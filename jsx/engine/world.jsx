@@ -21,6 +21,7 @@ export default class World {
     this.zoneList = [];
     this.afterTickActions = new ActionQueue();
     this.sortZones = this.sortZones.bind(this);
+    this.zoneContaining = this.zoneContaining.bind(this);
   }
 
   // push action into next frame
@@ -63,7 +64,7 @@ export default class World {
     for (let z in this.zoneDict) this.zoneDict[z].draw(this.engine);
   }
 
-  // Check for Cell inclusion
+  // get zone at position
   zoneContaining(x, y) {
     for (let z in this.zoneDict) {
       let zone = this.zoneDict[z];

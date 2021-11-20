@@ -48,4 +48,51 @@ export default {
   // Offsets
   drawOffset: new Vector(0, 1, 0.2),
   hotspotOffset: new Vector(0.5, 0.5, 0),
+  // Update
+  tick: function (time) {
+    if (!this.actionList.length) {
+      let ret = this.checkInput();
+      if (ret) {
+        // Send action to the server
+        // network.sendAction(ret);
+
+        // Start running action locally to avoid latency
+        // Local action will be replaced with a server-sanitised
+        // version on the next update
+        this.addAction(ret);
+      }
+    }
+    if (this.bindCamera) set(this.pos, this.engine.cameraPosition);
+  },
+  // Reads for Input to Respond to for player
+  checkInput: function () {
+    let facing = Direction.None;
+    // Read Key presses
+    switch (this.engine.keyboard.lastPressedKey("wsadhm")) {
+      // Movement
+      case "w":
+        facing = Direction.Up;
+        break;
+      case "s":
+        facing = Direction.Down;
+        break;
+      case "a":
+        facing = Direction.Left;
+        break;
+      case "d":
+        facing = Direction.Right;
+        break;
+      default:
+        return null;
+    }
+    // Check Direction
+    if (this.facing !== facing) {
+      return this.faceDir(facing);
+    }
+  },
+  // Set Facing
+  faceDir: function (facing) {
+    if (this.facing == facing || facing === Direction.None) return null;
+    return new ActionLoader(this, "face", [facing]);
+  }
 };

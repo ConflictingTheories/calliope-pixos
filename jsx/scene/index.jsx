@@ -11,19 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Shaders
-import fs from "./shaders/fs.jsx";
-import vs from "./shaders/vs.jsx";
 import World from "../engine/world.jsx";
 
 // Scene Object
 export default class Scene {
   constructor() {
-    // Shaders
-    this.shaders = {
-      fs: fs(),
-      vs: vs(),
-    };
     // Singleton
     if (!Scene._instance) {
       Scene._instance = this;

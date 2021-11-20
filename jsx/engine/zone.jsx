@@ -90,7 +90,7 @@ export default class Zone {
     this.vertexPosBuf = [];
     this.vertexTexBuf = [];
     this.walkability = [];
-    // Determine Walkability and Load Vertices
+    // Determine Walkability and Load Vertices (TODO -- Also determines Triggers / Interaction)
     for (let j = 0, k = 0; j < this.size[1]; j++) {
       let vertices = [];
       let vertexTexCoords = [];
@@ -99,7 +99,7 @@ export default class Zone {
         let cell = this.cells[k];
         this.walkability[k] = Direction.All;
         let n = Math.floor(cell.length / 3);
-        // Calc Walk, Vertex positions and Textures for each cell
+        // Calc Walk, Vertex positions and Textures for each cell (TODO - add triggers)
         for (let l = 0; l < n; l++) {
           let tilePos = [this.bounds[0] + i, this.bounds[1] + j, cell[3 * l + 2]];
           this.walkability[k] &= this.tileset.getWalkability(cell[3 * l]);
@@ -125,6 +125,7 @@ export default class Zone {
   // Update
   tick(time) {
     if (!this.loaded) return;
+    // Run Each Sprite
     this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
   }
 
@@ -233,4 +234,5 @@ export default class Zone {
     if (!this.isInZone(x, y)) return null;
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
   }
+
 }

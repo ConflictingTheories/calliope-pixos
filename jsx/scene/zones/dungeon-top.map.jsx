@@ -212,20 +212,31 @@ export default {
   ],
   // Sprites and Objects to be Loaded in the Scene & their Starting Points
   sprites: [
-    { id: "e2", type: "monsters/air_elemental", pos: [8, 2, 0], facing: 8 },
-    { id: "e3", type: "monsters/fire_elemental", pos: [2, 8, 0], facing: 1 },
-    { id: "e4", type: "monsters/water_elemental", pos: [14, 8, 0], facing: 4 },
-    { id: "spurt1", type: "effects/lavaspurt", pos: [10, 7, -1.5], facing: 2 },
-    { id: "spurt2", type: "effects/lavaspurt", pos: [9, 6, -1.5], facing: 2 },
-    { id: "spurt3", type: "effects/lavaspurt", pos: [10, 5, -1.5], facing: 2 },
-    { id: "spurt4", type: "effects/lavaspurt", pos: [7, 6, -1.5], facing: 2 },
-    { id: "spurt5", type: "effects/lavaspurt", pos: [6, 7, -1.5], facing: 2 },
-    { id: "spurt6", type: "effects/lavaspurt", pos: [6, 9, -1.5], facing: 2 },
-    { id: "spurt8", type: "effects/lavaspurt", pos: [9, 9, -1.5], facing: 2 },
-    { id: "player", type: "characters/player", pos: [8, 8, -1], facing: 8 },
+    { id: "e2", type: "monsters/air_elemental", pos: [8, 2, 0], facing: 8, options: {} },
+    { id: "e3", type: "monsters/fire_elemental", pos: [2, 8, 0], facing: 1, options: {} },
+    { id: "e4", type: "monsters/water_elemental", pos: [14, 8, 0], facing: 4, options: {} },
+    { id: "spurt1", type: "effects/lavaspurt", pos: [10, 7, -1.5], facing: 2, options: {} },
+    { id: "spurt2", type: "effects/lavaspurt", pos: [9, 6, -1.5], facing: 2, options: {} },
+    { id: "spurt3", type: "effects/lavaspurt", pos: [10, 5, -1.5], facing: 2, options: {} },
+    { id: "spurt4", type: "effects/lavaspurt", pos: [7, 6, -1.5], facing: 2, options: {} },
+    { id: "spurt5", type: "effects/lavaspurt", pos: [6, 7, -1.5], facing: 2, options: {} },
+    { id: "spurt6", type: "effects/lavaspurt", pos: [6, 9, -1.5], facing: 2, options: {} },
+    { id: "spurt8", type: "effects/lavaspurt", pos: [9, 9, -1.5], facing: 2, options: {} },
+    { id: "player", type: "characters/player", pos: [8, 8, -1], facing: 8, options: {} },
   ],
+
   // TODO - Add Scripts / Triggers for the Scene
-  //
+  triggers: [
+    {
+      id: "trap-0",
+      type: "trap",
+      pos: [8, 3, 0],
+      options: {
+        onWalk: true,
+      },
+    },
+  ],
+
   // TODO - Add in Scenes / Dialogue
-  //
+  dialogue: [{ id: "intro", src: "intros/intro-1", options: { autoplay: true } }],
 };

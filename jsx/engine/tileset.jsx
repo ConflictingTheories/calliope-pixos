@@ -40,9 +40,7 @@ export default class Tileset {
   // Received tileset definition JSON
   loadTileset(data) {
     // Merge tileset definition into this object
-    Object.keys(data).map((k) => {
-      this[k] = data[k];
-    });
+    Object.assign(this, data);
     // Definition actions must always run before loaded actions
     this.definitionLoaded = true;
     this.onDefinitionLoadActions.run();

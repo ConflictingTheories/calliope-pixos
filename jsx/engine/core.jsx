@@ -15,8 +15,15 @@ import { create, rotate, translate, perspective, set } from "./utils/math/matrix
 import { Vector, negate } from "./utils/math/vector.jsx";
 import Texture from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
+import fs from "./shaders/fs.jsx";
+import vs from "./shaders/vs.jsx";
 export default class GLEngine {
   constructor(canvas, hud, width, height) {
+    // Shaders
+    this.shaders = {
+      fs: fs(),
+      vs: vs(),
+    };
     this.uViewMat = create();
     this.uProjMat = create();
     this.canvas = canvas;
@@ -61,7 +68,7 @@ export default class GLEngine {
     gl.enable(gl.BLEND);
     this.initializedWebGl = true; // flag
     // Initialize Shader
-    this.initShaderProgram(gl, scene.shaders);
+    this.initShaderProgram(gl, this.shaders);
     // Initialize Project Matrix
     this.initProjection(gl);
     // Initialize Scene
