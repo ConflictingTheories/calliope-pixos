@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { create, rotate, translate, perspective, set } from "./utils/math/matrix4";
-import { Vector, negate } from "./utils/math/vector";
-import Texture from "./texture";
-import { textScrollBox } from "./hud";
+import { create, rotate, translate, perspective, set } from "./utils/math/matrix4.jsx";
+import { Vector, negate } from "./utils/math/vector.jsx";
+import Texture from "./texture.jsx";
+import { textScrollBox } from "./hud.jsx";
 export default class GLEngine {
   constructor(canvas, hud, width, height) {
     this.uViewMat = create();

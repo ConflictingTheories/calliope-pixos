@@ -14,11 +14,11 @@
 import React, { Component } from "react";
 import { collect } from "react-recollect";
 // WebGL Component
-import WebGLView from "./components/WebGLView";
+import WebGLView from "./components/WebGLView.jsx";
 // Pixos Scene Provider
-import SceneProvider from "./scene";
+import SceneProvider from "./scene/index.jsx";
 // Style Plugin
-import "../less/pixos.less";
+import "../less/pixos.css";
 
 class Pixos extends Component {
   constructor(props) {

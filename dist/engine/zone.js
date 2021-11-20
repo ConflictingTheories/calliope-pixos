@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _enums = require("./utils/enums");
+var _enums = require("./utils/enums.jsx");
 
-var _resources = _interopRequireDefault(require("./utils/resources"));
+var _resources = _interopRequireDefault(require("./utils/resources.jsx"));
 
 var _queue = _interopRequireDefault(require("./queue"));
 
-var _loaders = require("./utils/loaders");
+var _loaders = require("./utils/loaders.jsx");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

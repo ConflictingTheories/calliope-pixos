@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _vector = require("./utils/math/vector");
+var _vector = require("./utils/math/vector.jsx");
 
-var _enums = require("./utils/enums");
+var _enums = require("./utils/enums.jsx");
 
 var _queue = _interopRequireDefault(require("./queue"));
 
-var _matrix = require("./utils/math/matrix4");
+var _matrix = require("./utils/math/matrix4.jsx");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

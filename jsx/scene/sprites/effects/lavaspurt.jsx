@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector";
-import { translate, rotate } from "../../../engine/utils/math/matrix4";
-import Resources from "../../../engine/utils/resources";
+import { Vector } from "../../../engine/utils/math/vector.jsx";
+import { translate, rotate } from "../../../engine/utils/math/matrix4.jsx";
+import Resources from "../../../engine/utils/resources.jsx";
 export default {
   // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
   src: Resources.artResourceUrl("sewer.png"),

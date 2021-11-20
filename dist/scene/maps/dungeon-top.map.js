@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _sewer = _interopRequireDefault(require("../tilesets/sewer.tiles"));
+var _sewer = _interopRequireDefault(require("../tilesets/sewer.tiles.jsx"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

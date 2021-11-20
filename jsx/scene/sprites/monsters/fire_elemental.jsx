@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector";
-import Resources from "../../../engine/utils/resources";
+import { Vector } from "../../../engine/utils/math/vector.jsx";
+import Resources from "../../../engine/utils/resources.jsx";
 
 export default {
   src: Resources.artResourceUrl("elementals.gif"),

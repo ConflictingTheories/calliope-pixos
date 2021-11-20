@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set, lerp } from "../../engine/utils/math/vector";
-import { Direction } from "../../engine/utils/enums";
+import { Vector, set, lerp } from "../../engine/utils/math/vector.jsx";
+import { Direction } from "../../engine/utils/enums.jsx";
 
 export default {
   init: function (from, to, length) {

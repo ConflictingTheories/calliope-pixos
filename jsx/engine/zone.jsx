@@ -10,10 +10,10 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Direction } from "./utils/enums";
-import Resources from "./utils/resources";
-import ActionQueue from "./queue";
-import { SpriteLoader, TilesetLoader } from "./utils/loaders";
+import { Direction } from "./utils/enums.jsx";
+import Resources from "./utils/resources.jsx";
+import ActionQueue from "./queue.jsx";
+import { SpriteLoader, TilesetLoader } from "./utils/loaders.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {

@@ -13,10 +13,10 @@
 
 import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import glEngine from "../engine/core";
-import { Mouse } from "../engine/utils/enums";
-import Keyboard from "../engine/utils/keyboard";
-import { minecraftia } from "../engine/hud";
+import glEngine from "../engine/core.jsx";
+import { Mouse } from "../engine/utils/enums.jsx";
+import Keyboard from "../engine/utils/keyboard.jsx";
+import { minecraftia } from "../engine/hud.jsx";
 //
 const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const ref = useRef();

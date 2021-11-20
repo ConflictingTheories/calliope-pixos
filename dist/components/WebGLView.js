@@ -13,7 +13,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = _interopRequireDefault(require("../engine/core"));
 
-var _enums = require("../engine/utils/enums");
+var _enums = require("../engine/utils/enums.jsx");
 
 var _keyboard = _interopRequireDefault(require("../engine/utils/keyboard"));
 

@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _matrix = require("./utils/math/matrix4");
+var _matrix = require("./utils/math/matrix4.jsx");
 
-var _vector = require("./utils/math/vector");
+var _vector = require("./utils/math/vector.jsx");
 
 var _texture = _interopRequireDefault(require("./texture"));
 

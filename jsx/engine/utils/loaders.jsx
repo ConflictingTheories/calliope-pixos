@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "./resources";
-import Sprite from "../sprite";
-import Tileset from "../tileset";
-import Action from "../action";
+import Resources from "./resources.jsx";
+import Sprite from "../sprite.jsx";
+import Tileset from "../tileset.jsx";
+import Action from "../action.jsx";
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {

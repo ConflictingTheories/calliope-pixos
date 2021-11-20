@@ -10,11 +10,11 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector, set } from "./utils/math/vector";
-import { Direction } from "./utils/enums";
-import ActionQueue from "./queue";
+import { Vector, set } from "./utils/math/vector.jsx";
+import { Direction } from "./utils/enums.jsx";
+import ActionQueue from "./queue.jsx";
 
-import { rotate, translate } from "./utils/math/matrix4";
+import { rotate, translate } from "./utils/math/matrix4.jsx";
 
 export default class Sprite {
   constructor(engine) {

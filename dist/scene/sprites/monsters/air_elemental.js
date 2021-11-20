@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _vector = require("../../../engine/utils/math/vector");
+var _vector = require("../../../engine/utils/math/vector.jsx");
 
-var _resources = _interopRequireDefault(require("../../../engine/utils/resources"));
+var _resources = _interopRequireDefault(require("../../../engine/utils/resources.jsx"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

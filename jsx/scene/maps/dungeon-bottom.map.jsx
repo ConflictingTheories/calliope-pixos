@@ -12,7 +12,7 @@
 \*                                                 */
 
 // Tileset
-import Tiles from "../tilesets/sewer.tiles";
+import Tiles from "../tilesets/sewer.tiles.jsx";
 // Map
 export default {
   bounds: [0, 10, 17, 19],

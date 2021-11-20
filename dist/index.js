@@ -15,7 +15,7 @@ var _WebGLView = _interopRequireDefault(require("./components/WebGLView"));
 
 var _scene = _interopRequireDefault(require("./scene"));
 
-require("../less/pixos.less");
+require("../less/pixos.scss");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

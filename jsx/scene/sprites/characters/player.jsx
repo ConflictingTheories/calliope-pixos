@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set } from "../../../engine/utils/math/vector";
-import { Direction } from "../../../engine/utils/enums";
-import { ActionLoader } from "../../../engine/utils/loaders";
-import Resources from "../../../engine/utils/resources";
+import { Vector, set } from "../../../engine/utils/math/vector.jsx";
+import { Direction } from "../../../engine/utils/enums.jsx";
+import { ActionLoader } from "../../../engine/utils/loaders.jsx";
+import Resources from "../../../engine/utils/resources.jsx";
 export default {
   // Character art from http://opengameart.org/content/chara-seth-scorpio
   src: Resources.artResourceUrl("player.gif"),

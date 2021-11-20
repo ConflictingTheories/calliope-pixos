@@ -12,9 +12,9 @@
 \*                                                 */
 
 // Shaders
-import fs from "./shaders/fs";
-import vs from "./shaders/vs";
-import World from "../engine/world";
+import fs from "./shaders/fs.jsx";
+import vs from "./shaders/vs.jsx";
+import World from "../engine/world.jsx";
 
 // Scene Object
 export default class Scene {
