@@ -1,11 +1,17 @@
 {
   "name": "calliope-pixos",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pixos is a mini interactive scene player plugin for calliope static site generator.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf dist",
+    "compile": "npm run clean && cross-env NODE_ENV=production babel jsx --out-dir dist --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "keywords": [
     "calliope",
     "pixos",
@@ -24,6 +30,11 @@
   "author": "Kyle Derby MacInnis",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-react": "^7.16.0",
+    "babel-plugin-macros": "^3.1.0",
+    "cross-env": "^7.0.3",
     "react": "^17.0.2",
     "react-recollect": "^5.2.3"
   },
