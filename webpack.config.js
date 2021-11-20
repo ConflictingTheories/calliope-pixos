@@ -7,6 +7,7 @@ const config = {
   entry: './jsx/index.jsx',
   // Output
   output: {
+    library: 'commonjs',
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
@@ -28,11 +29,17 @@ const config = {
   },
   // Plugins
   plugins: [
-    // new webpack.ProvidePlugin({
-    //     Buffer: ['buffer', 'Buffer'],
-    //     process: 'process/browser'
-    //   })
+    new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+        process: 'process/browser'
+      })
   ],
+  externals: [
+    'react',
+    'react-dom',
+  ],
+  devtool: 'source-map',
+  mode: 'production',
 };
 // Exports
 module.exports = config;
