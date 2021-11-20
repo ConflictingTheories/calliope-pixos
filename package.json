@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pixos is a mini interactive scene player plugin for calliope static site generator.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,11 @@
   },
   "author": "Kyle Derby MacInnis",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
+    "react": "^17.0.2",
+    "react-recollect": "^5.2.3"
+  },
+  "peerDependencies": {
     "react": "^17.0.2",
     "react-recollect": "^5.2.3"
   }
