@@ -73,6 +73,25 @@ export class SpriteLoader {
   }
 }
 
+// Helps Loads New Sprite Instance
+export class DialogueLoader {
+  constructor(engine) {
+    this.engine = engine;
+    this.definitions = [];
+    this.instances = {};
+  }
+  // Load Sprite
+  async load(type) {
+    if (!this.instances[type]) {
+      this.instances[type] = [];
+    }
+    // New Instance
+    let instance = new Dialogue(this.engine, type);
+    this.instances[type].push({ instance });
+    return instance;
+  }
+}
+
 // Helps Loads New Action Instance
 export class ActionLoader {
   constructor(sprite, type, args) {

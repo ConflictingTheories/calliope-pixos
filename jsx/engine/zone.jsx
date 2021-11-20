@@ -13,7 +13,7 @@
 import { Direction } from "./utils/enums.jsx";
 import Resources from "./utils/resources.jsx";
 import ActionQueue from "./queue.jsx";
-import { SpriteLoader, TilesetLoader } from "./utils/loaders.jsx";
+import { SpriteLoader, TilesetLoader, DialogueLoader } from "./utils/loaders.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -25,6 +25,7 @@ export default class Zone {
     this.engine = world.engine;
     this.onLoadActions = new ActionQueue();
     this.spriteLoader = new SpriteLoader(world.engine);
+    this.dialogueLoader = new DialogueLoader(world.engine);
     this.tsLoader = new TilesetLoader(world.engine);
     // bind
     this.loadTilesetGeometry = this.loadTilesetGeometry.bind(this);
@@ -61,7 +62,7 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../scene/zones/" + this.id + ".map.jsx")["default"];
+      let data = require("../scene/zones/" + this.id + ".zone.jsx")["default"];
       this.bounds = data.bounds;
       this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
       this.cells = data.cells;
@@ -70,7 +71,11 @@ export default class Zone {
       this.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites from tileset
-      await Promise.all(data.sprites.map(this.loadSprite));
+      await Promise.all(
+        ...data.sprites.map(this.loadSprite),
+        ...data.triggers.map(this.loadTrigger),
+        ...data.dialogue.map(this.loadDialogue)
+      );
       // Notify the zone sprites when the new sprite has loaded
       this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
     } catch (e) {
@@ -116,7 +121,14 @@ export default class Zone {
 
   // run after each tileset / sprite is loaded
   onTilesetOrSpriteLoaded() {
-    if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded)) return;
+    if (
+      this.loaded ||
+      !this.tileset.loaded ||
+      !this.spriteList.every((sprite) => sprite.loaded) ||
+      !this.dialogueList.every((dialogue) => dialogue.loaded) ||
+      !this.triggerList.every((trigger) => trigger.loaded)
+    )
+      return;
     console.log("Initialized zone '" + this.id + "'");
     this.loaded = true;
     this.onLoadActions.run();
@@ -157,6 +169,22 @@ export default class Zone {
     let newSprite = await this.spriteLoader.load(spriteData.type);
     this.spriteDict[spriteData.id] = newSprite;
     this.spriteList.push(newSprite);
+  }
+
+  // Load new sprite data into zone
+  async loadTrigger(triggerData) {
+    triggerData.zone = this;
+    let newTrigger = await this.triggerLoader.load(triggerData.type);
+    this.triggerDict[triggerData.id] = newTrigger;
+    this.triggerList.push(newTrigger);
+  }
+
+  // Load new sprite data into zone
+  async loadDialogue(dialogueData) {
+    dialogueData.zone = this;
+    let newDialogue = await this.dialogueLoader.load(dialogueData.type);
+    this.dialogueDict[dialogueData.id] = newDialogue;
+    this.dialogueList.push(newDialogue);
   }
 
   // Add an existing sprite to the zone
@@ -234,5 +262,4 @@ export default class Zone {
     if (!this.isInZone(x, y)) return null;
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
   }
-
 }

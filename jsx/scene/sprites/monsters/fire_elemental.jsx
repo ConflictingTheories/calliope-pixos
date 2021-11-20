@@ -13,7 +13,7 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
-
+import { ActionLoader } from "../../../engine/utils/loaders.jsx";
 export default {
   src: Resources.artResourceUrl("elementals.gif"),
   sheetSize: [64, 128],
@@ -62,7 +62,6 @@ export default {
         this.addAction(ret);
       }
     }
-    if (this.bindCamera) set(this.pos, this.engine.cameraPosition);
   },
   // Reads for Input to Respond to for player
   checkInput: function () {
