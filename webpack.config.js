@@ -7,7 +7,8 @@ const config = {
   entry: './jsx/index.jsx',
   // Output
   output: {
-    library: 'commonjs',
+    library: 'calliope-pixos',
+    libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },

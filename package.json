@@ -1,8 +1,8 @@
 {
   "name": "calliope-pixos",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Pixos is a mini interactive scene player plugin for calliope static site generator.",
-  "main": "bundle.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf dist",
