@@ -17,6 +17,10 @@
     "canvas"
   ],
   "homepage": "https://calliope.site",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
   "author": "Kyle Derby MacInnis",
   "license": "ISC",
   "dependencies": {
