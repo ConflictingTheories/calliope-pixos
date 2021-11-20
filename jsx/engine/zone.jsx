@@ -27,7 +27,7 @@ export default class Zone {
     this.spriteLoader = new SpriteLoader(world.engine);
     this.tsLoader = new TilesetLoader(world.engine);
     // bind
-    this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
+    this.loadTilesetGeometry = this.loadTilesetGeometry.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
     this.loadSprite = this.loadSprite.bind(this);
   }
@@ -44,7 +44,7 @@ export default class Zone {
         this.cells = data.cells;
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset);
-        this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+        this.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
         await Promise.all(data.sprites.map(this.loadSprite));
@@ -61,13 +61,13 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../scene/maps/" + this.id + ".map.jsx")["default"];
+      let data = require("../scene/zones/" + this.id + ".map.jsx")["default"];
       this.bounds = data.bounds;
       this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
       this.cells = data.cells;
       // Load tileset and create level geometry & trigger updates
       this.tileset = await this.tsLoader.load(data.tileset);
-      this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+      this.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites from tileset
       await Promise.all(data.sprites.map(this.loadSprite));
@@ -85,8 +85,8 @@ export default class Zone {
     else this.onLoadActions.add(action);
   }
 
-  // When tileset loads
-  onTilesetDefinitionLoaded() {
+  // When tileset loads load geometry
+  loadTilesetGeometry() {
     this.vertexPosBuf = [];
     this.vertexTexBuf = [];
     this.walkability = [];
@@ -122,80 +122,10 @@ export default class Zone {
     this.onLoadActions.run();
   }
 
-  // Load Sprite
-  async loadSprite(data) {
-    data.zone = this;
-    let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
-    this.spriteDict[data.id] = newSprite;
-    this.spriteList.push(newSprite);
-  }
-
-  // Add an existing sprite to the zone
-  addSprite(sprite) {
-    sprite.zone = this;
-    this.spriteDict[sprite.id] = sprite;
-    this.spriteList.push(sprite);
-  }
-
-  // Remove an sprite from the zone
-  removeSprite(id) {
-    this.spriteList = this.spriteList.filter((sprite) => sprite.id !== id);
-    delete this.spriteDict[id];
-  }
-
-  // Calculate the height of a point in the zone
-  getHeight(x, y) {
-    if (!this.isInZone(x, y)) {
-      console.error("Requesting height for [" + x + ", " + y + "] outside zone bounds");
-      return 0;
-    }
-
-    let i = Math.floor(x);
-    let j = Math.floor(y);
-    let dp = [x - i, y - j];
-
-    // Calculate point inside a triangle
-    let getUV = (t, p) => {
-      // Vectors relative to first vertex
-      let u = [t[1][0] - t[0][0], t[1][1] - t[0][1]];
-      let v = [t[2][0] - t[0][0], t[2][1] - t[0][1]];
-
-      // Calculate basis transformation
-      let d = 1 / (u[0] * v[1] - u[1] * v[0]);
-      let T = [d * v[1], -d * v[0], -d * u[1], d * u[0]];
-
-      // Return new coords
-      u = (p[0] - t[0][0]) * T[0] + (p[1] - t[0][1]) * T[1];
-      v = (p[0] - t[0][0]) * T[2] + (p[1] - t[0][1]) * T[3];
-      return [u, v];
-    };
-
-    // Check if any of the tiles defines a custom walk polygon
-    let cell = this.cells[(j - this.bounds[1]) * this.size[0] + i - this.bounds[0]];
-    let n = Math.floor(cell.length / 3);
-    for (let l = 0; l < n; l++) {
-      let poly = this.tileset.getTileWalkPoly(cell[3 * l]);
-      if (!poly) continue;
-
-      // Loop over triangles
-      for (let p = 0; p < poly.length; p++) {
-        let uv = getUV(poly[p], dp);
-        let w = uv[0] + uv[1];
-        if (w <= 1) return cell[3 * l + 2] + (1 - w) * poly[p][0][2] + uv[0] * poly[p][1][2] + uv[1] * poly[p][2][2];
-      }
-    }
-
-    // Use the height of the first tile in the cell
-    return cell[2];
-  }
-
-  // Draw Row of Zone
-  drawRow(row) {
-    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.vertexPositionAttribute);
-    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.textureCoordAttribute);
-    this.tileset.texture.attach();
-    this.engine.shaderProgram.setMatrixUniforms();
-    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+  // Update
+  tick(time) {
+    if (!this.loaded) return;
+    this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
   }
 
   // Draw Frame
@@ -220,10 +150,77 @@ export default class Zone {
     this.engine.mvPopMatrix();
   }
 
-  // Update
-  tick(time) {
-    if (!this.loaded) return;
-    this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
+  // Load new sprite data into zone
+  async loadSprite(spriteData) {
+    spriteData.zone = this;
+    let newSprite = await this.spriteLoader.load(spriteData.type);
+    this.spriteDict[spriteData.id] = newSprite;
+    this.spriteList.push(newSprite);
+  }
+
+  // Add an existing sprite to the zone
+  addSprite(sprite) {
+    sprite.zone = this;
+    this.spriteDict[sprite.id] = sprite;
+    this.spriteList.push(sprite);
+  }
+
+  // Remove an sprite from the zone
+  removeSprite(id) {
+    this.spriteList = this.spriteList.filter((sprite) => sprite.id !== id);
+    delete this.spriteDict[id];
+  }
+
+  // Calculate the height of a point in the zone
+  getHeight(x, y) {
+    if (!this.isInZone(x, y)) {
+      console.error("Requesting height for [" + x + ", " + y + "] outside zone bounds");
+      return 0;
+    }
+    // Point
+    let i = Math.floor(x);
+    let j = Math.floor(y);
+    let dp = [x - i, y - j];
+    // Calculate point inside a triangle
+    let getUV = (t, p) => {
+      // Vectors relative to first vertex
+      let u = [t[1][0] - t[0][0], t[1][1] - t[0][1]];
+      let v = [t[2][0] - t[0][0], t[2][1] - t[0][1]];
+
+      // Calculate basis transformation
+      let d = 1 / (u[0] * v[1] - u[1] * v[0]);
+      let T = [d * v[1], -d * v[0], -d * u[1], d * u[0]];
+
+      // Return new coords
+      u = (p[0] - t[0][0]) * T[0] + (p[1] - t[0][1]) * T[1];
+      v = (p[0] - t[0][0]) * T[2] + (p[1] - t[0][1]) * T[3];
+      return [u, v];
+    };
+    // Check if any of the tiles defines a custom walk polygon
+    let cell = this.cells[(j - this.bounds[1]) * this.size[0] + i - this.bounds[0]];
+    let n = Math.floor(cell.length / 3);
+    for (let l = 0; l < n; l++) {
+      let poly = this.tileset.getTileWalkPoly(cell[3 * l]);
+      if (!poly) continue;
+
+      // Loop over triangles
+      for (let p = 0; p < poly.length; p++) {
+        let uv = getUV(poly[p], dp);
+        let w = uv[0] + uv[1];
+        if (w <= 1) return cell[3 * l + 2] + (1 - w) * poly[p][0][2] + uv[0] * poly[p][1][2] + uv[1] * poly[p][2][2];
+      }
+    }
+    // Use the height of the first tile in the cell
+    return cell[2];
+  }
+
+  // Draw Row of Zone
+  drawRow(row) {
+    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.vertexPositionAttribute);
+    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.textureCoordAttribute);
+    this.tileset.texture.attach();
+    this.engine.shaderProgram.setMatrixUniforms();
+    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }
 
   // Check for zone inclusion

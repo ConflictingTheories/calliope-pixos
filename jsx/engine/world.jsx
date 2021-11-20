@@ -36,7 +36,7 @@ export default class World {
   // Fetch and Load Zone
   async loadZone(zoneId) {
     if (this.zoneDict[zoneId]) return this.zoneDict[zoneId];
-    // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
+    // Fetch Zone Remotely (allows for custom zones - with approved sprites / actions)
     let z = new Zone(zoneId, this);
     await z.load();
     this.zoneDict[zoneId] = z;

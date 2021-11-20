@@ -16,6 +16,8 @@ export default class Action {
     this.sprite = sprite;
     this.time = new Date().getTime();
     this.id = sprite.id + "-" + type + "-" + this.time;
+    this.templateLoaded = true;
+    Object.assign(this, require("./actions/" + type + ".jsx")["default"]);
   }
   // configure action
   configure(type, sprite, id, time, args) {

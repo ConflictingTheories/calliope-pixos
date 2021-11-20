@@ -64,81 +64,38 @@ export class SpriteLoader {
   }
   // Load Sprite
   async load(type) {
-    let afterLoad = arguments[1];
-    let runConfigure = arguments[2];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
     // New Instance
-    let instance = new Sprite(this.engine);
-    Object.assign(instance, require("../../scene/sprites/" + type + ".jsx")["default"]);
-    instance.templateLoaded = true;
-    // Update Existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
-    });
-    // Configure if needed
-    if (runConfigure) runConfigure(instance);
-    // once loaded
-    if (afterLoad) {
-      console.log("after load");
-      if (instance.templateLoaded) afterLoad(instance);
-      else this.instances[type].push({ instance, afterLoad });
-    }
-
+    let instance = new Sprite(this.engine, type);
+    this.instances[type].push({ instance });
     return instance;
   }
 }
 
 // Helps Loads New Action Instance
 export class ActionLoader {
-  constructor(engine, type, args, sprite, id, time) {
-    this.engine = engine;
+  constructor(sprite, type, args) {
+    this.engine = sprite.engine;
     this.type = type;
     this.args = args;
     this.sprite = sprite;
     this.instances = {};
     this.definitions = [];
-
-    if (!time) {
-      time = new Date().getTime();
-    }
-    if (!id) {
-      id = sprite.id + "-" + type + "-" + time;
-    }
-    return this.load(
-      type,
-      function (action) {
-        action.onLoad(args);
-      },
-      function (action) {
-        action.configure(type, sprite, id, time, args);
-      }
-    );
+    this.time = new Date().getTime();
+    this.id = sprite.id + "-" + type + "-" + time;
+    return this.load(type,args);
   }
   // Load Action
-  load(type) {
-    let afterLoad = arguments[1];
-    let runConfigure = arguments[2];
+  load(type, args) {
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite);
-    Object.assign(instance, require("../actions/" + type + ".jsx")["default"]);
-    instance.templateLoaded = true;
-    // Notify existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
-    });
-    // construct
-    if (runConfigure) runConfigure(instance);
-    // load
-    if (afterLoad) {
-      if (instance.templateLoaded) afterLoad(instance);
-      else this.instances[type].push({ instance, afterLoad });
-    }
-
+    instance.configure(type, sprite, this.id, this.time, args);
+    instance.onLoad(args);
     return instance;
   }
 }

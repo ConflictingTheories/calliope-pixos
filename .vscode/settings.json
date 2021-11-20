@@ -1,0 +1,7 @@
+{
+    "files.exclude": {
+        "dist": true,
+        ".vscode": true,
+        ".contributions": true
+    }
+}

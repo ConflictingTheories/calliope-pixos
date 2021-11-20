@@ -37,6 +37,17 @@ export default class Scene {
     Scene._instance.engine = engine;
     // Init Game Engine Components
     let world = (Scene._instance.world = new World(engine));
+   
+    // TODO - Setup Channels
+    // - Main Channel (core game loop)
+    // - UI Channel (async UI )
+    // - Chat Channel (dynamic/async)
+    // - Network Channel (tbd)
+    //
+    // assign channels
+    //
+
+    // Load Initial Zones
     await world.loadZone("dungeon-top");
     await world.loadZone("dungeon-bottom");
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
@@ -44,14 +55,9 @@ export default class Scene {
 
   // Render Loop
   render = (engine, now) => {
-    // Build
+    // update
     Scene._instance.world.tick(now);
     // Draw Frame
-    this.draw(engine);
-  };
-
-  // Draw Scene
-  draw = (engine) => {
     Scene._instance.world.draw(engine);
   };
 

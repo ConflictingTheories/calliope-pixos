@@ -68,7 +68,7 @@ export default {
     }
     if (this.bindCamera) set(this.pos, this.engine.cameraPosition);
   },
-  // Reads for Input to Respond to
+  // Reads for Input to Respond to for player
   checkInput: function () {
     let moveTime = 600; // move time in ms
     let facing = Direction.None;
@@ -89,20 +89,10 @@ export default {
         break;
       // Help Dialogue
       case "h":
-        return new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Welcome! You pressed help!", false, { autoclose: true }],
-          this
-        );
-        // Chat Message
-        case "m":
-          return new ActionLoader(
-            this.engine,
-            "chat",
-            [">:", true, { autoclose: false }],
-            this
-          );
+        return new ActionLoader(this, "dialogue", ["Welcome! You pressed help!", false, { autoclose: true }]);
+      // Chat Message
+      case "m":
+        return new ActionLoader(this, "chat", [">:", true, { autoclose: false }]);
       default:
         return null;
     }
@@ -120,12 +110,7 @@ export default {
       if (!z || !z.loaded || !z.isWalkable(to.x, to.y, Direction.reverse(facing))) {
         return this.faceDir(facing);
       }
-      return new ActionLoader(
-        this.engine,
-        "changezone",
-        [this.zone.id, this.pos.toArray(), z.id, to.toArray(), moveTime],
-        this
-      );
+      return new ActionLoader(this, "changezone", [this.zone.id, this.pos.toArray(), z.id, to.toArray(), moveTime]);
     }
     // Check Walking
     if (
@@ -134,20 +119,15 @@ export default {
     ) {
       return this.faceDir(facing);
     }
-    return new ActionLoader(this.engine, "move", [this.pos.toArray(), to.toArray(), moveTime], this);
+    return new ActionLoader(this, "move", [this.pos.toArray(), to.toArray(), moveTime]);
   },
   // Set Facing
   faceDir: function (facing) {
     if (this.facing == facing || facing === Direction.None) return null;
-    return new ActionLoader(this.engine, "face", [facing], this);
+    return new ActionLoader(this, "face", [facing]);
   },
   // set message (for chat bubbles)
-  setGreeting: function(greeting){
-    return new ActionLoader(
-      this.engine,
-      "greeting",
-      [greeting, { autoclose: true }],
-      this
-    );
-  }
+  setGreeting: function (greeting) {
+    return new ActionLoader(this, "greeting", [greeting, { autoclose: true }]);
+  },
 };

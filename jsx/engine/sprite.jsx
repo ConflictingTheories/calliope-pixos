@@ -17,7 +17,7 @@ import ActionQueue from "./queue.jsx";
 import { rotate, translate } from "./utils/math/matrix4.jsx";
 
 export default class Sprite {
-  constructor(engine) {
+  constructor(engine, type) {
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
@@ -29,6 +29,9 @@ export default class Sprite {
     this.actionList = [];
     this.onLoadActions = new ActionQueue();
     this.getTexCoords = this.getTexCoords.bind(this)
+    this.templateLoaded = true;
+    Object.assign(this, require("../scene/sprites/" + type + ".jsx")["default"]);
+    this.loadTexture(this);
   }
 
   runWhenLoaded(action) {
@@ -37,7 +40,7 @@ export default class Sprite {
   }
 
   // Load Texture / Location
-  onLoad(instanceData) {
+  loadTexture(instanceData) {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
       console.error("Invalid sprite definition");
@@ -53,11 +56,11 @@ export default class Sprite {
     this.texture = this.engine.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
-    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    this.zone.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
   }
 
   // Definition Loaded
-  onTilesetDefinitionLoaded() {
+  loadTilesetGeometry() {
     let s = this.zone.tileset.tileSize;
     let ts = [this.tileSize[0] / s, this.tileSize[1] / s];
     let v = [
