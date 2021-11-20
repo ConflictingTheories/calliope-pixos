@@ -1,0 +1,26 @@
+{
+  "name": "calliope-pixos",
+  "version": "0.1.0",
+  "description": "Pixos is a mini interactive scene player plugin for calliope static site generator.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "calliope",
+    "pixos",
+    "html5",
+    "game",
+    "react",
+    "game",
+    "webgl",
+    "canvas"
+  ],
+  "homepage": "https://calliope.site",
+  "author": "Kyle Derby MacInnis",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-recollect": "^5.2.3"
+  }
+}
