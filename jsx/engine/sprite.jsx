@@ -11,10 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 import { Vector, set } from "./utils/math/vector.jsx";
+import { rotate, translate } from "./utils/math/matrix4.jsx";
 import { Direction } from "./utils/enums.jsx";
 import ActionQueue from "./queue.jsx";
-
-import { rotate, translate } from "./utils/math/matrix4.jsx";
 
 export default class Sprite {
   constructor(engine, type) {
@@ -28,9 +27,11 @@ export default class Sprite {
     this.actionDict = {};
     this.actionList = [];
     this.onLoadActions = new ActionQueue();
-    this.getTexCoords = this.getTexCoords.bind(this)
+    this.getTexCoords = this.getTexCoords.bind(this);
     this.templateLoaded = true;
+    // apply properties
     Object.assign(this, require("../scene/sprites/" + type + ".jsx")["default"]);
+    // load
     this.loadTexture(this);
   }
 
@@ -51,7 +52,7 @@ export default class Sprite {
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(new Vector(...instanceData.pos), this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
-    console.log('facing', Direction.spriteSequence(this.facing))
+    console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
@@ -84,14 +85,13 @@ export default class Sprite {
     this.init(); // Hook for sprite implementations
     this.loaded = true;
     this.onLoadActions.run();
-    
+
     console.log("Initialized sprite '" + this.id + "' in zone '" + this.zone.id + "'");
   }
 
   // Get Texture Coordinates
   getTexCoords() {
-    if(this.id == 'player')
-    console.log('texture frames', this.facing, Direction.spriteSequence(this.facing))
+    if (this.id == "player") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
     let t = this.frames[Direction.spriteSequence(this.facing)][this.animFrame % 4];
     let ss = this.sheetSize;
     let ts = this.tileSize;
@@ -133,15 +133,14 @@ export default class Sprite {
 
   // Set Facing
   setFacing(facing) {
-    console.log('setting face to ' + Direction.spriteSequence(facing))
-    if(facing)
-      this.facing = facing;
+    console.log("setting face to " + Direction.spriteSequence(facing));
+    if (facing) this.facing = facing;
     this.setFrame(this.animFrame);
   }
 
   // Add Action to Queue
   addAction(action) {
-    console.log('adding action')
+    console.log("adding action");
     if (this.actionDict[action.id]) this.removeAction(action.id);
     this.actionDict[action.id] = action;
     this.actionList.push(action);
@@ -149,8 +148,8 @@ export default class Sprite {
 
   // Remove Action
   removeAction(id) {
-    console.log('removing action')
-    this.actionList = this.actionList.filter((action)=>action.id !== id);
+    console.log("removing action");
+    this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
 

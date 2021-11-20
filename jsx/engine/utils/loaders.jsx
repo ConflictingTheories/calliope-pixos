@@ -34,7 +34,7 @@ export class TilesetLoader {
     if (fileResponse.ok) {
       try {
         let content = await fileResponse.json();
-        await tileset.onJsonLoaded(content);
+        await tileset.loadTileset(content);
       } catch (e) {
         console.error("Error parsing tileset '" + tileset.name + "' definition");
         console.error(e);
@@ -49,8 +49,7 @@ export class TilesetLoader {
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
-    let json = require("../../scene/tilesets/" + type + ".tileset.jsx")["default"];
-    instance.onJsonLoaded(json);
+    instance.loadTileset(require("../../scene/tilesets/" + type + ".tileset.jsx")["default"]);
     return instance;
   }
 }
@@ -85,7 +84,7 @@ export class ActionLoader {
     this.definitions = [];
     this.time = new Date().getTime();
     this.id = sprite.id + "-" + type + "-" + time;
-    return this.load(type,args);
+    return this.load(type, args);
   }
   // Load Action
   load(type, args) {

@@ -38,7 +38,7 @@ export default class Tileset {
   }
 
   // Received tileset definition JSON
-  onJsonLoaded(data) {
+  loadTileset(data) {
     // Merge tileset definition into this object
     Object.keys(data).map((k) => {
       this[k] = data[k];
