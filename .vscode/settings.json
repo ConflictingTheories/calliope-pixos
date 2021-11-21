@@ -1,7 +1,10 @@
 {
     "files.exclude": {
-        "dist": true,
-        ".vscode": true,
-        ".contributions": true
-    }
+        "dist": false,
+        ".vscode": false,
+        ".contributions": false,
+        "node_modules": false,
+        "test/my-app/node_modules": false
+    },
+    "workspace.isHidden": false
 }

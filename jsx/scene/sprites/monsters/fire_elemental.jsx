@@ -93,5 +93,5 @@ export default {
   faceDir: function (facing) {
     if (this.facing == facing || facing === Direction.None) return null;
     return new ActionLoader(this, "face", [facing]);
-  }
+  },
 };
