@@ -224,19 +224,4 @@ export default {
     { id: "spurt8", type: "effects/lavaspurt", pos: [9, 9, -1.5], facing: 2 },
     { id: "player", type: "characters/player", pos: [8, 8, -1], facing: 8 },
   ],
-
-  // TODO - Add Scripts / Triggers for the Scene
-  triggers: [
-    {
-      id: "trap-0",
-      type: "trap",
-      pos: [8, 3, 0],
-      options: {
-        onWalk: true,
-      },
-    },
-  ],
-
-  // TODO - Add in Scenes / Dialogue
-  dialogue: [{ id: "intro", src: "intros/intro-1", options: { autoplay: true } }],
 };
