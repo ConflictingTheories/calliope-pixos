@@ -13,6 +13,6 @@
 
 export default {
   tilesetRequestUrl: (id) => "/pixos/tilesets/" + id + ".tileset.jsx",
-  zoneRequestUrl: (id) => "/pixos/zones/" + id + ".map.jsx",
+  zoneRequestUrl: (id) => "/pixos/zones/" + id + ".zone.jsx",
   artResourceUrl: (art) => "/pixos/art/" + art,
 };

@@ -61,7 +61,7 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../scene/zones/" + this.id + ".map.jsx")["default"];
+      let data = require("../scene/zones/" + this.id + ".zone.jsx")["default"];
       this.bounds = data.bounds;
       this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
       this.cells = data.cells;
