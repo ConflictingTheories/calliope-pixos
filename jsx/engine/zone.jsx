@@ -152,8 +152,7 @@ export default class Zone {
 
   // Load new sprite data into zone
   async loadSprite(spriteData) {
-    spriteData.zone = this;
-    let newSprite = await this.spriteLoader.load(spriteData.type);
+    let newSprite = await this.spriteLoader.load(spriteData.type, this);
     this.spriteDict[spriteData.id] = newSprite;
     this.spriteList.push(newSprite);
   }

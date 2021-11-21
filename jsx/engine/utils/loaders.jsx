@@ -62,12 +62,12 @@ export class SpriteLoader {
     this.instances = {};
   }
   // Load Sprite
-  async load(type) {
+  async load(type, zone) {
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
     // New Instance
-    let instance = new Sprite(this.engine, type);
+    let instance = new Sprite(this.engine, type, zone);
     this.instances[type].push({ instance });
     return instance;
   }

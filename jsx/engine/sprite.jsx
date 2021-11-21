@@ -16,8 +16,9 @@ import { Direction } from "./utils/enums.jsx";
 import ActionQueue from "./queue.jsx";
 
 export default class Sprite {
-  constructor(engine, type) {
+  constructor(engine, type, zone) {
     this.engine = engine;
+    this.zone = zone;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
     this.hotspotOffset = new Vector(0, 0, 0);
@@ -49,9 +50,6 @@ export default class Sprite {
     }
     // Zone Information
     this.zone = instanceData.zone;
-    if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) set(new Vector(...instanceData.pos), this.pos);
-    if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);
