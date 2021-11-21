@@ -67,7 +67,7 @@ export default {
   checkInput: function () {
     let facing = Direction.None;
     // Read Key presses
-    switch (this.engine.keyboard.lastPressedKey("wsadhm")) {
+    switch (this.engine.keyboard.lastPressedKey("wsad")) {
       // Movement
       case "w":
         facing = Direction.Up;

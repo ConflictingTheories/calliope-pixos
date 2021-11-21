@@ -76,7 +76,7 @@ export default class Dialogue {
 
   // Tick
   tickOuter(time) {
-    if (!this.loaded) return;
+    if (!this.loaded || !this.active) return; // only if active
     // Sort activities by increasing startTime, then by id
     this.actionList.sort((a, b) => {
       let dt = a.startTime - b.startTime;

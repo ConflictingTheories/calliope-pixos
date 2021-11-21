@@ -33,31 +33,6 @@ export default class Zone {
     this.loadSprite = this.loadSprite.bind(this);
   }
 
-  // Load Map Resource from URL
-  async loadRemote() {
-    const fileResponse = await fetch(Resources.zoneRequestUrl(this.id));
-    if (fileResponse.ok) {
-      try {
-        // Extract and Read in Information
-        let data = await fileResponse.json();
-        this.bounds = data.bounds;
-        this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
-        this.cells = data.cells;
-        // Load tileset and create level geometry & trigger updates
-        this.tileset = await this.tsLoader.load(data.tileset);
-        this.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
-        this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
-        // Load sprites from tileset
-        await Promise.all(data.sprites.map(this.loadSprite));
-        // Notify the zone sprites when the new sprite has loaded
-        this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
-      } catch (e) {
-        console.error("Error parsing zone " + this.id);
-        console.error(e);
-      }
-    }
-  }
-
   // Load Tileset Directly (precompiled)
   async load() {
     try {
@@ -71,11 +46,7 @@ export default class Zone {
       this.tileset.runWhenDefinitionLoaded(this.loadTilesetGeometry.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites from tileset
-      await Promise.all(
-        ...data.sprites.map(this.loadSprite),
-        ...data.triggers.map(this.loadTrigger),
-        ...data.dialogue.map(this.loadDialogue)
-      );
+      await Promise.all(...data.sprites.map(this.loadSprite), ...data.dialogue.map(this.loadDialogue));
       // Notify the zone sprites when the new sprite has loaded
       this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
     } catch (e) {
@@ -139,6 +110,8 @@ export default class Zone {
     if (!this.loaded) return;
     // Run Each Sprite
     this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
+    // Run Dialogue
+    this.dialogueList.forEach(async (dialogue) => dialogue.tickOuter(time));
   }
 
   // Draw Frame
@@ -171,22 +144,6 @@ export default class Zone {
     this.spriteList.push(newSprite);
   }
 
-  // Load new sprite data into zone
-  async loadTrigger(triggerData) {
-    triggerData.zone = this;
-    let newTrigger = await this.triggerLoader.load(triggerData.type);
-    this.triggerDict[triggerData.id] = newTrigger;
-    this.triggerList.push(newTrigger);
-  }
-
-  // Load new sprite data into zone
-  async loadDialogue(dialogueData) {
-    dialogueData.zone = this;
-    let newDialogue = await this.dialogueLoader.load(dialogueData.type);
-    this.dialogueDict[dialogueData.id] = newDialogue;
-    this.dialogueList.push(newDialogue);
-  }
-
   // Add an existing sprite to the zone
   addSprite(sprite) {
     sprite.zone = this;
@@ -198,6 +155,27 @@ export default class Zone {
   removeSprite(id) {
     this.spriteList = this.spriteList.filter((sprite) => sprite.id !== id);
     delete this.spriteDict[id];
+  }
+
+  // Load new dialogue data into zone
+  async loadDialogue(dialogueData) {
+    dialogueData.zone = this;
+    let newDialogue = await this.dialogueLoader.load(dialogueData.type);
+    this.dialogueDict[dialogueData.id] = newDialogue;
+    this.dialogueList.push(newDialogue);
+  }
+
+  // Add an existing dialogue to the zone
+  addDialogue(dialogue) {
+    dialogue.zone = this;
+    this.dialogueDict[dialogue.id] = dialogue;
+    this.dialogueList.push(dialogue);
+  }
+
+  // Remove dialogue from the zone
+  removeDialogue(id) {
+    this.dialogueList = this.dialogueList.filter((dialogue) => dialogue.id !== id);
+    delete this.dialogueDict[id];
   }
 
   // Calculate the height of a point in the zone
