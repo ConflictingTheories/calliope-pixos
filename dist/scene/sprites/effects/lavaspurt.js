@@ -27,7 +27,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 \*                                                 */
 var _default = {
   // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
-  src: _resources["default"].artResourceUrl("sewer.png"),
+  src: _resources["default"].artResourceUrl("sewer.gif"),
   sheetSize: [256, 256],
   tileSize: [16, 16],
   // Frames

@@ -23,7 +23,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 \*                                                 */
 // Tileset Schema
 var _default = {
-  src: _resources["default"].artResourceUrl("sewer.png"),
+  src: _resources["default"].artResourceUrl("sewer.gif"),
   sheetSize: [256, 256],
   tileSize: 16,
   bgColor: [31, 20, 29],

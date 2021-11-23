@@ -14,7 +14,7 @@
 import Resources from "../../engine/utils/resources.jsx";
 // Tileset Schema
 export default {
-  src: Resources.artResourceUrl("sewer.png"),
+  src: Resources.artResourceUrl("sewer.gif"),
   sheetSize: [256, 256],
   tileSize: 16,
   bgColor: [31, 20, 29],
