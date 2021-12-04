@@ -4,11 +4,11 @@ require("babel-register");
 // Webpack Configuration
 const config = {
   // Entry
-  entry: './jsx/index.jsx',
+  entry: './pixos/jsx/index.jsx',
   // Output
   output: {
     library: 'calliope-pixos',
-    libraryTarget: 'umd',
+    libraryTarget: 'commonjs2',
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
@@ -35,10 +35,20 @@ const config = {
         process: 'process/browser'
       })
   ],
-  externals: [
-    'react',
-    'react-dom',
-  ],
+  externals: {
+    react: {
+        root: 'React',
+        commonjs2: 'react',
+        commonjs: 'react',
+        amd: 'react'
+    },
+    'react-dom': {
+        root: 'ReactDOM',
+        commonjs2: 'react-dom',
+        commonjs: 'react-dom',
+        amd: 'react-dom'
+    }
+  },
   devtool: 'source-map',
   mode: 'production',
 };

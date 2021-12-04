@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.1.8",
+  "version": "0.1.50",
   "description": "Pixos is a mini interactive scene player plugin for calliope static site generator.",
   "main": "dist/bundle.js",
   "scripts": {
@@ -39,22 +39,20 @@
     "babel-plugin-macros": "^3.1.0",
     "babel-register": "^6.26.0",
     "cross-env": "^7.0.3",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "react-recollect": "^5.2.3",
-    "sass": "^1.43.4",
-    "webpack": "^5.64.1",
+    "webpack": "^5.64.4",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.5.0"
+    "webpack-dev-server": "^4.6.0"
   },
   "peerDependencies": {
     "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-recollect": "^5.2.3"
   },
   "dependencies": {
     "babel-loader": "^8.2.3",
     "css-loader": "^6.5.1",
-    "sass-loader": "^12.3.0",
+    "prop-types": "^15.7.2",
     "style-loader": "^3.3.1"
   }
 }
