@@ -70,7 +70,7 @@ export default class Tileset {
   getTileTexCoords(id, texId) {
     let tileOffset = this.tiles[texId];
     let size = [this.tileSize / this.sheetSize[0], this.tileSize / this.sheetSize[1]];
-    return this.tileGeometry[id].tiles
+    return this.tileGeometry[id].surfaces
       .map((poly) => poly.map((vertex) => [(vertex[0] + tileOffset[0]) * size[0], (vertex[1] + tileOffset[1]) * size[1]]))
       .flat(3);
   }
@@ -82,6 +82,6 @@ export default class Tileset {
 
   // get poly for walk
   getTileWalkPoly(tileId) {
-    return this.tileGeometry[tileId].w;
+    return this.tileGeometry[tileId].walkPoly;
   }
 }

@@ -12,11 +12,10 @@
 \*                                                 */
 
 import { Vector } from "../../utils/math/vector.jsx";
-import { translate, rotate } from "../../utils/math/matrix4.jsx";
 import Resources from "../../utils/resources.jsx";
-import Sprite from "../../sprite.jsx";
+import AnimatedTile from "./base/animatedTile.jsx";
 
-export default class Spurt extends Sprite {
+export default class Spurt extends AnimatedTile {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
@@ -34,51 +33,12 @@ export default class Spurt extends Sprite {
         [80, 144],
       ],
     };
-    this.enableSpeech = false;
     this.drawOffset = new Vector(0, 1, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    this.lastTime = 0;
-    this.accumTime = 0;
-    this.blowTime = 0;
     this.frameTime = 150;
   }
   // Initialize
   init() {
-    this.blowTime = 1000 + Math.random() * 5000;
-  }
-  // Update each frame
-  tick(time) {
-    if (this.lastTime == 0) {
-      this.lastTime = time;
-      return;
-    }
-    // wait enough time
-    this.accumTime += time - this.lastTime;
-    if (this.accumTime < this.frameTime || (this.animFrame == 0 && this.accumTime < this.blowTime)) return;
-    // reset animation
-    if (this.animFrame == 5) {
-      this.setFrame(0);
-      this.blowTime = 1000 + Math.random() * 4000;
-    } else {
-      this.setFrame(this.animFrame + 1);
-      this.accumTime = 0;
-      this.lastTime = time;
-    }
-  }
-  // Draw Frame
-  draw(engine) {
-    if (!this.loaded) return;
-    engine.mvPushMatrix();
-    translate(engine.uViewMat, engine.uViewMat, this.pos.toArray());
-    // Lie flat on the ground
-    translate(engine.uViewMat, engine.uViewMat, this.drawOffset.toArray());
-    rotate(engine.uViewMat, engine.uViewMat, engine.degToRad(90), [1, 0, 0]);
-    engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.vertexPositionAttribute);
-    engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.textureCoordAttribute);
-    this.texture.attach();
-    // Draw
-    engine.shaderProgram.setMatrixUniforms();
-    engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
-    engine.mvPopMatrix();
+    this.triggerTime = 1000 + Math.random() * 5000;
   }
 }

@@ -20,46 +20,46 @@ export default {
   bgColor: [31, 20, 29],
   // Tile Locations on resource (based on size)
   tiles: {
-    0: [1, 1],
-    1: [2, 2],
-    2: [2, 1],
-    3: [2, 0],
-    4: [1, 0],
-    5: [0, 0],
-    6: [0, 1],
-    7: [0, 2],
-    8: [1, 2],
-    9: [4, 1],
-    10: [4, 0],
-    11: [3, 0],
-    12: [3, 1],
-    13: [3, 2],
-    14: [0.5, 7.5],
-    15: [4, 2],
-    16: [3, 3],
-    20: [6, 1],
-    21: [7, 2],
-    22: [7, 1],
-    23: [7, 0],
-    24: [6, 0],
-    25: [5, 0],
-    26: [5, 1],
-    27: [5, 2],
-    28: [6, 2],
-    29: [9, 1],
-    30: [9, 0],
-    31: [8, 0],
-    32: [8, 1],
-    50: [5, 3],
-    100: [0, 3],
-    101: [0, 5],
-    102: [0, 6],
+    FLOOR: [1, 1],
+    FLOOR_BR: [2, 2],
+    FLOOR_R: [2, 1],
+    FLOOR_TR: [2, 0],
+    FLOOR_T: [1, 0],
+    FLOOR_TL: [0, 0],
+    FLOOR_L: [0, 1],
+    FLOOR_BL: [0, 2],
+    FLOOR_B: [1, 2],
+    FLOOR_CBR: [4, 1],
+    FLOOR_CTR: [4, 0],
+    FLOOR_CTL: [3, 0],
+    FLOOR_CBL: [3, 1],
+    FLOOR_V: [3, 2],
+    WATER: [0.5, 7.5],
+    FLOOR_H: [4, 2],
+    FLOOR_C: [3, 3],
+    EMPTY: [6, 1],
+    EMPTY_BR: [7, 2],
+    EMPTY_R: [7, 1],
+    EMPTY_TR: [7, 0],
+    EMPTY_T: [6, 0],
+    EMPTY_TL: [5, 0],
+    EMPTY_L: [5, 1],
+    EMPTY_BL: [5, 2],
+    EMPTY_B: [6, 2],
+    EMPTY_CBR: [9, 1],
+    EMPTY_CTR: [9, 0],
+    EMPTY_CTL: [8, 0],
+    EMPTY_CBL: [8, 1],
+    STAIR: [5, 3],
+    WALL: [0, 3],
+    WALL_WATER: [0, 5],
+    WATER_WALL: [0, 6],
   },
   // Geometries for the tileset
   // type --> walkability -- 1/0 --> [down,left,up,right]
   tileGeometry: {
-    // All
-    0: {
+    // Flat - Walkability -- All
+    FLAT_ALL: {
       vertices: [
         [
           [0, 1, 0],
@@ -72,7 +72,7 @@ export default {
           [0, 0, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 1],
           [1, 1],
@@ -84,10 +84,10 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("1111",2),
+      type: parseInt("1111", 2),
     },
-    // None
-    1: {
+    // Flat - Walkability -- None
+    FLAT_NONE: {
       vertices: [
         [
           [0, 1, 0],
@@ -100,7 +100,7 @@ export default {
           [0, 0, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 1],
           [1, 1],
@@ -112,10 +112,10 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("0000",2),
+      type: parseInt("0000", 2),
     },
-    
-    50: {
+    // Stairs
+    STAIR_R: {
       vertices: [
         [
           [0.25, 0, 0.25],
@@ -208,7 +208,7 @@ export default {
           [0, 1, 1],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 0.75],
           [1, 0.75],
@@ -300,7 +300,7 @@ export default {
           [0, 2],
         ],
       ],
-      w: [
+      walkPoly: [
         [
           [0, 1, 0],
           [1, 1, 1],
@@ -312,9 +312,9 @@ export default {
           [0, 0, 0],
         ],
       ],
-      type: parseInt("0101",2),
+      type: parseInt("0101", 2),
     },
-    51: {
+    STAIR_T: {
       vertices: [
         [
           [0, 0.75, 0.25],
@@ -407,7 +407,7 @@ export default {
           [1, 1, 1],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 0.75],
           [1, 0.75],
@@ -499,7 +499,7 @@ export default {
           [0, 2],
         ],
       ],
-      w: [
+      walkPoly: [
         [
           [0, 1, 0],
           [1, 1, 0],
@@ -511,9 +511,9 @@ export default {
           [0, 0, 1],
         ],
       ],
-      type: parseInt("1010",2),
+      type: parseInt("1010", 2),
     },
-    52: {
+    STAIR_L: {
       vertices: [
         [
           [0.75, 1, 0.25],
@@ -606,7 +606,7 @@ export default {
           [1, 0, 1],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 0.75],
           [1, 0.75],
@@ -698,7 +698,7 @@ export default {
           [0, 2],
         ],
       ],
-      w: [
+      walkPoly: [
         [
           [0, 1, 1],
           [1, 1, 0],
@@ -710,9 +710,9 @@ export default {
           [0, 0, 1],
         ],
       ],
-      type: parseInt("0101",2),
+      type: parseInt("0101", 2),
     },
-    53: {
+    STAIR_B: {
       vertices: [
         [
           [1, 0.25, 0.25],
@@ -805,7 +805,7 @@ export default {
           [0, 0, 1],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 0.75],
           [1, 0.75],
@@ -897,7 +897,7 @@ export default {
           [0, 2],
         ],
       ],
-      w: [
+      walkPoly: [
         [
           [0, 1, 1],
           [1, 1, 1],
@@ -909,9 +909,10 @@ export default {
           [0, 0, 0],
         ],
       ],
-      type: parseInt("1010",2),
+      type: parseInt("1010", 2),
     },
-    100: {
+    // Wall
+    WALL_R: {
       vertices: [
         [
           [0, 0, -2],
@@ -924,7 +925,7 @@ export default {
           [0, 0, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 2],
           [1, 2],
@@ -936,9 +937,9 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("1011",2),
+      type: parseInt("1011", 2),
     },
-    102: {
+    WALL_T: {
       vertices: [
         [
           [0, 1, -2],
@@ -951,7 +952,7 @@ export default {
           [0, 1, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 2],
           [1, 2],
@@ -963,9 +964,9 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("0111",2),
+      type: parseInt("0111", 2),
     },
-    104: {
+    WALL_L: {
       vertices: [
         [
           [1, 1, -2],
@@ -978,7 +979,7 @@ export default {
           [1, 1, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 2],
           [1, 2],
@@ -990,9 +991,9 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("1110",2),
+      type: parseInt("1110", 2),
     },
-    106: {
+    WALL_B: {
       vertices: [
         [
           [1, 0, -2],
@@ -1005,7 +1006,7 @@ export default {
           [1, 0, 0],
         ],
       ],
-      tiles: [
+      surfaces: [
         [
           [0, 2],
           [1, 2],
@@ -1017,8 +1018,7 @@ export default {
           [0, 0],
         ],
       ],
-      type: parseInt("1101",2),
+      type: parseInt("1101", 2),
     },
   },
 };
-
