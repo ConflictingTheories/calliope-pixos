@@ -13,7 +13,7 @@
 
 import Zone from "./zone.jsx";
 import ActionQueue from "./queue.jsx";
-import { Direction } from "./utils/enums.jsx";
+import { Direction } from "../utils/enums.jsx";
 
 export default class World {
   constructor(engine) {

@@ -14,7 +14,7 @@
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
 import { ActionLoader } from "../../../engine/utils/loaders.jsx";
-import Sprite from "../../../engine/sprite.jsx";
+import Sprite from "../../../engine/core/sprite.jsx";
 
 export default class WaterKnight extends Sprite {
   constructor(engine) {

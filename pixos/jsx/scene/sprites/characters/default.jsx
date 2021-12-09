@@ -13,7 +13,7 @@
 
 import { Vector, set } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
-import Avatar from "../../../engine/avatar.jsx";
+import Avatar from "../../../engine/core/avatar.jsx";
 export default class Default extends Avatar {
   constructor(engine) {
     // Initialize Sprite

@@ -10,10 +10,10 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Direction } from "./utils/enums.jsx";
-import Resources from "./utils/resources.jsx";
+import { Direction } from "../utils/enums.jsx";
+import Resources from "../utils/resources.jsx";
 import ActionQueue from "./queue.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader } from "./utils/loaders.jsx";
+import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader } from "../utils/loaders.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -62,7 +62,7 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../scene/maps/" + this.id + ".map.jsx")["default"];
+      let data = require("../../scene/maps/" + this.id + ".map.jsx")["default"];
       Object.assign(this, data);
       if (this.audioSrc) {
         this.audio = new AudioLoader(this.audioSrc, true); // loop background music

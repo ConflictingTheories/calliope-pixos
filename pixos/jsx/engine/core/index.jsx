@@ -12,8 +12,8 @@
 \*                                                 */
 
 import React from "react";
-import { create, rotate, translate, perspective, set } from "./utils/math/matrix4.jsx";
-import { Vector, negate } from "./utils/math/vector.jsx";
+import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
+import { Vector, negate } from "../utils/math/vector.jsx";
 import Texture from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
 import Speech from "./speech.jsx";

@@ -14,7 +14,7 @@
 // Shaders
 import fs from "./shaders/fs.jsx";
 import vs from "./shaders/vs.jsx";
-import World from "../engine/world.jsx";
+import World from "../engine/core/world.jsx";
 
 // Scene Object
 export default class Scene {

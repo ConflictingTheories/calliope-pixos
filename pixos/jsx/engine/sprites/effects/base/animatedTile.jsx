@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { translate, rotate } from "../../../utils/math/matrix4.jsx";
-import Sprite from "../../../sprite.jsx";
+import Sprite from "../../../core/sprite.jsx";
 
 export default class AnimatedTile extends Sprite {
   constructor(engine) {

@@ -12,9 +12,9 @@
 \*                                                 */
 
 import Resources from "./resources.jsx";
-import Sprite from "../sprite.jsx";
-import Tileset from "../tileset.jsx";
-import Action from "../action.jsx";
+import Sprite from "../core/sprite.jsx";
+import Tileset from "../core/tileset.jsx";
+import Action from "../core/action.jsx";
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {

@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set } from "./utils/math/vector.jsx";
-import { Direction } from "./utils/enums.jsx";
-import { ActionLoader } from "./utils/loaders.jsx";
+import { Vector, set } from "../utils/math/vector.jsx";
+import { Direction } from "../utils/enums.jsx";
+import { ActionLoader } from "../utils/loaders.jsx";
 import Sprite from "./sprite.jsx";
 
 export default class Avatar extends Sprite {

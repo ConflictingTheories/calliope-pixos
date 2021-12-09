@@ -13,7 +13,7 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
-import Sprite from "../../../engine/sprite.jsx";
+import Sprite from "../../../engine/core/sprite.jsx";
 
 export default class EarthElemental extends Sprite {
   constructor(engine) {
