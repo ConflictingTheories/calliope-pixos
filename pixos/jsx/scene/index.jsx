@@ -42,6 +42,39 @@ export default class Scene {
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
   };
 
+  // Todo - Load scene remotely
+  loadSceneManifest = async (src) => {
+    // Put up loading Screen
+    //
+    // Fetch Manifest Remotely from Src
+    //
+    // Parse & Read in Zones
+    //
+    // Load Zones and Then once ready Remove Loading
+    //
+    // Start
+  };
+
+  // Todo - Load avatar into scene
+  loadAvatar = async (src, zoneId) => {
+    // Put up loading Screen
+    //
+    // Fetch Avatar Remotely from Src
+    //
+    // Parse & Read in & initialized
+    //
+    // Add to Zone
+  };
+
+  // Todo - Load avatar into scene
+  exportAvatar = async () => {
+    // Put up loading Screen
+    //
+    // Serialized and Compress Avatar
+    //
+    // Return Exported archive
+  };
+
   // Render Loop
   render = (engine, now) => {
     // Build

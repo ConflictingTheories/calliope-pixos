@@ -1,0 +1,9 @@
+{
+    "files.exclude": {
+        "node_modules": true,
+        "example/node_modules": true,
+        ".vscode": true,
+        ".contributions": true,
+        "dist": true
+    }
+}

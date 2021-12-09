@@ -170,7 +170,7 @@ export default class Zone {
   // Play a scene
   playScene(id) {
     let self = this;
-    self.scenes.forEach((x) => {
+    self.scenes.forEach(function runScene(x) {
       if (!x.currentStep) {
         x.currentStep = 0; // Starting
       }
@@ -189,7 +189,13 @@ export default class Zone {
             let args = action.args;
             let options = args.pop();
             sprite.addAction(
-              new ActionLoader(self.engine, action.action, [...args, { ...options, onClose: () => (x.currentStep += 1) }], sprite)
+              new ActionLoader(
+                self.engine,
+                action.action,
+                [...args, { ...options, onClose: () => (x.currentStep += 1) }],
+                sprite,
+                runScene.bind(self, x)
+              )
             );
           }
         }
@@ -198,7 +204,13 @@ export default class Zone {
           console.log("trigger");
           let sprite = action.scope.getSpriteById("player");
           sprite.addAction(
-            new ActionLoader(self.engine, "script", [action.trigger, action.scope, () => (x.currentStep += 1)], sprite)
+            new ActionLoader(
+              self.engine,
+              "script",
+              [action.trigger, action.scope, () => (x.currentStep += 1)],
+              sprite,
+              runScene.bind(self, x)
+            )
           );
         }
       }
