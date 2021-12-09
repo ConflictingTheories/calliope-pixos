@@ -11,20 +11,15 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set } from "../../utils/math/vector.jsx";
-import { Direction } from "../../utils/enums.jsx";
-import { ActionLoader } from "../../utils/loaders.jsx";
-import Resources from "../../utils/resources.jsx";
-import Sprite from "../../sprite.jsx";
+import { Vector, set } from "./utils/math/vector.jsx";
+import { Direction } from "./utils/enums.jsx";
+import { ActionLoader } from "./utils/loaders.jsx";
+import Sprite from "./sprite.jsx";
 
-export default class Player extends Sprite {
+export default class Avatar extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("player.gif");
-    this.sheetSize = [128, 256];
-    this.tileSize = [24, 32];
-    this.state = "intro";
     // Frames
     this.frames = {
       up: [
@@ -57,33 +52,9 @@ export default class Player extends Sprite {
     // Offsets
     this.drawOffset = new Vector(-0.25, 1, 0.125);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    // Should the camera follow the player?
+    // Should the camera follow the avatar?
     this.bindCamera = false;
     this.handleWalk = this.handleWalk.bind(this);
-  }
-  //
-  interact(finish) {
-    let ret = null;
-    // React based on internal state
-    switch (this.state) {
-      case "intro":
-        this.state = "loop";
-        this.speak("...");
-        break;
-      case "loop":
-        this.state = "loop2";
-        this.speak("....?");
-        break;
-      case "loop2":
-        this.state = "loop";
-        this.speak("...!");
-        break;
-      default:
-        break;
-    }
-    // If completion handler passed through - call it when done
-    if (finish) finish();
-    return ret;
   }
   // Update
   tick(time) {

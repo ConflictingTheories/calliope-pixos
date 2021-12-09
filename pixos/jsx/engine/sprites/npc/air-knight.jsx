@@ -54,7 +54,7 @@ export default class AirKnight extends Sprite {
         [24, 96],
       ],
     };
-    // Should the camera follow the player?
+    // Should the camera follow the avatar?
     this.bindCamera = false;
     // enable speech
     this.enableSpeech = true;

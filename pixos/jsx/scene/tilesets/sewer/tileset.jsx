@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "../../engine/utils/resources.jsx";
+import Resources from "../../../engine/utils/resources.jsx";
 // Tileset Schema
 export default {
   src: Resources.artResourceUrl("sewer.gif"),

@@ -53,7 +53,7 @@ export default class FireElemental extends Sprite {
         [48, 18],
       ],
     };
-    // Should the camera follow the player?
+    // Should the camera follow the avatar?
     this.bindCamera = false;
     // enable speech
     this.enableSpeech = true;

@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
 import Pixos from 'calliope-pixos';
-const PixosPlayer = Pixos['calliope-pixos'].default;
+const PixosAvatar = Pixos['calliope-pixos'].default;
 function App() {
   return (
     <div className="App">
-      <PixosPlayer/>
+      <PixosAvatar/>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>

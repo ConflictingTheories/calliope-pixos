@@ -11,13 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Use Tileset
-import T from "../tilesets/sewer.tiles.jsx";
 import { Vector } from "../../engine/utils/math/vector.jsx";
 import { Direction } from "../../engine/utils/enums.jsx";
+// Use Tileset
+import T from "../tilesets/sewer/tiles.jsx";
 // Map Information
 export default {
   bounds: [0, 0, 17, 10],
+  // Determines the tileset to load
   tileset: "sewer",
   // (0,0) -> (17,10) (X, Y) (10 Rows x 17 Column)
   cells: [
@@ -227,11 +228,10 @@ export default {
     { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
     { id: "spurt8", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
-    // Presently - player is treated like a normal sprite
-    { id: "player", type: "characters/player", pos: new Vector(...[8, 8, -1]), facing: Direction.Down },
+    // Presently - avatar is treated like a normal sprite
+    { id: "avatar", type: "characters/default", pos: new Vector(...[8, 8, -1]), facing: Direction.Down },
   ],
-  // TODO - Add in Scenes / Dialogue
-  //
+  // Scenes + Scenarios
   scenes: [
     {
       id: "strange-legend",
@@ -257,13 +257,12 @@ export default {
       ],
     },
   ],
-  // TODO - Add Scripts / Triggers for the Scene
-  //
+  // Scripts / Triggers for the Zone
   scripts: [
     {
-      id: "load-scene", // run automatically when loaded
+      id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        await this.moveSprite("darkness", [8, 6, 0], true);
+        this.playScene('strange-legend');
       },
     },
     {

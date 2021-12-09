@@ -12,14 +12,13 @@
 \*                                                 */
 
 import { Vector, set } from "../../../engine/utils/math/vector.jsx";
-import { Direction } from "../../../engine/utils/enums.jsx";
-import { ActionLoader } from "../../../engine/utils/loaders.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
-import Player from "../../../engine/sprites/characters/player.jsx";
-export default class MainCharacter extends Player {
+import Avatar from "../../../engine/avatar.jsx";
+export default class Default extends Avatar {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
+    // PROPERTIES
     this.src = Resources.artResourceUrl("player.gif");
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
@@ -56,7 +55,7 @@ export default class MainCharacter extends Player {
     // Offsets
     this.drawOffset = new Vector(-0.25, 1, 0.125);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    // Should the camera follow the player?
-    this.bindCamera = false;
+    // Should the camera follow the avatar?
+    this.bindCamera = true;
   }
 }

@@ -12,7 +12,7 @@
 \*                                                 */
 
 // Tet
-import T from "../tilesets/sewer.tiles.jsx";
+import T from "../tilesets/sewer/tiles.jsx";
 import { Vector } from "../../engine/utils/math/vector.jsx";
 import { Direction } from "../../engine/utils/enums.jsx";
 // Map

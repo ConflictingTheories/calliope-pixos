@@ -13,7 +13,7 @@
 
 // Tile Types Supported (Labels for Easy Use)
 export default {
-  "FLOOR": ["FLAT_ALL", "FLOOR", 0],
+  FLOOR: ["FLAT_ALL", "FLOOR", 0],
   WATER: ["FLAT_NONE", "WATER", -1.5],
   EMPTY: ["FLAT_ALL", "EMPTY", 2],
   // Stairs
@@ -50,6 +50,7 @@ export default {
   LW_LPIT: ["FLAT_ALL", "FLOOR_R", 0, "WALL_L", "WALL_WATER", 0],
   RW_RPIT: ["FLAT_ALL", "FLOOR_L", 0, "WALL_R", "WALL_WATER", 0],
   SW_SPIT: ["FLAT_ALL", "FLOOR_T", 0, "WALL_B", "WALL_WATER", 0],
+  // Walkway rampart
   C_WALKWAY: ["FLAT_ALL", "FLOOR_C", -1],
   V_WALKWAY: ["FLAT_ALL", "FLOOR_V", -1, "WALL_R", "WATER_WALL", -1, "WALL_L", "WATER_WALL", -1],
   H_WALKWAY: ["FLAT_ALL", "FLOOR_H", -1, "WALL_T", "WATER_WALL", -1, "WALL_B", "WATER_WALL", -1],

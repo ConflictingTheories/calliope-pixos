@@ -40,7 +40,7 @@ export default {
     this.spriteList.forEach((sprite) => {
       let faceChange = sprite.faceDir(Direction.reverse(this.facing));
       if (faceChange) {
-        sprite.addAction(faceChange); // face towards player
+        sprite.addAction(faceChange); // face towards avatar
       }
       return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.finish) : null;
     });

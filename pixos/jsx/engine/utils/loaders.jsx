@@ -49,7 +49,7 @@ export class TilesetLoader {
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
-    let json = require("../../scene/tilesets/" + type + ".tileset.jsx")["default"];
+    let json = require("../../scene/tilesets/" + type + "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }

@@ -202,7 +202,7 @@ export default class Zone {
         // trigger script
         if (action.trigger) {
           console.log("trigger");
-          let sprite = action.scope.getSpriteById("player");
+          let sprite = action.scope.getSpriteById("avatar");
           sprite.addAction(
             new ActionLoader(
               self.engine,
