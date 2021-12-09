@@ -62,7 +62,7 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../../scene/maps/" + this.id + ".map.jsx")["default"];
+      let data = require("../../scene/maps/" + this.id + "/map.jsx")["default"];
       Object.assign(this, data);
       if (this.audioSrc) {
         this.audio = new AudioLoader(this.audioSrc, true); // loop background music

@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set } from "../../../engine/utils/math/vector.jsx";
+import { Vector } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
 import Avatar from "../../../engine/core/avatar.jsx";
 export default class Default extends Avatar {
@@ -50,12 +50,11 @@ export default class Default extends Avatar {
         [24, 96],
       ],
     };
-    this.enableSpeech = true;
-    this.isWalkabl = false;
     // Offsets
     this.drawOffset = new Vector(-0.25, 1, 0.125);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Should the camera follow the avatar?
     this.bindCamera = true;
+    this.enableSpeech = true; // speech bubble
   }
 }

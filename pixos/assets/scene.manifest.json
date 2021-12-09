@@ -1,0 +1,15 @@
+{
+  "zones": [
+    { "id": "dungeon-top", "auto": true },
+    { "id": "dungeon-bottom", "auto": true }
+  ],
+  "tilesets": [
+    {
+      "id": "sewer"
+    }
+  ],
+  "entry-point": {
+    "pos": [8, 8, -1],
+    "facing": 4
+  }
+}

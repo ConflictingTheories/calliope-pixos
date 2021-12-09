@@ -16,45 +16,19 @@ import { Direction } from "../utils/enums.jsx";
 import { ActionLoader } from "../utils/loaders.jsx";
 import Sprite from "./sprite.jsx";
 
+// Special class of Sprite which is controlled by the player
+//
+// -- Additional methods such as saving / importing and input handling
+//
 export default class Avatar extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    // Frames
-    this.frames = {
-      up: [
-        [0, 0],
-        [24, 0],
-        [48, 0],
-        [24, 0],
-      ],
-      right: [
-        [0, 32],
-        [24, 32],
-        [48, 32],
-        [24, 32],
-      ],
-      down: [
-        [0, 64],
-        [24, 64],
-        [48, 64],
-        [24, 64],
-      ],
-      left: [
-        [0, 96],
-        [24, 96],
-        [48, 96],
-        [24, 96],
-      ],
-    };
-    this.enableSpeech = true;
-    this.isWalkable = false;
-    // Offsets
-    this.drawOffset = new Vector(-0.25, 1, 0.125);
-    this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    // Should the camera follow the avatar?
-    this.bindCamera = false;
     this.handleWalk = this.handleWalk.bind(this);
+  }
+  // Initialization Hook
+  init() {
+    console.log("- avatar hook", this.id, this.pos);
   }
   // Update
   tick(time) {

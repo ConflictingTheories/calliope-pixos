@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Spurt from "../../../engine/sprites/effects/spurt.jsx";
-export default class WATERSpurt extends Spurt {
+export default class WaterSpurt extends Spurt {
   constructor(engine) {
     // Initialize Sprite
     super(engine);

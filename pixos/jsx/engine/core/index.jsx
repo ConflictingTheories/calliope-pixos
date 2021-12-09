@@ -11,7 +11,6 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React from "react";
 import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
 import Texture from "./texture.jsx";
@@ -288,7 +287,7 @@ export default class GLEngine {
 
   // load texture
   loadSpeech(src, canvas) {
-    console.log('requesting speech', src)
+    console.log("requesting speech", src);
     if (this.speeches[src]) return this.speeches[src];
     this.speeches[src] = new Speech(canvas, this, src);
     return this.speeches[src];

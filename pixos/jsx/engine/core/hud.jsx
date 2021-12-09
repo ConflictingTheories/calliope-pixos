@@ -119,16 +119,11 @@ export class textScrollBox {
     ctx.fillStyle = this.scrollBox.background;
     ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y, this.scrollBox.width, this.height);
     ctx.fillStyle = this.scrollBox.color;
-    let barsize = this.height * scale; 
-    if(barsize > this.height){
+    let barsize = this.height * scale;
+    if (barsize > this.height) {
       barsize = this.height;
     }
-    ctx.fillRect(
-      this.x + this.width - this.scrollBox.width,
-      this.y - this.scrollY * scale,
-      this.scrollBox.width,
-      barsize
-    );
+    ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y - this.scrollY * scale, this.scrollBox.width, barsize);
   }
   // Scroll to position
   scroll(pos) {

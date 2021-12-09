@@ -119,6 +119,7 @@ export default class Sprite {
     return poly.flat(3);
   }
 
+  // Speech Area texture
   getSpeechBubbleTexture() {
     return [
       [1.0, 1.0],
