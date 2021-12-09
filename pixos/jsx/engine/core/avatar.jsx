@@ -81,17 +81,13 @@ export default class Avatar extends Sprite {
       case "c":
         this.bindCamera = false;
         break;
-      // play scene
-      case "y":
-        this.zone.playScene('strange-legend'); // trigger a scene to start
-        break;
       // Interact with tile
       case "k":
       case "Enter":
         return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
       // Help Dialogue
       case "h":
-        return new ActionLoader(this.engine, "dialogue", ["Welcome! You pressed help!", false, { autoclose: true }], this);
+        return new ActionLoader(this.engine, "dialogue", ["Welcome! You pressed help! Press Escape to close", false, { autoclose: true }], this);
       // Chat Message
       case "m":
       case " ":

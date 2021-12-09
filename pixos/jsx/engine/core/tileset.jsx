@@ -61,27 +61,27 @@ export default class Tileset {
 
   // Get vertices for tile
   getTileVertices(id, offset) {
-    return this.tileGeometry[id].vertices
+    return this.geometry[id].vertices
       .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + offset[1], vertex[2] + offset[2]]))
       .flat(3);
   }
 
   // get texture coordinates
   getTileTexCoords(id, texId) {
-    let tileOffset = this.tiles[texId];
+    let tileOffset = this.textures[texId];
     let size = [this.tileSize / this.sheetSize[0], this.tileSize / this.sheetSize[1]];
-    return this.tileGeometry[id].surfaces
+    return this.geometry[id].surfaces
       .map((poly) => poly.map((vertex) => [(vertex[0] + tileOffset[0]) * size[0], (vertex[1] + tileOffset[1]) * size[1]]))
       .flat(3);
   }
 
   // determine walkability
   getWalkability(tileId) {
-    return this.tileGeometry[tileId].type;
+    return this.geometry[tileId].type;
   }
 
   // get poly for walk
   getTileWalkPoly(tileId) {
-    return this.tileGeometry[tileId].walkPoly;
+    return this.geometry[tileId].walkPoly;
   }
 }

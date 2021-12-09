@@ -19,7 +19,7 @@ export default {
   tileSize: 16,
   bgColor: [31, 20, 29],
   // Tile Locations on resource (based on size)
-  tiles: {
+  textures: {
     FLOOR: [1, 1],
     FLOOR_BR: [2, 2],
     FLOOR_R: [2, 1],
@@ -57,7 +57,7 @@ export default {
   },
   // Geometries for the tileset
   // type --> walkability -- 1/0 --> [down,left,up,right]
-  tileGeometry: {
+  geometry: {
     // Flat - Walkability -- All
     FLAT_ALL: {
       vertices: [
