@@ -71,9 +71,12 @@ export default class AirKnight extends Sprite {
         ret = new ActionLoader(
           this.engine,
           "dialogue",
-          ["Welcome!", false, { autoclose: true, onClose: () => finish(true) }],
+          ["Buying stuff eh?!", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
+        if (typeof window.ethereum !== 'undefined') {
+          console.log('MetaMask is installed!');
+        }
         break;
       case "loop":
         this.state = "loop2";

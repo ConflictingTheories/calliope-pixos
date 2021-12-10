@@ -11,18 +11,18 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
-import Sprite from "../../../engine/core/sprite.jsx";
+import { Vector } from "../../../../engine/utils/math/vector.jsx";
+import Resources from "../../../../engine/utils/resources.jsx";
+import Sprite from "../../../../engine/core/sprite.jsx";
 
-export default class AirElemental extends Sprite {
+export default class Chest extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("elementals-2.gif");
-    this.sheetSize = [64, 128];
-    this.tileSize = [16, 18];
+    this.src = Resources.artResourceUrl("chests.gif");
+    this.sheetSize = [512, 512];
+    this.tileSize = [32, 48];
     // Offsets
     this.drawOffset = new Vector(0, 1, 0.2);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
@@ -30,27 +30,27 @@ export default class AirElemental extends Sprite {
     this.frames = {
       up: [
         [0, 0],
-        [16, 0],
-        [32, 0],
-        [48, 0],
-      ],
-      right: [
-        [0, 18],
-        [16, 18],
-        [32, 18],
-        [16, 18],
-      ],
-      down: [
-        [0, 36],
-        [16, 36],
-        [32, 36],
-        [16, 36],
+        [0, 48],
+        [0, 96],
+        [0, 144],
       ],
       left: [
-        [48, 0],
-        [48, 18],
-        [48, 36],
-        [48, 18],
+        [128, 0],
+        [128, 48],
+        [128, 96],
+        [128, 144],
+      ],
+      down: [
+        [0, 192],
+        [0, 240],
+        [0, 288],
+        [0, 336],
+      ],
+      right: [
+        [256, 0],
+        [256, 48],
+        [256, 96],
+        [256, 144],
       ],
     };
     // Should the camera follow the avatar?
@@ -58,6 +58,6 @@ export default class AirElemental extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "intro";
+    this.state = "closed";
   }
 }
