@@ -29,6 +29,7 @@ export default class Sprite {
     this.actionList = [];
     this.onLoadActions = new ActionQueue();
     this.getTexCoords = this.getTexCoords.bind(this);
+    this.inventory = [];
   }
 
   update(data) {
