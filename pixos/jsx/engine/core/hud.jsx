@@ -64,7 +64,7 @@ export class textScrollBox {
   // Get Text Position
   getTextPos() {
     if (this.align === "left") {
-      this.textPos = 0;
+      this.textPos = 2;
     } else if (this.align === "right") {
       this.textPos = Math.floor(this.width - this.scrollBox.width - this.fontSize / 4);
     } else {
@@ -85,7 +85,7 @@ export class textScrollBox {
     while (words.length > 0) {
       let word = words.shift();
       let width = ctx.measureText(line + space + word).width;
-      if (width < this.width - this.scrollBox.width - this.scrollBox.width) {
+      if (width < this.width - this.scrollBox.width - this.scrollBox.width - (this.portrait ? 84 : 0)) {
         line += space + word;
         space = " ";
       } else {
@@ -194,7 +194,7 @@ export class textScrollBox {
     ctx.fillStyle = this.fontStyle;
     for (let i = 0; i < this.lines.length; i++) {
       // Important text does not like being place at fractions of a pixel
-      ctx.fillText(this.lines[i], this.textPos, Math.floor(i * this.textHeight));
+      ctx.fillText(this.lines[i], this.textPos, Math.floor(i * this.textHeight) + 2);
     }
     ctx.restore(); // remove the clipping
   }
