@@ -1,6 +1,6 @@
 # Calliope Pixos Plugin
 
-This plugin is for [Calliope](https://calliope.site) and is designed to provide functionality for mermaid diagrams inside of pages and posts.
+This plugin is for [Calliope](https://calliope.site) and is designed to provide Pixos player functionality.
 
 ### Installation
 
