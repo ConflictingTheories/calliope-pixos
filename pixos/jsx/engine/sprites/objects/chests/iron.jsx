@@ -26,25 +26,25 @@ export default class IronChest extends Chest {
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
-      up: [
+      down: [
         [16, 0],
         [16, 24],
         [16, 48],
         [16, 72],
       ],
-      left: [
+      right: [
         [80, 0],
         [80, 24],
         [80, 48],
         [80, 72],
       ],
-      down: [
+      up: [
         [16, 96],
         [16, 120],
         [16, 144],
         [16, 168],
       ],
-      right: [
+      left: [
         [144, 0],
         [144, 24],
         [144, 48],

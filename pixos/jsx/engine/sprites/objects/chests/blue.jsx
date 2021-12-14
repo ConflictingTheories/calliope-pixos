@@ -26,25 +26,25 @@ export default class BlueChest extends Chest {
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
-      up: [
+      down: [
         [48, 0],
         [48, 24],
         [48, 48],
         [48, 72],
       ],
-      left: [
+      right: [
         [112, 0],
         [112, 24],
         [112, 48],
         [112, 72],
       ],
-      down: [
+      up: [
         [48, 96],
         [48, 120],
         [48, 144],
         [48, 168],
       ],
-      right: [
+      left: [
         [176, 0],
         [176, 24],
         [176, 48],

@@ -66,6 +66,7 @@ export default class Chest extends Sprite {
   // Interaction
   interact(sprite, finish) {
     let ret = null;
+    this.startTime = Date.now();
     // React based on internal state
     switch (this.state) {
       case "closed":
@@ -92,19 +93,19 @@ export default class Chest extends Sprite {
   }
   // open Chest
   openChest(sprite) {
-    this.startTime = Date.now();
-    let endTime = Date.now() + 600;
+    let endTime = this.startTime + 600;
     while (Date.now() < endTime) {
       let frac = (Date.now() - this.startTime) / 600;
+      console.log(frac);
       if (Date.now() >= endTime) {
         frac = 1;
       }
       // Get next frame
       let newFrame = Math.floor(frac * 4);
-      if (newFrame != this.animFrame) this.setFrame(newFrame);
+      this.setFrame(newFrame);
     }
     // give inventory
-    // this.inventory.forEach((x) => sprite.inventory.push(x));
-    // this.inventory = [];
+    this.inventory.forEach((x) => console.log(sprite, x));
+    this.inventory = [];
   }
 }

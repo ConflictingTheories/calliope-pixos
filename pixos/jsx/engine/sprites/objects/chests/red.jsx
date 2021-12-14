@@ -27,25 +27,25 @@ export default class RedChest extends Chest {
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
-      up: [
+      down: [
         [32, 0],
         [32, 24],
         [32, 48],
         [32, 72],
       ],
-      left: [
+      right: [
         [96, 0],
         [96, 24],
         [96, 48],
         [96, 72],
       ],
-      down: [
+      up: [
         [32, 96],
         [32, 120],
         [32, 144],
         [32, 168],
       ],
-      right: [
+      left: [
         [160, 0],
         [160, 24],
         [160, 48],

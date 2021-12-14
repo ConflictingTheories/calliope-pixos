@@ -66,11 +66,11 @@ export default class WoodChest extends Chest {
   // Interaction
   interact(sprite, finish) {
     let ret = null;
+    this.startTime = Date.now();
     // React based on internal state
     switch (this.state) {
       case "closed":
         this.state = "open";
-        this.startTime = Date.now();
         this.openChest(sprite);
         finish(true);
         break;
@@ -102,12 +102,10 @@ export default class WoodChest extends Chest {
       }
       // Get next frame
       let newFrame = Math.floor(frac * 4);
-      console.log('newframe', newFrame);
       this.setFrame(newFrame)
-      // if (newFrame != this.animFrame) ;
     }
     // give inventory
-    // this.inventory.forEach((x) => sprite.inventory.push(x));
-    // this.inventory = [];
+    this.inventory.forEach((x) => console.log(sprite, x));
+    this.inventory = [];
   }
 }
