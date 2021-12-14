@@ -58,11 +58,17 @@ export default class Sprite {
     this.texture = this.engine.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
+
     // // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+    }
+    // load Portrait
+    if (this.portraitSrc) {
+      this.portrait = this.engine.loadTexture(this.portraitSrc);
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -91,7 +97,14 @@ export default class Sprite {
 
   // After Tileset / Texture Loaded
   onTilesetOrTextureLoaded() {
-    if (this.loaded || !this.zone.tileset.loaded || !this.texture.loaded) return;
+    if (
+      this.loaded ||
+      !this.zone.tileset.loaded ||
+      !this.texture.loaded ||
+      (this.enableSpeech && !this.speech.loaded) ||
+      (this.portrait && !this.portrait.loaded)
+    )
+      return;
 
     this.init(); // Hook for sprite implementations
     if (this.enableSpeech) {
@@ -243,9 +256,10 @@ export default class Sprite {
   speak(text, showBubble = false) {
     if (!text) this.speech.clearHud();
     else {
-      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, {});
+      console.log("yola;,", this.portrait);
+      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false  });
       if (showBubble && this.speech) {
-        this.speech.scrollText(text);
+        this.speech.scrollText(text, false, { portrait: this.portrait ?? false });
         this.speech.loadImage();
       }
     }

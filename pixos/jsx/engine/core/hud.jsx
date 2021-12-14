@@ -31,6 +31,7 @@ export class textScrollBox {
     this.y = y;
     this.width = width;
     this.height = height;
+    this.portrait = options.portrait ?? null;
     this.setOptions(options);
     this.cleanit();
   }
@@ -49,6 +50,7 @@ export class textScrollBox {
   setOptions(options) {
     Object.keys(this).forEach((key) => {
       if (options[key] !== undefined) {
+        console.log("key", key);
         this[key] = options[key];
         this.dirty = true;
       }
@@ -104,13 +106,17 @@ export class textScrollBox {
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;
   }
   // Draw Textbox border
-  drawBorder() {
+  drawBorder(portrait = false) {
     let { ctx } = this;
     let bw = this.border.lineWidth / 2;
     ctx.lineJoin = this.border.corner;
     ctx.lineWidth = this.border.lineWidth;
     ctx.strokeStyle = this.border.style;
-    ctx.strokeRect(this.x - bw, this.y - bw, this.width + 2 * bw, this.height + 2 * bw);
+    if (portrait) {
+      ctx.strokeRect(this.x - bw + 84, this.y - bw, this.width + 2 * bw - 84, this.height + 2 * bw);
+    } else {
+      ctx.strokeRect(this.x - bw, this.y - bw, this.width + 2 * bw, this.height + 2 * bw);
+    }
   }
   // Draw Scrollbar on the side
   drawScrollBox() {
@@ -125,6 +131,14 @@ export class textScrollBox {
     }
     ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y - this.scrollY * scale, this.scrollBox.width, barsize);
   }
+
+  // Draw Scrollbar on the side
+  drawPortrait() {
+    let { ctx } = this;
+    console.log("drawing)");
+    ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
+  }
+
   // Scroll to position
   scroll(pos) {
     this.cleanit();
@@ -151,16 +165,32 @@ export class textScrollBox {
     this.cleanit();
     ctx.font = this.fontStr;
     ctx.textAlign = this.align;
-    this.drawBorder();
-    ctx.save(); // need this to reset the clip area
-    ctx.fillStyle = this.background;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    if (this.portrait) {
+      this.drawBorder(true);
+      this.drawPortrait();
+      ctx.save(); // need this to reset the clip area
+      ctx.fillStyle = this.background;
+      ctx.fillRect(this.x + 84, this.y, this.width - 84, this.height);
+    } else {
+      this.drawBorder();
+      ctx.save(); // need this to reset the clip area
+      ctx.fillStyle = this.background;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
     this.drawScrollBox();
-    ctx.beginPath();
-    ctx.rect(this.x, this.y, this.width - this.scrollBox.width, this.height);
-    ctx.clip();
+
     // Important text does not like being place at fractions of a pixel
-    ctx.setTransform(1, 0, 0, 1, this.x, Math.floor(this.y + this.scrollY));
+    if (this.portrait) {
+      ctx.beginPath();
+      ctx.rect(this.x + 84, this.y, this.width - this.scrollBox.width - 84, this.height);
+      ctx.clip();
+      ctx.setTransform(1, 0, 0, 1, this.x + 84, Math.floor(this.y + this.scrollY));
+    } else {
+      ctx.beginPath();
+      ctx.rect(this.x, this.y, this.width - this.scrollBox.width, this.height);
+      ctx.clip();
+      ctx.setTransform(1, 0, 0, 1, this.x, Math.floor(this.y + this.scrollY));
+    }
     ctx.fillStyle = this.fontStyle;
     for (let i = 0; i < this.lines.length; i++) {
       // Important text does not like being place at fractions of a pixel

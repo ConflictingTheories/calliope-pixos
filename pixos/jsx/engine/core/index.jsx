@@ -156,14 +156,19 @@ export default class GLEngine {
   }
 
   // Write Text to HUD
-  writeText(text, x, y) {
+  writeText(text, x, y, src = null) {
     const { ctx } = this;
     ctx.save();
     ctx.font = "20px invasion2000";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.fillText(text, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2);
+    if (src) { // draw portrait if set
+      ctx.fillText(text, x ?? ctx.canvas.width / 2 + 76, y ?? ctx.canvas.height / 2);
+      ctx.drawImage(src, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2, 76, 76);
+    } else {
+      ctx.fillText(text, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2);
+    }
     ctx.restore();
   }
 
@@ -176,6 +181,7 @@ export default class GLEngine {
   scrollText(text, scrolling = false, options = {}) {
     let txt = new textScrollBox(this.ctx);
     txt.init(text, 10, (2 * this.canvas.height) / 3, this.canvas.width - 20, this.canvas.height / 3 - 20, options);
+    txt.setOptions(options);
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
     }

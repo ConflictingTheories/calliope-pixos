@@ -22,6 +22,7 @@ export default class EarthKnight extends Sprite {
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
     this.src = Resources.artResourceUrl("earth-knight.gif");
+    this.portraitSrc = Resources.artResourceUrl("earth_portrait.gif");
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
     // Offsets
