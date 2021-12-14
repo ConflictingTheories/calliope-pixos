@@ -42,7 +42,7 @@ export default {
       if (faceChange) {
         sprite.addAction(faceChange); // face towards avatar
       }
-      return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.finish) : null;
+      return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish) : null;
     });
   },
   // Callback to clear interaction

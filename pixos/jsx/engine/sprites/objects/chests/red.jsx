@@ -11,46 +11,45 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../../engine/utils/math/vector.jsx";
-import Resources from "../../../../engine/utils/resources.jsx";
-import Sprite from "../../../../engine/core/sprite.jsx";
-
-export default class RedChest extends Sprite {
+import { Vector } from "../../../utils/math/vector.jsx";
+import Resources from "../../../utils/resources.jsx";
+import Chest from "./base.jsx";
+export default class RedChest extends Chest {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
     this.src = Resources.artResourceUrl("chests.gif");
-    this.sheetSize = [512, 512];
-    this.tileSize = [32, 48];
+    this.sheetSize = [256, 256];
+    this.tileSize = [16, 24];
     // Offsets
     this.drawOffset = new Vector(0, 1, 0.2);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
       up: [
-        [64, 0],
-        [64, 48],
-        [64, 96],
-        [64, 144],
+        [32, 0],
+        [32, 24],
+        [32, 48],
+        [32, 72],
       ],
       left: [
-        [192, 0],
-        [192, 48],
-        [192, 96],
-        [192, 144],
+        [96, 0],
+        [96, 24],
+        [96, 48],
+        [96, 72],
       ],
       down: [
-        [64, 192],
-        [64, 240],
-        [64, 320],
-        [64, 336],
+        [32, 96],
+        [32, 120],
+        [32, 144],
+        [32, 168],
       ],
       right: [
-        [320, 0],
-        [320, 48],
-        [320, 96],
-        [320, 144],
+        [160, 0],
+        [160, 24],
+        [160, 48],
+        [160, 72],
       ],
     };
     // Should the camera follow the avatar?
@@ -59,5 +58,6 @@ export default class RedChest extends Sprite {
     this.enableSpeech = true;
     // Interaction Management
     this.state = "closed";
+    this.inventory = [];
   }
 }

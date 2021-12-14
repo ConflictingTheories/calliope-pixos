@@ -105,7 +105,7 @@ export default class Sprite {
 
   // Get Texture Coordinates
   getTexCoords() {
-    if (this.id == "avatar") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
+    if (this.id == "chest") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
     let t = this.frames[Direction.spriteSequence(this.facing)][this.animFrame % 4];
     let ss = this.sheetSize;
     let ts = this.tileSize;
@@ -251,7 +251,7 @@ export default class Sprite {
   }
 
   // handles interaction -- default (should be overridden in definition)
-  interact(finish) {
+  interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {

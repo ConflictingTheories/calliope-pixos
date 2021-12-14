@@ -25,7 +25,7 @@ export default {
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
-    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[5, 2, 0]), facing: Direction.Up },
+    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[5, 2, 0]), facing: Direction.Right },
     { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[2, 5, 0]), facing: Direction.Right },
     // NPCs
     { id: "darkness", type: "npc/darkness", pos: new Vector(...[10, 2, 0]), facing: Direction.Down },
@@ -67,7 +67,7 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        this.playScene("strange-legend");
+        // this.playScene("strange-legend");
       },
     },
     {

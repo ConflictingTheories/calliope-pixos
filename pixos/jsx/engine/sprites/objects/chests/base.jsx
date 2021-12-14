@@ -11,47 +11,47 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
-import { ActionLoader } from "../../../engine/utils/loaders.jsx";
-import Sprite from "../../../engine/core/sprite.jsx";
+import { Vector } from "../../../utils/math/vector.jsx";
+import Resources from "../../../utils/resources.jsx";
+import Sprite from "../../../core/sprite.jsx";
+import { ActionLoader } from "../../../utils/loaders.jsx";
 
-export default class FireKnight extends Sprite {
+export default class Chest extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("fire-knight.gif");
-    this.sheetSize = [128, 256];
-    this.tileSize = [24, 32];
+    this.src = Resources.artResourceUrl("chests.gif");
+    this.sheetSize = [256, 256];
+    this.tileSize = [16, 24];
     // Offsets
-    this.drawOffset = new Vector(-0.25, 1, 0.125);
+    this.drawOffset = new Vector(0, 1, 0.2);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
-      up: [
+      down: [
         [0, 0],
-        [24, 0],
-        [48, 0],
-        [24, 0],
+        [0, 24],
+        [0, 48],
+        [0, 72],
       ],
       right: [
-        [0, 32],
-        [24, 32],
-        [48, 32],
-        [24, 32],
+        [64, 0],
+        [64, 24],
+        [64, 48],
+        [64, 72],
       ],
-      down: [
-        [0, 64],
-        [24, 64],
-        [48, 64],
-        [24, 64],
+      up: [
+        [0, 96],
+        [0, 120],
+        [0, 144],
+        [0, 168],
       ],
       left: [
-        [0, 96],
-        [24, 96],
-        [48, 96],
-        [24, 96],
+        [128, 0],
+        [128, 24],
+        [128, 48],
+        [128, 72],
       ],
     };
     // Should the camera follow the avatar?
@@ -59,47 +59,52 @@ export default class FireKnight extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "intro";
+    this.state = "closed";
+    // Inventory
+    this.inventory = [];
   }
   // Interaction
   interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {
-      case "intro":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Welcome!", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+      case "closed":
+        this.state = "open";
+        this.openChest(sprite);
+        finish(true);
         break;
-      case "loop":
-        this.state = "loop2";
+      case "open":
+        this.state = "open";
         ret = new ActionLoader(
           this.engine,
           "dialogue",
-          ["I heard about a strange legend once.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      case "loop2":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Sorry, I don't remember the story at the moment", false, { autoclose: true, onClose: () => finish(true) }],
+          ["Empty.", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
         break;
       default:
         break;
     }
-    console.log(ret);
     if (ret) this.addAction(ret);
     // If completion handler passed through - call it when done
     if (finish) finish(false);
     return ret;
+  }
+  // open Chest
+  openChest(sprite) {
+    this.startTime = Date.now();
+    let endTime = Date.now() + 600;
+    while (Date.now() < endTime) {
+      let frac = (Date.now() - this.startTime) / 600;
+      if (Date.now() >= endTime) {
+        frac = 1;
+      }
+      // Get next frame
+      let newFrame = Math.floor(frac * 4);
+      if (newFrame != this.animFrame) this.setFrame(newFrame);
+    }
+    // give inventory
+    // this.inventory.forEach((x) => sprite.inventory.push(x));
+    // this.inventory = [];
   }
 }

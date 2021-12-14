@@ -19,7 +19,7 @@ export default class MyFireKnight extends FireKnight {
     super(engine);
   }
   // Interaction
-  interact(finish) {
+  interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {

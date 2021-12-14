@@ -62,7 +62,7 @@ export default class WaterKnight extends Sprite {
     this.state = "intro";
   }
   // Interaction
-  interact(finish) {
+  interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {

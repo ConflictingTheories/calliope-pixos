@@ -10,47 +10,45 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-
-import { Vector } from "../../../../engine/utils/math/vector.jsx";
-import Resources from "../../../../engine/utils/resources.jsx";
-import Sprite from "../../../../engine/core/sprite.jsx";
-
-export default class BlueChest extends Sprite {
+import { Vector } from "../../../utils/math/vector.jsx";
+import Resources from "../../../utils/resources.jsx";
+import Chest from "./base.jsx";
+export default class BlueChest extends Chest {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
     this.src = Resources.artResourceUrl("chests.gif");
-    this.sheetSize = [512, 512];
-    this.tileSize = [32, 48];
+    this.sheetSize = [256, 256]; // (actually 512 - gives 2x up-res)
+    this.tileSize = [16, 24]; // (relative to other sprites)
     // Offsets
     this.drawOffset = new Vector(0, 1, 0.2);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Frames & Faces
     this.frames = {
       up: [
-        [96, 0],
-        [96, 48],
-        [96, 96],
-        [96, 144],
+        [48, 0],
+        [48, 24],
+        [48, 48],
+        [48, 72],
       ],
       left: [
-        [192, 0],
-        [192, 48],
-        [192, 96],
-        [192, 144],
+        [112, 0],
+        [112, 24],
+        [112, 48],
+        [112, 72],
       ],
       down: [
-        [96, 192],
-        [96, 240],
-        [96, 320],
-        [96, 336],
+        [48, 96],
+        [48, 120],
+        [48, 144],
+        [48, 168],
       ],
       right: [
-        [352, 0],
-        [352, 48],
-        [352, 96],
-        [352, 144],
+        [176, 0],
+        [176, 24],
+        [176, 48],
+        [176, 72],
       ],
     };
     // Should the camera follow the avatar?
@@ -59,5 +57,6 @@ export default class BlueChest extends Sprite {
     this.enableSpeech = true;
     // Interaction Management
     this.state = "closed";
+    this.inventory = [];
   }
 }
