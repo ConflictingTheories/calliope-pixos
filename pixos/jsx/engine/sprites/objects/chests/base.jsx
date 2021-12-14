@@ -71,8 +71,21 @@ export default class Chest extends Sprite {
     switch (this.state) {
       case "closed":
         this.state = "open";
-        this.openChest(sprite);
-        finish(true);
+        ret = new ActionLoader(
+          this.engine,
+          "animate",
+          [
+            600,
+            3,
+            () => {
+              if(sprite.inventory){
+                sprite.inventory.push(...this.inventory);
+              }
+              finish(true);
+            },
+          ],
+          this
+        );
         break;
       case "open":
         this.state = "open";
@@ -90,22 +103,5 @@ export default class Chest extends Sprite {
     // If completion handler passed through - call it when done
     if (finish) finish(false);
     return ret;
-  }
-  // open Chest
-  openChest(sprite) {
-    let endTime = this.startTime + 600;
-    while (Date.now() < endTime) {
-      let frac = (Date.now() - this.startTime) / 600;
-      console.log(frac);
-      if (Date.now() >= endTime) {
-        frac = 1;
-      }
-      // Get next frame
-      let newFrame = Math.floor(frac * 4);
-      this.setFrame(newFrame);
-    }
-    // give inventory
-    this.inventory.forEach((x) => console.log(sprite, x));
-    this.inventory = [];
   }
 }
