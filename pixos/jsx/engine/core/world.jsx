@@ -37,11 +37,12 @@ export default class World {
   }
 
   // Fetch and Load Zone
-  async loadZone(zoneId) {
+  async loadZone(zoneId, remotely = false) {
     if (this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
-    await z.load();
+    if(remotely) await z.loadRemote();
+    else await z.load();
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
     // Sort for correct render order
@@ -51,8 +52,21 @@ export default class World {
 
   // Remove Zone
   removeZone(zoneId) {
-    this.zoneList = this.zoneList.filter((zone) => zone.id !== zoneId);
+    this.zoneList = this.zoneList
+      .filter((zone) => {
+        if(zone.id !== zoneId){
+          return true
+        }else{
+          zone.removeAllSprites();
+        };
+      });
     delete this.zoneDict[zoneId];
+  }
+
+  // Remove Zones
+  removeAllZones() {
+    this.zoneList = [];
+    this.zoneDict = {};
   }
 
   // Update

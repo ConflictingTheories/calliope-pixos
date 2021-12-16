@@ -25,10 +25,10 @@ export default {
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // NPCs
-    { id: "darkness", type: "npc/darkness", pos: new Vector(...[10, 2, 0]), facing: Direction.Down },
-    { id: "air", type: "npc/air-knight", pos: new Vector(...[8, 2, 0]), facing: Direction.Down },
-    { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
-    { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },
+    // { id: "darkness1", type: "npc/darkness", pos: new Vector(...[10, 4, 0]), facing: Direction.Down },
+    // { id: "air1", type: "npc/air-knight", pos: new Vector(...[8, 4, 0]), facing: Direction.Down },
+    // { id: "fire1", type: "npc/fire-knight", pos: new Vector(...[2, 9, 0]), facing: Direction.Right },
+    // { id: "earth1", type: "npc/earth-knight", pos: new Vector(...[14, 7, 0]), facing: Direction.Left },
     // Effect tiles
     { id: "spurt1", type: "effects/waterspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
     { id: "spurt2", type: "effects/waterspurt", pos: new Vector(...[9, 6, -1.5]), facing: Direction.Up },
@@ -36,9 +36,8 @@ export default {
     { id: "spurt4", type: "effects/waterspurt", pos: new Vector(...[7, 6, -1.5]), facing: Direction.Up },
     { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
-    { id: "spurt8", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
-    // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    { id: "avatar", type: "characters/default", pos: new Vector(...[8, 8, -1]), facing: Direction.Down },
+    { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
+    // // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
   ],
   // Scenes + Scenarios
   scenes: [
@@ -78,14 +77,14 @@ export default {
     {
       id: "clear-path", // manually called custom script
       trigger: async function () {
-        await this.moveSprite("darkness", [10, 2, 0], true);
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
+        await this.moveSprite("darkness1", [10, 2, 0], true);
+        await this.spriteDialogue("darkness1", ["Hi there!", "Can I help you?"]);
       },
     },
     {
       id: "custom", // manually called custom script
       trigger: async function () {
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
+        await this.spriteDialogue("darkness1", ["Hi there!", "Can I help you?"]);
       },
     },
   ],

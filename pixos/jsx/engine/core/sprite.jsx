@@ -30,6 +30,7 @@ export default class Sprite {
     this.onLoadActions = new ActionQueue();
     this.getTexCoords = this.getTexCoords.bind(this);
     this.inventory = [];
+    this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
   }
 
   update(data) {
@@ -48,6 +49,7 @@ export default class Sprite {
       console.error("Invalid sprite definition");
       return;
     }
+    console.log('zoning ---->>')
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -56,18 +58,21 @@ export default class Sprite {
     console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);
+    console.log('texture ---->>')
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      console.log('speech ---->>')
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.loadTexture(this.portraitSrc);
+      console.log('portrait ---->>')
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //
@@ -98,10 +103,11 @@ export default class Sprite {
   // After Tileset / Texture Loaded
   onTilesetOrTextureLoaded() {
     if (
+      !this ||
       this.loaded ||
       !this.zone.tileset.loaded ||
       !this.texture.loaded ||
-      (this.enableSpeech && !this.speech.loaded) ||
+      (this.enableSpeech && (this.speech && !this.speech.loaded)) ||
       (this.portrait && !this.portrait.loaded)
     )
       return;
@@ -223,6 +229,12 @@ export default class Sprite {
     delete this.actionDict[id];
   }
 
+  // Remove Action
+  removeAllActions() {
+    this.actionList = [];
+    this.actionDict = {};
+  }
+
   // Tick
   tickOuter(time) {
     if (!this.loaded) return;
@@ -257,7 +269,7 @@ export default class Sprite {
     if (!text) this.speech.clearHud();
     else {
       console.log("yola;,", this.portrait);
-      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false  });
+      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
       if (showBubble && this.speech) {
         this.speech.scrollText(text, false, { portrait: this.portrait ?? false });
         this.speech.loadImage();

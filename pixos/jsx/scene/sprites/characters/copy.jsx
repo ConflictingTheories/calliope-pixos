@@ -13,21 +13,18 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import Resources from "../../../engine/utils/resources.jsx";
-import NPC from "./base/NPC.jsx";
-
-export default class Darkness extends NPC {
+import Avatar from "../../../engine/core/avatar.jsx";
+export default class Default extends Avatar {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("darkness.gif");
-    this.portraitSrc = Resources.artResourceUrl("dark_portrait.gif");
+    // PROPERTIES
+    this.src = Resources.artResourceUrl("player.gif");
+    this.portraitSrc = Resources.artResourceUrl("hero_portrait.gif");
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
-    // Offsets
-    this.drawOffset = new Vector(-0.25, 1, 0.125);
-    this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    // Frames & Faces
+    this.state = "intro";
+    // Frames
     this.frames = {
       up: [
         [0, 0],
@@ -54,11 +51,11 @@ export default class Darkness extends NPC {
         [24, 96],
       ],
     };
+    // Offsets
+    this.drawOffset = new Vector(-0.25, 1, 0.125);
+    this.hotspotOffset = new Vector(0.5, 0.5, 0);
     // Should the camera follow the avatar?
-    this.bindCamera = false;
-    // enable speech
-    this.enableSpeech = true;
-    // Interaction Management
-    this.state = "intro";
+    this.bindCamera = true;
+    this.enableSpeech = true; // speech bubble
   }
 }

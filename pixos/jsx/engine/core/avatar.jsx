@@ -55,13 +55,29 @@ export default class Avatar extends Sprite {
       case "c":
         this.bindCamera = false;
         break;
+      case "z":
+        // this.zone.world.removeZone("room");
+        this.zone.world.removeZone("room");
+        this.zone.world.loadZone("dungeon-top");
+        this.zone.world.loadZone("dungeon-bottom");
+        break;
+      case "y":
+        this.zone.world.removeZone("dungeon-top");
+        this.zone.world.removeZone("dungeon-bottom");
+        this.zone.world.loadZone("room");
+        break;
       // Interact with tile
       case "k":
       case "Enter":
         return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
       // Help Dialogue
       case "h":
-        return new ActionLoader(this.engine, "dialogue", ["Welcome! You pressed help! Press Escape to close", false, { autoclose: true }], this);
+        return new ActionLoader(
+          this.engine,
+          "dialogue",
+          ["Welcome! You pressed help! Press Escape to close", false, { autoclose: true }],
+          this
+        );
       // Chat Message
       case "m":
       case " ":

@@ -29,7 +29,7 @@ export default class Zone {
     // bind
     this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
-    this.loadSprite = this.loadSprite.bind(this);
+    this.loadSprite = this.loadSprite.bind(this, this);
     this.checkInput = this.checkInput.bind(this);
   }
 
@@ -48,7 +48,7 @@ export default class Zone {
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
-        await Promise.all(data.sprites.map(this.loadSprite));
+        await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
         // Notify the zone sprites when the new sprite has loaded
         this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
       } catch (e) {
@@ -72,10 +72,12 @@ export default class Zone {
       this.tileset = await this.tsLoader.load(this.tileset);
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
-      // Load sprites from tileset
-      await Promise.all(this.sprites.map(this.loadSprite));
+      // Load sprites
+      let self = this;
+      await Promise.all(self.sprites.map(self.loadSprite));
       // Notify the zone sprites when the new sprite has loaded
-      this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
+      console.log(self.spriteDict);
+      self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
       console.error("Error parsing zone " + this.id);
       console.error(e);
@@ -133,9 +135,10 @@ export default class Zone {
   }
 
   // Load Sprite
-  async loadSprite(data) {
-    data.zone = this;
+  async loadSprite(_this, data) {
+    data.zone = _this;
     let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
+    console.log(["this", this.spriteDict, this.spriteList, data, newSprite]);
     this.spriteDict[data.id] = newSprite;
     this.spriteList.push(newSprite);
   }
@@ -149,8 +152,21 @@ export default class Zone {
 
   // Remove an sprite from the zone
   removeSprite(id) {
-    this.spriteList = this.spriteList.filter((sprite) => sprite.id !== id);
+    this.spriteList = this.spriteList
+      .filter((sprite) => {
+        if(sprite.id !== id){
+          return true
+        }else{
+          sprite.removeAllActions();
+        };
+      });
     delete this.spriteDict[id];
+  }
+
+  // Remove all sprites from the zone
+  removeAllSprites() {
+    this.spriteList = [];
+    this.spriteDict = {};
   }
 
   // Remove an sprite from the zone
@@ -184,8 +200,8 @@ export default class Zone {
         if (action.sprite) {
           let sprite = action.scope.getSpriteById(action.sprite);
           // apply action
-          if (action.action) {
-            console.log("playing scene action in zone");
+          if (sprite && action.action) {
+            console.log("playing scene action in zone", self);
             let args = action.args;
             let options = args.pop();
             sprite.addAction(
