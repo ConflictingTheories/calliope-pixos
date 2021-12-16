@@ -27,6 +27,8 @@ export default class Sprite {
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
+    this.speech = {};
+    this.portrait = null;
     this.onLoadActions = new ActionQueue();
     this.getTexCoords = this.getTexCoords.bind(this);
     this.inventory = [];
