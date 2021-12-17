@@ -33,6 +33,8 @@ export default class Sprite {
     this.getTexCoords = this.getTexCoords.bind(this);
     this.inventory = [];
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
+    this.blocking = true; // default - cannot passthrough
+    this.override = false;
   }
 
   update(data) {

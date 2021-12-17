@@ -152,14 +152,13 @@ export default class Zone {
 
   // Remove an sprite from the zone
   removeSprite(id) {
-    this.spriteList = this.spriteList
-      .filter((sprite) => {
-        if(sprite.id !== id){
-          return true
-        }else{
-          sprite.removeAllActions();
-        };
-      });
+    this.spriteList = this.spriteList.filter((sprite) => {
+      if (sprite.id !== id) {
+        return true;
+      } else {
+        sprite.removeAllActions();
+      }
+    });
     delete this.spriteDict[id];
   }
 
@@ -333,11 +332,25 @@ export default class Zone {
   // Cell Walkable
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
-    // if sprite is
     for (let sprite in this.spriteDict) {
-      if (!this.spriteDict[sprite].walkable && this.spriteDict[sprite].pos.x === x && this.spriteDict[sprite].pos.y === y)
+      if ( // if sprite bypass & override
+        !this.spriteDict[sprite].walkable &&
+        this.spriteDict[sprite].pos.x === x &&
+        this.spriteDict[sprite].pos.y === y &&
+        !this.spriteDict[sprite].blocking &&
+        this.spriteDict[sprite].override
+      )
+        return true;
+
+      if ( // else if sprite blocking
+        !this.spriteDict[sprite].walkable &&
+        this.spriteDict[sprite].pos.x === x &&
+        this.spriteDict[sprite].pos.y === y &&
+        this.spriteDict[sprite].blocking
+      )
         return false;
     }
+    // else tile specific
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
   }
 

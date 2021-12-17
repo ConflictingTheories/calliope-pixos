@@ -23,6 +23,7 @@ export default class AnimatedTile extends Sprite {
     this.accumTime = 0;
     this.triggerTime = 400;
     this.frameTime = 250;
+    this.blocking = false; // can passthrough
   }
   // Initialize
   init() {

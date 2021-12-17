@@ -55,6 +55,8 @@ export default class Door extends Sprite {
     switch (this.state) {
       case "closed":
         this.state = "open";
+        this.blocking = false;
+        this.override = true;
         ret = new ActionLoader(
           this.engine,
           "animate",
