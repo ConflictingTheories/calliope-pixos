@@ -25,8 +25,11 @@ export default {
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
-    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[5, 2, 0]), facing: Direction.Right },
-    { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[2, 5, 0]), facing: Direction.Right },
+    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 9, 0]), facing: Direction.Down },
+    { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 8, 0]), facing: Direction.Right },
+    { id: "chestred", type: "objects/chests/red", pos: new Vector(...[9, 9, 0]), facing: Direction.Down },
+    { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 8, 0]), facing: Direction.Left },
+    { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 9, 0]), facing: Direction.Down },
     // Doorway
     {
       id: "door",
@@ -35,6 +38,8 @@ export default {
       facing: Direction.Down,
       zones: ["dungeon-top", "dungeon-bottom"],
     },
+    // Tree
+    { id: "tree", type: "furniture/tree", pos: new Vector(...[8, 8, 0]), facing: Direction.Up },
     // Furniture / Wall Decorations
     { id: "fireplace", type: "furniture/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     { id: "fireplace", type: "effects/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
@@ -44,7 +49,7 @@ export default {
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    { id: "avatar", type: "characters/default", pos: new Vector(...[8, 8, 0]), facing: Direction.Down },
+    { id: "avatar", type: "characters/default", pos: new Vector(...[10, 10, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
   scenes: [
