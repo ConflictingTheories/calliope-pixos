@@ -21,14 +21,14 @@ export default class XMasTree extends Sprite {
     super(engine);
     this.src = Resources.artResourceUrl("trees.png");
     this.sheetSize = [512, 512];
-    this.tileSize = [96, 120];
+    this.tileSize = [96, 144];
     // Frames
     this.frames = {
       up: [
         [96, 160]
       ],
     };
-    this.drawOffset = new Vector(-2.5, 1.85, -0.25);
+    this.drawOffset = new Vector(-2.5, 2.15, -0.85);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     this.blocking = true;
   }

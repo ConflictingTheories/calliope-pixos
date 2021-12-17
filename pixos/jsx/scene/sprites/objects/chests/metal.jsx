@@ -18,6 +18,7 @@ export default class MyMetalChest extends IronChest {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
+    this.enableSpeech = false;
     // todo - plan and implement an inventory system
     this.inventory = [];
   }

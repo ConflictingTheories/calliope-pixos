@@ -29,7 +29,6 @@ export default {
     { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 8, 0]), facing: Direction.Right },
     { id: "chestred", type: "objects/chests/red", pos: new Vector(...[9, 9, 0]), facing: Direction.Down },
     { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 8, 0]), facing: Direction.Left },
-    { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 9, 0]), facing: Direction.Down },
     // Doorway
     {
       id: "door",
