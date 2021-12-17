@@ -29,6 +29,14 @@ export default {
     { id: "air", type: "npc/air-knight", pos: new Vector(...[8, 4, 0]), facing: Direction.Down },
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 9, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 7, 0]), facing: Direction.Left },
+    // Doorway
+    {
+      id: "door",
+      type: "furniture/door",
+      pos: new Vector(...[2, 5, 0]),
+      facing: Direction.Down,
+      zones: ["room"],
+    },
     // Effect tiles
     { id: "spurt1", type: "effects/waterspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
     { id: "spurt2", type: "effects/waterspurt", pos: new Vector(...[9, 6, -1.5]), facing: Direction.Up },

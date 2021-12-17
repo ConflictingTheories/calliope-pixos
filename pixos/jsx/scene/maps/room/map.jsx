@@ -13,7 +13,7 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
-import cells from './cells.jsx';
+import cells from "./cells.jsx";
 // Use Tileset
 // Map Information
 export default {
@@ -27,7 +27,15 @@ export default {
     // Objects
     { id: "chest", type: "objects/chests/wood", pos: new Vector(...[5, 2, 0]), facing: Direction.Right },
     { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[2, 5, 0]), facing: Direction.Right },
-    { id: "door", type: "furniture/door", pos: new Vector(...[9, 1, 0]), facing: Direction.Down },
+    // Doorway
+    {
+      id: "door",
+      type: "furniture/door",
+      pos: new Vector(...[9, 1, 0]),
+      facing: Direction.Down,
+      zones: ["dungeon-top", "dungeon-bottom"],
+    },
+    // Furniture / Wall Decorations
     { id: "fireplace", type: "furniture/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     { id: "fireplace", type: "effects/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     // NPCs

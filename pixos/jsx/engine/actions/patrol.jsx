@@ -68,7 +68,7 @@ export default {
           }
         } else {
           // Load Next move
-          this.currentAction = new ActionLoader(this.sprite.engine, "move", [last, move, this.moveLength], this.sprite);
+          this.currentAction = new ActionLoader(this.sprite.engine, "move", [last, move, this.moveLength, this.zone], this.sprite);
         }
         // set facing
         if (this.currentAction) {

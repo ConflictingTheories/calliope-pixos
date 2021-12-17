@@ -155,6 +155,6 @@ export default class Avatar extends Sprite {
     if (!this.zone.isWalkable(to.x, to.y, Direction.reverse(facing))) {
       return this.faceDir(facing);
     }
-    return new ActionLoader(this.engine, "move", [this.pos.toArray(), to.toArray(), moveTime], this);
+    return new ActionLoader(this.engine, "move", [this.pos.toArray(), to.toArray(), moveTime, this.zone], this);
   }
 }

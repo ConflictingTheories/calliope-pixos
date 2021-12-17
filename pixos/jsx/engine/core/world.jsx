@@ -71,7 +71,7 @@ export default class World {
 
   // Update
   tick(time) {
-    for (let z in this.zoneDict) this.zoneDict[z].tick(time);
+    for (let z in this.zoneDict) this.zoneDict[z]?.tick(time);
     this.afterTickActions.run(time);
   }
 

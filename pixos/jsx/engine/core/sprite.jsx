@@ -59,6 +59,7 @@ export default class Sprite {
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
+    if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);

@@ -27,28 +27,29 @@ export default class Door extends Sprite {
     this.frames = {
       up: [
         [48, 64],
-        [48, 96]
+        [48, 96],
       ],
       right: [
         [48, 64],
-        [48, 96]
+        [48, 96],
       ],
       left: [
         [48, 64],
-        [48, 96]
+        [48, 96],
       ],
       down: [
         [48, 64],
-        [48, 96]
+        [48, 96],
       ],
     };
-    this.state = "closed";
     this.drawOffset = new Vector(0, 1.001, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
+    this.state = "closed";
   }
 
   // Interaction
   interact(sprite, finish) {
+    console.log("opening door", sprite);
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state
@@ -64,7 +65,7 @@ export default class Door extends Sprite {
             600,
             3,
             () => {
-              console.log("OPENED!!!")
+              console.log("OPENED!!!");
               finish(true);
             },
           ],
@@ -87,5 +88,14 @@ export default class Door extends Sprite {
     // If completion handler passed through - call it when done
     if (finish) finish(false);
     return ret;
+  }
+
+  // when stepping on tile position (if not blocking)
+  onStep(sprite) {
+    console.log("walking out....", sprite);
+    let world = this.zone.world;
+    world.removeAllZones();
+    if (this.zones) this.zones.forEach((z) => world.loadZone(z));
+    return null;
   }
 }
