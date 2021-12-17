@@ -27,8 +27,11 @@ export default {
     // Objects
     { id: "chest", type: "objects/chests/wood", pos: new Vector(...[5, 2, 0]), facing: Direction.Right },
     { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[2, 5, 0]), facing: Direction.Right },
+    { id: "door", type: "furniture/door", pos: new Vector(...[9, 1, 0]), facing: Direction.Down },
+    { id: "fireplace", type: "furniture/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
+    { id: "fireplace", type: "effects/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     // NPCs
-    { id: "darkness", type: "npc/darkness", pos: new Vector(...[10, 2, 0]), facing: Direction.Down },
+    { id: "darkness", type: "npc/darkness", pos: new Vector(...[6, 2, 0]), facing: Direction.Down },
     { id: "air", type: "npc/air-knight", pos: new Vector(...[8, 2, 0]), facing: Direction.Down },
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },

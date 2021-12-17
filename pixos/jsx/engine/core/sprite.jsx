@@ -128,7 +128,9 @@ export default class Sprite {
   // Get Texture Coordinates
   getTexCoords() {
     if (this.id == "chest") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
-    let t = this.frames[Direction.spriteSequence(this.facing)][this.animFrame % 4];
+    let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames["up"]; //default up
+    let length = this.frames[Direction.spriteSequence(this.facing)].length;
+    let t = frames[this.animFrame % length];
     let ss = this.sheetSize;
     let ts = this.tileSize;
     let bl = [(t[0] + ts[0]) / ss[0], t[1] / ss[1]];
