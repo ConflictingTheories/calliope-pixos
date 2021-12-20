@@ -18,7 +18,7 @@ export default {
     this.world = zone.world;
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.onCompleted = () => console.log('script finished');
+    this.onCompleted = () => console.log("script finished");
     if (onCompleted) this.onCompleted = onCompleted;
     // Determine Tile
     this.triggerId = triggerId;
@@ -28,8 +28,11 @@ export default {
   // Trigger interactions in sprites
   triggerScript: function () {
     if (!this.triggerId) this.completed = true;
-    Promise.all(this.zone.scripts.filter((x) => x.id === this.triggerId).map(async (x) => await x.trigger.call(this.zone)));
-    this.completed = true;
+    Promise.all(this.zone.scripts.filter((x) => x.id === this.triggerId).map(async (x) => await x.trigger.call(this.zone))).then(
+      () => {
+        this.completed = true;
+      }
+    );
   },
   // check input and completion
   tick: function (time) {

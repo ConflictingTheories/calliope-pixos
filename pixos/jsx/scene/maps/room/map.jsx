@@ -94,7 +94,7 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        this.playScene("strange-legend");
+        await this.playScene("strange-legend");
       },
     },
     {
@@ -108,7 +108,7 @@ export default {
       id: "custom", // manually called custom script
       trigger: async function () {
         // await this.moveSprite("earth", [12, 9, 0], true);
-        this.spriteDialogue("earth", ["Lets get in there!"]);
+        await this.spriteDialogue("earth", ["Lets get in there!"]);
       },
     },
   ],

@@ -350,9 +350,8 @@ export default class Zone {
                       new ActionLoader(
                         self.engine,
                         "script",
-                        [action.trigger, action.scope],
+                        [action.trigger, action.scope, () => resolve(self)],
                         sprite,
-                        () => resolve(self)
                       )
                     );
                   }
