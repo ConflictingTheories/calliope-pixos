@@ -12,13 +12,14 @@
 \*                                                 */
 
 export default {
-  init: function (triggerId, zone, onComplete) {
+  init: function (triggerId, zone, onCompleted = null) {
     console.log("loading - script", arguments);
     this.zone = zone;
     this.world = zone.world;
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.onComplete = onComplete;
+    this.onCompleted = () => console.log('script finished');
+    if (onCompleted) this.onCompleted = onCompleted;
     // Determine Tile
     this.triggerId = triggerId;
     // Trigger
@@ -33,7 +34,7 @@ export default {
   // check input and completion
   tick: function (time) {
     if (!this.loaded) return;
-    if (this.completed) this.onComplete();
+    if (this.completed) this.onCompleted();
     return this.completed; // loop
   },
 };

@@ -275,7 +275,6 @@ export default class Sprite {
   speak(text, showBubble = false) {
     if (!text) this.speech.clearHud();
     else {
-      console.log("yola;,", this.portrait);
       this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
       if (showBubble && this.speech) {
         this.speech.scrollText(text, false, { portrait: this.portrait ?? false });

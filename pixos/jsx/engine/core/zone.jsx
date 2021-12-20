@@ -130,6 +130,7 @@ export default class Zone {
         this.runWhenLoaded(x.trigger.bind(zone));
       }
     });
+    // loaded
     this.loaded = true;
     this.onLoadActions.run();
   }
@@ -314,7 +315,58 @@ export default class Zone {
       sprite.addAction(new ActionLoader(this.engine, "dialogue", [dialogue, false, options], sprite, resolve));
     });
   }
+  // Run Action configuration from JSON description
+  async runActions(actions) {
+    let self = this;
+    return await actions.reduce(async (prev, action) => {
+      return await prev
+        .then(
+          async () =>
+            new Promise((resolve, reject) => {
+              console.log('working on action ---- ', action);
 
+              if (!action) resolve();
+              try {
+                if (!action.scope) action.scope = self;
+                if (action.sprite) {
+                  let sprite = action.scope.getSpriteById(action.sprite);
+                  // apply action
+                  if (sprite && action.action) {
+                    console.log("playing scene action in zone", self);
+                    let args = action.args;
+                    let options = args.pop();
+                    sprite.addAction(
+                      new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self))
+                    );
+                  }
+                }
+                // trigger script
+                if (action.trigger) {
+                  console.log("trigger", action);
+                  let sprite = action.scope.getSpriteById("avatar");
+                  console.log("triggered by ", sprite);
+                  if (sprite && action.trigger) {
+                    sprite.addAction(
+                      new ActionLoader(
+                        self.engine,
+                        "script",
+                        [action.trigger, action.scope],
+                        sprite,
+                        () => resolve(self)
+                      )
+                    );
+                  }
+                }
+              } catch (e) {
+                reject(e);
+              }
+            })
+        )
+        .catch((err) => {
+          console.warn("err", err.message);
+        });
+    }, Promise.resolve());
+  }
   // Trigger Script
   triggerScript(id) {
     this.scripts.forEach((x) => {
@@ -325,57 +377,24 @@ export default class Zone {
   }
 
   // Play a scene
-  playScene(id) {
+  async playScene(id) {
     let self = this;
-    self.scenes.forEach(function runScene(x) {
-      if (!x.currentStep) {
-        x.currentStep = 0; // Starting
-      }
-      if (x.currentStep > self.scenes.length) {
-        return; // scene finished
-      }
-      if (x.id === id) {
-        // found scene
-        let action = x.actions[x.currentStep]; // current action
-        this.runAction(action);
+    self.scenes.forEach(async function runScene(x) {
+      try {
+        if (!x.currentStep) {
+          x.currentStep = 0; // Starting
+        }
+        if (x.currentStep > self.scenes.length) {
+          return; // scene finished
+        }
+        if (x.id === id) {
+          // found scene
+          console.log("found scene ---> ", x);
+          await self.runActions(x.actions);
+        }
+      } catch (e) {
+        console.error(e);
       }
     });
-  }
-
-  // Run Action configuration from JSON description
-  runAction(action) {
-    if (!action.scope) action.scope = self;
-    if (action.sprite) {
-      let sprite = action.scope.getSpriteById(action.sprite);
-      // apply action
-      if (sprite && action.action) {
-        console.log("playing scene action in zone", self);
-        let args = action.args;
-        let options = args.pop();
-        sprite.addAction(
-          new ActionLoader(
-            self.engine,
-            action.action,
-            [...args, { ...options, onClose: () => (x.currentStep += 1) }],
-            sprite,
-            runScene.bind(self, x)
-          )
-        );
-      }
-    }
-    // trigger script
-    if (action.trigger) {
-      console.log("trigger");
-      let sprite = action.scope.getSpriteById("avatar");
-      sprite.addAction(
-        new ActionLoader(
-          self.engine,
-          "script",
-          [action.trigger, action.scope, () => (x.currentStep += 1)],
-          sprite,
-          runScene.bind(self, x)
-        )
-      );
-    }
   }
 }

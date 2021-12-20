@@ -50,7 +50,6 @@ export class textScrollBox {
   setOptions(options) {
     Object.keys(this).forEach((key) => {
       if (options[key] !== undefined) {
-        console.log("key", key);
         this[key] = options[key];
         this.dirty = true;
       }
@@ -135,7 +134,6 @@ export class textScrollBox {
   // Draw Scrollbar on the side
   drawPortrait() {
     let { ctx } = this;
-    console.log("drawing)");
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
   }
 

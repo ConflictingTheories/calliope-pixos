@@ -71,8 +71,20 @@ export default {
           ],
           scope: this, // scoped to the zone
         },
-        // or call premade events and bundle many things and trigger them
+        {
+          sprite: "air",
+          action: "dialogue",
+          args: [
+            [
+              "But what was that plan?...",
+            ],
+            false,
+            { autoclose: true },
+          ],
+          scope: this, // scoped to the zone
+        },
         { trigger: "clear-path", scope: this },
+        // or call premade events and bundle many things and trigger them
         { trigger: "custom", scope: this },
       ],
     },
@@ -89,13 +101,14 @@ export default {
       id: "clear-path", // manually called custom script
       trigger: async function () {
         await this.moveSprite("darkness", [10, 2, 0], true);
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
+        // this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
       },
     },
     {
       id: "custom", // manually called custom script
       trigger: async function () {
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
+        // await this.moveSprite("earth", [12, 9, 0], true);
+        this.spriteDialogue("earth", ["Lets get in there!"]);
       },
     },
   ],
