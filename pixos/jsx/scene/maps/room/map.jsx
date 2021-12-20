@@ -25,10 +25,10 @@ export default {
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
-    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 9, 0]), facing: Direction.Down },
-    { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 8, 0]), facing: Direction.Right },
-    { id: "chestred", type: "objects/chests/red", pos: new Vector(...[9, 9, 0]), facing: Direction.Down },
-    { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 8, 0]), facing: Direction.Left },
+    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
+    { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },
+    { id: "chestred", type: "objects/chests/red", pos: new Vector(...[9, 14, 0]), facing: Direction.Down },
+    { id: "chestblue", type: "objects/chests/blue", pos: new Vector(...[7, 13, 0]), facing: Direction.Left },
     // Doorway
     {
       id: "door",
@@ -38,7 +38,7 @@ export default {
       zones: ["dungeon-top", "dungeon-bottom"],
     },
     // Tree
-    { id: "tree", type: "furniture/tree", pos: new Vector(...[8, 8, 0]), facing: Direction.Up },
+    { id: "tree", type: "furniture/tree", pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Furniture / Wall Decorations
     { id: "fireplace", type: "furniture/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     { id: "fireplace", type: "effects/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
@@ -48,7 +48,7 @@ export default {
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    { id: "avatar", type: "characters/default", pos: new Vector(...[10, 10, 0]), facing: Direction.Down },
+    { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
   scenes: [
@@ -83,7 +83,6 @@ export default {
           ],
           scope: this, // scoped to the zone
         },
-        { trigger: "clear-path", scope: this },
         // or call premade events and bundle many things and trigger them
         { trigger: "custom", scope: this },
       ],
@@ -98,17 +97,15 @@ export default {
       },
     },
     {
-      id: "clear-path", // manually called custom script
+      id: "custom", // manually called custom script
       trigger: async function () {
-        await this.moveSprite("darkness", [10, 2, 0], true);
-        // this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
+        await this.spriteDialogue("earth", ["Lets get in there!"]);
       },
     },
     {
-      id: "custom", // manually called custom script
+      id: "clear-path", // manually called custom script
       trigger: async function () {
-        // await this.moveSprite("earth", [12, 9, 0], true);
-        await this.spriteDialogue("earth", ["Lets get in there!"]);
+        await this.moveSprite("darkness", [8, 3, 0], true);
       },
     },
   ],

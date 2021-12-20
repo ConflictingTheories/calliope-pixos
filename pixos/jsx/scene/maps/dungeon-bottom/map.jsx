@@ -27,7 +27,6 @@ export default {
     { id: "water", type: "npc/water-knight", pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     { id: "spurt8", type: "effects/waterspurt", pos: new Vector(...[7, 10, -1.5]), facing: Direction.Up },
     { id: "spurt9", type: "effects/waterspurt", pos: new Vector(...[10, 10, -1.5]), facing: Direction.Up },
-    { id: "avatar", type: "characters/default", pos: new Vector(...[8, 8, -1]), facing: Direction.Down },
   ],
   // Scripts / Triggers
   scripts: [

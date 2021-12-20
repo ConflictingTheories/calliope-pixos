@@ -13,7 +13,7 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
-import cells from './cells.jsx';
+import cells from "./cells.jsx";
 // Use Tileset
 // Map Information
 export default {
@@ -45,54 +45,11 @@ export default {
     { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
     { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
+    // avatar
+    { id: "avatar", type: "characters/default", pos: new Vector(...[2, 6, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
-  scenes: [
-    {
-      id: "strange-legend",
-      actions: [
-        // manual actions
-        // Scripted Dialogue Action Controls directly on sprites
-        {
-          sprite: "air",
-          action: "dialogue",
-          args: [
-            [
-              "Long ago, in a dungeon far far away",
-              "The sewer was backing up, and well...everyone was losing their $%#t",
-              "But one had a plan...",
-            ],
-            false,
-            { autoclose: true },
-          ],
-          scope: this, // scoped to the zone
-        },
-        // or call premade events and bundle many things and trigger them
-        { trigger: "clear-path", scope: this },
-        { trigger: "custom", scope: this },
-      ],
-    },
-  ],
+  scenes: [],
   // Scripts / Triggers for the Zone
-  scripts: [
-    {
-      id: "load-scene", // **runs automatically when loaded
-      trigger: async function () {
-        this.playScene("strange-legend");
-      },
-    },
-    {
-      id: "clear-path", // manually called custom script
-      trigger: async function () {
-        await this.moveSprite("darkness", [10, 2, 0], true);
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
-      },
-    },
-    {
-      id: "custom", // manually called custom script
-      trigger: async function () {
-        await this.spriteDialogue("darkness", ["Hi there!", "Can I help you?"]);
-      },
-    },
-  ],
+  scripts: [],
 };
