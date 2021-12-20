@@ -82,7 +82,7 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        // this.playScene("strange-legend");
+        this.playScene("strange-legend");
       },
     },
     {

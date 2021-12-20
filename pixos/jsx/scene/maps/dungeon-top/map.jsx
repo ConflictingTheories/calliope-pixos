@@ -45,7 +45,6 @@ export default {
     { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
     { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
-    // // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
   ],
   // Scenes + Scenarios
   scenes: [

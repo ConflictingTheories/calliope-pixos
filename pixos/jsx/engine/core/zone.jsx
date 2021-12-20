@@ -173,65 +173,6 @@ export default class Zone {
     return this.spriteDict[id];
   }
 
-  // Trigger Script
-  triggerScript(id) {
-    this.scripts.forEach((x) => {
-      if (x.id === id) {
-        this.runWhenLoaded(x.trigger.bind(this));
-      }
-    });
-  }
-
-  // Play a scene
-  playScene(id) {
-    let self = this;
-    self.scenes.forEach(function runScene(x) {
-      if (!x.currentStep) {
-        x.currentStep = 0; // Starting
-      }
-      if (x.currentStep > self.scenes.length) {
-        return; // scene finished
-      }
-      if (x.id === id) {
-        // found scene
-        let action = x.actions[x.currentStep]; // current action
-        if (!action.scope) action.scope = self;
-        if (action.sprite) {
-          let sprite = action.scope.getSpriteById(action.sprite);
-          // apply action
-          if (sprite && action.action) {
-            console.log("playing scene action in zone", self);
-            let args = action.args;
-            let options = args.pop();
-            sprite.addAction(
-              new ActionLoader(
-                self.engine,
-                action.action,
-                [...args, { ...options, onClose: () => (x.currentStep += 1) }],
-                sprite,
-                runScene.bind(self, x)
-              )
-            );
-          }
-        }
-        // trigger script
-        if (action.trigger) {
-          console.log("trigger");
-          let sprite = action.scope.getSpriteById("avatar");
-          sprite.addAction(
-            new ActionLoader(
-              self.engine,
-              "script",
-              [action.trigger, action.scope, () => (x.currentStep += 1)],
-              sprite,
-              runScene.bind(self, x)
-            )
-          );
-        }
-      }
-    });
-  }
-
   // Calculate the height of a point in the zone
   getHeight(x, y) {
     if (!this.isInZone(x, y)) {
@@ -333,7 +274,8 @@ export default class Zone {
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
     for (let sprite in this.spriteDict) {
-      if ( // if sprite bypass & override
+      if (
+        // if sprite bypass & override
         !this.spriteDict[sprite].walkable &&
         this.spriteDict[sprite].pos.x === x &&
         this.spriteDict[sprite].pos.y === y &&
@@ -342,7 +284,8 @@ export default class Zone {
       )
         return true;
 
-      if ( // else if sprite blocking
+      if (
+        // else if sprite blocking
         !this.spriteDict[sprite].walkable &&
         this.spriteDict[sprite].pos.x === x &&
         this.spriteDict[sprite].pos.y === y &&
@@ -370,5 +313,69 @@ export default class Zone {
       let sprite = this.getSpriteById(id);
       sprite.addAction(new ActionLoader(this.engine, "dialogue", [dialogue, false, options], sprite, resolve));
     });
+  }
+
+  // Trigger Script
+  triggerScript(id) {
+    this.scripts.forEach((x) => {
+      if (x.id === id) {
+        this.runWhenLoaded(x.trigger.bind(this));
+      }
+    });
+  }
+
+  // Play a scene
+  playScene(id) {
+    let self = this;
+    self.scenes.forEach(function runScene(x) {
+      if (!x.currentStep) {
+        x.currentStep = 0; // Starting
+      }
+      if (x.currentStep > self.scenes.length) {
+        return; // scene finished
+      }
+      if (x.id === id) {
+        // found scene
+        let action = x.actions[x.currentStep]; // current action
+        this.runAction(action);
+      }
+    });
+  }
+
+  // Run Action configuration from JSON description
+  runAction(action) {
+    if (!action.scope) action.scope = self;
+    if (action.sprite) {
+      let sprite = action.scope.getSpriteById(action.sprite);
+      // apply action
+      if (sprite && action.action) {
+        console.log("playing scene action in zone", self);
+        let args = action.args;
+        let options = args.pop();
+        sprite.addAction(
+          new ActionLoader(
+            self.engine,
+            action.action,
+            [...args, { ...options, onClose: () => (x.currentStep += 1) }],
+            sprite,
+            runScene.bind(self, x)
+          )
+        );
+      }
+    }
+    // trigger script
+    if (action.trigger) {
+      console.log("trigger");
+      let sprite = action.scope.getSpriteById("avatar");
+      sprite.addAction(
+        new ActionLoader(
+          self.engine,
+          "script",
+          [action.trigger, action.scope, () => (x.currentStep += 1)],
+          sprite,
+          runScene.bind(self, x)
+        )
+      );
+    }
   }
 }
