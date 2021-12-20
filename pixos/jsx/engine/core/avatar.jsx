@@ -111,6 +111,14 @@ export default class Avatar extends Sprite {
         facing = Direction.Right;
         break;
       // Patrol
+      case "u":
+        return new ActionLoader(
+          this.engine,
+          "dance",
+          [ 300, this.zone],
+          this
+        );
+        // Patrol
       case "p":
         return new ActionLoader(
           this.engine,
