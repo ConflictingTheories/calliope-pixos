@@ -505,41 +505,50 @@ export class GamePad {
 
   // Draw
   render() {
-    let { ctx, map, touches } = this;
+    let { ctx } = this;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (this.showDebug) {
-      this.dy = 30;
-      ctx.fillStyle = "rgba(70,70,70,0.5)";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.font = "minecraftia 20px";
-      ctx.fillText("debug", 10, this.dy);
-      ctx.font = "minecraftia 14px";
-      this.dy += 5;
-      for (var prop in touches) {
-        this.dy += 10;
-        let text = prop + " : " + JSON.stringify(touches[prop]).slice(1, -1);
-        ctx.fillText(text, 10, this.dy);
-      }
+      this.debug();
     }
     if (this.showTrace) {
-      this.dy = 30;
-      ctx.fillStyle = "rgba(70,70,70,0.5)";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.font = "minecraftia 20px";
-      ctx.fillText("trace", this.width - 10, this.dy);
-      ctx.font = "minecraftia 14px";
-      this.dy += 5;
-      for (var prop in map) {
-        this.dy += 10;
-        let text = prop + " : " + map[prop];
-        ctx.fillText(text, this.width - 10, this.dy);
-      }
+      this.trace();
     }
-    this.controller.draw();
     this.controller.stick.draw();
     this.controller.buttons.draw();
+  }
+
+  debug() {
+    let { ctx, map, touches } = this;
+    this.dy = 30;
+    ctx.fillStyle = "rgba(70,70,70,0.5)";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.font = "minecraftia 20px";
+    ctx.fillText("debug", 10, this.dy);
+    ctx.font = "minecraftia 14px";
+    this.dy += 5;
+    for (var prop in touches) {
+      this.dy += 10;
+      let text = prop + " : " + JSON.stringify(touches[prop]).slice(1, -1);
+      ctx.fillText(text, 10, this.dy);
+    }
+  }
+
+  trace() {
+    let { ctx, map } = this;
+    this.dy = 30;
+    ctx.fillStyle = "rgba(70,70,70,0.5)";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.font = "minecraftia 20px";
+    ctx.fillText("trace", this.width - 10, this.dy);
+    ctx.font = "minecraftia 14px";
+    this.dy += 5;
+    for (var prop in map) {
+      this.dy += 10;
+      let text = prop + " : " + map[prop];
+      ctx.fillText(text, this.width - 10, this.dy);
+    }
   }
 }
 
@@ -551,20 +560,13 @@ class Controller {
     this.height = ctx.canvas.height;
     this.radius = 40;
     this.layout = layout;
+    this.touches = touches;
+    this.map = map;
+    this.start = start;
+    this.select = select;
     this.buttons_layout = buttons_layout;
     this.button_offset = button_offset;
-    this.stick = new ControllerStick(ctx, this.layout, map, touches, colours, this.radius);
-    this.buttons = new ControllerButtons(
-      ctx,
-      this.layout,
-      this.buttons_layout,
-      map,
-      touches,
-      start,
-      select,
-      colours,
-      this.radius
-    );
+    this.colours = colours;
     console.log("loading Controller Manager - ", this);
   }
   // Initialize
@@ -603,9 +605,20 @@ class Controller {
         this.layout.y = height - this.button_offset.y;
         break;
     }
-    // Initialize
-    this.buttons.init();
+    this.stick = new ControllerStick(this.ctx, this.layout, this.map, this.touches, this.colours, this.radius);
+    this.buttons = new ControllerButtons(
+      this.ctx,
+      this.layout,
+      this.buttons_layout,
+      this.map,
+      this.touches,
+      this.start,
+      this.select,
+      this.colours,
+      this.radius
+    );
     this.stick.init();
+    this.buttons.init();
   }
   // draw
   draw() {
@@ -628,7 +641,13 @@ class ControllerStick {
     this.y = 0;
     this.dx = 0;
     this.dy = 0;
+    this.map["x-dir"] = 0;
+    this.map["y-dir"] = 0;
+    this.map["x-axis"] = 0;
+    this.map["y-axis"] = 0;
     this.colours = colours;
+    this.init = this.init.bind(this);
+    this.draw = this.draw.bind(this);
     console.log("loading Controller Joystick - ", this);
   }
   // Initialize
@@ -638,14 +657,14 @@ class ControllerStick {
     this.y = layout.y;
     this.dx = this.x;
     this.dy = this.y;
-    map["x-dir"] = 0;
-    map["y-dir"] = 0;
-    map["x-axis"] = 0;
-    map["y-axis"] = 0;
+    this.map["x-dir"] = 0;
+    this.map["y-dir"] = 0;
+    this.map["x-axis"] = 0;
+    this.map["y-axis"] = 0;
   }
   // draw joystick
   draw() {
-    console.log('drawing - joy')
+    console.log("drawing - joy", this);
     let { ctx } = this;
     ctx.fillStyle = this.colours.joystick.base;
     ctx.beginPath();
@@ -691,7 +710,7 @@ class ControllerStick {
             break;
           case "mouseup":
             delete touches[id].id;
-            controller.stick.reset();
+            this.reset();
             break;
         }
       }
@@ -709,7 +728,7 @@ class ControllerStick {
       map["y-dir"] = Math.round(map["y-axis"]);
 
       if (dist > this.radius * 1.5) {
-        controller.stick.reset();
+        this.reset();
         delete touches[id].id;
       }
       if (typeof observerFunction === "function") {
@@ -774,7 +793,7 @@ class ControllerButtons {
   }
   // render Button
   draw() {
-    console.log('drawing - btn')
+    console.log("drawing - btn");
     let { ctx, buttons_layout, layout } = this;
     for (var n = 0; n < this.buttons_layout.length; n++) {
       var button = buttons_layout[n];
@@ -879,7 +898,7 @@ class ControllerButtons {
               break;
             case "mouseup":
               delete touches[id].id;
-              controller.buttons.reset(n);
+              this.reset(n);
               break;
           }
         }
