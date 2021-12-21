@@ -92,7 +92,6 @@ export default class Avatar extends Sprite {
     // Gamepad controls - TODO
     if (touchmap["b"] === 1) {
       // select
-      console.log("touched");
       return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
     }
     if (touchmap["x"] === 1) {
@@ -144,10 +143,8 @@ export default class Avatar extends Sprite {
 
     // Mobile Gamepad
     // X axis - joystick
-    console.log(touchmap);
     if (touchmap["x-dir"] === 1) {
       // right
-      console.log('x)')
       facing = Direction.Right;
     }
     if (touchmap["x-dir"] === -1) {

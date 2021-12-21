@@ -96,7 +96,7 @@ export class GamePad {
   }
 
   // check input status
-  checkInput(){
+  checkInput() {
     return this.map;
   }
 
@@ -161,6 +161,7 @@ export class GamePad {
         switch (type) {
           case "touchstart":
           case "touchmove":
+            this.disableScroll();
             controller.stick.state(id);
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n);
@@ -208,6 +209,9 @@ export class GamePad {
           }
           controller.stick.reset();
         }
+
+        // Enable Scroll Again
+        this.enableScroll();
       }
     } else {
       var keys = e;
@@ -366,14 +370,29 @@ export class GamePad {
   getPosition(element) {
     var xPosition = 0;
     var yPosition = 0;
-  
-    while(element) {
-        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
-        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
-        element = element.offsetParent;
+
+    while (element) {
+      xPosition += element.offsetLeft - element.scrollLeft + element.clientLeft;
+      yPosition += element.offsetTop - element.scrollTop + element.clientTop;
+      element = element.offsetParent;
     }
     return { x: xPosition, y: yPosition };
-}
+  }
+
+  // disable scroll while touching canvas
+  enableScroll() {
+    document.body.removeEventListener("touchmove", this.preventDefault);
+  }
+
+  // reenable once done
+  disableScroll() {
+    document.body.addEventListener("touchmove", this.preventDefault, { passive: false });
+  }
+
+  // stop event
+  preventDefault(e) {
+    e.preventDefault();
+  }
 }
 
 // Controller Manager for Gamepad

@@ -123,22 +123,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
         onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
         onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchMoveCapture={(e) => {
-          e.preventDefault();
-          onTouchEvent(e.nativeEvent);
-        }}
-        onTouchCancelCapture={(e) => {
-          e.preventDefault();
-          onTouchEvent(e.nativeEvent);
-        }}
-        onTouchStartCapture={(e) => {
-          e.preventDefault();
-          onTouchEvent(e.nativeEvent);
-        }}
-        onTouchEndCapture={(e) => {
-          e.preventDefault();
-          onTouchEvent(e.nativeEvent);
-        }}
+        onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
       />
       {/* MIPMAP - For Sprite Text / Speech / Titles */}
       <canvas style={{ display: "none" }} ref={mmRef} width={256} height={256} />
