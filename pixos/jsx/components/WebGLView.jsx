@@ -56,7 +56,11 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   }, [SceneProvider]);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{ position: "relative" }}
+      onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
+      onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
+    >
       {/* // WEBGL - For 3D Rendering */}
       <canvas
         style={{ position: "absolute", zIndex: 1, top: 0, left: 0 }}
@@ -73,8 +77,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         width={width}
         height={height}
         className={string}
-        onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
-        onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas

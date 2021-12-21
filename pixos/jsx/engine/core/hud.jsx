@@ -208,7 +208,7 @@ export class GamePad {
     this.opacity = 0.4;
     this.font = "minecraftia";
     // Start & Select Buttons
-    this.start = true;
+    this.start = false;
     this.select = false;
     this.touches = {};
     this.map = {};
@@ -255,10 +255,10 @@ export class GamePad {
       { x: this.radius * 3, y: 0 + this.radius, r: this.radius, color: this.colours.purple, name: "y" },
     ];
     if (this.start) {
-      this.buttons_layout.push({ x: this.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "start" });
+      this.buttons_layout.push({ x: this.ctx.canvas.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "start" });
     }
     if (this.select) {
-      this.buttons_layout.push({ x: this.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "select" });
+      this.buttons_layout.push({ x: this.ctx.canvas.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "select" });
     }
     // setup controller
     this.controller = new Controller(
@@ -298,7 +298,7 @@ export class GamePad {
   // setup canvas
   loadCanvas() {
     let { ctx, controller, width, height } = this;
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillStyle = "rgba(70,70,70,0.5)";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "minecraftia 14px";
@@ -509,7 +509,7 @@ export class GamePad {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (this.showDebug) {
       this.dy = 30;
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "rgba(70,70,70,0.5)";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.font = "minecraftia 20px";
@@ -524,7 +524,7 @@ export class GamePad {
     }
     if (this.showTrace) {
       this.dy = 30;
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "rgba(70,70,70,0.5)";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.font = "minecraftia 20px";
@@ -553,15 +553,25 @@ class Controller {
     this.layout = layout;
     this.buttons_layout = buttons_layout;
     this.button_offset = button_offset;
-    this.stick = new ControllerStick(ctx, layout, map, touches, colours, this.radius);
-    this.buttons = new ControllerButtons(ctx, layout, buttons_layout, map, touches, start, select, colours, this.radius);
+    this.stick = new ControllerStick(ctx, this.layout, map, touches, colours, this.radius);
+    this.buttons = new ControllerButtons(
+      ctx,
+      this.layout,
+      this.buttons_layout,
+      map,
+      touches,
+      start,
+      select,
+      colours,
+      this.radius
+    );
     console.log("loading Controller Manager - ", this);
   }
   // Initialize
   init() {
     let { layout, width, height } = this;
     var layout_string = layout;
-    layout = { x: 0, y: 0 };
+    this.layout = { x: 0, y: 0 };
     switch (layout_string) {
       case "TOP_LEFT":
         var shift = 0;
@@ -571,8 +581,8 @@ class Controller {
             this.buttons_layout[n].y -= this.buttons_layout[n].r * 2;
           }
         }
-        layout.x = shift + this.button_offset.x;
-        layout.y = 0 + this.button_offset.y;
+        this.layout.x = shift + this.button_offset.x;
+        this.layout.y = 0 + this.button_offset.y;
         break;
       case "TOP_RIGHT":
         layout.x = width - this.button_offset.x;
@@ -585,12 +595,12 @@ class Controller {
             shift += this.buttons_layout[n].r;
           }
         }
-        layout.x = shift + this.button_offset.x;
-        layout.y = height - this.button_offset.y;
+        this.layout.x = shift + this.button_offset.x;
+        this.layout.y = height - this.button_offset.y;
         break;
       case "BOTTOM_RIGHT":
-        layout.x = width - this.button_offset.x;
-        layout.y = height - this.button_offset.y;
+        this.layout.x = width - this.button_offset.x;
+        this.layout.y = height - this.button_offset.y;
         break;
     }
     // Initialize
@@ -635,6 +645,7 @@ class ControllerStick {
   }
   // draw joystick
   draw() {
+    console.log('drawing - joy')
     let { ctx } = this;
     ctx.fillStyle = this.colours.joystick.base;
     ctx.beginPath();
@@ -730,7 +741,7 @@ class ControllerButtons {
     this.start = start;
     this.select = select;
     this.colours = colours;
-    console.log("loading Controller Joystick - ", this);
+    console.log("loading Controller Buttons - ", this);
   }
   // Initialize
   init() {
@@ -763,6 +774,7 @@ class ControllerButtons {
   }
   // render Button
   draw() {
+    console.log('drawing - btn')
     let { ctx, buttons_layout, layout } = this;
     for (var n = 0; n < this.buttons_layout.length; n++) {
       var button = buttons_layout[n];
