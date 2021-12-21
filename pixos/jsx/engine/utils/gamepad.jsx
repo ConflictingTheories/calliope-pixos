@@ -143,16 +143,17 @@ export class GamePad {
         e = { touches: [e] };
       }
       var rect = ctx.canvas.getBoundingClientRect();
+      let offset = this.getPosition(ctx.canvas);
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
         if (!touches[id]) {
           touches[id] = {
-            x: e.touches[n].pageX - rect.left,
-            y: e.touches[n].pageY - rect.top,
+            x: e.touches[n].pageX - offset.x,
+            y: e.touches[n].pageY - offset.y,
           };
         } else {
-          touches[id].x = e.touches[n].pageX - rect.left;
-          touches[id].y = e.touches[n].pageY - rect.top;
+          touches[id].x = e.touches[n].pageX - offset.x;
+          touches[id].y = e.touches[n].pageY - offset.y;
         }
       }
 
@@ -360,6 +361,19 @@ export class GamePad {
       ctx.fillText(text, this.width - 10, this.dy);
     }
   }
+
+  // get position with correct offset
+  getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+  
+    while(element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+    return { x: xPosition, y: yPosition };
+}
 }
 
 // Controller Manager for Gamepad
