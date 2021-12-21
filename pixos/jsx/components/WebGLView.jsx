@@ -105,8 +105,16 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas
-        style={{ position: "relative", zIndex: 5, top: 0, left: 0, background: "none" }}
+        style={{
+          position: "relative",
+          zIndex: 5,
+          top: 0,
+          left: 0,
+          background: "none",
+          display: screenSize.dynamicWidth <= 768 ? "block" : "none",
+        }}
         ref={gamepadRef}
+        hidden={screenSize.dynamicWidth > 768}
         maxWidth={800}
         maxHeight={600}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
