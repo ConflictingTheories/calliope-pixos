@@ -14,7 +14,8 @@
 import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
 import Texture from "./texture.jsx";
-import { textScrollBox, GamePad } from "./hud.jsx";
+import { textScrollBox } from "./hud.jsx";
+import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
 
 export default class GLEngine {
@@ -39,7 +40,8 @@ export default class GLEngine {
   }
 
   // Initialize a Scene object
-  async init(scene, keyboard, touchHandler) {
+  async init(scene, keyboard) {
+    // set up canvas
     const ctx = this.hud.getContext("2d");
     const gl = this.canvas.getContext("webgl");
     const gp = this.gamepadcanvas.getContext("2d");
@@ -60,7 +62,7 @@ export default class GLEngine {
     this.keyboard = keyboard;
     // Configure Mobile Gamepad (if Mobile)
     let gamepad = new GamePad(gp);
-    gamepad.init(this.canvas.width, this.canvas.height);
+    gamepad.init();
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
     // Configure HUD

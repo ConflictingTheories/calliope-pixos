@@ -11,23 +11,34 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import glEngine from "../engine/core/index.jsx";
-import { Mouse } from "../engine/utils/enums.jsx";
 import Keyboard from "../engine/utils/keyboard.jsx";
 import { minecraftia } from "../engine/core/hud.jsx";
-import MobileTouch from "../engine/utils/mobile.jsx";
 //
 const WebGLView = ({ width, height, SceneProvider, class: string }) => {
+  // Canvas
   const ref = useRef();
   const hudRef = useRef();
   const gamepadRef = useRef();
   const mmRef = useRef();
   let keyboard = new Keyboard();
-  let touchHandler = new MobileTouch();
   let onKeyEvent = SceneProvider.onKeyEvent;
   let onTouchEvent = SceneProvider.onTouchEvent;
+
+  // Resize
+  const [screenSize, getDimension] = useState({
+    dynamicWidth: window.innerWidth,
+    dynamicHeight: window.innerHeight,
+  });
+
+  const setDimension = () => {
+    getDimension({
+      dynamicWidth: window.innerWidth,
+      dynamicHeight: window.innerHeight,
+    });
+  };
 
   // load fonts
   async function loadFonts() {
@@ -36,6 +47,9 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   }
 
   useEffect(async () => {
+    // handle resize
+    window.addEventListener("resize", setDimension);
+    // setup canvases
     const canvas = ref.current;
     const hud = hudRef.current;
     const mipmap = mmRef.current;
@@ -45,18 +59,26 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     // load fonts
     await loadFonts();
     // Initialize Scene
-    await engine.init(SceneProvider, keyboard, touchHandler);
+    await engine.init(SceneProvider, keyboard);
     // render loop
     engine.render();
     // cleanup
     return () => {
+      window.removeEventListener("resize", setDimension);
       engine.close();
     };
   }, [SceneProvider]);
 
   return (
     <div
-      style={{ position: "relative", padding: "none", width: "100%", maxWidth: width, maxHeight: height + 200 }}
+      style={{
+        position: "relative",
+        padding: "none",
+        background: "slategrey",
+        width: "100%",
+        maxWidth: width,
+        maxHeight: height + 200,
+      }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
       tabIndex={0}
@@ -65,32 +87,40 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       <canvas
         style={{ position: "absolute", zIndex: 1, top: 0, left: 0 }}
         ref={ref}
-        width={width}
-        height={height}
+        maxWidth={800}
+        maxHeight={600}
+        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
         className={string}
       />
       {/* HUD - For Dialogue / Menus / Overlays */}
       <canvas
         style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none" }}
         ref={hudRef}
-        width={width}
-        height={height}
+        maxWidth={800}
+        maxHeight={600}
+        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
         className={string}
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas
         style={{ position: "relative", zIndex: 5, top: 0, left: 0, background: "none" }}
         ref={gamepadRef}
-        width={width}
-        height={height + 200}
+        maxWidth={800}
+        maxHeight={600}
+        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 800 : (screenSize.dynamicWidth * 3) / 4 + 200}
         className={string}
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
         onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
         onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
         onTouchMove={(e) => onTouchEvent(e.nativeEvent)}
         onTouchCancel={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchStart={(e) => {e.preventDefault; onTouchEvent(e.nativeEvent)}}
-        onTouchEndC={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchStart={(e) => {
+          onTouchEvent(e.nativeEvent);
+        }}
+        onTouchEnd={(e) => onTouchEvent(e.nativeEvent)}
       />
       {/* MIPMAP - For Sprite Text / Speech / Titles */}
       <canvas style={{ display: "none" }} ref={mmRef} width={256} height={256} />
