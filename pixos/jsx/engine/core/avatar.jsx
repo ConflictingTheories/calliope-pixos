@@ -45,7 +45,8 @@ export default class Avatar extends Sprite {
   checkInput() {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
-    // Misc Actions
+    let touchmap = this.engine.gamepad.checkInput();
+    // Keyboard
     switch (key) {
       // Bind Camera
       case "b":
@@ -88,11 +89,21 @@ export default class Avatar extends Sprite {
         this.speech.clearHud();
         break;
     }
+    // Gamepad controls - TODO
+    if (touchmap["b"] === 1) {
+      // select
+      console.log("touched");
+      return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
+    }
+    if (touchmap["x"] === 1) {
+      // camera
+      this.bindCamera = !this.bindCamera;
+    }
     // Walk
-    return this.handleWalk(this.engine.keyboard.lastPressedKey());
+    return this.handleWalk(this.engine.keyboard.lastPressedKey(), touchmap);
   }
   // walk between tiles
-  handleWalk(key) {
+  handleWalk(key, touchmap) {
     let moveTime = 600; // move time in ms
     let facing = Direction.None;
     // Read Key presses
@@ -112,13 +123,8 @@ export default class Avatar extends Sprite {
         break;
       // Patrol
       case "u":
-        return new ActionLoader(
-          this.engine,
-          "dance",
-          [ 300, this.zone],
-          this
-        );
-        // Patrol
+        return new ActionLoader(this.engine, "dance", [300, this.zone], this);
+      // Patrol
       case "p":
         return new ActionLoader(
           this.engine,
@@ -134,11 +140,32 @@ export default class Avatar extends Sprite {
           [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone],
           this
         );
-      default:
-        return null;
     }
+
+    // Mobile Gamepad
+    // X axis - joystick
+    console.log(touchmap);
+    if (touchmap["x-dir"] === 1) {
+      // right
+      console.log('x)')
+      facing = Direction.Right;
+    }
+    if (touchmap["x-dir"] === -1) {
+      // left
+      facing = Direction.Left;
+    }
+    // Y axis - joystick
+    if (touchmap["y-dir"] === 1) {
+      // down
+      facing = Direction.Down;
+    }
+    if (touchmap["y-dir"] === -1) {
+      // up
+      facing = Direction.Up;
+    }
+
     // Running?
-    if (this.engine.keyboard.shift) {
+    if (this.engine.keyboard.shift || touchmap["y"] === 1) {
       moveTime = 200;
     } else {
       moveTime = 600;

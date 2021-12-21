@@ -57,6 +57,7 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
+    let touchmap = this.sprite.engine.gamepad.checkInput();
     if (time > this.lastKey + this.length) {
       switch (this.sprite.engine.keyboard.lastPressed("q")) {
         // close dialogue on q key press
@@ -66,9 +67,14 @@ export default {
           //
           console.log("stopping interaction");
           this.completed = true; // toggle
+          break;
         default:
           this.lastKey = new Date().getTime();
           return null;
+      }
+      // gamepad
+      if (touchmap["x"] === 1) {
+        this.completed = true;
       }
     }
   },

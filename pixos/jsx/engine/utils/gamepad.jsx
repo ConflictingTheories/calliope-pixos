@@ -19,7 +19,6 @@ export class GamePad {
     this.radius = 25;
     // Button placement
     this.button_offset = { x: this.radius * 3, y: this.radius * 3 };
-    this.observerFunction = () => this.map;
     // Button Colours
     this.colours = {
       red: `rgba(255,0,0,${this.opacity})`,
@@ -96,6 +95,12 @@ export class GamePad {
     this.loadCanvas();
   }
 
+  // check input status
+  checkInput(){
+    return this.map;
+  }
+
+  // Handle resize (TODO - needs work)
   resize() {
     this.width = this.ctx.canvas.width;
     this.height = this.ctx.canvas.height;
@@ -320,6 +325,7 @@ export class GamePad {
     this.controller.buttons.draw();
   }
 
+  // debug information
   debug() {
     let { ctx, map, touches } = this;
     this.dy = 30;
@@ -337,6 +343,7 @@ export class GamePad {
     }
   }
 
+  // map trace output
   trace() {
     let { ctx, map } = this;
     this.dy = 30;
@@ -495,7 +502,7 @@ class ControllerStick {
   }
   // manage event state
   state(id, type) {
-    let { map, touches, observerFunction } = this;
+    let { map, touches, checkInput } = this;
     var touch = {
       x: touches[id].x,
       y: touches[id].y,
@@ -534,8 +541,8 @@ class ControllerStick {
         this.reset();
         delete touches[id].id;
       }
-      if (typeof observerFunction === "function") {
-        observerFunction();
+      if (typeof checkInput === "function") {
+        checkInput();
       }
     }
   }
@@ -671,7 +678,7 @@ class ControllerButtons {
   }
   // State of Buttons
   state(id, n, type) {
-    let { touches, observerFunction, width } = this;
+    let { touches, checkInput, width } = this;
     if (touches[id].id != "stick") {
       var touch = {
         x: touches[id].x,
@@ -713,8 +720,8 @@ class ControllerButtons {
           this.map[name] = 0;
           delete touches[id].id;
         }
-        if (typeof observerFunction === "function") {
-          observerFunction();
+        if (typeof checkInput === "function") {
+          checkInput();
         }
       }
     }

@@ -50,23 +50,41 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
+    let touchmap = this.engine.gamepad.checkInput();
     if (time > this.lastKey + 100) {
-    switch (this.engine.keyboard.lastPressedCode()) {
-      case "Escape":
-        console.log("closing dialogue");
-        this.sprite.speak(false);
-        this.completed = true; // toggle
-        break;
-      case "Enter":
-        if (typeof this.text === "string" || (this.text.length === 0)) {
+      switch (this.engine.keyboard.lastPressedCode()) {
+        case "Escape":
+          console.log("closing dialogue");
+          this.sprite.speak(false);
+          this.completed = true; // toggle
+          break;
+        case "Enter":
+          if (typeof this.text === "string" || this.text.length === 0) {
+            this.completed = true;
+          } else {
+            this.completed = false;
+            this.displayText = this.text.shift();
+            this.sprite.speak(this.displayText);
+          }
+          break;
+      }
+      // gamepad
+      if (touchmap["b"] === 1) {
+        if (typeof this.text === "string" || this.text.length === 0) {
           this.completed = true;
         } else {
           this.completed = false;
           this.displayText = this.text.shift();
           this.sprite.speak(this.displayText);
         }
-        break;
+        return;
+      }
+      if (touchmap["x"] === 1) {
+        console.log("closing dialogue");
+        this.sprite.speak(false);
+        this.completed = true; // toggle
+        return;
+      }
     }
-  }
   },
 };

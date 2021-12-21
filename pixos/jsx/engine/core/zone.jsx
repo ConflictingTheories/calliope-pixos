@@ -259,11 +259,17 @@ export default class Zone {
   }
 
   checkInput(time) {
+    let touchmap = this.engine.gamepad.checkInput();
     switch (this.engine.keyboard.lastPressedKey("o")) {
       case "o":
         if (this.audio) this.audio.playAudio();
         break;
     } // play audio
+     // Gamepad controls - TODO
+     if (touchmap["a"] === 1) {
+      // select
+      if (this.audio) this.audio.playAudio();
+    }
   }
 
   // Check for zone inclusion
