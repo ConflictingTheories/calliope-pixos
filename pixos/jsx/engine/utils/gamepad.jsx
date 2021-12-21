@@ -90,7 +90,7 @@ export class GamePad {
   }
   // initialize widget
   init(options = {}) {
-      console.log('initing')
+    console.log("initing");
     this.setOptions(options);
     this.resize();
     this.loadCanvas();
@@ -137,16 +137,17 @@ export class GamePad {
         e.identifier = "desktop";
         e = { touches: [e] };
       }
+      var rect = ctx.canvas.getBoundingClientRect();
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
         if (!touches[id]) {
           touches[id] = {
-            x: e.touches[n].pageX - ctx.canvas.left,
-            y: e.touches[n].pageY - ctx.canvas.top,
+            x: e.touches[n].pageX - rect.left,
+            y: e.touches[n].pageY - rect.top,
           };
         } else {
-          touches[id].x = e.touches[n].pageX;
-          touches[id].y = e.touches[n].pageY;
+          touches[id].x = e.touches[n].pageX - rect.left;
+          touches[id].y = e.touches[n].pageY - rect.top;
         }
       }
 

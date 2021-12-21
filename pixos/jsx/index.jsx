@@ -45,7 +45,7 @@ class Pixos extends Component {
     const { updated, scene } = this.state;
     return (
       <>
-        <WebGLView class="pixos" key={updated} width={640} height={480} SceneProvider={scene} />
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={640} height={480} SceneProvider={scene} />
       </>
     );
   }
