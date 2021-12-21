@@ -56,7 +56,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
 
   return (
     <div
-      style={{ position: "relative", padding:'none' }}
+      style={{ position: "relative", padding:'none', width: width, height: height + 200}}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
       tabIndex={0}
