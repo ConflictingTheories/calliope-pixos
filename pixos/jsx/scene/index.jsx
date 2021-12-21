@@ -104,17 +104,9 @@ export default class Scene {
       case "touchend":
       case "touchmove":
       case "touchcancel":
+      default:
         Scene._instance.engine.touch(e);
         break;
-      default:
-        break;
     }
-  };
-
-  // Mouse Handler for Scene
-  onMouseEvent = (x, y, type, rmb, e) => {
-    // console.log(`pos -- ${x}, ${y}`, rmb, e);
-    //
-    // TODO
   };
 }

@@ -202,7 +202,7 @@ export class GamePad {
   constructor(ctx) {
     this.ctx = ctx;
     this.dirty = true;
-    this.showTrace = false;
+    this.showTrace = true;
     this.showDebug = true;
     this.fontSize = 24;
     this.opacity = 0.4;
@@ -342,9 +342,6 @@ export class GamePad {
         }
       }
 
-      /*
-       **
-       */
       for (var id in touches) {
         switch (type) {
           case "touchstart":
@@ -365,9 +362,6 @@ export class GamePad {
         }
       }
 
-      /*
-       ** @description remove touchend from touches
-       */
       if (e.type == "touchend") {
         var id = e.changedTouches[0].identifier;
         if (touches[id].id == "stick") {

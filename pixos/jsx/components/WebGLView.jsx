@@ -26,7 +26,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const mmRef = useRef();
   let keyboard = new Keyboard();
   let touchHandler = new MobileTouch();
-  let onMouseEvent = SceneProvider.onMouseEvent;
   let onKeyEvent = SceneProvider.onKeyEvent;
   let onTouchEvent = SceneProvider.onTouchEvent;
 
@@ -57,9 +56,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
 
   return (
     <div
-      style={{ position: "relative" }}
+      style={{ position: "relative", padding:'none' }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
+      tabIndex={0}
     >
       {/* // WEBGL - For 3D Rendering */}
       <canvas
@@ -72,7 +72,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       {/* HUD - For Dialogue / Menus / Overlays */}
       <canvas
         style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none" }}
-        tabIndex={0}
         ref={hudRef}
         width={width}
         height={height}
@@ -80,11 +79,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas
-        style={{ zIndex: 3, top: 0, left: 0, background: "none" }}
-        tabIndex={0}
+        style={{position: "absolute", zIndex: 5, top: 0, left: 0, background: "none" }}
         ref={gamepadRef}
         width={width}
-        height={height}
+        height={height + 200}
         className={string}
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
         onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
