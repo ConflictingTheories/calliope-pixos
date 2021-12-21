@@ -24,7 +24,6 @@ class Pixos extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      networkString: props.networkString,
       scene: new SceneProvider(),
       updated: Date.now(),
     };
@@ -43,17 +42,10 @@ class Pixos extends Component {
 
   // Render World as Passed in String or FlatLand (Default)
   render() {
-    const { networkString, updated, scene } = this.state;
+    const { updated, scene } = this.state;
     return (
       <>
-        <WebGLView
-          class="pixos"
-          key={updated}
-          width={640}
-          height={480}
-          SceneProvider={scene}
-          networkString={networkString}
-        />
+        <WebGLView class="pixos" key={updated} width={640} height={480} SceneProvider={scene} />
       </>
     );
   }

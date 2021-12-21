@@ -56,7 +56,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
 
   return (
     <div
-      style={{ position: "relative", padding:'none', width: width, height: height + 200}}
+      style={{ position: "relative", padding: "none", width: "100%", maxWidth: width, maxHeight: height + 200 }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
       tabIndex={0}
@@ -79,7 +79,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas
-        style={{position: "absolute", zIndex: 5, top: 0, left: 0, background: "none" }}
+        style={{ position: "relative", zIndex: 5, top: 0, left: 0, background: "none" }}
         ref={gamepadRef}
         width={width}
         height={height + 200}
@@ -87,10 +87,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
         onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
         onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
-        onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchMove={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchCancel={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchStart={(e) => {e.preventDefault; onTouchEvent(e.nativeEvent)}}
+        onTouchEndC={(e) => onTouchEvent(e.nativeEvent)}
       />
       {/* MIPMAP - For Sprite Text / Speech / Titles */}
       <canvas style={{ display: "none" }} ref={mmRef} width={256} height={256} />
