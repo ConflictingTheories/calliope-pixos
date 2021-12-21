@@ -14,14 +14,16 @@
 import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
 import Texture from "./texture.jsx";
-import { textScrollBox } from "./hud.jsx";
+import { textScrollBox, GamePad } from "./hud.jsx";
 import Speech from "./speech.jsx";
+
 export default class GLEngine {
-  constructor(canvas, hud, mipmap, width, height) {
+  constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
     this.uViewMat = create();
     this.uProjMat = create();
     this.canvas = canvas;
     this.hud = hud;
+    this.gamepadcanvas = gamepadcanvas;
     this.mipmap = mipmap;
     this.width = width;
     this.height = height;
@@ -40,18 +42,27 @@ export default class GLEngine {
   async init(scene, keyboard, touchHandler) {
     const ctx = this.hud.getContext("2d");
     const gl = this.canvas.getContext("webgl");
+    const gp = this.gamepadcanvas.getContext("2d");
     if (!gl) {
       throw new Error("WebGL : unable to initialize");
     }
     if (!ctx) {
       throw new Error("Canvas : unable to initialize HUD");
     }
+    if (!gp) {
+      throw new Error("Gamepad : unable to initialize Mobile Canvas");
+    }
     this.gl = gl;
     this.ctx = ctx;
+    this.gp = gp;
     this.time = new Date().getTime();
     this.scene = scene;
     this.keyboard = keyboard;
-    this.touch = touchHandler;
+    // Configure Mobile Gamepad (if Mobile)
+    let gamepad = new GamePad(gp);
+    gamepad.init(this.canvas.width, this.canvas.height);
+    this.touch = gamepad.listen.bind(gamepad);
+    this.gamepad = gamepad;
     // Configure HUD
     ctx.canvas.width = this.canvas.width;
     ctx.canvas.height = this.canvas.height;
@@ -163,7 +174,8 @@ export default class GLEngine {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    if (src) { // draw portrait if set
+    if (src) {
+      // draw portrait if set
       ctx.fillText(text, x ?? ctx.canvas.width / 2 + 76, y ?? ctx.canvas.height / 2);
       ctx.drawImage(src, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2, 76, 76);
     } else {
@@ -254,6 +266,7 @@ export default class GLEngine {
     this.requestId = requestAnimationFrame(this.render);
     this.clearScreen();
     this.clearHud();
+    this.gamepad.render();
     this.scene.render(this, new Date().getTime());
   }
 

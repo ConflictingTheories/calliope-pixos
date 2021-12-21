@@ -16,12 +16,13 @@ import PropTypes from "prop-types";
 import glEngine from "../engine/core/index.jsx";
 import { Mouse } from "../engine/utils/enums.jsx";
 import Keyboard from "../engine/utils/keyboard.jsx";
-import { minecraftia  } from "../engine/core/hud.jsx";
+import { minecraftia } from "../engine/core/hud.jsx";
 import MobileTouch from "../engine/utils/mobile.jsx";
 //
 const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const ref = useRef();
   const hudRef = useRef();
+  const gamepadRef = useRef();
   const mmRef = useRef();
   let keyboard = new Keyboard();
   let touchHandler = new MobileTouch();
@@ -39,8 +40,9 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     const canvas = ref.current;
     const hud = hudRef.current;
     const mipmap = mmRef.current;
+    const gamepad = gamepadRef.current;
     // Webgl Engine
-    const engine = new glEngine(canvas, hud, mipmap, width, height);
+    const engine = new glEngine(canvas, hud, mipmap, gamepad, width, height);
     // load fonts
     await loadFonts();
     // Initialize Scene
@@ -65,22 +67,30 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       />
       {/* HUD - For Dialogue / Menus / Overlays */}
       <canvas
-        style={{ zIndex: 2, top: 0, left: 0, background: "none" }}
+        style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none" }}
         tabIndex={0}
         ref={hudRef}
         width={width}
         height={height}
         className={string}
-        onTouchMoveCapture={(e)=> onTouchEvent(e.nativeEvent)}
-        onTouchCancelCapture={(e)=> onTouchEvent(e.nativeEvent)}
-        onTouchStartCapture={(e)=> onTouchEvent(e.nativeEvent)}
-        onTouchEndCapture={(e)=> onTouchEvent(e.nativeEvent)}
         onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
         onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
-        onContextMenu={(e) => onMouseEvent(e.nativeEvent.clientX, e.nativeEvent.clientY, Mouse.UP, true, e)}
-        onMouseUp={(e) => onMouseEvent(e.nativeEvent.clientX, e.nativeEvent.clientY, Mouse.UP, e.nativeEvent.button == 3, e)}
-        onMouseDown={(e) => onMouseEvent(e.nativeEvent.clientX, e.nativeEvent.clientY, Mouse.DOWN, e.nativeEvent.button == 3, e)}
-        onMouseMove={(e) => onMouseEvent(e.nativeEvent.clientX, e.nativeEvent.clientY, Mouse.MOVE, e.nativeEvent.button == 3, e)}
+      />
+      {/* Gamepad - For controls on Mobile Only*/}
+      <canvas
+        style={{ zIndex: 3, top: 0, left: 0, background: "none" }}
+        tabIndex={0}
+        ref={gamepadRef}
+        width={width}
+        height={height}
+        className={string}
+        onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
+        onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
+        onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
+        onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
       />
       {/* MIPMAP - For Sprite Text / Speech / Titles */}
       <canvas style={{ display: "none" }} ref={mmRef} width={256} height={256} />

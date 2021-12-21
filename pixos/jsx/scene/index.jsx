@@ -104,7 +104,7 @@ export default class Scene {
       case "touchend":
       case "touchmove":
       case "touchcancel":
-        Scene._instance.engine.touch.onTouch(e);
+        Scene._instance.engine.touch(e);
         break;
       default:
         break;
