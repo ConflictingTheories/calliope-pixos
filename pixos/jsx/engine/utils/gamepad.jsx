@@ -410,7 +410,7 @@ export class GamePad {
   // reenable once done
   disableScroll() {
     document.body.addEventListener("touchmove", this.preventDefault, { passive: false });
-    document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
+    // document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
   }
 
   // stop event
