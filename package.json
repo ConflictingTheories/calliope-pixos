@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.3.10",
+  "version": "0.3.12",
   "description": "Pixos is a mini interactive scene avatar plugin for calliope static site generator.",
   "main": "dist/bundle.js",
   "scripts": {
@@ -42,7 +42,7 @@
     "react-recollect": "^5.2.3",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.7.0"
+    "webpack-dev-server": "^4.7.1"
   },
   "peerDependencies": {
     "react": "^17.0.2",

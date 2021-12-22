@@ -382,16 +382,19 @@ export class GamePad {
   // disable scroll while touching canvas
   enableScroll() {
     document.body.removeEventListener("touchmove", this.preventDefault);
+    document.body.addEventListener("touchstart", this.preventDefault);
   }
 
   // reenable once done
   disableScroll() {
     document.body.addEventListener("touchmove", this.preventDefault, { passive: false });
+    document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
   }
 
   // stop event
   preventDefault(e) {
     e.preventDefault();
+    e.stopPropagation();
   }
 }
 
