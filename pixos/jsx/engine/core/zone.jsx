@@ -22,6 +22,7 @@ export default class Zone {
     this.data = {};
     this.spriteDict = {};
     this.spriteList = [];
+    this.lastKey = Date.now();
     this.engine = world.engine;
     this.onLoadActions = new ActionQueue();
     this.spriteLoader = new SpriteLoader(world.engine);
@@ -259,20 +260,25 @@ export default class Zone {
   }
 
   checkInput(time) {
-    let touchmap = this.engine.gamepad.checkInput();
-    switch (this.engine.keyboard.lastPressedKey("o")) {
-      case "o":
-        if (this.audio) this.audio.playAudio();
-        break;
-    } // play audio
-    // Gamepad controls - TODO
-    if (touchmap["start"] === 1) {
-      // select
-      if (this.audio) this.audio.playAudio();
-    }
-    if (touchmap["select"] === 1) {
-      // select
-      if (this.audio) this.audio.pauseAudio();
+    if (time > this.lastKey + 100) {
+      let touchmap = this.engine.gamepad.checkInput();
+      this.lastKey = time;
+      switch (this.engine.keyboard.lastPressedKey("o")) {
+        case "o":
+          if (this.audio) this.audio.playAudio();
+          break;
+      } // play audio
+      // Gamepad controls - TODO
+      if (touchmap["start"] === 1) {
+        // select
+        if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
+        if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
+      }
+      if (touchmap["select"] === 1) {
+        // select
+        touchmap["select"] = 0;
+        this.engine.toggleFullscreen();
+      }
     }
   }
 

@@ -60,6 +60,7 @@ export default class GLEngine {
     this.time = new Date().getTime();
     this.scene = scene;
     this.keyboard = keyboard;
+    this.fullscreen = false;
     // Configure Mobile Gamepad (if Mobile)
     let gamepad = new GamePad(gp);
     gamepad.init();
@@ -270,6 +271,24 @@ export default class GLEngine {
     this.clearHud();
     this.gamepad.render();
     this.scene.render(this, new Date().getTime());
+  }
+
+  toggleFullscreen() {
+    if (!this.fullscreen) {
+      try {
+        this.gamepadcanvas.parentElement.requestFullscreen();
+        this.fullscreen = true;
+      } catch (e) {
+        //
+      }
+    } else {
+      try {
+        document.exitFullscreen();
+      } catch (e) {
+        //
+      }
+      this.fullscreen = false;
+    }
   }
 
   // individual buffer

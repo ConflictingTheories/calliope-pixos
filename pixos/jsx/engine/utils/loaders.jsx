@@ -144,6 +144,7 @@ export class ActionLoader {
 export class AudioLoader {
   constructor(src, loop = false) {
     this.src = src;
+    this.playing = false;
     this.audio = new Audio(src);
     // loop if set
     if (loop) {
@@ -158,8 +159,12 @@ export class AudioLoader {
     }
     this.audio.load();
   }
+  isPlaying() {
+    return this.playing;
+  }
   playAudio() {
     const audioPromise = this.audio.play();
+    this.playing = true;
     if (audioPromise !== undefined) {
       audioPromise
         .then((_) => {
@@ -173,6 +178,7 @@ export class AudioLoader {
   }
   pauseAudio() {
     const audioPromise = this.audio.pause();
+    this.playing = false;
     if (audioPromise !== undefined) {
       audioPromise
         .then((_) => {

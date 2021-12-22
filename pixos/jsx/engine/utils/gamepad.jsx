@@ -106,7 +106,8 @@ export class GamePad {
       this.touches,
       this.start,
       this.select,
-      this.colours
+      this.colours,
+      this
     );
     // use custom round Rect shape
   }
@@ -165,7 +166,6 @@ export class GamePad {
         e.identifier = "desktop";
         e = { touches: [e] };
       }
-      var rect = ctx.canvas.getBoundingClientRect();
       let offset = this.getPosition(ctx.canvas);
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
@@ -422,8 +422,9 @@ export class GamePad {
 
 // Controller Manager for Gamepad
 class Controller {
-  constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours) {
+  constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours, gamepad) {
     this.ctx = ctx;
+    this.gamepad = gamepad
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
     this.radius = 60;
@@ -435,7 +436,7 @@ class Controller {
     this.button_offset = button_offset;
     this.colours = colours;
     this.layout = { x: this.width - this.button_offset.x, y: this.height - this.button_offset.y };
-    this.stick = new ControllerStick(this.ctx, this.layout, this.map, this.touches, this.colours, this.radius);
+    this.stick = new ControllerStick(this.ctx, this.layout, this.map, this.touches, this.colours, this.radius, this.gamepad);
     this.buttons = new ControllerButtons(
       this.ctx,
       this.layout,
@@ -445,7 +446,8 @@ class Controller {
       this.start,
       this.select,
       this.colours,
-      this.radius
+      this.radius,
+      this.gamepad
     );
     console.log("loading Controller Manager - ", this);
   }
@@ -463,8 +465,9 @@ class Controller {
 
 // Controller Joystick Manager
 class ControllerStick {
-  constructor(ctx, layout, map, touches, colours, radius) {
+  constructor(ctx, layout, map, touches, colours, radius, gamepad) {
     this.ctx = ctx;
+    this.gamepad = gamepad;
     this.map = map;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
@@ -475,10 +478,10 @@ class ControllerStick {
     this.y = 0;
     this.dx = 0;
     this.dy = 0;
-    this.map["x-dir"] = 0;
-    this.map["y-dir"] = 0;
-    this.map["x-axis"] = 0;
-    this.map["y-axis"] = 0;
+    this.gamepad.map["x-dir"] = 0;
+    this.gamepad.map["y-dir"] = 0;
+    this.gamepad.map["x-axis"] = 0;
+    this.gamepad.map["y-axis"] = 0;
     this.colours = colours;
     this.init = this.init.bind(this);
     this.draw = this.draw.bind(this);
@@ -525,7 +528,8 @@ class ControllerStick {
   }
   // manage event state
   state(id, type) {
-    let { map, touches, checkInput } = this;
+    let {gamepad } = this;
+    let { touches, map, checkInput } = gamepad;
     var touch = {
       x: touches[id].x,
       y: touches[id].y,
@@ -583,8 +587,9 @@ class ControllerStick {
 
 // Controller Button Manager
 class ControllerButtons {
-  constructor(ctx, layout, buttons_layout, map, touches, start, select, colours, radius) {
+  constructor(ctx, layout, buttons_layout, map, touches, start, select, colours, radius, gamepad) {
     this.ctx = ctx;
+    this.gamepad = gamepad;
     this.layout = layout;
     this.map = map;
     this.radius = radius;
@@ -664,7 +669,6 @@ class ControllerButtons {
         ctx.font = "minecraftia 12px";
         ctx.fillText(button.name, x, y);
       } else {
-        console.log("--->", button);
         var w = button.w;
         var h = button.h;
         var x = isNaN(button.x) ? ctx.canvas.width / 2 : button.x;
@@ -701,7 +705,8 @@ class ControllerButtons {
   }
   // State of Buttons
   state(id, n, type) {
-    let { touches, checkInput, width } = this;
+    let {gamepad} = this;
+    let { touches, checkInput, width } = gamepad;
     if (touches[id].id != "stick") {
       var touch = {
         x: touches[id].x,
@@ -744,7 +749,7 @@ class ControllerButtons {
           delete touches[id].id;
         }
         if (typeof checkInput === "function") {
-          checkInput();
+          this.gamepad.checkInput();
         }
       }
     }
