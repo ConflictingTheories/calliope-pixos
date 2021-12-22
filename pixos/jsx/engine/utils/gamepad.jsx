@@ -494,10 +494,10 @@ class ControllerStick {
     this.y = layout.y + (3 * this.radius) / 8;
     this.dx = this.x;
     this.dy = this.y;
-    this.map["x-dir"] = 0;
-    this.map["y-dir"] = 0;
-    this.map["x-axis"] = 0;
-    this.map["y-axis"] = 0;
+    this.gamepad.map["x-dir"] = 0;
+    this.gamepad.map["y-dir"] = 0;
+    this.gamepad.map["x-axis"] = 0;
+    this.gamepad.map["y-axis"] = 0;
   }
   // draw joystick
   draw() {
@@ -569,13 +569,13 @@ class ControllerStick {
         delete touches[id].id;
       }
       if (typeof checkInput === "function") {
-        checkInput();
+        this.gamepad.checkInput();
       }
     }
   }
   // reset state
   reset() {
-    let { map } = this;
+    let { map } = this.gamepad;
     this.dx = this.x;
     this.dy = this.y;
     map["x-dir"] = 0;
@@ -627,7 +627,7 @@ class ControllerButtons {
         var y = layout.y - button.y;
         buttons_layout[n]["hit"] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
       }
-      this.map[button.name] = 0;
+      this.gamepad.map[button.name] = 0;
     }
   }
   // render Button
@@ -741,11 +741,11 @@ class ControllerButtons {
         }
       }
       if (touches[id].id == name) {
-        this.map[name] = 1;
+        this.gamepad.map[name] = 1;
         button.hit.active = true;
         if (dist > this.radius) {
           button.hit.active = false;
-          this.map[name] = 0;
+          this.gamepad.map[name] = 0;
           delete touches[id].id;
         }
         if (typeof checkInput === "function") {
@@ -759,6 +759,6 @@ class ControllerButtons {
     var button = this.buttons_layout[n];
     var name = button.name;
     button.hit.active = false;
-    this.map[name] = 0;
+    this.gamepad.map[name] = 0;
   }
 }
