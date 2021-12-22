@@ -265,10 +265,14 @@ export default class Zone {
         if (this.audio) this.audio.playAudio();
         break;
     } // play audio
-     // Gamepad controls - TODO
-     if (touchmap["a"] === 1) {
+    // Gamepad controls - TODO
+    if (touchmap["start"] === 1) {
       // select
       if (this.audio) this.audio.playAudio();
+    }
+    if (touchmap["select"] === 1) {
+      // select
+      if (this.audio) this.audio.pauseAudio();
     }
   }
 
@@ -329,7 +333,7 @@ export default class Zone {
         .then(
           async () =>
             new Promise((resolve, reject) => {
-              console.log('working on action ---- ', action);
+              console.log("working on action ---- ", action);
 
               if (!action) resolve();
               try {
@@ -353,12 +357,7 @@ export default class Zone {
                   console.log("triggered by ", sprite);
                   if (sprite && action.trigger) {
                     sprite.addAction(
-                      new ActionLoader(
-                        self.engine,
-                        "script",
-                        [action.trigger, action.scope, () => resolve(self)],
-                        sprite,
-                      )
+                      new ActionLoader(self.engine, "script", [action.trigger, action.scope, () => resolve(self)], sprite)
                     );
                   }
                 }

@@ -57,8 +57,8 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
-    let touchmap = this.sprite.engine.gamepad.checkInput();
     if (time > this.lastKey + this.length) {
+      let touchmap = this.sprite.engine.gamepad.checkInput();
       switch (this.sprite.engine.keyboard.lastPressed("q")) {
         // close dialogue on q key press
         case "q":

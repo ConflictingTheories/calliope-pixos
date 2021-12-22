@@ -50,8 +50,8 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
-    let touchmap = this.engine.gamepad.checkInput();
     if (time > this.lastKey + 100) {
+      let touchmap = this.engine.gamepad.checkInput();
       switch (this.engine.keyboard.lastPressedCode()) {
         case "Escape":
           console.log("closing dialogue");
@@ -69,7 +69,7 @@ export default {
           break;
       }
       // gamepad
-      if (touchmap["b"] === 1) {
+      if (touchmap["a"] === 1) {
         if (typeof this.text === "string" || this.text.length === 0) {
           this.completed = true;
         } else {

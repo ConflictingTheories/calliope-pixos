@@ -90,7 +90,7 @@ export default class Avatar extends Sprite {
         break;
     }
     // Gamepad controls - TODO
-    if (touchmap["b"] === 1) {
+    if (touchmap["a"] === 1) {
       // select
       return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
     }

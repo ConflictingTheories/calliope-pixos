@@ -1,4 +1,16 @@
 // Mobile Gamepad Controller
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + w, y, r);
+  this.closePath();
+  return this;
+};
 export class GamePad {
   // courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
   constructor(ctx) {
@@ -10,62 +22,85 @@ export class GamePad {
     this.opacity = 0.4;
     this.font = "minecraftia";
     // Start & Select Buttons
-    this.start = false;
-    this.select = false;
+    this.start = true;
+    this.select = true;
     this.touches = {};
     this.map = {};
-    this.layout = "BOTTOM_RIGHT";
     // Joystick Radius
-    this.radius = 25;
+    this.radius = 40;
     // Button placement
-    this.button_offset = { x: this.radius * 3, y: this.radius * 3 };
+    this.button_offset = { x: this.radius * 2.5, y: this.radius * 3 };
     // Button Colours
     this.colours = {
       red: `rgba(255,0,0,${this.opacity})`,
-      green: `rgba(0,255,0,${this.opacity})`,
-      blue: `rgba(0,0,255,${this.opacity})`,
-      purple: `rgba(255,0,255,${this.opacity})`,
-      yellow: `rgba(255,255,0,${this.opacity})`,
-      cyan: `rgba(0,255,255,${this.opacity})`,
-      black: `rgba(0,0,0,${this.opacity})`,
-      white: `rgba(255,255,255,${this.opacity})`,
+      green: `rgba(5,220,30,${this.opacity})`,
+      blue: `rgba(5,30,220,${this.opacity})`,
+      purple: `rgba(240,5,240,${this.opacity})`,
+      yellow: `rgba(240,240,5,${this.opacity})`,
+      cyan: `rgba(5,240,240,${this.opacity})`,
+      black: `rgba(5,5,5,${this.opacity})`,
+      white: `rgba(250,250,250,${this.opacity})`,
       joystick: {
         base: `rgba(0,0,0,${this.opacity})`,
         dust: `rgba(0,0,0,${this.opacity})`,
-        stick: `rgba(204,204,204,1)`,
-        ball: `rgba(255,255,255,1)`,
+        stick: `rgba(214,214,214,1)`,
+        ball: `rgba(245,245,245,1)`,
       },
     };
     // Button Layouts
-    this.buttons_layout = [
-      { x: -this.radius, y: this.radius, r: this.radius, color: this.colours.red, name: "a" },
+    let buttons_layout = [
       {
-        x: this.radius * 2 - this.radius,
-        y: -(this.radius + this.radius) + this.radius,
-        r: this.radius,
-        color: this.colours.green,
+        x: -this.radius - this.radius / 2 + this.radius / 4,
+        y: -this.radius / 4,
+        r: (3 / 4) * this.radius,
+        color: this.colours.red,
         name: "b",
       },
       {
-        x: this.radius * 2 - this.radius,
-        y: this.radius + this.radius + this.radius,
-        r: this.radius,
+        x: this.radius - this.radius / 2,
+        y: -(this.radius + this.radius / 2),
+        r: (3 / 4) * this.radius,
+        color: this.colours.green,
+        name: "a",
+      },
+      {
+        x: this.radius - this.radius / 2,
+        y: this.radius,
+        r: (3 / 4) * this.radius,
         color: this.colours.blue,
         name: "x",
       },
-      { x: this.radius * 3, y: 0 + this.radius, r: this.radius, color: this.colours.purple, name: "y" },
+      {
+        x: this.radius * 3 - this.radius / 2 - this.radius / 4,
+        y: 0 - this.radius / 4,
+        r: (3 / 4) * this.radius,
+        color: this.colours.yellow,
+        name: "y",
+      },
     ];
     if (this.start) {
-      this.buttons_layout.push({ x: this.ctx.canvas.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "start" });
+      buttons_layout.push({
+        color: this.colours.black,
+        y: -55,
+        w: 50,
+        h: 15,
+        name: "start",
+      });
     }
     if (this.select) {
-      this.buttons_layout.push({ x: this.ctx.canvas.width / 2, y: -15, w: 50, h: 15, color: this.colours.black, name: "select" });
+      buttons_layout.push({
+        y: -55,
+        w: 50,
+        h: 15,
+        color: this.colours.black,
+        name: "select",
+      });
     }
     // setup controller
+    this.buttons_layout = buttons_layout;
     this.controller = new Controller(
       ctx,
-      this.layout,
-      this.buttons_layout,
+      buttons_layout,
       this.button_offset,
       this.map,
       this.touches,
@@ -74,18 +109,6 @@ export class GamePad {
       this.colours
     );
     // use custom round Rect shape
-    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-      if (w < 2 * r) r = w / 2;
-      if (h < 2 * r) r = h / 2;
-      this.beginPath();
-      this.moveTo(x + r, y);
-      this.arcTo(x + w, y, x + w, y + h, r);
-      this.arcTo(x + w, y + h, x, y + h, r);
-      this.arcTo(x, y + h, x, y, r);
-      this.arcTo(x, y, x + w, y, r);
-      this.closePath();
-      return this;
-    };
   }
   // initialize widget
   init(options = {}) {
@@ -382,7 +405,6 @@ export class GamePad {
   // disable scroll while touching canvas
   enableScroll() {
     document.body.removeEventListener("touchmove", this.preventDefault);
-    document.body.removeEventListener("touchstart", this.preventDefault);
   }
 
   // reenable once done
@@ -400,12 +422,11 @@ export class GamePad {
 
 // Controller Manager for Gamepad
 class Controller {
-  constructor(ctx, layout, buttons_layout, button_offset, map, touches, start, select, colours) {
+  constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours) {
     this.ctx = ctx;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
-    this.radius = 40;
-    this.layout = layout;
+    this.radius = 60;
     this.touches = touches;
     this.map = map;
     this.start = start;
@@ -413,50 +434,12 @@ class Controller {
     this.buttons_layout = buttons_layout;
     this.button_offset = button_offset;
     this.colours = colours;
-    console.log("loading Controller Manager - ", this);
-  }
-  // Initialize
-  init() {
-    let { layout, width, height } = this;
-    var layout_string = layout;
-    this.layout = { x: 0, y: 0 };
-    switch (layout_string) {
-      case "TOP_LEFT":
-        var shift = 0;
-        for (var n = 0; n < this.buttons_layout.length; n++) {
-          if (this.buttons_layout[n].r) {
-            shift += this.buttons_layout[n].r;
-            this.buttons_layout[n].y -= this.buttons_layout[n].r * 2;
-          }
-        }
-        this.layout.x = shift + this.button_offset.x;
-        this.layout.y = 0 + this.button_offset.y;
-        break;
-      case "TOP_RIGHT":
-        layout.x = width - this.button_offset.x;
-        layout.y = 0 + this.button_offset.y;
-        break;
-      case "BOTTOM_LEFT":
-        var shift = 0;
-        for (var n = 0; n < this.buttons_layout.length; n++) {
-          if (this.buttons_layout[n].r) {
-            shift += this.buttons_layout[n].r;
-          }
-        }
-        this.layout.x = shift + this.button_offset.x;
-        this.layout.y = height - this.button_offset.y;
-        break;
-      case "BOTTOM_RIGHT":
-      default:
-        this.layout.x = width - this.button_offset.x;
-        this.layout.y = height - this.button_offset.y;
-        break;
-    }
+    this.layout = { x: this.width - this.button_offset.x, y: this.height - this.button_offset.y };
     this.stick = new ControllerStick(this.ctx, this.layout, this.map, this.touches, this.colours, this.radius);
     this.buttons = new ControllerButtons(
       this.ctx,
       this.layout,
-      this.buttons_layout,
+      buttons_layout,
       this.map,
       this.touches,
       this.start,
@@ -464,6 +447,10 @@ class Controller {
       this.colours,
       this.radius
     );
+    console.log("loading Controller Manager - ", this);
+  }
+  // Initialize
+  init() {
     this.stick.init();
     this.buttons.init();
   }
@@ -501,7 +488,7 @@ class ControllerStick {
   init() {
     let { map, layout, width, ctx } = this;
     this.x = width - layout.x;
-    this.y = layout.y;
+    this.y = layout.y + (3 * this.radius) / 8;
     this.dx = this.x;
     this.dy = this.y;
     this.map["x-dir"] = 0;
@@ -610,7 +597,8 @@ class ControllerButtons {
   }
   // Initialize
   init() {
-    let { buttons_layout, layout, width, height } = this;
+    let { buttons_layout, layout, ctx } = this;
+    let width = ctx.canvas.width;
     for (var n = 0; n < buttons_layout.length; n++) {
       var button = buttons_layout[n];
       var x = layout.x - button.x;
@@ -639,12 +627,10 @@ class ControllerButtons {
   }
   // render Button
   draw() {
-    let { ctx, buttons_layout, layout } = this;
+    let { ctx, layout } = this;
     for (var n = 0; n < this.buttons_layout.length; n++) {
-      var button = buttons_layout[n];
-      var name = button.name;
+      var button = this.buttons_layout[n];
       var color = button.color;
-
       var x = layout.x - button.x;
       var y = layout.y - button.y;
       button.dx = x;
@@ -678,10 +664,10 @@ class ControllerButtons {
         ctx.font = "minecraftia 12px";
         ctx.fillText(button.name, x, y);
       } else {
+        console.log("--->", button);
         var w = button.w;
         var h = button.h;
-        var x = button.x;
-        var y = button.dy;
+        var x = isNaN(button.x) ? ctx.canvas.width / 2 : button.x;
         var r = 10;
         ctx.fillStyle = color;
         if (button.hit) {
@@ -690,6 +676,7 @@ class ControllerButtons {
           }
         }
         ctx.roundRect(x, y, w, h, r).fill();
+
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.stroke();
