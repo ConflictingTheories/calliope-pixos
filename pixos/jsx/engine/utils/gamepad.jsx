@@ -382,7 +382,7 @@ export class GamePad {
   // disable scroll while touching canvas
   enableScroll() {
     document.body.removeEventListener("touchmove", this.preventDefault);
-    document.body.addEventListener("touchstart", this.preventDefault);
+    document.body.removeEventListener("touchstart", this.preventDefault);
   }
 
   // reenable once done
