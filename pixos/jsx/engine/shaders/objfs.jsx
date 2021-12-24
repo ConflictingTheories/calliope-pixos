@@ -10,20 +10,18 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-
-export default function vs() {
+export default function fs() {
   return `
-  attribute vec3 aVertexPosition;
-  attribute vec2 aTextureCoord;
-  
-  uniform mat4 uMVMatrix;
-  uniform mat4 uPMatrix;
-  
+  precision mediump float;
   varying vec2 vTextureCoord;
+  varying highp vec3 vLighting;
+
+  uniform sampler2D uSampler;
   
   void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    vTextureCoord = aTextureCoord;
+    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+    if(gl_FragColor.a < 0.1)
+        discard;
   }
 `;
 }

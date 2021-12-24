@@ -14,6 +14,8 @@
 // Shaders
 import fs from "../engine/shaders/fs.jsx";
 import vs from "../engine/shaders/vs.jsx";
+import objfs from "../engine/shaders/objfs.jsx";
+import objvs from "../engine/shaders/objvs.jsx";
 import World from "../engine/core/world.jsx";
 
 // Scene Object
@@ -23,6 +25,10 @@ export default class Scene {
     this.shaders = {
       fs: fs(),
       vs: vs(),
+    };
+    this.objectShaders = {
+      fs: objfs(),
+      vs: objvs(),
     };
     // Singleton
     if (!Scene._instance) {

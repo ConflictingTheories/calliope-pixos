@@ -13,6 +13,7 @@
 
 import Resources from "./resources.jsx";
 import Sprite from "../core/sprite.jsx";
+import ModelObject from "../core/object.jsx";
 import Tileset from "../core/tileset.jsx";
 import Action from "../core/action.jsx";
 
@@ -87,6 +88,50 @@ export class SpriteLoader {
       else this.instances[type].push({ instance, afterLoad });
     }
 
+    return instance;
+  }
+}
+
+//helps load sprite
+export class ObjectLoader {
+  constructor(engine) {
+    this.engine = engine;
+    this.definitions = [];
+    this.instances = {};
+  }
+  // Load Sprite
+  async load(model) {
+    let afterLoad = arguments[1];
+    let runConfigure = arguments[2];
+    if (!this.instances[model.id]) {
+      this.instances[model.id] = [];
+    }
+    let instance = new ModelObject(this.engine);
+    instance.update(model);
+    // New Instance
+    let modelreq = {
+      obj: `pixos/models/${instance.type}.obj`,
+      downloadMtlTextures: true,
+      name: instance.id,
+    };
+    let result = (await this.engine.objLoader.downloadModels([modelreq]))[model.id];
+    console.log(result);
+    instance.mesh = result;
+    instance.templateLoaded = true;
+    console.log("loaded model", instance);
+    // Update Existing
+    this.instances[instance.id].forEach(function (instance) {
+      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    });
+    // Configure if needed
+    if (runConfigure) runConfigure(instance);
+    // once loaded
+    if (afterLoad) {
+      console.log("after load");
+      if (instance.templateLoaded) afterLoad(instance);
+      else this.instances[instance.id].push({ instance, afterLoad });
+    }
+    instance.loaded = true;
     return instance;
   }
 }

@@ -109,4 +109,12 @@ export default {
       },
     },
   ],
+  // objects // 3d
+  objects:[
+    {
+      id: "test-obj",
+      type: "apple",
+      pos: new Vector(...[8, 14, 0]), facing: Direction.Down
+    }
+  ]
 };

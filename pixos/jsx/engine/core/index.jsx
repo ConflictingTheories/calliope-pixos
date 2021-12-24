@@ -102,7 +102,42 @@ export default class GLEngine {
     return shader;
   }
 
-  // Initialize Shader Program
+  // // Initialize Shader Program
+  // initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
+  //   const self = this;
+  //   const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+  //   const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+  //   // generate shader
+  //   let shaderProgram = gl.createProgram();
+  //   gl.attachShader(shaderProgram, vertexShader);
+  //   gl.attachShader(shaderProgram, fragmentShader);
+  //   gl.linkProgram(shaderProgram);
+  //   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+  //     throw new Error(`WebGL unable to initialize the shader program: ${gl.getshaderProgramLog(shaderProgram)}`);
+  //   }
+  //   // Configure Shader
+  //   gl.useProgram(shaderProgram);
+  //   // Vertices
+  //   shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+  //   gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+  //   // Texture Coord
+  //   shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+  //   gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+  //   // Uniform Locations
+  //   shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+  //   shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+  //   shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+  //   // Uniform apply
+  //   shaderProgram.setMatrixUniforms = function () {
+  //     gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
+  //     gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
+  //   };
+  //   // return
+  //   this.shaderProgram = shaderProgram;
+  //   return shaderProgram;
+  // };
+
+  // Initialize Object Shader Program
   initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
     const self = this;
     const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
@@ -118,8 +153,8 @@ export default class GLEngine {
     // Configure Shader
     gl.useProgram(shaderProgram);
     // Normals (needs work)
-    // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
     // Vertices
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
@@ -129,13 +164,13 @@ export default class GLEngine {
     // Uniform Locations
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    // shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
+    shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     // Uniform apply
     shaderProgram.setMatrixUniforms = function () {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
-      // gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+      gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
     };
     // return
     this.shaderProgram = shaderProgram;
