@@ -13,7 +13,7 @@
 import { Direction } from "../utils/enums.jsx";
 import Resources from "../utils/resources.jsx";
 import ActionQueue from "./queue.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader } from "../utils/loaders.jsx";
+import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "../utils/loaders.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -22,15 +22,19 @@ export default class Zone {
     this.data = {};
     this.spriteDict = {};
     this.spriteList = [];
+    this.objectDict = {};
+    this.objectList = [];
     this.lastKey = Date.now();
     this.engine = world.engine;
     this.onLoadActions = new ActionQueue();
     this.spriteLoader = new SpriteLoader(world.engine);
+    this.objectLoader = new ObjectLoader(world.engine);
     this.tsLoader = new TilesetLoader(world.engine);
     // bind
     this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
     this.loadSprite = this.loadSprite.bind(this, this);
+    this.loadObject = this.loadObject.bind(this, this);
     this.checkInput = this.checkInput.bind(this);
   }
 
@@ -50,8 +54,10 @@ export default class Zone {
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
         await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
+        await Promise.all(data.objects.map(this.loadObject.bind(this)));
         // Notify the zone sprites when the new sprite has loaded
         this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
+        this.objectList.forEach((object) => object.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
       } catch (e) {
         console.error("Error parsing zone " + this.id);
         console.error(e);
@@ -109,6 +115,7 @@ export default class Zone {
       // Load sprites
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
+      await Promise.all(self.objects.map(self.loadObject));
       // Notify the zone sprites when the new sprite has loaded
       console.log(self.spriteDict);
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
@@ -155,7 +162,7 @@ export default class Zone {
 
   // run after each tileset / sprite is loaded
   onTilesetOrSpriteLoaded() {
-    if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded)) return;
+    if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded)) return;
     console.log("Initialized zone '" + this + "'");
     // Load Scene Triggers
     let zone = this;
@@ -167,6 +174,15 @@ export default class Zone {
     // loaded
     this.loaded = true;
     this.onLoadActions.run();
+  }
+
+  // load obj model
+  async loadObject(_this, data) {
+    data.zone = _this;
+    let newObject = await this.objectLoader.load(data);
+    console.log(["this", this.objectDict, this.objectList, data, newObject]);
+    this.objectDict[data.id] = newObject;
+    this.objectList.push(newObject);
   }
 
   // Load Sprite
@@ -302,11 +318,16 @@ export default class Zone {
     this.engine.setCamera();
     // Draw tile terrain row by row (back to front)
     let k = 0;
+    let z = 0;
     for (let j = 0; j < this.size[1]; j++) {
       this.drawRow(j);
       // draw each sprite in front of floor tiles if positioned in front
       while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
         this.spriteList[k++].draw(this.engine);
+      }
+      // draw each sprite in front of floor tiles if positioned in front
+      while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
+        this.objectList[z++].draw(this.engine);
       }
     }
     // draw each sprite (fixes tearing)
