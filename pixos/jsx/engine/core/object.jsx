@@ -16,13 +16,12 @@ import ActionQueue from "./queue.jsx";
 import { ActionLoader } from "../utils/loaders.jsx";
 import { rotate, translate } from "../utils/math/matrix4.jsx";
 
-export default class Sprite {
+export default class ModelObject {
   constructor(engine) {
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
     this.hotspotOffset = new Vector(0, 0, 0);
-    this.animFrame = 0;
     this.pos = new Vector(0, 0, 0);
     this.facing = Direction.Right;
     this.actionDict = {};
@@ -30,7 +29,6 @@ export default class Sprite {
     this.speech = {};
     this.portrait = null;
     this.onLoadActions = new ActionQueue();
-    this.getTexCoords = this.getTexCoords.bind(this);
     this.inventory = [];
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
@@ -46,28 +44,24 @@ export default class Sprite {
     else this.onLoadActions.add(action);
   }
 
-  // Load Texture / Location
+  // Load Object and Materials
   onLoad(instanceData) {
+    console.log("loading", instanceData);
     if (this.loaded) return;
-    if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
-      console.error("Invalid sprite definition");
+    if (!instanceData.mesh.vertexBuffer || !instanceData.mesh.indexBuffer) {
+      console.error("Invalid object file");
       return;
     }
-    console.log("zoning ---->>");
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
-    console.log("facing", Direction.spriteSequence(this.facing));
-    // Texture Buffer
-    this.texture = this.engine.loadTexture(this.src);
-    console.log("texture ---->>");
-    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-    this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
-
-    // // Speech bubble
+    // Adjust Vertices based on position
+    this.mesh = instanceData.mesh;
+    this.engine.objLoader.initMeshBuffers(this.engine.gl, instanceData.mesh);
+    // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       console.log("speech ---->>");
@@ -86,22 +80,6 @@ export default class Sprite {
 
   // Definition Loaded
   onTilesetDefinitionLoaded() {
-    let s = this.zone.tileset.tileSize;
-    let ts = [this.tileSize[0] / s, this.tileSize[1] / s];
-    let v = [
-      [0, 0, 0],
-      [ts[0], 0, 0],
-      [ts[0], 0, ts[1]],
-      [0, 0, ts[1]],
-    ];
-    let poly = [
-      [v[2], v[3], v[0]],
-      [v[2], v[0], v[1]],
-    ].flat(3);
-    this.vertexPosBuf = this.engine.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
-    if (this.enableSpeech) {
-      this.speechVerBuf = this.engine.createBuffer(this.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
-    }
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
   }
 
@@ -110,8 +88,6 @@ export default class Sprite {
     if (
       !this ||
       this.loaded ||
-      !this.zone.tileset.loaded ||
-      !this.texture.loaded ||
       (this.enableSpeech && this.speech && !this.speech.loaded) ||
       (this.portrait && !this.portrait.loaded)
     )
@@ -127,25 +103,7 @@ export default class Sprite {
     }
     this.loaded = true;
     this.onLoadActions.run();
-    console.log("Initialized sprite '" + this.id + "' in zone '" + this.zone.id + "'");
-  }
-
-  // Get Texture Coordinates
-  getTexCoords() {
-    if (this.id == "chest") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
-    let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames["up"]; //default up
-    let length = this.frames[Direction.spriteSequence(this.facing)].length;
-    let t = frames[this.animFrame % length];
-    let ss = this.sheetSize;
-    let ts = this.tileSize;
-    let bl = [(t[0] + ts[0]) / ss[0], t[1] / ss[1]];
-    let tr = [t[0] / ss[0], (t[1] + ts[1]) / ss[1]];
-    let v = [bl, [tr[0], bl[1]], tr, [bl[0], tr[1]]];
-    let poly = [
-      [v[0], v[1], v[2]],
-      [v[0], v[2], v[3]],
-    ];
-    return poly.flat(3);
+    console.log("Initialized object '" + this.id + "' in zone '" + this.zone.id + "'");
   }
 
   // Speech Area texture
@@ -172,48 +130,32 @@ export default class Sprite {
     ].flat(3);
   }
 
-  // Draw Sprite Sprite
+  // Draw Object
   draw() {
     if (!this.loaded) return;
-    this.engine.mvPushMatrix();
-    // Undo rotation so that character plane is normal to LOS
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-    rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
-    // Bind texture
-    this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.vertexPositionAttribute);
-    this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.textureCoordAttribute);
-    this.texture.attach();
-    // Draw
-    this.engine.shaderProgram.setMatrixUniforms();
-    this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
-    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
-    this.engine.gl.depthFunc(this.engine.gl.LESS);
-    this.engine.mvPopMatrix();
-    // Draw Speech
-    if (this.enableSpeech) {
-      this.engine.mvPushMatrix();
-      // Undo rotation so that character plane is normal to LOS
-      translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
-      translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-      rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
-      // Bind texture for speech bubble
-      this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.vertexPositionAttribute);
-      this.engine.bindBuffer(this.speechTexBuf, this.engine.shaderProgram.textureCoordAttribute);
-      this.speech.attach();
-      // // Draw Speech
-      this.engine.shaderProgram.setMatrixUniforms();
-      this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
-      this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.speechVerBuf.numItems);
-      this.engine.gl.depthFunc(this.engine.gl.LESS);
-      this.engine.mvPopMatrix();
+    let { engine, mesh } = this;
+    engine.objLoader.initMeshBuffers(engine.gl, mesh);
+    engine.mvPushMatrix();
+    // Vertices
+    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+    // Texture
+    if (!mesh.textures.length) {
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    } else {
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+      this.tileset.texture.attach();
     }
-  }
-
-  // Set Frame
-  setFrame(frame) {
-    this.animFrame = frame;
-    this.engine.updateBuffer(this.vertexTexBuf, this.getTexCoords());
+    // Normals
+    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+    // Indices
+    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    // draw triangles
+    engine.shaderProgram.setMatrixUniforms();
+    engine.gl.uniformMatrix4fv(this.normalMatrixUniform, false, engine.normalMat);
+    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
+    // Draw
+    engine.mvPopMatrix();
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
   }
 
   // Set Facing
