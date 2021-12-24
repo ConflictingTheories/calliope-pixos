@@ -117,7 +117,7 @@ export default class GLEngine {
     }
     // Configure Shader
     gl.useProgram(shaderProgram);
-    // Normals
+    // Normals (needs work)
     // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
     // Vertices
@@ -135,7 +135,7 @@ export default class GLEngine {
     shaderProgram.setMatrixUniforms = function () {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
-      gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+      // gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
     };
     // return
     this.shaderProgram = shaderProgram;
