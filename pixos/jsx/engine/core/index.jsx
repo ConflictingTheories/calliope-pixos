@@ -17,11 +17,12 @@ import Texture from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
 import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
-
+import { OBJ } from "../utils/obj";
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
     this.uViewMat = create();
     this.uProjMat = create();
+    this.normalMat = create();
     this.canvas = canvas;
     this.hud = hud;
     this.gamepadcanvas = gamepadcanvas;
@@ -37,6 +38,7 @@ export default class GLEngine {
     this.cameraOffset = new Vector(0, 0, 0);
     this.setCamera = this.setCamera.bind(this);
     this.render = this.render.bind(this);
+    this.objLoader = OBJ;
   }
 
   // Initialize a Scene object
@@ -115,6 +117,9 @@ export default class GLEngine {
     }
     // Configure Shader
     gl.useProgram(shaderProgram);
+    // Normals
+    // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
     // Vertices
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
@@ -124,11 +129,13 @@ export default class GLEngine {
     // Uniform Locations
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+    // shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     // Uniform apply
     shaderProgram.setMatrixUniforms = function () {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
+      gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
     };
     // return
     this.shaderProgram = shaderProgram;

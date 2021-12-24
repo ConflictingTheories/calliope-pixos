@@ -85,20 +85,16 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     >
       {/* // WEBGL - For 3D Rendering */}
       <canvas
-        style={{ position: "absolute", zIndex: 1, top: 0, left: 0 }}
+        style={{ position: "absolute", zIndex: 1, top: 0, left: 0, maxWidth: 800 }}
         ref={ref}
-        maxWidth={800}
-        maxHeight={600}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
         height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
         className={string}
       />
       {/* HUD - For Dialogue / Menus / Overlays */}
       <canvas
-        style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none" }}
+        style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none", maxWidth: 800 }}
         ref={hudRef}
-        maxWidth={800}
-        maxHeight={600}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
         height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
         className={string}
@@ -112,11 +108,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           left: 0,
           background: "none",
           display: screenSize.dynamicWidth <= 768 ? "block" : "none",
+          maxWidth: 800,
         }}
         ref={gamepadRef}
         hidden={screenSize.dynamicWidth > 768}
-        maxWidth={800}
-        maxHeight={600}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
         height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 800 : (screenSize.dynamicWidth * 3) / 4 + 200}
         className={string}

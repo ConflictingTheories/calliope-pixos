@@ -73,6 +73,39 @@ export default class Zone {
       this.tileset = await this.tsLoader.load(this.tileset);
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
+      // Load Obj Files
+      let obj = `
+      o my_cube.obj
+      v 1 1 1
+      v -1 1 1
+      v -1 -1 1
+      v 1 -1 1
+      v 1 1 -1
+      v -1 1 -1
+      v -1 -1 -1
+      v 1 -1 -1
+      vn 0 0 1
+      vn 1 0 0
+      vn -1 0 0
+      vn 0 0 -1
+      vn 0 1 0
+      vn 0 -1 0
+      f 1//1 2//1 3//1
+      f 3//1 4//1 1//1
+      f 5//2 1//2 4//2
+      f 4//2 8//2 5//2
+      f 2//3 6//3 7//3
+      f 7//3 3//3 2//3
+      f 7//4 8//4 5//4
+      f 5//4 6//4 7//4
+      f 5//5 6//5 2//5
+      f 2//5 1//5 5//5
+      f 8//6 4//6 3//6
+      f 3//6 7//6 8//6
+      `;
+      // obj - mesh
+      this.test = new this.engine.objLoader.Mesh(obj);
+      this.engine.objLoader.initMeshBuffers(this.engine.gl, this.test);
       // Load sprites
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
@@ -223,11 +256,41 @@ export default class Zone {
 
   // Draw Row of Zone
   drawRow(row) {
+    // vertice positions
     this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.vertexPositionAttribute);
+    // texture positions
     this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.textureCoordAttribute);
+    // texturize
     this.tileset.texture.attach();
+    // set shader
     this.engine.shaderProgram.setMatrixUniforms();
+    // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+  }
+
+  // Draw Obj to scene
+  drawObj(mesh) {
+    let { engine } = this;
+    engine.mvPushMatrix();
+    engine.objLoader.initMeshBuffers(engine.gl, mesh);
+    // Vertices
+    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+    // Texture
+    if (!mesh.textures.length) {
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    } else {
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+    }
+    // Normals
+    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+    // Indices
+    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    // draw triangles
+    engine.shaderProgram.setMatrixUniforms();
+    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
+    // Draw
+    engine.mvPopMatrix();
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
   }
 
   // Draw Frame
@@ -237,18 +300,21 @@ export default class Zone {
     this.spriteList.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
-    // Draw Terrain
+    // Draw tile terrain row by row (back to front)
     let k = 0;
     for (let j = 0; j < this.size[1]; j++) {
       this.drawRow(j);
+      // draw each sprite in front of floor tiles if positioned in front
       while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
         this.spriteList[k++].draw(this.engine);
       }
     }
-    // draw each Sprite
+    // draw each sprite (fixes tearing)
     while (k < this.spriteList.length) {
       this.spriteList[k++].draw(this.engine);
     }
+    // draw each object mesh
+    this.drawObj(this.test);
     this.engine.mvPopMatrix();
   }
 
@@ -259,6 +325,7 @@ export default class Zone {
     this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
   }
 
+  // read input
   checkInput(time) {
     if (time > this.lastKey + 100) {
       let touchmap = this.engine.gamepad.checkInput();
@@ -314,6 +381,15 @@ export default class Zone {
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
   }
 
+  // Trigger Script
+  triggerScript(id) {
+    this.scripts.forEach((x) => {
+      if (x.id === id) {
+        this.runWhenLoaded(x.trigger.bind(this));
+      }
+    });
+  }
+
   // Move the sprite
   async moveSprite(id, location, running = false) {
     return new Promise((resolve, reject) => {
@@ -331,6 +407,7 @@ export default class Zone {
       sprite.addAction(new ActionLoader(this.engine, "dialogue", [dialogue, false, options], sprite, resolve));
     });
   }
+
   // Run Action configuration from JSON description
   async runActions(actions) {
     let self = this;
@@ -376,14 +453,6 @@ export default class Zone {
           console.warn("err", err.message);
         });
     }, Promise.resolve());
-  }
-  // Trigger Script
-  triggerScript(id) {
-    this.scripts.forEach((x) => {
-      if (x.id === id) {
-        this.runWhenLoaded(x.trigger.bind(this));
-      }
-    });
   }
 
   // Play a scene
