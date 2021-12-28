@@ -114,7 +114,14 @@ export default {
     {
       id: "test-obj",
       type: "apple",
-      pos: new Vector(...[8, 14, 0]), facing: Direction.Down
+      mtl: true,
+      pos: new Vector(...[10, 4, 1]), facing: Direction.up
+    },
+    {
+      id: "test-cube",
+      type: "cube",
+      mtl: false,
+      pos: new Vector(...[6, 4, 0]), facing: Direction.Down
     }
   ]
 };

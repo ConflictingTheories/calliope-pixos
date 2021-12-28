@@ -48,10 +48,6 @@ export default class ModelObject {
   onLoad(instanceData) {
     console.log("loading", instanceData);
     if (this.loaded) return;
-    if (!instanceData.mesh.vertexBuffer || !instanceData.mesh.indexBuffer) {
-      console.error("Invalid object file");
-      return;
-    }
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -59,19 +55,35 @@ export default class ModelObject {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     // Adjust Vertices based on position
-    this.mesh = instanceData.mesh;
-    this.engine.objLoader.initMeshBuffers(this.engine.gl, instanceData.mesh);
+    let mesh = instanceData.mesh;
+    console.log("mesh", mesh);
+    for (let i = 0; i < mesh.vertices.length - 3; i = i + 3) {
+      let v = mesh.vertices.slice(i, i + 3);
+      console.log(i, v);
+      let w = new Vector(v[0] + instanceData.pos.x, v[1] + instanceData.pos.y, v[2] + instanceData.pos.z);
+      console.log(i, w);
+      mesh.vertices[i] = w.x;
+      mesh.vertices[i + 1] = w.y;
+      mesh.vertices[i + 2] = w.z;
+      let n = mesh.vertexNormals.slice(i, i + 3);
+      let m = new Vector(n[0] + instanceData.pos.x, n[1] + instanceData.pos.y, n[2] + instanceData.pos.z);
+      mesh.vertexNormals[i] = m.x;
+      mesh.vertexNormals[i + 1] = m.y;
+      mesh.vertexNormals[i + 2] = m.z;
+      [].slice();
+    }
+    this.mesh = mesh;
+    console.log("mesh", this.mesh);
+    this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
-      console.log("speech ---->>");
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.loadTexture(this.portraitSrc);
-      console.log("portrait ---->>");
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //
@@ -133,6 +145,7 @@ export default class ModelObject {
   // Draw Object
   draw() {
     if (!this.loaded) return;
+    console.log("drawing-->", this.mesh);
     let { engine, mesh } = this;
     engine.objLoader.initMeshBuffers(engine.gl, mesh);
     engine.mvPushMatrix();
@@ -142,8 +155,8 @@ export default class ModelObject {
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
     } else {
+      console.log("texture");
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
-      this.tileset.texture.attach();
     }
     // Normals
     engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
@@ -161,6 +174,7 @@ export default class ModelObject {
   // Set Facing
   setFacing(facing) {
     console.log("setting face to " + Direction.spriteSequence(facing));
+    // todo -- apply rotation
     if (facing) this.facing = facing;
     this.setFrame(this.animFrame);
   }

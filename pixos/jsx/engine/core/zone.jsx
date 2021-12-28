@@ -117,8 +117,9 @@ export default class Zone {
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
       // Notify the zone sprites when the new sprite has loaded
-      console.log(self.spriteDict);
+      console.log(self.spriteDict, self.objectDict);
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+      self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
       console.error("Error parsing zone " + this.id);
       console.error(e);
@@ -162,7 +163,13 @@ export default class Zone {
 
   // run after each tileset / sprite is loaded
   onTilesetOrSpriteLoaded() {
-    if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded)) return;
+    if (
+      this.loaded ||
+      !this.tileset.loaded ||
+      !this.spriteList.every((sprite) => sprite.loaded) ||
+      !this.objectList.every((object) => object.loaded)
+    )
+      return;
     console.log("Initialized zone '" + this + "'");
     // Load Scene Triggers
     let zone = this;
@@ -179,7 +186,7 @@ export default class Zone {
   // load obj model
   async loadObject(_this, data) {
     data.zone = _this;
-    let newObject = await this.objectLoader.load(data);
+    let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
     console.log(["this", this.objectDict, this.objectList, data, newObject]);
     this.objectDict[data.id] = newObject;
     this.objectList.push(newObject);
@@ -313,7 +320,8 @@ export default class Zone {
   draw() {
     if (!this.loaded) return;
     // Organize by Depth
-    this.spriteList.sort((a, b) => a.pos.y - b.pos.y);
+    this.spriteList?.sort((a, b) => a.pos.y - b.pos.y);
+    this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
     // Draw tile terrain row by row (back to front)
@@ -325,17 +333,14 @@ export default class Zone {
       while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
         this.spriteList[k++].draw(this.engine);
       }
-      // draw each sprite in front of floor tiles if positioned in front
-      while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
-        this.objectList[z++].draw(this.engine);
-      }
     }
     // draw each sprite (fixes tearing)
     while (k < this.spriteList.length) {
       this.spriteList[k++].draw(this.engine);
     }
-    // draw each object mesh
-    this.drawObj(this.test);
+    // draw objects
+    this.objectList.map((obj) => obj.draw());
+    this.drawObj(this.objectList[0].mesh);
     this.engine.mvPopMatrix();
   }
 
@@ -395,6 +400,26 @@ export default class Zone {
         this.spriteDict[sprite].pos.x === x &&
         this.spriteDict[sprite].pos.y === y &&
         this.spriteDict[sprite].blocking
+      )
+        return false;
+    }
+    for (let object in this.objectDict) {
+      if (
+        // if sprite bypass & override
+        !this.objectDict[object].walkable &&
+        this.objectDict[object].pos.x === x &&
+        this.objectDict[object].pos.y === y &&
+        !this.objectDict[object].blocking &&
+        this.objectDict[object].override
+      )
+        return true;
+
+      if (
+        // else if sprite blocking
+        !this.objectDict[object].walkable &&
+        this.objectDict[object].pos.x === x &&
+        this.objectDict[object].pos.y === y &&
+        this.objectDict[object].blocking
       )
         return false;
     }

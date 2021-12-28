@@ -111,12 +111,12 @@ export class ObjectLoader {
     // New Instance
     let modelreq = {
       obj: `pixos/models/${instance.type}.obj`,
+      mtl: model.mtl ?? false,
+      mtlTextureRoot: "/pixos/models",
       downloadMtlTextures: true,
       name: instance.id,
     };
-    let result = (await this.engine.objLoader.downloadModels([modelreq]))[model.id];
-    console.log(result);
-    instance.mesh = result;
+    instance.mesh = (await this.engine.objLoader.downloadModels([modelreq]))[model.id];
     instance.templateLoaded = true;
     console.log("loaded model", instance);
     // Update Existing
