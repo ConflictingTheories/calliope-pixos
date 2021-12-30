@@ -23,6 +23,7 @@ export default class ModelObject {
     this.drawOffset = new Vector(0, 0, 0);
     this.hotspotOffset = new Vector(0, 0, 0);
     this.pos = new Vector(0, 0, 0);
+    this.size = new Vector(0, 0, 0);
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
@@ -57,11 +58,25 @@ export default class ModelObject {
     // Adjust Vertices based on position
     let mesh = instanceData.mesh;
     console.log("mesh", mesh);
-    for (let i = 0; i < mesh.vertices.length - 3; i = i + 3) {
+    let maxX,
+      minX = null;
+    let maxY,
+      minY = null;
+    let maxZ,
+      minZ = null;
+
+    for (let i = 0; i < mesh.vertices.length; i = i + 3) {
       let v = mesh.vertices.slice(i, i + 3);
-      console.log(i, v);
+
+      // size
+      if (maxX == null || v[0] > maxX) maxX = v[0];
+      if (minX == null || v[0] < minX) minX = v[0];
+      if (maxY == null || v[1] > maxY) maxY = v[1];
+      if (minY == null || v[1] < minY) minY = v[1];
+      if (maxZ == null || v[2] > maxZ) maxZ = v[2];
+      if (minZ == null || v[2] < minZ) minZ = v[2];
+
       let w = new Vector(v[0] + instanceData.pos.x, v[1] + instanceData.pos.y, v[2] + instanceData.pos.z);
-      console.log(i, w);
       mesh.vertices[i] = w.x;
       mesh.vertices[i + 1] = w.y;
       mesh.vertices[i + 2] = w.z;
@@ -70,8 +85,8 @@ export default class ModelObject {
       mesh.vertexNormals[i] = m.x;
       mesh.vertexNormals[i + 1] = m.y;
       mesh.vertexNormals[i + 2] = m.z;
-      [].slice();
     }
+    this.size = new Vector(maxX - minX, maxY - minY, maxZ- minZ);
     this.mesh = mesh;
     console.log("mesh", this.mesh);
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
@@ -145,7 +160,6 @@ export default class ModelObject {
   // Draw Object
   draw() {
     if (!this.loaded) return;
-    console.log("drawing-->", this.mesh);
     let { engine, mesh } = this;
     engine.objLoader.initMeshBuffers(engine.gl, mesh);
     engine.mvPushMatrix();
@@ -155,7 +169,6 @@ export default class ModelObject {
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
     } else {
-      console.log("texture");
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
     }
     // Normals
@@ -164,7 +177,7 @@ export default class ModelObject {
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     // draw triangles
     engine.shaderProgram.setMatrixUniforms();
-    engine.gl.uniformMatrix4fv(this.normalMatrixUniform, false, engine.normalMat);
+
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();

@@ -4266,10 +4266,10 @@
     "range-parser" "^1.2.1"
     "schema-utils" "^4.0.0"
 
-"webpack-dev-server@^4.7.1":
-  "integrity" "sha512-bkoNgFyqlF/CT726Axtf/ELHHYsTZJWz3QJ6HqstWPbalhjAPunlPH9bwt/Lr5cLb+uoLmsta6svVplVzq8beA=="
-  "resolved" "https://registry.npmjs.org/webpack-dev-server/-/webpack-dev-server-4.7.1.tgz"
-  "version" "4.7.1"
+"webpack-dev-server@^4.7.2":
+  "integrity" "sha512-s6yEOSfPpB6g1T2+C5ZOUt5cQOMhjI98IVmmvMNb5cdiqHoxSUfACISHqU/wZy+q4ar/A9jW0pbNj7sa50XRVA=="
+  "resolved" "https://registry.npmjs.org/webpack-dev-server/-/webpack-dev-server-4.7.2.tgz"
+  "version" "4.7.2"
   dependencies:
     "@types/bonjour" "^3.5.9"
     "@types/connect-history-api-fallback" "^1.3.5"

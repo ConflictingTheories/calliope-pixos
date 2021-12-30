@@ -118,8 +118,8 @@ export default class GLEngine {
     // Configure Shader
     gl.useProgram(shaderProgram);
     // Normals (needs work)
-    // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
     // Vertices
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
@@ -129,13 +129,13 @@ export default class GLEngine {
     // Uniform Locations
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    // shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
+    shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     // Uniform apply
     shaderProgram.setMatrixUniforms = function () {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
-      // gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+      gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
     };
     // return
     this.shaderProgram = shaderProgram;

@@ -111,12 +111,12 @@ export default {
   ],
   // objects // 3d
   objects:[
-    {
-      id: "test-obj",
-      type: "apple",
-      mtl: true,
-      pos: new Vector(...[10, 4, 1]), facing: Direction.up
-    },
+    // {
+    //   id: "test-obj",
+    //   type: "apple",
+    //   mtl: true,
+    //   pos: new Vector(...[10, 4, 1]), facing: Direction.up
+    // },
     {
       id: "test-cube",
       type: "cube",
