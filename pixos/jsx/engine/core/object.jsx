@@ -23,7 +23,8 @@ export default class ModelObject {
     this.drawOffset = new Vector(0, 0, 0);
     this.hotspotOffset = new Vector(0, 0, 0);
     this.pos = new Vector(0, 0, 0);
-    this.size = new Vector(0, 0, 0);
+    this.size = new Vector(1, 1, 1);
+    this.scale = new Vector(1, 1, 1);
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
@@ -57,7 +58,6 @@ export default class ModelObject {
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     // Adjust Vertices based on position
     let mesh = instanceData.mesh;
-    console.log("mesh", mesh);
     let maxX,
       minX = null;
     let maxY,
@@ -76,19 +76,18 @@ export default class ModelObject {
       if (maxZ == null || v[2] > maxZ) maxZ = v[2];
       if (minZ == null || v[2] < minZ) minZ = v[2];
 
-      let w = new Vector(v[0] + instanceData.pos.x, v[1] + instanceData.pos.y, v[2] + instanceData.pos.z);
-      mesh.vertices[i] = w.x;
-      mesh.vertices[i + 1] = w.y;
-      mesh.vertices[i + 2] = w.z;
-      let n = mesh.vertexNormals.slice(i, i + 3);
-      let m = new Vector(n[0] + instanceData.pos.x, n[1] + instanceData.pos.y, n[2] + instanceData.pos.z);
-      mesh.vertexNormals[i] = m.x;
-      mesh.vertexNormals[i + 1] = m.y;
-      mesh.vertexNormals[i + 2] = m.z;
+      // let w = new Vector(v[0] + instanceData.pos.x, v[1] + instanceData.pos.y, v[2] + instanceData.pos.z);
+      // mesh.vertices[i] = w.x;
+      // mesh.vertices[i + 1] = w.y;
+      // mesh.vertices[i + 2] = w.z;
+      // let n = mesh.vertexNormals.slice(i, i + 3);
+      // let m = new Vector(n[0] + instanceData.pos.x, n[1] + instanceData.pos.y, n[2] + instanceData.pos.z);
+      // mesh.vertexNormals[i] = m.x;
+      // mesh.vertexNormals[i + 1] = m.y;
+      // mesh.vertexNormals[i + 2] = m.z;
     }
-    this.size = new Vector(maxX - minX, maxY - minY, maxZ- minZ);
+    this.size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
     this.mesh = mesh;
-    console.log("mesh", this.mesh);
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
     // Speech bubble
     if (this.enableSpeech) {
@@ -163,6 +162,8 @@ export default class ModelObject {
     let { engine, mesh } = this;
     engine.objLoader.initMeshBuffers(engine.gl, mesh);
     engine.mvPushMatrix();
+    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
+    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
     // Vertices
     engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
     // Texture
@@ -177,7 +178,6 @@ export default class ModelObject {
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     // draw triangles
     engine.shaderProgram.setMatrixUniforms();
-
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();

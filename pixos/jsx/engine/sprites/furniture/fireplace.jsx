@@ -22,13 +22,14 @@ export default class Fireplace extends Sprite {
     this.src = Resources.artResourceUrl("room.gif");
     this.sheetSize = [256, 256];
     this.tileSize = [48, 80];
+    this.fixed = true;
     // Frames
     this.frames = {
       up: [
         [160, 80]
       ],
     };
-    this.drawOffset = new Vector(0, 1.85, 0.001);
+    this.drawOffset = new Vector(0, 1.8, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
   }
 }

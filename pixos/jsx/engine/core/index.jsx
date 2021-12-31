@@ -23,6 +23,7 @@ export default class GLEngine {
     this.uViewMat = create();
     this.uProjMat = create();
     this.normalMat = create();
+    this.scale = new Vector(1, 1, 1);
     this.canvas = canvas;
     this.hud = hud;
     this.gamepadcanvas = gamepadcanvas;
@@ -34,6 +35,7 @@ export default class GLEngine {
     this.textures = [];
     this.speeches = [];
     this.cameraAngle = 45;
+    this.fov = 45;
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
     this.setCamera = this.setCamera.bind(this);
@@ -131,11 +133,14 @@ export default class GLEngine {
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+    shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
     // Uniform apply
-    shaderProgram.setMatrixUniforms = function () {
+    shaderProgram.setMatrixUniforms = function (scale = null) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
       gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+      // scale
+      gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
     };
     // return
     this.shaderProgram = shaderProgram;
@@ -144,7 +149,7 @@ export default class GLEngine {
 
   // Set FOV and Perspective
   initProjection(gl) {
-    const fieldOfView = this.degToRad(45);
+    const fieldOfView = this.degToRad(this.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
@@ -166,7 +171,7 @@ export default class GLEngine {
     const { gl } = this;
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    perspective(this.degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this.uProjMat);
+    perspective(this.degToRad(this.fov), gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this.uProjMat);
     this.uViewMat = create();
   }
 

@@ -23,7 +23,9 @@ export default class Sprite {
     this.drawOffset = new Vector(0, 0, 0);
     this.hotspotOffset = new Vector(0, 0, 0);
     this.animFrame = 0;
+    this.fixed = false;
     this.pos = new Vector(0, 0, 0);
+    this.scale = new Vector(1, 1, 1);
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
@@ -179,13 +181,15 @@ export default class Sprite {
     // Undo rotation so that character plane is normal to LOS
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+    // scale & rotate sprite to handle walls
+    if (!this.fixed) this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
     rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
     // Bind texture
     this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.vertexPositionAttribute);
     this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.textureCoordAttribute);
     this.texture.attach();
     // Draw
-    this.engine.shaderProgram.setMatrixUniforms();
+    if (this.fixed) this.engine.shaderProgram.setMatrixUniforms();
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);

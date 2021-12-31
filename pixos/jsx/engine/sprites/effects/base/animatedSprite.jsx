@@ -13,6 +13,7 @@
 
 import { translate, rotate } from "../../../utils/math/matrix4.jsx";
 import Sprite from "../../../core/sprite.jsx";
+import { Vector } from "../../../utils/math/vector.jsx";
 
 export default class AnimatedSprite extends Sprite {
   constructor(engine) {
@@ -46,22 +47,5 @@ export default class AnimatedSprite extends Sprite {
       this.accumTime = 0;
       this.lastTime = time;
     }
-  }
-  // Draw Frame
-  draw(engine) {
-    if (!this.loaded) return;
-    engine.mvPushMatrix();
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-    rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
-    engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.vertexPositionAttribute);
-    engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.textureCoordAttribute);
-    this.texture.attach();
-    // Draw
-    engine.gl.depthFunc(engine.gl.ALWAYS)
-    engine.shaderProgram.setMatrixUniforms();
-    engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
-    engine.gl.depthFunc(engine.gl.LESS)
-    engine.mvPopMatrix();
   }
 }

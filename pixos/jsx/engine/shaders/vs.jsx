@@ -20,12 +20,15 @@ export default function vs() {
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
   uniform mat4 uNormalMatrix;
+
+  uniform vec3 u_scale;
   
   varying vec2 vTextureCoord;
   varying highp vec3 vLighting;
 
   void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    vec3 scaledPosition = aVertexPosition * u_scale;
+    gl_Position = uPMatrix * uMVMatrix * vec4(scaledPosition, 1.0);
     vTextureCoord = aTextureCoord;
     
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);

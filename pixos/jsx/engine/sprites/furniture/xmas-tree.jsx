@@ -22,6 +22,7 @@ export default class XMasTree extends Sprite {
     this.src = Resources.artResourceUrl("trees.png");
     this.sheetSize = [512, 512];
     this.tileSize = [96, 144];
+    this.fixed = true;
     // Frames
     this.frames = {
       up: [

@@ -38,12 +38,12 @@ export default {
       zones: ["dungeon-top", "dungeon-bottom"],
     },
     // Tree
-    { id: "tree", type: "furniture/tree", pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
+    { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Furniture / Wall Decorations
-    { id: "fireplace", type: "furniture/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
-    { id: "fireplace", type: "effects/fireplace", pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
+    { id: "fireplace", type: "furniture/fireplace", fixed: true, pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
+    { id: "fireplace", type: "effects/fireplace", fixed: true, pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
     // NPCs
-    { id: "darkness", type: "npc/darkness", pos: new Vector(...[6, 2, 0]), facing: Direction.Down },
+    { id: "darkness", type: "npc/darkness", pos: new Vector(...[6, 5, 0]), facing: Direction.Down },
     { id: "air", type: "npc/air-knight", pos: new Vector(...[8, 2, 0]), facing: Direction.Down },
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },
@@ -74,13 +74,7 @@ export default {
         {
           sprite: "air",
           action: "dialogue",
-          args: [
-            [
-              "But what was that plan?...",
-            ],
-            false,
-            { autoclose: true },
-          ],
+          args: [["But what was that plan?..."], false, { autoclose: true }],
           scope: this, // scoped to the zone
         },
         // or call premade events and bundle many things and trigger them
@@ -110,7 +104,7 @@ export default {
     },
   ],
   // objects // 3d
-  objects:[
+  objects: [
     // {
     //   id: "test-obj",
     //   type: "apple",
@@ -121,7 +115,8 @@ export default {
       id: "test-cube",
       type: "cube",
       mtl: false,
-      pos: new Vector(...[6, 4, 0]), facing: Direction.Down
-    }
-  ]
+      pos: new Vector(...[6, 4, 0]),
+      facing: Direction.Down,
+    },
+  ],
 };

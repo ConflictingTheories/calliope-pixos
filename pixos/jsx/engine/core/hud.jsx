@@ -195,4 +195,3 @@ export class textScrollBox {
     ctx.restore(); // remove the clipping
   }
 }
-

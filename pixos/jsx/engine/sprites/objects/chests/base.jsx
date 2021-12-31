@@ -28,6 +28,7 @@ export default class Chest extends Sprite {
     this.state = "closed";
     // Inventory
     this.inventory = [];
+    this.fixed = true;
   }
   // Interaction
   interact(sprite, finish) {

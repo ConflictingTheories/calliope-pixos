@@ -41,7 +41,7 @@ export default class World {
     if (this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
-    if(remotely) await z.loadRemote();
+    if (remotely) await z.loadRemote();
     else await z.load();
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
@@ -52,14 +52,13 @@ export default class World {
 
   // Remove Zone
   removeZone(zoneId) {
-    this.zoneList = this.zoneList
-      .filter((zone) => {
-        if(zone.id !== zoneId){
-          return true
-        }else{
-          zone.removeAllSprites();
-        };
-      });
+    this.zoneList = this.zoneList.filter((zone) => {
+      if (zone.id !== zoneId) {
+        return true;
+      } else {
+        zone.removeAllSprites();
+      }
+    });
     delete this.zoneDict[zoneId];
   }
 
