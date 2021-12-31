@@ -23,7 +23,7 @@ export default class Door extends Sprite {
     this.src = Resources.artResourceUrl("room.gif");
     this.sheetSize = [256, 256];
     this.tileSize = [16, 32];
-    this.fixed = true;
+    // this.fixed = true;
     // Frames
     this.frames = {
       up: [
