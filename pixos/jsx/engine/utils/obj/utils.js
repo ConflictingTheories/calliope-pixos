@@ -69,7 +69,7 @@ function downloadMtlTextures(mtl, root) {
                 image.src = URL.createObjectURL(data);
                 mapData.texture = image;
                 console.log('loading texture image ', mapData, image.src);
-                return new Promise(function (resolve) { return (image.onload = resolve); });
+                return new Promise(function (resolve) { return (image.onload = function () { return resolve(mapData); }); });
             })["catch"](function () {
                 console.error("Unable to download texture: " + url);
             }));
@@ -88,6 +88,7 @@ function downloadMtlTextures(mtl, root) {
             finally { if (e_1) throw e_1.error; }
         }
     }
+    console.log('textures loaded ', textures);
     return Promise.all(textures);
 }
 function getMtl(modelOptions) {
@@ -186,7 +187,8 @@ function downloadModels(models) {
                 return Promise.all([Promise.resolve(material), undefined]);
             })
                 .then(function (value) {
-                return value[0];
+                console.log('material loaded', value);
+                return value;
             });
         }
         var parsed = [namePromise, meshPromise, mtlPromise];
@@ -217,7 +219,8 @@ function downloadModels(models) {
                 var _b = __read(model, 3), name_2 = _b[0], mesh = _b[1], mtl = _b[2];
                 mesh.name = name_2;
                 if (mtl) {
-                    mesh.addMaterialLibrary(mtl);
+                    console.log(mtl);
+                    mesh.addMaterialLibrary(mtl[0]);
                 }
                 models[name_2] = mesh;
             }

@@ -179,9 +179,10 @@ export default class ModelObject {
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
     } else {
-      // engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      // TODO - OBJ textures not properly rendering
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
       // attach the textures
-      this.attach();
+      // this.attach();
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
     }
     // Normals

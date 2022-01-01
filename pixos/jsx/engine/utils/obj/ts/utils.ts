@@ -42,7 +42,7 @@ function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
                         image.src = URL.createObjectURL(data);
                         mapData.texture = image;
                         console.log('loading texture image ', mapData, image.src);
-                        return new Promise(resolve => (image.onload = resolve));
+                        return new Promise(resolve => (image.onload = ()=>resolve(mapData)));
                     })
                     .catch(() => {
                         console.error(`Unable to download texture: ${url}`);
@@ -50,6 +50,7 @@ function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
             );
         }
     }
+    console.log('textures loaded ', textures);
 
     return Promise.all(textures);
 }
@@ -172,7 +173,8 @@ export function downloadModels(models: DownloadModelsOptions[]): Promise<MeshMap
                     },
                 )
                 .then((value: [MaterialLibrary, any]) => {
-                    return value[0];
+                    console.log('material loaded', value);
+                    return value;
                 });
         }
 
@@ -190,7 +192,8 @@ export function downloadModels(models: DownloadModelsOptions[]): Promise<MeshMap
             const [name, mesh, mtl] = model;
             mesh.name = name;
             if (mtl) {
-                mesh.addMaterialLibrary(mtl);
+                console.log(mtl);
+                mesh.addMaterialLibrary(mtl[0]);
             }
             models[name] = mesh;
         }

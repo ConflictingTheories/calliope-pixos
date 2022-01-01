@@ -11,8 +11,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd textures\handgun_Fire.png
-map_Ke textures\\handgun_Fire.png
-map_d textures\\handgun_Fire.png
+map_Ke textures\handgun_Fire.png
+map_d textures\handgun_Fire.png
 
 newmtl Material.001
 Ns 96.078431
@@ -24,8 +24,8 @@ Ni 1.000000
 d 0.000000
 illum 1
 map_Kd textures\handgun_Fire.png
-map_Ke textures\\handgun_Fire.png
-map_d textures\\handgun_Fire.png
+map_Ke textures\handgun_Fire.png
+map_d textures\handgun_Fire.png
 
 newmtl Material.004
 Ns 96.078431
@@ -47,8 +47,8 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd textures\handgun_S.jpg
-map_Bump -bm 5.000000 textures\\handgun_N.jpg
-map_Ks textures\\handgun_S.jpg
+map_Bump -bm 5.000000 textures\handgun_N.jpg
+map_Ks textures\handgun_S.jpg
 
 newmtl handgun_handgun_C.jpg
 Ns 96.078431
@@ -60,5 +60,5 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd textures\handgun_C.jpg
-map_Bump -bm 5.000000 textures\\handgun_N.jpg
-map_Ks textures\\handgun_S.jpg
+map_Bump -bm 5.000000 textures\handgun_N.jpg
+map_Ks textures\handgun_S.jpg
