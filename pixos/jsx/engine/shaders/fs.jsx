@@ -19,9 +19,10 @@ export default function fs() {
   uniform sampler2D uSampler;
   
   void main(void) {
-    if(vLighting != vec3(0.0,0.0,0.0))
-      gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-    else{
+    if(vLighting != vec3(0.0,0.0,0.0)){
+      highp vec4 texelColors = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+      gl_FragColor = vec4(texelColors.rgb * vLighting, texelColors.a);
+    }else{
       highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
       gl_FragColor = vec4(texelColor.rgb, texelColor.a);
     }

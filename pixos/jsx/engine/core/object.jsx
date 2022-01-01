@@ -156,10 +156,19 @@ export default class ModelObject {
     ].flat(3);
   }
 
+  attach() {
+    let { gl } = this.engine;
+    gl.activeTexture(gl.TEXTURE0);
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(this.mesh.textures));
+  }
+
   // Draw Object
   draw() {
     if (!this.loaded) return;
     let { engine, mesh } = this;
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
     engine.objLoader.initMeshBuffers(engine.gl, mesh);
     engine.mvPushMatrix();
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
@@ -170,6 +179,9 @@ export default class ModelObject {
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
     } else {
+      // engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      // attach the textures
+      this.attach();
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
     }
     // Normals
@@ -177,11 +189,12 @@ export default class ModelObject {
     // Indices
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     // draw triangles
-    engine.shaderProgram.setMatrixUniforms();
+    engine.shaderProgram.setMatrixUniforms(this.scale);
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();
     engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    engine.gl.disableVertexAttribArray(this.engine.shaderProgram.vertexNormalAttribute);
   }
 
   // Set Facing

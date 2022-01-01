@@ -105,17 +105,28 @@ export default {
   ],
   // objects // 3d
   objects: [
-    // {
-    //   id: "test-obj",
-    //   type: "apple",
-    //   mtl: true,
-    //   pos: new Vector(...[10, 4, 1]), facing: Direction.up
-    // },
+    {
+      id: "test-obj",
+      type: "person",
+      mtl: false,
+      pos: new Vector(...[10, 4, 1]),
+      scale: new Vector(...[0.1,0.1,0.1]),
+      facing: Direction.up,
+    },
+    {
+      id: "test-gun",
+      type: "handgun",
+      mtl: true,
+      pos: new Vector(...[10, 6, 1]),
+      scale: new Vector(...[1.1,1.1,1.1]),
+      facing: Direction.up,
+    },
     {
       id: "test-cube",
       type: "cube",
       mtl: false,
       pos: new Vector(...[6, 4, 0]),
+      scale: new Vector(...[1,1,1]),
       facing: Direction.Down,
     },
   ],

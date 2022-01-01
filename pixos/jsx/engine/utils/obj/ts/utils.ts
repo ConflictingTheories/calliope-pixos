@@ -41,6 +41,7 @@ function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
                         const image = new Image();
                         image.src = URL.createObjectURL(data);
                         mapData.texture = image;
+                        console.log('loading texture image ', mapData, image.src);
                         return new Promise(resolve => (image.onload = resolve));
                     })
                     .catch(() => {

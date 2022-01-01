@@ -147,6 +147,52 @@ export default class GLEngine {
     return shaderProgram;
   };
 
+    // Initialize Shader Program
+    initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
+      const self = this;
+      const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+      const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      // generate shader
+      let shaderProgram = gl.createProgram();
+      gl.attachShader(shaderProgram, vertexShader);
+      gl.attachShader(shaderProgram, fragmentShader);
+      gl.linkProgram(shaderProgram);
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        throw new Error(`WebGL unable to initialize the shader program: ${gl.getshaderProgramLog(shaderProgram)}`);
+      }
+      // Configure Shader
+      gl.useProgram(shaderProgram);
+      // Normals (needs work)
+      shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+      gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+      // Vertices
+      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+      // Texture Coord
+      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+      gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+      // Uniform Locations
+      shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+      shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
+      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+      shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
+      // Uniform apply
+      shaderProgram.setMatrixUniforms = function (scale = null) {
+        gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
+        gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
+        gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+        // scale
+        gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+      };
+      // disable normal vector (will be enabled when needed)
+      gl.disableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+      // return
+      this.shaderProgram = shaderProgram;
+
+      return shaderProgram;
+    };
+
   // Set FOV and Perspective
   initProjection(gl) {
     const fieldOfView = this.degToRad(this.fov);

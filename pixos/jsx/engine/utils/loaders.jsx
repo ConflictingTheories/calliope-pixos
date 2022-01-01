@@ -114,7 +114,7 @@ export class ObjectLoader {
       mtl: model.mtl ?? false,
       mtlTextureRoot: "/pixos/models",
       downloadMtlTextures: true,
-      enableWTextureCoord: true,
+      enableWTextureCoord: false,
       name: instance.id,
     };
     instance.mesh = (await this.engine.objLoader.downloadModels([modelreq]))[model.id];

@@ -288,7 +288,6 @@ export default class Zone {
   // Draw Frame
   draw() {
     if (!this.loaded) return;
-    this.engine.gl.disableVertexAttribArray(this.engine.shaderProgram.vertexNormalAttribute);
     // Organize by Depth
     this.spriteList?.sort((a, b) => a.pos.y - b.pos.y);
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
@@ -309,9 +308,8 @@ export default class Zone {
       this.spriteList[k++].draw(this.engine);
     }
     // draw objects
-    this.engine.gl.enableVertexAttribArray(this.engine.shaderProgram.vertexNormalAttribute);
     this.objectList.map((obj) => obj.draw());
-    // this.drawObj(this.test);
+    this.drawObj(this.objectList[0].mesh);
     this.engine.mvPopMatrix();
   }
 
@@ -399,8 +397,8 @@ export default class Zone {
       if (
         // else if object blocking
         !this.objectDict[object].walkable &&
-        this.within(x, this.objectDict[object].pos.x - this.objectDict[object].size.x / 2, this.objectDict[object].pos.x, true) &&
-        this.within(y, this.objectDict[object].pos.y - this.objectDict[object].size.y / 2, this.objectDict[object].pos.y, true) &&
+        this.within(x, this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2), this.objectDict[object].pos.x, true) &&
+        this.within(y, this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2), this.objectDict[object].pos.y, true) &&
         this.objectDict[object].blocking
       )
         return false;
