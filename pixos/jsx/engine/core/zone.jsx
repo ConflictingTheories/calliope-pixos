@@ -293,23 +293,29 @@ export default class Zone {
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
+        // // draw objects
+        // this.objectList.map((obj) => obj.draw());
+        // this.drawObj(this.objectList[0].mesh);
     // Draw tile terrain row by row (back to front)
     let k = 0;
     let z = 0;
     for (let j = 0; j < this.size[1]; j++) {
       this.drawRow(j);
+      while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
+        this.objectList[z++].draw();
+      }
       // draw each sprite in front of floor tiles if positioned in front
       while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
         this.spriteList[k++].draw(this.engine);
       }
     }
+    while (z < this.objectList.length) {
+      this.objectList[z++].draw();
+    }
     // draw each sprite (fixes tearing)
     while (k < this.spriteList.length) {
       this.spriteList[k++].draw(this.engine);
     }
-    // draw objects
-    this.objectList.map((obj) => obj.draw());
-    this.drawObj(this.objectList[0].mesh);
     this.engine.mvPopMatrix();
   }
 

@@ -157,11 +157,13 @@ export default class ModelObject {
   }
 
   attach() {
-    let { gl } = this.engine;
-    gl.activeTexture(gl.TEXTURE0);
-    var tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(this.mesh.textures));
+    Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
+      let { gl } = this.engine;
+      console.log("diffusing", mtl);
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, mtl.mapDiffuse.texture);
+      gl.uniform1i(this.engine.shaderProgram.samplerUniform, i);
+    });
   }
 
   // Draw Object
@@ -179,10 +181,8 @@ export default class ModelObject {
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
     } else {
-      // TODO - OBJ textures not properly rendering
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-      // attach the textures
       // this.attach();
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
     }
     // Normals
