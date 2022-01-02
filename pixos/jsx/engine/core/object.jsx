@@ -15,7 +15,7 @@ import { Direction } from "../utils/enums.jsx";
 import ActionQueue from "./queue.jsx";
 import { ActionLoader } from "../utils/loaders.jsx";
 import { rotate, translate } from "../utils/math/matrix4.jsx";
-
+import { _buildBuffer } from "../utils/obj/utils.js";
 export default class ModelObject {
   constructor(engine) {
     this.engine = engine;
@@ -56,37 +56,34 @@ export default class ModelObject {
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
-    // Adjust Vertices based on position
     let mesh = instanceData.mesh;
+    // Mesh bounds
     let maxX,
       minX = null;
     let maxY,
       minY = null;
     let maxZ,
       minZ = null;
-
     for (let i = 0; i < mesh.vertices.length; i = i + 3) {
       let v = mesh.vertices.slice(i, i + 3);
-
-      // size
+      // calculate size
       if (maxX == null || v[0] > maxX) maxX = v[0];
       if (minX == null || v[0] < minX) minX = v[0];
       if (maxY == null || v[1] > maxY) maxY = v[1];
       if (minY == null || v[1] < minY) minY = v[1];
       if (maxZ == null || v[2] > maxZ) maxZ = v[2];
       if (minZ == null || v[2] < minZ) minZ = v[2];
-
-      // let w = new Vector(v[0] + instanceData.pos.x, v[1] + instanceData.pos.y, v[2] + instanceData.pos.z);
-      // mesh.vertices[i] = w.x;
-      // mesh.vertices[i + 1] = w.y;
-      // mesh.vertices[i + 2] = w.z;
-      // let n = mesh.vertexNormals.slice(i, i + 3);
-      // let m = new Vector(n[0] + instanceData.pos.x, n[1] + instanceData.pos.y, n[2] + instanceData.pos.z);
-      // mesh.vertexNormals[i] = m.x;
-      // mesh.vertexNormals[i + 1] = m.y;
-      // mesh.vertexNormals[i + 2] = m.z;
     }
-    this.size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
+    // normalize x, y to fit in tile (todo)
+    let size =new Vector(maxX - minX, maxY - minY, maxZ - minZ);
+    this.size = size;
+    this.scale = new Vector(
+      1 / Math.max(size.x, size.y),
+      1 / Math.max(size.x, size.y),
+      1 / Math.max(size.x, size.y)
+    );
+    this.drawOffset = new Vector(0.5, 0.5, 0);
+    
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
     // Speech bubble
@@ -159,10 +156,16 @@ export default class ModelObject {
   attach() {
     Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
       let { gl } = this.engine;
-      console.log("diffusing", mtl);
+      console.log("diffusing", mtl.mapDiffuse);
       gl.activeTexture(gl.TEXTURE0 + i);
-      gl.bindTexture(gl.TEXTURE_2D, mtl.mapDiffuse.texture);
+      gl.bindTexture(gl.TEXTURE_2D, mtl.mapDiffuse.glTexture);
       gl.uniform1i(this.engine.shaderProgram.samplerUniform, i);
+      // attach indices
+      let bufferInfo = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this.mesh.indicesPerMaterial[i], 1);
+      console.log("buffering", bufferInfo);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
+      this.engine.shaderProgram.setMatrixUniforms(this.scale);
+      gl.drawElements(gl.TRIANGLES, this.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     });
   }
 
@@ -177,21 +180,26 @@ export default class ModelObject {
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
     // Vertices
     engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
-    // Texture
+
+    // Texture - todo (needs work)
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      // Normals
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+      // Indices
+      engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+      // draw triangles
+      engine.shaderProgram.setMatrixUniforms(this.scale);
+      engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     } else {
-      // this.attach();
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      // textures
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+      // normals
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+      // attach materials
+      this.attach();
     }
-    // Normals
-    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
-    // Indices
-    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    // draw triangles
-    engine.shaderProgram.setMatrixUniforms(this.scale);
-    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();
     engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);

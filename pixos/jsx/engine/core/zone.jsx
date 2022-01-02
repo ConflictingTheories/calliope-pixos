@@ -293,9 +293,9 @@ export default class Zone {
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
-        // // draw objects
-        // this.objectList.map((obj) => obj.draw());
-        // this.drawObj(this.objectList[0].mesh);
+    // // draw objects
+    // this.objectList.map((obj) => obj.draw());
+    // this.drawObj(this.objectList[0].mesh);
     // Draw tile terrain row by row (back to front)
     let k = 0;
     let z = 0;
@@ -393,8 +393,16 @@ export default class Zone {
       if (
         // if sprite bypass & override
         !this.objectDict[object].walkable &&
-        this.within(x, this.objectDict[object].pos.x - this.objectDict[object].size.x / 2, this.objectDict[object].pos.x) &&
-        this.within(y, this.objectDict[object].pos.y - this.objectDict[object].size.y / 2, this.objectDict[object].pos.y) &&
+        this.within(
+          x,
+          this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2),
+          this.objectDict[object].pos.x
+        ) &&
+        this.within(
+          y,
+          this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2),
+          this.objectDict[object].pos.y
+        ) &&
         !this.objectDict[object].blocking &&
         this.objectDict[object].override
       )
@@ -403,8 +411,19 @@ export default class Zone {
       if (
         // else if object blocking
         !this.objectDict[object].walkable &&
-        this.within(x, this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2), this.objectDict[object].pos.x, true) &&
-        this.within(y, this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2), this.objectDict[object].pos.y, true) &&
+        ((this.objectDict[object].pos.x === x && this.objectDict[object].pos.y === y) ||
+          (this.within(
+            x,
+            this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2),
+            this.objectDict[object].pos.x,
+            true
+          ) &&
+            this.within(
+              y,
+              this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2),
+              this.objectDict[object].pos.y,
+              true
+            ))) &&
         this.objectDict[object].blocking
       )
         return false;

@@ -117,7 +117,9 @@ export class ObjectLoader {
       enableWTextureCoord: false,
       name: instance.id,
     };
-    instance.mesh = (await this.engine.objLoader.downloadModels([modelreq]))[model.id];
+    let models = (await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]));
+    console.log('downloading models ---> ', models);
+    instance.mesh = models[model.id];
     instance.templateLoaded = true;
     console.log("loaded model", instance);
     // Update Existing

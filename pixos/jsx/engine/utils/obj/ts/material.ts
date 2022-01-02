@@ -25,6 +25,7 @@ export interface TextureMapData {
     filename: string;
     reflectionType?: string;
     texture?: HTMLImageElement;
+    glTexture?: WebGLTexture
 }
 
 /**

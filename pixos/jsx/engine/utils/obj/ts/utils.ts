@@ -1,7 +1,7 @@
 import Mesh from "./mesh";
 import { MaterialLibrary, TextureMapData } from "./material";
 
-function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
+function downloadMtlTextures(gl, mtl: MaterialLibrary, root: string) {
     const mapAttributes = [
         "mapDiffuse",
         "mapAmbient",
@@ -41,6 +41,20 @@ function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
                         const image = new Image();
                         image.src = URL.createObjectURL(data);
                         mapData.texture = image;
+                      
+                        var texture = gl.createTexture();
+                        gl.bindTexture(gl.TEXTURE_2D, texture);
+                        
+                        // Set the parameters so we can render any size image.
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                        
+                        // Upload the image into the texture.
+                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                        
+                        mapData.glTexture = texture;
                         console.log('loading texture image ', mapData, image.src);
                         return new Promise(resolve => (image.onload = ()=>resolve(mapData)));
                     })
@@ -118,7 +132,7 @@ export type MeshMap = { [name: string]: Mesh };
  * and the value is its Mesh object. Each Mesh object will automatically
  * have its addMaterialLibrary() method called to set the given MTL data (if given).
  */
-export function downloadModels(models: DownloadModelsOptions[]): Promise<MeshMap> {
+export function downloadModels(gl, models: DownloadModelsOptions[]): Promise<MeshMap> {
     const finished = [];
 
     for (const model of models) {
@@ -167,7 +181,7 @@ export function downloadModels(models: DownloadModelsOptions[]): Promise<MeshMap
                             // is resolved once all of the images it
                             // contains are downloaded. These are then
                             // attached to the map data objects
-                            return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);
+                            return Promise.all([Promise.resolve(material), downloadMtlTextures(gl, material, root)]);
                         }
                         return Promise.all([Promise.resolve(material), undefined]);
                     },
@@ -262,7 +276,7 @@ export interface ExtendedGLBuffer extends WebGLBuffer {
     numItems: number;
 }
 
-function _buildBuffer(gl: WebGLRenderingContext, type: GLenum, data: number[], itemSize: number): ExtendedGLBuffer {
+export function _buildBuffer(gl: WebGLRenderingContext, type: GLenum, data: number[], itemSize: number): ExtendedGLBuffer {
     const buffer = gl.createBuffer() as ExtendedGLBuffer;
     const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
     gl.bindBuffer(type, buffer);

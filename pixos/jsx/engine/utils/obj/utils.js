@@ -27,10 +27,10 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 exports.__esModule = true;
-exports.deleteMeshBuffers = exports.initMeshBuffers = exports.downloadMeshes = exports.downloadModels = void 0;
+exports.deleteMeshBuffers = exports.initMeshBuffers = exports._buildBuffer = exports.downloadMeshes = exports.downloadModels = void 0;
 var mesh_1 = require("./mesh");
 var material_1 = require("./material");
-function downloadMtlTextures(mtl, root) {
+function downloadMtlTextures(gl, mtl, root) {
     var e_1, _a;
     var mapAttributes = [
         "mapDiffuse",
@@ -68,6 +68,16 @@ function downloadMtlTextures(mtl, root) {
                 var image = new Image();
                 image.src = URL.createObjectURL(data);
                 mapData.texture = image;
+                var texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                // Set the parameters so we can render any size image.
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                // Upload the image into the texture.
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                mapData.glTexture = texture;
                 console.log('loading texture image ', mapData, image.src);
                 return new Promise(function (resolve) { return (image.onload = function () { return resolve(mapData); }); });
             })["catch"](function () {
@@ -140,7 +150,7 @@ function getMtl(modelOptions) {
  * and the value is its Mesh object. Each Mesh object will automatically
  * have its addMaterialLibrary() method called to set the given MTL data (if given).
  */
-function downloadModels(models) {
+function downloadModels(gl, models) {
     var e_2, _a;
     var finished = [];
     var _loop_2 = function (model) {
@@ -182,7 +192,7 @@ function downloadModels(models) {
                     // is resolved once all of the images it
                     // contains are downloaded. These are then
                     // attached to the map data objects
-                    return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);
+                    return Promise.all([Promise.resolve(material), downloadMtlTextures(gl, material, root)]);
                 }
                 return Promise.all([Promise.resolve(material), undefined]);
             })
@@ -300,6 +310,7 @@ function _buildBuffer(gl, type, data, itemSize) {
     buffer.numItems = data.length / itemSize;
     return buffer;
 }
+exports._buildBuffer = _buildBuffer;
 /**
  * Takes in the WebGL context and a Mesh, then creates and appends the buffers
  * to the mesh object as attributes.

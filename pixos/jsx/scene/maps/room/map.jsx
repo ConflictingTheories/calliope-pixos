@@ -108,17 +108,17 @@ export default {
     {
       id: "test-obj",
       type: "person",
-      mtl: false,
+      mtl: true,
       pos: new Vector(...[10, 4, 1]),
       scale: new Vector(...[0.1,0.1,0.1]),
       facing: Direction.up,
     },
     {
       id: "test-gun",
-      type: "handgun",
+      type: "bed",
       mtl: true,
       pos: new Vector(...[10, 6, 1]),
-      scale: new Vector(...[1.1,1.1,1.1]),
+      scale: new Vector(...[0.1,0.1,0.1]),
       facing: Direction.up,
     },
     {
