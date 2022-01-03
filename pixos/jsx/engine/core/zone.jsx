@@ -248,9 +248,9 @@ export default class Zone {
   // Draw Row of Zone
   drawRow(row) {
     // vertice positions
-    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.vertexPositionAttribute);
+    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.aVertexPosition);
     // texture positions
-    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.textureCoordAttribute);
+    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.aTextureCoord);
     // texturize
     this.tileset.texture.attach();
     // set shader
@@ -265,16 +265,16 @@ export default class Zone {
     engine.mvPushMatrix();
     engine.objLoader.initMeshBuffers(engine.gl, mesh);
     // Vertices
-    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
     // Texture
     if (!mesh.textures.length) {
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
     } else {
       this.tileset.texture.attach();
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
     }
     // Normals
-    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
     // Indices
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     // draw triangles
@@ -282,7 +282,7 @@ export default class Zone {
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
   }
 
   // Draw Frame

@@ -186,15 +186,15 @@ export default class Sprite {
     // if (!this.fixed) this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
     rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
     // Bind texture
-    this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.vertexPositionAttribute);
-    this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.textureCoordAttribute);
+    this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.aVertexPosition);
+    this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.aTextureCoord);
     this.engine.bindBuffer(
       this.engine.createBuffer([1, 1, 1], this.engine.gl.DYNAMIC_DRAW, 3),
-      this.engine.shaderProgram.aDiffuseAttribute
+      this.engine.shaderProgram.aDiffuse
     );
     this.engine.bindBuffer(
       this.engine.createBuffer([0,0,0], this.engine.gl.DYNAMIC_DRAW, 3),
-      this.engine.shaderProgram.aSpecularAttribute
+      this.engine.shaderProgram.aSpecular
     );
     this.engine.bindBuffer(
       this.engine.createBuffer([0, 0, 0], this.engine.gl.DYNAMIC_DRAW, 1),
@@ -216,8 +216,8 @@ export default class Sprite {
       translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
       rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
       // Bind texture for speech bubble
-      this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.vertexPositionAttribute);
-      this.engine.bindBuffer(this.speechTexBuf, this.engine.shaderProgram.textureCoordAttribute);
+      this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.aVertexPosition);
+      this.engine.bindBuffer(this.speechTexBuf, this.engine.shaderProgram.aTextureCoord);
       this.speech.attach();
       // // Draw Speech
       this.engine.shaderProgram.setMatrixUniforms();

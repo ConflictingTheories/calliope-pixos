@@ -56,8 +56,8 @@ export default class AnimatedTile extends Sprite {
     // Lie flat on the ground
     translate(engine.uViewMat, engine.uViewMat, this.drawOffset.toArray());
     rotate(engine.uViewMat, engine.uViewMat, engine.degToRad(90), [1, 0, 0]);
-    engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.vertexPositionAttribute);
-    engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.textureCoordAttribute);
+    engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.aVertexPosition);
+    engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.aTextureCoord);
     this.texture.attach();
     // Draw
     engine.shaderProgram.setMatrixUniforms();

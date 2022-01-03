@@ -120,23 +120,23 @@ export default class GLEngine {
     // Configure Shader
     gl.useProgram(shaderProgram);
     // Normals (needs work)
-    shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
     // diffuse
-    shaderProgram.vertexDiffuseAttribute = gl.getAttribLocation(shaderProgram, "aDiffuse");
-    gl.enableVertexAttribArray(shaderProgram.vertexDiffuseAttribute);
+    shaderProgram.aDiffuse = gl.getAttribLocation(shaderProgram, "aDiffuse");
+    gl.enableVertexAttribArray(shaderProgram.aDiffuse);
     // specular
-    shaderProgram.vertexSpecularAttribute = gl.getAttribLocation(shaderProgram, "aSpecular");
-    gl.enableVertexAttribArray(shaderProgram.vertexSpecularAttribute);
+    shaderProgram.aSpecular = gl.getAttribLocation(shaderProgram, "aSpecular");
+    gl.enableVertexAttribArray(shaderProgram.aSpecular);
     // specular Exponent
-    shaderProgram.vertexSpecularExponentAttribute = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
-    gl.enableVertexAttribArray(shaderProgram.vertexSpecularExponentAttribute);
+    shaderProgram.aSpecularExponent = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
+    gl.enableVertexAttribArray(shaderProgram.aSpecularExponent);
     // Vertices
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
     // Texture Coord
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+    shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+    gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
     // Uniform Locations
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
@@ -177,10 +177,10 @@ export default class GLEngine {
       }
     };
 
-    gl.disableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-    gl.disableVertexAttribArray(shaderProgram.vertexDiffuseAttribute);
-    gl.disableVertexAttribArray(shaderProgram.vertexSpecularAttribute);
-    gl.disableVertexAttribArray(shaderProgram.vertexSpecularExponentAttribute);
+    gl.disableVertexAttribArray(shaderProgram.aVertexNormal);
+    gl.disableVertexAttribArray(shaderProgram.aDiffuse);
+    gl.disableVertexAttribArray(shaderProgram.aSpecular);
+    gl.disableVertexAttribArray(shaderProgram.aSpecularExponent);
     // return
     this.shaderProgram = shaderProgram;
     return shaderProgram;

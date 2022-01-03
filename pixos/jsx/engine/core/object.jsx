@@ -164,46 +164,31 @@ export default class ModelObject {
     Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
       let { engine, mesh } = this;
       let { gl } = this.engine;
-
-      // todo - bind buffers for each material
       // Vertices
-      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
-
+      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
       // Diffuse
       engine.bindBuffer(
-        this.engine.createBuffer(mtl.diffuse, this.engine.gl.DYNAMIC_DRAW, 3),
-        engine.shaderProgram.vertexDiffuseAttribute
+        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.diffuse, 3),
+        engine.shaderProgram.aDiffuse
       );
-
       // Specular
       engine.bindBuffer(
-        this.engine.createBuffer(mtl.specular, this.engine.gl.DYNAMIC_DRAW, 3),
-        engine.shaderProgram.vertexSpecularAttribute
+        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.specular, 3),
+        engine.shaderProgram.aSpecular
       );
-
       // Specular Exponent
       engine.bindBuffer(
-        this.engine.createBuffer(mtl.specularExponent, this.engine.gl.DYNAMIC_DRAW, 3),
-        engine.shaderProgram.vertexSpecularExponentAttribute
+        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.specularExponent, 1),
+        engine.shaderProgram.aSpecularExponent
       );
-
-      // Texture - todo (needs work)
-      if (!mesh.textures.length) {
-        // disable texture attribute
-        engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-      } else {
-        // attach material texture TODO
-        engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
-      }
+      // attach material texture TODO
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
       // normal
-      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
-
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
       // attach indices
       let bufferInfo = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indicesPerMaterial[i], 1);
-      console.log(bufferInfo,  mesh.indicesPerMaterial[i]);
-      // index
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-
+      // draw
       engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
       gl.drawElements(gl.TRIANGLES, bufferInfo.numItems, gl.UNSIGNED_SHORT, 0);
     });
@@ -214,9 +199,7 @@ export default class ModelObject {
     if (!this.loaded) return;
     let { engine, mesh } = this;
     // setup obj attributes
-    engine.gl.uniform1f(this.engine.shaderProgram.useSampler, 0.0);
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
-
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.aVertexNormal);
     // initialize buffers
     engine.mvPushMatrix();
     // position object
@@ -224,63 +207,27 @@ export default class ModelObject {
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
     // disable texture attribute (none applied to obj)
     if (!mesh.textures.length) {
-      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
-      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
+      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
       engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
       engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     } else {
-      // Texture - todo (needs work)
-      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexDiffuseAttribute);
-      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexSpecularAttribute);
-      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexSpecularExponentAttribute);
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
       this.attach();
     }
+
+
+
     // Draw
     engine.mvPopMatrix();
     // clear obj rendering attributes
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexDiffuseAttribute);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexSpecularAttribute);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexSpecularExponentAttribute);
-  }
-
-  _draw() {
-    if (!this.loaded) return;
-    let { engine, mesh } = this;
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
-    engine.objLoader.initMeshBuffers(engine.gl, mesh);
-    engine.mvPushMatrix();
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-    // Vertices
-    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
-
-    // Texture - todo (needs work)
-    if (!mesh.textures.length) {
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-      // Normals
-      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
-      // Indices
-      engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-      // draw triangles
-      engine.shaderProgram.setMatrixUniforms(this.scale);
-      engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
-    } else {
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-      // textures
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
-      // normals
-      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
-      // attach materials
-      this.attach();
-    }
-    // Draw
-    engine.mvPopMatrix();
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
-    engine.gl.disableVertexAttribArray(this.engine.shaderProgram.vertexNormalAttribute);
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.aVertexNormal);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.aDiffuse);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.aSpecular);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.aSpecularExponent);
   }
 
   // Set Facing
