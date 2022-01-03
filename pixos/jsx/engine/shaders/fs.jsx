@@ -18,14 +18,15 @@ export default function fs() {
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
 
-  varying vec3 vDiffuse;
-  varying vec3 vSpecular;
-  varying float vSpecularExponent;
   varying highp vec3 vLighting;
 
   uniform float useSampler;
   uniform sampler2D uSampler;
-  
+    
+  uniform vec3 uDiffuse;
+  uniform vec3 uSpecular;
+  uniform float uSpecularExponent;
+
   void main(void) {
 
     if(useSampler == 1.0){
@@ -41,8 +42,7 @@ export default function fs() {
       vec3 L = normalize(vec3(1.0, 1.0, 1.0));
       vec3 H = normalize(L + V);
       vec3 N = normalize(vTransformedNormal);
-      vec3 color = vDiffuse * dot(N, L) + vSpecular * pow(dot(H, N), vSpecularExponent);
-      
+      vec3 color = uDiffuse * dot(N, L) + uSpecular * pow(dot(H, N), uSpecularExponent);
       if(vLighting != vec3(0.0,0.0,0.0))
         gl_FragColor = vec4(color * vLighting, 1.0);
       else

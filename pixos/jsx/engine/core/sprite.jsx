@@ -188,18 +188,6 @@ export default class Sprite {
     // Bind texture
     this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.aVertexPosition);
     this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.aTextureCoord);
-    this.engine.bindBuffer(
-      this.engine.createBuffer([1, 1, 1], this.engine.gl.DYNAMIC_DRAW, 3),
-      this.engine.shaderProgram.aDiffuse
-    );
-    this.engine.bindBuffer(
-      this.engine.createBuffer([0,0,0], this.engine.gl.DYNAMIC_DRAW, 3),
-      this.engine.shaderProgram.aSpecular
-    );
-    this.engine.bindBuffer(
-      this.engine.createBuffer([0, 0, 0], this.engine.gl.DYNAMIC_DRAW, 1),
-      this.engine.shaderProgram.aSpecularExponentAttribute
-    );
     this.texture.attach();
     // Draw
     // if (this.fixed)
