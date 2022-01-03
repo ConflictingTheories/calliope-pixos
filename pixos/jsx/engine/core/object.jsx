@@ -162,26 +162,47 @@ export default class ModelObject {
 
   // draw materials individually to screen from obj
   attach() {
+    let { engine, mesh } = this;
+    let { gl } = this.engine;
+    let diffuse = mesh.vertexMaterialIndices.map((index) => mesh.materialsByIndex[index].diffuse).flat(2);
+    let specular = mesh.vertexMaterialIndices.map((index) => mesh.materialsByIndex[index].specular).flat(2);
+    let specExp = mesh.vertexMaterialIndices.map((index) => mesh.materialsByIndex[index].specExp);
+
+    let diffuseBuffer = _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, diffuse, 3);
+    let specularBuffer = _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, specular, 3);
+    let specExpBuffer = _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, specExp, 1);
+    mesh.diffuseBuffer = diffuseBuffer;
+    mesh.specularBuffer = specularBuffer;
+    mesh.specExpBuffer = specExpBuffer;
+    console.log(mesh);
+    // vertices
+    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
+    // texture
+    engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
+    // normal
+    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
+    // diffuse
+    engine.bindBuffer(mesh.diffuseBuffer, engine.shaderProgram.uDiffuse);
+    // specular
+    engine.bindBuffer(mesh.specularBuffer, engine.shaderProgram.uSpecular);
+    engine.bindBuffer(mesh.specExpBuffer, engine.shaderProgram.uSpecularExponent);
+
+    // engine.shaderProgram.applyAttributePointers(this);
+    // indices
+    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+    gl.drawElements(gl.TRIANGLES, mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  }
+
+  _attached() {
     Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
       let { engine, mesh } = this;
       let { gl } = this.engine;
       // Vertices
       engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
-      // Diffuse
-      engine.bindBuffer(
-        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.diffuse, 3),
-        engine.shaderProgram.aDiffuse
-      );
-      // Specular
-      engine.bindBuffer(
-        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.specular, 3),
-        engine.shaderProgram.aSpecular
-      );
-      // Specular Exponent
-      engine.bindBuffer(
-        _buildBuffer(gl, this.engine.gl.ARRAY_BUFFER, mtl.specularExponent, 1),
-        engine.shaderProgram.aSpecularExponent
-      );
+      gl.vertexAttrib3fv(engine.shaderProgram.uDiffuse, mtl.diffuse);
+      gl.vertexAttrib3fv(engine.shaderProgram.uSpecular, mtl.specular);
+      gl.vertexAttrib1f(engine.shaderProgram.uSpecularExponent, mtl.specularExponent);
       // attach material texture TODO
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
       // normal
@@ -204,10 +225,10 @@ export default class ModelObject {
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
     // attributes
-    engine.shaderProgram.applyAttributePointers(this);
+    engine.shaderProgram.applyAttributePointers(mesh);
     // material indices
-    let materialBuffer = mesh.makeIndexBufferDataForMaterials(...Object.values(mesh.materialIndices))
-    console.log(mesh, materialBuffer);
+    let materialBuffer = mesh.makeIndexBufferDataForMaterials(...Object.values(mesh.materialIndices));
+    console.log(mesh, vertexData, materialBuffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, materialBuffer, gl.STATIC_DRAW);
     // draw
@@ -221,6 +242,7 @@ export default class ModelObject {
     let { engine, mesh } = this;
     // setup obj attributes
     engine.gl.enableVertexAttribArray(engine.shaderProgram.aVertexNormal);
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
     // initialize buffers
     engine.mvPushMatrix();
     // position object
@@ -237,12 +259,39 @@ export default class ModelObject {
       engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     } else {
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
-      // this.attach();
-      engine.gl.enableVertexAttribArray(engine.shaderProgram.aDiffuse);
-      engine.gl.enableVertexAttribArray(engine.shaderProgram.aSpecular);
-      engine.gl.enableVertexAttribArray(engine.shaderProgram.aSpecularExponent);
-      this.drawObj();
+      // mesh.indicesPerMaterial.forEach((x, i) => {
+      //   engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
+      //   engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
+      //   engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
+      //   engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
+
+      //   let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
+      //   engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
+      //   engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
+      //   engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
+      // });
+      // this._attached();
+      // this.drawObj();
+      // draw each piece of the object (per material)
+      mesh.indicesPerMaterial.forEach((x, i) => {
+        // vertices
+        engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
+        // texture
+        engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
+        // normal
+        engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
+        // Diffuse
+        engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
+        // Specular
+        engine.gl.uniform3fv(engine.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
+        // Specular Exponent
+        engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+        // indices
+        let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
+        engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
+        engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+        engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
+      });
     }
 
     // Draw
@@ -250,9 +299,6 @@ export default class ModelObject {
     // clear obj rendering attributes
     engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
     engine.gl.disableVertexAttribArray(engine.shaderProgram.aVertexNormal);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.aDiffuse);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.aSpecular);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.aSpecularExponent);
   }
 
   // Set Facing
