@@ -13,7 +13,7 @@
 
 import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
-import {Texture, ColorTexture} from "./texture.jsx";
+import { Texture, ColorTexture } from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
 import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
@@ -151,8 +151,32 @@ export default class GLEngine {
       gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+      // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);
     };
+
+    const attrs = {
+      aVertexPosition: OBJ.Layout.POSITION.key,
+      aVertexNormal: OBJ.Layout.NORMAL.key,
+      aTextureCoord: OBJ.Layout.UV.key,
+      aDiffuse: OBJ.Layout.DIFFUSE.key,
+      aSpecular: OBJ.Layout.SPECULAR.key,
+      aSpecularExponent: OBJ.Layout.SPECULAR_EXPONENT.key,
+    };
+    shaderProgram.applyAttributePointers = function (model) {
+      const layout = model.mesh.vertexBuffer.layout;
+      for (const attrName in attrs) {
+        if (!attrs.hasOwnProperty(attrName) || shaderProgram[attrName] == -1) {
+          continue;
+        }
+        const layoutKey = attrs[attrName];
+        if (shaderProgram[attrName] != -1) {
+          const attr = layout.attributeMap[layoutKey];
+          gl.vertexAttribPointer(shaderProgram[attrName], attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        }
+      }
+    };
+
     gl.disableVertexAttribArray(shaderProgram.vertexNormalAttribute);
     gl.disableVertexAttribArray(shaderProgram.vertexDiffuseAttribute);
     gl.disableVertexAttribArray(shaderProgram.vertexSpecularAttribute);
@@ -161,8 +185,6 @@ export default class GLEngine {
     this.shaderProgram = shaderProgram;
     return shaderProgram;
   };
-
-
 
   // Set FOV and Perspective
   initProjection(gl) {
