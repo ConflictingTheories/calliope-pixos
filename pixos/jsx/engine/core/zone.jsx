@@ -155,7 +155,7 @@ export default class Zone {
   async loadObject(_this, data) {
     data.zone = _this;
     let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
-    console.log(["this", this.objectDict, this.objectList, data, newObject]);
+    console.log(["object", this.objectDict, this.objectList, data, newObject]);
     this.objectDict[data.id] = newObject;
     this.objectList.push(newObject);
   }
@@ -164,7 +164,7 @@ export default class Zone {
   async loadSprite(_this, data) {
     data.zone = _this;
     let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
-    console.log(["this", this.spriteDict, this.spriteList, data, newSprite]);
+    console.log(["sprite", this.spriteDict, this.spriteList, data, newSprite]);
     this.spriteDict[data.id] = newSprite;
     this.spriteList.push(newSprite);
   }

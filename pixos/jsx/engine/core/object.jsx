@@ -194,6 +194,16 @@ export default class ModelObject {
     });
   }
 
+  drawObj(){
+    let { engine, mesh } = this;
+    let { gl } = engine;
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
+    shaderProgram.applyAttributePointers(model);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    engine.setMatrixUniforms(this.scale, 0.0);
+    gl.drawElements(gl.TRIANGLES, mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  }
+
   // Draw Object
   draw() {
     if (!this.loaded) return;

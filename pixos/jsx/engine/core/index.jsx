@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { create, create3, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
+import { create, create3, normalFromMat4, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
 import { Texture, ColorTexture } from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
@@ -148,6 +148,9 @@ export default class GLEngine {
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
+      // normal
+      self.normalMat = create3();
+      normalFromMat4(self.normalMat, self.uViewMat);
       gl.uniformMatrix3fv(this.normalMatrixUniform, false, self.normalMat);
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
