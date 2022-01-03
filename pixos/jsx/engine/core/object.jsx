@@ -159,7 +159,8 @@ export default class ModelObject {
       new Vector(...[2, 0, 2]).toArray(),
     ].flat(3);
   }
-  // attach each material separately
+
+  // draw materials individually to screen from obj
   attach() {
     Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
       let { engine, mesh } = this;
@@ -194,14 +195,24 @@ export default class ModelObject {
     });
   }
 
-  drawObj(){
+  // attempt to draw obj buffer
+  drawObj() {
     let { engine, mesh } = this;
     let { gl } = engine;
+    // vertices
+    var vertexData = mesh.makeBufferData(mesh.vertexBuffer.layout);
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-    shaderProgram.applyAttributePointers(model);
+    gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
+    // attributes
+    engine.shaderProgram.applyAttributePointers(this);
+    // material indices
+    let materialBuffer = mesh.makeIndexBufferDataForMaterials(...Object.values(mesh.materialIndices))
+    console.log(mesh, materialBuffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    engine.setMatrixUniforms(this.scale, 0.0);
-    gl.drawElements(gl.TRIANGLES, mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, materialBuffer, gl.STATIC_DRAW);
+    // draw
+    engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+    gl.drawElements(gl.TRIANGLES, materialBuffer.numItems, gl.UNSIGNED_SHORT, 0);
   }
 
   // Draw Object
@@ -227,7 +238,11 @@ export default class ModelObject {
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     } else {
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
-      this.attach();
+      // this.attach();
+      engine.gl.enableVertexAttribArray(engine.shaderProgram.aDiffuse);
+      engine.gl.enableVertexAttribArray(engine.shaderProgram.aSpecular);
+      engine.gl.enableVertexAttribArray(engine.shaderProgram.aSpecularExponent);
+      this.drawObj();
     }
 
     // Draw

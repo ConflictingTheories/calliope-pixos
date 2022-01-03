@@ -140,7 +140,7 @@ export default class GLEngine {
     // Uniform Locations
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
+    shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, "useSampler");
@@ -151,7 +151,7 @@ export default class GLEngine {
       // normal
       self.normalMat = create3();
       normalFromMat4(self.normalMat, self.uViewMat);
-      gl.uniformMatrix3fv(this.normalMatrixUniform, false, self.normalMat);
+      gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
       // use sampler or materials?
