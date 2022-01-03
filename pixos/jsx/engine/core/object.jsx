@@ -77,10 +77,10 @@ export default class ModelObject {
       if (minZ == null || v[2] < minZ) minZ = v[2];
     }
     // normalize x, y to fit in tile (todo)
-    let size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
+    let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
-    this.scale = new Vector(1 / Math.max(size.x, size.y), 1 / Math.max(size.x, size.y), 1 / Math.max(size.x, size.y));
-    this.drawOffset = new Vector(0.5, 0.5, 0);
+    this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
+    this.drawOffset = new Vector(0.5, 0.5, 1);
 
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
@@ -205,6 +205,8 @@ export default class ModelObject {
     // position object
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+    rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(90), [1, 0, 0]);
+
     // disable texture attribute (none applied to obj)
     if (!mesh.textures.length) {
       engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
@@ -217,8 +219,6 @@ export default class ModelObject {
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
       this.attach();
     }
-
-
 
     // Draw
     engine.mvPopMatrix();
