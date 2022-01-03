@@ -259,32 +259,6 @@ export default class Zone {
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }
 
-  // Draw Obj to scene
-  drawObj(mesh) {
-    let { engine } = this;
-    engine.mvPushMatrix();
-    engine.objLoader.initMeshBuffers(engine.gl, mesh);
-    // Vertices
-    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
-    // Texture
-    if (!mesh.textures.length) {
-      engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
-    } else {
-      this.tileset.texture.attach();
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
-    }
-    // Normals
-    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
-    // Indices
-    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    // draw triangles
-    engine.shaderProgram.setMatrixUniforms();
-    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
-    // Draw
-    engine.mvPopMatrix();
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
-  }
-
   // Draw Frame
   draw() {
     if (!this.loaded) return;
@@ -293,9 +267,6 @@ export default class Zone {
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
-    // // draw objects
-    // this.objectList.map((obj) => obj.draw());
-    // this.drawObj(this.objectList[0].mesh);
     // Draw tile terrain row by row (back to front)
     let k = 0;
     let z = 0;
@@ -379,17 +350,6 @@ export default class Zone {
         return false;
     }
     for (let object in this.objectDict) {
-      console.log(
-        this.objectDict[object],
-        x,
-        y,
-        this.within(
-          x,
-          this.objectDict[object].pos.x - this.objectDict[object].size.x / 2,
-          this.objectDict[object].pos.x + this.objectDict[object].size.x / 2
-        ),
-        this.objectDict[object].size
-      );
       if (
         // if sprite bypass & override
         !this.objectDict[object].walkable &&

@@ -80,7 +80,7 @@ export default class ModelObject {
     let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
     this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
-    this.drawOffset = new Vector(0.5, 0.5, 1);
+    this.drawOffset = new Vector(0.5, 0.5, 0);
 
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
