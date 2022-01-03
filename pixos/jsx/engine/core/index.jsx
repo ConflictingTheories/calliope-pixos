@@ -13,7 +13,7 @@
 
 import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
-import Texture from "./texture.jsx";
+import {Texture, ColorTexture} from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
 import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
@@ -115,13 +115,22 @@ export default class GLEngine {
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the shader program: ${gl.getshaderProgramLog(shaderProgram)}`);
+      throw new Error(`WebGL unable to initialize the shader program: ${shaderProgram}`);
     }
     // Configure Shader
     gl.useProgram(shaderProgram);
     // Normals (needs work)
     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    // diffuse
+    shaderProgram.vertexDiffuseAttribute = gl.getAttribLocation(shaderProgram, "aDiffuse");
+    gl.enableVertexAttribArray(shaderProgram.vertexDiffuseAttribute);
+    // specular
+    shaderProgram.vertexSpecularAttribute = gl.getAttribLocation(shaderProgram, "aSpecular");
+    gl.enableVertexAttribArray(shaderProgram.vertexSpecularAttribute);
+    // specular Exponent
+    shaderProgram.vertexSpecularExponentAttribute = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
+    gl.enableVertexAttribArray(shaderProgram.vertexSpecularExponentAttribute);
     // Vertices
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
@@ -134,64 +143,26 @@ export default class GLEngine {
     shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
+    shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, "useSampler");
     // Uniform apply
-    shaderProgram.setMatrixUniforms = function (scale = null) {
+    shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
       gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+      gl.uniform1f(this.useSampler, sampler);
     };
+    gl.disableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    gl.disableVertexAttribArray(shaderProgram.vertexDiffuseAttribute);
+    gl.disableVertexAttribArray(shaderProgram.vertexSpecularAttribute);
+    gl.disableVertexAttribArray(shaderProgram.vertexSpecularExponentAttribute);
     // return
     this.shaderProgram = shaderProgram;
     return shaderProgram;
   };
 
-    // Initialize Shader Program
-    initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
-      const self = this;
-      const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
-      const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-      // generate shader
-      let shaderProgram = gl.createProgram();
-      gl.attachShader(shaderProgram, vertexShader);
-      gl.attachShader(shaderProgram, fragmentShader);
-      gl.linkProgram(shaderProgram);
-      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        throw new Error(`WebGL unable to initialize the shader program: ${gl.getshaderProgramLog(shaderProgram)}`);
-      }
-      // Configure Shader
-      gl.useProgram(shaderProgram);
-      // Normals (needs work)
-      shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-      gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-      // Vertices
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-      // Texture Coord
-      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-      gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-      // Uniform Locations
-      shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-      shaderProgram.normalMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
-      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-      shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
-      // Uniform apply
-      shaderProgram.setMatrixUniforms = function (scale = null) {
-        gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
-        gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
-        gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
-        // scale
-        gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
-      };
-      // disable normal vector (will be enabled when needed)
-      gl.disableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-      // return
-      this.shaderProgram = shaderProgram;
 
-      return shaderProgram;
-    };
 
   // Set FOV and Perspective
   initProjection(gl) {

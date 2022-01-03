@@ -108,7 +108,7 @@ export default {
     {
       id: "test-obj",
       type: "person",
-      mtl: true,
+      mtl: false,
       pos: new Vector(...[10, 4, 1]),
       scale: new Vector(...[0.1,0.1,0.1]),
       facing: Direction.up,

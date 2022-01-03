@@ -16,6 +16,8 @@ import ActionQueue from "./queue.jsx";
 import { ActionLoader } from "../utils/loaders.jsx";
 import { rotate, translate } from "../utils/math/matrix4.jsx";
 import { _buildBuffer } from "../utils/obj/utils.js";
+import * as OBJ from "../utils/obj";
+import { ColorTexture, Texture } from "./texture.jsx";
 export default class ModelObject {
   constructor(engine) {
     this.engine = engine;
@@ -75,17 +77,22 @@ export default class ModelObject {
       if (minZ == null || v[2] < minZ) minZ = v[2];
     }
     // normalize x, y to fit in tile (todo)
-    let size =new Vector(maxX - minX, maxY - minY, maxZ - minZ);
+    let size = new Vector(maxX - minX, maxY - minY, maxZ - minZ);
     this.size = size;
-    this.scale = new Vector(
-      1 / Math.max(size.x, size.y),
-      1 / Math.max(size.x, size.y),
-      1 / Math.max(size.x, size.y)
-    );
+    this.scale = new Vector(1 / Math.max(size.x, size.y), 1 / Math.max(size.x, size.y), 1 / Math.max(size.x, size.y));
     this.drawOffset = new Vector(0.5, 0.5, 0);
-    
+
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    let layout = new OBJ.Layout(
+      OBJ.Layout.POSITION,
+      OBJ.Layout.NORMAL,
+      OBJ.Layout.DIFFUSE,
+      OBJ.Layout.UV,
+      OBJ.Layout.SPECULAR,
+      OBJ.Layout.SPECULAR_EXPONENT
+    );
+    mesh.vertexBuffer.layout = layout;
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
@@ -153,24 +160,42 @@ export default class ModelObject {
     ].flat(3);
   }
 
-  attach() {
-    Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
-      let { gl } = this.engine;
-      console.log("diffusing", mtl.mapDiffuse);
-      gl.activeTexture(gl.TEXTURE0 + i);
-      gl.bindTexture(gl.TEXTURE_2D, mtl.mapDiffuse.glTexture);
-      gl.uniform1i(this.engine.shaderProgram.samplerUniform, i);
-      // attach indices
-      let bufferInfo = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this.mesh.indicesPerMaterial[i], 1);
-      console.log("buffering", bufferInfo);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-      this.engine.shaderProgram.setMatrixUniforms(this.scale);
-      gl.drawElements(gl.TRIANGLES, this.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-    });
-  }
-
   // Draw Object
   draw() {
+    if (!this.loaded) return;
+    let { engine, mesh } = this;
+    // setup obj attributes
+    engine.gl.uniform1f(this.engine.shaderProgram.useSampler, 0.0);
+    // initialize buffers
+    engine.mvPushMatrix();
+    // position object
+    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
+    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+    // Vertices
+    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+    // Texture - todo (needs work)
+    if (!mesh.textures.length) {
+      // disable texture attribute
+      engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    } else {
+      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+    }
+    // Indices
+    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    // draw triangles
+    engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
+    // Draw
+    engine.mvPopMatrix();
+    // clear obj rendering attributes
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexDiffuseAttribute);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexSpecularAttribute);
+    engine.gl.disableVertexAttribArray(engine.shaderProgram.vertexSpecularExponentAttribute);
+  }
+
+  _draw() {
     if (!this.loaded) return;
     let { engine, mesh } = this;
     engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
