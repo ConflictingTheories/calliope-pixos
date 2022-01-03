@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { create, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
+import { create, create3, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
 import { Vector, negate } from "../utils/math/vector.jsx";
 import { Texture, ColorTexture } from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
@@ -22,7 +22,7 @@ export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
     this.uViewMat = create();
     this.uProjMat = create();
-    this.normalMat = create();
+    this.normalMat = create3();
     this.scale = new Vector(1, 1, 1);
     this.canvas = canvas;
     this.hud = hud;
@@ -148,7 +148,7 @@ export default class GLEngine {
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
-      gl.uniformMatrix4fv(this.normalMatrixUniform, false, self.normalMat);
+      gl.uniformMatrix3fv(this.normalMatrixUniform, false, self.normalMat);
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
       // use sampler or materials?

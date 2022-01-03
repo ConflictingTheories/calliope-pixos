@@ -15,7 +15,7 @@ export default function fs() {
   precision mediump float;
 
   varying vec2 vTextureCoord;
-  varying vec4 vTransformedNormal;
+  varying vec3 vTransformedNormal;
   varying vec4 vPosition;
 
   varying vec3 vDiffuse;
@@ -40,7 +40,7 @@ export default function fs() {
       vec3 V = -normalize(vPosition.xyz);
       vec3 L = normalize(vec3(1.0, 1.0, 1.0));
       vec3 H = normalize(L + V);
-      vec3 N = normalize(vTransformedNormal.xyz);
+      vec3 N = normalize(vTransformedNormal);
       vec3 color = vDiffuse * dot(N, L) + vSpecular * pow(dot(H, N), vSpecularExponent);
       
       if(vLighting != vec3(0.0,0.0,0.0))

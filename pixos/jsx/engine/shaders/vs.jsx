@@ -22,10 +22,10 @@ export default function vs() {
 
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
-  uniform mat4 uNormalMatrix;
+  uniform mat3 uNormalMatrix;
 
   varying vec2 vTextureCoord;
-  varying vec4 vTransformedNormal;
+  varying vec3 vTransformedNormal;
   varying vec4 vPosition;
 
   varying vec3 vDiffuse;
@@ -51,7 +51,7 @@ export default function vs() {
     highp vec3 directionalLightColor = vec3(1, 1, 1);
     highp vec3 directionalVector = normalize(vec3(1, 1, 0.75));
 
-    highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+    highp vec3 transformedNormal = uNormalMatrix * aVertexNormal;
 
     highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
     vLighting = ambientLight + (directionalLightColor * directional);

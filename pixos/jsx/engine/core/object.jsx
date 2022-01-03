@@ -159,6 +159,55 @@ export default class ModelObject {
       new Vector(...[2, 0, 2]).toArray(),
     ].flat(3);
   }
+  // attach each material separately
+  attach() {
+    Object.values(this.mesh.materialsByIndex).map((mtl, i) => {
+      let { engine, mesh } = this;
+      let { gl } = this.engine;
+
+      // todo - bind buffers for each material
+      // Vertices
+      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+
+      // Diffuse
+      engine.bindBuffer(
+        this.engine.createBuffer(mtl.diffuse, this.engine.gl.DYNAMIC_DRAW, 3),
+        engine.shaderProgram.vertexDiffuseAttribute
+      );
+
+      // Specular
+      engine.bindBuffer(
+        this.engine.createBuffer(mtl.specular, this.engine.gl.DYNAMIC_DRAW, 3),
+        engine.shaderProgram.vertexSpecularAttribute
+      );
+
+      // Specular Exponent
+      engine.bindBuffer(
+        this.engine.createBuffer(mtl.specularExponent, this.engine.gl.DYNAMIC_DRAW, 3),
+        engine.shaderProgram.vertexSpecularExponentAttribute
+      );
+
+      // Texture - todo (needs work)
+      if (!mesh.textures.length) {
+        // disable texture attribute
+        engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      } else {
+        // attach material texture TODO
+        engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+      }
+      // normal
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
+
+      // attach indices
+      let bufferInfo = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indicesPerMaterial[i], 1);
+      console.log(bufferInfo,  mesh.indicesPerMaterial[i]);
+      // index
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
+
+      engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+      gl.drawElements(gl.TRIANGLES, bufferInfo.numItems, gl.UNSIGNED_SHORT, 0);
+    });
+  }
 
   // Draw Object
   draw() {
@@ -166,25 +215,28 @@ export default class ModelObject {
     let { engine, mesh } = this;
     // setup obj attributes
     engine.gl.uniform1f(this.engine.shaderProgram.useSampler, 0.0);
+    engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexNormalAttribute);
+
     // initialize buffers
     engine.mvPushMatrix();
     // position object
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-    // Vertices
-    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
-    // Texture - todo (needs work)
+    // disable texture attribute (none applied to obj)
     if (!mesh.textures.length) {
-      // disable texture attribute
+      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.vertexPositionAttribute);
+      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.vertexNormalAttribute);
       engine.gl.disableVertexAttribArray(engine.shaderProgram.textureCoordAttribute);
+      engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+      engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
+      engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     } else {
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.textureCoordAttribute);
+      // Texture - todo (needs work)
+      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexDiffuseAttribute);
+      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexSpecularAttribute);
+      // engine.gl.enableVertexAttribArray(engine.shaderProgram.vertexSpecularExponentAttribute);
+      this.attach();
     }
-    // Indices
-    engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    // draw triangles
-    engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
-    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     // Draw
     engine.mvPopMatrix();
     // clear obj rendering attributes

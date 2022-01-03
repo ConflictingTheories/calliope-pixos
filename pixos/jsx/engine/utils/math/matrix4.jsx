@@ -43,6 +43,15 @@ const create = () => {
   return matrix;
 };
 
+
+const create3 = () => {
+  let matrix = new Float32Array(9);
+  matrix[0] = 1;
+  matrix[4] = 1;
+  matrix[8] = 1;
+  return matrix;
+};
+
 const perspective = (fovy, aspect, near, far) => {
   let matrix = new Float32Array(16);
   let f = 1.0 / Math.tan(fovy / 2);
@@ -172,4 +181,4 @@ function set(mat, dest) {
   return dest;
 };
 
-export { from, create, perspective, translate, rotate, isPowerOf2, set };
+export { from, create, create3, perspective, translate, rotate, isPowerOf2, set };

@@ -193,11 +193,11 @@ export default class Sprite {
       this.engine.shaderProgram.aDiffuseAttribute
     );
     this.engine.bindBuffer(
-      this.engine.createBuffer([0.5, 0.5, 0.5], this.engine.gl.DYNAMIC_DRAW, 3),
+      this.engine.createBuffer([0,0,0], this.engine.gl.DYNAMIC_DRAW, 3),
       this.engine.shaderProgram.aSpecularAttribute
     );
     this.engine.bindBuffer(
-      this.engine.createBuffer([0, 0, 0], this.engine.gl.DYNAMIC_DRAW, 3),
+      this.engine.createBuffer([0, 0, 0], this.engine.gl.DYNAMIC_DRAW, 1),
       this.engine.shaderProgram.aSpecularExponentAttribute
     );
     this.texture.attach();
