@@ -1,6 +1,12 @@
 import Mesh from "./mesh";
 import { MaterialLibrary, TextureMapData } from "./material";
-
+function create1PixelTexture(gl, pixel) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                  new Uint8Array(pixel));
+    return texture;
+  }
 function downloadMtlTextures(gl, mtl: MaterialLibrary, root: string) {
     const mapAttributes = [
         "mapDiffuse",
@@ -41,20 +47,21 @@ function downloadMtlTextures(gl, mtl: MaterialLibrary, root: string) {
                         const image = new Image();
                         image.src = URL.createObjectURL(data);
                         mapData.texture = image;
-                      
-                        var texture = gl.createTexture();
-                        gl.bindTexture(gl.TEXTURE_2D, texture);
-                        
+                        var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
+                        mapData.glTexture = texture;
                         // Set the parameters so we can render any size image.
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                        
+                        gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
                         // Upload the image into the texture.
-                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                        image.onload = () => {
+                            gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
+                        }
                         
-                        mapData.glTexture = texture;
                         console.log('loading texture image ', mapData, image.src);
                         return new Promise(resolve => (image.onload = ()=>resolve(mapData)));
                     })
@@ -77,7 +84,7 @@ function getMtl(modelOptions: DownloadModelsOptions): string {
     return modelOptions.mtl;
 }
 
-export interface DownloadModelsOptions {
+  export interface DownloadModelsOptions {
     obj: string;
     mtl?: boolean | string;
     downloadMtlTextures?: boolean;

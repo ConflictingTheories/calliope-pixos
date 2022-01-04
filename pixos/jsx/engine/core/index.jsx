@@ -136,8 +136,10 @@ export default class GLEngine {
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+    shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, "uDiffuseMap");
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, "useSampler");
+    shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, "useDiffuse");
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);

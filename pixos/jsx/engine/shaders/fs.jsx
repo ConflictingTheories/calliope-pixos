@@ -21,8 +21,10 @@ export default function fs() {
   varying highp vec3 vLighting;
 
   uniform float useSampler;
+  uniform float useDiffuse;
   uniform sampler2D uSampler;
-    
+  uniform sampler2D uDiffuseMap;
+
   uniform vec3 uDiffuse;
   uniform vec3 uSpecular;
   uniform float uSpecularExponent;
@@ -38,11 +40,18 @@ export default function fs() {
         gl_FragColor = vec4(texelColor.rgb, texelColor.a);
       }
     } else {
+      highp vec4 texelColors = texture2D(uDiffuseMap, vTextureCoord);
       vec3 V = -normalize(vPosition.xyz);
       vec3 L = normalize(vec3(1.0, 1.0, 1.0));
       vec3 H = normalize(L + V);
       vec3 N = normalize(vLighting);
       vec3 color = uDiffuse * dot(N, L) + uSpecular * pow(dot(H, N), uSpecularExponent);
+      if(useDiffuse == 1.0){
+        if(texelColors != vec4(0.0,0.0,0.0,0.0)){
+          color = texelColors.rgb * color;
+        }
+      }
+
       if(vLighting != vec3(0.0,0.0,0.0))
         gl_FragColor = vec4(color * vLighting, 1.0);
       else

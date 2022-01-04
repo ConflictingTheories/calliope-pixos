@@ -152,17 +152,16 @@ export default class ModelObject {
 
   attach(texture) {
     let { gl } = this.engine;
-    console.log('attaching', texture);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(this.engine.shaderProgram.samplerUniform, 0);
+    gl.uniform1i(this.engine.shaderProgram.diffuseMapUniform, 0);
   }
   // draw obj model with materials
   drawTexturedObj() {
     let { engine, mesh } = this;
     // draw each piece of the object (per material)
     console.log(mesh);
-    if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0 ) {
+    if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
         engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
@@ -172,7 +171,9 @@ export default class ModelObject {
         engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
         // Diffuse
         engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
-        if(mesh.materialsByIndex[i]?.mapDiffuse?.texture) this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
+        engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+        // TODO -- Texture is not being displayed (needs fixing)
+        if (mesh.materialsByIndex[i]?.mapDiffuse?.glTexture) this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
         // Specular
         engine.gl.uniform3fv(engine.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
         // Specular Exponent
@@ -180,10 +181,11 @@ export default class ModelObject {
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-        engine.shaderProgram.setMatrixUniforms(this.scale, mesh.materialsByIndex[i]?.mapDiffuse?.texture ? 1.0 : 0.0);
+        engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
-    } else { // no materials
+    } else {
+      // no materials
       // vertices
       engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
       engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
