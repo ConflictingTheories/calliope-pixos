@@ -150,12 +150,18 @@ export default class ModelObject {
     ].flat(3);
   }
 
+  attach(texture) {
+    let { gl } = this.engine;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(this.engine.shaderProgram.samplerUniform, 0);
+  }
   // draw obj model with materials
   drawTexturedObj() {
     let { engine, mesh } = this;
     // draw each piece of the object (per material)
     console.log(mesh);
-    if(mesh.indicesPerMaterial.length > 1){
+    if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0 ) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
         engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
@@ -163,7 +169,6 @@ export default class ModelObject {
         engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
         // normal
         engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
-        console.log(mesh);
         // Diffuse
         engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
         // Specular
@@ -176,13 +181,19 @@ export default class ModelObject {
         engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
-    }else{
+    } else {
       // vertices
       engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
       engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
       engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
       engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-      engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
+      // Diffuse
+      engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
+      // Specular
+      engine.gl.uniform3fv(engine.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
+      // Specular Exponent
+      engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, 2);
+      engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
   }
