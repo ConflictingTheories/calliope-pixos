@@ -138,8 +138,8 @@ export default {
     },
     {
       id: "test-cube",
-      type: "cube",
-      mtl: false,
+      type: "die",
+      mtl: true,
       pos: new Vector(...[6, 4, 1]),
     },
   ],
