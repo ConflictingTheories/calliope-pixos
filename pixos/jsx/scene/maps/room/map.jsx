@@ -109,6 +109,7 @@ export default {
       id: "test-obj",
       type: "person",
       mtl: false,
+      useScale: new Vector(...[0.1, 0.1, 0.1]),
       pos: new Vector(...[10, 15, 0]),
     },
     {
@@ -116,6 +117,24 @@ export default {
       type: "bed",
       mtl: true,
       pos: new Vector(...[14, 10, 0]),
+    },
+    {
+      id: "test-" + Math.random(),
+      type: "cactus_tall",
+      mtl: true,
+      pos: new Vector(...[12, 6, 0]),
+    },
+    {
+      id: "test-" + Math.random(),
+      type: "cactus_tall",
+      mtl: true,
+      pos: new Vector(...[12, 7, 0]),
+    },
+    {
+      id: "test" + Math.random(),
+      type: "cactus_short",
+      mtl: true,
+      pos: new Vector(...[11, 6, 0]),
     },
     {
       id: "test-cube",

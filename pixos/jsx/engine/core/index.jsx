@@ -122,15 +122,6 @@ export default class GLEngine {
     // Normals (needs work)
     shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
-    // diffuse
-    shaderProgram.aDiffuse = gl.getAttribLocation(shaderProgram, "aDiffuse");
-    gl.enableVertexAttribArray(shaderProgram.aDiffuse);
-    // specular
-    shaderProgram.aSpecular = gl.getAttribLocation(shaderProgram, "aSpecular");
-    gl.enableVertexAttribArray(shaderProgram.aSpecular);
-    // specular Exponent
-    shaderProgram.aSpecularExponent = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
-    gl.enableVertexAttribArray(shaderProgram.aSpecularExponent);
     // Vertices
     shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
@@ -138,6 +129,9 @@ export default class GLEngine {
     shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, "aTextureCoord");
     gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
     // Uniform Locations
+    shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, "uDiffuse");
+    shaderProgram.uSpecular = gl.getUniformLocation(shaderProgram, "uSpecular");
+    shaderProgram.uSpecularExponent = gl.getUniformLocation(shaderProgram, "uSpecularExponent");
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
@@ -162,12 +156,9 @@ export default class GLEngine {
       aVertexPosition: OBJ.Layout.POSITION.key,
       aVertexNormal: OBJ.Layout.NORMAL.key,
       aTextureCoord: OBJ.Layout.UV.key,
-      aDiffuse: OBJ.Layout.DIFFUSE.key,
-      aSpecular: OBJ.Layout.SPECULAR.key,
-      aSpecularExponent: OBJ.Layout.SPECULAR_EXPONENT.key,
     };
-    shaderProgram.applyAttributePointers = function (model) {
-      const layout = model.mesh.vertexBuffer.layout;
+    shaderProgram.applyAttributePointers = function (mesh) {
+      const layout = mesh.vertexBuffer.layout;
       for (const attrName in attrs) {
         if (!attrs.hasOwnProperty(attrName) || shaderProgram[attrName] == -1) {
           continue;
@@ -179,11 +170,7 @@ export default class GLEngine {
         }
       }
     };
-
     gl.disableVertexAttribArray(shaderProgram.aVertexNormal);
-    gl.disableVertexAttribArray(shaderProgram.aDiffuse);
-    gl.disableVertexAttribArray(shaderProgram.aSpecular);
-    gl.disableVertexAttribArray(shaderProgram.aSpecularExponent);
     // return
     this.shaderProgram = shaderProgram;
     return shaderProgram;
