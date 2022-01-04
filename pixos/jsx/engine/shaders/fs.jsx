@@ -44,8 +44,7 @@ export default function fs() {
       vec3 N = normalize(vTransformedNormal);
       vec3 color = uDiffuse * dot(N, L) + uSpecular * pow(dot(H, N), uSpecularExponent);
       if(vLighting != vec3(0.0,0.0,0.0)){
-      // gl_FragColor = vec4(vec3(0.1,0.6,0.4) * vLighting, 1.0);
-      gl_FragColor = vec4(uDiffuse * vLighting, 1.0);
+        gl_FragColor = vec4((uDiffuse + uSpecular) * vLighting, 1.0);
       }else
         gl_FragColor = vec4(color, 1.0);
     }

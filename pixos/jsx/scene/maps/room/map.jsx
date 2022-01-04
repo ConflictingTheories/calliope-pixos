@@ -125,22 +125,22 @@ export default {
       pos: new Vector(...[12, 6, 0]),
     },
     {
-      id: "test-" + Math.random(),
-      type: "cactus_tall",
-      mtl: true,
-      pos: new Vector(...[12, 7, 0]),
-    },
-    {
       id: "test" + Math.random(),
       type: "cactus_short",
       mtl: true,
       pos: new Vector(...[11, 6, 0]),
     },
     {
+      id: "test-apple",
+      type: "apple",
+      mtl: true,
+      pos: new Vector(...[6, 6, 1]),
+    },
+    {
       id: "test-cube",
       type: "cube",
       mtl: false,
-      pos: new Vector(...[6, 4, 0]),
+      pos: new Vector(...[6, 4, 1]),
     },
   ],
 };
