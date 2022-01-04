@@ -120,7 +120,7 @@ export default {
     },
     {
       id: "test-" + Math.random(),
-      type: "cactus_tall",
+      type: "chair",
       mtl: true,
       pos: new Vector(...[12, 6, 0]),
     },
@@ -131,10 +131,10 @@ export default {
       pos: new Vector(...[11, 6, 0]),
     },
     {
-      id: "test-apple",
-      type: "apple",
-      mtl: true,
-      pos: new Vector(...[6, 6, 1]),
+      id: "test-robot",
+      type: "robot",
+      mtl: false,
+      pos: new Vector(...[7, 7, 1]),
     },
     {
       id: "test-cube",
