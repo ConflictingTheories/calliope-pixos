@@ -15,6 +15,7 @@
 import fs from "../engine/shaders/fs.jsx";
 import vs from "../engine/shaders/vs.jsx";
 import World from "../engine/core/world.jsx";
+import * as JSZip from "jszip";
 
 // Scene Object
 export default class Scene {
@@ -70,11 +71,13 @@ export default class Scene {
 
   // Todo - Load avatar into scene
   exportAvatar = async () => {
-    // Put up loading Screen
-    //
-    // Serialized and Compress Avatar
-    //
-    // Return Exported archive
+    let zip = new JSZip();
+    let avatar = {}; // todo;
+    // store in zip
+    zip.folder("pixos").file("avatar.json", JSON.stringify(avatar));
+    // save
+    let blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, "avatar.zip");
   };
 
   // Render Loop

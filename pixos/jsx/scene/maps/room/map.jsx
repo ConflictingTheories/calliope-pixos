@@ -135,6 +135,7 @@ export default {
       type: "robot",
       mtl: false,
       pos: new Vector(...[7, 7, 1]),
+      rotation: new Vector(...[0, 90, 0]),
     },
     {
       id: "test-cube",

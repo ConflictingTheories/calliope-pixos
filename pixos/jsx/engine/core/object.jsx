@@ -25,6 +25,7 @@ export default class ModelObject {
     this.pos = new Vector(0, 0, 0);
     this.size = new Vector(1, 1, 1);
     this.scale = new Vector(1, 1, 1);
+    this.rotation = new Vector(0, 0, 0);
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
@@ -54,6 +55,7 @@ export default class ModelObject {
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.rotation) set(instanceData.rotation, this.rotation);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
@@ -226,6 +228,16 @@ export default class ModelObject {
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
     rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(90), [1, 0, 0]);
+    // rotate object
+    if (this.rotation && this.rotation.toArray) {
+      let rotation = Math.max(...this.rotation.toArray());
+      if (rotation > 0)
+        rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(rotation), [
+          this.rotation.x / rotation,
+          this.rotation.y / rotation,
+          this.rotation.z / rotation,
+        ]);
+    }
     // Draw Object
     if (!mesh.textures.length) {
       this.drawObj();
@@ -240,10 +252,9 @@ export default class ModelObject {
 
   // Set Facing
   setFacing(facing) {
-    console.log("setting face to " + Direction.spriteSequence(facing));
-    // todo -- apply rotation
+    console.log("setting direction for object to " + Direction.objectSequence(facing));
     if (facing) this.facing = facing;
-    this.setFrame(this.animFrame);
+    this.rotation = Direction.objectSequence(facing);
   }
 
   // Add Action to Queue
@@ -319,6 +330,13 @@ export default class ModelObject {
     // If completion handler passed through - call it when done
     if (finish) finish(true);
     return ret;
+  }
+
+  // Set Facing
+  setFacing(facing) {
+    console.log("setting direction for object to " + Direction.objectSequence(facing));
+    if (facing) this.facing = facing;
+    this.rotation = Direction.objectSequence(facing);
   }
 
   // Set Facing

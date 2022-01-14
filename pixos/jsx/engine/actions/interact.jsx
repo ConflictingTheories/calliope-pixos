@@ -29,6 +29,7 @@ export default {
     this.zone = world.zoneContaining(...this.to);
     // Trigger interaction on Sprite
     this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to[0] && sprite.pos.y === this.to[1]);
+    this.objectList = this.zone.objectList.filter((object) => object.pos.x === this.to[0] && object.pos.y === this.to[1]);
     // -- pass through reference to "finish()" callback
     this.finish = this.finish.bind(this);
     // Trigger
@@ -36,7 +37,17 @@ export default {
   },
   // Trigger interactions in sprites
   interact: function () {
-    if (this.spriteList.length === 0) this.completed = true;
+    if (this.spriteList.length === 0 && this.objectList.length === 0) this.completed = true;
+    // objects
+    this.objectList.forEach((object) => {
+      let faceChange = object.faceDir(Direction.reverse(this.facing));
+      console.log('-----> CHANGING ---->', faceChange)
+      if (faceChange) {
+        object.addAction(faceChange); // face towards avatar
+      }
+      return object.interact ? this.zone.objectDict[object.id].interact(this.sprite, this.finish) : null;
+    });
+    // sprite
     this.spriteList.forEach((sprite) => {
       let faceChange = sprite.faceDir(Direction.reverse(this.facing));
       if (faceChange) {

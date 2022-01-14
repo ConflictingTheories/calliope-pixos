@@ -18,6 +18,8 @@ import { textScrollBox } from "./hud.jsx";
 import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
 import { OBJ } from "../utils/obj";
+import Dexie from 'dexie';
+
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
     this.uViewMat = create();
@@ -41,6 +43,18 @@ export default class GLEngine {
     this.setCamera = this.setCamera.bind(this);
     this.render = this.render.bind(this);
     this.objLoader = OBJ;
+    // database
+    this.db = new Dexie('hyperspace');
+    this.db.version(1).stores({
+      tileset: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
+      inventory: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
+      spirits: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
+      abilities: '++id, name, creator, type checksum, signature', // Primary key and indexed props
+      models: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
+      accounts: '++id, name, type, checksum, signature', // Primary key and indexed props
+      dht: '++id, name, type, ip, checksum, signature', // Primary key and indexed props
+      msg: '++id, name, type, ip, checksum, signature', // Primary key and indexed props
+    });
   }
 
   // Initialize a Scene object
