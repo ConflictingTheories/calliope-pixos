@@ -92,14 +92,14 @@ export class SpriteLoader {
   }
 }
 
-//helps load sprite
+//helps load models
 export class ObjectLoader {
   constructor(engine) {
     this.engine = engine;
     this.definitions = [];
     this.instances = {};
   }
-  // Load Sprite
+  // Load 3d model
   async load(model) {
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
@@ -149,6 +149,7 @@ export class ActionLoader {
     this.callback = callback;
     this.instances = {};
     this.definitions = [];
+    this.assets = {};
 
     let time = new Date().getTime();
     let id = sprite.id + "-" + type + "-" + time;
@@ -162,7 +163,7 @@ export class ActionLoader {
       }
     );
   }
-  // Load Action
+  // Load Internal Action
   load(type) {
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
@@ -188,6 +189,7 @@ export class ActionLoader {
     return instance;
   }
 }
+
 // Loads Audio
 export class AudioLoader {
   constructor(src, loop = false) {
