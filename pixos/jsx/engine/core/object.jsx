@@ -347,7 +347,9 @@ export default class ModelObject {
 
   // set message (for chat bubbles)
   setGreeting(greeting) {
-    this.speech.clearHud();
+    if (this.speech.clearHud) {
+      this.speech.clearHud();
+    }
     this.speech.writeText(greeting);
     this.speech.loadImage();
     return new ActionLoader(this.engine, "greeting", [greeting, { autoclose: true }], this);

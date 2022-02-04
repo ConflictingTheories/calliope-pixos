@@ -43,7 +43,9 @@ export default {
 
     // Callback on Completion
     if (this.completed && this.options.onClose) {
-      this.sprite.speech.clearHud();
+      if (this.sprite.speech.clearHud) {
+        this.sprite.speech.clearHud();
+      }
       this.options.onClose();
     }
     return this.completed;

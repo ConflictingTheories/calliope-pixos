@@ -281,7 +281,7 @@ export default class Sprite {
 
   // speak
   speak(text, showBubble = false) {
-    if (!text) this.speech.clearHud();
+    if (!text && this.speech.clearHud) this.speech.clearHud();
     else {
       this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
       if (showBubble && this.speech) {
@@ -312,7 +312,9 @@ export default class Sprite {
 
   // set message (for chat bubbles)
   setGreeting(greeting) {
-    this.speech.clearHud();
+    if (this.speech.clearHud) {
+      this.speech.clearHud();
+    }
     this.speech.writeText(greeting);
     this.speech.loadImage();
     return new ActionLoader(this.engine, "greeting", [greeting, { autoclose: true }], this);
