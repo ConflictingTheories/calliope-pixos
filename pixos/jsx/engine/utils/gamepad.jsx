@@ -18,7 +18,7 @@ export class GamePad {
     this.dirty = true;
     this.showTrace = true;
     this.showDebug = true;
-    this.fontSize = 24;
+    this.fontSize = ctx.canvas.width / 12;
     this.opacity = 0.4;
     this.font = "minecraftia";
     // Start & Select Buttons
@@ -27,9 +27,9 @@ export class GamePad {
     this.touches = {};
     this.map = {};
     // Joystick Radius
-    this.radius = 40;
+    this.radius = ctx.canvas.width / 12;
     // Button placement
-    this.button_offset = { x: this.radius * 2.5, y: this.radius * 3 };
+    this.button_offset = { x: this.radius * 2.5, y: 105};
     // Button Colours
     this.colours = {
       red: `rgba(255,0,0,${this.opacity})`,
@@ -424,10 +424,10 @@ export class GamePad {
 class Controller {
   constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours, gamepad) {
     this.ctx = ctx;
-    this.gamepad = gamepad
+    this.gamepad = gamepad;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
-    this.radius = 60;
+    this.radius = ctx.canvas.width / 10;
     this.touches = touches;
     this.map = map;
     this.start = start;
@@ -528,7 +528,7 @@ class ControllerStick {
   }
   // manage event state
   state(id, type) {
-    let {gamepad } = this;
+    let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
     var touch = {
       x: touches[id].x,
@@ -612,7 +612,7 @@ class ControllerButtons {
         var r = button.r;
         buttons_layout[n]["hit"] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
       } else {
-        button.x = width / 2 - button.w;
+        button.x = width / 3 - button.w;
         if (this.start && this.select) {
           switch (button.name) {
             case "select":
@@ -705,7 +705,7 @@ class ControllerButtons {
   }
   // State of Buttons
   state(id, n, type) {
-    let {gamepad} = this;
+    let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
     if (touches[id].id != "stick") {
       var touch = {

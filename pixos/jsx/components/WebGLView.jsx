@@ -69,6 +69,8 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     };
   }, [SceneProvider]);
 
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : screenSize.dynamicHeight - 200;
+
   return (
     <div
       style={{
@@ -77,7 +79,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         background: "slategrey",
         width: "100%",
         maxWidth: width,
-        maxHeight: height + 200,
+        maxHeight: canvasHeight + 200,
       }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
@@ -88,7 +90,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         style={{ position: "absolute", zIndex: 1, top: 0, left: 0, maxWidth: 800 }}
         ref={ref}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
-        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
+        height={canvasHeight}
         className={string}
       />
       {/* HUD - For Dialogue / Menus / Overlays */}
@@ -96,7 +98,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none", maxWidth: 800 }}
         ref={hudRef}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
-        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : (screenSize.dynamicWidth * 3) / 4}
+        height={canvasHeight}
         className={string}
       />
       {/* Gamepad - For controls on Mobile Only*/}
@@ -113,7 +115,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         ref={gamepadRef}
         hidden={screenSize.dynamicWidth > 768}
         width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
-        height={(screenSize.dynamicWidth * 3) / 4 > 600 ? 800 : (screenSize.dynamicWidth * 3) / 4 + 200}
+        height={canvasHeight + 200}
         className={string}
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
         onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
