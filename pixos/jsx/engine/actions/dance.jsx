@@ -42,35 +42,9 @@ export default {
     let endTime = this.startTime + this.moveLength;
     if (time > endTime) {
       // set facing based on audio
-      let bar_pos,bar_width,bar_height = null;
-      for (var i = 0; i < 16; i++) {
-        bar_pos = i * 4;
-        bar_width = 2;
-        bar_height = -(fbc_array[i] / 2);
-      }
-      console.log(bar_pos, bar_width, bar_height);
       let facing = this.sprite.facing == Direction.Right ? Direction.Left : Direction.Right;
-      this.sprite.addAction(this.sprite.faceDir(facing));
-      this.startTime = time;
-    }
-    // next move
-    return this.completed; // loop
-  },
-
-  tick: function (time) {
-    if (!this.loaded) return;
-    // listen to audio freq data
-    let fbc_array = new Uint8Array(this.analyser.frequencyBinCount);
-    this.analyser.getByteFrequencyData(fbc_array);
-    this.checkInput(time);
-    // load up moves - todo (improve this and make it less manual)
-    let endTime = this.startTime + this.moveLength;
-    if (time > endTime) {
-      // set facing based on audio
-      let facing = this.sprite.facing == Direction.Right ? Direction.Left : Direction.Right;
-     
-
       let bar_pos,bar_width,bar_height = null;
+
       for (var i = 0; i < 16; i++) {
         bar_pos = i * 4;
         bar_width = 2;

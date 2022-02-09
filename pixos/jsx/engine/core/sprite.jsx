@@ -279,6 +279,23 @@ export default class Sprite {
     console.log("- sprite hook", this.id, this.pos);
   }
 
+  // load from json specification
+  async loadRemote(url) {
+    let response = await fetch(url);
+    if (!response.ok) {
+      throw new Error();
+    }
+    this.processJson(response.json());
+  }
+
+  // process json object
+  processJson(json) {
+    // TODO -- process json details
+    //
+
+    this.update(json);
+  }
+
   // speak
   speak(text, showBubble = false) {
     if (!text && this.speech.clearHud) this.speech.clearHud();

@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Tile Types Supported (Labels for Easy Use)
+// Tile Types Supported (Labels for Easy Use) [[geometry, texture, height], walkability?]
 export default {
   FLOOR: ["FLAT_ALL", "FLOOR", 0],
   WATER: ["FLAT_NONE", "WATER", -1.5],
