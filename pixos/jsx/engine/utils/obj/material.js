@@ -513,7 +513,7 @@ var MaterialLibrary = /** @class */ (function () {
                 continue;
             }
             values = optionsToValues[option];
-            var optionMethod = this["parse_" + option];
+            var optionMethod = this["parse_".concat(option)];
             if (optionMethod) {
                 optionMethod.bind(this)(values, options);
             }
@@ -667,9 +667,9 @@ var MaterialLibrary = /** @class */ (function () {
                     continue;
                 }
                 var _b = __read(line.split(/\s/)), directive = _b[0], tokens = _b.slice(1);
-                var parseMethod = this["parse_" + directive];
+                var parseMethod = this["parse_".concat(directive)];
                 if (!parseMethod) {
-                    console.warn("Don't know how to parse the directive: \"" + directive + "\"");
+                    console.warn("Don't know how to parse the directive: \"".concat(directive, "\""));
                     continue;
                 }
                 // console.log(`Parsing "${directive}" with tokens: ${tokens}`);

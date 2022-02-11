@@ -48,7 +48,7 @@ var DuplicateAttributeException = /** @class */ (function (_super) {
      *        once in the {@link Layout}
      */
     function DuplicateAttributeException(attribute) {
-        return _super.call(this, "found duplicate attribute: " + attribute.key) || this;
+        return _super.call(this, "found duplicate attribute: ".concat(attribute.key)) || this;
     }
     return DuplicateAttributeException;
 }(Error));
@@ -101,7 +101,7 @@ var Attribute = /** @class */ (function () {
                 this.sizeOfType = 4;
                 break;
             default:
-                throw new Error("Unknown gl type: " + type);
+                throw new Error("Unknown gl type: ".concat(type));
         }
         this.sizeInBytes = this.sizeOfType * size;
     }

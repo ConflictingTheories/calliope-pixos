@@ -91,7 +91,7 @@ function downloadMtlTextures(gl, mtl, root) {
                 console.log('loading texture image ', mapData, image.src);
                 return new Promise(function (resolve) { return (image.onload = function () { return resolve(mapData); }); });
             })["catch"](function () {
-                console.error("Unable to download texture: " + url);
+                console.error("Unable to download texture: ".concat(url));
             }));
         };
         try {
