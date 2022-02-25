@@ -105,7 +105,7 @@ export default {
 
         if (!tome) {
           // Initialize the garden
-          tome = { selected: 0, rain: false, snow: false, scenes: [], sprites: [], objects: [] };
+          tome = { selected: 0, rain: true, snow: false, scenes: [], sprites: [], objects: [] };
           this.engine.addStore("garden-tome", tome);
 
           // Generate a collection of scenes programmably
