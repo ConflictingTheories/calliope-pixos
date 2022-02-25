@@ -473,14 +473,17 @@ export default class Zone {
   }
 
   // Play a scene
-  async playScene(id) {
+  async playScene(id, scenes = null) {
     let self = this;
-    self.scenes.forEach(async function runScene(x) {
+    if (!scenes) {
+      scenes = self.scenes;
+    }
+    scenes.forEach(async function runScene(x) {
       try {
         if (!x.currentStep) {
           x.currentStep = 0; // Starting
         }
-        if (x.currentStep > self.scenes.length) {
+        if (x.currentStep > scenes.length) {
           return; // scene finished
         }
         if (x.id === id) {

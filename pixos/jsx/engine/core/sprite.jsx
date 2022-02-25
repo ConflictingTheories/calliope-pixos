@@ -62,6 +62,16 @@ export default class Sprite {
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
+    if (instanceData.onStep && typeof instanceData.onStep == "function") {
+      console.log('steping OUTTTTERS', instanceData)
+      let stepParent = this.onStep.bind(this);
+      this.onStep = () => {
+        console.log('steping RUNNING')
+        instanceData.onStep();
+        console.log('steping JUMPPS')
+        stepParent();
+      };
+    }
     console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);

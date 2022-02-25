@@ -18,7 +18,8 @@ import { textScrollBox } from "./hud.jsx";
 import { GamePad } from "../utils/gamepad.jsx";
 import Speech from "./speech.jsx";
 import { OBJ } from "../utils/obj";
-import Dexie from 'dexie';
+import Dexie from "dexie";
+import { store } from "react-recollect";
 
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
@@ -44,17 +45,21 @@ export default class GLEngine {
     this.render = this.render.bind(this);
     this.objLoader = OBJ;
     // database
-    this.db = new Dexie('hyperspace');
+    this.db = new Dexie("hyperspace");
     this.db.version(1).stores({
-      tileset: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
-      inventory: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
-      spirits: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
-      abilities: '++id, name, creator, type checksum, signature', // Primary key and indexed props
-      models: '++id, name, creator, type, checksum, signature', // Primary key and indexed props
-      accounts: '++id, name, type, checksum, signature', // Primary key and indexed props
-      dht: '++id, name, type, ip, checksum, signature', // Primary key and indexed props
-      msg: '++id, name, type, ip, checksum, signature', // Primary key and indexed props
+      tileset: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
+      inventory: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
+      spirits: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
+      abilities: "++id, name, creator, type checksum, signature, timestamp", // Primary key and indexed props
+      models: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
+      accounts: "++id, name, type, checksum, signature, timestamp", // Primary key and indexed props
+      dht: "++id, name, type, ip, checksum, signature, timestamp", // Primary key and indexed props
+      msg: "++id, name, type, ip, checksum, signature, timestamp", // Primary key and indexed props
+      tmp: "++id, key, value, timestamp", // key-store
     });
+    // Store setup - session based
+    store.pixos = {};
+    this.store = store.pixos;
   }
 
   // Initialize a Scene object
@@ -102,6 +107,46 @@ export default class GLEngine {
     this.initProjection(gl);
     // Initialize Scene
     await scene.init(this);
+  }
+
+  // fetch value
+  async dbGet(store, key) {
+    return await this.db[store].get(key);
+  }
+
+  // add key to db store and returns id
+  async dbAdd(store, value) {
+    return await this.db[store].add({ ...value });
+  }
+
+  // update key to db store returns number of rows
+  async dbUpdate(store, id, changes) {
+    return await this.db[store].update(id, { ...changes });
+  }
+
+  // update key to db store returns number of rows
+  async dbRemove(store, id) {
+    return await this.db[store].delete(id);
+  }
+
+  // fetch value from store
+  fetchStore(key) {
+    return this.store[key];
+  }
+
+  // add key to store and returns id
+  addStore(key, value) {
+    return (this.store[key] = { ...value });
+  }
+
+  // update key in store returns number of rows
+  updateStore(key, changes) {
+    return (this.store[key] = { ...changes });
+  }
+
+  // delete key from store returns number of rows
+  delStore(key) {
+    return (this.store[key] = null);
   }
 
   // Load and Compile Shader Source

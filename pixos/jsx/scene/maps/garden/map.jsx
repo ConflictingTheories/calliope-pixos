@@ -14,6 +14,8 @@
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
 import cells from "./cells.jsx";
+import { store } from "react-recollect";
+
 // Use Tileset
 // Map Information
 export default {
@@ -31,6 +33,32 @@ export default {
     { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
     { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
+
+    // Doors
+
+    {
+      id: "door-l",
+      type: "furniture/door",
+      pos: new Vector(...[2, 5, 0]),
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos["garden-tome"].selected -= 3;
+        console.log("steping left", store.pixos["garden-tome"]);
+      },
+      zones: ["garden"],
+    },
+
+    {
+      id: "door-r",
+      type: "furniture/door",
+      pos: new Vector(...[4, 5, 0]),
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos["garden-tome"].selected += 7;
+        console.log("steping right", store.pixos["garden-tome"]);
+      },
+      zones: ["garden"],
+    },
   ],
   // Scenes + Scenarios
   scenes: [
@@ -63,13 +91,85 @@ export default {
         { trigger: "custom", scope: this },
       ],
     },
+    ,
   ],
   // Scripts / Triggers for the Zone
   scripts: [
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        await this.playScene("welcome");
+        // load current scene or play welcome
+        let tome = this.engine.fetchStore("garden-tome");
+
+        console.log("welcome -- loading - found the following: ", tome);
+
+        if (!tome) {
+          // Initialize the garden
+          tome = { selected: 0, rain: false, snow: false, scenes: [], sprites: [], objects: [] };
+          this.engine.addStore("garden-tome", tome);
+
+          // Generate a collection of scenes programmably
+          // and append them to the scenes collection.
+
+          // this.randomlyGenerateSprites();
+          // this.randomlySprites();
+
+          await this.playScene("welcome");
+        } else {
+          // load Sprites
+          await Promise.all(
+            tome.sprites
+              .filter((x) => {
+                return x.id == tome.selected;
+              })
+              .map(this.loadSprite.bind(this))
+          );
+          // Load Objects
+          await Promise.all(
+            tome.objects
+              .filter((x) => {
+                return x.id == tome.selected;
+              })
+              .map(this.loadObject.bind(this))
+          );
+          // Finally - Play appropriate scenes
+          await Promise.all(
+            tome.scenes
+              .filter((x) => {
+                return x.id == tome.selected;
+              })
+              .map(async (scene) => {
+                await this.playScene(scene.id, tome.scenes);
+              })
+          );
+
+          // run custom scene
+          let scene = [
+            {
+              id: "new-space" + Math.random(),
+              actions: [
+                // manual actions
+                // Scripted Dialogue Action Controls directly on sprites
+                {
+                  sprite: "avatar",
+                  action: "dialogue",
+                  args: [
+                    [
+                      "Welcome traveler... I see you are exploring. Good. Please continue to look",
+                      "You have travelled into the the number " +
+                        (store.pixos && store.pixos["garden-tome"] ? store.pixos["garden-tome"].selected : 0) +
+                        " room",
+                    ],
+                    false,
+                    { autoclose: true },
+                  ],
+                  scope: this, // scoped to the zone
+                },
+              ],
+            },
+          ];
+          await this.playScene(scene[0].id, scene);
+        }
       },
     },
   ],
