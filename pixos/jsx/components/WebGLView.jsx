@@ -83,7 +83,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     };
   }, [SceneProvider]);
 
-  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 600 ? 600 : screenSize.dynamicHeight - 200;
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 768 ? 768 : screenSize.dynamicHeight - 200;
 
   return (
     <div
@@ -92,8 +92,8 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         padding: "none",
         background: "slategrey",
         width: "100%",
-        maxWidth: width,
-        maxHeight: canvasHeight + 200,
+        // maxWidth: width,
+        // maxHeight: canvasHeight + 200,
       }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
@@ -101,17 +101,32 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     >
       {/* // WEBGL - For 3D Rendering */}
       <canvas
-        style={{ position: "absolute", zIndex: 1, top: 0, left: 0, maxWidth: 800 }}
+        style={{
+          position: "absolute",
+          zIndex: 1,
+          top: 0,
+          left: 0,
+          // maxWidth: 800
+          maxHeight: "100vh",
+        }}
         ref={ref}
-        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
         height={canvasHeight}
         className={string}
       />
       {/* HUD - For Dialogue / Menus / Overlays */}
       <canvas
-        style={{ position: "absolute", zIndex: 2, top: 0, left: 0, background: "none", maxWidth: 800 }}
+        style={{
+          position: "absolute",
+          zIndex: 2,
+          top: 0,
+          left: 0,
+          background: "none",
+          // maxWidth: 800
+          maxHeight: "100vh",
+        }}
         ref={hudRef}
-        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
         height={canvasHeight}
         className={string}
       />
@@ -124,11 +139,12 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           left: 0,
           background: "none",
           display: screenSize.dynamicWidth <= 768 ? "block" : "none",
-          maxWidth: 800,
+          // maxWidth: 800,
+          maxHeight: "100vh",
         }}
         ref={gamepadRef}
         hidden={screenSize.dynamicWidth > 768}
-        width={screenSize.dynamicWidth > 800 ? 800 : screenSize.dynamicWidth}
+        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
         height={canvasHeight + 200}
         className={string}
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
