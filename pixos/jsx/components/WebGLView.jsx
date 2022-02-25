@@ -83,7 +83,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     };
   }, [SceneProvider]);
 
-  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 768 ? 768 : screenSize.dynamicHeight - 200;
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight - 200;
 
   return (
     <div
@@ -110,7 +110,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           maxHeight: "100vh",
         }}
         ref={ref}
-        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
+        width={screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth}
         height={canvasHeight}
         className={string}
       />
@@ -126,7 +126,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           maxHeight: "100vh",
         }}
         ref={hudRef}
-        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
+        width={screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth}
         height={canvasHeight}
         className={string}
       />
@@ -138,13 +138,13 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           top: 0,
           left: 0,
           background: "none",
-          display: screenSize.dynamicWidth <= 768 ? "block" : "none",
+          display: screenSize.dynamicWidth <= 900 ? "block" : "none",
           // maxWidth: 800,
           maxHeight: "100vh",
         }}
         ref={gamepadRef}
-        hidden={screenSize.dynamicWidth > 768}
-        width={screenSize.dynamicWidth > 1024 ? 1024 : screenSize.dynamicWidth}
+        hidden={screenSize.dynamicWidth > 900}
+        width={screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth}
         height={canvasHeight + 200}
         className={string}
         onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
