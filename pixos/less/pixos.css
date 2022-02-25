@@ -126,7 +126,6 @@ body {
 
 .rain {
   position: absolute;
-  display: none;
   left: 0;
   width: 100%;
   height: 100%;
@@ -236,7 +235,6 @@ body.back-row-toggle .rain.back-row .snow.back-row {
   opacity: 1;
   transform: scale(0);
   animation: splat 0.5s linear infinite;
-  display: none;
 }
 
 body.splat-toggle .splat {

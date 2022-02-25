@@ -51,14 +51,13 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     if (engine !== null) {
       console.log(engine);
       return engine.store["garden-tome"].rain;
-    }
-    return true;
+    } else return true;
   }
 
   function isSnowing() {
     if (engine !== null) {
       return engine.store["garden-tome"].snow;
-    } else return true;
+    } else return false;
   }
 
   useEffect(async () => {
@@ -218,10 +217,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
             <div className="flake" style={{ ...x }}>
               <div
                 className="stem"
-                style={{ "animation-delay": x["animation-delay"], "animation-duration": x["animation-duration"] }}
-              ></div>
-              <div
-                className="splat"
                 style={{ "animation-delay": x["animation-delay"], "animation-duration": x["animation-duration"] }}
               ></div>
             </div>
