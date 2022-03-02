@@ -35,7 +35,7 @@ export default {
       type: "furniture/door",
       pos: new Vector(...[2, 5, 0]),
       facing: Direction.Down,
-      zones: ["room"],
+      zones: ["garden"],
     },
     // Effect tiles
     { id: "spurt1", type: "effects/waterspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
@@ -49,7 +49,18 @@ export default {
     { id: "avatar", type: "characters/default", pos: new Vector(...[2, 6, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
+  scripts: [
+    {
+      id: "load-scene",
+      trigger: () => {
+        console.log("Triggered");
+      },
+    },
+  ],
+  // TODO - Add in Scenes / Dialogue
+  //
   scenes: [],
-  // Scripts / Triggers for the Zone
-  scripts: [],
+  //
+  // objects // 3d
+  objects: [],
 };

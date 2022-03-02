@@ -40,4 +40,7 @@ export default {
   // TODO - Add in Scenes / Dialogue
   //
   scenes: [],
+  //
+  // objects // 3d
+  objects: [],
 };

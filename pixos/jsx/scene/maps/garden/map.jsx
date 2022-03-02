@@ -32,28 +32,35 @@ export default {
     // Tree
     { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
+    {
+      id: "avatar",
+      type: "characters/default",
+      pos: typeof store.pixos["garden-tome"]?.position !== 'undefined' ? store.pixos["garden-tome"].position : new Vector(...[8, 8, 0]),
+      facing: Direction.Down,
+    },
 
     // Doors
 
     {
       id: "door-l",
       type: "furniture/door",
-      pos: new Vector(...[2, 5, 0]),
+      pos: new Vector(...[5, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
+        store.pixos["garden-tome"].position = new Vector(...[5, 3, 0]);
         store.pixos["garden-tome"].selected -= 3;
         console.log("steping left", store.pixos["garden-tome"]);
       },
-      zones: ["garden"],
+      zones: ["dungeon-top", "dungeon-bottom"],
     },
 
     {
       id: "door-r",
       type: "furniture/door",
-      pos: new Vector(...[4, 5, 0]),
+      pos: new Vector(...[8, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
+        store.pixos["garden-tome"].position = new Vector(...[8, 3, 0]);
         store.pixos["garden-tome"].selected += 7;
         console.log("steping right", store.pixos["garden-tome"]);
       },
@@ -105,7 +112,15 @@ export default {
 
         if (!tome) {
           // Initialize the garden
-          tome = { selected: 0, rain: true, snow: false, scenes: [], sprites: [], objects: [] };
+          tome = {
+            position: new Vector(...[8, 3, 0]),
+            selected: 0,
+            rain: true,
+            snow: false,
+            scenes: [],
+            sprites: [],
+            objects: [],
+          };
           this.engine.addStore("garden-tome", tome);
 
           // Generate a collection of scenes programmably
