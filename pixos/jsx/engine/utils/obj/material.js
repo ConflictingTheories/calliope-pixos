@@ -108,8 +108,8 @@ var MaterialLibrary = /** @class */ (function () {
     }
     /* eslint-disable camelcase */
     /* the function names here disobey camelCase conventions
-     to make parsing/routing easier. see the parse function
-     documentation for more information. */
+       to make parsing/routing easier. see the parse function
+       documentation for more information. */
     /**
      * Creates a new Material object and adds to the registry.
      * @param tokens the tokens associated with the directive
@@ -672,7 +672,6 @@ var MaterialLibrary = /** @class */ (function () {
                     console.warn("Don't know how to parse the directive: \"".concat(directive, "\""));
                     continue;
                 }
-                // console.log(`Parsing "${directive}" with tokens: ${tokens}`);
                 parseMethod.bind(this)(tokens);
             }
         }

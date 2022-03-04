@@ -53,7 +53,6 @@ export default class MyEarthKnight extends EarthKnight {
       default:
         break;
     }
-    console.log(ret);
     if (ret) this.addAction(ret);
     // If completion handler passed through - call it when done
     if (finish) finish(false);

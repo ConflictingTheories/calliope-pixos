@@ -239,7 +239,6 @@ function downloadModels(gl, models) {
                 var _b = __read(model, 3), name_2 = _b[0], mesh = _b[1], mtl = _b[2];
                 mesh.name = name_2;
                 if (mtl) {
-                    console.log(mtl);
                     mesh.addMaterialLibrary(mtl[0]);
                 }
                 models[name_2] = mesh;

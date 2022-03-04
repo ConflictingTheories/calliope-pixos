@@ -213,7 +213,6 @@ export function downloadModels(gl, models: DownloadModelsOptions[]): Promise<Mes
             const [name, mesh, mtl] = model;
             mesh.name = name;
             if (mtl) {
-                console.log(mtl);
                 mesh.addMaterialLibrary(mtl[0]);
             }
             models[name] = mesh;

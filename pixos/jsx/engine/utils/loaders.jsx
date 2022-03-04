@@ -72,7 +72,6 @@ export class SpriteLoader {
     }
     // New Instance
     let Type = require("../../scene/sprites/" + type + ".jsx")["default"];
-    console.log(Type, type);
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
     // Update Existing

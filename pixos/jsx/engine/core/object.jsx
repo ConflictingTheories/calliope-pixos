@@ -49,7 +49,6 @@ export default class ModelObject {
 
   // Load Object and Materials
   onLoad(instanceData) {
-    console.log("loading", instanceData);
     if (this.loaded) return;
     // Zone Information
     this.zone = instanceData.zone;
@@ -125,7 +124,6 @@ export default class ModelObject {
     }
     this.loaded = true;
     this.onLoadActions.run();
-    console.log("Initialized object '" + this.id + "' in zone '" + this.zone.id + "'");
   }
 
   // Speech Area texture
@@ -162,7 +160,6 @@ export default class ModelObject {
   drawTexturedObj() {
     let { engine, mesh } = this;
     // draw each piece of the object (per material)
-    console.log(mesh);
     if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
