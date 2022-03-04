@@ -25,6 +25,7 @@ export class GamePad {
     this.start = true;
     this.select = true;
     this.touches = {};
+    this.lastKey = new Date().getTime();
     this.map = {};
     // Joystick Radius
     this.radius = ctx.canvas.width / 12;
@@ -147,6 +148,21 @@ export class GamePad {
     });
   }
 
+  // debounce
+  debounce() {
+    let { controller, buttons_layout } = this
+    let t = this.lastKey;
+    this.lastKey = new Date().getTime() + 100;
+    // todo - clear key
+    for (var n = 0; n < buttons_layout.length; n++) {
+      controller.buttons.reset(n);
+    }
+    return t < this.lastKey;
+  }
+  // debounce and check key
+  keyPressed(key) {
+    return this.map[key] === 1 && this.debounce();
+  }
   // Event Listener
   listen(e) {
     let { ctx, touches, controller, buttons_layout } = this;
@@ -176,8 +192,11 @@ export class GamePad {
           case "touchmove":
             this.disableScroll();
             controller.stick.state(id);
-            for (var n = 0; n < buttons_layout.length; n++) {
-              controller.buttons.state(id, n);
+            if (new Date().getTime() > this.lastKey + 150) {
+              for (var n = 0; n < buttons_layout.length; n++) {
+                controller.buttons.state(id, n);
+              }
+              this.lastKey = new Date().getTime();
             }
             break;
           case "touchend":

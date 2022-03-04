@@ -53,7 +53,6 @@ export default {
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + 100) {
-      let touchmap = this.engine.gamepad.checkInput();
       switch (this.engine.keyboard.lastPressedCode()) {
         case "Escape":
           console.log("closing dialogue");
@@ -71,7 +70,7 @@ export default {
           break;
       }
       // gamepad
-      if (touchmap["a"] === 1) {
+      if (this.engine.gamepad.keyPressed("a")) {
         if (typeof this.text === "string" || this.text.length === 0) {
           this.completed = true;
         } else {
@@ -81,7 +80,7 @@ export default {
         }
         return;
       }
-      if (touchmap["x"] === 1) {
+      if (this.engine.gamepad.keyPressed("a")) {
         console.log("closing dialogue");
         this.sprite.speak(false);
         this.completed = true; // toggle

@@ -90,7 +90,7 @@ export default class Avatar extends Sprite {
         break;
     }
     // Gamepad controls - TODO
-    if (touchmap["a"] === 1) {
+    if (this.engine.gamepad.keyPressed("a")) {
       // select
       return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
     }
@@ -162,7 +162,7 @@ export default class Avatar extends Sprite {
     }
 
     // Running?
-    if (this.engine.keyboard.shift || touchmap["y"] === 1) {
+    if (this.engine.keyboard.shift || this.engine.gamepad.keyPressed("y")) {
       moveTime = 200;
     } else {
       moveTime = 600;

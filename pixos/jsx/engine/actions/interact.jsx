@@ -41,7 +41,7 @@ export default {
     // objects
     this.objectList.forEach((object) => {
       let faceChange = object.faceDir(Direction.reverse(this.facing));
-      console.log('-----> CHANGING ---->', faceChange)
+      console.log("-----> CHANGING ---->", faceChange);
       if (faceChange) {
         object.addAction(faceChange); // face towards avatar
       }
@@ -69,13 +69,10 @@ export default {
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + this.length) {
-      let touchmap = this.sprite.engine.gamepad.checkInput();
       switch (this.sprite.engine.keyboard.lastPressed("q")) {
         // close dialogue on q key press
         case "q":
           // Needs to Cancel the Interaction on the Affected Sprite as well
-          // -- todo
-          //
           console.log("stopping interaction");
           this.completed = true; // toggle
           break;
@@ -83,10 +80,10 @@ export default {
           this.lastKey = new Date().getTime();
           return null;
       }
-      // gamepad
-      if (touchmap["x"] === 1) {
-        this.completed = true;
-      }
+    }
+    // gamepad
+    if (this.sprite.engine.gamepad.keyPressed("a")) {
+      this.completed = true;
     }
   },
 };
