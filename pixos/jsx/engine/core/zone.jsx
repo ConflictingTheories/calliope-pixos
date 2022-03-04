@@ -48,7 +48,7 @@ export default class Zone {
         let data = await fileResponse.json();
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
-        this.cells = data.cells;
+        this.cells = typeof data.cells == "function" ? data.cells() : data.cells;
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -72,6 +72,11 @@ export default class Zone {
       // Extract and Read in Information
       let data = require("../../scene/maps/" + this.id + "/map.jsx")["default"];
       Object.assign(this, data);
+      // handle cells generator
+      if (typeof this.cells == "function") {
+        this.cells = this.cells(this.bounds);
+      }
+      // audio loader
       if (this.audioSrc) {
         this.audio = new AudioLoader(this.audioSrc, true); // loop background music
       }

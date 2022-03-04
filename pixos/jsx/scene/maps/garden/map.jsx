@@ -15,15 +15,38 @@ import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
 import cells from "./cells.jsx";
 import { store } from "react-recollect";
-
+import T from "../../tilesets/sewer/tiles.jsx";
 // Use Tileset
 // Map Information
 export default {
-  bounds: [0, 0, 17, 19],
+  bounds: [0, 0, 30, 50],
   // Determines the tileset to load
   tileset: "jungle",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
-  cells: cells,
+  // cells: cells,
+  cells: (bounds) => {
+    let tiles = Object.keys(T);
+    let x = bounds[0];
+    let y = bounds[1];
+    let width = bounds[2] - x;
+    let height = bounds[3] - y;
+    let a = new Array(height).fill(null).map((_, i) => {
+      return new Array(width).fill(null).map((__, j) => {
+        if(i == y || i == bounds[3]-1 || j == x || j == bounds[2]-1){
+          return T.PILLAR;
+        }
+        // return random tile based on location (x+i, y+j)
+        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
+        // 66% of tiles are floor
+        let random = posKey % Math.abs(3 + (store.pixos && store.pixos["garden-tome"] ? store.pixos["garden-tome"].selected : 7));
+        if (random !== 0) return T.FLOOR;
+        // rest are random (for now just pillars)
+        let tileMod = posKey % (tiles.length - 1);
+        return T.PILLAR; //T[tiles[tileMod]] ??
+      });
+    });
+    return a.flat(1);
+  },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
@@ -35,7 +58,10 @@ export default {
     {
       id: "avatar",
       type: "characters/default",
-      pos: typeof store.pixos["garden-tome"]?.position !== 'undefined' ? store.pixos["garden-tome"].position : new Vector(...[8, 8, 0]),
+      pos:
+        typeof store.pixos["garden-tome"]?.position !== "undefined"
+          ? store.pixos["garden-tome"].position
+          : new Vector(...[8, 8, 0]),
       facing: Direction.Down,
     },
 
