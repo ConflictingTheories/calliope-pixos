@@ -29,7 +29,7 @@ export class GamePad {
     // Joystick Radius
     this.radius = ctx.canvas.width / 12;
     // Button placement
-    this.button_offset = { x: this.radius * 2.5, y: 105};
+    this.button_offset = { x: this.radius * 2.5, y: 105 };
     // Button Colours
     this.colours = {
       red: `rgba(255,0,0,${this.opacity})`,
@@ -98,17 +98,7 @@ export class GamePad {
     }
     // setup controller
     this.buttons_layout = buttons_layout;
-    this.controller = new Controller(
-      ctx,
-      buttons_layout,
-      this.button_offset,
-      this.map,
-      this.touches,
-      this.start,
-      this.select,
-      this.colours,
-      this
-    );
+    this.controller = new Controller(ctx, this.button_offset, this.touches, this.start, this.select, this.colours, this);
     // use custom round Rect shape
   }
   // initialize widget
@@ -188,6 +178,11 @@ export class GamePad {
             controller.stick.state(id);
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n);
+            }
+            break;
+          case "touchend":
+            for (var n = 0; n < buttons_layout.length; n++) {
+              controller.buttons.reset(n);
             }
             break;
           case "mousedown":
@@ -422,26 +417,22 @@ export class GamePad {
 
 // Controller Manager for Gamepad
 class Controller {
-  constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours, gamepad) {
+  constructor(ctx, button_offset, touches, start, select, colours, gamepad) {
     this.ctx = ctx;
     this.gamepad = gamepad;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
     this.radius = ctx.canvas.width / 10;
     this.touches = touches;
-    this.map = map;
     this.start = start;
     this.select = select;
-    this.buttons_layout = buttons_layout;
     this.button_offset = button_offset;
     this.colours = colours;
     this.layout = { x: this.width - this.button_offset.x, y: this.height - this.button_offset.y };
-    this.stick = new ControllerStick(this.ctx, this.layout, this.map, this.touches, this.colours, this.radius, this.gamepad);
+    this.stick = new ControllerStick(this.ctx, this.layout, this.touches, this.colours, this.radius, this.gamepad);
     this.buttons = new ControllerButtons(
       this.ctx,
       this.layout,
-      buttons_layout,
-      this.map,
       this.touches,
       this.start,
       this.select,
@@ -465,10 +456,9 @@ class Controller {
 
 // Controller Joystick Manager
 class ControllerStick {
-  constructor(ctx, layout, map, touches, colours, radius, gamepad) {
+  constructor(ctx, layout, touches, colours, radius, gamepad) {
     this.ctx = ctx;
     this.gamepad = gamepad;
-    this.map = map;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
     this.layout = layout;
@@ -489,7 +479,7 @@ class ControllerStick {
   }
   // Initialize
   init() {
-    let { map, layout, width, ctx } = this;
+    let { layout, width } = this;
     this.x = width - layout.x;
     this.y = layout.y + (3 * this.radius) / 8;
     this.dx = this.x;
@@ -587,14 +577,12 @@ class ControllerStick {
 
 // Controller Button Manager
 class ControllerButtons {
-  constructor(ctx, layout, buttons_layout, map, touches, start, select, colours, radius, gamepad) {
+  constructor(ctx, layout, touches, start, select, colours, radius, gamepad) {
     this.ctx = ctx;
     this.gamepad = gamepad;
     this.layout = layout;
-    this.map = map;
     this.radius = radius;
     this.touches = touches;
-    this.buttons_layout = buttons_layout;
     this.start = start;
     this.select = select;
     this.colours = colours;
@@ -602,7 +590,8 @@ class ControllerButtons {
   }
   // Initialize
   init() {
-    let { buttons_layout, layout, ctx } = this;
+    let { layout, ctx } = this;
+    let { buttons_layout } = this.gamepad;
     let width = ctx.canvas.width;
     for (var n = 0; n < buttons_layout.length; n++) {
       var button = buttons_layout[n];
@@ -633,8 +622,8 @@ class ControllerButtons {
   // render Button
   draw() {
     let { ctx, layout } = this;
-    for (var n = 0; n < this.buttons_layout.length; n++) {
-      var button = this.buttons_layout[n];
+    for (var n = 0; n < this.gamepad.buttons_layout.length; n++) {
+      var button = this.gamepad.buttons_layout[n];
       var color = button.color;
       var x = layout.x - button.x;
       var y = layout.y - button.y;
@@ -712,7 +701,7 @@ class ControllerButtons {
         x: touches[id].x,
         y: touches[id].y,
       };
-      var button = this.buttons_layout[n];
+      var button = this.gamepad.buttons_layout[n];
       var name = button.name;
 
       var dx = parseInt(touch.x - button.dx);
@@ -756,9 +745,7 @@ class ControllerButtons {
   }
   // Reset State
   reset(n) {
-    var button = this.buttons_layout[n];
-    var name = button.name;
-    button.hit.active = false;
-    this.gamepad.map[name] = 0;
+    this.gamepad.buttons_layout[n].hit.active = false;
+    this.gamepad.map[this.gamepad.buttons_layout[n].name] = 0;
   }
 }
