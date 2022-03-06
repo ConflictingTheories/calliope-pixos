@@ -30,7 +30,7 @@ export default {
     let height = bounds[3] - y;
     let a = new Array(height).fill(null).map((_, i) => {
       return new Array(width).fill(null).map((__, j) => {
-        if(i == y || i == bounds[3]-1 || j == x || j == bounds[2]-1){
+        if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
           return T.PILLAR;
         }
         // return random tile based on location (x+i, y+j)
@@ -145,6 +145,11 @@ export default {
             sprites: [],
             objects: [],
           };
+
+          // Load CYOA config
+          let cyoa = require("../../dialogues/cyoa.json");
+          Object.assign(tome, cyoa);
+
           this.engine.addStore("garden-tome", tome);
 
           // Generate a collection of scenes programmably
@@ -152,25 +157,60 @@ export default {
 
           // this.randomlyGenerateSprites();
           // this.randomlySprites();
-
           await this.playScene("welcome");
         } else {
           // load Sprites
           await Promise.all(
             tome.sprites
               .filter((x) => {
+                // Determine whether to load sprite or not
+                // base on the tome settings and cyoa
+
                 return x.id == tome.selected;
               })
               .map(this.loadSprite.bind(this))
           );
+
           // Load Objects
           await Promise.all(
             tome.objects
               .filter((x) => {
+                // Determine whether to load object or not
+                // base on the tome settings and cyoa
+
                 return x.id == tome.selected;
               })
               .map(this.loadObject.bind(this))
           );
+
+          // Load NPCs for the zone
+          await Promise.all(
+            tome.npcs
+              .filter((x) => {
+                // Determine whether to load NPC and decide what
+                // dialogue is base on the tome settings and cyoa
+
+                return x.id == tome.selected;
+              })
+              .map(async (trigger) => {
+                // run trigger
+              })
+          );
+
+          // Apply any Triggers & Setup New Scenes if needed
+          await Promise.all(
+            tome.triggers
+              .filter((x) => {
+                // Determine whether to load trigger
+                // base on the tome settings and cyoa
+
+                return x.id == tome.selected;
+              })
+              .map(async (trigger) => {
+                // run trigger
+              })
+          );
+
           // Finally - Play appropriate scenes
           await Promise.all(
             tome.scenes
