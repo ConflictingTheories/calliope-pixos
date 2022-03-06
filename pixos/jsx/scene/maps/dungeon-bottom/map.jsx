@@ -14,6 +14,7 @@
 // Tet
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
+import { loadAvatar, STORE_NAME } from "../../../engine/utils/generator.jsx";
 import cells from "./cells.jsx";
 // Map
 export default {
@@ -32,8 +33,9 @@ export default {
   scripts: [
     {
       id: "load-scene",
-      trigger: () => {
+      trigger: async function () {
         console.log("Triggered");
+        await loadAvatar(this, STORE_NAME);
       },
     },
   ],

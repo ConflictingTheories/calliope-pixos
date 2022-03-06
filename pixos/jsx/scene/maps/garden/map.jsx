@@ -23,6 +23,7 @@ export default {
   bounds: [0, 0, 30, 50],
   // Determines the tileset to load
   tileset: "jungle",
+  audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds) => {
     let tiles = Object.keys(T);
