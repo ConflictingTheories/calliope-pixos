@@ -28,9 +28,11 @@
     "The road less traveled brings new opportunities.",
     "Chance is what we make of our fate."
   ],
-  "triggers": {
-    "fantastic-journey": ["You have stumbled across a fantastic journey."],
-    "old-secrets": ["This may hint at some great secrets..."],
-    "special-place": ["What a unique place..."]
-  }
+  "triggers": [
+    {
+      "fantastic-journey": ["You have stumbled across a fantastic journey."],
+      "old-secrets": ["This may hint at some great secrets..."],
+      "special-place": ["What a unique place..."]
+    }
+  ]
 }

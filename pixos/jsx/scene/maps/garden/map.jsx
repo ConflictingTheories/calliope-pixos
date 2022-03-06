@@ -11,10 +11,15 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { store } from "react-recollect";
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
-import { store } from "react-recollect";
+import { generateZone } from "../../../engine/utils/generator.jsx";
 import T from "../../tilesets/sewer/tiles.jsx";
+
+// Store name
+const STORE_NAME = "garden-tome";
+
 // Use Tileset
 // Map Information
 export default {
@@ -36,7 +41,7 @@ export default {
         // return random tile based on location (x+i, y+j)
         let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
         // 66% of tiles are floor
-        let random = posKey % Math.abs(3 + (store.pixos && store.pixos["garden-tome"] ? store.pixos["garden-tome"].selected : 7));
+        let random = posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7));
         if (random !== 0) return T.FLOOR;
         // rest are random (for now just pillars)
         let tileMod = posKey % (tiles.length - 1);
@@ -48,20 +53,20 @@ export default {
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
-    { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
-    { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },
+    // { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
+    // { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },
     // Tree
-    { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
+    // { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    {
-      id: "avatar",
-      type: "characters/default",
-      pos:
-        typeof store.pixos["garden-tome"]?.position !== "undefined"
-          ? store.pixos["garden-tome"].position
-          : new Vector(...[8, 8, 0]),
-      facing: Direction.Down,
-    },
+    // {
+    //   id: "avatar",
+    //   type: "characters/default",
+    //   pos:
+    //     typeof store.pixos[STORE_NAME]?.position !== "undefined"
+    //       ? store.pixos[STORE_NAME].position
+    //       : new Vector(...[8, 8, 0]),
+    //   facing: Direction.Down,
+    // },
 
     // Doors
 
@@ -71,11 +76,10 @@ export default {
       pos: new Vector(...[5, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
-        store.pixos["garden-tome"].position = new Vector(...[5, 3, 0]);
-        store.pixos["garden-tome"].selected -= 3;
-        console.log("steping left", store.pixos["garden-tome"]);
+        store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
+        store.pixos[STORE_NAME].selected -= 3;
       },
-      zones: ["dungeon-top", "dungeon-bottom"],
+      zones: ["room"],
     },
 
     {
@@ -84,9 +88,8 @@ export default {
       pos: new Vector(...[8, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
-        store.pixos["garden-tome"].position = new Vector(...[8, 3, 0]);
-        store.pixos["garden-tome"].selected += 7;
-        console.log("steping right", store.pixos["garden-tome"]);
+        store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
+        store.pixos[STORE_NAME].selected += 7;
       },
       zones: ["garden"],
     },
@@ -112,12 +115,6 @@ export default {
           ],
           scope: this, // scoped to the zone
         },
-        {
-          sprite: "air",
-          action: "dialogue",
-          args: [["But what was that plan?..."], false, { autoclose: true }],
-          scope: this, // scoped to the zone
-        },
         // or call premade events and bundle many things and trigger them
         { trigger: "custom", scope: this },
       ],
@@ -129,126 +126,19 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        // load current scene or play welcome
-        let tome = this.engine.fetchStore("garden-tome");
-
-        console.log("welcome -- loading - found the following: ", tome);
-
-        if (!tome) {
-          // Initialize the garden
-          tome = {
-            position: new Vector(...[8, 3, 0]),
-            selected: 0,
-            rain: true,
-            snow: false,
-            scenes: [],
-            sprites: [],
-            objects: [],
-          };
-
-          // Load CYOA config
-          let cyoa = require("../../dialogues/cyoa.json");
-          Object.assign(tome, cyoa);
-
-          this.engine.addStore("garden-tome", tome);
-
-          // Generate a collection of scenes programmably
-          // and append them to the scenes collection.
-
-          // this.randomlyGenerateSprites();
-          // this.randomlySprites();
-          await this.playScene("welcome");
-        } else {
-          // load Sprites
-          await Promise.all(
-            tome.sprites
-              .filter((x) => {
-                // Determine whether to load sprite or not
-                // base on the tome settings and cyoa
-
-                return x.id == tome.selected;
-              })
-              .map(this.loadSprite.bind(this))
-          );
-
-          // Load Objects
-          await Promise.all(
-            tome.objects
-              .filter((x) => {
-                // Determine whether to load object or not
-                // base on the tome settings and cyoa
-
-                return x.id == tome.selected;
-              })
-              .map(this.loadObject.bind(this))
-          );
-
-          // Load NPCs for the zone
-          await Promise.all(
-            tome.npcs
-              .filter((x) => {
-                // Determine whether to load NPC and decide what
-                // dialogue is base on the tome settings and cyoa
-
-                return x.id == tome.selected;
-              })
-              .map(async (trigger) => {
-                // run trigger
-              })
-          );
-
-          // Apply any Triggers & Setup New Scenes if needed
-          await Promise.all(
-            tome.triggers
-              .filter((x) => {
-                // Determine whether to load trigger
-                // base on the tome settings and cyoa
-
-                return x.id == tome.selected;
-              })
-              .map(async (trigger) => {
-                // run trigger
-              })
-          );
-
-          // Finally - Play appropriate scenes
-          await Promise.all(
-            tome.scenes
-              .filter((x) => {
-                return x.id == tome.selected;
-              })
-              .map(async (scene) => {
-                await this.playScene(scene.id, tome.scenes);
-              })
-          );
-
-          // run custom scene
-          let scene = [
-            {
-              id: "new-space" + Math.random(),
-              actions: [
-                // manual actions
-                // Scripted Dialogue Action Controls directly on sprites
-                {
-                  sprite: "avatar",
-                  action: "dialogue",
-                  args: [
-                    [
-                      "Welcome traveler... I see you are exploring. Good. Please continue to look",
-                      "You have travelled into the the number " +
-                        (store.pixos && store.pixos["garden-tome"] ? store.pixos["garden-tome"].selected : 0) +
-                        " room",
-                    ],
-                    false,
-                    { autoclose: true },
-                  ],
-                  scope: this, // scoped to the zone
-                },
-              ],
-            },
-          ];
-          await this.playScene(scene[0].id, scene);
-        }
+        console.log("LOADING SCENE", this);
+        // Load avatar
+        await this.loadSprite.bind(this)({
+          id: "avatar",
+          type: "characters/default",
+          pos:
+            typeof store.pixos[STORE_NAME]?.position !== "undefined"
+              ? store.pixos[STORE_NAME].position
+              : new Vector(...[8, 8, 0]),
+          facing: Direction.Down,
+        });
+        // generate the zone procedurally
+        await generateZone(this, STORE_NAME, require("../../dialogues/cyoa.json"));
       },
     },
   ],

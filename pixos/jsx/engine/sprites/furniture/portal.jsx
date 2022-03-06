@@ -23,7 +23,7 @@ export default class Portal extends AnimatedSprite {
     this.src = Resources.artResourceUrl("room.png");
     this.sheetSize = [256, 256];
     this.tileSize = [16, 32];
-    this.fixed = true;
+    // this.fixed = true;
     // Frames
     this.frames = {
       up: [
