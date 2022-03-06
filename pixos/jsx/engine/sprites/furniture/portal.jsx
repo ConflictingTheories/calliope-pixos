@@ -13,44 +13,56 @@
 
 import { Vector } from "../../utils/math/vector.jsx";
 import Resources from "../../utils/resources.jsx";
-import Sprite from "../../core/sprite.jsx";
+import AnimatedSprite from "../effects/base/animatedSprite.jsx";
 import { ActionLoader } from "../../utils/loaders.jsx";
 
-export default class Door extends Sprite {
+export default class Portal extends AnimatedSprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("room.gif");
+    this.src = Resources.artResourceUrl("room.png");
     this.sheetSize = [256, 256];
     this.tileSize = [16, 32];
     this.fixed = true;
     // Frames
     this.frames = {
       up: [
-        [48, 64],
-        [48, 96],
-      ],
-      right: [
-        [48, 64],
-        [48, 96],
+        [0, 210],
+        [18, 210],
+        [36, 210],
+        [54, 210],
       ],
       left: [
-        [48, 64],
-        [48, 96],
+        [0, 210],
+        [18, 210],
+        [36, 210],
+        [54, 210],
+      ],
+      right: [
+        [0, 210],
+        [18, 210],
+        [36, 210],
+        [54, 210],
       ],
       down: [
-        [48, 64],
-        [48, 96],
+        [0, 210],
+        [18, 210],
+        [36, 210],
+        [54, 210],
       ],
     };
     this.drawOffset = new Vector(0, 1.001, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
+    this.frameTime = 150;
     this.state = "closed";
   }
-
-  // Interaction
+  // Initialize
+  init() {
+    this.triggerTime = 1000;
+  }
+  // Interact
   interact(sprite, finish) {
-    console.log("opening door", sprite);
+    console.log("opening portal", sprite);
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state
@@ -59,28 +71,75 @@ export default class Door extends Sprite {
         this.state = "open";
         this.blocking = false;
         this.override = true;
+        this.frames = {
+          up: [
+            [96, 210],
+            [114, 210],
+            [132, 210],
+            [150, 210],
+          ],
+          right: [
+            [96, 210],
+            [114, 210],
+            [132, 210],
+            [150, 210],
+          ],
+          left: [
+            [96, 210],
+            [114, 210],
+            [132, 210],
+            [150, 210],
+          ],
+          down: [
+            [96, 210],
+            [114, 210],
+            [132, 210],
+            [150, 210],
+          ],
+        };
         ret = new ActionLoader(
           this.engine,
-          "animate",
-          [
-            600,
-            3,
-            () => {
-              console.log("OPENED!!!");
-              finish(true);
-            },
-          ],
+          "dialogue",
+          ["The portal is Open.", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
         break;
       case "open":
-        this.state = "open";
+        this.state = "closed";
+        this.blocking = true;
+        this.override = false;
         ret = new ActionLoader(
           this.engine,
           "dialogue",
-          ["Its already Open!.", false, { autoclose: true, onClose: () => finish(true) }],
+          ["The portal is Closed.", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
+        this.frames = {
+          up: [
+            [0, 210],
+            [18, 210],
+            [36, 210],
+            [54, 210],
+          ],
+          left: [
+            [0, 210],
+            [18, 210],
+            [36, 210],
+            [54, 210],
+          ],
+          right: [
+            [0, 210],
+            [18, 210],
+            [36, 210],
+            [54, 210],
+          ],
+          down: [
+            [0, 210],
+            [18, 210],
+            [36, 210],
+            [54, 210],
+          ],
+        };
         break;
       default:
         break;
@@ -90,7 +149,6 @@ export default class Door extends Sprite {
     if (finish) finish(false);
     return ret;
   }
-
   // when stepping on tile position (if not blocking)
   onStep(sprite) {
     console.log("walking out....", sprite);

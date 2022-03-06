@@ -13,7 +13,6 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
-import cells from "./cells.jsx";
 import { store } from "react-recollect";
 import T from "../../tilesets/sewer/tiles.jsx";
 // Use Tileset
@@ -23,7 +22,6 @@ export default {
   // Determines the tileset to load
   tileset: "jungle",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
-  // cells: cells,
   cells: (bounds) => {
     let tiles = Object.keys(T);
     let x = bounds[0];
@@ -69,7 +67,7 @@ export default {
 
     {
       id: "door-l",
-      type: "furniture/door",
+      type: "furniture/portal",
       pos: new Vector(...[5, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
@@ -82,7 +80,7 @@ export default {
 
     {
       id: "door-r",
-      type: "furniture/door",
+      type: "furniture/portal",
       pos: new Vector(...[8, 2, 0]),
       facing: Direction.Down,
       onStep: () => {
