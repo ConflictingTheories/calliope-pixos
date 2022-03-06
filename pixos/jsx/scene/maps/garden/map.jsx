@@ -14,11 +14,8 @@
 import { store } from "react-recollect";
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
-import { generateZone } from "../../../engine/utils/generator.jsx";
+import { loadAvatar, generateZone, STORE_NAME } from "../../../engine/utils/generator.jsx";
 import T from "../../tilesets/sewer/tiles.jsx";
-
-// Store name
-const STORE_NAME = "garden-tome";
 
 // Use Tileset
 // Map Information
@@ -57,19 +54,7 @@ export default {
     // { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },
     // Tree
     // { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
-    // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    // {
-    //   id: "avatar",
-    //   type: "characters/default",
-    //   pos:
-    //     typeof store.pixos[STORE_NAME]?.position !== "undefined"
-    //       ? store.pixos[STORE_NAME].position
-    //       : new Vector(...[8, 8, 0]),
-    //   facing: Direction.Down,
-    // },
-
     // Doors
-
     {
       id: "door-l",
       type: "furniture/portal",
@@ -127,18 +112,24 @@ export default {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
         console.log("LOADING SCENE", this);
-        // Load avatar
-        await this.loadSprite.bind(this)({
-          id: "avatar",
-          type: "characters/default",
-          pos:
-            typeof store.pixos[STORE_NAME]?.position !== "undefined"
-              ? store.pixos[STORE_NAME].position
-              : new Vector(...[8, 8, 0]),
-          facing: Direction.Down,
-        });
+        // // randomly pick gender & store
+        // let gender =
+        //   typeof store.pixos[STORE_NAME]?.gender !== "undefined"
+        //     ? store.pixos[STORE_NAME].gender
+        //     : ["male", "female"][Math.floor((2 * Math.random()) % 2)];
+        // // Load avatar (Male or Female)
+        // await this.loadSprite.bind(this)({
+        //   id: "avatar",
+        //   type: "characters/" + gender,
+        //   pos:
+        //     typeof store.pixos[STORE_NAME]?.position !== "undefined"
+        //       ? store.pixos[STORE_NAME].position
+        //       : new Vector(...[8, 8, 0]),
+        //   facing: Direction.Down,
+        // });
+        let gender = await loadAvatar(this, STORE_NAME);
         // generate the zone procedurally
-        await generateZone(this, STORE_NAME, require("../../dialogues/cyoa.json"));
+        await generateZone(this, gender, STORE_NAME, require("../../dialogues/cyoa.json"));
       },
     },
   ],

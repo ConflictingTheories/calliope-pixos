@@ -1,15 +1,21 @@
 import { Vector } from "./math/vector.jsx";
 import { Direction } from "./enums.jsx";
 import { store } from "react-recollect";
-export async function generateZone(self, storeName, cyoa) {
+
+// Store Name
+export const STORE_NAME = "garden-tome";
+
+// generate random map zone
+export async function generateZone(self, gender, storeName, cyoa) {
   // load current scene or play welcome
   let tome = self.engine.fetchStore(storeName);
 
-  console.log("welcome -- loading - found the following: ", self, tome, cyoa);
+  console.log("welcome -- loading - found the following: ", self, gender, tome, cyoa);
 
   if (!tome) {
     // Initialize the garden
     tome = {
+      gender: gender,
       position: new Vector(...[8, 3, 0]),
       selected: 0,
       rain: true,
@@ -121,4 +127,21 @@ export async function generateZone(self, storeName, cyoa) {
     ];
     await self.playScene(scene[0].id, scene);
   }
+}
+
+// load avatar
+export async function loadAvatar(self, storeName) {
+  // randomly pick gender & store
+  let gender =
+    typeof store.pixos[storeName]?.gender !== "undefined"
+      ? store.pixos[storeName].gender
+      : ["male", "female"][Math.floor((2 * Math.random()) % 2)];
+  // Load avatar (Male or Female)
+  await self.loadSprite.bind(self)({
+    id: "avatar",
+    type: "characters/" + gender,
+    pos: typeof store.pixos[storeName]?.position !== "undefined" ? store.pixos[storeName].position : new Vector(...[8, 8, 0]),
+    facing: Direction.Down,
+  });
+  return gender;
 }

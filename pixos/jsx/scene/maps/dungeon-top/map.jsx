@@ -13,7 +13,9 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
+import { loadAvatar, STORE_NAME } from "../../../engine/utils/generator.jsx";
 import cells from "./cells.jsx";
+
 // Use Tileset
 // Map Information
 export default {
@@ -46,14 +48,15 @@ export default {
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
     { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
     // avatar
-    { id: "avatar", type: "characters/default", pos: new Vector(...[2, 6, 0]), facing: Direction.Down },
+    // { id: "avatar", type: "characters/default", pos: new Vector(...[2, 6, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
   scripts: [
     {
       id: "load-scene",
-      trigger: () => {
+      trigger: async () => {
         console.log("Triggered");
+        await loadAvatar(this, STORE_NAME);
       },
     },
   ],

@@ -13,6 +13,7 @@
 
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
+import { loadAvatar, STORE_NAME } from "../../../engine/utils/generator.jsx";
 import cells from "./cells.jsx";
 // Use Tileset
 // Map Information
@@ -48,7 +49,7 @@ export default {
     { id: "fire", type: "npc/fire-knight", pos: new Vector(...[2, 8, 0]), facing: Direction.Right },
     { id: "earth", type: "npc/earth-knight", pos: new Vector(...[14, 8, 0]), facing: Direction.Left },
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
-    { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
+    // { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
   scenes: [
@@ -87,6 +88,7 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
+        await loadAvatar(this, STORE_NAME);
         await this.playScene("strange-legend");
       },
     },

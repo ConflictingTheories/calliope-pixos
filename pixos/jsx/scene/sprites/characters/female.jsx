@@ -19,8 +19,8 @@ export default class Default extends Avatar {
     // Initialize Sprite
     super(engine);
     // PROPERTIES
-    this.src = Resources.artResourceUrl("player.gif");
-    this.portraitSrc = Resources.artResourceUrl("hero_portrait.gif");
+    this.src = Resources.artResourceUrl("player-2.gif");
+    this.portraitSrc = Resources.artResourceUrl("witch_portrait.gif");
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
     this.state = "intro";
