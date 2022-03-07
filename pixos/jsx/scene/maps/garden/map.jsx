@@ -30,53 +30,106 @@ export default {
     let y = bounds[1];
     let width = bounds[2] - x;
     let height = bounds[3] - y;
+    let portals = [
+      {
+        id: "door-l",
+        type: "furniture/portal",
+        pos: new Vector(...[5, 2, 0]),
+        facing: Direction.Down,
+        onStep: () => {
+          store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
+          store.pixos[STORE_NAME].selected -= 3;
+        },
+        zones: ["room"],
+      },
+
+      {
+        id: "door-r",
+        type: "furniture/portal",
+        pos: new Vector(...[8, 2, 0]),
+        facing: Direction.Down,
+        onStep: () => {
+          store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
+          store.pixos[STORE_NAME].selected += 7;
+        },
+        zones: ["garden"],
+      },
+    ];
     let a = new Array(height).fill(null).map((_, i) => {
       return new Array(width).fill(null).map((__, j) => {
+        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
+        // Edges
         if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
-          console.log("PILLAR TIME");
-          // let len = Math.floor(Math.random() * 3);
-          // while (len--) {
-          // zone.loadSprite(zone, {
-          //   id: "plt-" + Math.random(),
-          //   type: "objects/plants/random",
-          //   pos: new Vector(...[i, j, 2]),
-          //   facing: Direction.Down,
-          // });
-          // }
+          let len = Math.floor(((posKey + 1) * 337) % 9);
+          for (let m = 0; m < len; m++) {
+            zone.sprites.push({
+              id: "plt-" + posKey + m,
+              type: "objects/plants/random",
+              pos: new Vector(...[j, i, 2]),
+              facing: Direction.Down,
+            });
+          }
           return T.PILLAR;
         }
         // return random tile based on location (x+i, y+j)
-        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
         // 66% of tiles are floor
-        let random = posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7));
-        if (random !== 0) {
+        if (posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
           // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
-          let random = posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7));
-          if (random !== 0) {
-            let len = Math.floor((random * 6)%9);
-            for (let m = 0; m < len; m++) {
+          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+            for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
               zone.sprites.push({
-                id: "plt-" + Math.random(),
+                id: "plt-" + posKey + m,
                 type: "objects/plants/random",
-                pos: new Vector(...[i, j, 0]),
+                pos: new Vector(...[j, i, 0]),
                 facing: Direction.Down,
               });
+            }
+
+            // add Portals randomly around map on floor tiles
+            if (portals.length > 0 && posKey % Math.abs(22)) {
+              let portal = portals.pop();
+              portal.pos = new Vector(...[j, i, 0]);
+              posKey % Math.abs(zone.sprites.push(portal));
+            } else if (portals.length > 0 && posKey % Math.abs(33)) {
+              let portal = portals.shift();
+              portal.pos = new Vector(...[j, i, 0]);
+              posKey % Math.abs(zone.sprites.push(portal));
             }
           }
           return T.FLOOR;
         }
 
-        // let len = Math.floor(Math.random() * 6);
-        // for (let m = 0; m < len; m++) {
-        //   zone.sprites.push({
-        //     id: "plt-" + Math.random(),
-        //     type: "objects/plants/random",
-        //     pos: new Vector(...[i, j, 2]),
-        //     facing: Direction.Down,
-        //   });
-        // }
-        // rest are random (for now just pillars)
-        return T.PILLAR;
+        // return random tile based on location (x+i, y+j)
+        // 66% of tiles are floor
+        if (posKey % Math.abs(7 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
+          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+            for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+              zone.sprites.push({
+                id: "plt-" + posKey + m,
+                type: "objects/plants/random",
+                pos: new Vector(...[j, i, 2]),
+                facing: Direction.Down,
+              });
+            }
+          }
+          return T.PILLAR;
+        }
+
+        // add some flowers to the remaining blocks
+        if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+          for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+            zone.sprites.push({
+              id: "plt-" + Math.random(),
+              type: "objects/plants/random",
+              pos: new Vector(...[j, i, 1]),
+              facing: Direction.Down,
+            });
+          }
+        }
+
+        // rest are random (for now just blocks)
+        return T.BLOCK;
       });
     });
     return a.filter((x) => x).flat(1);
@@ -89,29 +142,6 @@ export default {
     // Tree
     // { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Doors
-    {
-      id: "door-l",
-      type: "furniture/portal",
-      pos: new Vector(...[5, 2, 0]),
-      facing: Direction.Down,
-      onStep: () => {
-        store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
-        store.pixos[STORE_NAME].selected -= 3;
-      },
-      zones: ["room"],
-    },
-
-    {
-      id: "door-r",
-      type: "furniture/portal",
-      pos: new Vector(...[8, 2, 0]),
-      facing: Direction.Down,
-      onStep: () => {
-        store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
-        store.pixos[STORE_NAME].selected += 7;
-      },
-      zones: ["garden"],
-    },
   ],
   // Scenes + Scenarios
   scenes: [

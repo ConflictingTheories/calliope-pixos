@@ -49,7 +49,7 @@ export default class Zone {
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
-        console.log('made --it', this.cells, data.tileset);
+        console.log("made --it", this.cells, data.tileset);
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -160,19 +160,23 @@ export default class Zone {
   // load obj model
   async loadObject(_this, data) {
     data.zone = _this;
-    let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
-    console.log(["object", this.objectDict, this.objectList, data, newObject]);
-    this.objectDict[data.id] = newObject;
-    this.objectList.push(newObject);
+    if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
+      let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
+      console.log(["object", this.objectDict, this.objectList, data, newObject]);
+      this.objectDict[data.id] = newObject;
+      this.objectList.push(newObject);
+    }
   }
 
   // Load Sprite
   async loadSprite(_this, data) {
     data.zone = _this;
-    let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
-    console.log(["sprite", this.spriteDict, this.spriteList, data, newSprite]);
-    this.spriteDict[data.id] = newSprite;
-    this.spriteList.push(newSprite);
+    if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
+      let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
+      console.log(["sprite", this.spriteDict, this.spriteList, data, newSprite]);
+      this.spriteDict[data.id] = newSprite;
+      this.spriteList.push(newSprite);
+    }
   }
 
   // Add an existing sprite to the zone
