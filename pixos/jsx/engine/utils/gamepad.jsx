@@ -699,7 +699,7 @@ class ControllerButtons {
         ctx.fillText(button.name, x + w / 2, y + h * 2);
       }
 
-      if (button.key && hint) {
+      if (button.key) {
         ctx.fillStyle = "rgba(0,0,0,0.25)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";

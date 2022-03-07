@@ -25,8 +25,7 @@ export default {
   tileset: "jungle",
   audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
-  cells: (bounds) => {
-    let tiles = Object.keys(T);
+  cells: (bounds, zone) => {
     let x = bounds[0];
     let y = bounds[1];
     let width = bounds[2] - x;
@@ -34,19 +33,53 @@ export default {
     let a = new Array(height).fill(null).map((_, i) => {
       return new Array(width).fill(null).map((__, j) => {
         if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
+          console.log("PILLAR TIME");
+          // let len = Math.floor(Math.random() * 3);
+          // while (len--) {
+          // zone.loadSprite(zone, {
+          //   id: "plt-" + Math.random(),
+          //   type: "objects/plants/random",
+          //   pos: new Vector(...[i, j, 2]),
+          //   facing: Direction.Down,
+          // });
+          // }
           return T.PILLAR;
         }
         // return random tile based on location (x+i, y+j)
         let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
         // 66% of tiles are floor
         let random = posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7));
-        if (random !== 0) return T.FLOOR;
+        if (random !== 0) {
+          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
+          let random = posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7));
+          if (random !== 0) {
+            let len = Math.floor((random * 6)%9);
+            for (let m = 0; m < len; m++) {
+              zone.sprites.push({
+                id: "plt-" + Math.random(),
+                type: "objects/plants/random",
+                pos: new Vector(...[i, j, 0]),
+                facing: Direction.Down,
+              });
+            }
+          }
+          return T.FLOOR;
+        }
+
+        // let len = Math.floor(Math.random() * 6);
+        // for (let m = 0; m < len; m++) {
+        //   zone.sprites.push({
+        //     id: "plt-" + Math.random(),
+        //     type: "objects/plants/random",
+        //     pos: new Vector(...[i, j, 2]),
+        //     facing: Direction.Down,
+        //   });
+        // }
         // rest are random (for now just pillars)
-        let tileMod = posKey % (tiles.length - 1);
-        return T.PILLAR; //T[tiles[tileMod]] ??
+        return T.PILLAR;
       });
     });
-    return a.flat(1);
+    return a.filter((x) => x).flat(1);
   },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   sprites: [
@@ -112,22 +145,7 @@ export default {
     {
       id: "load-scene", // **runs automatically when loaded
       trigger: async function () {
-        console.log("LOADING SCENE", this);
-        // // randomly pick gender & store
-        // let gender =
-        //   typeof store.pixos[STORE_NAME]?.gender !== "undefined"
-        //     ? store.pixos[STORE_NAME].gender
-        //     : ["male", "female"][Math.floor((2 * Math.random()) % 2)];
-        // // Load avatar (Male or Female)
-        // await this.loadSprite.bind(this)({
-        //   id: "avatar",
-        //   type: "characters/" + gender,
-        //   pos:
-        //     typeof store.pixos[STORE_NAME]?.position !== "undefined"
-        //       ? store.pixos[STORE_NAME].position
-        //       : new Vector(...[8, 8, 0]),
-        //   facing: Direction.Down,
-        // });
+        // randomly pick gender & store
         let gender = await loadAvatar(this, STORE_NAME);
         // generate the zone procedurally
         await generateZone(this, gender, STORE_NAME, require("../../dialogues/cyoa.json"));

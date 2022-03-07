@@ -12,14 +12,14 @@
 \*                                                 */
 
 import Resources from "../../../engine/utils/resources.jsx";
-import TilesetGeometry from '../common/geometry.jsx';
+import TilesetGeometry from "../../../engine/tilesets/common/geometry.jsx";
 // Tileset Schema
 export default {
-  name: "sewer",
-  src: Resources.artResourceUrl("sewer.gif"),
+  name: "jungle",
+  src: Resources.artResourceUrl("jungle.gif"),
   sheetSize: [256, 256],
   tileSize: 16,
-  bgColor: [31, 20, 29],
+  bgColor: [88, 62, 36],
   // Tile Locations on resource (based on size)
   textures: {
     FLOOR: [1, 1],
@@ -48,10 +48,10 @@ export default {
     EMPTY_L: [5, 1],
     EMPTY_BL: [5, 2],
     EMPTY_B: [6, 2],
-    EMPTY_CBR: [9, 1],
-    EMPTY_CTR: [9, 0],
-    EMPTY_CTL: [8, 0],
-    EMPTY_CBL: [8, 1],
+    EMPTY_CBR: [6, 1],
+    EMPTY_CTR: [6, 1],
+    EMPTY_CTL: [6, 1],
+    EMPTY_CBL: [6, 1],
     STAIR: [5, 3],
     WALL: [0, 3],
     WALL_WATER: [0, 5],

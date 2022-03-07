@@ -48,7 +48,8 @@ export default class Zone {
         let data = await fileResponse.json();
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
-        this.cells = typeof data.cells == "function" ? data.cells() : data.cells;
+        this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
+        console.log('made --it', this.cells, data.tileset);
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -74,7 +75,7 @@ export default class Zone {
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells == "function") {
-        this.cells = this.cells(this.bounds);
+        this.cells = this.cells(this.bounds, this);
       }
       // audio loader
       if (this.audioSrc) {

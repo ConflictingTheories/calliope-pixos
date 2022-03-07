@@ -50,7 +50,9 @@ export class TilesetLoader {
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
+    instance.name = type;
     let json = require("../../scene/tilesets/" + type + "/tileset.jsx")["default"];
+    console.log('loading tileset info', json);
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -116,8 +118,8 @@ export class ObjectLoader {
       enableWTextureCoord: false,
       name: instance.id,
     };
-    let models = (await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]));
-    console.log('downloading models ---> ', models);
+    let models = await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]);
+    console.log("downloading models ---> ", models);
     instance.mesh = models[model.id];
     instance.templateLoaded = true;
     console.log("loaded model", instance);

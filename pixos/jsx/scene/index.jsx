@@ -15,6 +15,7 @@
 import fs from "../engine/shaders/fs.jsx";
 import vs from "../engine/shaders/vs.jsx";
 import World from "../engine/core/world.jsx";
+import { saveAs } from "file-saver";
 import * as JSZip from "jszip";
 
 // Scene Object

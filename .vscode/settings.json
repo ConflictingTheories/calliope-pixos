@@ -6,5 +6,5 @@
         ".contributions": true,
         "dist": true
     },
-    "workspace.isHidden": false
+    "workspace.isHidden": true
 }

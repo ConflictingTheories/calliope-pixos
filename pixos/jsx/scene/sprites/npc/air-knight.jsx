@@ -33,7 +33,7 @@ export default class MyAirKnight extends AirKnight {
           this,
           async () => {
             // Eth Account
-            const account = (await ethereum.request({ method: "eth_requestAccounts" }))[0];
+            const account = (await window.ethereum.request({ method: "eth_requestAccounts" }))[0];
             // Params
             const msgParams = JSON.stringify({
               domain: {
@@ -86,7 +86,7 @@ export default class MyAirKnight extends AirKnight {
             var params = [from, msgParams];
             var method = "eth_signTypedData_v4";
             // Sign
-            web3.currentProvider.sendAsync(
+            window.web3.currentProvider.sendAsync(
               {
                 method,
                 params,
@@ -100,12 +100,12 @@ export default class MyAirKnight extends AirKnight {
                 if (result.error) return console.error("ERROR", result);
                 console.log("TYPED SIGNED:" + JSON.stringify(result.result));
 
-                const recovered = sigUtil.recoverTypedSignature_v4({
+                const recovered = window.sigUtil.recoverTypedSignature_v4({
                   data: JSON.parse(msgParams),
                   sig: result.result,
                 });
 
-                if (ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)) {
+                if (window.ethUtil.toChecksumAddress(recovered) === window.ethUtil.toChecksumAddress(from)) {
                   alert("Successfully recovered signer as " + from);
                 } else {
                   alert("Failed to verify signer when comparing " + result + " to " + from);

@@ -47,8 +47,6 @@ export default {
     { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
     { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
     { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
-    // avatar
-    // { id: "avatar", pos: new Vector(...[2, 6, 0]), facing: Direction.Down },
   ],
   // Scenes + Scenarios
   scripts: [
