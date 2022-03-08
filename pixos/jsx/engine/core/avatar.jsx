@@ -56,6 +56,42 @@ export default class Avatar extends Sprite {
       case "c":
         this.bindCamera = false;
         break;
+      // show menu
+      case "m":
+        return new ActionLoader(
+          this.engine,
+          "menu",
+          [
+            [
+              {
+                text: "Click Me",
+                x: 100,
+                y: 100,
+                w: 150,
+                h: 75,
+                colours: {
+                  top: "#333",
+                  bottom: "#777",
+                  background: "#999",
+                },
+                children: [
+                  {
+                    text: "Click Me Again",
+                    x: 110,
+                    y: 110,
+                    w: 150,
+                    h: 75,
+                    colours: { top: "#333", bottom: "#777", background: "#999" },
+                  },
+                ],
+              },
+            ],
+            false,
+            { autoclose: false },
+          ],
+          this
+        );
+        break;
       case "z":
         // this.zone.world.removeZone("room");
         this.zone.world.removeZone("room");

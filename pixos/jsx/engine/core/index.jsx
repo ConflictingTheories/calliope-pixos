@@ -307,7 +307,7 @@ export default class GLEngine {
   }
 
   // Draws a button
-  drawButton(x, y, w, h, colours) {
+  drawButton(text, x, y, w, h, colours) {
     const { ctx } = this;
 
     let halfHeight = h / 2;
@@ -362,6 +362,12 @@ export default class GLEngine {
         ctx.restore();
       }
     }
+
+    ctx.font = "20px invasion2000";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
+    ctx.fillText(text, x+w/2, y+h/2, w);
 
     ctx.restore();
   }

@@ -26,6 +26,10 @@ export default {
   audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
+    // clear out sprites
+    delete zone.sprite; 
+    zone.sprites = zone.defaultSprites ?? [];
+    // generate based on bounds
     let x = bounds[0];
     let y = bounds[1];
     let width = bounds[2] - x;
@@ -120,7 +124,7 @@ export default {
         if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
           for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
             zone.sprites.push({
-              id: "plt-" + Math.random(),
+              id: "plt-" + posKey + m,
               type: "objects/plants/random",
               pos: new Vector(...[j, i, 1]),
               facing: Direction.Down,
@@ -135,14 +139,7 @@ export default {
     return a.filter((x) => x).flat(1);
   },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
-  sprites: [
-    // Objects
-    // { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
-    // { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },
-    // Tree
-    // { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
-    // Doors
-  ],
+  defaultSprites: [],
   // Scenes + Scenarios
   scenes: [
     {
@@ -168,7 +165,6 @@ export default {
         { trigger: "custom", scope: this },
       ],
     },
-    ,
   ],
   // Scripts / Triggers for the Zone
   scripts: [
