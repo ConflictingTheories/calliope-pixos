@@ -26,6 +26,7 @@ export class GamePad {
     this.select = true;
     this.touches = {};
     this.lastKey = new Date().getTime();
+    this.listeners = [];
     this.map = {};
     // Joystick Radius
     this.radius = ctx.canvas.width / 12;
@@ -110,6 +111,17 @@ export class GamePad {
     this.loadCanvas();
   }
 
+  // attach external event listener (spliced into)
+  attachListener(listener) {
+    console.log('attached listener', listener);
+    return this.listeners.push(listener);
+  }
+
+  // removed an attached external event listener
+  removeListener(id) {
+    this.listeners.splice(id - 1, 1);
+  }
+
   // check input status
   checkInput() {
     return this.map;
@@ -150,7 +162,7 @@ export class GamePad {
 
   // debounce
   debounce() {
-    let { controller, buttons_layout } = this
+    let { controller, buttons_layout } = this;
     let t = this.lastKey;
     this.lastKey = new Date().getTime() + 100;
     // todo - clear key
@@ -173,6 +185,12 @@ export class GamePad {
         e = { touches: [e] };
       }
       let offset = this.getPosition(ctx.canvas);
+       // run against attached listeners
+       this.listeners.map((l) => {
+        if (l[type]) {
+          return l[type](e);
+        }
+      });
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
         if (!touches[id]) {
@@ -187,6 +205,7 @@ export class GamePad {
       }
 
       for (var id in touches) {
+        // handle controller
         switch (type) {
           case "touchstart":
           case "touchmove":

@@ -367,7 +367,7 @@ export default class GLEngine {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.fillText(text, x+w/2, y+h/2, w);
+    ctx.fillText(text, x + w / 2, y + h / 2, w);
 
     ctx.restore();
   }

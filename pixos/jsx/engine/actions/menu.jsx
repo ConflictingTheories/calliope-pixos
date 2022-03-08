@@ -19,10 +19,14 @@ export default {
     this.text = "";
     this.scrolling = scrolling;
     this.line = 0;
-    this.menu = menu ?? [];
     this.options = options;
     this.completed = false;
     this.lastKey = new Date().getTime();
+    this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
+    this.touches = [];
+    this.menu = menu ?? [];
+    this.activeMenu = menu ?? [];
+    this.isTouched = false;
   },
   // Update & Scroll
   tick: function (time) {
@@ -34,11 +38,12 @@ export default {
         this.completed = true;
       }
     }
+
     // Handle Input
     this.checkInput(time);
 
     // Draw Screen
-    this.menu.map((section) => {
+    this.activeMenu.map((section) => {
       let colors = section.colours;
       if (section.active) {
         colors["background"] = "#555";
@@ -47,10 +52,66 @@ export default {
     });
 
     this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
+
+    if (this.completed) this.unhookListener();
     return this.completed;
+  },
+
+  unhookListener: function () {
+    // remove listener
+    this.engine.gamepad.removeListener(this.listenerId);
+    this.listenerId = null;
+  },
+
+  hookListener: function () {
+    let touchstart = (touches) => {
+      console.log("touching - start", touches);
+      this.isTouched = true;
+      this.touches = touches;
+    };
+    let touchend = (touches) => {
+      console.log("touching - end", touches);
+      this.isTouched = false;
+      this.touches = [];
+    };
+    let touchmove = touchstart;
+    let mousemove = touchstart;
+    let mousedown = touchstart;
+    let mouseup = touchend;
+    return {
+      touchstart,
+      touchmove,
+      touchend,
+      mousedown,
+      mousemove,
+      mouseup,
+    };
   },
   // Handle Keyboard & Mouse & Touch
   checkInput: function (time) {
+    // Mouse
+    if (this.isTouched) {
+      let x = this.touches[0].x;
+      let y = this.touches[0].y;
+      this.activeMenu = this.menu
+        .filter((w) => {
+          if (w.active && w < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
+            return true;
+          }
+          return false;
+        })
+        .map((w) => {
+          if (w.trigger) w.trigger();
+          if (w.children)
+            return w.children.map((c) => {
+              c.active = true;
+              return c;
+            });
+          return w;
+        });
+    }
+
+    // Keyboard
     if (time > this.lastKey + 100) {
       let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {

@@ -65,6 +65,7 @@ export default class Avatar extends Sprite {
             [
               {
                 text: "Click Me",
+                active: true,
                 x: 100,
                 y: 100,
                 w: 150,
@@ -116,7 +117,6 @@ export default class Avatar extends Sprite {
           this
         );
       // Chat Message
-      case "m":
       case " ":
         return new ActionLoader(this.engine, "chat", [">:", true, { autoclose: false }], this);
       // Clear Speech
