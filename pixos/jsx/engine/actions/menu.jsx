@@ -64,18 +64,43 @@ export default {
   },
 
   hookListener: function () {
-    let touchstart = (touches) => {
+    let touchstart = ({ touches }) => {
       console.log("touching - start", touches);
       this.isTouched = true;
+      this.touches = touches;
+      if (this.isTouched && this.touches.length > 0 && this.lastKey + 100 < new Date().getTime()) {
+        let x = this.touches[0].x;
+        let y = this.touches[0].y;
+        let self = this;
+        self.activeMenu
+          .filter((w) => {
+            console.log("checking", x, y, w);
+            if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
+              console.log("CLICKED!!", x, y, w);
+              return true;
+            }
+            return false;
+          })
+          .map((w) => {
+            if (w.trigger) w.trigger();
+            if (w.children) {
+              self.activeMenu = w.children.map((c) => {
+                c.active = true;
+                return c;
+              });
+            }
+          });
+      }
+    };
+    let touchmove = (touches) => {
       this.touches = touches;
     };
     let touchend = (touches) => {
       console.log("touching - end", touches);
       this.isTouched = false;
-      this.touches = [];
+      this.touches = touches;
     };
-    let touchmove = touchstart;
-    let mousemove = touchstart;
+    let mousemove = touchmove;
     let mousedown = touchstart;
     let mouseup = touchend;
     return {
@@ -90,26 +115,29 @@ export default {
   // Handle Keyboard & Mouse & Touch
   checkInput: function (time) {
     // Mouse
-    if (this.isTouched) {
-      let x = this.touches[0].x;
-      let y = this.touches[0].y;
-      this.activeMenu = this.menu
-        .filter((w) => {
-          if (w.active && w < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
-            return true;
-          }
-          return false;
-        })
-        .map((w) => {
-          if (w.trigger) w.trigger();
-          if (w.children)
-            return w.children.map((c) => {
-              c.active = true;
-              return c;
-            });
-          return w;
-        });
-    }
+    // if (this.isTouched && this.touches.length > 0 && this.lastKey + 100 < time) {
+    //   let x = this.touches[0].x;
+    //   let y = this.touches[0].y;
+    //   let self = this;
+    //   self.activeMenu
+    //     .filter((w) => {
+    //       console.log("checking", x, y, w);
+    //       if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
+    //         console.log("CLICKED!!", x, y, w);
+    //         return true;
+    //       }
+    //       return false;
+    //     })
+    //     .map((w) => {
+    //       if (w.trigger) w.trigger();
+    //       if (w.children) {
+    //         self.activeMenu = w.children.map((c) => {
+    //           c.active = true;
+    //           return c;
+    //         });
+    //       }
+    //     });
+    // }
 
     // Keyboard
     if (time > this.lastKey + 100) {

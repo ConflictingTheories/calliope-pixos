@@ -83,6 +83,19 @@ export default class Avatar extends Sprite {
                     w: 150,
                     h: 75,
                     colours: { top: "#333", bottom: "#777", background: "#999" },
+                    children: [
+                      {
+                        text: "Click Me ONE MORE",
+                        x: 110,
+                        y: 110,
+                        w: 150,
+                        h: 75,
+                        colours: { top: "#333", bottom: "#777", background: "#999" },
+                        trigger: () => {
+                          this.zone.world.loadZone("room");
+                        },
+                      },
+                    ],
                   },
                 ],
               },
