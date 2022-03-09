@@ -13,7 +13,7 @@
 
 export default {
   // Initialize Dialogue Object
-  init: function (menu, scrolling = true, options = {}) {
+  init: function (menu, activeMenus, scrolling = true, options = {}) {
     console.log("loading - menu");
     this.engine = this.sprite.engine;
     this.text = "";
@@ -24,8 +24,10 @@ export default {
     this.lastKey = new Date().getTime();
     this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
     this.touches = [];
-    this.menu = menu ?? [];
-    this.activeMenu = menu ?? [];
+    this.menuDict = menu ?? {};
+    this.activeMenus = activeMenus ?? [];
+    this.selectedMenu = {};
+    this.selectedMenuId = null;
     this.isTouched = false;
   },
   // Update & Scroll
@@ -41,19 +43,24 @@ export default {
 
     // Handle Input
     this.checkInput(time);
-
-    // Draw Screen
-    this.activeMenu.map((section) => {
-      let colors = section.colours;
-      if (section.active) {
-        colors["background"] = "#555";
-      }
-      this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
-    });
+    // Draw Active Menus to Screen
+    Object.keys(this.menuDict)
+      .filter((key) => this.activeMenus.includes(key))
+      .map((id) => {
+        let section = this.menuDict[id];
+        let colors = section.colours;
+        if (section.active) {
+          colors["background"] = "#555";
+        }
+        this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+      });
 
     this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
 
-    if (this.completed) this.unhookListener();
+    if (this.completed) {
+      this.unhookListener();
+      // this.engine.clearHud();
+    }
     return this.completed;
   },
 
@@ -72,22 +79,21 @@ export default {
         let x = this.touches[0].x;
         let y = this.touches[0].y;
         let self = this;
-        self.activeMenu
-          .filter((w) => {
+        self.activeMenus
+          .filter((key) => {
+            let w = self.menuDict[key];
             console.log("checking", x, y, w);
-            if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
+            if (x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
               console.log("CLICKED!!", x, y, w);
               return true;
             }
             return false;
           })
-          .map((w) => {
-            if (w.trigger) w.trigger();
+          .map((key) => {
+            let w = self.menuDict[key];
+            if (w.trigger) w.trigger(this);
             if (w.children) {
-              self.activeMenu = w.children.map((c) => {
-                c.active = true;
-                return c;
-              });
+              self.activeMenus = w.children;
             }
           });
       }

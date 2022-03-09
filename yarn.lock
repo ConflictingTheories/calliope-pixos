@@ -1956,10 +1956,10 @@
     "shebang-command" "^2.0.0"
     "which" "^2.0.1"
 
-"css-loader@^6.7.0":
-  "integrity" "sha512-S7HCfCiDHLA+VXKqdZwyRZgoO0R9BnKDnVIoHMq5grl3N86zAu7MB+FBWHr5xOJC8SmvpTLha/2NpfFkFEN/ig=="
-  "resolved" "https://registry.npmjs.org/css-loader/-/css-loader-6.7.0.tgz"
-  "version" "6.7.0"
+"css-loader@^6.7.1":
+  "integrity" "sha512-yB5CNFa14MbPJcomwNh3wLThtkZgcNyI2bNMRt8iE5Z8Vwl7f8vQXFAzn2HDOJvtDq2NTZBUGMSUNNyrv3/+cw=="
+  "resolved" "https://registry.npmjs.org/css-loader/-/css-loader-6.7.1.tgz"
+  "version" "6.7.1"
   dependencies:
     "icss-utils" "^5.1.0"
     "postcss" "^8.4.7"

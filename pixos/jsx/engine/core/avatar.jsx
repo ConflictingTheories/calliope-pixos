@@ -62,10 +62,9 @@ export default class Avatar extends Sprite {
           this.engine,
           "menu",
           [
-            [
-              {
+            {
+              main: {
                 text: "Click Me",
-                active: true,
                 x: 100,
                 y: 100,
                 w: 150,
@@ -75,31 +74,31 @@ export default class Avatar extends Sprite {
                   bottom: "#777",
                   background: "#999",
                 },
-                children: [
-                  {
-                    text: "Click Me Again",
-                    x: 110,
-                    y: 110,
-                    w: 150,
-                    h: 75,
-                    colours: { top: "#333", bottom: "#777", background: "#999" },
-                    children: [
-                      {
-                        text: "Click Me ONE MORE",
-                        x: 110,
-                        y: 110,
-                        w: 150,
-                        h: 75,
-                        colours: { top: "#333", bottom: "#777", background: "#999" },
-                        trigger: () => {
-                          this.zone.world.loadZone("room");
-                        },
-                      },
-                    ],
-                  },
-                ],
+                children: ["sub"],
               },
-            ],
+              sub: {
+                text: "Click Me Again",
+                x: 110,
+                y: 110,
+                w: 150,
+                h: 75,
+                colours: { top: "#333", bottom: "#777", background: "#999" },
+                children: ["nested"],
+              },
+              nested: {
+                text: "Click Me ONE MORE",
+                x: 110,
+                y: 110,
+                w: 150,
+                h: 75,
+                colours: { top: "#333", bottom: "#777", background: "#999" },
+                trigger: (menu) => {
+                  menu.completed = true;
+                  this.zone.world.loadZone("room");
+                },
+              },
+            },
+            ["main"],
             false,
             { autoclose: false },
           ],
