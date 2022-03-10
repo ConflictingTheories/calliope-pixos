@@ -321,7 +321,7 @@ export default class Zone {
       if (this.engine.gamepad.keyPressed("start")) {
         // select
         if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
-        if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
+        else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
       }
       if (this.engine.gamepad.keyPressed("select")) {
         // select

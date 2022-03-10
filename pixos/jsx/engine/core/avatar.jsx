@@ -41,6 +41,10 @@ export default class Avatar extends Sprite {
     }
     if (this.bindCamera) set(this.pos, this.engine.cameraPosition);
   }
+  // open menu
+  openMenu(menuConfig = {}, defaultMenus = []) {
+    return new ActionLoader(this.engine, "menu", [menuConfig, defaultMenus, false, { autoclose: false }], this);
+  }
   // Reads for Input to Respond to
   checkInput() {
     // Action Keys
@@ -58,51 +62,25 @@ export default class Avatar extends Sprite {
         break;
       // show menu
       case "m":
-        return new ActionLoader(
-          this.engine,
-          "menu",
-          [
-            {
-              main: {
-                text: "Click Me",
-                x: 100,
-                y: 100,
-                w: 150,
-                h: 75,
-                colours: {
-                  top: "#333",
-                  bottom: "#777",
-                  background: "#999",
-                },
-                children: ["sub"],
+        return this.openMenu(
+          {
+            main: {
+              text: "Close Menu",
+              x: 100,
+              y: 100,
+              w: 150,
+              h: 75,
+              colours: {
+                top: "#333",
+                bottom: "#777",
+                background: "#999",
               },
-              sub: {
-                text: "Click Me Again",
-                x: 110,
-                y: 110,
-                w: 150,
-                h: 75,
-                colours: { top: "#333", bottom: "#777", background: "#999" },
-                children: ["nested"],
-              },
-              nested: {
-                text: "Click Me ONE MORE",
-                x: 110,
-                y: 110,
-                w: 150,
-                h: 75,
-                colours: { top: "#333", bottom: "#777", background: "#999" },
-                trigger: (menu) => {
-                  menu.completed = true;
-                  this.zone.world.loadZone("room");
-                },
+              trigger: (menu) => {
+                menu.completed = true;
               },
             },
-            ["main"],
-            false,
-            { autoclose: false },
-          ],
-          this
+          },
+          ["main"]
         );
         break;
       case "z":
@@ -142,10 +120,34 @@ export default class Avatar extends Sprite {
       // select
       return new ActionLoader(this.engine, "interact", [this.pos.toArray(), this.facing, this.zone.world], this);
     }
+    // camera
     if (touchmap["x"] === 1) {
-      // camera
       this.bindCamera = !this.bindCamera;
     }
+    // menu
+    if (touchmap["y"] === 1) {
+      return this.openMenu(
+        {
+          main: {
+            text: "Close Menu",
+            x: 100,
+            y: 100,
+            w: 150,
+            h: 75,
+            colours: {
+              top: "#333",
+              bottom: "#777",
+              background: "#999",
+            },
+            trigger: (menu) => {
+              menu.completed = true;
+            },
+          },
+        },
+        ["main"]
+      );
+    }
+
     // Walk
     return this.handleWalk(this.engine.keyboard.lastPressedKey(), touchmap);
   }
