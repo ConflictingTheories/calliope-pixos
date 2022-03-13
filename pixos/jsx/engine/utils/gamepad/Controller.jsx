@@ -1,3 +1,16 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 import { ControllerStick } from "@Engine/utils/gamepad/ControllerStick.jsx";
 import { ControllerButtons } from "@Engine/utils/gamepad/ControllerButtons.jsx";
 // Controller Manager for Gamepad

@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.4.18",
+  "version": "0.4.20",
   "description": "Pixos is a mini interactive scene avatar plugin for calliope static site generator.",
   "main": "dist/bundle.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "ISC",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.5",

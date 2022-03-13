@@ -1,6 +1,20 @@
-import { Vector } from "./math/vector.jsx";
-import { Direction } from "./enums.jsx";
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 import { store } from "react-recollect";
+
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 
 // Store Name
 export const STORE_NAME = "garden-tome";
@@ -143,4 +157,3 @@ export async function loadAvatar(self, storeName) {
   });
   return gender;
 }
-
