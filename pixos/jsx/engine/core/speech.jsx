@@ -56,7 +56,7 @@ export default class Speech {
   // clear HUD overlay
   clearHud() {
     const { ctx } = this;
-    ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     this.loadImage();
   }
 
