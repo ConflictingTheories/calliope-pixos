@@ -25,6 +25,7 @@ export default class Zone {
     this.spriteList = [];
     this.objectDict = {};
     this.objectList = [];
+    this.scenes = [];
     this.lastKey = Date.now();
     this.engine = world.engine;
     this.onLoadActions = new ActionQueue();
@@ -55,8 +56,8 @@ export default class Zone {
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
-        await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
-        await Promise.all(data.objects.map(this.loadObject.bind(this)));
+        if (data.sprites) await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
+        if (data.objects) await Promise.all(data.objects.map(this.loadObject.bind(this)));
         // Notify the zone sprites when the new sprite has loaded
         this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
         this.objectList.forEach((object) => object.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
@@ -71,7 +72,6 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      console.log("@Scenes/" + this.sceneName + "/maps/" + this.id + "/map.jsx");
       let data = require("@Scenes/" + this.sceneName + "/maps/" + this.id + "/map.jsx")["default"];
       Object.assign(this, data);
       // handle cells generator

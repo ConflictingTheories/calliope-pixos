@@ -14,11 +14,5 @@
 import Tiles from "@Tilesets/common/tiles.jsx";
 
 // Tile Types Supported (Labels for Easy Use) [[geometry, texture, height], walkability?]
-export default Object.create(
-  // Common tile
-  Tiles,
-  // Custom Tile Types & Overrides (if appl.)
-  {
-    WATER: ["FLAT_NONE", "WATER", -1.25],
-  }
-);
+const T = Object.assign({}, { ...Tiles, WATER: ["FLAT_NONE", "WATER", -1.65] });
+export default T;
