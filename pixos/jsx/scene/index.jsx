@@ -61,7 +61,8 @@ export default class Scene {
           // tood - needs a way to trigger on open
           this.isPaused = true;
         },
-        trigger: (menu) => { // on Click
+        trigger: (menu) => {
+          // on Click
           console.log(menu);
           // start initial audio
           menu.world.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
@@ -132,6 +133,9 @@ export default class Scene {
   // Mobile Touch handler for Scene
   onTouchEvent = (e) => {
     switch (e.type) {
+      case "mousedown":
+      case "mouseup":
+      case "mousemove":
       case "touchstart":
       case "touchend":
       case "touchmove":

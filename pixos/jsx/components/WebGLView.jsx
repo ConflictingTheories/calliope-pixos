@@ -83,7 +83,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   }, [SceneProvider]);
 
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight - 200;
-
+  let showGamepad = screenSize.dynamicWidth <= 900;
   return (
     <div
       style={{
@@ -91,8 +91,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         padding: "none",
         background: "slategrey",
         width: "100%",
-        // maxWidth: width,
-        // maxHeight: canvasHeight + 200,
       }}
       onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
       onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
@@ -105,7 +103,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           zIndex: 1,
           top: 0,
           left: 0,
-          // maxWidth: 800
           maxHeight: "100vh",
         }}
         ref={ref}
@@ -121,13 +118,15 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           top: 0,
           left: 0,
           background: "none",
-          // maxWidth: 800
           maxHeight: "100vh",
         }}
         ref={hudRef}
         width={screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth}
         height={canvasHeight}
         className={string}
+        onMouseUp={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
+        onMouseDown={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
+        onMouseMove={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
       />
       {/* Gamepad - For controls on Mobile Only*/}
       <canvas
@@ -137,12 +136,11 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           top: 0,
           left: 0,
           background: "none",
-          display: screenSize.dynamicWidth <= 900 ? "block" : "none",
-          // maxWidth: 800,
+          display: showGamepad ? "block" : "none",
           maxHeight: "100vh",
         }}
         ref={gamepadRef}
-        hidden={screenSize.dynamicWidth > 900}
+        hidden={!showGamepad}
         width={screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth}
         height={canvasHeight + 200}
         className={string}
