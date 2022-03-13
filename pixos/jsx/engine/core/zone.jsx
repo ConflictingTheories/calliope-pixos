@@ -10,10 +10,10 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Direction } from "../utils/enums.jsx";
-import Resources from "../utils/resources.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
+import Resources from "@Engine/utils/resources.jsx";
 import ActionQueue from "./queue.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "../utils/loaders.jsx";
+import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -71,8 +71,8 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      console.log("../../" + this.sceneName + "/maps/" + this.id + "/map.jsx");
-      let data = require("../../" + this.sceneName + "/maps/" + this.id + "/map.jsx")["default"];
+      console.log("@Scenes/" + this.sceneName + "/maps/" + this.id + "/map.jsx");
+      let data = require("@Scenes/" + this.sceneName + "/maps/" + this.id + "/map.jsx")["default"];
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells == "function") {

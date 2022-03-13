@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../utils/math/vector.jsx";
-import Resources from "../../utils/resources.jsx";
-import Sprite from "../../core/sprite.jsx";
-import { ActionLoader } from "../../utils/loaders.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
+import { ActionLoader } from "@Engine/utils/loaders.jsx";
 
 export default class Door extends Sprite {
   constructor(engine) {

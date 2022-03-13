@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set } from "../utils/math/vector.jsx";
-import { Direction } from "../utils/enums.jsx";
-import { ActionLoader } from "../utils/loaders.jsx";
+import { Vector, set } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
+import { ActionLoader } from "@Engine/utils/loaders.jsx";
 import Sprite from "./sprite.jsx";
 
 // Special class of Sprite which is controlled by the player

@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set, lerp } from "../../engine/utils/math/vector.jsx";
-import { Direction } from "../../engine/utils/enums.jsx";
+import { Vector, set, lerp } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 
 export default {
   init: async function (fromZoneId, from, toZoneId, to, length) {

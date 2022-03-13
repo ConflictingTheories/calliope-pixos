@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Resources from "../resources.jsx";
-import Tileset from "../../core/tileset.jsx";
+import Tileset from "@Engine/core/tileset.jsx";
 
 // Helps Loads New Tileset Instance
 export default class TilesetLoader {
@@ -48,7 +48,7 @@ export default class TilesetLoader {
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
-    let json = require("../../"+sceneName+"/tilesets/" + type + "/tileset.jsx")["default"];
+    let json = require("@Scenes/"+sceneName+"/tilesets/" + type + "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }

@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "../../../engine/utils/resources.jsx";
+import Resources from "@Engine/utils/resources.jsx";
 import TilesetGeometry from '../common/geometry.jsx';
 // Tileset Schema
 export default {

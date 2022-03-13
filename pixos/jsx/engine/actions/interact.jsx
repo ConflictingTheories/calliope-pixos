@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../engine/utils/math/vector.jsx";
-import { Direction } from "../../engine/utils/enums.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 
 export default {
   init: function (from, facing, world) {

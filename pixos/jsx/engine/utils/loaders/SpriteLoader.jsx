@@ -12,11 +12,11 @@
 \*                                                 */
 
 import Resources from "../resources.jsx";
-import Sprite from "../../core/sprite.jsx";
-import ModelObject from "../../core/object.jsx";
-import Tileset from "../../core/tileset.jsx";
-import Action from "../../core/action.jsx";
-import Event from "../../core/event.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
+import ModelObject from "@Engine/core/object.jsx";
+import Tileset from "@Engine/core/tileset.jsx";
+import Action from "@Engine/core/action.jsx";
+import Event from "@Engine/core/event.jsx";
 
 // Helps Loads New Sprite Instance
 export default class SpriteLoader {
@@ -33,7 +33,7 @@ export default class SpriteLoader {
       this.instances[type] = [];
     }
     // New Instance
-    let Type = require("/"+sceneName+"/sprites/" + type + ".jsx")["default"];
+    let Type = require("@Scenes/"+sceneName+"/sprites/" + type + ".jsx")["default"];
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
     // Update Existing

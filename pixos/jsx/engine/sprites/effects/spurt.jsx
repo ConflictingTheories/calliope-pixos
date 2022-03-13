@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../utils/math/vector.jsx";
-import Resources from "../../utils/resources.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
 import AnimatedTile from "./base/animatedTile.jsx";
 
 export default class Spurt extends AnimatedTile {

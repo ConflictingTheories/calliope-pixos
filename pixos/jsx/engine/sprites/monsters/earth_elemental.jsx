@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
-import Sprite from "../../../engine/core/sprite.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
 
 export default class EarthElemental extends Sprite {
   constructor(engine) {

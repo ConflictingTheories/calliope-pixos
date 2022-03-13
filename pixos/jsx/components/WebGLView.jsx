@@ -13,9 +13,9 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import glEngine from "../engine/core/index.jsx";
-import Keyboard from "../engine/utils/keyboard.jsx";
-import { minecraftia } from "../engine/core/hud.jsx";
+import glEngine from "@Engine/core/index.jsx";
+import Keyboard from "@Engine/utils/keyboard.jsx";
+import { minecraftia } from "@Engine/core/hud.jsx";
 //
 const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   // Canvas

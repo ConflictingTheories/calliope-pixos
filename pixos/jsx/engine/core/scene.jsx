@@ -12,8 +12,8 @@
 \*                                                 */
 
 // Shaders
-import fs from "../shaders/fs.jsx";
-import vs from "../shaders/vs.jsx";
+import fs from "@Engine/shaders/fs.jsx";
+import vs from "@Engine/shaders/vs.jsx";
 import World from "./world.jsx";
 import { saveAs } from "file-saver";
 import * as JSZip from "jszip";

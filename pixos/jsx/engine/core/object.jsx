@@ -10,12 +10,12 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector, set } from "../utils/math/vector.jsx";
-import { Direction } from "../utils/enums.jsx";
+import { Vector, set } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 import ActionQueue from "./queue.jsx";
-import { ActionLoader } from "../utils/loaders.jsx";
-import { rotate, translate } from "../utils/math/matrix4.jsx";
-import { _buildBuffer } from "../utils/obj/utils.js";
+import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { rotate, translate } from "@Engine/utils/math/matrix4.jsx";
+import { _buildBuffer } from "@Engine/utils/obj/utils.js";
 export default class ModelObject {
   constructor(engine) {
     this.engine = engine;

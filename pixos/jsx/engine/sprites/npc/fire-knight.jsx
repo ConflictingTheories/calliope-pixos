@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
 import NPC from "./base/NPC.jsx";
 
 export default class FireKnight extends NPC {

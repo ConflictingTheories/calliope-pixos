@@ -13,8 +13,8 @@
 
 import Zone from "./zone.jsx";
 import ActionQueue from "./queue.jsx";
-import { Direction } from "../utils/enums.jsx";
-import { EventLoader } from "../utils/loaders.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
+import { EventLoader } from "@Engine/utils/loaders.jsx";
 export default class World {
   constructor(engine, id) {
     this.id = id;

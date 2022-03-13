@@ -13,6 +13,11 @@ const config = {
     filename: "bundle.js",
   },
   resolve: {
+    alias: {
+      "@Components": path.resolve(__dirname, 'pixos/jsx/components'),
+      "@Engine": path.resolve(__dirname, 'pixos/jsx/engine'),
+      "@Scenes": path.resolve(__dirname, 'pixos/jsx/scenes'),
+    },
     fallback: {
       buffer: require.resolve("buffer/"),
     },

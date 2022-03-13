@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { create, create3, normalFromMat4, rotate, translate, perspective, set } from "../utils/math/matrix4.jsx";
-import { Vector, negate } from "../utils/math/vector.jsx";
+import { create, create3, normalFromMat4, rotate, translate, perspective, set } from "@Engine/utils/math/matrix4.jsx";
+import { Vector, negate } from "@Engine/utils/math/vector.jsx";
 import { Texture, ColorTexture } from "./texture.jsx";
 import { textScrollBox } from "./hud.jsx";
-import { GamePad } from "../utils/gamepad.jsx";
+import { GamePad } from "@Engine/utils/gamepad.jsx";
 import Speech from "./speech.jsx";
-import { OBJ } from "../utils/obj";
+import { OBJ } from "@Engine/utils/obj";
 import Dexie from "dexie";
 import { store } from "react-recollect";
 

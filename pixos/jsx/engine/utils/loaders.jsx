@@ -12,11 +12,11 @@
 \*                                                 */
 
 import Resources from "./resources.jsx";
-import Sprite from "../core/sprite.jsx";
-import ModelObject from "../core/object.jsx";
-import Tileset from "../core/tileset.jsx";
-import Action from "../core/action.jsx";
-import Event from "../core/event.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
+import ModelObject from "@Engine/core/object.jsx";
+import Tileset from "@Engine/core/tileset.jsx";
+import Action from "@Engine/core/action.jsx";
+import Event from "@Engine/core/event.jsx";
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
@@ -53,7 +53,7 @@ export class TilesetLoader {
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
-    let json = require("../../" + sceneName + "/tilesets/" + type + "/tileset.jsx")["default"];
+    let json = require("@Scenes/" + sceneName + "/tilesets/" + type + "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -76,7 +76,7 @@ export class SpriteLoader {
     // New Instance
     console.log('loading sprite - ', type, sceneName, "../../" + sceneName + "/sprites/" + type + ".jsx")
 
-    let Type = require("../../" + sceneName + "/sprites/" + type + ".jsx")["default"];
+    let Type = require("@Scenes/" + sceneName + "/sprites/" + type + ".jsx")["default"];
 
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
