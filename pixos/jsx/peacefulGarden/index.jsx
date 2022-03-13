@@ -15,21 +15,21 @@
 import Scene from "../engine/core/scene.jsx";
 import World from "../engine/core/world.jsx";
 // Scene Object
-export default class PixosScene extends Scene {
+export default class PeacefulGarden extends Scene {
   // Init Scene
   init = async (engine) => {
     // game Engine & Timing
     Scene._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine, "scene"));
+    let world = (Scene._instance.world = new World(engine, "peacefulGarden"));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    await world.loadZone("room");
+    await world.loadZone("garden");
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
     // show start menu
     world.startMenu({
       start: {
         text: "Start Game",
-        prompt: "Welcome to Pixos",
+        prompt: "Welcome to the Peaceful Garden. Please feel free to discover its secrets",
         x: engine.screenSize().width / 2 - 75,
         y: engine.screenSize().height / 2 - 50,
         w: 150,

@@ -14,10 +14,10 @@ import { Direction } from "../utils/enums.jsx";
 import Resources from "../utils/resources.jsx";
 import ActionQueue from "./queue.jsx";
 import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "../utils/loaders.jsx";
-import { rotate, translate } from "../utils/math/matrix4.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
+    this.sceneName = world.id;
     this.id = zoneId;
     this.world = world;
     this.data = {};
@@ -51,7 +51,7 @@ export default class Zone {
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
         // Load tileset and create level geometry & trigger updates
-        this.tileset = await this.tsLoader.load(data.tileset);
+        this.tileset = await this.tsLoader.load(data.tileset, this.sceneName);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
@@ -71,7 +71,8 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("../../scene/maps/" + this.id + "/map.jsx")["default"];
+      console.log("../../" + this.sceneName + "/maps/" + this.id + "/map.jsx");
+      let data = require("../../" + this.sceneName + "/maps/" + this.id + "/map.jsx")["default"];
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells == "function") {
@@ -83,7 +84,7 @@ export default class Zone {
       }
       // Load tileset and create level geometry & trigger updates
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
-      this.tileset = await this.tsLoader.load(this.tileset);
+      this.tileset = await this.tsLoader.load(this.tileset, this.sceneName);
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
@@ -169,7 +170,7 @@ export default class Zone {
   async loadSprite(_this, data) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
+      let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }

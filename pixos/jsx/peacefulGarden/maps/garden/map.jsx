@@ -15,7 +15,7 @@ import { store } from "react-recollect";
 import { Vector } from "../../../engine/utils/math/vector.jsx";
 import { Direction } from "../../../engine/utils/enums.jsx";
 import { loadAvatar, generateZone, STORE_NAME } from "../../../engine/utils/generator.jsx";
-import T from "../../tilesets/sewer/tiles.jsx";
+import T from "../../tilesets/jungle/tiles.jsx";
 
 // Use Tileset
 // Map Information
@@ -27,7 +27,6 @@ export default {
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
     // clear out sprites
-    delete zone.sprite; 
     zone.sprites = zone.defaultSprites ?? [];
     // generate based on bounds
     let x = bounds[0];

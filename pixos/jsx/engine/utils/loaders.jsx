@@ -46,13 +46,14 @@ export class TilesetLoader {
   }
 
   // Load Tileset Directly (precompiled)
-  async load(type) {
+  async load(type, sceneName) {
+    console.log('loading tileset - ', type, sceneName)
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
-    let json = require("../../scene/tilesets/" + type + "/tileset.jsx")["default"];
+    let json = require("../../" + sceneName + "/tilesets/" + type + "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -66,14 +67,17 @@ export class SpriteLoader {
     this.instances = {};
   }
   // Load Sprite
-  async load(type) {
-    let afterLoad = arguments[1];
-    let runConfigure = arguments[2];
+  async load(type, sceneName) {
+    let afterLoad = arguments[2];
+    let runConfigure = arguments[3];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
     // New Instance
-    let Type = require("../../scene/sprites/" + type + ".jsx")["default"];
+    console.log('loading sprite - ', type, sceneName, "../../" + sceneName + "/sprites/" + type + ".jsx")
+
+    let Type = require("../../" + sceneName + "/sprites/" + type + ".jsx")["default"];
+
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
     // Update Existing

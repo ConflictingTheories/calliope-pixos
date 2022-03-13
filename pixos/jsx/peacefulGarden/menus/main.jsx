@@ -21,6 +21,7 @@ export default {
       menu.isComplete = true;
     },
   },
+
   main: {
     text: "Click Me",
     x: 100,
