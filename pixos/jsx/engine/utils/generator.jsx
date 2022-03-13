@@ -15,7 +15,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
     tome = {
       gender: gender,
       position: new Vector(...[8, 3, 0]),
-      selected: 0,
+      selected: -2,
       rain: true,
       snow: false,
       scenes: [],
@@ -112,7 +112,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
               [
                 "Welcome traveler... I see you are exploring. Good. Please continue to look",
                 "You have travelled into the the number " +
-                  (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : 0) +
+                  (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) +
                   " room",
               ],
               false,
