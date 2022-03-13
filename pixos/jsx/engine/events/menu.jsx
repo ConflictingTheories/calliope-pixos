@@ -29,6 +29,12 @@ export default {
     this.selectedMenu = {};
     this.selectedMenuId = null;
     this.isTouched = false;
+    this.speechOutput = false;
+    this.quittable = true;
+    // load voices and then play
+    window.speechSynthesis.onvoiceschanged = () => {
+      this.speechOutput = true;
+    };
   },
   // Update & Scroll
   tick: function (time) {
@@ -53,12 +59,19 @@ export default {
           colors["background"] = "#555";
         }
         this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
-        this.textbox = this.engine.scrollText(section.prompt, this.scrolling, this.options);
+        if (section.prompt) {
+          if (this.speechOutput) {
+            this.engine.speechSynthesis(section.prompt);
+          }
+          this.textbox = this.engine.scrollText(section.prompt, this.scrolling, this.options);
+        }
       });
+    // don't keep repeating speech
+    this.speechOutput = false;
 
     if (this.completed) {
       this.unhookListener();
-      // this.engine.clearHud();
+      window.speechSynthesis.cancel();
     }
     return this.completed;
   },
@@ -122,11 +135,14 @@ export default {
     if (time > this.lastKey + 100) {
       switch (this.engine.keyboard.lastPressedCode()) {
         case "Escape":
-          this.completed = true;
+          if (this.quittable) {
+            this.completed = true;
+          }
           break;
         case "Enter":
-          this.engine.setGreeting(this.text);
-          this.completed = true;
+          if (this.quittable) {
+            this.completed = true;
+          }
           break;
       }
     }

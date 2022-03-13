@@ -21,6 +21,7 @@ export default {
     this.options = options;
     this.completed = false;
     this.lastText = false;
+    this.speechOutput = true;
     this.lastKey = new Date().getTime();
     this.loaded = true;
   },
@@ -38,7 +39,7 @@ export default {
     this.checkInput(time);
 
     // Dialogue
-    this.sprite.speak(this.displayText);
+    this.sprite.speak(this.displayText, false, this);
 
     // Callback on Completion
     if (this.completed && this.options.onClose) {
@@ -63,7 +64,9 @@ export default {
           } else {
             this.completed = false;
             this.displayText = this.text.shift();
-            this.sprite.speak(this.displayText);
+            window.speechSynthesis.cancel();
+            this.speechOutput = true;
+            this.sprite.speak(this.displayText, false, this);
           }
           break;
       }
@@ -74,7 +77,9 @@ export default {
         } else {
           this.completed = false;
           this.displayText = this.text.shift();
-          this.sprite.speak(this.displayText);
+          window.speechSynthesis.cancel();
+          this.speechOutput = true;
+          this.sprite.speak(this.displayText, false, this);
         }
         return;
       }

@@ -34,6 +34,7 @@ export default class PeacefulGarden extends Scene {
         y: engine.screenSize().height / 2 - 50,
         w: 150,
         h: 75,
+        quittable: false,
         colours: {
           top: "#333",
           bottom: "#777",

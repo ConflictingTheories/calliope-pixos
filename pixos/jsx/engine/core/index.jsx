@@ -45,6 +45,7 @@ export default class GLEngine {
     this.setCamera = this.setCamera.bind(this);
     this.render = this.render.bind(this);
     this.objLoader = OBJ;
+    this.voice = new SpeechSynthesisUtterance();
     // database
     this.db = new Dexie("hyperspace");
     this.db.version(1).stores({
@@ -286,6 +287,22 @@ export default class GLEngine {
       ctx.fillText(text, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2);
     }
     ctx.restore();
+  }
+
+  // Text to Speech output
+  speechSynthesis(text, voice = null, lang = "en", rate = null, volume = null, pitch = null) {
+    let speech = this.voice;
+    let voices = window.speechSynthesis.getVoices() ?? [];
+    console.log(voices);
+    // set voice
+    speech.voice = voices[0];
+    if (rate) speech.rate = rate;
+    if (volume) speech.volume = volume;
+    if (pitch) speech.pitch = pitch;
+    speech.text = text;
+    speech.lang = lang;
+    // speak
+    window.speechSynthesis.speak(speech);
   }
 
   // Greeting Text

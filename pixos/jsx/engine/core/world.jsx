@@ -204,7 +204,9 @@ export default class World {
       visited.push(jsonNeighbour);
       return world
         .getNeighbours(...neighbour)
-        .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
+        .sort((a, b) =>
+          Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1]))
+        )
         .map((neigh) => buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]]))
         .filter((x) => x)
         .flat();

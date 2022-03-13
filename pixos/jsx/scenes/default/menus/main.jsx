@@ -1,26 +1,4 @@
 export default {
-  start: {
-    text: "Start Game",
-    x: 150,
-    y: 150,
-    w: 150,
-    h: 75,
-    colours: {
-      top: "#333",
-      bottom: "#777",
-      background: "#999",
-    },
-    trigger: (menu) => {
-      // start initial audio
-      if (menu.engine.world.zoneList[0].audio) {
-        menu.engine.world.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
-      }
-      // Unpause Gameplay
-      menu.engine.world.isPaused = false;
-      // Exit Menu
-      menu.isComplete = true;
-    },
-  },
   main: {
     text: "Click Me",
     x: 100,

@@ -37,6 +37,7 @@ export default class Sprite {
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
+    this.voice = new SpeechSynthesisUtterance();
   }
 
   update(data) {
@@ -294,15 +295,35 @@ export default class Sprite {
   }
 
   // speak
-  speak(text, showBubble = false) {
+  speak(text, showBubble = false, dialogue = false) {
     if (!text && this.speech.clearHud) this.speech.clearHud();
     else {
+      if (dialogue.speechOutput) {
+        this.speechSynthesis(text);
+        dialogue.speechOutput = false;
+      }
       this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
       if (showBubble && this.speech) {
         this.speech.scrollText(text, false, { portrait: this.portrait ?? false });
         this.speech.loadImage();
       }
     }
+  }
+
+  // Text to Speech output
+  speechSynthesis(text, voice = null, lang = "en", rate = null, volume = null, pitch = null) {
+    let speech = this.voice;
+    let voices = window.speechSynthesis.getVoices() ?? [];
+    console.log(voices);
+    // set voice
+    speech.voice = voices[0];
+    if (rate) speech.rate = rate;
+    if (volume) speech.volume = volume;
+    if (pitch) speech.pitch = pitch;
+    speech.text = text;
+    speech.lang = lang;
+    // speak
+    window.speechSynthesis.speak(speech);
   }
 
   // handles interaction -- default (should be overridden in definition)
