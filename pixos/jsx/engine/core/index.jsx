@@ -91,8 +91,8 @@ export default class GLEngine {
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
     // Configure HUD
-    ctx.canvas.width = this.canvas.clientWidth;
-    ctx.canvas.height = this.canvas.clientHeight;
+    ctx.canvas.width = gl.canvas.clientWidth;
+    ctx.canvas.height = gl.canvas.clientHeight;
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
@@ -315,8 +315,8 @@ export default class GLEngine {
   // Screensize
   screenSize() {
     return {
-      width: this.canvas.width,
-      height: this.canvas.height,
+      width: this.canvas.clientWidth,
+      height: this.canvas.clientHeight,
     };
   }
 
