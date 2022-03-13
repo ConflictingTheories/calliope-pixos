@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Resources from "@Engine/utils/resources.jsx";
-import TilesetGeometry from '../common/geometry.jsx';
+import TilesetGeometry from '@Tilesets/common/geometry.jsx';
 // Tileset Schema
 export default {
   name: "sewer",
