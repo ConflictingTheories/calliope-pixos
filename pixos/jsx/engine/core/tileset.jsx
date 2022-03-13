@@ -10,7 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import ActionQueue from "./queue.jsx";
+import ActionQueue from "@Engine/core/queue.jsx";
 export default class Tileset {
   constructor(engine) {
     this.engine = engine;

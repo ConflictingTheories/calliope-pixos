@@ -13,7 +13,7 @@
 import { Vector, set } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
 import ActionQueue from "./queue.jsx";
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import { rotate, translate } from "@Engine/utils/math/matrix4.jsx";
 import { _buildBuffer } from "@Engine/utils/obj/utils.js";
 export default class ModelObject {

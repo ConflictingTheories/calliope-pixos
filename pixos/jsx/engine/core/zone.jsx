@@ -12,8 +12,8 @@
 \*                                                 */
 import { Direction } from "@Engine/utils/enums.jsx";
 import Resources from "@Engine/utils/resources.jsx";
-import ActionQueue from "./queue.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders.jsx";
+import ActionQueue from "@Engine/core/queue.jsx";
+import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {

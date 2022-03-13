@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import Darkness from "@Engine/sprites/npc/darkness.jsx";
 export default class MyDarkness extends Darkness {
   constructor(engine) {

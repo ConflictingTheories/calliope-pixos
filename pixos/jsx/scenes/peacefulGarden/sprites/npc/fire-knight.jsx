@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import FireKnight from "@Engine/sprites/npc/fire-knight.jsx";
 export default class MyFireKnight extends FireKnight {
   constructor(engine) {

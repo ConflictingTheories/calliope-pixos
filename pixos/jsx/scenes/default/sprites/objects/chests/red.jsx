@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import RedChest from "@Engine/sprites/objects/chests/red.jsx";
 
 export default class MyRedChest extends RedChest {

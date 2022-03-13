@@ -13,7 +13,7 @@
 
 import { Vector } from "../../../utils/math/vector.jsx";
 import Resources from "../../../utils/resources.jsx";
-import { ActionLoader } from "../../../utils/loaders.jsx";
+import { ActionLoader } from "../../../utils/loaders/index.jsx";
 import Chest from "./base.jsx";
 
 export default class WoodChest extends Chest {

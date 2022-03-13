@@ -14,7 +14,7 @@
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import Resources from "@Engine/utils/resources.jsx";
 import AnimatedSprite from "../effects/base/animatedSprite.jsx";
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default class Portal extends AnimatedSprite {
   constructor(engine) {

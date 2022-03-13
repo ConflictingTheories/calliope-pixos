@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import ActionQueue from "./queue.jsx";
+import ActionQueue from "@Engine/core/queue.jsx";
 export class Texture {
   constructor(src, engine) {
     this.engine = engine;

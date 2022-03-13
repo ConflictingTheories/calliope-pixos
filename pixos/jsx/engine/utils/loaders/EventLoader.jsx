@@ -11,41 +11,50 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import ModelObject from "@Engine/core/object.jsx";
-import Tileset from "@Engine/core/tileset.jsx";
-import Action from "@Engine/core/action.jsx";
 import Event from "@Engine/core/event.jsx";
 
-// Helps Loads New Sprite Instance
-export class SpriteLoader {
-  constructor(engine) {
+// Helps Loads New Event Instance
+export class EventLoader {
+  constructor(engine, type, args, world, callback) {
     this.engine = engine;
-    this.definitions = [];
+    this.type = type;
+    this.args = args;
+    this.world = world;
+    this.callback = callback;
     this.instances = {};
+    this.definitions = [];
+    this.assets = {};
+
+    let time = new Date().getTime();
+    let id = world.id + "-" + type + "-" + time;
+    return this.load(
+      type,
+      function (event) {
+        event.onLoad(args);
+      },
+      function (event) {
+        event.configure(type, world, id, time, args);
+      }
+    );
   }
-  // Load Sprite
-  async load(type, sceneName) {
-    let afterLoad = arguments[2];
-    let runConfigure = arguments[3];
+  // Load Internal Action
+  load(type) {
+    let afterLoad = arguments[1];
+    let runConfigure = arguments[2];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
-    // New Instance
-    console.log('loading sprite - ', type, sceneName, "../../" + sceneName + "/sprites/" + type + ".jsx")
-
-    let Type = require("@Scenes/" + sceneName + "/sprites/" + type + ".jsx")["default"];
-
-    let instance = new Type(this.engine);
+    // New Instance (assigns properties loaded by type)
+    let instance = new Event(this.type, this.world, this.callback);
+    Object.assign(instance, require("@Engine/events/" + type + ".jsx")["default"]);
     instance.templateLoaded = true;
-    // Update Existing
+    // Notify existing
     this.instances[type].forEach(function (instance) {
       if (instance.afterLoad) instance.afterLoad(instance.instance);
     });
-    // Configure if needed
+    // construct
     if (runConfigure) runConfigure(instance);
-    // once loaded
+    // load
     if (afterLoad) {
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });

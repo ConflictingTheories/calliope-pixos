@@ -11,15 +11,18 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import IronChest from "@Engine/sprites/objects/chests/iron.jsx";
-
-export default class MyMetalChest extends IronChest {
-  constructor(engine) {
-    // Initialize Sprite
-    super(engine);
-    this.enableSpeech = false;
-    // todo - plan and implement an inventory system
-    this.inventory = [];
-  }
+import { TilesetLoader } from "./TilesetLoader.jsx";
+import { SpriteLoader } from "./SpriteLoader.jsx";
+import { ObjectLoader } from "./ObjectLoader.jsx";
+import { ActionLoader } from "./ActionLoader.jsx";
+import { EventLoader } from "./EventLoader.jsx";
+import { AudioLoader } from "./AudioLoader.jsx";
+// Helps Loads New Tileset Instance
+export {
+  TilesetLoader,
+  SpriteLoader,
+  ObjectLoader,
+  ActionLoader,
+  EventLoader,
+  AudioLoader
 }

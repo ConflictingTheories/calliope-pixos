@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import ActionQueue from "./queue.jsx";
-import { textScrollBox } from "./hud.jsx";
+import ActionQueue from "@Engine/core/queue.jsx";
+import { textScrollBox } from "@Engine/core/hud.jsx";
 export default class Speech {
   constructor(canvas, engine, id) {
     this.id = id;

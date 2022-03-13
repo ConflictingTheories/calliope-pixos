@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import AirKnight from "@Engine/sprites/npc/air-knight.jsx";
 
 export default class MyAirKnight extends AirKnight {

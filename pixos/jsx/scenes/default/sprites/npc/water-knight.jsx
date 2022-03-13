@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import WaterKnight from "@Engine/sprites/npc/water-knight.jsx";
 export default class MyWaterKnight extends WaterKnight {
   constructor(engine) {

@@ -11,36 +11,39 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
+import Resources from "../resources.jsx";
 import ModelObject from "@Engine/core/object.jsx";
-import Tileset from "@Engine/core/tileset.jsx";
-import Action from "@Engine/core/action.jsx";
-import Event from "@Engine/core/event.jsx";
 
-// Helps Loads New Sprite Instance
-export class SpriteLoader {
+//helps load models
+export class ObjectLoader {
   constructor(engine) {
     this.engine = engine;
     this.definitions = [];
     this.instances = {};
   }
-  // Load Sprite
-  async load(type, sceneName) {
-    let afterLoad = arguments[2];
-    let runConfigure = arguments[3];
-    if (!this.instances[type]) {
-      this.instances[type] = [];
+  // Load 3d model
+  async load(model) {
+    let afterLoad = arguments[1];
+    let runConfigure = arguments[2];
+    if (!this.instances[model.id]) {
+      this.instances[model.id] = [];
     }
+    let instance = new ModelObject(this.engine);
+    instance.update(model);
     // New Instance
-    console.log('loading sprite - ', type, sceneName, "../../" + sceneName + "/sprites/" + type + ".jsx")
-
-    let Type = require("@Scenes/" + sceneName + "/sprites/" + type + ".jsx")["default"];
-
-    let instance = new Type(this.engine);
+    let modelreq = {
+      obj: `pixos/models/${instance.type}.obj`,
+      mtl: model.mtl ?? false,
+      mtlTextureRoot: "/pixos/models",
+      downloadMtlTextures: true,
+      enableWTextureCoord: false,
+      name: instance.id,
+    };
+    let models = await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]);
+    instance.mesh = models[model.id];
     instance.templateLoaded = true;
     // Update Existing
-    this.instances[type].forEach(function (instance) {
+    this.instances[instance.id].forEach(function (instance) {
       if (instance.afterLoad) instance.afterLoad(instance.instance);
     });
     // Configure if needed
@@ -48,9 +51,9 @@ export class SpriteLoader {
     // once loaded
     if (afterLoad) {
       if (instance.templateLoaded) afterLoad(instance);
-      else this.instances[type].push({ instance, afterLoad });
+      else this.instances[instance.id].push({ instance, afterLoad });
     }
-
+    instance.loaded = true;
     return instance;
   }
 }

@@ -11,15 +11,16 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { store } from "react-recollect";
+import Dexie from "dexie";
+
 import { create, create3, normalFromMat4, rotate, translate, perspective, set } from "@Engine/utils/math/matrix4.jsx";
 import { Vector, negate } from "@Engine/utils/math/vector.jsx";
-import { Texture, ColorTexture } from "./texture.jsx";
-import { textScrollBox } from "./hud.jsx";
-import { GamePad } from "@Engine/utils/gamepad.jsx";
-import Speech from "./speech.jsx";
+import { Texture, ColorTexture } from "@Engine/core/texture.jsx";
+import { textScrollBox } from "@Engine/core/hud.jsx";
+import { GamePad } from "@Engine/utils/gamepad/index.jsx";
+import Speech from "@Engine/core/speech.jsx";
 import { OBJ } from "@Engine/utils/obj";
-import Dexie from "dexie";
-import { store } from "react-recollect";
 
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {

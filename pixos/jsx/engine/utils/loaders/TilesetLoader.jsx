@@ -11,11 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "../resources.jsx";
+import Resources from "@Engine/utils/resources.jsx";
 import Tileset from "@Engine/core/tileset.jsx";
 
 // Helps Loads New Tileset Instance
-export default class TilesetLoader {
+export class TilesetLoader {
   constructor(engine) {
     this.engine = engine;
     this.tilesets = {};
@@ -43,12 +43,13 @@ export default class TilesetLoader {
 
   // Load Tileset Directly (precompiled)
   async load(type, sceneName) {
+    console.log('loading tileset - ', type, sceneName)
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
-    let json = require("@Scenes/"+sceneName+"/tilesets/" + type + "/tileset.jsx")["default"];
+    let json = require("@Tilesets/" + type + "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }

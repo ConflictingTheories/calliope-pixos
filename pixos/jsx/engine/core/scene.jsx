@@ -11,12 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { saveAs } from "file-saver";
+import * as JSZip from "jszip";
+
 // Shaders
 import fs from "@Engine/shaders/fs.jsx";
 import vs from "@Engine/shaders/vs.jsx";
-import World from "./world.jsx";
-import { saveAs } from "file-saver";
-import * as JSZip from "jszip";
+import World from "@Engine/core/world.jsx";
 
 // Scene Object
 export default class Scene {

@@ -13,7 +13,7 @@
 
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
-import { AudioLoader, ActionLoader } from "@Engine/utils/loaders.jsx";
+import { AudioLoader, ActionLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default {
   init: function (from, to, moveLength, zone) {

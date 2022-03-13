@@ -13,8 +13,8 @@
 
 import { Vector, set } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
-import Sprite from "./sprite.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
 
 // Special class of Sprite which is controlled by the player
 //

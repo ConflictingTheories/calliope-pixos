@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 import RandomPlant from "@Engine/sprites/objects/plants/random.jsx";
 
 export default class MyPlants extends RandomPlant {
