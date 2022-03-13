@@ -223,7 +223,7 @@ async function main() {
     time *= 0.001; // convert to seconds
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.enable(gl.DEPTH_TEST);
 
     const fieldOfViewRadians = degToRad(60);

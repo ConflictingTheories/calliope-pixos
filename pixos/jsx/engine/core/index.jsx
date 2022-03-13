@@ -91,11 +91,9 @@ export default class GLEngine {
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
     // Configure HUD
-    ctx.canvas.width = this.canvas.width;
-    ctx.canvas.height = this.canvas.height;
+    ctx.canvas.width = this.canvas.clientWidth;
+    ctx.canvas.height = this.canvas.clientHeight;
     // Configure GL
-    gl.viewportWidth = this.canvas.width;
-    gl.viewportHeight = this.canvas.height;
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -260,9 +258,9 @@ export default class GLEngine {
   // Clear Screen with Color (RGBA)
   clearScreen() {
     const { gl } = this;
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.viewport(0, 0, this.ctx.canvas.clientWidth, this.ctx.canvas.clientHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    perspective(this.degToRad(this.fov), gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this.uProjMat);
+    perspective(this.degToRad(this.fov), this.ctx.canvas.clientWidth / this.ctx.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
     this.uViewMat = create();
   }
 
@@ -298,7 +296,14 @@ export default class GLEngine {
   // Scrolling Textbox
   scrollText(text, scrolling = false, options = {}) {
     let txt = new textScrollBox(this.ctx);
-    txt.init(text, 10, (2 * this.canvas.height) / 3, this.canvas.width - 20, this.canvas.height / 3 - 20, options);
+    txt.init(
+      text,
+      10,
+      (2 * this.canvas.clientHeight) / 3,
+      this.canvas.clientWidth - 20,
+      this.canvas.clientHeight / 3 - 20,
+      options
+    );
     txt.setOptions(options);
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
