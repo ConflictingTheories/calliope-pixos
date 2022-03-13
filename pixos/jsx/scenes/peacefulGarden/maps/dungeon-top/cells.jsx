@@ -1,4 +1,4 @@
-import T from "../../tilesets/sewer/tiles.jsx";
+import T from "@Tilesets/sewer/tiles.jsx";
 
 export default [
   ...[

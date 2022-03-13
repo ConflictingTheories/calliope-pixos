@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "../../../utils/loaders.jsx";
-import Sprite from "../../../core/sprite.jsx";
+import { ActionLoader } from "@Engine/utils/loaders.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
 
 export default class NPC extends Sprite {
   constructor(engine) {

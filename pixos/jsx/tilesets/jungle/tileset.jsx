@@ -12,9 +12,10 @@
 \*                                                 */
 
 import Resources from "@Engine/utils/resources.jsx";
-import TilesetGeometry from "@Engine/tilesets/common/geometry.jsx";
+import TilesetGeometry from "@Tilesets/common/geometry.jsx";
 // Tileset Schema
 export default {
+  name: "jungle",
   src: Resources.artResourceUrl("jungle.gif"),
   sheetSize: [256, 256],
   tileSize: 16,

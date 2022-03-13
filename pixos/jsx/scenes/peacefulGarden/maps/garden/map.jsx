@@ -15,7 +15,7 @@ import { store } from "react-recollect";
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
 import { loadAvatar, generateZone, STORE_NAME } from "@Engine/utils/generator.jsx";
-import T from "../../tilesets/jungle/tiles.jsx";
+import T from "@Tilesets/jungle/tiles.jsx";
 
 // Use Tileset
 // Map Information

@@ -16,6 +16,7 @@ const config = {
     alias: {
       "@Components": path.resolve(__dirname, 'pixos/jsx/components'),
       "@Engine": path.resolve(__dirname, 'pixos/jsx/engine'),
+      "@Tilesets": path.resolve(__dirname, 'pixos/jsx/tilesets'),
       "@Scenes": path.resolve(__dirname, 'pixos/jsx/scenes'),
     },
     fallback: {
