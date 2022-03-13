@@ -152,6 +152,7 @@ export async function loadAvatar(self, storeName) {
   await self.loadSprite.bind(self)({
     id: "avatar",
     type: "characters/" + gender,
+    gender: gender,
     pos: typeof store.pixos[storeName]?.position !== "undefined" ? store.pixos[storeName].position : new Vector(...[8, 8, 0]),
     facing: Direction.Down,
   });

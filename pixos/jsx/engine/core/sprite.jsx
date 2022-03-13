@@ -29,6 +29,7 @@ export default class Sprite {
     this.facing = Direction.Right;
     this.actionDict = {};
     this.actionList = [];
+    this.gender = null;
     this.speech = {};
     this.portrait = null;
     this.onLoadActions = new ActionQueue();
@@ -314,9 +315,9 @@ export default class Sprite {
   speechSynthesis(text, voice = null, lang = "en", rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
-    console.log(voices);
+    console.log(this, this.gender, voices);
     // set voice
-    speech.voice = voices[0];
+    speech.voice = this.gender ? (this.gender == "male" ? voices[7] : voices[28]) : voices[0];
     if (rate) speech.rate = rate;
     if (volume) speech.volume = volume;
     if (pitch) speech.pitch = pitch;

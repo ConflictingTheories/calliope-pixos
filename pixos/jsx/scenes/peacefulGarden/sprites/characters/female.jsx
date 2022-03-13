@@ -24,6 +24,7 @@ export default class Default extends Avatar {
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
     this.state = "intro";
+    this.gender = "female";
     // Frames
     this.frames = {
       up: [
