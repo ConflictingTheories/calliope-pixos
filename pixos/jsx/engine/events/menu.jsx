@@ -53,9 +53,8 @@ export default {
           colors["background"] = "#555";
         }
         this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        this.textbox = this.engine.scrollText(section.prompt, this.scrolling, this.options);
       });
-
-    this.textbox = this.engine.scrollText(this.prompt, this.scrolling, this.options);
 
     if (this.completed) {
       this.unhookListener();
@@ -71,6 +70,9 @@ export default {
   },
 
   hookListener: function () {
+    // open hook
+    if (this.onOpen) this.onOpen(this);
+    // attach handler
     let touchstart = ({ touches }) => {
       this.isTouched = true;
       this.touches = touches;
@@ -116,29 +118,6 @@ export default {
   },
   // Handle Keyboard & Mouse & Touch
   checkInput: function (time) {
-    // Mouse
-    // if (this.isTouched && this.touches.length > 0 && this.lastKey + 100 < time) {
-    //   let x = this.touches[0].x;
-    //   let y = this.touches[0].y;
-    //   let self = this;
-    //   self.activeMenu
-    //     .filter((w) => {
-    //       if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
-    //         return true;
-    //       }
-    //       return false;
-    //     })
-    //     .map((w) => {
-    //       if (w.trigger) w.trigger();
-    //       if (w.children) {
-    //         self.activeMenu = w.children.map((c) => {
-    //           c.active = true;
-    //           return c;
-    //         });
-    //       }
-    //     });
-    // }
-
     // Keyboard
     if (time > this.lastKey + 100) {
       switch (this.engine.keyboard.lastPressedCode()) {

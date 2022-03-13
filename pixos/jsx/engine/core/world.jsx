@@ -31,26 +31,8 @@ export default class World {
     this.pathFind = this.pathFind.bind(this);
     this.menuConfig = {
       start: {
-        text: "Resume",
-        x: 150,
-        y: 150,
-        w: 150,
-        h: 75,
-        colours: {
-          top: "#333",
-          bottom: "#777",
-          background: "#999",
-        },
         onOpen: (menu) => {
-          this.isPaused = true;
-        },
-        trigger: (menu) => {
-          console.log("menu", menu);
-          // start initial audio
-          this.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
-          // Unpause Gameplay
-          this.isPaused = false;
-          // Exit Menu
+          // auto-close - do nothing
           menu.completed = true;
         },
       },
@@ -107,7 +89,7 @@ export default class World {
 
   // read input (HIGHEST LEVEL)
   checkInput(time) {
-    if (time > this.lastKey + 100) {
+    if (time > this.lastKey + 200) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
       // Gamepad controls - TODO

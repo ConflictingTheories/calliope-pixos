@@ -313,17 +313,6 @@ export default class Zone {
           if (this.audio) this.audio.playAudio();
           break;
       } // play audio
-      // Gamepad controls - TODO
-      if (this.engine.gamepad.keyPressed("start")) {
-        // select
-        if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
-        else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
-      }
-      if (this.engine.gamepad.keyPressed("select")) {
-        // select
-        touchmap["select"] = 0;
-        this.engine.toggleFullscreen();
-      }
     }
   }
 
