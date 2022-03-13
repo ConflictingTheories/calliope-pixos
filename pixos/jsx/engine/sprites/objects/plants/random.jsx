@@ -23,8 +23,8 @@ export default class RandomPlant extends Plant {
     this.selectedPlant = [Math.floor(12 * ((Math.random() * 30) % 30)), 0];
     // Offsets
     // new Vector(-0.25, 1, 0.125)
-    this.drawOffset = new Vector(0.25 * Math.random(), 0.001 - 0.1 * Math.random(), -0.15);
-    this.hotspotOffset = new Vector(0.1, 0.1, 0);
+    this.drawOffset = new Vector(0.25 * Math.random(), 0.5 + 0.1 * Math.random(), -0.2);
+    this.hotspotOffset = new Vector(0, 0, 0);
     // Frames & Faces
     this.frames = {
       down: [this.selectedPlant],

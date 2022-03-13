@@ -121,16 +121,16 @@ export default {
         }
 
         // add some flowers to the remaining blocks
-        if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
-          for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
-            zone.sprites.push({
-              id: "plt-" + posKey + m,
-              type: "objects/plants/random",
-              pos: new Vector(...[j, i, 1]),
-              facing: Direction.Down,
-            });
-          }
-        }
+        // if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+        //   for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+        //     zone.sprites.push({
+        //       id: "plt-" + posKey + m,
+        //       type: "objects/plants/random",
+        //       pos: new Vector(...[j, i, 1]),
+        //       facing: Direction.Down,
+        //     });
+        //   }
+        // }
 
         // rest are random (for now just blocks)
         return T.BLOCK;
