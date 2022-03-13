@@ -88,7 +88,6 @@ function downloadMtlTextures(gl, mtl, root) {
                     gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
                 };
-                console.log('loading texture image ', mapData, image.src);
                 return new Promise(function (resolve) { return (image.onload = function () { return resolve(mapData); }); });
             })["catch"](function () {
                 console.error("Unable to download texture: ".concat(url));
@@ -108,7 +107,6 @@ function downloadMtlTextures(gl, mtl, root) {
             finally { if (e_1) throw e_1.error; }
         }
     }
-    console.log('textures loaded ', textures);
     return Promise.all(textures);
 }
 function getMtl(modelOptions) {
@@ -207,7 +205,6 @@ function downloadModels(gl, models) {
                 return Promise.all([Promise.resolve(material), undefined]);
             })
                 .then(function (value) {
-                console.log('material loaded', value);
                 return value;
             });
         }

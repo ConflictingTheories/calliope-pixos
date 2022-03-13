@@ -16,7 +16,6 @@ import { Direction } from "../../engine/utils/enums.jsx";
 
 export default {
   init: function (from, facing, world) {
-    console.log("loading - interact", arguments);
     this.world = world;
     this.from = new Vector(...from);
     this.facing = facing;
@@ -41,7 +40,6 @@ export default {
     // objects
     this.objectList.forEach((object) => {
       let faceChange = object.faceDir(Direction.reverse(this.facing));
-      console.log("-----> CHANGING ---->", faceChange);
       if (faceChange) {
         object.addAction(faceChange); // face towards avatar
       }
@@ -73,7 +71,6 @@ export default {
         // close dialogue on q key press
         case "q":
           // Needs to Cancel the Interaction on the Affected Sprite as well
-          console.log("stopping interaction");
           this.completed = true; // toggle
           break;
         default:

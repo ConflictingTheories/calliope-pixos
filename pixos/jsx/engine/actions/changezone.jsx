@@ -16,7 +16,6 @@ import { Direction } from "../../engine/utils/enums.jsx";
 
 export default {
   init: async function (fromZoneId, from, toZoneId, to, length) {
-    console.log("loading - change zone");
     this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId);
     this.toZone = await this.sprite.zone.world.loadZone(toZoneId);
     this.from = new Vector(...from);

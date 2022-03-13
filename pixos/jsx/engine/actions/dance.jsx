@@ -17,7 +17,6 @@ import { AudioLoader } from "../utils/loaders.jsx";
 
 export default {
   init: function (moveLength, zone) {
-    console.log("loading - dance", arguments);
     this.zone = zone;
     this.moveLength = moveLength;
     this.startTime = new Date().getTime();
@@ -55,8 +54,6 @@ export default {
       } else {
         facing = this.sprite.facing == Direction.Up ? Direction.Left : Direction.Down;
       }
-      console.log(bar_pos, bar_width, bar_height);
-      console.log(facing);
       this.sprite.addAction(this.sprite.faceDir(facing));
       this.startTime = time;
     }
@@ -70,7 +67,6 @@ export default {
       switch (this.sprite.engine.keyboard.lastPressed("q")) {
         // close dialogue on q key press
         case "q":
-          console.log("stopping dance");
           this.audio.pauseAudio();
           this.completed = true; // toggle
         default:

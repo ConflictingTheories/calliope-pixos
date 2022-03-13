@@ -249,14 +249,12 @@ export default class ModelObject {
 
   // Set Facing
   setFacing(facing) {
-    console.log("setting direction for object to " + Direction.objectSequence(facing));
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }
 
   // Add Action to Queue
   addAction(action) {
-    console.log("adding action to sprite", action.id);
     if (this.actionDict[action.id]) this.removeAction(action.id);
     this.actionDict[action.id] = action;
     this.actionList.push(action);
@@ -264,7 +262,6 @@ export default class ModelObject {
 
   // Remove Action
   removeAction(id) {
-    console.log("removing action");
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
@@ -331,7 +328,6 @@ export default class ModelObject {
 
   // Set Facing
   setFacing(facing) {
-    console.log("setting direction for object to " + Direction.objectSequence(facing));
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }

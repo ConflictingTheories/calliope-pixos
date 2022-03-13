@@ -43,7 +43,7 @@ export default class Avatar extends Sprite {
   }
   // open menu
   openMenu(menuConfig = {}, defaultMenus = []) {
-    return new ActionLoader(this.engine, "menu", [menuConfig, defaultMenus, false, { autoclose: false }], this);
+    return new ActionLoader(this.engine, "prompt", [menuConfig, defaultMenus, false, { autoclose: false }], this);
   }
   // Reads for Input to Respond to
   checkInput() {

@@ -49,7 +49,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
 
   function isRaining() {
     if (engine !== null) {
-      console.log(engine);
       return engine.store["garden-tome"].rain;
     } else return true;
   }

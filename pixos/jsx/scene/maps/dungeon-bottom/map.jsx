@@ -34,7 +34,6 @@ export default {
     {
       id: "load-scene",
       trigger: async function () {
-        console.log("Triggered");
         await loadAvatar(this, STORE_NAME);
       },
     },

@@ -38,12 +38,40 @@ export default class Scene {
     // game Engine & Timing
     Scene._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine));
+    let world = (Scene._instance.world = new World(engine, "pixos"));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
     await world.loadZone("garden");
-    // await world.loadZone("dungeon-top");
-    // await world.loadZone("dungeon-bottom");
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
+    // show start menu
+
+    world.startMenu({
+      start: {
+        text: "Start Game",
+        prompt: "Welcome to the Peaceful Garden. Please feel free to discover its secrets",
+        x: engine.screenSize().width / 2 - 75,
+        y: engine.screenSize().height / 2 - 50,
+        w: 150,
+        h: 75,
+        colours: {
+          top: "#333",
+          bottom: "#777",
+          background: "#999",
+        },
+        onOpen: (menu) => {
+          // tood - needs a way to trigger on open
+          this.isPaused = true;
+        },
+        trigger: (menu) => { // on Click
+          console.log(menu);
+          // start initial audio
+          menu.world.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
+          // Unpause Gameplay
+          menu.world.isPaused = false;
+          // Exit Menu
+          menu.completed = true;
+        },
+      },
+    });
   };
 
   // Todo - Load scene remotely
@@ -84,7 +112,7 @@ export default class Scene {
   // Render Loop
   render = (engine, now) => {
     // Build
-    Scene._instance.world.tick(now);
+    Scene._instance.world.tickOuter(now);
     // Draw Frame
     this.draw(engine);
   };

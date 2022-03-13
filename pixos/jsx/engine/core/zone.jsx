@@ -31,6 +31,7 @@ export default class Zone {
     this.spriteLoader = new SpriteLoader(world.engine);
     this.objectLoader = new ObjectLoader(world.engine);
     this.tsLoader = new TilesetLoader(world.engine);
+    this.audio = null;
     // bind
     this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
@@ -49,7 +50,6 @@ export default class Zone {
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
-        console.log("made --it", this.cells, data.tileset);
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -91,7 +91,6 @@ export default class Zone {
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
       // Notify the zone sprites when the new sprite has loaded
-      console.log(self.spriteDict, self.objectDict);
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
       self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
@@ -144,7 +143,6 @@ export default class Zone {
       !this.objectList.every((object) => object.loaded)
     )
       return;
-    console.log("Initialized zone '" + this + "'");
     // Load Scene Triggers
     let zone = this;
     this.scripts.forEach((x) => {
@@ -162,7 +160,6 @@ export default class Zone {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
       let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
-      console.log(["object", this.objectDict, this.objectList, data, newObject]);
       this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
     }
@@ -173,7 +170,6 @@ export default class Zone {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
       let newSprite = await this.spriteLoader.load(data.type, (sprite) => sprite.onLoad(data));
-      console.log(["sprite", this.spriteDict, this.spriteList, data, newSprite]);
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -301,8 +297,8 @@ export default class Zone {
   }
 
   // Update
-  tick(time) {
-    if (!this.loaded) return;
+  tick(time, isPaused) {
+    if (!this.loaded || isPaused) return;
     this.checkInput(time);
     this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
   }
@@ -443,8 +439,6 @@ export default class Zone {
         .then(
           async () =>
             new Promise((resolve, reject) => {
-              console.log("working on action ---- ", action);
-
               if (!action) resolve();
               try {
                 if (!action.scope) action.scope = self;
@@ -452,7 +446,6 @@ export default class Zone {
                   let sprite = action.scope.getSpriteById(action.sprite);
                   // apply action
                   if (sprite && action.action) {
-                    console.log("playing scene action in zone", self);
                     let args = action.args;
                     let options = args.pop();
                     sprite.addAction(
@@ -462,9 +455,7 @@ export default class Zone {
                 }
                 // trigger script
                 if (action.trigger) {
-                  console.log("trigger", action);
                   let sprite = action.scope.getSpriteById("avatar");
-                  console.log("triggered by ", sprite);
                   if (sprite && action.trigger) {
                     sprite.addAction(
                       new ActionLoader(self.engine, "script", [action.trigger, action.scope, () => resolve(self)], sprite)
@@ -498,7 +489,6 @@ export default class Zone {
         }
         if (x.id === id) {
           // found scene
-          console.log("found scene ---> ", x);
           await self.runActions(x.actions);
         }
       } catch (e) {

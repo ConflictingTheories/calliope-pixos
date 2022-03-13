@@ -13,7 +13,6 @@
 
 export default {
   init: function (triggerId, zone, onCompleted = null) {
-    console.log("loading - script", arguments);
     this.zone = zone;
     this.world = zone.world;
     this.lastKey = new Date().getTime();

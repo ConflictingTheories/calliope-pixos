@@ -62,7 +62,6 @@ export default class Portal extends AnimatedSprite {
   }
   // Interact
   interact(sprite, finish) {
-    console.log("opening portal", sprite);
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state
@@ -151,7 +150,6 @@ export default class Portal extends AnimatedSprite {
   }
   // when stepping on tile position (if not blocking)
   onStep(sprite) {
-    console.log("walking out....", sprite);
     let world = this.zone.world;
     world.removeAllZones();
     if (this.zones) this.zones.forEach((z) => world.loadZone(z));

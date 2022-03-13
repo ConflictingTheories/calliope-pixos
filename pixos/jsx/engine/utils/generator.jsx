@@ -10,8 +10,6 @@ export async function generateZone(self, gender, storeName, cyoa) {
   // load current scene or play welcome
   let tome = self.engine.fetchStore(storeName);
 
-  console.log("welcome -- loading - found the following: ", self, gender, tome, cyoa);
-
   if (!tome) {
     // Initialize the garden
     tome = {
@@ -143,7 +141,6 @@ export async function loadAvatar(self, storeName) {
     pos: typeof store.pixos[storeName]?.position !== "undefined" ? store.pixos[storeName].position : new Vector(...[8, 8, 0]),
     facing: Direction.Down,
   });
-  console.log("LOADING AVATAR", gender);
   return gender;
 }
 

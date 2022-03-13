@@ -13,16 +13,15 @@
 
 export default {
   // Initialize Dialogue Object
-  init: function (text, scrolling = true, options = {}) {
-    this.engine = this.sprite.engine;
-    this.text = text; // holds queue of dialogue
-    this.displayText = typeof text === "string" ? text : this.text.shift(); // current statement
+  init: function (prompt, scrolling = true, options = {}) {
+    this.engine = this.world.engine;
+    this.text = "";
+    this.prompt = prompt;
     this.scrolling = scrolling;
+    this.line = 0;
     this.options = options;
     this.completed = false;
-    this.lastText = false;
     this.lastKey = new Date().getTime();
-    this.loaded = true;
   },
   // Update & Scroll
   tick: function (time) {
@@ -36,52 +35,42 @@ export default {
     }
     // Handle Input
     this.checkInput(time);
-
-    // Dialogue
-    this.sprite.speak(this.displayText);
-
-    // Callback on Completion
-    if (this.completed && this.options.onClose) {
-      if (this.sprite.speech.clearHud) {
-        this.sprite.speech.clearHud();
-      }
-      this.options.onClose();
-    }
+    this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
     return this.completed;
   },
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + 100) {
+      let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {
         case "Escape":
-          this.sprite.speak(false);
-          this.completed = true; // toggle
+          this.completed = true;
+          skipChar = true;
+          break;
+        case "Backspace":
+          let arr = this.text.split("");
+          arr.pop();
+          this.text = arr.join("");
+          this.lastKey = time;
+          skipChar = true;
           break;
         case "Enter":
-          if (typeof this.text === "string" || this.text.length === 0) {
-            this.completed = true;
-          } else {
-            this.completed = false;
-            this.displayText = this.text.shift();
-            this.sprite.speak(this.displayText);
-          }
+          this.engine.setGreeting(this.text);
+          // if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
+          // this.speechbox = this.sprite.speech.scrollText(this.text);
+          // this.sprite.speech.loadImage();
+          this.completed = true;
+          skipChar = true;
           break;
       }
-      // gamepad
-      if (this.engine.gamepad.keyPressed("a")) {
-        if (typeof this.text === "string" || this.text.length === 0) {
-          this.completed = true;
-        } else {
-          this.completed = false;
-          this.displayText = this.text.shift();
-          this.sprite.speak(this.displayText);
+      // debounce keypresses
+      // write to chat box
+      if (!skipChar) {
+        let char = this.engine.keyboard.lastPressedKey();
+        if (char) {
+          this.lastKey = time;
+          this.text += "" + char;
         }
-        return;
-      }
-      if (this.engine.gamepad.keyPressed("a")) {
-        this.sprite.speak(false);
-        this.completed = true; // toggle
-        return;
       }
     }
   },

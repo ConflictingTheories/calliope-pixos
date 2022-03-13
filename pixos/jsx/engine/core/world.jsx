@@ -14,16 +14,47 @@
 import Zone from "./zone.jsx";
 import ActionQueue from "./queue.jsx";
 import { Direction } from "../utils/enums.jsx";
-
+import { EventLoader } from "../utils/loaders.jsx";
 export default class World {
-  constructor(engine) {
+  constructor(engine, id) {
+    this.id = id;
     this.engine = engine;
     this.zoneDict = {};
     this.zoneList = [];
+    this.eventList = [];
+    this.eventDict = {};
+    this.lastKey = new Date().getTime();
+    this.isPaused = true;
     this.afterTickActions = new ActionQueue();
     this.sortZones = this.sortZones.bind(this);
     this.canWalk = this.canWalk.bind(this);
     this.pathFind = this.pathFind.bind(this);
+    this.menuConfig = {
+      start: {
+        text: "Resume",
+        x: 150,
+        y: 150,
+        w: 150,
+        h: 75,
+        colours: {
+          top: "#333",
+          bottom: "#777",
+          background: "#999",
+        },
+        onOpen: (menu) => {
+          this.isPaused = true;
+        },
+        trigger: (menu) => {
+          console.log("menu", menu);
+          // start initial audio
+          this.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
+          // Unpause Gameplay
+          this.isPaused = false;
+          // Exit Menu
+          menu.completed = true;
+        },
+      },
+    };
   }
 
   // push action into next frame
@@ -70,8 +101,78 @@ export default class World {
 
   // Update
   tick(time) {
-    for (let z in this.zoneDict) this.zoneDict[z]?.tick(time);
+    for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
+  }
+
+  // read input (HIGHEST LEVEL)
+  checkInput(time) {
+    if (time > this.lastKey + 100) {
+      let touchmap = this.engine.gamepad.checkInput();
+      this.lastKey = time;
+      // Gamepad controls - TODO
+      if (this.engine.gamepad.keyPressed("start")) {
+        // select
+        if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
+        else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
+      }
+      if (this.engine.gamepad.keyPressed("select")) {
+        // select
+        touchmap["select"] = 0;
+        this.engine.toggleFullscreen();
+      }
+    }
+  }
+
+  // open start menu
+  startMenu(menuConfig, defaultMenus = ["start"]) {
+    this.addEvent(
+      new EventLoader(this.engine, "menu", [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false }], this)
+    );
+  }
+
+  // Add Event to Queue
+  addEvent(event) {
+    if (this.eventDict[event.id]) this.removeAction(event.id);
+    this.eventDict[event.id] = event;
+    this.eventList.push(event);
+  }
+
+  // Remove Action
+  removeAction(id) {
+    this.eventList = this.eventList.filter((event) => event.id !== id);
+    delete this.eventDict[id];
+  }
+
+  // Remove Action
+  removeAllActions() {
+    this.eventList = [];
+    this.eventDict = {};
+  }
+
+  // Tick
+  tickOuter(time) {
+    // read input
+    this.checkInput(time);
+    // Sort activities by increasing startTime, then by id
+    this.eventList.sort((a, b) => {
+      let dt = a.startTime - b.startTime;
+      if (!dt) return dt;
+      return a.id > b.id ? 1 : -1;
+    });
+    // Run & Queue for Removal when complete
+    let toRemove = [];
+    this.eventList.forEach((event) => {
+      if (!event.loaded || event.startTime > time) return;
+      if (event.tick(time)) {
+        toRemove.push(event); // remove from backlog
+        event.onComplete(); // call completion handler
+      }
+    });
+    // clear completed activities
+    toRemove.forEach((event) => this.removeAction(event.id));
+    // tick
+    if (this.tick && !this.isPaused) this.tick(time);
   }
 
   // Draw Each Zone

@@ -16,6 +16,7 @@ import Sprite from "../core/sprite.jsx";
 import ModelObject from "../core/object.jsx";
 import Tileset from "../core/tileset.jsx";
 import Action from "../core/action.jsx";
+import Event from "../core/event.jsx";
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
@@ -52,7 +53,6 @@ export class TilesetLoader {
     this.tilesets[type] = instance;
     instance.name = type;
     let json = require("../../scene/tilesets/" + type + "/tileset.jsx")["default"];
-    console.log('loading tileset info', json);
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -84,7 +84,6 @@ export class SpriteLoader {
     if (runConfigure) runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      console.log("after load");
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
@@ -119,10 +118,8 @@ export class ObjectLoader {
       name: instance.id,
     };
     let models = await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]);
-    console.log("downloading models ---> ", models);
     instance.mesh = models[model.id];
     instance.templateLoaded = true;
-    console.log("loaded model", instance);
     // Update Existing
     this.instances[instance.id].forEach(function (instance) {
       if (instance.afterLoad) instance.afterLoad(instance.instance);
@@ -131,7 +128,6 @@ export class ObjectLoader {
     if (runConfigure) runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      console.log("after load");
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[instance.id].push({ instance, afterLoad });
     }
@@ -174,6 +170,57 @@ export class ActionLoader {
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
     Object.assign(instance, require("../actions/" + type + ".jsx")["default"]);
+    instance.templateLoaded = true;
+    // Notify existing
+    this.instances[type].forEach(function (instance) {
+      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    });
+    // construct
+    if (runConfigure) runConfigure(instance);
+    // load
+    if (afterLoad) {
+      if (instance.templateLoaded) afterLoad(instance);
+      else this.instances[type].push({ instance, afterLoad });
+    }
+
+    return instance;
+  }
+}
+
+// Helps Loads New Event Instance
+export class EventLoader {
+  constructor(engine, type, args, world, callback) {
+    this.engine = engine;
+    this.type = type;
+    this.args = args;
+    this.world = world;
+    this.callback = callback;
+    this.instances = {};
+    this.definitions = [];
+    this.assets = {};
+
+    let time = new Date().getTime();
+    let id = world.id + "-" + type + "-" + time;
+    return this.load(
+      type,
+      function (event) {
+        event.onLoad(args);
+      },
+      function (event) {
+        event.configure(type, world, id, time, args);
+      }
+    );
+  }
+  // Load Internal Action
+  load(type) {
+    let afterLoad = arguments[1];
+    let runConfigure = arguments[2];
+    if (!this.instances[type]) {
+      this.instances[type] = [];
+    }
+    // New Instance (assigns properties loaded by type)
+    let instance = new Event(this.type, this.world, this.callback);
+    Object.assign(instance, require("../events/" + type + ".jsx")["default"]);
     instance.templateLoaded = true;
     // Notify existing
     this.instances[type].forEach(function (instance) {

@@ -55,7 +55,6 @@ export default class Sprite {
       console.error("Invalid sprite definition");
       return;
     }
-    console.log("zoning ---->>");
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -63,33 +62,26 @@ export default class Sprite {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == "function") {
-      console.log('steping OUTTTTERS', instanceData)
       let stepParent = this.onStep.bind(this);
       this.onStep = () => {
-        console.log('steping RUNNING')
         instanceData.onStep();
-        console.log('steping JUMPPS')
         stepParent();
       };
     }
-    console.log("facing", Direction.spriteSequence(this.facing));
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);
-    console.log("texture ---->>");
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
-      console.log("speech ---->>");
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.loadTexture(this.portraitSrc);
-      console.log("portrait ---->>");
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //
@@ -139,12 +131,10 @@ export default class Sprite {
     }
     this.loaded = true;
     this.onLoadActions.run();
-    console.log("Initialized sprite '" + this.id + "' in zone '" + this.zone.id + "'");
   }
 
   // Get Texture Coordinates
   getTexCoords() {
-    if (this.id == "chest") console.log("texture frames", this.facing, Direction.spriteSequence(this.facing));
     let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames["up"]; //default up
     let length = this.frames[Direction.spriteSequence(this.facing)].length;
     let t = frames[this.animFrame % length];
@@ -234,14 +224,12 @@ export default class Sprite {
 
   // Set Facing
   setFacing(facing) {
-    console.log("setting face to " + Direction.spriteSequence(facing));
     if (facing) this.facing = facing;
     this.setFrame(this.animFrame);
   }
 
   // Add Action to Queue
   addAction(action) {
-    console.log("adding action to sprite", action.id);
     if (this.actionDict[action.id]) this.removeAction(action.id);
     this.actionDict[action.id] = action;
     this.actionList.push(action);
@@ -249,7 +237,6 @@ export default class Sprite {
 
   // Remove Action
   removeAction(id) {
-    console.log("removing action");
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }

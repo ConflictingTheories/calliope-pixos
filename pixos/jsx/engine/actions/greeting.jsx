@@ -14,7 +14,6 @@
 export default {
   // Initialize Dialogue Object
   init: function (greeting, options = {}) {
-    console.log("loading - greeting");
     this.engine = this.sprite.engine;
     this.greeting = greeting;
     this.options = options;

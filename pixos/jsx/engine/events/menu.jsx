@@ -14,9 +14,9 @@
 export default {
   // Initialize Dialogue Object
   init: function (menu, activeMenus, scrolling = true, options = {}) {
-    console.log("loading - menu");
-    this.engine = this.sprite.engine;
+    this.engine = this.world.engine;
     this.text = "";
+    this.prompt = "";
     this.scrolling = scrolling;
     this.line = 0;
     this.options = options;
@@ -55,7 +55,7 @@ export default {
         this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
       });
 
-    this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.scrollText(this.prompt, this.scrolling, this.options);
 
     if (this.completed) {
       this.unhookListener();
@@ -72,7 +72,6 @@ export default {
 
   hookListener: function () {
     let touchstart = ({ touches }) => {
-      console.log("touching - start", touches);
       this.isTouched = true;
       this.touches = touches;
       if (this.isTouched && this.touches.length > 0 && this.lastKey + 100 < new Date().getTime()) {
@@ -82,9 +81,7 @@ export default {
         self.activeMenus
           .filter((key) => {
             let w = self.menuDict[key];
-            console.log("checking", x, y, w);
             if (x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
-              console.log("CLICKED!!", x, y, w);
               return true;
             }
             return false;
@@ -102,7 +99,6 @@ export default {
       this.touches = touches;
     };
     let touchend = (touches) => {
-      console.log("touching - end", touches);
       this.isTouched = false;
       this.touches = touches;
     };
@@ -127,9 +123,7 @@ export default {
     //   let self = this;
     //   self.activeMenu
     //     .filter((w) => {
-    //       console.log("checking", x, y, w);
     //       if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
-    //         console.log("CLICKED!!", x, y, w);
     //         return true;
     //       }
     //       return false;
@@ -147,36 +141,14 @@ export default {
 
     // Keyboard
     if (time > this.lastKey + 100) {
-      let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {
         case "Escape":
           this.completed = true;
-          skipChar = true;
-          break;
-        case "Backspace":
-          let arr = this.text.split("");
-          arr.pop();
-          this.text = arr.join("");
-          this.lastKey = time;
-          skipChar = true;
           break;
         case "Enter":
           this.engine.setGreeting(this.text);
-          if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
-          this.speechbox = this.sprite.speech.scrollText(this.text);
-          this.sprite.speech.loadImage();
           this.completed = true;
-          skipChar = true;
           break;
-      }
-      // debounce keypresses
-      // write to chat box
-      if (!skipChar) {
-        let char = this.engine.keyboard.lastPressedKey();
-        if (char) {
-          this.lastKey = time;
-          this.text += "" + char;
-        }
       }
     }
   },

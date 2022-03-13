@@ -98,8 +98,6 @@ export default class MyAirKnight extends AirKnight {
                   alert(result.error.message);
                 }
                 if (result.error) return console.error("ERROR", result);
-                console.log("TYPED SIGNED:" + JSON.stringify(result.result));
-
                 const recovered = window.sigUtil.recoverTypedSignature_v4({
                   data: JSON.parse(msgParams),
                   sig: result.result,

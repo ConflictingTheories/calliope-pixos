@@ -54,7 +54,6 @@ export default class Tileset {
 
   // run when loaded
   onTextureLoaded() {
-    console.log("Initialized tileset '" + this.name + "'");
     this.loaded = true;
     this.onLoadActions.run();
   }

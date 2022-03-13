@@ -16,7 +16,6 @@ import { Direction } from "../../engine/utils/enums.jsx";
 
 export default {
   init: function (from, to, length, zone) {
-    console.log("loading - move");
     this.zone = zone;
     this.from = new Vector(...from);
     this.to = new Vector(...to);
@@ -54,7 +53,6 @@ export default {
      console.log('on steppping', this.spriteList)
     if (this.spriteList.length === 0) this.completed = true;
     this.spriteList.forEach((sprite) => {
-      console.log(sprite);
       return sprite.onStep ? this.zone.spriteDict[sprite.id].onStep(this.sprite) : null;
     });
   },

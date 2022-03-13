@@ -306,6 +306,14 @@ export default class GLEngine {
     return txt;
   }
 
+  // Screensize
+  screenSize() {
+    return {
+      width: this.canvas.width,
+      height: this.canvas.height,
+    };
+  }
+
   // Draws a button
   drawButton(text, x, y, w, h, colours) {
     const { ctx } = this;
@@ -435,7 +443,6 @@ export default class GLEngine {
 
   // load texture
   loadSpeech(src, canvas) {
-    console.log("requesting speech", src);
     if (this.speeches[src]) return this.speeches[src];
     this.speeches[src] = new Speech(canvas, this, src);
     return this.speeches[src];

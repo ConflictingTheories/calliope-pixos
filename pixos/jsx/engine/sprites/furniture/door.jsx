@@ -50,7 +50,6 @@ export default class Door extends Sprite {
 
   // Interaction
   interact(sprite, finish) {
-    console.log("opening door", sprite);
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state
@@ -66,7 +65,6 @@ export default class Door extends Sprite {
             600,
             3,
             () => {
-              console.log("OPENED!!!");
               finish(true);
             },
           ],
@@ -93,7 +91,6 @@ export default class Door extends Sprite {
 
   // when stepping on tile position (if not blocking)
   onStep(sprite) {
-    console.log("walking out....", sprite);
     let world = this.zone.world;
     world.removeAllZones();
     if (this.zones) this.zones.forEach((z) => world.loadZone(z));

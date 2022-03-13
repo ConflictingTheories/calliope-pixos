@@ -14,7 +14,6 @@
 export default {
   // Initialize Dialogue Object
   init: function (prompt, scrolling = true, options = {}) {
-    console.log("loading - chat");
     this.engine = this.sprite.engine;
     this.text = "";
     this.prompt = prompt;

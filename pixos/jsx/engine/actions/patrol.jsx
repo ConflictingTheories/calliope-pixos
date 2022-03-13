@@ -18,7 +18,6 @@ import { AudioLoader } from "../utils/loaders.jsx";
 
 export default {
   init: function (from, to, moveLength, zone) {
-    console.log("loading - patrol", arguments);
     this.zone = zone;
     this.from = new Vector(...from);
     this.to = new Vector(...to);
@@ -95,7 +94,6 @@ export default {
       switch (this.sprite.engine.keyboard.lastPressed("q")) {
         // close dialogue on q key press
         case "q":
-          console.log("stopping patrol");
           this.audio.pauseAudio();
           this.completed = true; // toggle
         default:

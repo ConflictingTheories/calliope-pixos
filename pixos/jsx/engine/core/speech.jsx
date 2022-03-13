@@ -41,7 +41,6 @@ export default class Speech {
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    console.log("loading canvas ", this.canvas);
     this.loaded = true;
     this.onLoadActions.run();
   }
