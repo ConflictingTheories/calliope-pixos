@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,12 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector, set, lerp } from "../../engine/utils/math/vector.jsx";
-import { Direction } from "../../engine/utils/enums.jsx";
+import { Vector, set, lerp } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 
 export default {
   init: async function (fromZoneId, from, toZoneId, to, length) {
-    console.log("loading - change zone");
     this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId);
     this.toZone = await this.sprite.zone.world.loadZone(toZoneId);
     this.from = new Vector(...from);

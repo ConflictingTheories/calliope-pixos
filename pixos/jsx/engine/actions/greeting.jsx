@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -14,7 +14,6 @@
 export default {
   // Initialize Dialogue Object
   init: function (greeting, options = {}) {
-    console.log("loading - greeting");
     this.engine = this.sprite.engine;
     this.greeting = greeting;
     this.options = options;

@@ -1,7 +1,7 @@
 /*                                                 *** ----------------------------------------------- **
 **             Calliope - Site Generator   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -10,94 +10,311 @@
 ** ----------------------------------------------- **
 \*                                                 */
 .pixos {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
-    width: 100%;
-    text-shadow: #3f3f3f 2px 2px 0px;
-    position: relative;
-    padding: 2.5em;
-    align-items: center;
-    align-content: center; }
-  
-  .renderSurface {
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%; }
-  
-  .materialSelector {
-    background: rgba(0, 0, 0, 0.6);
-    margin: auto;
-    position: relative; }
-    .materialSelector tr {
-      height: 70px; }
-    .materialSelector td {
-      background-position: 0px 0px;
-      cursor: pointer;
-      margin: 0;
-      opacity: 0.3;
-      padding: 0;
-      width: 70px; }
-      .materialSelector td:hover {
-        opacity: 0.8; }
-  
-  .nickname {
-    color: #ffffff;
-    cursor: default;
-    left: 42%;
-    position: absolute;
-    top: 40%;
-    width: 300px; }
-    .nickname input {
-      background: none;
-      border-bottom: 1px solid #888888;
-      border: none;
-      color: white;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 24px;
-      outline: none;
-      width: 100%; }
-  
-  .joininfo {
-    color: #ffffff;
-    cursor: default;
-    font-size: 24px;
-    position: absolute;
-    text-align: center;
-    top: 42%;
-    width: 99%; }
-  
-  .chatbox {
-    background: rgba(0, 0, 0, 0.6);
-    bottom: 55px;
-    color: white;
-    cursor: default;
-    height: 195px;
-    left: 20px;
-    overflow: hidden;
-    padding-left: 10px;
-    padding-right: 10px;
-    position: absolute;
-    width: 600px; }
-  
-  .chatbox_text {
-    bottom: 8px;
-    position: absolute;
-    text-shadow: none; }
-  
-  .chatbox_entry {
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    bottom: 18px;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
-    height: 30px;
-    left: 20px;
-    outline: none;
-    padding-bottom: 2px;
-    padding-left: 10px;
-    position: absolute;
-    width: 610px; }
-  
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  width: 100%;
+  text-shadow: #3f3f3f 2px 2px 0px;
+  position: relative;
+  /* padding: 2.5em; */
+  align-items: center;
+  align-content: center;
+}
+
+.renderSurface {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.materialSelector {
+  background: rgba(0, 0, 0, 0.6);
+  margin: auto;
+  position: relative;
+}
+.materialSelector tr {
+  height: 70px;
+}
+.materialSelector td {
+  background-position: 0px 0px;
+  cursor: pointer;
+  margin: 0;
+  opacity: 0.3;
+  padding: 0;
+  width: 70px;
+}
+.materialSelector td:hover {
+  opacity: 0.8;
+}
+
+.nickname {
+  color: #ffffff;
+  cursor: default;
+  left: 42%;
+  position: absolute;
+  top: 40%;
+  width: 300px;
+}
+.nickname input {
+  background: none;
+  border-bottom: 1px solid #888888;
+  border: none;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 24px;
+  outline: none;
+  width: 100%;
+}
+
+.joininfo {
+  color: #ffffff;
+  cursor: default;
+  font-size: 24px;
+  position: absolute;
+  text-align: center;
+  top: 42%;
+  width: 99%;
+}
+
+.chatbox {
+  background: rgba(0, 0, 0, 0.6);
+  bottom: 55px;
+  color: white;
+  cursor: default;
+  height: 195px;
+  left: 20px;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 10px;
+  position: absolute;
+  width: 600px;
+}
+
+.chatbox_text {
+  bottom: 8px;
+  position: absolute;
+  text-shadow: none;
+}
+
+.chatbox_entry {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  bottom: 18px;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  height: 30px;
+  left: 20px;
+  outline: none;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  position: absolute;
+  width: 610px;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #202020, #111119);
+}
+
+.rain {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.snow {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.rain.back-row {
+  z-index: 1;
+  bottom: 60px;
+  opacity: 0.5;
+}
+.snow.back-row {
+  z-index: 1;
+  bottom: 60px;
+  opacity: 0.8;
+}
+
+body.back-row-toggle .rain.back-row .snow.back-row {
+  display: block;
+}
+
+.drop {
+  position: absolute;
+  bottom: 100%;
+  width: 15px;
+  height: 120px;
+  pointer-events: none;
+  animation: drop 0.5s linear infinite;
+}
+
+.flake {
+  position: absolute;
+  bottom: 100%;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  animation: snow 2.5s linear infinite;
+}
+
+@keyframes drop {
+  0% {
+    transform: translateY(0vh);
+  }
+  75% {
+    transform: translateY(90vh);
+  }
+  100% {
+    transform: translateY(90vh);
+  }
+}
+
+@keyframes snow {
+  0% {
+    transform: translateY(0vh);
+  }
+  70% {
+    transform: translateY(50vh);
+  }
+  85% {
+    transform: translateY(85vh);
+  }
+  75% {
+    transform: translateY(75vh);
+  }
+  100% {
+    transform: translateY(95vh);
+    transform: translateX(30vw);
+  }
+}
+
+.stem {
+  width: 1px;
+  height: 60%;
+  margin-left: 7px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.25));
+  animation: stem 0.5s linear infinite;
+}
+
+@keyframes stem {
+  0% {
+    opacity: 1;
+  }
+  65% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.splat {
+  width: 15px;
+  height: 10px;
+  border-top: 2px dotted rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  opacity: 1;
+  transform: scale(0);
+  animation: splat 0.5s linear infinite;
+}
+
+body.splat-toggle .splat {
+  display: block;
+}
+
+@keyframes splat {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  90% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.toggles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+}
+
+.toggle {
+  position: absolute;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  line-height: 51px;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.toggle:active {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.toggle.active {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.splat-toggle {
+  top: 20px;
+}
+
+.back-row-toggle {
+  top: 90px;
+  line-height: 12px;
+  padding-top: 14px;
+}
+
+.single-toggle {
+  top: 160px;
+}
+
+body.single-toggle .drop {
+  display: none;
+}
+
+body.single-toggle .drop:nth-child(10) {
+  display: block;
+}

@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -20,12 +20,12 @@ export const Mouse = {
 
 // Directions enumeration & methods
 export const Direction = {
-  None: 0,  //0000
+  None: 0, //0000
   Right: 1, //0001
-  Up: 2,    //0010
-  Left: 4,  //0100
-  Down: 8,  //1000
-  All: 15,  //1111
+  Up: 2, //0010
+  Left: 4, //0100
+  Down: 8, //1000
+  All: 15, //1111
 
   fromOffset(dp) {
     if (dp[0] > 0) return Direction.Right;
@@ -76,7 +76,7 @@ export const Direction = {
     }
     return Direction.None;
   },
-
+  // sprite sequence facing
   spriteSequence(dir) {
     switch (dir) {
       case Direction.Right:
@@ -89,5 +89,19 @@ export const Direction = {
         return "down";
     }
     return "down";
+  },
+  // object sequence rotation (TODO)
+  objectSequence(dir) {
+    switch (dir) {
+      case Direction.Right:
+        return [0, 90, 0];
+      case Direction.Up:
+        return [0, 0, 0];
+      case Direction.Left:
+        return [0, -90, 0];
+      case Direction.Down:
+        return [0, 180, 0];
+    }
+    return [0, 0, 0];
   },
 };

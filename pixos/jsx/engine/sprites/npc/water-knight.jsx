@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,17 +11,17 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
-import { ActionLoader } from "../../../engine/utils/loaders.jsx";
-import Sprite from "../../../engine/sprite.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
+import NPC from "./base/NPC.jsx";
 
-export default class WaterKnight extends Sprite {
+export default class WaterKnight extends NPC {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
     this.src = Resources.artResourceUrl("water-knight.gif");
+    this.portraitSrc = Resources.artResourceUrl("water_portrait.gif");
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
     // Offsets
@@ -54,51 +54,11 @@ export default class WaterKnight extends Sprite {
         [24, 96],
       ],
     };
-    // Should the camera follow the player?
+    // Should the camera follow the avatar?
     this.bindCamera = false;
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
     this.state = "intro";
-  }
-  // Interaction
-  interact(finish) {
-    let ret = null;
-    // React based on internal state
-    switch (this.state) {
-      case "intro":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          [["I am the Water Knight!", "Here is my home."], false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      case "loop":
-        this.state = "loop2";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["I heard about a strange legend once.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      case "loop2":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Sorry, I don't remember the story at the moment", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      default:
-        break;
-    }
-    if (ret) this.addAction(ret);
-    // If completion handler passed through - call it when done
-    if (finish) finish(false);
-    return ret;
   }
 }

@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -14,9 +14,9 @@
 import React, { Component } from "react";
 import { collect } from "react-recollect";
 // WebGL Component
-import WebGLView from "./components/WebGLView.jsx";
+import WebGLView from "@Components/WebGLView.jsx";
 // Pixos Scene Provider
-import SceneProvider from "./scene/index.jsx";
+import SceneProvider from "@Scenes/peacefulGarden/index.jsx";
 // Style Plugin
 import "../less/pixos.css";
 
@@ -24,7 +24,6 @@ class Pixos extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      networkString: props.networkString,
       scene: new SceneProvider(),
       updated: Date.now(),
     };
@@ -32,7 +31,6 @@ class Pixos extends Component {
 
   // Update world on Edit
   componentWillReceiveProps(nextProps) {
-    console.log(nextProps);
     if (JSON.stringify(this.props.networkString) != JSON.stringify(nextProps.networkString)) {
       this.setState({
         networkString: nextProps.networkString,
@@ -43,25 +41,13 @@ class Pixos extends Component {
 
   // Render World as Passed in String or FlatLand (Default)
   render() {
-    const { networkString, updated, scene } = this.state;
+    const { updated, scene } = this.state;
     return (
-      <>
-        <WebGLView
-          class="pixos"
-          key={updated}
-          width={640}
-          height={480}
-          SceneProvider={scene}
-          networkString={networkString}
-        />
-      </>
+      <div style={{ margin: 0 }}>
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={640} height={480} SceneProvider={scene} />
+      </div>
     );
   }
 }
 
-// export default collect(Pixos);
-export default () => {
-  return (
-      <Pixos />
-  )
-}
+export default collect(Pixos);

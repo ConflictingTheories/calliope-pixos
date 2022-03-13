@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,12 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../engine/utils/math/vector.jsx";
-import { Direction } from "../../engine/utils/enums.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import { Direction } from "@Engine/utils/enums.jsx";
 
 export default {
   init: function (from, facing, world) {
-    console.log("loading - interact", arguments);
     this.world = world;
     this.from = new Vector(...from);
     this.facing = facing;
@@ -29,6 +28,7 @@ export default {
     this.zone = world.zoneContaining(...this.to);
     // Trigger interaction on Sprite
     this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to[0] && sprite.pos.y === this.to[1]);
+    this.objectList = this.zone.objectList.filter((object) => object.pos.x === this.to[0] && object.pos.y === this.to[1]);
     // -- pass through reference to "finish()" callback
     this.finish = this.finish.bind(this);
     // Trigger
@@ -36,13 +36,22 @@ export default {
   },
   // Trigger interactions in sprites
   interact: function () {
-    if (this.spriteList.length === 0) this.completed = true;
+    if (this.spriteList.length === 0 && this.objectList.length === 0) this.completed = true;
+    // objects
+    this.objectList.forEach((object) => {
+      let faceChange = object.faceDir(Direction.reverse(this.facing));
+      if (faceChange) {
+        object.addAction(faceChange); // face towards avatar
+      }
+      return object.interact ? this.zone.objectDict[object.id].interact(this.sprite, this.finish) : null;
+    });
+    // sprite
     this.spriteList.forEach((sprite) => {
       let faceChange = sprite.faceDir(Direction.reverse(this.facing));
       if (faceChange) {
-        sprite.addAction(faceChange); // face towards player
+        sprite.addAction(faceChange); // face towards avatar
       }
-      return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.finish) : null;
+      return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish) : null;
     });
   },
   // Callback to clear interaction
@@ -62,14 +71,16 @@ export default {
         // close dialogue on q key press
         case "q":
           // Needs to Cancel the Interaction on the Affected Sprite as well
-          // -- todo
-          //
-          console.log("stopping interaction");
           this.completed = true; // toggle
+          break;
         default:
           this.lastKey = new Date().getTime();
           return null;
       }
+    }
+    // gamepad
+    if (this.sprite.engine.gamepad.keyPressed("a")) {
+      this.completed = true;
     }
   },
 };

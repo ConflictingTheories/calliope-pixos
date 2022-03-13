@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../engine/utils/math/vector.jsx";
-import Resources from "../../../engine/utils/resources.jsx";
-import Sprite from "../../../engine/sprite.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import Resources from "@Engine/utils/resources.jsx";
+import Sprite from "@Engine/core/sprite.jsx";
 
 export default class EarthElemental extends Sprite {
   constructor(engine) {
@@ -53,7 +53,7 @@ export default class EarthElemental extends Sprite {
         [48, 72],
       ],
     };
-    // Should the camera follow the player?
+    // Should the camera follow the avatar?
     this.bindCamera = false;
     // enable speech
     this.enableSpeech = true;

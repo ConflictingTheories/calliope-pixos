@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -14,7 +14,6 @@
 export default {
   // Initialize Dialogue Object
   init: function (prompt, scrolling = true, options = {}) {
-    console.log("loading - chat");
     this.engine = this.sprite.engine;
     this.text = "";
     this.prompt = prompt;
@@ -57,7 +56,7 @@ export default {
           break;
         case "Enter":
           this.engine.setGreeting(this.text);
-          this.sprite.speech.clearHud();
+          if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
           this.speechbox = this.sprite.speech.scrollText(this.text);
           this.sprite.speech.loadImage();
           this.completed = true;

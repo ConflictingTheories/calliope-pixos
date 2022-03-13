@@ -1,8 +1,8 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**             Calliope - Site Generator   	       **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2021 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -14,7 +14,6 @@
 export default {
   // Initialize Dialogue Object
   init: function (text, scrolling = true, options = {}) {
-    console.log("loading - dialogue");
     this.engine = this.sprite.engine;
     this.text = text; // holds queue of dialogue
     this.displayText = typeof text === "string" ? text : this.text.shift(); // current statement
@@ -27,7 +26,6 @@ export default {
   },
   // Update & Scroll
   tick: function (time) {
-    // console.log('action', this);
     if (!this.loaded) return;
     // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
     if (this.options && this.options.autoclose) {
@@ -39,13 +37,14 @@ export default {
     // Handle Input
     this.checkInput(time);
 
-    console.log(this.displayText, this.text);
     // Dialogue
     this.sprite.speak(this.displayText);
 
     // Callback on Completion
     if (this.completed && this.options.onClose) {
-      this.sprite.speech.clearHud();
+      if (this.sprite.speech.clearHud) {
+        this.sprite.speech.clearHud();
+      }
       this.options.onClose();
     }
     return this.completed;
@@ -53,22 +52,37 @@ export default {
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + 100) {
-    switch (this.engine.keyboard.lastPressedCode()) {
-      case "Escape":
-        console.log("closing dialogue");
-        this.sprite.speak(false);
-        this.completed = true; // toggle
-        break;
-      case "Enter":
-        if (typeof this.text === "string" || (this.text.length === 0)) {
+      switch (this.engine.keyboard.lastPressedCode()) {
+        case "Escape":
+          this.sprite.speak(false);
+          this.completed = true; // toggle
+          break;
+        case "Enter":
+          if (typeof this.text === "string" || this.text.length === 0) {
+            this.completed = true;
+          } else {
+            this.completed = false;
+            this.displayText = this.text.shift();
+            this.sprite.speak(this.displayText);
+          }
+          break;
+      }
+      // gamepad
+      if (this.engine.gamepad.keyPressed("a")) {
+        if (typeof this.text === "string" || this.text.length === 0) {
           this.completed = true;
         } else {
           this.completed = false;
           this.displayText = this.text.shift();
           this.sprite.speak(this.displayText);
         }
-        break;
+        return;
+      }
+      if (this.engine.gamepad.keyPressed("a")) {
+        this.sprite.speak(false);
+        this.completed = true; // toggle
+        return;
+      }
     }
-  }
   },
 };
