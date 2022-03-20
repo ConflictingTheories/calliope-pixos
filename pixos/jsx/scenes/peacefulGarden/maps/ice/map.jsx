@@ -99,15 +99,7 @@ export default {
           // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
           if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
             // add Portals randomly around map on floor tiles
-            if (zone.portals.length > 0 && posKey % Math.abs(22) && zone.getHeight(j, i) === 0) {
-              let portal = zone.portals.pop();
-              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
-              posKey % Math.abs(sprites.push(portal));
-            } else if (zone.portals.length > 0 && posKey % Math.abs(33) && zone.getHeight(j, i) === 0) {
-              let portal = zone.portals.shift();
-              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
-              posKey % Math.abs(sprites.push(portal));
-            }
+            sprites = zone.addPortal(sprites, i, j);
           }
         }
       });

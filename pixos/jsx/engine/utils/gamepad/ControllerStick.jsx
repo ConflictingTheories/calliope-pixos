@@ -83,7 +83,8 @@ export class ControllerStick {
     var dx = parseInt(touch.x - this.x);
     var dy = parseInt(touch.y - this.y);
     var dist = parseInt(Math.sqrt(dx * dx + dy * dy));
-    if (dist < this.radius * 1.5) {
+    // Start
+    if (dist < this.radius * 1.2) {
       if (!type) {
         touches[id].id = "stick";
       } else {
@@ -91,13 +92,24 @@ export class ControllerStick {
           case "mousedown":
             touches[id].id = "stick";
             break;
-          case "mouseup":
-            delete touches[id].id;
-            this.reset();
-            break;
         }
       }
     }
+    // Stop
+    if (dist < this.radius * 2.5) {
+      if (!type) {
+        touches[id].id = "stick";
+      } else {
+        if (touches[id].id == "stick")
+          switch (type) {
+            case "mouseup":
+              delete touches[id].id;
+              this.reset();
+              break;
+          }
+      }
+    }
+    // Move
     if (touches[id].id == "stick") {
       if (Math.abs(parseInt(dx)) < this.radius / 2) {
         this.dx = this.x + dx;
@@ -110,7 +122,7 @@ export class ControllerStick {
       map["x-dir"] = Math.round(map["x-axis"]);
       map["y-dir"] = Math.round(map["y-axis"]);
 
-      if (dist > this.radius * 1.5) {
+      if (dist > this.radius * 2.5) {
         this.reset();
         delete touches[id].id;
       }

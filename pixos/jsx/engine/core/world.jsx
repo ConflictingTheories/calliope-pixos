@@ -92,14 +92,13 @@ export default class World {
     if (time > this.lastKey + 200) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
-      // Gamepad controls - TODO
+      // start
       if (this.engine.gamepad.keyPressed("start")) {
-        // select
         if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
         else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
       }
+      // select
       if (this.engine.gamepad.keyPressed("select")) {
-        // select
         touchmap["select"] = 0;
         this.engine.toggleFullscreen();
       }

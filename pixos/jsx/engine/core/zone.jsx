@@ -13,6 +13,7 @@
 import { Direction } from "@Engine/utils/enums.jsx";
 import Resources from "@Engine/utils/resources.jsx";
 import ActionQueue from "@Engine/core/queue.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
 import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default class Zone {
@@ -208,6 +209,20 @@ export default class Zone {
   // Remove an sprite from the zone
   getSpriteById(id) {
     return this.spriteDict[id];
+  }
+
+  // add portal to provide list of sprites
+  addPortal(sprites, x, y) {
+    if (this.portals.length > 0 && this.getHeight(x, y) === 0) {
+      let portal = this.portals.pop();
+      portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
+      sprites.push(portal);
+    } else if (this.portals.length > 0 && (x * y) % Math.abs(3) && this.getHeight(x, y) === 0) {
+      let portal = this.portals.shift();
+      portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
+      sprites.push(portal);
+    }
+    return sprites;
   }
 
   // Calculate the height of a point in the zone

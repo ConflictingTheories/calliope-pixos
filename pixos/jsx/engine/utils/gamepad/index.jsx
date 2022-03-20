@@ -23,8 +23,8 @@ export class GamePad {
     this.opacity = 0.4;
     this.font = "minecraftia";
     // Start & Select Buttons
-    this.start = true;
-    this.select = true;
+    this.start = false;
+    this.select = false;
     this.touches = {};
     this.lastKey = new Date().getTime();
     this.listeners = [];

@@ -24,6 +24,28 @@ export default {
   // Determines the tileset to load
   tileset: "mountain",
   audioSrc: "/pixos/audio/blue-fields.mp3",
+  portals: [
+    {
+      id: "door-l",
+      type: "furniture/portal",
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
+        store.pixos[STORE_NAME].selected += 3;
+      },
+      zones: ["jungle"],
+    },
+    {
+      id: "door-r",
+      type: "furniture/portal",
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
+        store.pixos[STORE_NAME].selected += 7;
+      },
+      zones: ["ice"],
+    },
+  ],
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
     // generate based on bounds
@@ -65,28 +87,6 @@ export default {
     let y = bounds[1];
     let width = bounds[2] - x;
     let height = bounds[3] - y;
-    let portals = [
-      {
-        id: "door-l",
-        type: "furniture/portal",
-        facing: Direction.Down,
-        onStep: () => {
-          store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
-          store.pixos[STORE_NAME].selected += 3;
-        },
-        zones: ["ice"],
-      },
-      {
-        id: "door-r",
-        type: "furniture/portal",
-        facing: Direction.Down,
-        onStep: () => {
-          store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
-          store.pixos[STORE_NAME].selected += 7;
-        },
-        zones: ["jungle"],
-      },
-    ];
     new Array(height).fill(null).map((_, i) => {
       return new Array(width).fill(null).map((__, j) => {
         let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
@@ -109,15 +109,7 @@ export default {
           // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
           if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
             // add Portals randomly around map on floor tiles
-            if (zone.portals.length > 0 && posKey % Math.abs(22) && zone.getHeight(j, i) === 0) {
-              let portal = zone.portals.pop();
-              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
-              posKey % Math.abs(sprites.push(portal));
-            } else if (zone.portals.length > 0 && posKey % Math.abs(33) && zone.getHeight(j, i) === 0) {
-              let portal = zone.portals.shift();
-              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
-              posKey % Math.abs(sprites.push(portal));
-            }
+            sprites = zone.addPortal(sprites, j, i);
           }
         }
 
