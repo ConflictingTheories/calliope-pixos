@@ -11,25 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Spurt from "@Engine/sprites/effects/spurt.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-export default class WaterSpurt extends Spurt {
-  constructor(engine) {
-    // Initialize Sprite
-    super(engine);
-    this.src = Resources.artResourceUrl("tileset.png");
-    this.sheetSize = [512, 512];
-    this.tileSize = [16, 16];
-    // Frames
-    this.frames = {
-      up: [
-        [0, 448],
-        [16, 448],
-        [32, 448],
-        [48, 448],
-        [64, 448],
-        [80, 448],
-      ],
-    };
-  }
-}
+import Tiles from "@Tilesets/common/tiles.jsx";
+
+// Tile Types Supported (Labels for Easy Use) [[geometry, texture, height], walkability?]
+const T = Object.assign({}, { ...Tiles});
+export default T;

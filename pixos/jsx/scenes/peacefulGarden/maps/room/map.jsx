@@ -20,7 +20,7 @@ import cells from "./cells.jsx";
 export default {
   bounds: [0, 0, 17, 19],
   // Determines the tileset to load
-  tileset: "sewer",
+  tileset: "ice",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: cells,
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)

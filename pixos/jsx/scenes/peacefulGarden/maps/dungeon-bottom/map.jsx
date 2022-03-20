@@ -19,7 +19,7 @@ import cells from "./cells.jsx";
 // Map
 export default {
   bounds: [0, 10, 17, 19],
-  tileset: "sewer",
+  tileset: "ice",
   audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,10) -> (17,19) (X, Y) (9 Rows x 17 Column)
   cells: cells,
