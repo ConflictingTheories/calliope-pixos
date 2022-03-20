@@ -50,7 +50,7 @@ export default (sheetOffsetX, sheetOffsetY) => {
       WALL_WATER: [1 + sheetOffsetX, 5 + sheetOffsetY * 2],
       WATER_WALL: [1 + sheetOffsetX, 5 + sheetOffsetY * 2],
       //
-      EMPTY: [1 + sheetOffsetX, 1],
+      EMPTY: [2 + sheetOffsetX, 5],
       EMPTY_BR: [2 + sheetOffsetX, 2],
       EMPTY_R: [2 + sheetOffsetX, 1],
       EMPTY_TR: [2 + sheetOffsetX, 0],
