@@ -11,11 +11,19 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Door from "@Engine/sprites/furniture/door.jsx";
-export default class MyDoor extends Door {
-  constructor(engine) {
-    // Initialize Sprite
-    super(engine);
-    this.fixed = true;
-  }
-}
+import DefaultTileset from "@Tilesets/common/tileset.jsx";
+// Tileset Schema
+const _default = DefaultTileset(15, 0);
+export default {
+  ..._default,
+  name: "jungle",
+  bgColor: [32, 88, 62],
+  // Tile Locations on resource (based on size)
+  textures: {
+    ..._default.textures,
+  },
+  // Geometries for the tileset
+  geometry: {
+    ..._default.geometry,
+  },
+};

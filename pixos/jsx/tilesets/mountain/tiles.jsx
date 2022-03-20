@@ -11,11 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Door from "@Engine/sprites/furniture/door.jsx";
-export default class MyDoor extends Door {
-  constructor(engine) {
-    // Initialize Sprite
-    super(engine);
-    this.fixed = true;
-  }
-}
+import Tiles from "@Tilesets/common/tiles.jsx";
+
+// Tile Types Supported (Labels for Easy Use) [[geometry, texture, height], walkability?]
+const T = Object.assign({}, { ...Tiles });
+export default T;

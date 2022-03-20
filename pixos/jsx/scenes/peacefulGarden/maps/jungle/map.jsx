@@ -15,14 +15,14 @@ import { store } from "react-recollect";
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
 import { loadAvatar, generateZone, STORE_NAME } from "@Engine/utils/generator.jsx";
-import T from "@Tilesets/field/tiles.jsx";
+import T from "@Tilesets/jungle/tiles.jsx";
 
 // Use Tileset
 // Map Information
 export default {
   bounds: [0, 0, 30, 50],
   // Determines the tileset to load
-  tileset: "field",
+  tileset: "jungle",
   audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
@@ -43,7 +43,7 @@ export default {
           store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
           store.pixos[STORE_NAME].selected -= 3;
         },
-        zones: ["jungle"],
+        zones: ["room"],
       },
 
       {

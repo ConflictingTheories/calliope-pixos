@@ -37,7 +37,7 @@ export default {
       type: "furniture/door",
       pos: new Vector(...[2, 5, 0]),
       facing: Direction.Down,
-      zones: ["garden"],
+      zones: ["mountain"],
     },
     // Effect tiles
     { id: "spurt1", type: "effects/lavaspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
