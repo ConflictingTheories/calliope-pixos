@@ -19,15 +19,15 @@ import cells from "./cells.jsx";
 // Map
 export default {
   bounds: [0, 10, 17, 19],
-  tileset: "ice",
+  tileset: "void",
   audioSrc: "/pixos/audio/blue-fields.mp3",
   // (0,10) -> (17,19) (X, Y) (9 Rows x 17 Column)
   cells: cells,
   // Sprites and Objects to be Loaded in the Scene & their Starting Points
   sprites: [
     { id: "water", type: "npc/water-knight", pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
-    { id: "spurt8", type: "effects/waterspurt", pos: new Vector(...[7, 10, -1.5]), facing: Direction.Up },
-    { id: "spurt9", type: "effects/waterspurt", pos: new Vector(...[10, 10, -1.5]), facing: Direction.Up },
+    { id: "spurt8", type: "effects/lavaspurt", pos: new Vector(...[7, 10, -1.5]), facing: Direction.Up },
+    { id: "spurt9", type: "effects/lavaspurt", pos: new Vector(...[10, 10, -1.5]), facing: Direction.Up },
   ],
   // Scripts / Triggers
   scripts: [

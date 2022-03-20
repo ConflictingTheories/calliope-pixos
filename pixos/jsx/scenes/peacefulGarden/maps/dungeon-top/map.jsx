@@ -21,7 +21,7 @@ import cells from "./cells.jsx";
 export default {
   bounds: [0, 0, 17, 10],
   // Determines the tileset to load
-  tileset: "ice",
+  tileset: "void",
   // (0,0) -> (17,10) (X, Y) (10 Rows x 17 Column)
   cells: cells,
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
@@ -40,13 +40,13 @@ export default {
       zones: ["garden"],
     },
     // Effect tiles
-    { id: "spurt1", type: "effects/waterspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
-    { id: "spurt2", type: "effects/waterspurt", pos: new Vector(...[9, 6, -1.5]), facing: Direction.Up },
-    { id: "spurt3", type: "effects/waterspurt", pos: new Vector(...[10, 5, -1.5]), facing: Direction.Up },
-    { id: "spurt4", type: "effects/waterspurt", pos: new Vector(...[7, 6, -1.5]), facing: Direction.Up },
-    { id: "spurt5", type: "effects/waterspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
-    { id: "spurt6", type: "effects/waterspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
-    { id: "spurt7", type: "effects/waterspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
+    { id: "spurt1", type: "effects/lavaspurt", pos: new Vector(...[10, 7, -1.5]), facing: Direction.Up },
+    { id: "spurt2", type: "effects/lavaspurt", pos: new Vector(...[9, 6, -1.5]), facing: Direction.Up },
+    { id: "spurt3", type: "effects/lavaspurt", pos: new Vector(...[10, 5, -1.5]), facing: Direction.Up },
+    { id: "spurt4", type: "effects/lavaspurt", pos: new Vector(...[7, 6, -1.5]), facing: Direction.Up },
+    { id: "spurt5", type: "effects/lavaspurt", pos: new Vector(...[6, 7, -1.5]), facing: Direction.Up },
+    { id: "spurt6", type: "effects/lavaspurt", pos: new Vector(...[6, 9, -1.5]), facing: Direction.Up },
+    { id: "spurt7", type: "effects/lavaspurt", pos: new Vector(...[9, 9, -1.5]), facing: Direction.Up },
   ],
   // Scenes + Scenarios
   scripts: [
