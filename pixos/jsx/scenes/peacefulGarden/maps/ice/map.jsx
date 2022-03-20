@@ -15,128 +15,104 @@ import { store } from "react-recollect";
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
 import { loadAvatar, generateZone, STORE_NAME } from "@Engine/utils/generator.jsx";
-import T from "@Tilesets/jungle/tiles.jsx";
+import T from "@Tilesets/ice/tiles.jsx";
 
 // Use Tileset
 // Map Information
 export default {
   bounds: [0, 0, 30, 50],
   // Determines the tileset to load
-  tileset: "jungle",
+  tileset: "ice",
   audioSrc: "/pixos/audio/blue-fields.mp3",
+  portals: [
+    {
+      id: "door-l",
+      type: "furniture/portal",
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
+        store.pixos[STORE_NAME].selected += 3;
+      },
+      zones: ["mountain"],
+    },
+    {
+      id: "door-r",
+      type: "furniture/portal",
+      facing: Direction.Down,
+      onStep: () => {
+        store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
+        store.pixos[STORE_NAME].selected += 7;
+      },
+      zones: ["sewer"],
+    },
+  ],
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
-    // clear out sprites
-    zone.sprites = zone.defaultSprites ?? [];
     // generate based on bounds
     let x = bounds[0];
     let y = bounds[1];
     let width = bounds[2] - x;
     let height = bounds[3] - y;
-    let portals = [
-      {
-        id: "door-l",
-        type: "furniture/portal",
-        pos: new Vector(...[5, 2, 0]),
-        facing: Direction.Down,
-        onStep: () => {
-          store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
-          store.pixos[STORE_NAME].selected += 3;
-        },
-        zones: ["room"],
-      },
-
-      {
-        id: "door-r",
-        type: "furniture/portal",
-        pos: new Vector(...[8, 2, 0]),
-        facing: Direction.Down,
-        onStep: () => {
-          store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
-          store.pixos[STORE_NAME].selected += 7;
-        },
-        zones: ["field"],
-      },
-    ];
-    let a = new Array(height).fill(null).map((_, i) => {
+    let cells = new Array(height).fill(null).map((_, i) => {
       return new Array(width).fill(null).map((__, j) => {
         let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
         // Edges
         if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
-          let len = Math.floor(((posKey + 1) * 337) % 9);
-          for (let m = 0; m < len; m++) {
-            zone.sprites.push({
-              id: "plt-" + posKey + m,
-              type: "objects/plants/random",
-              pos: new Vector(...[j, i, 2]),
-              facing: Direction.Down,
-            });
-          }
           return T.PILLAR;
         }
         // return random tile based on location (x+i, y+j)
         // 66% of tiles are floor
         if (posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
-          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
-          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
-            // flowers
-            // for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
-            //   zone.sprites.push({
-            //     id: "plt-" + posKey + m,
-            //     type: "objects/plants/random",
-            //     pos: new Vector(...[j, i, 0]),
-            //     facing: Direction.Down,
-            //   });
-            // }
-
-            // add Portals randomly around map on floor tiles
-            if (portals.length > 0 && posKey % Math.abs(22)) {
-              let portal = portals.pop();
-              portal.pos = new Vector(...[j, i, 0]);
-              posKey % Math.abs(zone.sprites.push(portal));
-            } else if (portals.length > 0 && posKey % Math.abs(33)) {
-              let portal = portals.shift();
-              portal.pos = new Vector(...[j, i, 0]);
-              posKey % Math.abs(zone.sprites.push(portal));
-            }
-          }
           return T.FLOOR;
         }
 
         // return random tile based on location (x+i, y+j)
         // 66% of tiles are floor
         if (posKey % Math.abs(7 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
-          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
-          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
-            for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
-              zone.sprites.push({
-                id: "plt-" + posKey + m,
-                type: "objects/plants/random",
-                pos: new Vector(...[j, i, 2]),
-                facing: Direction.Down,
-              });
-            }
-          }
           return T.PILLAR;
-        }
-
-        // add some flowers to the remaining blocks
-        if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
-          for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
-            zone.sprites.push({
-              id: "plt-" + posKey + m,
-              type: "objects/plants/random",
-              pos: new Vector(...[j, i, 1]),
-              facing: Direction.Down,
-            });
-          }
         }
 
         // rest are random (for now just blocks)
         return T.BLOCK;
       });
     });
-    return a.filter((x) => x).flat(1);
+    return cells.filter((x) => x).flat(1);
+  },
+  // sprites
+  sprites: (bounds, zone) => {
+    // clear out sprites
+    let sprites = zone.defaultSprites ?? [];
+    // generate based on bounds
+    let x = bounds[0];
+    let y = bounds[1];
+    let width = bounds[2] - x;
+    let height = bounds[3] - y;
+    new Array(height).fill(null).map((_, i) => {
+      return new Array(width).fill(null).map((__, j) => {
+        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
+        // Edges
+        if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
+          // edge sprites
+        }
+        // 66% of tiles are floor
+        if (posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
+          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+            // add Portals randomly around map on floor tiles
+            if (zone.portals.length > 0 && posKey % Math.abs(22) && zone.getHeight(j, i) === 0) {
+              let portal = zone.portals.pop();
+              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
+              posKey % Math.abs(sprites.push(portal));
+            } else if (zone.portals.length > 0 && posKey % Math.abs(33) && zone.getHeight(j, i) === 0) {
+              let portal = zone.portals.shift();
+              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
+              posKey % Math.abs(sprites.push(portal));
+            }
+          }
+        }
+      });
+    });
+    return sprites;
   },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
   defaultSprites: [],

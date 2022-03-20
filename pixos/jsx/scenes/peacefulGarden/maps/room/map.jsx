@@ -36,7 +36,7 @@ export default {
       type: "furniture/door",
       pos: new Vector(...[9, 1, 0]),
       facing: Direction.Down,
-      zones: ["dungeon-top", "dungeon-bottom"],
+      zones: ["dungeon"],
     },
     // Tree
     { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },

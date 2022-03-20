@@ -14,17 +14,141 @@
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
 import { loadAvatar, STORE_NAME } from "@Engine/utils/generator.jsx";
-import cells from "./cells.jsx";
-// Use Tileset
 // Map Information
 export default {
   bounds: [0, 0, 17, 19],
   // Determines the tileset to load
   tileset: "sewer",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
-  cells: cells,
+  cells: (bounds, zone) => {
+    // generate based on bounds
+    let x = bounds[0];
+    let y = bounds[1];
+    let width = bounds[2] - x;
+    let height = bounds[3] - y;
+    let cells = new Array(height).fill(null).map((_, i) => {
+      return new Array(width).fill(null).map((__, j) => {
+        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
+        // Edges
+        if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
+          return T.PILLAR;
+        }
+        // return random tile based on location (x+i, y+j)
+        // 66% of tiles are floor
+        if (posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          return T.FLOOR;
+        }
+
+        // return random tile based on location (x+i, y+j)
+        // 66% of tiles are floor
+        if (posKey % Math.abs(7 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          return T.PILLAR;
+        }
+
+        // rest are random (for now just blocks)
+        return T.BLOCK;
+      });
+    });
+    return cells.filter((x) => x).flat(1);
+  },
+  // sprites
+  sprites: (bounds, zone) => {
+    // clear out sprites
+    let sprites = zone.defaultSprites ?? [];
+    // generate based on bounds
+    let x = bounds[0];
+    let y = bounds[1];
+    let width = bounds[2] - x;
+    let height = bounds[3] - y;
+    let portals = [
+      {
+        id: "door-l",
+        type: "furniture/portal",
+        facing: Direction.Down,
+        onStep: () => {
+          store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
+          store.pixos[STORE_NAME].selected += 3;
+        },
+        zones: ["ice"],
+      },
+      {
+        id: "door-r",
+        type: "furniture/portal",
+        facing: Direction.Down,
+        onStep: () => {
+          store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
+          store.pixos[STORE_NAME].selected += 7;
+        },
+        zones: ["jungle"],
+      },
+    ];
+    new Array(height).fill(null).map((_, i) => {
+      return new Array(width).fill(null).map((__, j) => {
+        let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
+        // Edges
+        if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
+          // edge sprites
+          for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+            sprites.push({
+              id: "plt-" + posKey + m,
+              type: "objects/plants/random",
+              pos: new Vector(...[j, i, 2]),
+              facing: Direction.Down,
+            });
+          }
+        }
+
+        // return random tile based on location (x+i, y+j)
+        // 66% of tiles are floor
+        if (posKey % Math.abs(3 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
+          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+            // add Portals randomly around map on floor tiles
+            if (portals.length > 0 && posKey % Math.abs(22) && zone.getHeight(j, i) === 0) {
+              let portal = portals.pop();
+              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
+              posKey % Math.abs(sprites.push(portal));
+            } else if (portals.length > 0 && posKey % Math.abs(33) && zone.getHeight(j, i) === 0) {
+              let portal = portals.shift();
+              portal.pos = new Vector(...[j, i, zone.getHeight(j, i)]);
+              posKey % Math.abs(sprites.push(portal));
+            }
+          }
+        }
+
+        // return random tile based on location (x+i, y+j) -- TODO - Add check for tile type through method
+        // 66% of tiles are floor
+        if (posKey % Math.abs(7 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
+          // add some random flower sprites on some of those tiles to decorate (upto 6 per tile)
+          if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+            for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+              sprites.push({
+                id: "plt-" + posKey + m,
+                type: "objects/plants/random",
+                pos: new Vector(...[j, i, zone.getHeight(j, i)]),
+                facing: Direction.Down,
+              });
+            }
+          }
+        }
+
+        // add some flowers to the remaining blocks
+        if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
+          for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
+            sprites.push({
+              id: "plt-" + posKey + m,
+              type: "objects/plants/random",
+              pos: new Vector(...[j, i, zone.getHeight(j, i)]),
+              facing: Direction.Down,
+            });
+          }
+        }
+      });
+    });
+    return sprites;
+  },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
-  sprites: [
+  defaultSprites: [
     // Objects
     { id: "chest", type: "objects/chests/wood", pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
     { id: "chestmetal", type: "objects/chests/metal", pos: new Vector(...[9, 13, 0]), facing: Direction.Right },

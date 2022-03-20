@@ -1,10 +1,11 @@
 {
     "files.exclude": {
-        "node_modules": true,
-        "example/node_modules": true,
-        ".vscode": true,
-        ".contributions": true,
-        "dist": true
+        "node_modules": false,
+        "example/node_modules": false,
+        ".vscode": false,
+        ".contributions": false,
+        "dist": false,
+        "pixos/jsx/components": false
     },
-    "workspace.isHidden": true
+    "workspace.isHidden": false
 }

@@ -51,6 +51,7 @@ export default class Zone {
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
+        this.sprites = typeof data.sprites == "function" ? data.sprites(this.bounds, this) : data.sprites;
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset, this.sceneName);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -88,6 +89,9 @@ export default class Zone {
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
+      if (typeof this.sprites == "function") {
+        this.sprites = this.sprites(this.bounds, this);
+      }
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
