@@ -41,7 +41,7 @@ export default {
         facing: Direction.Down,
         onStep: () => {
           store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
-          store.pixos[STORE_NAME].selected -= 3;
+          store.pixos[STORE_NAME].selected += 3;
         },
         zones: ["room"],
       },
