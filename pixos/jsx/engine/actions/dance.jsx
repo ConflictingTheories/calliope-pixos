@@ -42,7 +42,9 @@ export default {
     if (time > endTime) {
       // set facing based on audio
       let facing = this.sprite.facing == Direction.Right ? Direction.Left : Direction.Right;
-      let bar_pos,bar_width,bar_height = null;
+      let bar_pos,
+        bar_width,
+        bar_height = null;
 
       for (var i = 0; i < 16; i++) {
         bar_pos = i * 4;

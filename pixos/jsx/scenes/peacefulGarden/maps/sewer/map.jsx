@@ -69,7 +69,7 @@ export default {
         // return random tile based on location (x+i, y+j)
         // 66% of tiles are floor
         if (posKey % Math.abs(7 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) !== 0) {
-          return T.PILLAR;
+          return T.EDGE;
         }
 
         // rest are random (for now just blocks)

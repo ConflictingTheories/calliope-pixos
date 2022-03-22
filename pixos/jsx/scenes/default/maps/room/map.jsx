@@ -32,7 +32,7 @@ export default {
         let posKey = (x + i) * (y + j) + Math.floor(i * Math.random()) - Math.floor(j * Math.random());
         // Edges
         if (i == y || i == bounds[3] - 1 || j == x || j == bounds[2] - 1) {
-          return T.PILLAR;
+          return T.EDGE;
         }
         // return random tile based on location (x+i, y+j)
         // 66% of tiles are floor
