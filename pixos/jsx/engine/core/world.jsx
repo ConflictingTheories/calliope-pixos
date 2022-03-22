@@ -116,7 +116,7 @@ export default class World {
   // open start menu
   startMenu(menuConfig, defaultMenus = ["start"]) {
     this.addEvent(
-      new EventLoader(this.engine, "menu", [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false }], this)
+      new EventLoader(this.engine, "menu", [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
   }
 

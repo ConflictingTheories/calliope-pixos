@@ -13,7 +13,7 @@
 
 export default {
   // Initialize Dialogue Object
-  init: function (menu, activeMenus, scrolling = true, options = {}) {
+  init: function (menu, activeMenus, scrolling = true, options = { autoclose: false, closeOnEnter: false }) {
     this.engine = this.world.engine;
     this.text = "";
     this.prompt = "";
@@ -140,7 +140,13 @@ export default {
           }
           break;
         case "Enter":
-          if (this.quittable) {
+          Object.keys(this.menuDict)
+            .filter((key) => this.activeMenus.includes(key))
+            .map((id) => {
+              let section = this.menuDict[id];
+              if (section.onEnter) section.trigger(this);
+            });
+          if (this.quittable || this.options.closeOnEnter) {
             this.completed = true;
           }
           break;
