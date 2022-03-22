@@ -21,6 +21,7 @@ import { textScrollBox } from "@Engine/core/hud.jsx";
 import { GamePad } from "@Engine/utils/gamepad/index.jsx";
 import Speech from "@Engine/core/speech.jsx";
 import { OBJ } from "@Engine/utils/obj";
+import { AudioLoader } from "../utils/loaders/AudioLoader.jsx";
 
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
@@ -46,6 +47,7 @@ export default class GLEngine {
     this.render = this.render.bind(this);
     this.objLoader = OBJ;
     this.voice = new SpeechSynthesisUtterance();
+    this.audioLoader = new AudioLoader(this);
     // database
     this.db = new Dexie("hyperspace");
     this.db.version(1).stores({

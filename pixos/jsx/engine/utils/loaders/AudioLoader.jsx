@@ -13,6 +13,34 @@
 
 // Loads Audio
 export class AudioLoader {
+  constructor(engine) {
+    this.engine = engine;
+    this.definitions = [];
+    this.instances = {};
+  }
+  // Load Audio Track
+  load(src, loop = false) {
+    if (this.instances[src]) {
+      return this.instances[src];
+    }
+    let instance = new AudioTrack(src, loop);
+    this.instances[src] = instance;
+    // Stop other loops
+    let loader = this;
+    if (loop) {
+      Object.keys(loader.instances)
+        .filter((instance) => src !== instance)
+        .forEach(function (instance) {
+          loader.instances[instance].pauseAudio();
+        });
+    }
+    // once loaded
+    instance.loaded = true;
+    return instance;
+  }
+}
+
+export class AudioTrack {
   constructor(src, loop = false) {
     this.src = src;
     this.playing = false;

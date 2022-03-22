@@ -48,7 +48,7 @@ export default class PeacefulGarden extends Scene {
           // on Click
           console.log(menu);
           // start initial audio
-          menu.world.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
+          menu.world.zoneList.filter((x) => x.audio != null).map((x) => {console.log(x.audio); x.audio.playAudio();});
           // Unpause Gameplay
           menu.world.isPaused = false;
           // Exit Menu

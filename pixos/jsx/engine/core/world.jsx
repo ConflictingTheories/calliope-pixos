@@ -58,7 +58,7 @@ export default class World {
     else await z.load();
     // audio
     this.zoneList.map((x) => x.audio.pauseAudio());
-    if (z.audio.audio) z.audio.playAudio();
+    if (z.audio) z.audio.playAudio();
     // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
@@ -103,8 +103,7 @@ export default class World {
       this.lastKey = time;
       // start
       if (this.engine.gamepad.keyPressed("start")) {
-        if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
-        else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
+        touchmap["start"] = 0;
       }
       // select
       if (this.engine.gamepad.keyPressed("select")) {

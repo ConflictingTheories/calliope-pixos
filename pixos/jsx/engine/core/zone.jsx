@@ -14,7 +14,7 @@ import { Direction } from "@Engine/utils/enums.jsx";
 import Resources from "@Engine/utils/resources.jsx";
 import ActionQueue from "@Engine/core/queue.jsx";
 import { Vector } from "@Engine/utils/math/vector.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
+import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -82,7 +82,7 @@ export default class Zone {
       }
       // audio loader
       if (this.audioSrc) {
-        this.audio = new AudioLoader(this.audioSrc, true); // loop background music
+        this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
       }
       // Load tileset and create level geometry & trigger updates
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
@@ -330,6 +330,7 @@ export default class Zone {
       this.lastKey = time;
       switch (this.engine.keyboard.lastPressedKey("o")) {
         case "o":
+          console.log(this.audio);
           if (this.audio) this.audio.playAudio();
           break;
       } // play audio
