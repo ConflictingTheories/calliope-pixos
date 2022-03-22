@@ -43,7 +43,7 @@ export default function vs() {
 
     highp vec3 transformedNormal = uNormalMatrix * aVertexNormal;
 
-    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.1);
     vLighting = ambientLight + (directionalLightColor * directional);
   }
 `;

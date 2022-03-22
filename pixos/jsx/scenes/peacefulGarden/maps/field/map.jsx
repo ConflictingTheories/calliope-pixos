@@ -23,7 +23,7 @@ export default {
   bounds: [0, 0, 30, 50],
   // Determines the tileset to load
   tileset: "field",
-  audioSrc: "/pixos/audio/dawns-peak.mp3",
+  audioSrc: "/pixos/audio/calm-escape.mp3",
   portals: [
     {
       id: "door-l",
