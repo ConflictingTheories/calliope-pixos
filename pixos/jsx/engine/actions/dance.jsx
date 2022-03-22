@@ -22,7 +22,7 @@ export default {
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = new AudioLoader("/pixos/audio/seed.mp3");
+    this.audio = new AudioLoader("/pixos/audio/brass-loop.mp3");
     if (this.zone.audio) this.zone.audio.pauseAudio();
     this.audio.playAudio();
     this.audioContext = new AudioContext();

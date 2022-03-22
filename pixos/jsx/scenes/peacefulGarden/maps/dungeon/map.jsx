@@ -20,7 +20,7 @@ import cells from "./cells.jsx";
 export default {
   bounds: [0, 0, 17, 19],
   tileset: "void",
-  audioSrc: "/pixos/audio/blue-fields.mp3",
+  audioSrc: "/pixos/audio/dungeon-beat.mp3",
   cells: cells,
   // Sprites and Objects to be Loaded in the Scene & their Starting Points
   sprites: [

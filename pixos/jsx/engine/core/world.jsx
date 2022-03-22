@@ -56,6 +56,10 @@ export default class World {
     let z = new Zone(zoneId, this);
     if (remotely) await z.loadRemote();
     else await z.load();
+    // audio
+    this.zoneList.map((x) => x.audio.pauseAudio());
+    if (z.audio.audio) z.audio.playAudio();
+    // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
     // Sort for correct render order
@@ -69,6 +73,7 @@ export default class World {
       if (zone.id !== zoneId) {
         return true;
       } else {
+        zone.audio.pauseAudio();
         zone.removeAllSprites();
       }
     });
@@ -77,6 +82,10 @@ export default class World {
 
   // Remove Zones
   removeAllZones() {
+    this.zoneList.map((z) => {
+      z.audio.pauseAudio();
+      z.removeAllSprites();
+    });
     this.zoneList = [];
     this.zoneDict = {};
   }

@@ -125,7 +125,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
             args: [
               [
                 "Welcome traveler... I see you are exploring. Good. Please continue to look",
-                "You have travelled into the the number " +
+                "You have travelled into the number " +
                   (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) +
                   " room",
               ],

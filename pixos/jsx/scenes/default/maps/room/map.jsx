@@ -19,6 +19,7 @@ export default {
   bounds: [0, 0, 17, 19],
   // Determines the tileset to load
   tileset: "sewer",
+  audioSrc: "/pixos/audio/calm-escape.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: (bounds, zone) => {
     // generate based on bounds
