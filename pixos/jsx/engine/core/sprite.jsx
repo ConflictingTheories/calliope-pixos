@@ -122,16 +122,16 @@ export default class Sprite {
       (this.portrait && !this.portrait.loaded)
     )
       return;
-      
-      this.init(); // Hook for sprite implementations
-      if (this.enableSpeech && this.speech) {
-        if (this.speech.clearHud) {
-          this.speech.clearHud();
-          this.speech.writeText(this.id);
-          this.speech.loadImage();
-        }
+
+    this.init(); // Hook for sprite implementations
+    if (this.enableSpeech && this.speech) {
+      if (this.speech.clearHud) {
+        this.speech.clearHud();
+        this.speech.writeText(this.id);
+        this.speech.loadImage();
       }
-      this.loaded = true;
+    }
+    this.loaded = true;
     this.onLoadActions.run();
   }
 
@@ -262,9 +262,14 @@ export default class Sprite {
     let toRemove = [];
     this.actionList.forEach((action) => {
       if (!action.loaded || action.startTime > time) return;
-      if (action.tick(time)) {
-        toRemove.push(action); // remove from backlog
-        action.onComplete(); // call completion handler
+      try {
+        if (action.tick(time)) {
+          toRemove.push(action); // remove from backlog
+          action.onComplete(); // call completion handler
+        }
+      } catch (e) {
+        console.error(e);
+        toRemove.push(action);
       }
     });
     // clear completed activities
