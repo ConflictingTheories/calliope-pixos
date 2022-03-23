@@ -12,22 +12,33 @@
 \*                                                 */
 
 import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
+import AirElemental from "@Engine/sprites/monsters/air_elemental.jsx";
 import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-
-export default class Plant extends Sprite {
+export default class MyAirElemental extends AirElemental {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    // Should the camera follow the avatar?
-    this.bindCamera = false;
-    // enable speech
-    this.enableSpeech = true;
-    // Interaction Management
-    this.state = "closed";
-    // Inventory
-    this.blocking = false;
-    this.fixed = true;
+  }
+  // hook init
+  async interact(sprite, finish) {
+    try {
+      await this.zone.moveSprite(this.id, [10, 11, this.zone.getHeight(10, 11)], false);
+      if (finish) finish(true);
+    } catch (e) {
+      console.log("error", e);
+    }
+  }
+  // hook init
+  async init() {
+    // this.addAction(
+    //   new ActionLoader(
+    //     this.engine,
+    //     "patrol",
+    //     [this.pos.toArray(), [7, 7, this.zone.getHeight(7, 7)], 200, this.zone],
+    //     this,
+    //     (x) => {
+    //       console.log("sssss", sprite);
+    //     }
+    //   ))
   }
 }

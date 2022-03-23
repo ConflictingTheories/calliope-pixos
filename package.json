@@ -51,7 +51,7 @@
     "react-recollect": "^5.2.3"
   },
   "dependencies": {
-    "babel-loader": "^8.2.3",
+    "babel-loader": "^8.2.4",
     "css-loader": "^6.7.1",
     "dexie": "^3.2.0",
     "file-saver": "^2.0.5",

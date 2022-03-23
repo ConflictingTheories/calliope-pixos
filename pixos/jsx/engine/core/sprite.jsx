@@ -122,16 +122,16 @@ export default class Sprite {
       (this.portrait && !this.portrait.loaded)
     )
       return;
-
-    this.init(); // Hook for sprite implementations
-    if (this.enableSpeech && this.speech) {
-      if (this.speech.clearHud) {
-        this.speech.clearHud();
-        this.speech.writeText(this.id);
-        this.speech.loadImage();
+      
+      this.init(); // Hook for sprite implementations
+      if (this.enableSpeech && this.speech) {
+        if (this.speech.clearHud) {
+          this.speech.clearHud();
+          this.speech.writeText(this.id);
+          this.speech.loadImage();
+        }
       }
-    }
-    this.loaded = true;
+      this.loaded = true;
     this.onLoadActions.run();
   }
 
@@ -274,9 +274,7 @@ export default class Sprite {
   }
 
   // Hook for sprite implementations
-  init() {
-    console.log("- sprite hook", this.id, this.pos);
-  }
+  init() {}
 
   // load from json specification
   async loadRemote(url) {

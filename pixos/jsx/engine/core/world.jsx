@@ -116,7 +116,12 @@ export default class World {
   // open start menu
   startMenu(menuConfig, defaultMenus = ["start"]) {
     this.addEvent(
-      new EventLoader(this.engine, "menu", [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
+      new EventLoader(
+        this.engine,
+        "menu",
+        [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }],
+        this
+      )
     );
   }
 
@@ -225,6 +230,7 @@ export default class World {
       .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
       .filter((x) => x[0]);
     // Flatten Path from Segments
+    console.log("pathing", world, world.getNeighbours(x, y), visited, found, x, y, from, to, steps);
     return steps.flat();
   }
 

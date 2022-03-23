@@ -324,13 +324,14 @@ export default class Zone {
   }
 
   // read input
-  checkInput(time) {
+  async checkInput(time) {
     if (time > this.lastKey + 100) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
       switch (this.engine.keyboard.lastPressedKey("o")) {
         case "o":
           console.log(this.audio);
+          await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
           if (this.audio) this.audio.playAudio();
           break;
       } // play audio
@@ -345,6 +346,7 @@ export default class Zone {
   // Cell Walkable
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
+    console.log('check walk');;
     for (let sprite in this.spriteDict) {
       if (
         // if sprite bypass & override

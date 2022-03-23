@@ -145,7 +145,7 @@ export default {
     return sprites;
   },
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
-  defaultSprites: [],
+  defaultSprites: [{ id: "monster", type: "monsters/air_elemental", pos: new Vector(...[10, 4, 0]), facing: Direction.Down }],
   // Scenes + Scenarios
   scenes: [
     {
