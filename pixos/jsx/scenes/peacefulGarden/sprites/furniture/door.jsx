@@ -16,5 +16,6 @@ export default class MyDoor extends Door {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
+    this.fixed = true;
   }
 }

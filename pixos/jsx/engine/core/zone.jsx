@@ -13,7 +13,8 @@
 import { Direction } from "@Engine/utils/enums.jsx";
 import Resources from "@Engine/utils/resources.jsx";
 import ActionQueue from "@Engine/core/queue.jsx";
-import { SpriteLoader, TilesetLoader, AudioLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from "@Engine/utils/math/vector.jsx";
+import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -51,6 +52,7 @@ export default class Zone {
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
+        this.sprites = typeof data.sprites == "function" ? data.sprites(this.bounds, this) : data.sprites;
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset, this.sceneName);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -80,7 +82,7 @@ export default class Zone {
       }
       // audio loader
       if (this.audioSrc) {
-        this.audio = new AudioLoader(this.audioSrc, true); // loop background music
+        this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
       }
       // Load tileset and create level geometry & trigger updates
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
@@ -88,6 +90,9 @@ export default class Zone {
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
+      if (typeof this.sprites == "function") {
+        this.sprites = this.sprites(this.bounds, this);
+      }
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
@@ -206,6 +211,20 @@ export default class Zone {
     return this.spriteDict[id];
   }
 
+  // add portal to provide list of sprites
+  addPortal(sprites, x, y) {
+    if (this.portals.length > 0 && this.getHeight(x, y) === 0) {
+      let portal = this.portals.pop();
+      portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
+      sprites.push(portal);
+    } else if (this.portals.length > 0 && (x * y) % Math.abs(3) && this.getHeight(x, y) === 0) {
+      let portal = this.portals.shift();
+      portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
+      sprites.push(portal);
+    }
+    return sprites;
+  }
+
   // Calculate the height of a point in the zone
   getHeight(x, y) {
     if (!this.isInZone(x, y)) {
@@ -305,12 +324,14 @@ export default class Zone {
   }
 
   // read input
-  checkInput(time) {
+  async checkInput(time) {
     if (time > this.lastKey + 100) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
       switch (this.engine.keyboard.lastPressedKey("o")) {
         case "o":
+          console.log(this.audio);
+          await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
           if (this.audio) this.audio.playAudio();
           break;
       } // play audio
@@ -325,6 +346,7 @@ export default class Zone {
   // Cell Walkable
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
+    console.log('check walk');;
     for (let sprite in this.spriteDict) {
       if (
         // if sprite bypass & override

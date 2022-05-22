@@ -43,13 +43,14 @@ export class TilesetLoader {
 
   // Load Tileset Directly (precompiled)
   async load(type, sceneName) {
-    console.log('loading tileset - ', type, sceneName)
+    console.log('loading tileset - ', this, type, sceneName)
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
     let json = require("@Tilesets/" + type + "/tileset.jsx")["default"];
+    console.log('loading .... - ', json, type, sceneName)
     instance.onJsonLoaded(json);
     return instance;
   }

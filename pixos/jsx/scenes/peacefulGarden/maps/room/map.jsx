@@ -21,6 +21,7 @@ export default {
   bounds: [0, 0, 17, 19],
   // Determines the tileset to load
   tileset: "sewer",
+  audioSrc: "/pixos/audio/deep-unknown-beat.mp3",
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: cells,
   // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
@@ -36,7 +37,7 @@ export default {
       type: "furniture/door",
       pos: new Vector(...[9, 1, 0]),
       facing: Direction.Down,
-      zones: ["dungeon-top", "dungeon-bottom"],
+      zones: ["dungeon"],
     },
     // Tree
     { id: "tree", type: "furniture/tree", fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },

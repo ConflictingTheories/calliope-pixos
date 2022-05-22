@@ -125,7 +125,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
             args: [
               [
                 "Welcome traveler... I see you are exploring. Good. Please continue to look",
-                "You have travelled into the the number " +
+                "You have travelled into the number " +
                   (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) +
                   " room",
               ],
@@ -142,18 +142,21 @@ export async function generateZone(self, gender, storeName, cyoa) {
 }
 
 // load avatar
-export async function loadAvatar(self, storeName) {
+export async function loadAvatar(zone, storeName) {
   // randomly pick gender & store
   let gender =
     typeof store.pixos[storeName]?.gender !== "undefined"
       ? store.pixos[storeName].gender
       : ["male", "female"][Math.floor((2 * Math.random()) % 2)];
   // Load avatar (Male or Female)
-  await self.loadSprite.bind(self)({
+  await zone.loadSprite.bind(self)({
     id: "avatar",
     type: "characters/" + gender,
     gender: gender,
-    pos: typeof store.pixos[storeName]?.position !== "undefined" ? store.pixos[storeName].position : new Vector(...[8, 8, 0]),
+    pos:
+      typeof store.pixos[storeName]?.position !== "undefined"
+        ? store.pixos[storeName].position
+        : new Vector(...[8, 8, zone.getHeight(8, 8)]),
     facing: Direction.Down,
   });
   return gender;

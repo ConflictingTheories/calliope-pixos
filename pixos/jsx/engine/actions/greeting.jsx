@@ -22,7 +22,7 @@ export default {
   // Update & Scroll
   tick: function (time) {
     if (!this.loaded) return;
-    this.engine.setGreeting(this.text)
+    this.engine.setGreeting(this.text);
     return true;
-  }
+  },
 };

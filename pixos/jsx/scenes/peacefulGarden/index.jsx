@@ -23,7 +23,7 @@ export default class PeacefulGarden extends Scene {
     // Init Game Engine Components
     let world = (Scene._instance.world = new World(engine, "peacefulGarden"));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    await world.loadZone("garden");
+    await world.loadZone("field");
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
     // show start menu
     world.startMenu({
@@ -40,6 +40,7 @@ export default class PeacefulGarden extends Scene {
           bottom: "#777",
           background: "#999",
         },
+        onEnter: true,
         onOpen: (menu) => {
           // tood - needs a way to trigger on open
           this.isPaused = true;
@@ -48,7 +49,11 @@ export default class PeacefulGarden extends Scene {
           // on Click
           console.log(menu);
           // start initial audio
-          menu.world.zoneList.filter((x) => x.audio != null).map((x) => x.audio.playAudio());
+          menu.world.zoneList
+            .filter((x) => x.audio != null)
+            .map((x) => {
+              x.audio.playAudio();
+            });
           // Unpause Gameplay
           menu.world.isPaused = false;
           // Exit Menu

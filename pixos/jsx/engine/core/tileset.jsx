@@ -48,6 +48,7 @@ export default class Tileset {
     // load texture
     this.texture = this.engine.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTextureLoaded);
+    console.log('texture loaded', this.texture);
     // set background colour
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }

@@ -13,7 +13,7 @@
 
 import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
-import { AudioLoader, ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default {
   init: function (from, to, moveLength, zone) {
@@ -23,7 +23,7 @@ export default {
     this.lastKey = new Date().getTime();
     this.completed = false;
     this.direction = 1;
-    this.audio = new AudioLoader("/pixos/audio/seed.mp3");
+    this.audio = this.zone.engine.audioLoader.load("/pixos/audio/sewer-beat.mp3");
     // Determine Path to Walk
     [this.hasMoves, this.moveList] = this.sprite.zone.world.pathFind(from, to);
     if (!this.hasMoves) {

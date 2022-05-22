@@ -262,9 +262,14 @@ export default class Sprite {
     let toRemove = [];
     this.actionList.forEach((action) => {
       if (!action.loaded || action.startTime > time) return;
-      if (action.tick(time)) {
-        toRemove.push(action); // remove from backlog
-        action.onComplete(); // call completion handler
+      try {
+        if (action.tick(time)) {
+          toRemove.push(action); // remove from backlog
+          action.onComplete(); // call completion handler
+        }
+      } catch (e) {
+        console.error(e);
+        toRemove.push(action);
       }
     });
     // clear completed activities
@@ -274,9 +279,7 @@ export default class Sprite {
   }
 
   // Hook for sprite implementations
-  init() {
-    console.log("- sprite hook", this.id, this.pos);
-  }
+  init() {}
 
   // load from json specification
   async loadRemote(url) {

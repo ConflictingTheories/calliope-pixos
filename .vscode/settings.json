@@ -4,7 +4,8 @@
         "example/node_modules": true,
         ".vscode": true,
         ".contributions": true,
-        "dist": true
+        "dist": true,
+        "pixos/jsx/components": true
     },
     "workspace.isHidden": true
 }

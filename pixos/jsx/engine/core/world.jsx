@@ -56,6 +56,10 @@ export default class World {
     let z = new Zone(zoneId, this);
     if (remotely) await z.loadRemote();
     else await z.load();
+    // audio
+    this.zoneList.map((x) => x.audio.pauseAudio());
+    if (z.audio) z.audio.playAudio();
+    // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
     // Sort for correct render order
@@ -69,6 +73,7 @@ export default class World {
       if (zone.id !== zoneId) {
         return true;
       } else {
+        zone.audio.pauseAudio();
         zone.removeAllSprites();
       }
     });
@@ -77,6 +82,10 @@ export default class World {
 
   // Remove Zones
   removeAllZones() {
+    this.zoneList.map((z) => {
+      z.audio.pauseAudio();
+      z.removeAllSprites();
+    });
     this.zoneList = [];
     this.zoneDict = {};
   }
@@ -92,14 +101,12 @@ export default class World {
     if (time > this.lastKey + 200) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
-      // Gamepad controls - TODO
+      // start
       if (this.engine.gamepad.keyPressed("start")) {
-        // select
-        if (this.audio && !this.audio.isPlaying()) this.audio.playAudio();
-        else if (this.audio && this.audio.isPlaying()) this.audio.pauseAudio();
+        touchmap["start"] = 0;
       }
+      // select
       if (this.engine.gamepad.keyPressed("select")) {
-        // select
         touchmap["select"] = 0;
         this.engine.toggleFullscreen();
       }
@@ -109,7 +116,12 @@ export default class World {
   // open start menu
   startMenu(menuConfig, defaultMenus = ["start"]) {
     this.addEvent(
-      new EventLoader(this.engine, "menu", [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false }], this)
+      new EventLoader(
+        this.engine,
+        "menu",
+        [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }],
+        this
+      )
     );
   }
 
@@ -218,6 +230,7 @@ export default class World {
       .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
       .filter((x) => x[0]);
     // Flatten Path from Segments
+    console.log("pathing", world, world.getNeighbours(x, y), visited, found, x, y, from, to, steps);
     return steps.flat();
   }
 

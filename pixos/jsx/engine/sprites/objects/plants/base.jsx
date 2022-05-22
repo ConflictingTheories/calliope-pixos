@@ -30,36 +30,4 @@ export default class Plant extends Sprite {
     this.blocking = false;
     this.fixed = true;
   }
-  // // Interaction
-  // interact(sprite, finish) {
-  //   let ret = null;
-  //   this.startTime = Date.now();
-  //   // React based on internal state
-  //   switch (this.state) {
-  //     case "closed":
-  //       this.state = "open";
-  //       ret = new ActionLoader(
-  //         this.engine,
-  //         "dialogue",
-  //         ["What beautiful flowers.", false, { autoclose: true, onClose: () => finish(true) }],
-  //         this
-  //       );
-  //       break;
-  //     case "open":
-  //       this.state = "closed";
-  //       ret = new ActionLoader(
-  //         this.engine,
-  //         "dialogue",
-  //         ["so peaceful.", false, { autoclose: true, onClose: () => finish(true) }],
-  //         this
-  //       );
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   if (ret) this.addAction(ret);
-  //   // If completion handler passed through - call it when done
-  //   if (finish) finish(false);
-  //   return ret;
-  // }
 }

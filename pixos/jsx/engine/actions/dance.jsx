@@ -11,9 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
 import { Direction } from "@Engine/utils/enums.jsx";
-import { AudioLoader } from "@Engine/utils/loaders/index.jsx";
 
 export default {
   init: function (moveLength, zone) {
@@ -22,8 +20,8 @@ export default {
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = new AudioLoader("/pixos/audio/seed.mp3");
-    if (this.zone.audio) this.zone.audio.pauseAudio();
+    this.audio = this.zone.engine.audioLoader.load("/pixos/audio/brass-loop.mp3");
+    // if (this.zone.audio) this.zone.audio.pauseAudio();
     this.audio.playAudio();
     this.audioContext = new AudioContext();
     this.analyser = this.audioContext.createAnalyser();
@@ -42,7 +40,9 @@ export default {
     if (time > endTime) {
       // set facing based on audio
       let facing = this.sprite.facing == Direction.Right ? Direction.Left : Direction.Right;
-      let bar_pos,bar_width,bar_height = null;
+      let bar_pos,
+        bar_width,
+        bar_height = null;
 
       for (var i = 0; i < 16; i++) {
         bar_pos = i * 4;

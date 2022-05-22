@@ -30,6 +30,7 @@ export default {
   S_WALL: ["WALL_B", "WALL", 2, "FLAT_ALL", "EMPTY_T", 2],
   L_WALL: ["WALL_L", "WALL", 2, "FLAT_ALL", "EMPTY_R", 2],
   R_WALL: ["WALL_R", "WALL", 2, "FLAT_ALL", "EMPTY_L", 2],
+  EDGE: ["WALL_R", "WALL", 2, "WALL_B", "WALL", 2, "WALL_L", "WALL", 2, "WALL_T", "WALL", 2, "FLAT_ALL", "FLOOR", 2],
   PILLAR: ["WALL_R", "WALL", 2, "WALL_B", "WALL", 2, "WALL_L", "WALL", 2, "WALL_T", "WALL", 2, "FLAT_ALL", "EMPTY", 2],
   BLOCK: ["WALL_R", "WALL", 1, "WALL_B", "WALL", 1, "WALL_L", "WALL", 1, "WALL_T", "WALL", 1, "FLAT_ALL", "EMPTY", 1],
   // Corner Blend Empty

@@ -13,7 +13,7 @@
 
 export default {
   // Initialize Dialogue Object
-  init: function (menu, activeMenus, scrolling = true, options = {}) {
+  init: function (menu, activeMenus, scrolling = true, options = { autoclose: false, closeOnEnter: false }) {
     this.engine = this.world.engine;
     this.text = "";
     this.prompt = "";
@@ -75,13 +75,13 @@ export default {
     }
     return this.completed;
   },
-
+  // Unhook from the Touch & mouse handler
   unhookListener: function () {
     // remove listener
     this.engine.gamepad.removeListener(this.listenerId);
     this.listenerId = null;
   },
-
+  // Hook into the Touch & Mouse handler
   hookListener: function () {
     // open hook
     if (this.onOpen) this.onOpen(this);
@@ -129,7 +129,7 @@ export default {
       mouseup,
     };
   },
-  // Handle Keyboard & Mouse & Touch
+  // Handle Keyboard & Input States
   checkInput: function (time) {
     // Keyboard
     if (time > this.lastKey + 100) {
@@ -140,7 +140,13 @@ export default {
           }
           break;
         case "Enter":
-          if (this.quittable) {
+          Object.keys(this.menuDict)
+            .filter((key) => this.activeMenus.includes(key))
+            .map((id) => {
+              let section = this.menuDict[id];
+              if (section.onEnter) section.trigger(this);
+            });
+          if (this.quittable || this.options.closeOnEnter) {
             this.completed = true;
           }
           break;
