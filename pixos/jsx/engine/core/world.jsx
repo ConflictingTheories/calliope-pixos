@@ -119,7 +119,12 @@ export default class World {
       new EventLoader(
         this.engine,
         "menu",
-        [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }],
+        [
+          menuConfig ?? this.menuConfig,
+          defaultMenus,
+          false,
+          { autoclose: false, closeOnEnter: true },
+        ],
         this
       )
     );
@@ -217,20 +222,41 @@ export default class World {
       return world
         .getNeighbours(...neighbour)
         .sort((a, b) =>
-          Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1]))
+          Math.min(
+            Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
+            Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
+          )
         )
-        .map((neigh) => buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]]))
+        .map((neigh) =>
+          buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]])
+        )
         .filter((x) => x)
         .flat();
     }
     // Fetch Steps
     steps = world
       .getNeighbours(x, y)
-      .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
+      .sort((a, b) =>
+        Math.min(
+          Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
+          Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
+        )
+      )
       .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
       .filter((x) => x[0]);
     // Flatten Path from Segments
-    console.log("pathing", world, world.getNeighbours(x, y), visited, found, x, y, from, to, steps);
+    console.log(
+      "pathing",
+      world,
+      world.getNeighbours(x, y),
+      visited,
+      found,
+      x,
+      y,
+      from,
+      to,
+      steps
+    );
     return steps.flat();
   }
 
@@ -254,7 +280,11 @@ export default class World {
       visited.indexOf(jsonNeighbour) >= 0 ||
       !zone ||
       !zone.isWalkable(...neighbour) ||
-      !zone.isWalkable(neighbour[0], neighbour[1], Direction.reverse(neighbour[2]))
+      !zone.isWalkable(
+        neighbour[0],
+        neighbour[1],
+        Direction.reverse(neighbour[2])
+      )
     ) {
       return false;
     }

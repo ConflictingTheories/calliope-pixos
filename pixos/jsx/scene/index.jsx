@@ -39,6 +39,10 @@ export default class Scene {
     // Init Game Engine Components
     let world = (Scene._instance.world = new World(engine));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
+    //
+    // -- Dynamic Loader is sort of built. But it needs to be accessible, and the loading process needs to be made
+    //    less complicated. Right now it is a bit much.
+    //
     await world.loadZone("room");
     // await world.loadZone("dungeon-top");
     // await world.loadZone("dungeon-bottom");

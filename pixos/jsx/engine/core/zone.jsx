@@ -14,7 +14,15 @@ import { Direction } from "@Engine/utils/enums.jsx";
 import Resources from "@Engine/utils/resources.jsx";
 import ActionQueue from "@Engine/core/queue.jsx";
 import { Vector } from "@Engine/utils/math/vector.jsx";
-import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from "@Engine/utils/loaders/index.jsx";
+import {
+  SpriteLoader,
+  TilesetLoader,
+  ActionLoader,
+  ObjectLoader,
+} from "@Engine/utils/loaders/index.jsx";
+// for dynamic loading -- todo
+// import { loadMap } from "../../scene/maps/dynamic/map";
+// import { dynamicCells } from "../../scene/maps/dynamic/cells";
 
 export default class Zone {
   constructor(zoneId, world) {
@@ -50,19 +58,36 @@ export default class Zone {
         // Extract and Read in Information
         let data = await fileResponse.json();
         this.bounds = data.bounds;
-        this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
-        this.cells = typeof data.cells == "function" ? data.cells(this.bounds, this) : data.cells;
-        this.sprites = typeof data.sprites == "function" ? data.sprites(this.bounds, this) : data.sprites;
+        this.size = [
+          data.bounds[2] - data.bounds[0],
+          data.bounds[3] - data.bounds[1],
+        ];
+        this.cells =
+          typeof data.cells == "function"
+            ? data.cells(this.bounds, this)
+            : data.cells;
+        this.sprites =
+          typeof data.sprites == "function"
+            ? data.sprites(this.bounds, this)
+            : data.sprites;
         // Load tileset and create level geometry & trigger updates
         this.tileset = await this.tsLoader.load(data.tileset, this.sceneName);
-        this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+        this.tileset.runWhenDefinitionLoaded(
+          this.onTilesetDefinitionLoaded.bind(this)
+        );
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
-        if (data.sprites) await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
-        if (data.objects) await Promise.all(data.objects.map(this.loadObject.bind(this)));
+        if (data.sprites)
+          await Promise.all(data.sprites.map(this.loadSprite.bind(this)));
+        if (data.objects)
+          await Promise.all(data.objects.map(this.loadObject.bind(this)));
         // Notify the zone sprites when the new sprite has loaded
-        this.spriteList.forEach((sprite) => sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
-        this.objectList.forEach((object) => object.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this)));
+        this.spriteList.forEach((sprite) =>
+          sprite.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this))
+        );
+        this.objectList.forEach((object) =>
+          object.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this))
+        );
       } catch (e) {
         console.error("Error parsing zone " + this.id);
         console.error(e);
@@ -74,7 +99,11 @@ export default class Zone {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require("@Scenes/" + this.sceneName + "/maps/" + this.id + "/map.jsx")["default"];
+      let data = require("@Scenes/" +
+        this.sceneName +
+        "/maps/" +
+        this.id +
+        "/map.jsx")["default"];
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells == "function") {
@@ -85,9 +114,14 @@ export default class Zone {
         this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
       }
       // Load tileset and create level geometry & trigger updates
-      this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
+      this.size = [
+        this.bounds[2] - this.bounds[0],
+        this.bounds[3] - this.bounds[1],
+      ];
       this.tileset = await this.tsLoader.load(this.tileset, this.sceneName);
-      this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+      this.tileset.runWhenDefinitionLoaded(
+        this.onTilesetDefinitionLoaded.bind(this)
+      );
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
       if (typeof this.sprites == "function") {
@@ -97,8 +131,12 @@ export default class Zone {
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
       // Notify the zone sprites when the new sprite has loaded
-      self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
-      self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+      self.spriteList.forEach((sprite) =>
+        sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded)
+      );
+      self.objectList.forEach((object) =>
+        object.runWhenLoaded(self.onTilesetOrSpriteLoaded)
+      );
     } catch (e) {
       console.error("Error parsing zone " + this.id);
       console.error(e);
@@ -127,16 +165,32 @@ export default class Zone {
         let n = Math.floor(cell.length / 3);
         // Calc Walk, Vertex positions and Textures for each cell
         for (let l = 0; l < n; l++) {
-          let tilePos = [this.bounds[0] + i, this.bounds[1] + j, cell[3 * l + 2]];
+          let tilePos = [
+            this.bounds[0] + i,
+            this.bounds[1] + j,
+            cell[3 * l + 2],
+          ];
           this.walkability[k] &= this.tileset.getWalkability(cell[3 * l]);
-          vertices = vertices.concat(this.tileset.getTileVertices(cell[3 * l], tilePos));
-          vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(cell[3 * l], cell[3 * l + 1]));
+          vertices = vertices.concat(
+            this.tileset.getTileVertices(cell[3 * l], tilePos)
+          );
+          vertexTexCoords = vertexTexCoords.concat(
+            this.tileset.getTileTexCoords(cell[3 * l], cell[3 * l + 1])
+          );
         }
         // Custom walkability
         if (cell.length == 3 * n + 1) this.walkability[k] = cell[3 * n];
       }
-      this.vertexPosBuf[j] = this.engine.createBuffer(vertices, this.engine.gl.STATIC_DRAW, 3);
-      this.vertexTexBuf[j] = this.engine.createBuffer(vertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
+      this.vertexPosBuf[j] = this.engine.createBuffer(
+        vertices,
+        this.engine.gl.STATIC_DRAW,
+        3
+      );
+      this.vertexTexBuf[j] = this.engine.createBuffer(
+        vertexTexCoords,
+        this.engine.gl.STATIC_DRAW,
+        2
+      );
     }
   }
 
@@ -165,7 +219,9 @@ export default class Zone {
   async loadObject(_this, data) {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
-      let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
+      let newObject = await this.objectLoader.load(data, (sprite) =>
+        sprite.onLoad(sprite)
+      );
       this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
     }
@@ -175,7 +231,11 @@ export default class Zone {
   async loadSprite(_this, data) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
+      let newSprite = await this.spriteLoader.load(
+        data.type,
+        this.sceneName,
+        (sprite) => sprite.onLoad(data)
+      );
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -217,7 +277,11 @@ export default class Zone {
       let portal = this.portals.pop();
       portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
       sprites.push(portal);
-    } else if (this.portals.length > 0 && (x * y) % Math.abs(3) && this.getHeight(x, y) === 0) {
+    } else if (
+      this.portals.length > 0 &&
+      (x * y) % Math.abs(3) &&
+      this.getHeight(x, y) === 0
+    ) {
       let portal = this.portals.shift();
       portal.pos = new Vector(...[x, y, this.getHeight(x, y)]);
       sprites.push(portal);
@@ -228,7 +292,9 @@ export default class Zone {
   // Calculate the height of a point in the zone
   getHeight(x, y) {
     if (!this.isInZone(x, y)) {
-      console.error("Requesting height for [" + x + ", " + y + "] outside zone bounds");
+      console.error(
+        "Requesting height for [" + x + ", " + y + "] outside zone bounds"
+      );
       return 0;
     }
 
@@ -253,7 +319,8 @@ export default class Zone {
     };
 
     // Check if any of the tiles defines a custom walk polygon
-    let cell = this.cells[(j - this.bounds[1]) * this.size[0] + i - this.bounds[0]];
+    let cell =
+      this.cells[(j - this.bounds[1]) * this.size[0] + i - this.bounds[0]];
     let n = Math.floor(cell.length / 3);
     for (let l = 0; l < n; l++) {
       let poly = this.tileset.getTileWalkPoly(cell[3 * l]);
@@ -263,7 +330,13 @@ export default class Zone {
       for (let p = 0; p < poly.length; p++) {
         let uv = getUV(poly[p], dp);
         let w = uv[0] + uv[1];
-        if (w <= 1) return cell[3 * l + 2] + (1 - w) * poly[p][0][2] + uv[0] * poly[p][1][2] + uv[1] * poly[p][2][2];
+        if (w <= 1)
+          return (
+            cell[3 * l + 2] +
+            (1 - w) * poly[p][0][2] +
+            uv[0] * poly[p][1][2] +
+            uv[1] * poly[p][2][2]
+          );
       }
     }
 
@@ -274,15 +347,25 @@ export default class Zone {
   // Draw Row of Zone
   drawRow(row) {
     // vertice positions
-    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.aVertexPosition);
+    this.engine.bindBuffer(
+      this.vertexPosBuf[row],
+      this.engine.shaderProgram.aVertexPosition
+    );
     // texture positions
-    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.aTextureCoord);
+    this.engine.bindBuffer(
+      this.vertexTexBuf[row],
+      this.engine.shaderProgram.aTextureCoord
+    );
     // texturize
     this.tileset.texture.attach();
     // set shader
     this.engine.shaderProgram.setMatrixUniforms();
     // draw triangles
-    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+    this.engine.gl.drawArrays(
+      this.engine.gl.TRIANGLES,
+      0,
+      this.vertexPosBuf[row].numItems
+    );
   }
 
   // Draw Frame
@@ -298,11 +381,17 @@ export default class Zone {
     let z = 0;
     for (let j = 0; j < this.size[1]; j++) {
       this.drawRow(j);
-      while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
+      while (
+        z < this.objectList.length &&
+        this.objectList[z].pos.y - this.bounds[1] <= j
+      ) {
         this.objectList[z++].draw();
       }
       // draw each sprite in front of floor tiles if positioned in front
-      while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
+      while (
+        k < this.spriteList.length &&
+        this.spriteList[k].pos.y - this.bounds[1] <= j
+      ) {
         this.spriteList[k++].draw(this.engine);
       }
     }
@@ -331,7 +420,7 @@ export default class Zone {
       switch (this.engine.keyboard.lastPressedKey("o")) {
         case "o":
           console.log(this.audio);
-          await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
+          await this.moveSprite("monster", [7, 7, this.getHeight(7, 7)], false);
           if (this.audio) this.audio.playAudio();
           break;
       } // play audio
@@ -340,13 +429,18 @@ export default class Zone {
 
   // Check for zone inclusion
   isInZone(x, y) {
-    return x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3];
+    return (
+      x >= this.bounds[0] &&
+      y >= this.bounds[1] &&
+      x < this.bounds[2] &&
+      y < this.bounds[3]
+    );
   }
 
   // Cell Walkable
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
-    console.log('check walk');;
+    console.log("check walk");
     for (let sprite in this.spriteDict) {
       if (
         // if sprite bypass & override
@@ -373,12 +467,16 @@ export default class Zone {
         !this.objectDict[object].walkable &&
         this.within(
           x,
-          this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2),
+          this.objectDict[object].pos.x -
+            this.objectDict[object].scale.x *
+              (this.objectDict[object].size.x / 2),
           this.objectDict[object].pos.x
         ) &&
         this.within(
           y,
-          this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2),
+          this.objectDict[object].pos.y -
+            this.objectDict[object].scale.y *
+              (this.objectDict[object].size.y / 2),
           this.objectDict[object].pos.y
         ) &&
         !this.objectDict[object].blocking &&
@@ -389,16 +487,21 @@ export default class Zone {
       if (
         // else if object blocking
         !this.objectDict[object].walkable &&
-        ((this.objectDict[object].pos.x === x && this.objectDict[object].pos.y === y) ||
+        ((this.objectDict[object].pos.x === x &&
+          this.objectDict[object].pos.y === y) ||
           (this.within(
             x,
-            this.objectDict[object].pos.x - this.objectDict[object].scale.x * (this.objectDict[object].size.x / 2),
+            this.objectDict[object].pos.x -
+              this.objectDict[object].scale.x *
+                (this.objectDict[object].size.x / 2),
             this.objectDict[object].pos.x,
             true
           ) &&
             this.within(
               y,
-              this.objectDict[object].pos.y - this.objectDict[object].scale.y * (this.objectDict[object].size.y / 2),
+              this.objectDict[object].pos.y -
+                this.objectDict[object].scale.y *
+                  (this.objectDict[object].size.y / 2),
               this.objectDict[object].pos.y,
               true
             ))) &&
@@ -407,7 +510,13 @@ export default class Zone {
         return false;
     }
     // else tile specific
-    return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
+    return (
+      (this.walkability[
+        (y - this.bounds[1]) * this.size[0] + x - this.bounds[0]
+      ] &
+        direction) !=
+      0
+    );
   }
 
   within(x, a, b, include = false) {
@@ -430,7 +539,13 @@ export default class Zone {
     return new Promise((resolve, reject) => {
       let sprite = this.getSpriteById(id);
       sprite.addAction(
-        new ActionLoader(this.engine, "patrol", [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve)
+        new ActionLoader(
+          this.engine,
+          "patrol",
+          [sprite.pos.toArray(), location, running ? 200 : 600, this],
+          sprite,
+          resolve
+        )
       );
     });
   }
@@ -439,7 +554,15 @@ export default class Zone {
   async spriteDialogue(id, dialogue, options = { autoclose: true }) {
     return new Promise((resolve, reject) => {
       let sprite = this.getSpriteById(id);
-      sprite.addAction(new ActionLoader(this.engine, "dialogue", [dialogue, false, options], sprite, resolve));
+      sprite.addAction(
+        new ActionLoader(
+          this.engine,
+          "dialogue",
+          [dialogue, false, options],
+          sprite,
+          resolve
+        )
+      );
     });
   }
 
@@ -461,7 +584,13 @@ export default class Zone {
                     let args = action.args;
                     let options = args.pop();
                     sprite.addAction(
-                      new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self))
+                      new ActionLoader(
+                        self.engine,
+                        action.action,
+                        [...args, { ...options }],
+                        sprite,
+                        () => resolve(self)
+                      )
                     );
                   }
                 }
@@ -470,7 +599,12 @@ export default class Zone {
                   let sprite = action.scope.getSpriteById("avatar");
                   if (sprite && action.trigger) {
                     sprite.addAction(
-                      new ActionLoader(self.engine, "script", [action.trigger, action.scope, () => resolve(self)], sprite)
+                      new ActionLoader(
+                        self.engine,
+                        "script",
+                        [action.trigger, action.scope, () => resolve(self)],
+                        sprite
+                      )
                     );
                   }
                 }
