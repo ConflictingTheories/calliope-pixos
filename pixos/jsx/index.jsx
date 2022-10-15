@@ -11,14 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from 'react';
-import { collect } from 'react-recollect';
+import React, { Component } from "react";
+import { collect } from "react-recollect";
 // WebGL Component
-import WebGLView from '@Components/WebGLView.jsx';
+import WebGLView from "@Components/WebGLView.jsx";
 // Pixos Scene Provider
-import SceneProvider from '@Scenes/peacefulGarden/index.jsx';
+import SceneProvider from "@Scenes/peacefulGarden/index.jsx";
 // Style Plugin
-import '../less/pixos.css';
+import "../less/pixos.css";
 
 class Pixos extends Component {
   constructor(props) {
@@ -43,8 +43,8 @@ class Pixos extends Component {
   render() {
     const { updated, scene } = this.state;
     return (
-      <div style={{ margin: 0, minHeight: '480px', minWidth: '640px' }}>
-        <WebGLView height="480px" width="640px" class="pixos" key={`pixos-${updated}`} SceneProvider={scene} />
+      <div style={{ margin: 0, minHeight: "480px", maxHeight: "1080px" }}>
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={"480px"} height={"640px"} SceneProvider={scene} />
       </div>
     );
   }
