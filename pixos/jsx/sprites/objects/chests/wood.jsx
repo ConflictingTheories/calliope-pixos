@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from '../../../utils/math/vector.jsx';
-import Resources from '../../../utils/resources.jsx';
-import { ActionLoader } from '../../../utils/loaders/index.jsx';
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import Chest from './base.jsx';
 
 export default class WoodChest extends Chest {

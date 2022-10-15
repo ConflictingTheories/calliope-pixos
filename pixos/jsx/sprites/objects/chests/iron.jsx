@@ -10,8 +10,8 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector } from '../../../utils/math/vector.jsx';
-import Resources from '../../../utils/resources.jsx';
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
 import Chest from './base.jsx';
 export default class IronChest extends Chest {
   constructor(engine) {
