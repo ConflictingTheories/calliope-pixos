@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Fireplace from "@Engine/sprites/effects/fireplace.jsx";
+import Fireplace from "@Sprites/effects/fireplace.jsx";
 export default class MyFireplace extends Fireplace {
   constructor(engine) {
     // Initialize Sprite

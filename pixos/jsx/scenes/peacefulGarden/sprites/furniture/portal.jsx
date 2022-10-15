@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Portal from "@Engine/sprites/furniture/portal.jsx";
+import Portal from "@Sprites/furniture/portal.jsx";
 export default class MyPortal extends Portal {
   constructor(engine) {
     // Initialize Sprite

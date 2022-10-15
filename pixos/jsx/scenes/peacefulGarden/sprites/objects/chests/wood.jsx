@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import WoodChest from "@Engine/sprites/objects/chests/wood.jsx";
+import WoodChest from "@Sprites/objects/chests/wood.jsx";
 
 export default class MyWoodChest extends WoodChest {
   constructor(engine) {

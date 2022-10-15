@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import XMasTree from "@Engine/sprites/furniture/xmas-tree.jsx";
+import XMasTree from "@Sprites/furniture/xmas-tree.jsx";
 export default class MyTree extends XMasTree {
   constructor(engine) {
     // Initialize Sprite

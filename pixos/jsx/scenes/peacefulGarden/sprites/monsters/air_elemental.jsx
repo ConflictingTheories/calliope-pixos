@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { Vector } from "@Engine/utils/math/vector.jsx";
-import AirElemental from "@Engine/sprites/monsters/air_elemental.jsx";
+import AirElemental from "@Sprites/monsters/air_elemental.jsx";
 import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
 export default class MyAirElemental extends AirElemental {
   constructor(engine) {

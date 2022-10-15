@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import IronChest from "@Engine/sprites/objects/chests/iron.jsx";
+import IronChest from "@Sprites/objects/chests/iron.jsx";
 
 export default class MyMetalChest extends IronChest {
   constructor(engine) {

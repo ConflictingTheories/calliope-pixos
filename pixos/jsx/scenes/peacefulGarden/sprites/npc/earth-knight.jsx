@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import EarthKnight from "@Engine/sprites/npc/earth-knight.jsx";
+import EarthKnight from "@Sprites/npc/earth-knight.jsx";
 export default class MyEarthKnight extends EarthKnight {
   constructor(engine) {
     // Initialize Sprite
