@@ -16,6 +16,7 @@ import { Vector } from "../../../engine/utils/math/vector.jsx";
 // Map Information
 export function loadMap(json, cells) {
   return {
+    // size of map
     bounds: json.bound,
     // Determines the tileset to load
     tileset: json.tileset,

@@ -21,8 +21,8 @@ import {
   ObjectLoader,
 } from "@Engine/utils/loaders/index.jsx";
 // for dynamic loading -- todo
-// import { loadMap } from "../../scene/maps/dynamic/map";
-// import { dynamicCells } from "../../scene/maps/dynamic/cells";
+// import { loadMap } from "../../scenes/maps/dynamic/map";
+// import { dynamicCells } from "../../scenes/maps/dynamic/cells";
 
 export default class Zone {
   constructor(zoneId, world) {

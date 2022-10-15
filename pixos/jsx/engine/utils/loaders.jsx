@@ -17,6 +17,9 @@ import ModelObject from "../core/object.jsx";
 import Tileset from "../core/tileset.jsx";
 import Action from "../core/action.jsx";
 
+// select which scene set you wish to use
+const SCENE_SET = "default";  // default || peacefulGarden
+
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
   constructor(engine) {
@@ -37,7 +40,9 @@ export class TilesetLoader {
         let content = await fileResponse.json();
         await tileset.onJsonLoaded(content);
       } catch (e) {
-        console.error("Error parsing tileset '" + tileset.name + "' definition");
+        console.error(
+          "Error parsing tileset '" + tileset.name + "' definition"
+        );
         console.error(e);
       }
     }
@@ -50,7 +55,11 @@ export class TilesetLoader {
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
-    let json = require("../../scene/tilesets/" + type + "/tileset.jsx")["default"];
+    let json = require("../../scenes/" +
+      SCENE_SET +
+      "/tilesets/" +
+      type +
+      "/tileset.jsx")["default"];
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -71,7 +80,11 @@ export class SpriteLoader {
       this.instances[type] = [];
     }
     // New Instance
-    let Type = require("../../scene/sprites/" + type + ".jsx")["default"];
+    let Type = require("../../scenes/" +
+      SCENE_SET +
+      "/sprites/" +
+      type +
+      ".jsx")["default"];
     console.log(Type, type);
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
@@ -117,8 +130,10 @@ export class ObjectLoader {
       enableWTextureCoord: false,
       name: instance.id,
     };
-    let models = (await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]));
-    console.log('downloading models ---> ', models);
+    let models = await this.engine.objLoader.downloadModels(this.engine.gl, [
+      modelreq,
+    ]);
+    console.log("downloading models ---> ", models);
     instance.mesh = models[model.id];
     instance.templateLoaded = true;
     console.log("loaded model", instance);
