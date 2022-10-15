@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Tiles from "@Tilesets/common/tiles.jsx";
+import Tiles from '@Tilesets/common/tiles.jsx';
 
 // Tile Types Supported (Labels for Easy Use) [[geometry, texture, height], walkability?]
-const T = Object.assign({}, { ...Tiles});
+const T = Object.assign({}, { ...Tiles });
 export default T;

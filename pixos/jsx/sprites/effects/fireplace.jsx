@@ -11,15 +11,15 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import AnimatedSprite from "./base/animatedSprite.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import AnimatedSprite from './base/animatedSprite.jsx';
 
 export default class Fireplace extends AnimatedSprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("room.gif");
+    this.src = Resources.artResourceUrl('room.gif');
     this.sheetSize = [256, 256];
     this.tileSize = [48, 32];
     this.fixed = true;

@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { translate, rotate } from "@Engine/utils/math/matrix4.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
+import { translate, rotate } from '@Engine/utils/math/matrix4.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
 
 export default class AnimatedTile extends Sprite {
   constructor(engine) {
@@ -27,7 +27,7 @@ export default class AnimatedTile extends Sprite {
   }
   // Initialize
   init() {
-    this.triggerTime = 2000 ;
+    this.triggerTime = 2000;
   }
   // Update each frame
   tick(time) {

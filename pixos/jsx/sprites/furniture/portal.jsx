@@ -11,16 +11,16 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import AnimatedSprite from "../effects/base/animatedSprite.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import AnimatedSprite from '../effects/base/animatedSprite.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default class Portal extends AnimatedSprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("room.png");
+    this.src = Resources.artResourceUrl('room.png');
     this.sheetSize = [256, 256];
     this.tileSize = [16, 32];
     // this.fixed = true;
@@ -54,7 +54,7 @@ export default class Portal extends AnimatedSprite {
     this.drawOffset = new Vector(0, 1.001, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
     this.frameTime = 150;
-    this.state = "closed";
+    this.state = 'closed';
   }
   // Initialize
   init() {
@@ -66,8 +66,8 @@ export default class Portal extends AnimatedSprite {
     this.startTime = Date.now();
     // React based on internal state
     switch (this.state) {
-      case "closed":
-        this.state = "open";
+      case 'closed':
+        this.state = 'open';
         this.blocking = false;
         this.override = true;
         this.frames = {
@@ -96,23 +96,13 @@ export default class Portal extends AnimatedSprite {
             [150, 210],
           ],
         };
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["The portal is Open.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+        ret = new ActionLoader(this.engine, 'dialogue', ['The portal is Open.', false, { autoclose: true, onClose: () => finish(true) }], this);
         break;
-      case "open":
-        this.state = "closed";
+      case 'open':
+        this.state = 'closed';
         this.blocking = true;
         this.override = false;
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["The portal is Closed.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+        ret = new ActionLoader(this.engine, 'dialogue', ['The portal is Closed.', false, { autoclose: true, onClose: () => finish(true) }], this);
         this.frames = {
           up: [
             [0, 210],

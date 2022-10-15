@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Direction } from "@Engine/utils/enums.jsx";
+import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
   init: function (moveLength, zone) {
@@ -20,7 +20,7 @@ export default {
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = this.zone.engine.audioLoader.load("/pixos/audio/brass-loop.mp3");
+    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/brass-loop.mp3');
     // if (this.zone.audio) this.zone.audio.pauseAudio();
     this.audio.playAudio();
     this.audioContext = new AudioContext();
@@ -64,9 +64,9 @@ export default {
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + this.moveLength) {
-      switch (this.sprite.engine.keyboard.lastPressed("q")) {
+      switch (this.sprite.engine.keyboard.lastPressed('q')) {
         // close dialogue on q key press
-        case "q":
+        case 'q':
           this.audio.pauseAudio();
           this.completed = true; // toggle
         default:

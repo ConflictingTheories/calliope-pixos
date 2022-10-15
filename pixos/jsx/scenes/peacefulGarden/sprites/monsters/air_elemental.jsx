@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import AirElemental from "@Sprites/monsters/air_elemental.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import AirElemental from '@Sprites/monsters/air_elemental.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 export default class MyAirElemental extends AirElemental {
   constructor(engine) {
     // Initialize Sprite
@@ -25,21 +25,15 @@ export default class MyAirElemental extends AirElemental {
       await this.zone.moveSprite(this.id, [10, 11, this.zone.getHeight(10, 11)], false);
       if (finish) finish(true);
     } catch (e) {
-      console.log("error", e);
+      console.log('error', e);
     }
   }
   // hook init
   init() {
-    let ret = new ActionLoader(
-      this.engine,
-      "patrol",
-      [this.pos.toArray(), [7, 7, this.zone.getHeight(7, 7)], 200, this.zone],
-      this,
-      (x) => {
-        console.log("sssss", x);
-      }
-    );
-    console.log("---->HERE", ret);
+    let ret = new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), [7, 7, this.zone.getHeight(7, 7)], 200, this.zone], this, (x) => {
+      console.log('sssss', x);
+    });
+    console.log('---->HERE', ret);
     this.addAction(ret);
   }
 }

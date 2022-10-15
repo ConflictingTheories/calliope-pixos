@@ -16,7 +16,7 @@ export default class Event {
     this.world = world;
     this.callback = callback;
     this.time = new Date().getTime();
-    this.id = world.id + "-" + type + "-" + this.time;
+    this.id = world.id + '-' + type + '-' + this.time;
   }
   // configure action
   configure(type, world, id, time, args) {

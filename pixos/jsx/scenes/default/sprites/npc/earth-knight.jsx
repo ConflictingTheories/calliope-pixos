@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import EarthKnight from "@Sprites/npc/earth-knight.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import EarthKnight from '@Sprites/npc/earth-knight.jsx';
 export default class MyEarthKnight extends EarthKnight {
   constructor(engine) {
     // Initialize Sprite
@@ -23,29 +23,24 @@ export default class MyEarthKnight extends EarthKnight {
     let ret = null;
     // React based on internal state
     switch (this.state) {
-      case "intro":
-        this.state = "loop";
+      case 'intro':
+        this.state = 'loop';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Welcome!', false, { autoclose: true, onClose: () => finish(true) }], this);
+        break;
+      case 'loop':
+        this.state = 'loop2';
         ret = new ActionLoader(
           this.engine,
-          "dialogue",
-          ["Welcome!", false, { autoclose: true, onClose: () => finish(true) }],
+          'dialogue',
+          ['I heard about a strange legend once.', false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
         break;
-      case "loop":
-        this.state = "loop2";
+      case 'loop2':
+        this.state = 'loop';
         ret = new ActionLoader(
           this.engine,
-          "dialogue",
-          ["I heard about a strange legend once.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      case "loop2":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
+          'dialogue',
           ["Sorry, I don't remember the story at the moment", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );

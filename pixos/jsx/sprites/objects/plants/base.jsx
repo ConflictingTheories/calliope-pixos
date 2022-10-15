@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default class Plant extends Sprite {
   constructor(engine) {
@@ -25,7 +25,7 @@ export default class Plant extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "closed";
+    this.state = 'closed';
     // Inventory
     this.blocking = false;
     this.fixed = true;

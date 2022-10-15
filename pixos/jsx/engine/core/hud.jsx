@@ -1,4 +1,4 @@
-export const minecraftia = new FontFace("minecraftia", "url(/pixos/font/minecraftia.ttf)");
+export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
 // Scrolling Text Box UI (For Dialogue)
 export class textScrollBox {
@@ -8,20 +8,20 @@ export class textScrollBox {
     this.dirty = true; // indicates that variouse setting need update
     this.scrollY = 0;
     this.fontSize = 24;
-    this.font = "minecraftia";
-    this.align = "left";
-    this.background = "#999";
+    this.font = 'minecraftia';
+    this.align = 'left';
+    this.background = '#999';
     this.border = {
       lineWidth: 4,
-      style: "white",
-      corner: "round",
+      style: 'white',
+      corner: 'round',
     };
     this.scrollBox = {
       width: 5,
-      background: "#568",
-      color: "#78a",
+      background: '#568',
+      color: '#78a',
     };
-    this.fontStyle = "white";
+    this.fontStyle = 'white';
     this.lines = [];
   }
   // initialize widget
@@ -57,14 +57,14 @@ export class textScrollBox {
   }
   // Apply font
   setFont() {
-    this.fontStr = this.fontSize + "px " + this.font;
+    this.fontStr = this.fontSize + 'px ' + this.font;
     this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.05);
   }
   // Get Text Position
   getTextPos() {
-    if (this.align === "left") {
+    if (this.align === 'left') {
       this.textPos = 2;
-    } else if (this.align === "right") {
+    } else if (this.align === 'right') {
       this.textPos = Math.floor(this.width - this.scrollBox.width - this.fontSize / 4);
     } else {
       this.textPos = Math.floor((this.width - -this.scrollBox.width) / 2);
@@ -76,30 +76,30 @@ export class textScrollBox {
     this.cleanit(true); // MUST PASS TRUE or will recurse to call stack overflow
     ctx.font = this.fontStr;
     ctx.textAlign = this.align;
-    ctx.textBaseline = "top";
-    let words = this.text.split(" ");
+    ctx.textBaseline = 'top';
+    let words = this.text.split(' ');
     this.lines.length = 0;
-    let line = "";
-    let space = "";
+    let line = '';
+    let space = '';
     while (words.length > 0) {
       let word = words.shift();
       let width = ctx.measureText(line + space + word).width;
       if (width < this.width - this.scrollBox.width - this.scrollBox.width - (this.portrait ? 84 : 0)) {
         line += space + word;
-        space = " ";
+        space = ' ';
       } else {
-        if (space === "") {
+        if (space === '') {
           // if one word too big put it in anyways
           line += word;
         } else {
           words.unshift(word);
         }
         this.lines.push(line);
-        space = "";
-        line = "";
+        space = '';
+        line = '';
       }
     }
-    if (line !== "") {
+    if (line !== '') {
       this.lines.push(line);
     }
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;

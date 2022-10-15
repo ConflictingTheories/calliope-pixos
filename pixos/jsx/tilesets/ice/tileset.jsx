@@ -11,12 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import DefaultTileset from "@Tilesets/common/tileset.jsx";
+import DefaultTileset from '@Tilesets/common/tileset.jsx';
 // Tileset Schema
 const _default = DefaultTileset(12, 4);
 export default {
   ..._default,
-  name: "ice",
+  name: 'ice',
   bgColor: [32, 62, 88],
   // Tile Locations on resource (based on size)
   textures: {

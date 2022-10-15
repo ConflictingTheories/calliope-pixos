@@ -11,39 +11,39 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { store } from "react-recollect";
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
-import { loadAvatar, generateZone, STORE_NAME } from "@Engine/utils/generator.jsx";
-import T from "@Tilesets/sewer/tiles.jsx";
+import { store } from 'react-recollect';
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
+import { loadAvatar, generateZone, STORE_NAME } from '@Engine/utils/generator.jsx';
+import T from '@Tilesets/sewer/tiles.jsx';
 
 // Use Tileset
 // Map Information
 export default {
   bounds: [0, 0, 30, 50],
   // Determines the tileset to load
-  tileset: "sewer",
-  audioSrc: "/pixos/audio/sewer-beat.mp3",
+  tileset: 'sewer',
+  audioSrc: '/pixos/audio/sewer-beat.mp3',
   portals: [
     {
-      id: "door-l",
-      type: "furniture/portal",
+      id: 'door-l',
+      type: 'furniture/portal',
       facing: Direction.Down,
       onStep: () => {
         store.pixos[STORE_NAME].position = new Vector(...[5, 3, 0]);
         store.pixos[STORE_NAME].selected += 3;
       },
-      zones: ["field"],
+      zones: ['field'],
     },
     {
-      id: "door-r",
-      type: "furniture/portal",
+      id: 'door-r',
+      type: 'furniture/portal',
       facing: Direction.Down,
       onStep: () => {
         store.pixos[STORE_NAME].position = new Vector(...[8, 3, 0]);
         store.pixos[STORE_NAME].selected += 7;
       },
-      zones: ["ice"],
+      zones: ['ice'],
     },
   ],
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
@@ -95,8 +95,8 @@ export default {
           // edge sprites
           for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
             sprites.push({
-              id: "plt-" + posKey + m,
-              type: "objects/plants/random",
+              id: 'plt-' + posKey + m,
+              type: 'objects/plants/random',
               pos: new Vector(...[j, i, 2]),
               facing: Direction.Down,
             });
@@ -120,8 +120,8 @@ export default {
           if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
             for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
               sprites.push({
-                id: "plt-" + posKey + m,
-                type: "objects/plants/random",
+                id: 'plt-' + posKey + m,
+                type: 'objects/plants/random',
                 pos: new Vector(...[j, i, zone.getHeight(j, i)]),
                 facing: Direction.Down,
               });
@@ -133,8 +133,8 @@ export default {
         if (posKey % Math.abs(5 + (store.pixos && store.pixos[STORE_NAME] ? store.pixos[STORE_NAME].selected : 7)) === 0) {
           for (let m = 0; m < Math.floor(((posKey + 1) * 227) % 9); m++) {
             sprites.push({
-              id: "plt-" + posKey + m,
-              type: "objects/plants/random",
+              id: 'plt-' + posKey + m,
+              type: 'objects/plants/random',
               pos: new Vector(...[j, i, zone.getHeight(j, i)]),
               facing: Direction.Down,
             });
@@ -149,18 +149,18 @@ export default {
   // Scenes + Scenarios
   scenes: [
     {
-      id: "welcome",
+      id: 'welcome',
       actions: [
         // manual actions
         // Scripted Dialogue Action Controls directly on sprites
         {
-          sprite: "avatar",
-          action: "dialogue",
+          sprite: 'avatar',
+          action: 'dialogue',
           args: [
             [
-              "Welcome to the Peaceful Garden.",
-              "May your anxieties melt away and your inner spirit find balance and a sense of calm.",
-              "Feel free to take a look around and explore.",
+              'Welcome to the Peaceful Garden.',
+              'May your anxieties melt away and your inner spirit find balance and a sense of calm.',
+              'Feel free to take a look around and explore.',
             ],
             false,
             { autoclose: true },
@@ -168,27 +168,27 @@ export default {
           scope: this, // scoped to the zone
         },
         // or call premade events and bundle many things and trigger them
-        { trigger: "custom", scope: this },
+        { trigger: 'custom', scope: this },
       ],
     },
   ],
   // Scripts / Triggers for the Zone
   scripts: [
     {
-      id: "load-scene", // **runs automatically when loaded
+      id: 'load-scene', // **runs automatically when loaded
       trigger: async function () {
         // randomly pick gender & store
         let gender = await loadAvatar(this, STORE_NAME);
         // generate the zone procedurally
-        await generateZone(this, gender, STORE_NAME, require("../../dialogues/cyoa.json"));
+        await generateZone(this, gender, STORE_NAME, require('../../dialogues/cyoa.json'));
       },
     },
   ],
   // objects // 3d
   objects: [
     {
-      id: "test" + Math.random(),
-      type: "cactus_short",
+      id: 'test' + Math.random(),
+      type: 'cactus_short',
       mtl: true,
       pos: new Vector(...[11, 6, 0]),
     },

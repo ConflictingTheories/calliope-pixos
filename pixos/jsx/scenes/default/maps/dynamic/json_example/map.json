@@ -93,11 +93,7 @@
           "sprite": "air",
           "action": "dialogue",
           "args": [
-            [
-              "Long ago, in a dungeon far far away",
-              "The sewer was backing up, and well...everyone was losing their $%#t",
-              "But one had a plan..."
-            ],
+            ["Long ago, in a dungeon far far away", "The sewer was backing up, and well...everyone was losing their $%#t", "But one had a plan..."],
             false,
             { "autoclose": true }
           ]

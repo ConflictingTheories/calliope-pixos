@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Fireplace from "/pixos/jsx/engine/sprites/furniture/fireplace.jsx";
+import Fireplace from '/pixos/jsx/engine/sprites/furniture/fireplace.jsx';
 export default class MyFireplace extends Fireplace {
   constructor(engine) {
     // Initialize Sprite

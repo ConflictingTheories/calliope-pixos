@@ -11,14 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import ActionQueue from "@Engine/core/queue.jsx";
-import { textScrollBox } from "@Engine/core/hud.jsx";
+import ActionQueue from '@Engine/core/queue.jsx';
+import { textScrollBox } from '@Engine/core/hud.jsx';
 export default class Speech {
   constructor(canvas, engine, id) {
     this.id = id;
     this.engine = engine;
     this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
+    this.ctx = canvas.getContext('2d');
     this.glTexture = engine.gl.createTexture();
     this.loaded = false;
     this.onLoadActions = new ActionQueue();
@@ -64,10 +64,10 @@ export default class Speech {
   writeText(text, x, y) {
     const { ctx } = this;
     ctx.save();
-    ctx.font = "32px minecraftia";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "white";
+    ctx.font = '32px minecraftia';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
     ctx.fillText(text, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2);
     ctx.restore();
   }

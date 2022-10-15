@@ -39,7 +39,7 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("1111", 2),
+    type: parseInt('1111', 2),
   },
   // Flat - Walkability -- None
   FLAT_NONE: {
@@ -67,7 +67,7 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("0000", 2),
+    type: parseInt('0000', 2),
   },
   // Stairs
   STAIR_R: {
@@ -267,7 +267,7 @@ export default {
         [0, 0, 0],
       ],
     ],
-    type: parseInt("0101", 2),
+    type: parseInt('0101', 2),
   },
   STAIR_T: {
     vertices: [
@@ -466,7 +466,7 @@ export default {
         [0, 0, 1],
       ],
     ],
-    type: parseInt("1010", 2),
+    type: parseInt('1010', 2),
   },
   STAIR_L: {
     vertices: [
@@ -665,7 +665,7 @@ export default {
         [0, 0, 1],
       ],
     ],
-    type: parseInt("0101", 2),
+    type: parseInt('0101', 2),
   },
   STAIR_B: {
     vertices: [
@@ -864,7 +864,7 @@ export default {
         [0, 0, 0],
       ],
     ],
-    type: parseInt("1010", 2),
+    type: parseInt('1010', 2),
   },
   // Wall
   WALL_R: {
@@ -892,7 +892,7 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("1011", 2),
+    type: parseInt('1011', 2),
   },
   WALL_T: {
     vertices: [
@@ -919,7 +919,7 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("0111", 2),
+    type: parseInt('0111', 2),
   },
   WALL_L: {
     vertices: [
@@ -946,7 +946,7 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("1110", 2),
+    type: parseInt('1110', 2),
   },
   WALL_B: {
     vertices: [
@@ -973,6 +973,6 @@ export default {
         [0, 0],
       ],
     ],
-    type: parseInt("1101", 2),
+    type: parseInt('1101', 2),
   },
 };

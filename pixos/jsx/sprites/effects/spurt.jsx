@@ -11,15 +11,15 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import AnimatedTile from "./base/animatedTile.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import AnimatedTile from './base/animatedTile.jsx';
 
 export default class Spurt extends AnimatedTile {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("sewer.gif");
+    this.src = Resources.artResourceUrl('sewer.gif');
     this.sheetSize = [256, 256];
     this.tileSize = [16, 16];
     // Frames

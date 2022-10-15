@@ -11,17 +11,17 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "../../../utils/math/vector.jsx";
-import Resources from "../../../utils/resources.jsx";
-import { ActionLoader } from "../../../utils/loaders/index.jsx";
-import Chest from "./base.jsx";
+import { Vector } from '../../../utils/math/vector.jsx';
+import Resources from '../../../utils/resources.jsx';
+import { ActionLoader } from '../../../utils/loaders/index.jsx';
+import Chest from './base.jsx';
 
 export default class WoodChest extends Chest {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("chests.gif");
+    this.src = Resources.artResourceUrl('chests.gif');
     this.sheetSize = [256, 256];
     this.tileSize = [16, 24];
     // Offsets
@@ -59,7 +59,7 @@ export default class WoodChest extends Chest {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "closed";
+    this.state = 'closed';
     // Inventory
     this.inventory = [];
   }

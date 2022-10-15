@@ -12,8 +12,8 @@
 \*                                                 */
 
 // Shaders
-import Scene from "@Engine/core/scene.jsx";
-import World from "@Engine/core/world.jsx";
+import Scene from '@Engine/core/scene.jsx';
+import World from '@Engine/core/world.jsx';
 // Scene Object
 export default class PeacefulGarden extends Scene {
   // Init Scene
@@ -21,24 +21,24 @@ export default class PeacefulGarden extends Scene {
     // game Engine & Timing
     Scene._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine, "peacefulGarden"));
+    let world = (Scene._instance.world = new World(engine, 'peacefulGarden'));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    await world.loadZone("field");
-    world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
+    await world.loadZone('field');
+    world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log('loading...done')));
     // show start menu
     world.startMenu({
       start: {
-        text: "Start Game",
-        prompt: "Welcome to the Peaceful Garden. Please feel free to discover its secrets",
+        text: 'Start Game',
+        prompt: 'Welcome to the Peaceful Garden. Please feel free to discover its secrets',
         x: engine.screenSize().width / 2 - 75,
         y: engine.screenSize().height / 2 - 50,
         w: 150,
         h: 75,
         quittable: false,
         colours: {
-          top: "#333",
-          bottom: "#777",
-          background: "#999",
+          top: '#333',
+          bottom: '#777',
+          background: '#999',
         },
         onEnter: true,
         onOpen: (menu) => {

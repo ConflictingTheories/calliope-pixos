@@ -11,16 +11,16 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default class Door extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("room.gif");
+    this.src = Resources.artResourceUrl('room.gif');
     this.sheetSize = [256, 256];
     this.tileSize = [16, 32];
     this.fixed = true;
@@ -45,7 +45,7 @@ export default class Door extends Sprite {
     };
     this.drawOffset = new Vector(0, 1.001, 0.001);
     this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    this.state = "closed";
+    this.state = 'closed';
   }
 
   // Interaction
@@ -54,13 +54,13 @@ export default class Door extends Sprite {
     this.startTime = Date.now();
     // React based on internal state
     switch (this.state) {
-      case "closed":
-        this.state = "open";
+      case 'closed':
+        this.state = 'open';
         this.blocking = false;
         this.override = true;
         ret = new ActionLoader(
           this.engine,
-          "animate",
+          'animate',
           [
             600,
             3,
@@ -71,14 +71,9 @@ export default class Door extends Sprite {
           this
         );
         break;
-      case "open":
-        this.state = "open";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Its already Open!.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+      case 'open':
+        this.state = 'open';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Its already Open!.', false, { autoclose: true, onClose: () => finish(true) }], this);
         break;
       default:
         break;

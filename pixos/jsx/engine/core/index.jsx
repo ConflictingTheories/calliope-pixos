@@ -11,17 +11,17 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { store } from "react-recollect";
-import Dexie from "dexie";
+import { store } from 'react-recollect';
+import Dexie from 'dexie';
 
-import { create, create3, normalFromMat4, rotate, translate, perspective, set } from "@Engine/utils/math/matrix4.jsx";
-import { Vector, negate } from "@Engine/utils/math/vector.jsx";
-import { Texture, ColorTexture } from "@Engine/core/texture.jsx";
-import { textScrollBox } from "@Engine/core/hud.jsx";
-import { GamePad } from "@Engine/utils/gamepad/index.jsx";
-import Speech from "@Engine/core/speech.jsx";
-import { OBJ } from "@Engine/utils/obj";
-import { AudioLoader } from "../utils/loaders/AudioLoader.jsx";
+import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '@Engine/utils/math/matrix4.jsx';
+import { Vector, negate } from '@Engine/utils/math/vector.jsx';
+import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
+import { textScrollBox } from '@Engine/core/hud.jsx';
+import { GamePad } from '@Engine/utils/gamepad/index.jsx';
+import Speech from '@Engine/core/speech.jsx';
+import { OBJ } from '@Engine/utils/obj';
+import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
 
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
@@ -49,17 +49,17 @@ export default class GLEngine {
     this.voice = new SpeechSynthesisUtterance();
     this.audioLoader = new AudioLoader(this);
     // database
-    this.db = new Dexie("hyperspace");
+    this.db = new Dexie('hyperspace');
     this.db.version(1).stores({
-      tileset: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
-      inventory: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
-      spirits: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
-      abilities: "++id, name, creator, type checksum, signature, timestamp", // Primary key and indexed props
-      models: "++id, name, creator, type, checksum, signature, timestamp", // Primary key and indexed props
-      accounts: "++id, name, type, checksum, signature, timestamp", // Primary key and indexed props
-      dht: "++id, name, type, ip, checksum, signature, timestamp", // Primary key and indexed props
-      msg: "++id, name, type, ip, checksum, signature, timestamp", // Primary key and indexed props
-      tmp: "++id, key, value, timestamp", // key-store
+      tileset: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
+      inventory: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
+      spirits: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
+      abilities: '++id, name, creator, type checksum, signature, timestamp', // Primary key and indexed props
+      models: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
+      accounts: '++id, name, type, checksum, signature, timestamp', // Primary key and indexed props
+      dht: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
+      msg: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
+      tmp: '++id, key, value, timestamp', // key-store
     });
     // Store setup - session based
     store.pixos = {};
@@ -68,19 +68,29 @@ export default class GLEngine {
 
   // Initialize a Scene object
   async init(scene, keyboard) {
-    // set up canvas
-    const ctx = this.hud.getContext("2d");
-    const gl = this.canvas.getContext("webgl");
-    const gp = this.gamepadcanvas.getContext("2d");
+    const ctx = this.hud.getContext('2d');
+    const gl = this.canvas.getContext('webgl');
+    const gp = this.gamepadcanvas.getContext('2d');
+
     if (!gl) {
-      throw new Error("WebGL : unable to initialize");
+      throw new Error('WebGL : unable to initialize');
     }
     if (!ctx) {
-      throw new Error("Canvas : unable to initialize HUD");
+      throw new Error('Canvas : unable to initialize HUD');
     }
     if (!gp) {
-      throw new Error("Gamepad : unable to initialize Mobile Canvas");
+      throw new Error('Gamepad : unable to initialize Mobile Canvas');
     }
+
+    // gamepad controller
+    const gamepad = new GamePad(gp);
+    gamepad.init();
+
+    // Configure HUD
+    ctx.canvas.width = gl.canvas.clientWidth;
+    ctx.canvas.height = gl.canvas.clientHeight;
+
+    this.initializedWebGl = true;
     this.gl = gl;
     this.ctx = ctx;
     this.gp = gp;
@@ -88,25 +98,22 @@ export default class GLEngine {
     this.scene = scene;
     this.keyboard = keyboard;
     this.fullscreen = false;
-    // Configure Mobile Gamepad (if Mobile)
-    let gamepad = new GamePad(gp);
-    gamepad.init();
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
-    // Configure HUD
-    ctx.canvas.width = gl.canvas.clientWidth;
-    ctx.canvas.height = gl.canvas.clientHeight;
+
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
-    this.initializedWebGl = true; // flag
+
     // Initialize Shader
     this.initShaderProgram(gl, scene.shaders);
+
     // Initialize Project Matrix
     this.initProjection(gl);
+
     // Initialize Scene
     await scene.init(this);
   }
@@ -181,26 +188,26 @@ export default class GLEngine {
     // Configure Shader
     gl.useProgram(shaderProgram);
     // Normals (needs work)
-    shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
     gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
     // Vertices
-    shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
     gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
     // Texture Coord
-    shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+    shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
     gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
     // Uniform Locations
-    shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, "uDiffuse");
-    shaderProgram.uSpecular = gl.getUniformLocation(shaderProgram, "uSpecular");
-    shaderProgram.uSpecularExponent = gl.getUniformLocation(shaderProgram, "uSpecularExponent");
-    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-    shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, "uDiffuseMap");
-    shaderProgram.scale = gl.getUniformLocation(shaderProgram, "u_scale");
-    shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, "useSampler");
-    shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, "useDiffuse");
+    shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, 'uDiffuse');
+    shaderProgram.uSpecular = gl.getUniformLocation(shaderProgram, 'uSpecular');
+    shaderProgram.uSpecularExponent = gl.getUniformLocation(shaderProgram, 'uSpecularExponent');
+    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uPMatrix');
+    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+    shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, 'uNormalMatrix');
+    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, 'uSampler');
+    shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, 'uDiffuseMap');
+    shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
+    shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
+    shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
@@ -277,10 +284,10 @@ export default class GLEngine {
   writeText(text, x, y, src = null) {
     const { ctx } = this;
     ctx.save();
-    ctx.font = "20px invasion2000";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "white";
+    ctx.font = '20px invasion2000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
     if (src) {
       // draw portrait if set
       ctx.fillText(text, x ?? ctx.canvas.width / 2 + 76, y ?? ctx.canvas.height / 2);
@@ -292,7 +299,7 @@ export default class GLEngine {
   }
 
   // Text to Speech output
-  speechSynthesis(text, voice = null, lang = "en", rate = null, volume = null, pitch = null) {
+  speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
     console.log(voices);
@@ -315,14 +322,7 @@ export default class GLEngine {
   // Scrolling Textbox
   scrollText(text, scrolling = false, options = {}) {
     let txt = new textScrollBox(this.ctx);
-    txt.init(
-      text,
-      10,
-      (2 * this.canvas.clientHeight) / 3,
-      this.canvas.clientWidth - 20,
-      this.canvas.clientHeight / 3 - 20,
-      options
-    );
+    txt.init(text, 10, (2 * this.canvas.clientHeight) / 3, this.canvas.clientWidth - 20, this.canvas.clientHeight / 3 - 20, options);
     txt.setOptions(options);
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
@@ -358,8 +358,8 @@ export default class GLEngine {
 
     // light gradient
     var grad = ctx.createLinearGradient(x, y, x, y + halfHeight);
-    grad.addColorStop(0, "rgb(221,181,155)");
-    grad.addColorStop(1, "rgb(22,13,8)");
+    grad.addColorStop(0, 'rgb(221,181,155)');
+    grad.addColorStop(1, 'rgb(22,13,8)');
     ctx.fillStyle = grad;
     ctx.globalAlpha = 0.5;
     ctx.fillRect(x, y, w, h);
@@ -396,10 +396,10 @@ export default class GLEngine {
       }
     }
 
-    ctx.font = "20px invasion2000";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "white";
+    ctx.font = '20px invasion2000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
     ctx.fillText(text, x + w / 2, y + h / 2, w);
 
     ctx.restore();
@@ -503,7 +503,7 @@ export default class GLEngine {
   // pop model stack and apply view
   mvPopMatrix() {
     if (this.modelViewMatrixStack.length == 0) {
-      throw "Invalid popMatrix!";
+      throw 'Invalid popMatrix!';
     }
     this.uViewMat = this.modelViewMatrixStack.pop();
   }

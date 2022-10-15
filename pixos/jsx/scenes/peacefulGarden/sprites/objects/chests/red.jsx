@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import RedChest from "@Sprites/objects/chests/red.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import RedChest from '@Sprites/objects/chests/red.jsx';
 
 export default class MyRedChest extends RedChest {
   constructor(engine) {

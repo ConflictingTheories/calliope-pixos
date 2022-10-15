@@ -11,16 +11,16 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
 
 export default class EarthElemental extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("elementals-2.gif");
+    this.src = Resources.artResourceUrl('elementals-2.gif');
     this.sheetSize = [64, 128];
     this.tileSize = [16, 18];
     // Offsets
@@ -58,6 +58,6 @@ export default class EarthElemental extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "intro";
+    this.state = 'intro';
   }
 }

@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import RandomPlant from "@Sprites/objects/plants/random.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import RandomPlant from '@Sprites/objects/plants/random.jsx';
 
 export default class MyPlants extends RandomPlant {
   constructor(engine) {

@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
   init: function (from, facing, world) {
@@ -67,9 +67,9 @@ export default {
   // Handle Keyboard
   checkInput: function (time) {
     if (time > this.lastKey + this.length) {
-      switch (this.sprite.engine.keyboard.lastPressed("q")) {
+      switch (this.sprite.engine.keyboard.lastPressed('q')) {
         // close dialogue on q key press
-        case "q":
+        case 'q':
           // Needs to Cancel the Interaction on the Affected Sprite as well
           this.completed = true; // toggle
           break;
@@ -79,7 +79,7 @@ export default {
       }
     }
     // gamepad
-    if (this.sprite.engine.gamepad.keyPressed("a")) {
+    if (this.sprite.engine.gamepad.keyPressed('a')) {
       this.completed = true;
     }
   },

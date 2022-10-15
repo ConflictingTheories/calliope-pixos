@@ -16,7 +16,7 @@ export default class Action {
     this.sprite = sprite;
     this.callback = callback;
     this.time = new Date().getTime();
-    this.id = sprite.id + "-" + type + "-" + this.time;
+    this.id = sprite.id + '-' + type + '-' + this.time;
   }
   // configure action
   configure(type, sprite, id, time, args) {

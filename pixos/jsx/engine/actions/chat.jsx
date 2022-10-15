@@ -15,7 +15,7 @@ export default {
   // Initialize Dialogue Object
   init: function (prompt, scrolling = true, options = {}) {
     this.engine = this.sprite.engine;
-    this.text = "";
+    this.text = '';
     this.prompt = prompt;
     this.scrolling = scrolling;
     this.line = 0;
@@ -43,18 +43,18 @@ export default {
     if (time > this.lastKey + 100) {
       let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {
-        case "Escape":
+        case 'Escape':
           this.completed = true;
           skipChar = true;
           break;
-        case "Backspace":
-          let arr = this.text.split("");
+        case 'Backspace':
+          let arr = this.text.split('');
           arr.pop();
-          this.text = arr.join("");
+          this.text = arr.join('');
           this.lastKey = time;
           skipChar = true;
           break;
-        case "Enter":
+        case 'Enter':
           this.engine.setGreeting(this.text);
           if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
           this.speechbox = this.sprite.speech.scrollText(this.text);
@@ -69,7 +69,7 @@ export default {
         let char = this.engine.keyboard.lastPressedKey();
         if (char) {
           this.lastKey = time;
-          this.text += "" + char;
+          this.text += '' + char;
         }
       }
     }

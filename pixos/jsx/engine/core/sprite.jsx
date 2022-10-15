@@ -10,11 +10,11 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector, set } from "@Engine/utils/math/vector.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
-import ActionQueue from "./queue.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import { rotate, translate } from "@Engine/utils/math/matrix4.jsx";
+import { Vector, set } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
+import ActionQueue from './queue.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 
 export default class Sprite {
   constructor(engine) {
@@ -54,7 +54,7 @@ export default class Sprite {
   onLoad(instanceData) {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
-      console.error("Invalid sprite definition");
+      console.error('Invalid sprite definition');
       return;
     }
     // Zone Information
@@ -63,7 +63,7 @@ export default class Sprite {
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
-    if (instanceData.onStep && typeof instanceData.onStep == "function") {
+    if (instanceData.onStep && typeof instanceData.onStep == 'function') {
       let stepParent = this.onStep.bind(this);
       this.onStep = () => {
         instanceData.onStep();
@@ -137,7 +137,7 @@ export default class Sprite {
 
   // Get Texture Coordinates
   getTexCoords() {
-    let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames["up"]; //default up
+    let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames['up']; //default up
     let length = this.frames[Direction.spriteSequence(this.facing)].length;
     let t = frames[this.animFrame % length];
     let ss = this.sheetSize;
@@ -306,21 +306,25 @@ export default class Sprite {
         this.speechSynthesis(text);
         dialogue.speechOutput = false;
       }
-      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
+      this.textbox = this.engine.scrollText(this.id + ':> ' + text, true, {
+        portrait: this.portrait ?? false,
+      });
       if (showBubble && this.speech) {
-        this.speech.scrollText(text, false, { portrait: this.portrait ?? false });
+        this.speech.scrollText(text, false, {
+          portrait: this.portrait ?? false,
+        });
         this.speech.loadImage();
       }
     }
   }
 
   // Text to Speech output
-  speechSynthesis(text, voice = null, lang = "en", rate = null, volume = null, pitch = null) {
+  speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
     console.log(this, this.gender, voices);
     // set voice
-    speech.voice = this.gender ? (this.gender == "male" ? voices[7] : voices[28]) : voices[0];
+    speech.voice = this.gender ? (this.gender == 'male' ? voices[7] : voices[28]) : voices[0];
     if (rate) speech.rate = rate;
     if (volume) speech.volume = volume;
     if (pitch) speech.pitch = pitch;
@@ -346,7 +350,7 @@ export default class Sprite {
   // Set Facing
   faceDir(facing) {
     if (this.facing == facing || facing === Direction.None) return null;
-    return new ActionLoader(this.engine, "face", [facing], this);
+    return new ActionLoader(this.engine, 'face', [facing], this);
   }
 
   // set message (for chat bubbles)
@@ -356,6 +360,6 @@ export default class Sprite {
     }
     this.speech.writeText(greeting);
     this.speech.loadImage();
-    return new ActionLoader(this.engine, "greeting", [greeting, { autoclose: true }], this);
+    return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
   }
 }

@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import WoodChest from "@Sprites/objects/chests/wood.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import WoodChest from '@Sprites/objects/chests/wood.jsx';
 
 export default class MyWoodChest extends WoodChest {
   constructor(engine) {
@@ -22,8 +22,8 @@ export default class MyWoodChest extends WoodChest {
     // todo - plan and implement an inventory system
     this.inventory = [
       {
-        id: "sword",
-        type: "object",
+        id: 'sword',
+        type: 'object',
       },
     ];
   }

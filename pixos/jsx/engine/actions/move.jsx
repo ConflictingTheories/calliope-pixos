@@ -19,17 +19,23 @@ export default {
     this.zone = zone;
     this.from = new Vector(...from);
     this.to = new Vector(...to);
-    this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
+    this.facing = Direction.fromOffset([
+      Math.round(to.x - from.x),
+      Math.round(to.y - from.y),
+    ]);
     this.length = length;
     // interactions
     console.log(this.zone);
-    this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y);
+    this.spriteList = this.zone.spriteList.filter(
+      (sprite) => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y
+    );
   },
   // move
   tick: function (time) {
     if (!this.loaded) return;
     // Set facing
-    if (this.facing && this.facing != this.sprite.facing) this.sprite.setFacing(this.facing);
+    if (this.facing && this.facing != this.sprite.facing)
+      this.sprite.setFacing(this.facing);
     // Transition & Move
     let endTime = this.startTime + this.length;
     let frac = (time - this.startTime) / this.length;
@@ -53,7 +59,9 @@ export default {
     console.log("on steppping", this.spriteList);
     if (this.spriteList.length === 0) this.completed = true;
     this.spriteList.forEach((sprite) => {
-      return sprite.onStep ? this.zone.spriteDict[sprite.id].onStep(this.sprite) : null;
+      return sprite.onStep
+        ? this.zone.spriteDict[sprite.id].onStep(this.sprite)
+        : null;
     });
   },
 };

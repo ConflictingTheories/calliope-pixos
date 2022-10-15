@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Door from "@Sprites/furniture/door.jsx";
+import Door from '@Sprites/furniture/door.jsx';
 export default class MyDoor extends Door {
   constructor(engine) {
     // Initialize Sprite

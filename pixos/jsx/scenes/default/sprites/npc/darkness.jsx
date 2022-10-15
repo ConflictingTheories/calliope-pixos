@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import Darkness from "@Sprites/npc/darkness.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import Darkness from '@Sprites/npc/darkness.jsx';
 export default class MyDarkness extends Darkness {
   constructor(engine) {
     // Initialize Sprite
@@ -23,32 +23,22 @@ export default class MyDarkness extends Darkness {
     let ret = null;
     // React based on internal state
     switch (this.state) {
-      case "intro":
-        this.state = "loop";
+      case 'intro':
+        this.state = 'loop';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Join me....!', false, { autoclose: true, onClose: () => finish(true) }], this);
+        break;
+      case 'loop':
+        this.state = 'loop2';
         ret = new ActionLoader(
           this.engine,
-          "dialogue",
-          ["Join me....!", false, { autoclose: true, onClose: () => finish(true) }],
+          'dialogue',
+          ['I need a partner for squash.', false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
         break;
-      case "loop":
-        this.state = "loop2";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["I need a partner for squash.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
-        break;
-      case "loop2":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Seriously - you swing?", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+      case 'loop2':
+        this.state = 'loop';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Seriously - you swing?', false, { autoclose: true, onClose: () => finish(true) }], this);
         break;
       default:
         break;

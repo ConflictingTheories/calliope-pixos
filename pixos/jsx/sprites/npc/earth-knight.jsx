@@ -11,17 +11,17 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import NPC from "./base/NPC.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import NPC from './base/NPC.jsx';
 
 export default class EarthKnight extends NPC {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("earth-knight.gif");
-    this.portraitSrc = Resources.artResourceUrl("earth_portrait.gif");
+    this.src = Resources.artResourceUrl('earth-knight.gif');
+    this.portraitSrc = Resources.artResourceUrl('earth_portrait.gif');
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
     // Offsets
@@ -59,6 +59,6 @@ export default class EarthKnight extends NPC {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "intro";
+    this.state = 'intro';
   }
 }

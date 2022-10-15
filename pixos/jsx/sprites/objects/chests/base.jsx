@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default class Chest extends Sprite {
   constructor(engine) {
@@ -25,7 +25,7 @@ export default class Chest extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "closed";
+    this.state = 'closed';
     // Inventory
     this.inventory = [];
     this.fixed = true;
@@ -36,16 +36,16 @@ export default class Chest extends Sprite {
     this.startTime = Date.now();
     // React based on internal state
     switch (this.state) {
-      case "closed":
-        this.state = "open";
+      case 'closed':
+        this.state = 'open';
         ret = new ActionLoader(
           this.engine,
-          "animate",
+          'animate',
           [
             600,
             3,
             () => {
-              if(sprite.inventory){
+              if (sprite.inventory) {
                 sprite.inventory.push(...this.inventory);
               }
               finish(true);
@@ -54,14 +54,9 @@ export default class Chest extends Sprite {
           this
         );
         break;
-      case "open":
-        this.state = "open";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Empty.", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+      case 'open':
+        this.state = 'open';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Empty.', false, { autoclose: true, onClose: () => finish(true) }], this);
         break;
       default:
         break;

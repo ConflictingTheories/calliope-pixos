@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "@Engine/utils/resources.jsx";
-import TilesetGeometry from "@Tilesets/common/geometry.jsx";
+import Resources from '@Engine/utils/resources.jsx';
+import TilesetGeometry from '@Tilesets/common/geometry.jsx';
 // Tileset Schema
 export default (sheetOffsetX, sheetOffsetY) => {
   return {
-    name: "default",
-    src: Resources.artResourceUrl("tileset.png"),
+    name: 'default',
+    src: Resources.artResourceUrl('tileset.png'),
     sheetSize: [512, 512],
     sheetOffsetX,
     sheetOffsetY,

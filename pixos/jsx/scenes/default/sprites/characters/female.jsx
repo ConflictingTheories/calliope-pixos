@@ -11,19 +11,19 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import Resources from "@Engine/utils/resources.jsx";
-import Avatar from "@Engine/core/avatar.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import Resources from '@Engine/utils/resources.jsx';
+import Avatar from '@Engine/core/avatar.jsx';
 export default class Default extends Avatar {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // PROPERTIES
-    this.src = Resources.artResourceUrl("player-2.gif");
-    this.portraitSrc = Resources.artResourceUrl("witch_portrait.gif");
+    this.src = Resources.artResourceUrl('player-2.gif');
+    this.portraitSrc = Resources.artResourceUrl('witch_portrait.gif');
     this.sheetSize = [128, 256];
     this.tileSize = [24, 32];
-    this.state = "intro";
+    this.state = 'intro';
     // Frames
     this.frames = {
       up: [

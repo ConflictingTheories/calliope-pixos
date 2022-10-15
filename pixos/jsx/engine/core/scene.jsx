@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { saveAs } from "file-saver";
-import * as JSZip from "jszip";
+import { saveAs } from 'file-saver';
+import * as JSZip from 'jszip';
 
 // Shaders
-import fs from "@Engine/shaders/fs.jsx";
-import vs from "@Engine/shaders/vs.jsx";
-import World from "@Engine/core/world.jsx";
+import fs from '@Engine/shaders/fs.jsx';
+import vs from '@Engine/shaders/vs.jsx';
+import World from '@Engine/core/world.jsx';
 
 // Scene Object
 export default class Scene {
@@ -39,23 +39,23 @@ export default class Scene {
     // game Engine & Timing
     Scene._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine, "scene"));
+    let world = (Scene._instance.world = new World(engine, 'scene'));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
+    world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log('loading...done')));
     // show start menu
     world.startMenu({
       start: {
-        text: "Start Game",
-        prompt: "Please press the button to start...",
+        text: 'Start Game',
+        prompt: 'Please press the button to start...',
         x: engine.screenSize().width / 2 - 75,
         y: engine.screenSize().height / 2 - 50,
         w: 150,
         h: 75,
         quittable: false,
         colours: {
-          top: "#333",
-          bottom: "#777",
-          background: "#999",
+          top: '#333',
+          bottom: '#777',
+          background: '#999',
         },
         onOpen: (menu) => {
           // tood - needs a way to trigger on open
@@ -102,10 +102,10 @@ export default class Scene {
     let zip = new JSZip();
     let avatar = {}; // todo;
     // store in zip
-    zip.folder("pixos").file("avatar.json", JSON.stringify(avatar));
+    zip.folder('pixos').file('avatar.json', JSON.stringify(avatar));
     // save
-    let blob = await zip.generateAsync({ type: "blob" });
-    saveAs(blob, "avatar.zip");
+    let blob = await zip.generateAsync({ type: 'blob' });
+    saveAs(blob, 'avatar.zip');
   };
 
   // Render Loop
@@ -123,7 +123,7 @@ export default class Scene {
 
   // Keyboard handler for Scene
   onKeyEvent = (e) => {
-    if (e.type === "keydown") {
+    if (e.type === 'keydown') {
       Scene._instance.engine.keyboard.onKeyDown(e);
     } else Scene._instance.engine.keyboard.onKeyUp(e);
   };
@@ -131,13 +131,13 @@ export default class Scene {
   // Mobile Touch handler for Scene
   onTouchEvent = (e) => {
     switch (e.type) {
-      case "mousedown":
-      case "mouseup":
-      case "mousemove":
-      case "touchstart":
-      case "touchend":
-      case "touchmove":
-      case "touchcancel":
+      case 'mousedown':
+      case 'mouseup':
+      case 'mousemove':
+      case 'touchstart':
+      case 'touchend':
+      case 'touchmove':
+      case 'touchcancel':
       default:
         Scene._instance.engine.touch(e);
         break;

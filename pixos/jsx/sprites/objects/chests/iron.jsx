@@ -10,15 +10,15 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector } from "../../../utils/math/vector.jsx";
-import Resources from "../../../utils/resources.jsx";
-import Chest from "./base.jsx";
+import { Vector } from '../../../utils/math/vector.jsx';
+import Resources from '../../../utils/resources.jsx';
+import Chest from './base.jsx';
 export default class IronChest extends Chest {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    this.src = Resources.artResourceUrl("chests.gif");
+    this.src = Resources.artResourceUrl('chests.gif');
     this.sheetSize = [256, 256];
     this.tileSize = [16, 24];
     // Offsets
@@ -56,7 +56,7 @@ export default class IronChest extends Chest {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "closed";
+    this.state = 'closed';
     this.inventory = [];
   }
 }

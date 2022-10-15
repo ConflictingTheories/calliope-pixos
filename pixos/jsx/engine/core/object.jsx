@@ -10,12 +10,12 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Vector, set } from "@Engine/utils/math/vector.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
-import ActionQueue from "./queue.jsx";
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import { rotate, translate } from "@Engine/utils/math/matrix4.jsx";
-import { _buildBuffer } from "@Engine/utils/obj/utils.js";
+import { Vector, set } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
+import ActionQueue from './queue.jsx';
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
+import { _buildBuffer } from '@Engine/utils/obj/utils.js';
 export default class ModelObject {
   constructor(engine) {
     this.engine = engine;
@@ -106,13 +106,7 @@ export default class ModelObject {
 
   // After Tileset / Texture Loaded
   onTilesetOrTextureLoaded() {
-    if (
-      !this ||
-      this.loaded ||
-      (this.enableSpeech && this.speech && !this.speech.loaded) ||
-      (this.portrait && !this.portrait.loaded)
-    )
-      return;
+    if (!this || this.loaded || (this.enableSpeech && this.speech && !this.speech.loaded) || (this.portrait && !this.portrait.loaded)) return;
 
     this.init(); // Hook for sprite implementations
     if (this.enableSpeech && this.speech) {
@@ -298,16 +292,20 @@ export default class ModelObject {
 
   // Hook for sprite implementations
   init() {
-    console.log("- sprite hook", this.id, this.pos);
+    console.log('- sprite hook', this.id, this.pos);
   }
 
   // speak
   speak(text, showBubble = false) {
     if (!text) this.speech.clearHud();
     else {
-      this.textbox = this.engine.scrollText(this.id + ":> " + text, true, { portrait: this.portrait ?? false });
+      this.textbox = this.engine.scrollText(this.id + ':> ' + text, true, {
+        portrait: this.portrait ?? false,
+      });
       if (showBubble && this.speech) {
-        this.speech.scrollText(text, false, { portrait: this.portrait ?? false });
+        this.speech.scrollText(text, false, {
+          portrait: this.portrait ?? false,
+        });
         this.speech.loadImage();
       }
     }
@@ -335,7 +333,7 @@ export default class ModelObject {
   // Set Facing
   faceDir(facing) {
     if (this.facing == facing || facing === Direction.None) return null;
-    return new ActionLoader(this.engine, "face", [facing], this);
+    return new ActionLoader(this.engine, 'face', [facing], this);
   }
 
   // set message (for chat bubbles)
@@ -345,6 +343,6 @@ export default class ModelObject {
     }
     this.speech.writeText(greeting);
     this.speech.loadImage();
-    return new ActionLoader(this.engine, "greeting", [greeting, { autoclose: true }], this);
+    return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
   }
 }

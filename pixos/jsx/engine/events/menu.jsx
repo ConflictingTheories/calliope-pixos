@@ -15,8 +15,8 @@ export default {
   // Initialize Dialogue Object
   init: function (menu, activeMenus, scrolling = true, options = { autoclose: false, closeOnEnter: false }) {
     this.engine = this.world.engine;
-    this.text = "";
-    this.prompt = "";
+    this.text = '';
+    this.prompt = '';
     this.scrolling = scrolling;
     this.line = 0;
     this.options = options;
@@ -56,7 +56,7 @@ export default {
         let section = this.menuDict[id];
         let colors = section.colours;
         if (section.active) {
-          colors["background"] = "#555";
+          colors['background'] = '#555';
         }
         this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
         if (section.prompt) {
@@ -134,12 +134,12 @@ export default {
     // Keyboard
     if (time > this.lastKey + 100) {
       switch (this.engine.keyboard.lastPressedCode()) {
-        case "Escape":
+        case 'Escape':
           if (this.quittable) {
             this.completed = true;
           }
           break;
-        case "Enter":
+        case 'Enter':
           Object.keys(this.menuDict)
             .filter((key) => this.activeMenus.includes(key))
             .map((id) => {

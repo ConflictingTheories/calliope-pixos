@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from "@Engine/utils/loaders/index.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
+import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
 
 export default class NPC extends Sprite {
   constructor(engine) {
@@ -23,39 +23,34 @@ export default class NPC extends Sprite {
     // enable speech
     this.enableSpeech = true;
     // Interaction Management
-    this.state = "intro";
+    this.state = 'intro';
   }
   // Interaction
   interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {
-      case "intro":
-        this.state = "loop";
-        ret = new ActionLoader(
-          this.engine,
-          "dialogue",
-          ["Buying stuff eh?!", false, { autoclose: true, onClose: () => finish(true) }],
-          this
-        );
+      case 'intro':
+        this.state = 'loop';
+        ret = new ActionLoader(this.engine, 'dialogue', ['Buying stuff eh?!', false, { autoclose: true, onClose: () => finish(true) }], this);
         if (typeof window.ethereum !== 'undefined') {
           console.log('MetaMask is installed!');
         }
         break;
-      case "loop":
-        this.state = "loop2";
+      case 'loop':
+        this.state = 'loop2';
         ret = new ActionLoader(
           this.engine,
-          "dialogue",
-          ["I heard about a strange legend once.", false, { autoclose: true, onClose: () => finish(true) }],
+          'dialogue',
+          ['I heard about a strange legend once.', false, { autoclose: true, onClose: () => finish(true) }],
           this
         );
         break;
-      case "loop2":
-        this.state = "loop";
+      case 'loop2':
+        this.state = 'loop';
         ret = new ActionLoader(
           this.engine,
-          "dialogue",
+          'dialogue',
           ["Sorry, I don't remember the story at the moment", false, { autoclose: true, onClose: () => finish(true) }],
           this
         );

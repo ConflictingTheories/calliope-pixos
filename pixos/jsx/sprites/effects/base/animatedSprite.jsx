@@ -11,9 +11,9 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { translate, rotate } from "@Engine/utils/math/matrix4.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import { Vector } from "@Engine/utils/math/vector.jsx";
+import { translate, rotate } from '@Engine/utils/math/matrix4.jsx';
+import Sprite from '@Engine/core/sprite.jsx';
+import { Vector } from '@Engine/utils/math/vector.jsx';
 
 export default class AnimatedSprite extends Sprite {
   constructor(engine) {

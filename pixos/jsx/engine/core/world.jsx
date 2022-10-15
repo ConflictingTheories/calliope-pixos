@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Zone from "./zone.jsx";
-import ActionQueue from "./queue.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
-import { EventLoader } from "@Engine/utils/loaders/index.jsx";
+import Zone from './zone.jsx';
+import ActionQueue from './queue.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
+import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 export default class World {
   constructor(engine, id) {
     this.id = id;
@@ -102,31 +102,21 @@ export default class World {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
       // start
-      if (this.engine.gamepad.keyPressed("start")) {
-        touchmap["start"] = 0;
+      if (this.engine.gamepad.keyPressed('start')) {
+        touchmap['start'] = 0;
       }
       // select
-      if (this.engine.gamepad.keyPressed("select")) {
-        touchmap["select"] = 0;
+      if (this.engine.gamepad.keyPressed('select')) {
+        touchmap['select'] = 0;
         this.engine.toggleFullscreen();
       }
     }
   }
 
   // open start menu
-  startMenu(menuConfig, defaultMenus = ["start"]) {
+  startMenu(menuConfig, defaultMenus = ['start']) {
     this.addEvent(
-      new EventLoader(
-        this.engine,
-        "menu",
-        [
-          menuConfig ?? this.menuConfig,
-          defaultMenus,
-          false,
-          { autoclose: false, closeOnEnter: true },
-        ],
-        this
-      )
+      new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
   }
 
@@ -221,42 +211,19 @@ export default class World {
       visited.push(jsonNeighbour);
       return world
         .getNeighbours(...neighbour)
-        .sort((a, b) =>
-          Math.min(
-            Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
-            Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
-          )
-        )
-        .map((neigh) =>
-          buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]])
-        )
+        .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
+        .map((neigh) => buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]]))
         .filter((x) => x)
         .flat();
     }
     // Fetch Steps
     steps = world
       .getNeighbours(x, y)
-      .sort((a, b) =>
-        Math.min(
-          Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
-          Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
-        )
-      )
+      .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
       .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
       .filter((x) => x[0]);
     // Flatten Path from Segments
-    console.log(
-      "pathing",
-      world,
-      world.getNeighbours(x, y),
-      visited,
-      found,
-      x,
-      y,
-      from,
-      to,
-      steps
-    );
+    console.log('pathing', world, world.getNeighbours(x, y), visited, found, x, y, from, to, steps);
     return steps.flat();
   }
 
@@ -280,11 +247,7 @@ export default class World {
       visited.indexOf(jsonNeighbour) >= 0 ||
       !zone ||
       !zone.isWalkable(...neighbour) ||
-      !zone.isWalkable(
-        neighbour[0],
-        neighbour[1],
-        Direction.reverse(neighbour[2])
-      )
+      !zone.isWalkable(neighbour[0], neighbour[1], Direction.reverse(neighbour[2]))
     ) {
       return false;
     }

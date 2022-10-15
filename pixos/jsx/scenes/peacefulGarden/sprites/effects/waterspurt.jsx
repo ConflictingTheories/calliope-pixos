@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Spurt from "@Sprites/effects/spurt.jsx";
-import Resources from "@Engine/utils/resources.jsx";
+import Spurt from '@Sprites/effects/spurt.jsx';
+import Resources from '@Engine/utils/resources.jsx';
 export default class WaterSpurt extends Spurt {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl("tileset.png");
+    this.src = Resources.artResourceUrl('tileset.png');
     this.sheetSize = [512, 512];
     this.tileSize = [16, 16];
     // Frames
