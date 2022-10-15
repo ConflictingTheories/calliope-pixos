@@ -28,7 +28,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const recordingRef = useRef();
   const mergeCanvasRef = useRef();
   const previewRef = useRef();
-  const chunks = []; // recording
+  const previewBoxRef = useRef();
 
   // keyboard & touch
   let keyboard = new Keyboard();
@@ -37,6 +37,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   let engine = null;
 
   // recording stream & media tracks
+  let chunks = []; // recording
   let [isRecording, setRecording] = useState(false);
   let [recorder, setRecorder] = useState();
   let [cStream, setStream] = useState();
@@ -178,13 +179,13 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
 
     // stream video output (single canvas element?)
     cStream = mergeCanvas.captureStream();
-    // streamToVideo(cStream, previewRef);
+    streamToVideo(cStream, previewRef);
 
     // setup recorder (todo -- move into the engine to access audio streams)
     recorder = new MediaRecorder(cStream);
 
     // allow dragging preview video around
-    // dragElement(previewRef);
+    dragElement(previewBoxRef);
 
     // Webgl Engine
     engine = new glEngine(canvas, hud, mipmap, gamepad, width, height);
@@ -205,13 +206,13 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     };
   }, [SceneProvider]);
 
-  let wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight;
-  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? wrapperHeight : wrapperHeight - 200;
-  let canvasWidth = screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth;
+  let wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
+  let canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
 
   return (
-    <div>
+    <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>
       <div
         style={{
           position: 'relative',
@@ -294,8 +295,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       </div>
       <div>
         {/* Preview & Recording */}
-        <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
-        <video style={{ display: isRecording ? 'none' : 'block' }} ref={recordingRef}></video>
+        <div ref={previewBoxRef}>
+          <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
+          <video style={{ display: isRecording ? 'none' : 'block' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={recordingRef}></video>
+        </div>
 
         {/* Recording Buttons - todo - style and include video controls */}
         <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
