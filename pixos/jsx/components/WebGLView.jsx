@@ -26,14 +26,20 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const mmRef = useRef();
   const recordBtnRef = useRef();
   const recordingRef = useRef();
-  const viewRef = useRef();
+  const mergeCanvasRef = useRef();
   const previewRef = useRef();
   const chunks = []; // recording
 
+  // keyboard & touch
   let keyboard = new Keyboard();
   let onKeyEvent = SceneProvider.onKeyEvent;
   let onTouchEvent = SceneProvider.onTouchEvent;
   let engine = null;
+
+  // recording stream & media tracks
+  let [isRecording, setRecording] = useState(false);
+  let [recorder, setRecorder] = useState();
+  let [cStream, setStream] = useState();
 
   // Resize
   const [screenSize, getDimension] = useState({
@@ -54,6 +60,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     document.fonts.add(minecraftia);
   }
 
+  // convert stream to video
   function streamToVideo(stream, ref) {
     let video = document.createElement('video');
     if (ref) {
@@ -66,6 +73,86 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     return video;
   }
 
+  // stop recording and display recording
+  function stopRecording(recorder) {
+    recordingRef.current.pause();
+    recorder?.stop();
+  }
+
+  // record gameplay to video stream
+  function startRecording(cStream, recorder) {
+    setRecorder(recorder);
+    setStream(cStream);
+
+    // start
+    recorder.start();
+    recorder.onstart = () => {
+      setRecording(true);
+      streamToVideo(cStream, previewRef);
+    };
+
+    // capture output from merge & preview
+    recorder.ondataavailable = (e) => {
+      e.data.size && chunks.push(e.data);
+    };
+
+    // handle export and display video
+    recorder.onstop = function exportStream(e) {
+      if (chunks.length) {
+        setRecording(false);
+        // generate blob
+        let blob = new Blob(chunks);
+        let vidURL = URL.createObjectURL(blob);
+        // output recording video
+        let vid = recordingRef.current;
+        vid.controls = true;
+        vid.src = vidURL;
+        vid.onend = function () {
+          URL.revokeObjectURL(vidURL);
+        };
+        // clear buffer
+        chunks = [];
+      }
+    };
+  }
+
+  // Provide Draggable Preview to move window around
+  function dragElement(ref) {
+    try {
+      let pos1 = 0,
+        pos2 = 0,
+        pos3 = 0,
+        pos4 = 0;
+
+      ref.current.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        ref.current.onmouseup = closeDragElement;
+        ref.current.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        ref.current.style.top = ref.current.offsetTop - pos2 + 'px';
+        ref.current.style.left = ref.current.offsetLeft - pos1 + 'px';
+      }
+
+      function closeDragElement() {
+        ref.current.onmouseup = null;
+        ref.current.onmousemove = null;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   useEffect(async () => {
     // handle resize
     window.addEventListener('resize', setDimension);
@@ -75,32 +162,39 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     const mipmap = mmRef.current;
     const gamepad = gamepadRef.current;
 
+    // merge streams canvas
+    const mergeCanvas = mergeCanvasRef.current;
+    let mergeContext = mergeCanvas.getContext('2d');
+
+    cStream = mergeCanvas.captureStream(30);
+    recorder = new MediaRecorder(cStream);
+    
     // streams
-    let gameVideo = streamToVideo(ref.current.captureStream());
-    let hudVideo = streamToVideo(hudRef.current.captureStream());
-
-    // preview canvas
-    let previewCanvas = viewRef.current;
-    let context = previewCanvas.getContext('2d');
-
+    let gameVideo = streamToVideo(canvas.captureStream());
+    let hudVideo = streamToVideo(hud.captureStream());
+    
     // merge hud + canvas into preview (for recording / screen capture)
-    (function draw() {
-      context.drawImage(gameVideo, 0, 0, previewCanvas.width, previewCanvas.height);
-      // 200x150 - 4:3 - update
-      let w = 200;
-      let h = 150;
-      context.drawImage(hudVideo, previewCanvas.width - w, previewCanvas.height - h, w, h);
-      requestAnimationFrame(draw);
+    (function mergeStreams() {
+      mergeContext.drawImage(gameVideo, 0, 0, mergeCanvas.width, mergeCanvas.height);
+      mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height);
+      requestAnimationFrame(mergeStreams);
     })();
+
+    // allow dragging preview around
+    dragElement(previewRef);
 
     // Webgl Engine
     engine = new glEngine(canvas, hud, mipmap, gamepad, width, height);
+
     // load fonts
     await loadFonts();
+
     // Initialize Scene
     await engine.init(SceneProvider, keyboard);
+
     // render loop
     engine.render();
+
     // cleanup
     return () => {
       window.removeEventListener('resize', setDimension);
@@ -111,6 +205,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight - 200;
   let canvasWidth = screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
+
   return (
     <div>
       <div
@@ -184,54 +279,19 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         {/* MIPMAP - For Sprite Text / Speech / Titles */}
         <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
         {/* Movie Preview Canvas / Recording */}
-        <canvas ref={viewRef}></canvas>
+        <canvas width={canvasWidth} height={canvasHeight} ref={mergeCanvasRef} style={{ display: 'none' }}></canvas>
       </div>
       <div>
         {/* Preview Video */}
-        <video ref={previewRef}></video>
+        <video style={{ position: 'absolute', zIndex: 10000 }} ref={previewRef}></video>
         {/* Recording Video */}
-        <video ref={recordingRef}></video>
-        {/* Button */}
-        <button
-          ref={recordBtnRef}
-          onClick={() => {
-            recordBtnRef.current.textContent = 'stop recording';
-            let cStream = viewRef.current.captureStream(30);
-            let recorder = new MediaRecorder(cStream);
-
-            // start
-            recorder.start();
-            recorder.onstart = () => {
-              // capture output from merge & preview
-              streamToVideo(cStream, previewRef);
-            };
-
-            recorder.ondataavailable = (e) => {
-              e.data.size && chunks.push(e.data);
-            };
-
-            // handle export and display video
-            recorder.onstop = function exportStream(e) {
-              if (chunks.length) {
-                let blob = new Blob(chunks);
-                let vidURL = URL.createObjectURL(blob);
-                let vid = recordingRef.current;
-                vid.controls = true;
-                vid.src = vidURL;
-                vid.onend = function () {
-                  URL.revokeObjectURL(vidURL);
-                };
-              }
-            };
-
-            // stop
-            recordBtnRef.current.onclick = () => {
-              recordingRef.current.pause();
-              recorder.stop();
-            };
-          }}
-        >
-          record
+        <video style={{ display: isRecording ? 'none' : 'block' }} ref={recordingRef}></video>
+        {/* Recording Buttons */}
+        <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
+          Record Gameplay
+        </button>
+        <button style={{ display: isRecording ? 'block' : 'none' }} ref={recordBtnRef} onClick={() => stopRecording(recorder)}>
+          Stop Recording
         </button>
       </div>
     </div>
