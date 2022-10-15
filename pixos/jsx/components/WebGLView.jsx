@@ -88,7 +88,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     recorder.start();
     recorder.onstart = () => {
       setRecording(true);
-      streamToVideo(cStream, previewRef);
     };
 
     // capture output from merge & preview
@@ -162,26 +161,30 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     const mipmap = mmRef.current;
     const gamepad = gamepadRef.current;
 
+    // streams
+    let gameVideo = streamToVideo(canvas.captureStream());
+    let hudVideo = streamToVideo(hud.captureStream());
+
     // merge streams canvas
     const mergeCanvas = mergeCanvasRef.current;
     let mergeContext = mergeCanvas.getContext('2d');
 
-    cStream = mergeCanvas.captureStream(30);
-    recorder = new MediaRecorder(cStream);
-    
-    // streams
-    let gameVideo = streamToVideo(canvas.captureStream());
-    let hudVideo = streamToVideo(hud.captureStream());
-    
     // merge hud + canvas into preview (for recording / screen capture)
     (function mergeStreams() {
-      mergeContext.drawImage(gameVideo, 0, 0, mergeCanvas.width, mergeCanvas.height);
-      mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height);
+      mergeContext.drawImage(gameVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // game
+      mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // hud
       requestAnimationFrame(mergeStreams);
     })();
 
-    // allow dragging preview around
-    dragElement(previewRef);
+    // stream video output (single canvas element?)
+    cStream = mergeCanvas.captureStream();
+    // streamToVideo(cStream, previewRef);
+
+    // setup recorder (todo -- move into the engine to access audio streams)
+    recorder = new MediaRecorder(cStream);
+
+    // allow dragging preview video around
+    // dragElement(previewRef);
 
     // Webgl Engine
     engine = new glEngine(canvas, hud, mipmap, gamepad, width, height);
@@ -202,7 +205,8 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     };
   }, [SceneProvider]);
 
-  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight - 200;
+  let wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? 900 : screenSize.dynamicHeight;
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 900 ? wrapperHeight : wrapperHeight - 200;
   let canvasWidth = screenSize.dynamicWidth > 1440 ? 1440 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
 
@@ -266,7 +270,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           ref={gamepadRef}
           hidden={!showGamepad}
           width={canvasWidth}
-          height={canvasHeight + 200}
+          height={wrapperHeight}
           className={string}
           onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
           onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
@@ -278,15 +282,22 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
         />
         {/* MIPMAP - For Sprite Text / Speech / Titles */}
         <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
-        {/* Movie Preview Canvas / Recording */}
-        <canvas width={canvasWidth} height={canvasHeight} ref={mergeCanvasRef} style={{ display: 'none' }}></canvas>
+        {/* Merged Preview Canvas / Recording Source*/}
+        <canvas
+          width={canvasWidth}
+          height={canvasHeight}
+          ref={mergeCanvasRef}
+          style={{
+            display: 'none',
+          }}
+        ></canvas>
       </div>
       <div>
-        {/* Preview Video */}
-        <video style={{ position: 'absolute', zIndex: 10000 }} ref={previewRef}></video>
-        {/* Recording Video */}
+        {/* Preview & Recording */}
+        <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
         <video style={{ display: isRecording ? 'none' : 'block' }} ref={recordingRef}></video>
-        {/* Recording Buttons */}
+
+        {/* Recording Buttons - todo - style and include video controls */}
         <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
           Record Gameplay
         </button>
