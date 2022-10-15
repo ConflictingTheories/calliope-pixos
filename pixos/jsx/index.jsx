@@ -43,7 +43,7 @@ class Pixos extends Component {
   render() {
     const { updated, scene } = this.state;
     return (
-      <div style={{ margin: 0, minHeight: '480px', maxHeight: '100vh' }}>
+      <div style={{ margin: 0, minHeight: '480px', minWidth: '640px' }}>
         <WebGLView height="480px" width="640px" class="pixos" key={`pixos-${updated}`} SceneProvider={scene} />
       </div>
     );
