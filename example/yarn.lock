@@ -3049,10 +3049,10 @@ caller-path@^2.0.0:
   dependencies:
     caller-callsite "^2.0.0"
 
-calliope-pixos@^0.5.10:
-  version "0.5.10"
-  resolved "https://registry.yarnpkg.com/calliope-pixos/-/calliope-pixos-0.5.10.tgz#8b8896d20768ce6adf5d8e8ba3814dcfd29c265f"
-  integrity sha512-PLAeMlcN46cF1VSTo215XBM9OhsGqjE9qVP6n80744m3ipblsK/qJthFN08195ca/z+NYtKenLwf63ExQ9GLCA==
+calliope-pixos@^0.5.35:
+  version "0.5.35"
+  resolved "https://registry.yarnpkg.com/calliope-pixos/-/calliope-pixos-0.5.35.tgz#42e106a963d4776e9e6991b93ef96e4b9daec621"
+  integrity sha512-Z+UQwFXqtF3mYh64b+1CKr1QawGAq/F0KVwzeDbGK6JRs0193FmSPggw6/pgYb47ASvMhkAyDmT6adj7AIJQsg==
   dependencies:
     babel-loader "^8.2.5"
     css-loader "^6.7.1"
