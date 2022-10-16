@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.6.18",
+  "version": "0.6.30",
   "description": "Pixos is a mini interactive scene avatar plugin for calliope static site generator.",
   "main": "dist/bundle.js",
   "scripts": {
@@ -58,6 +58,7 @@
     "file-saver": "^2.0.5",
     "jszip": "^3.7.1",
     "prop-types": "^15.7.2",
+    "realtime-bpm-analyzer": "^2.1.6",
     "style-loader": "^3.3.1"
   }
 }

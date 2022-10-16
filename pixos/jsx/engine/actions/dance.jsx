@@ -20,25 +20,23 @@ export default {
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/brass-loop.mp3');
+    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/sewer-beat.mp3', true);
     // if (this.zone.audio) this.zone.audio.pauseAudio();
+
+    // analyze the audio context
     this.audio.playAudio();
-    this.audioContext = new AudioContext();
-    this.analyser = this.audioContext.createAnalyser();
-    this.audioSource = this.audioContext.createMediaElementSource(this.audio.audio);
-    this.audioSource.connect(this.analyser);
-    this.analyser.connect(this.audioContext.destination);
   },
   tick: function (time) {
     if (!this.loaded) return;
     // listen to audio freq data
-    let fbc_array = new Uint8Array(this.analyser.frequencyBinCount);
-    this.analyser.getByteFrequencyData(fbc_array);
-    this.checkInput(time);
+    let fbc_array = new Uint8Array(this.audio.analyser.frequencyBinCount);
+    this.audio.analyser.getByteFrequencyData(fbc_array);
+
     // load up moves - todo (improve this and make it less manual)
+    this.checkInput(time);
     let endTime = this.startTime + this.moveLength;
     if (time > endTime) {
-      // set facing based on audio
+      //   // set facing based on audio
       let facing = this.sprite.facing == Direction.Right ? Direction.Left : Direction.Right;
       let bar_pos,
         bar_width,
@@ -57,6 +55,33 @@ export default {
       this.sprite.addAction(this.sprite.faceDir(facing));
       this.startTime = time;
     }
+
+    // change on the beat (NEEDS WORK)
+    // let facing = this.sprite.facing;
+    // let beat = this.audio.bpm ? time % ((this.audio.bpm[0].tempo ?? 1) * 1000) : 1;
+    // while (beat === 0) {
+    //   switch (this.sprite.facing) {
+    //     case Direction.Up:
+    //       facing = Direction.Left;
+    //       break;
+    //     case Direction.Down:
+    //       facing = Direction.Right;
+    //       break;
+    //     case Direction.Right:
+    //       facing = Direction.Up;
+    //       break;
+    //     case Direction.Left:
+    //       facing = Direction.Down;
+    //       break;
+    //     default:
+    //       facing = Direction.Down;
+    //       break;
+    //   }
+    // }
+    // this.sprite.addAction(this.sprite.faceDir(facing));
+    // this.startTime = time;
+    // }
+
     // next move
     return this.completed; // loop
   },

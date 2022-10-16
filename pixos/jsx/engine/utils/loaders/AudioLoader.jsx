@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+import { RealTimeBPMAnalyzer } from 'realtime-bpm-analyzer';
 
 // Loads Audio
 export class AudioLoader {
@@ -45,6 +46,32 @@ export class AudioTrack {
     this.src = src;
     this.playing = false;
     this.audio = new Audio(src);
+    this.audioContext = new AudioContext();
+    this.bpm = 0;
+    this.analyser = this.audioContext.createAnalyser();
+    this.audioSource = this.audioContext.createMediaElementSource(this.audio);
+    this.audioSource.connect(this.analyser);
+    // this.audioSource.connect(this.audioContext.destination);
+    this.audioNode = this.audioContext.createScriptProcessor(4096, 1, 1);
+    this.audioNode.connect(this.audioContext.destination);
+    // Connect everythings together
+    this.audioSource.connect(this.audioNode);
+    this.audioSource.connect(this.audioContext.destination);
+    // bpm analyzer
+    const onAudioProcess = new RealTimeBPMAnalyzer({
+      scriptNode: {
+        bufferSize: 4096,
+      },
+      pushTime: 2000,
+      pushCallback: (err, bpm) => {
+        console.log('bpm', err, bpm);
+        this.bpm = bpm;
+      },
+    });
+    this.audioNode.onaudioprocess = (e) => {
+      onAudioProcess.analyze(e);
+    };
+
     // loop if set
     if (loop) {
       this.audio.addEventListener(

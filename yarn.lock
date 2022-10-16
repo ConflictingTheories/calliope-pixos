@@ -485,7 +485,7 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.8.0"
 
-"@babel/plugin-syntax-jsx@^7.17.12", "@babel/plugin-syntax-jsx@^7.18.6":
+"@babel/plugin-syntax-jsx@^7.17.12":
   version "7.18.6"
   resolved "https://registry.npmjs.org/@babel/plugin-syntax-jsx/-/plugin-syntax-jsx-7.18.6.tgz"
   integrity sha512-6mmljtAedFGTWu2p/8WIORGwy+61PLgOMPOdazc7YoJ9ZCWUyFy3A6CpPkRKLKD1ToAesxX8KGEViAiLo9N+7Q==
@@ -3475,6 +3475,11 @@ readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
+
+realtime-bpm-analyzer@^2.1.6:
+  version "2.1.6"
+  resolved "https://registry.yarnpkg.com/realtime-bpm-analyzer/-/realtime-bpm-analyzer-2.1.6.tgz#3d820f5c38288edac0598b7713871f0523890606"
+  integrity sha512-VTdTWOEgY58Uk1mkd/fi48MJSPdqV8MXSKc+FstpkXtRHGRqkYxrfqGKlZ4GY7TceMsauE6WnSfONGQK+MuJcQ==
 
 rechoir@^0.7.0:
   version "0.7.1"
