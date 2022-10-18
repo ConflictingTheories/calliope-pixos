@@ -19,9 +19,9 @@ import { Vector, negate } from '@Engine/utils/math/vector.jsx';
 import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
 import { textScrollBox } from '@Engine/core/hud.jsx';
 import { GamePad } from '@Engine/utils/gamepad/index.jsx';
-import Speech from '@Engine/core/speech.jsx';
 import { OBJ } from '@Engine/utils/obj';
 import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
+import Speech from '@Engine/core/speech.jsx';
 import Keyboard from '@Engine/utils/keyboard.jsx';
 
 export default class GLEngine {

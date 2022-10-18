@@ -1,5 +1,9 @@
 // Map
 export function dynamicCells(cells, Tileset) {
+  // handle cells generator
+  if (typeof cells === 'string') {
+    return cells;
+  }
   let result = [];
   cells.forEach((row, i) => {
     let len = row.size;
