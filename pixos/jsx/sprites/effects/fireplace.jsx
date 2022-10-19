@@ -13,7 +13,7 @@
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import Resources from '@Engine/utils/resources.jsx';
-import AnimatedSprite from './base/animatedSprite.jsx';
+import AnimatedSprite from '@Sprites/effects/base/animatedSprite.jsx';
 
 export default class Fireplace extends AnimatedSprite {
   constructor(engine) {
