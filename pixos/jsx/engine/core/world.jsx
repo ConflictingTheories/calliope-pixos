@@ -22,6 +22,12 @@ export default class World {
     this.engine = engine;
     this.zoneDict = {};
     this.zoneList = [];
+    this.spriteDict = {};
+    this.spriteList = [];
+    this.objectDict = {};
+    this.objectList = [];
+    this.tilesetDict = {};
+    this.tilesetList = [];
     this.eventList = [];
     this.eventDict = {};
     this.lastKey = new Date().getTime();
@@ -50,6 +56,8 @@ export default class World {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
   }
 
+  // todo -- setup method to read in json objects from zip
+
   // Fetch and Load Zone
   async loadZoneFromZip(zoneId, zip, skipCache = false) {
     // check cache ?
@@ -59,8 +67,14 @@ export default class World {
     // todo
     //
 
-    let zoneJson = ''; // main map file (/zip/maps/{zoneId}/map.json)
-    let cellJson = ''; // cells (/zip/maps/{zoneId}/cells.json)
+    let zoneJson = await zip
+      .file('/maps/' + zoneId + '/map.json')
+      .async('string')
+      .then(JSON.parse); // main map file (/zip/maps/{zoneId}/map.json)
+    let cellJson = await zip
+      .file('/maps/' + zoneId + '/cells.json')
+      .async('string')
+      .then(JSON.parse); // cells (/zip/maps/{zoneId}/cells.json)
 
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);

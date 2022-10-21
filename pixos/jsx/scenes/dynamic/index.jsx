@@ -56,31 +56,72 @@ export default class DynamicScene extends Scene {
                 let file = engine.fileUpload.files[0];
                 let zip = await JSZip.loadAsync(file);
 
-                zip.forEach(function (relativePath, zipEntry) {
-                  // Read Files and Store into local store
-                  console.log({ relativePath, name: zipEntry.name });
-                 
-                  if (relativePath === 'manifest.json') {
-                    console.log('found manifest...loading & storing content');
-                    // read content from manifest and load from zip
-                    //
-                    // -- only files in manifest are loaded.
-                    // --
-                    // -- they are applied by type and dynamically
-                    // --
-                    // -- loaded into memory.
-                  }
+                zip.forEach((path, file) => {
+                  console.log(path);
                 });
+
+                // find manifest and read
+                let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
+                console.log(manifest);
+
+                // read in zone files
+                let zones = await Promise.all(
+                  manifest.maps.map(async (zoneId) => {
+                    let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string'));
+                    let zoneCells = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string'));
+                    return { id: zoneId, map: zoneJson, cells: zoneCells };
+                  })
+                );
+                console.log(zones);
+
+                // read in sprites
+                let sprites = await Promise.all(
+                  manifest.sprites.map(async (spriteId) => {
+                    let spriteJson = JSON.parse(zip.file('sprites/' + spriteId + '.json').async('string'));
+                    return { id: spriteId, sprite: spriteJson };
+                  })
+                );
+                console.log(sprites);
+
+                // read in objects
+                let objects = await Promise.all(
+                  manifest.objects.map(async (objectId) => {
+                    let spriteJson = JSON.parse(zip.file('objects/' + objectId + '.json').async('string'));
+                    return { id: objectId, sprite: spriteJson };
+                  })
+                );
+                console.log(objects);
+
+                // read in tilesets
+                // let tilesets = await Promise.all(manifest.tilesets.map(async (tilesetId) => {
+                //   let tilesetJson = JSON.parse(zip.file('/tilesets/' + tilesetId + '.json').async('string'));
+                //   let tilesetGeo = JSON.parse(zip.file('/tilesets/' + tilesetId + '.json').async('string'));
+                //   return { id: tilesetId, tileset: tilesetJson, geometry: tilesetGeo };
+                // }));
+                // console.log(tilesets);
+
+                // todo read in assets / tilesets
+
+                // read content from manifest and load from zip
+                //
+                // -- only files in manifest are loaded.
+                // --
+                // -- they are applied by type and dynamically
+                // --
+                // -- loaded into memory.
+
+                // load initial zone from zip file
+                world.initialZoneId = manifest.intialZone;
+                console.log('Initializing initial zone...' + world.initialZoneId);
+
+                // world.loadZoneFromZip(initialZoneId, zip, true);
+
+                // Exit Menu
+                menu.completed = true;
               } catch (e) {
                 console.error(e);
                 return;
               }
-
-              // load zone from zip file
-              world.loadZoneFromZip(initialZoneId, zip, true);
-
-              // Exit Menu
-              menu.completed = true;
             };
             return;
           }

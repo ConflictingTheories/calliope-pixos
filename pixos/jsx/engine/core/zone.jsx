@@ -114,6 +114,8 @@ export default class Zone {
   }
 
   // Load from Json components -- For more Dynamic Evaluation
+  // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
+  // as it is reading everything from the prebundled zip
   async loadJson(zoneJson, cellJson) {
     try {
       // Extract and Read in Information
