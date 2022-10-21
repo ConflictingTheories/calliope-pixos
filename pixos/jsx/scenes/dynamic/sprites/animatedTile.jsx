@@ -83,7 +83,7 @@ export default class DynamicAnimatedTile extends AnimatedTile {
     evalStatement.push('default:\n\tbreak;\n}');
 
     // evaluate state machine for npc
-    eval(evalStatement.join(''));
+    eval.apply(this, evalStatement.join(''));
 
     // assuming there is an action present - this will add it to the queue
     if (ret) this.addAction(ret);

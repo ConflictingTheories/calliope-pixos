@@ -122,7 +122,7 @@ export default class Zone {
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells === 'string') {
-        this.cells = eval(this.cells)(this.bounds, this);
+        this.cells = eval.apply(this, this.cells)(this.bounds, this);
       }
       // audio loader
       if (this.audioSrc) {
@@ -135,7 +135,7 @@ export default class Zone {
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
       if (typeof this.sprites === 'string') {
-        this.sprites = eval(this.sprites)(this.bounds, this);
+        this.sprites = eval.apply(this, this.sprites)(this.bounds, this);
       }
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));

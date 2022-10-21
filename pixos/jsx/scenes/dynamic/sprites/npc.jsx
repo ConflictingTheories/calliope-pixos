@@ -13,6 +13,7 @@
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import NPC from '@Sprites/npc/base/NPC.jsx';
 
 export default class DynamicNpc extends NPC {
   constructor(engine, json) {
@@ -57,7 +58,7 @@ export default class DynamicNpc extends NPC {
     evalStatement.push('default:\n\tbreak;\n}');
 
     // evaluate state machine for npc
-    eval(evalStatement.join(''));
+    eval.apply(this, evalStatement.join(''));
 
     // assuming there is an action present - this will add it to the queue
     if (ret) this.addAction(ret);
