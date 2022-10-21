@@ -15,7 +15,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import glEngine from '@Engine/core/index.jsx';
-import Keyboard from '@Engine/utils/keyboard.jsx';
 import { minecraftia } from '@Engine/core/hud.jsx';
 //
 const WebGLView = ({ width, height, SceneProvider, class: string }) => {
@@ -31,7 +30,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const previewBoxRef = useRef();
 
   // keyboard & touch
-  let keyboard = new Keyboard();
   let onKeyEvent = SceneProvider.onKeyEvent;
   let onTouchEvent = SceneProvider.onTouchEvent;
   let engine = null;
@@ -194,7 +192,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     await loadFonts();
 
     // Initialize Scene
-    await engine.init(SceneProvider, keyboard);
+    await engine.init(SceneProvider);
 
     // render loop
     engine.render();

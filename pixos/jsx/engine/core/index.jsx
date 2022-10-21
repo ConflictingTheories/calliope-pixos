@@ -19,9 +19,10 @@ import { Vector, negate } from '@Engine/utils/math/vector.jsx';
 import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
 import { textScrollBox } from '@Engine/core/hud.jsx';
 import { GamePad } from '@Engine/utils/gamepad/index.jsx';
-import Speech from '@Engine/core/speech.jsx';
 import { OBJ } from '@Engine/utils/obj';
 import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
+import Speech from '@Engine/core/speech.jsx';
+import Keyboard from '@Engine/utils/keyboard.jsx';
 
 export default class GLEngine {
   constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
@@ -67,7 +68,7 @@ export default class GLEngine {
   }
 
   // Initialize a Scene object
-  async init(scene, keyboard) {
+  async init(scene) {
     const ctx = this.hud.getContext('2d');
     const gl = this.canvas.getContext('webgl');
     const gp = this.gamepadcanvas.getContext('2d');
@@ -96,7 +97,7 @@ export default class GLEngine {
     this.gp = gp;
     this.time = new Date().getTime();
     this.scene = scene;
-    this.keyboard = keyboard;
+    this.keyboard = new Keyboard();
     this.fullscreen = false;
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
