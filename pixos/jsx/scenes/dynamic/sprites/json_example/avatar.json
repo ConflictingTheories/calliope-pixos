@@ -1,0 +1,38 @@
+{
+  "src": "player.gif",
+  "portraitSrc": "hero_portrait.gif",
+  "sheetSize": [128, 256],
+  "tileSize": [24, 32],
+  "state": "intro",
+  "gender": "male",
+  "frames": {
+    "up": [
+      [0, 0],
+      [24, 0],
+      [48, 0],
+      [24, 0]
+    ],
+    "right": [
+      [0, 32],
+      [24, 32],
+      [48, 32],
+      [24, 32]
+    ],
+    "down": [
+      [0, 64],
+      [24, 64],
+      [48, 64],
+      [24, 64]
+    ],
+    "left": [
+      [0, 96],
+      [24, 96],
+      [48, 96],
+      [24, 96]
+    ]
+  },
+  "drawOffset": [-0.25, 1, 0.125],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "bindCamera": true,
+  "enableSpeech": true
+}

@@ -1,4 +1,4 @@
-export default [
+[
   [
     "EMPTY",
     "EMPTY",
@@ -16,7 +16,7 @@ export default [
     "EMPTY",
     "EMPTY",
     "EMPTY",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -35,7 +35,7 @@ export default [
     "N_WALL",
     "NRW_CORNER",
     "EMPTY",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -54,7 +54,7 @@ export default [
     "FLOOR",
     "NRW_COLUMN",
     "NRW_CORNER",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -73,7 +73,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -92,7 +92,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -111,7 +111,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -130,7 +130,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -149,7 +149,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -168,7 +168,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -187,7 +187,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -206,7 +206,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -225,7 +225,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -244,7 +244,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -263,7 +263,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -282,7 +282,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -301,7 +301,7 @@ export default [
     "FLOOR",
     "FLOOR",
     "R_WALL",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -320,7 +320,7 @@ export default [
     "FLOOR",
     "SRW_COLUMN",
     "SRW_CORNER",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -339,7 +339,7 @@ export default [
     "S_WALL",
     "SRW_CORNER",
     "EMPTY",
-    "EMPTY",
+    "EMPTY"
   ],
   [
     "EMPTY",
@@ -358,6 +358,6 @@ export default [
     "EMPTY",
     "EMPTY",
     "EMPTY",
-    "EMPTY",
-  ],
-];
+    "EMPTY"
+  ]
+]

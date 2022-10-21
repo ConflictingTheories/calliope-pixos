@@ -1,0 +1,57 @@
+{
+  "src": "air-knight.gif",
+  "portraitSrc": "air_portrait.gif",
+  "sheetSize": [128, 256],
+  "tileSize": [24, 32],
+  "drawOffset": [-0.25, 1, 0.125],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "frames": {
+    "up": [
+      [0, 0],
+      [24, 0],
+      [48, 0],
+      [24, 0]
+    ],
+    "right": [
+      [0, 32],
+      [24, 32],
+      [48, 32],
+      [24, 32]
+    ],
+    "down": [
+      [0, 64],
+      [24, 64],
+      [48, 64],
+      [24, 64]
+    ],
+    "left": [
+      [0, 96],
+      [24, 96],
+      [48, 96],
+      [24, 96]
+    ]
+  },
+  "bindCamera": false,
+  "enableSpeech": true,
+  "state": "intro",
+  "states": [
+    {
+      "name": "intro",
+      "next": "loop",
+      "dialogue": "Buying eh??",
+      "callback": "\"async()=>{const e=(await window.ethereum.request({method:\\\"eth_requestAccounts\\\"}))[0],t=JSON.stringify({domain:{chainId:1,name:\\\"Pixos\\\",verifyingContract:\\\"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC\\\",version:\\\"1\\\"},message:{game:\\\"Example\\\",contents:\\\"Quest Item\\\",from:{sprite:\\\"air-knight\\\",wallet:\\\"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826\\\"},to:{sprite:\\\"avatar\\\",wallet:e}},primaryType:\\\"Item\\\",types:{EIP712Domain:[{name:\\\"name\\\",type:\\\"string\\\"},{name:\\\"version\\\",type:\\\"string\\\"},{name:\\\"chainId\\\",type:\\\"uint256\\\"},{name:\\\"verifyingContract\\\",type:\\\"address\\\"}],Item:[{name:\\\"game\\\",type:\\\"string\\\"},{name:\\\"contents\\\",type:\\\"string\\\"},{name:\\\"from\\\",type:\\\"Person\\\"},{name:\\\"to\\\",type:\\\"Person\\\"}],Person:[{name:\\\"sprite\\\",type:\\\"string\\\"},{name:\\\"wallet\\\",type:\\\"address\\\"}]}});var r=e,n=[r,t];window.web3.currentProvider.sendAsync({method:\\\"eth_signTypedData_v4\\\",params:n,from:r},(function(e,n){if(e)return;if(n.error&&alert(n.error.message),n.error)return;const a=window.sigUtil.recoverTypedSignature_v4({data:JSON.parse(t),sig:n.result});window.ethUtil.toChecksumAddress(a)===window.ethUtil.toChecksumAddress(r)?alert(\\\"Successfully recovered signer as \\\"+r):alert(\\\"Failed to verify signer when comparing \\\"+n+\\\" to \\\"+r)}))}\""
+    },
+    {
+      "name": "loop",
+      "next": "loop2",
+      "dialogue": "I heard about a strange legend once.",
+      "callback": ""
+    },
+    {
+      "name": "loop2",
+      "next": "loop",
+      "dialogue": "Sorry, I don't remember the story at the moment",
+      "callback": ""
+    }
+  ]
+}

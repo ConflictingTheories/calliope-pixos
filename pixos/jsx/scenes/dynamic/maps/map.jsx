@@ -15,6 +15,20 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 // Map Information
 export function loadMap(json, cells) {
+  // read sprites & handle functions
+  let sprites =
+    typeof json.sprites === 'string'
+      ? json.sprites
+      : json.sprites.map((sprite) => {
+          return {
+            id: sprite.id,
+            type: sprite.type,
+            pos: new Vector(...sprite.pos),
+            facing: Direction[sprite.facing],
+            zones: sprite.zones ?? null,
+          };
+        });
+
   return {
     // size of map
     bounds: json.bound,
@@ -23,15 +37,7 @@ export function loadMap(json, cells) {
     // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
     cells: cells,
     // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
-    sprites: json.sprites.map((sprite) => {
-      return {
-        id: sprite.id,
-        type: sprite.type,
-        pos: new Vector(...sprite.pos),
-        facing: Direction[sprite.facing],
-        zones: sprite.zones ?? null,
-      };
-    }),
+    sprites: sprites,
     // Scenes + Scenarios
     scenes: json.scenes.map((scene) => {
       return {
