@@ -15,6 +15,8 @@ import Resources from '@Engine/utils/resources.jsx';
 import ActionQueue from '@Engine/core/queue.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
+import { loadMap } from '@Scenes/dynamic/maps/map.jsx';
+import { dynamicCells } from '@Scenes/dynamic/maps/cells.jsx';
 
 // for dynamic loading -- todo
 // import { loadMap } from "../../scenes/maps/dynamic/map";
@@ -111,6 +113,42 @@ export default class Zone {
     }
   }
 
+  // Load from Json components -- For more Dynamic Evaluation
+  async loadJson(zoneJson, cellJson) {
+    try {
+      // Extract and Read in Information
+      let tileset = await this.tsLoader.load(zoneJson.tileset, this.sceneName);
+      let data = loadMap(zoneJson, dynamicCells(cellJson, tileset));
+      Object.assign(this, data);
+      // handle cells generator
+      if (typeof this.cells === 'string') {
+        this.cells = eval.apply(this, this.cells)(this.bounds, this);
+      }
+      // audio loader
+      if (this.audioSrc) {
+        this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
+      }
+      // Load tileset and create level geometry & trigger updates
+      this.tileset = tileset;
+      this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
+      this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+      this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
+      // Load sprites
+      if (typeof this.sprites === 'string') {
+        this.sprites = eval.apply(this, this.sprites)(this.bounds, this);
+      }
+      let self = this;
+      await Promise.all(self.sprites.map(self.loadSprite));
+      await Promise.all(self.objects.map(self.loadObject));
+      // Notify the zone sprites when the new sprite has loaded
+      self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+      self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+    } catch (e) {
+      console.error('Error parsing zone ' + this.id);
+      console.error(e);
+    }
+  }
+
   // Actions to run when the map has loaded
   runWhenLoaded(action) {
     if (this.loaded) action();
@@ -173,9 +211,9 @@ export default class Zone {
   }
 
   // Load Sprite
-  async loadSprite(_this, data) {
+  async loadSprite(_this, data, skipCache = false) {
     data.zone = _this;
-    if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
+    if (skipCache || (!this.spriteDict[data.id] && !_this.spriteDict[data.id])) {
       let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
