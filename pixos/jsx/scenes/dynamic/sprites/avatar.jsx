@@ -12,32 +12,30 @@
 \*                                                 */
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
-import Resources from '@Engine/utils/resources.jsx';
-import AnimatedSprite from '@Sprites/effects/base/animatedSprite.jsx';
+import Avatar from '@Engine/core/avatar.jsx';
 
-export default class Fireplace extends AnimatedSprite {
-  constructor(engine) {
+export default class DynamicAvatar extends Avatar {
+  constructor(engine, json) {
     // Initialize Sprite
     super(engine);
-    this.src = Resources.artResourceUrl('room.gif');
-    this.sheetSize = [256, 256];
-    this.tileSize = [48, 32];
-    this.fixed = true;
-    // Frames
-    this.frames = {
-      up: [
-        [0, 144],
-        [48, 144],
-        [0, 176],
-        [48, 176],
-      ],
-    };
-    this.drawOffset = new Vector(0, 1.8, 0.001);
-    this.hotspotOffset = new Vector(0.5, 0.5, 0);
-    this.frameTime = 150;
+    // load in json
+    this.loadJson(json);
   }
-  // Initialize
-  init() {
-    this.triggerTime = 1000;
+
+  // load in json properties to object
+  loadJson(json) {
+    this.src = json.src;
+    this.portraitSrc = json.portraitSrc;
+    this.sheetSize = json.sheetSize;
+    this.tileSize = json.tileSize;
+    this.state = 'intro';
+    // Frames
+    this.frames = json.frames;
+    // Offsets
+    this.drawOffset = new Vector(...json.drawOffset);
+    this.hotspotOffset = new Vector(...json.hotspotOffset);
+    // Should the camera follow the avatar?
+    this.bindCamera = json.bindCamera;
+    this.enableSpeech = json.enableSpeech; // speech bubble
   }
 }
