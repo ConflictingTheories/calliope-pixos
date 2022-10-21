@@ -63,18 +63,10 @@ export default class World {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
 
-    // extract file from game package zip (use a similar structure to existing scene folder)
-    // todo
-    //
-
-    let zoneJson = await zip
-      .file('/maps/' + zoneId + '/map.json')
-      .async('string')
-      .then(JSON.parse); // main map file (/zip/maps/{zoneId}/map.json)
-    let cellJson = await zip
-      .file('/maps/' + zoneId + '/cells.json')
-      .async('string')
-      .then(JSON.parse); // cells (/zip/maps/{zoneId}/cells.json)
+    console.log(zip);
+    
+    let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string')); // main map file (/zip/maps/{zoneId}/map.json)
+    let cellJson = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string')); // cells (/zip/maps/{zoneId}/cells.json)
 
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);

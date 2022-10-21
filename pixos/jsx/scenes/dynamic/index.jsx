@@ -56,6 +56,7 @@ export default class DynamicScene extends Scene {
                 let file = engine.fileUpload.files[0];
                 let zip = await JSZip.loadAsync(file);
 
+                // read file contents of zip
                 zip.forEach((path, file) => {
                   console.log(path);
                 });
@@ -77,7 +78,7 @@ export default class DynamicScene extends Scene {
                 // read in sprites
                 let sprites = await Promise.all(
                   manifest.sprites.map(async (spriteId) => {
-                    let spriteJson = JSON.parse(zip.file('sprites/' + spriteId + '.json').async('string'));
+                    let spriteJson = JSON.parse(await zip.file('sprites/' + spriteId + '.json').async('string'));
                     return { id: spriteId, sprite: spriteJson };
                   })
                 );
@@ -86,7 +87,7 @@ export default class DynamicScene extends Scene {
                 // read in objects
                 let objects = await Promise.all(
                   manifest.objects.map(async (objectId) => {
-                    let spriteJson = JSON.parse(zip.file('objects/' + objectId + '.json').async('string'));
+                    let spriteJson = JSON.parse(await zip.file('objects/' + objectId + '.json').async('string'));
                     return { id: objectId, sprite: spriteJson };
                   })
                 );
@@ -111,10 +112,8 @@ export default class DynamicScene extends Scene {
                 // -- loaded into memory.
 
                 // load initial zone from zip file
-                world.initialZoneId = manifest.intialZone;
-                console.log('Initializing initial zone...' + world.initialZoneId);
-
-                // world.loadZoneFromZip(initialZoneId, zip, true);
+                console.log('Initializing initial zone...' + manifest.initialZone);
+                world.loadZoneFromZip(manifest.initialZone, zip, true);
 
                 // Exit Menu
                 menu.completed = true;
