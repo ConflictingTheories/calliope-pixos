@@ -25,7 +25,7 @@ import Speech from '@Engine/core/speech.jsx';
 import Keyboard from '@Engine/utils/keyboard.jsx';
 
 export default class GLEngine {
-  constructor(canvas, hud, mipmap, gamepadcanvas, width, height) {
+  constructor(canvas, hud, mipmap, gamepadcanvas, fileUpload, width, height) {
     this.uViewMat = create();
     this.uProjMat = create();
     this.normalMat = create3();
@@ -34,6 +34,7 @@ export default class GLEngine {
     this.hud = hud;
     this.gamepadcanvas = gamepadcanvas;
     this.mipmap = mipmap;
+    this.fileUpload = fileUpload;
     this.width = width;
     this.height = height;
     this.modelViewMatrixStack = [];

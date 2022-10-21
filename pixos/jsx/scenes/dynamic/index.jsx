@@ -14,6 +14,8 @@
 // Shaders
 import Scene from '@Engine/core/scene.jsx';
 import World from '@Engine/core/world.jsx';
+import JSZip from 'jszip';
+
 // Scene Object
 export default class DynamicScene extends Scene {
   // Init Scene
@@ -45,37 +47,43 @@ export default class DynamicScene extends Scene {
         trigger: async (menu) => {
           console.log(menu);
 
-          // Prompt for File
-          let input = new HTMLInputElement();
-          input.type = 'file';
-
           // if no file don't go any further
-          if (fileElement.files.length === 0) {
-            input.click();
+          if (engine.fileUpload.files.length === 0) {
+            engine.fileUpload.click();
+            engine.fileUpload.onchange = async (e) => {
+              try {
+                // read zip from uploaded file
+                let file = engine.fileUpload.files[0];
+                let zip = await JSZip.loadAsync(file);
+
+                zip.forEach(function (relativePath, zipEntry) {
+                  // Read Files and Store into local store
+                  console.log({ relativePath, name: zipEntry.name });
+                 
+                  if (relativePath === 'manifest.json') {
+                    console.log('found manifest...loading & storing content');
+                    // read content from manifest and load from zip
+                    //
+                    // -- only files in manifest are loaded.
+                    // --
+                    // -- they are applied by type and dynamically
+                    // --
+                    // -- loaded into memory.
+                  }
+                });
+              } catch (e) {
+                console.error(e);
+                return;
+              }
+
+              // load zone from zip file
+              world.loadZoneFromZip(initialZoneId, zip, true);
+
+              // Exit Menu
+              menu.completed = true;
+            };
             return;
           }
-
-          // read zip
-          try {
-            let file = input.files[0];
-            let zip = await JSZip.loadAsync(file);
-            zip.forEach(function (relativePath, zipEntry) {
-              // Read Files and Store into local store
-              console.log({ relativePath, name: zipEntry.name });
-
-              // Find manifest
-              //
-            });
-          } catch (e) {
-            console.error(e);
-            return;
-          }
-
-          // load zone from zip file
-          world.loadZoneFromZip(initialZoneId, zip, true);
-
-          // Exit Menu
-          menu.completed = true;
         },
       },
     });

@@ -22,6 +22,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
   const ref = useRef();
   const hudRef = useRef();
   const gamepadRef = useRef();
+  const fileRef = useRef();
   const mmRef = useRef();
   const recordBtnRef = useRef();
   const recordingRef = useRef();
@@ -159,6 +160,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     const hud = hudRef.current;
     const mipmap = mmRef.current;
     const gamepad = gamepadRef.current;
+    const fileUpload = fileRef.current;
 
     // streams
     let gameVideo = streamToVideo(canvas.captureStream());
@@ -186,7 +188,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     dragElement(previewBoxRef);
 
     // Webgl Engine
-    engine = new glEngine(canvas, hud, mipmap, gamepad, width, height);
+    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
 
     // load fonts
     await loadFonts();
@@ -297,7 +299,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
           <video style={{ display: isRecording ? 'none' : 'block' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={recordingRef}></video>
         </div>
-
+        <input type="file" ref={fileRef} hidden />
         {/* Recording Buttons - todo - style and include video controls */}
         <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
           Record Gameplay
