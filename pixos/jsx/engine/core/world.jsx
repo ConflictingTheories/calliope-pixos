@@ -15,6 +15,7 @@ import Zone from './zone.jsx';
 import ActionQueue from './queue.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
 import { EventLoader } from '@Engine/utils/loaders/index.jsx';
+
 export default class World {
   constructor(engine, id) {
     this.id = id;
@@ -50,8 +51,37 @@ export default class World {
   }
 
   // Fetch and Load Zone
-  async loadZone(zoneId, remotely = false) {
-    if (this.zoneDict[zoneId]) return this.zoneDict[zoneId];
+  async loadZoneFromZip(zoneId, zip, skipCache = false) {
+    // check cache ?
+    if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
+
+    // extract file from game package zip (use a similar structure to existing scene folder)
+    // todo
+    //
+
+    let zoneJson = ''; // main map file (/zip/maps/{zoneId}/map.json)
+    let cellJson = ''; // cells (/zip/maps/{zoneId}/cells.json)
+
+    // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
+    let z = new Zone(zoneId, this);
+    await z.loadJson(zoneJson, cellJson);
+
+    // audio
+    this.zoneList.map((x) => x.audio.pauseAudio());
+    if (z.audio) z.audio.playAudio();
+
+    // add zone
+    this.zoneDict[zoneId] = z;
+    this.zoneList.push(z);
+
+    // Sort for correct render order
+    z.runWhenLoaded(this.sortZones);
+    return z;
+  }
+
+  // Fetch and Load Zone
+  async loadZone(zoneId, remotely = false, skipCache = false) {
+    if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
     if (remotely) await z.loadRemote();
