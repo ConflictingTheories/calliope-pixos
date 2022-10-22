@@ -532,6 +532,7 @@ export default class Zone {
                 // trigger script
                 if (action.trigger) {
                   let sprite = action.scope.getSpriteById('avatar');
+                  console.log({msg: 'trigger', sprite});
                   if (sprite && action.trigger) {
                     sprite.addAction(new ActionLoader(self.engine, 'script', [action.trigger, action.scope, () => resolve(self)], sprite));
                   }
@@ -563,6 +564,7 @@ export default class Zone {
         }
         if (x.id === id) {
           // found scene
+          console.log({msg: 'scene', actions: x.actions});
           await self.runActions(x.actions);
         }
       } catch (e) {

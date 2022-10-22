@@ -49,19 +49,17 @@ export default class DynamicSprite extends Sprite {
     let states = this.json.states ?? [];
 
     // build state machine
-    let evalStatement = ['switch (this.state) {\n '];
+    let evalStatement = ['((_this)=> {switch (_this.state) {\n '];
     states.forEach((state) => {
       $actionString = this.loadActionDynamically(state); // load actions dynamically
-      evalStatement.push("case '" + state.name + "':\n\tthis.state = '" + config.next + "';" + $actionString + '\nbreak;');
+      evalStatement.push("case '" + state.name + "':\n\t_this.state = '" + config.next + "';" + $actionString + '\nbreak;');
       return config;
     });
-    evalStatement.push('default:\n\tbreak;\n}');
+    evalStatement.push('default:\n\tbreak;\n}\nconsole.log("hahahha"); if (ret) _this.addAction(ret);)');
 
     // evaluate state machine for npc
-    eval.apply(this, evalStatement.join(''));
-
-    // assuming there is an action present - this will add it to the queue
-    if (ret) this.addAction(ret);
+    xeval = eval;
+    xeval(evalStatement.join(''))(this);
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -73,9 +71,9 @@ export default class DynamicSprite extends Sprite {
     switch (state.type) {
       case 'dialogue':
         return (
-          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
+          "\n\tret = new _this.ActionLoader(_this.engine, 'dialogue', ['" +
           state.dialogue +
-          "', false, { autoclose: true, onClose: () => finish(true) }, this," +
+          "', false, { autoclose: true, onClose: () => finish(true) }, _this," +
           JSON.parse(state.callback) +
           ');\n'
         );

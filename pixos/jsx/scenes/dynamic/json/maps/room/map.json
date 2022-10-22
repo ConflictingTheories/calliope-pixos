@@ -39,11 +39,11 @@
     },
     {
       "id": "custom",
-      "trigger": "async () => { await _this.spriteDialogue('earth', ['Lets get in there!']); }"
+      "trigger": "async () => { await _this.spriteDialogue('avatar', ['Lets get in there!']); }"
     },
     {
       "id": "clear-path",
-      "trigger": "async () => { await _this.moveSprite('darkness', [8, 3, 0], true); }"
+      "trigger": "async () => { await _this.moveSprite('avatar', [8, 3, 0], true); }"
     }
   ],
   "objects": [
