@@ -158,12 +158,12 @@ export default class Zone {
 
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
-      await Promise.all(self.objects.map(self.loadObject));
+      // await Promise.all(self.objects.map(self.loadObject));
       console.log({ msg: 'zone load objects/sprites loaded' });
 
       // Notify the zone sprites when the new sprite has loaded
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
-      self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+      // self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
       console.error('Error parsing json zone ' + this.id);
       console.error(e);

@@ -56,17 +56,18 @@ export function loadMap(json, cells) {
     try {
       let $statement =
         `
-        (()=>{return{
+        ((_this)=>{return{
           id: '` +
         script.id +
         `',
           trigger: ` +
         script.trigger +
         `,
-        }})()
+        }})
       `;
       console.log($statement);
-      return xeval($statement);
+      let result = xeval($statement)(_this);
+      return result;
     } catch (e) {
       console.error(e);
     }
