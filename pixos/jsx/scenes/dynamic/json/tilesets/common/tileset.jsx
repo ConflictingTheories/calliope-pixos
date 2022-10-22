@@ -11,21 +11,20 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import DefaultTileset from '@Tilesets/common/tileset.jsx';
-import Tiles from './tiles.jsx';
 // Tileset Schema
-const _default = DefaultTileset(0, 0);
-export default {
-  ..._default,
-  name: 'sewer',
-  bgColor: [0, 0, 0],
-  // Tile Locations on resource (based on size)
-  textures: {
-    ..._default.textures,
-  },
-  // Geometries for the tileset
-  geometry: {
-    ..._default.geometry,
-  },
-  tiles: Tiles
-};
+export default function loadTileset(tilesetJson, TilesetGeometry) {
+  return {
+    name: tilesetJson.name,
+    src: tilesetJson.src,
+    sheetSize: tilesetJson.sheetSize,
+    sheetOffsetX: tilesetJson.sheetOffsetX,
+    sheetOffsetY: tilesetJson.sheetOffsetY,
+    tileSize: tilesetJson.tileSize,
+    bgColor: tilesetJson.bgColor,
+    // Tile Locations on resource (based on size)
+    textures: tilesetJson.textures,
+    // Geometries for the tileset
+    // type --> walkability -- 1/0 --> [down,left,up,right]
+    geometry: TilesetGeometry,
+  };
+}

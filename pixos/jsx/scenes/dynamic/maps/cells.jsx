@@ -6,7 +6,7 @@ export function dynamicCells(cells, Tileset) {
   }
   let result = [];
   cells.forEach((row, i) => {
-    let len = row.size;
+    let len = row.length;
     row.forEach((cell, j) => {
       result[i * len + j] = Tileset[cell];
     });

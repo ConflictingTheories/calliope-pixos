@@ -119,34 +119,53 @@ export default class Zone {
   async loadJson(zoneJson, cellJson) {
     try {
       // Extract and Read in Information
+      console.log({msg: "zone load json", zoneJson, cellJson});
+      
+      // todo
+      // extract tileset from the zip and load
+      //
+
       let tileset = await this.tsLoader.load(zoneJson.tileset, this.sceneName);
-      let data = loadMap(zoneJson, dynamicCells(cellJson, tileset));
-      Object.assign(this, data);
+      console.log({msg: "zone load tileset found", tileset});
+      let cells = dynamicCells(cellJson, tileset.tiles);
+      console.log({msg: "zone load map data", cells});
+      let map = loadMap(zoneJson, cells);
+      console.log({msg: "zone load map data", data});
+
+      Object.assign(this, map);
       // handle cells generator
       if (typeof this.cells === 'string') {
-        this.cells = eval.apply(this, this.cells)(this.bounds, this);
+        this.cells = (eval.call(this, this.cells)).call(this, this.bounds, this);
       }
       // audio loader
       if (this.audioSrc) {
         this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
       }
+      console.log({msg: "zone load audio loaded"});
+
       // Load tileset and create level geometry & trigger updates
       this.tileset = tileset;
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
+      console.log({msg: "zone load tileset loaded"});
+
       // Load sprites
       if (typeof this.sprites === 'string') {
-        this.sprites = eval.apply(this, this.sprites)(this.bounds, this);
+        this.sprites = (eval.call(this, this.sprites)).call(this, this.bounds, this);
       }
+      console.log({msg: "zone load sprites identified"});
+
       let self = this;
       await Promise.all(self.sprites.map(self.loadSprite));
       await Promise.all(self.objects.map(self.loadObject));
+      console.log({msg: "zone load objects/sprites loaded"});
+
       // Notify the zone sprites when the new sprite has loaded
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
       self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
-      console.error('Error parsing zone ' + this.id);
+      console.error('Error parsing json zone ' + this.id);
       console.error(e);
     }
   }

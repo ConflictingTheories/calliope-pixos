@@ -11,14 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "./resources.jsx";
-import Sprite from "../core/sprite.jsx";
-import ModelObject from "../core/object.jsx";
-import Tileset from "../core/tileset.jsx";
-import Action from "../core/action.jsx";
+import Resources from './resources.jsx';
+import Sprite from '../core/sprite.jsx';
+import ModelObject from '../core/object.jsx';
+import Tileset from '../core/tileset.jsx';
+import Action from '../core/action.jsx';
 
 // select which scene set you wish to use
-const SCENE_SET = "default";  // default || peacefulGarden
+const SCENE_SET = 'default'; // default || peacefulGarden
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
@@ -40,9 +40,7 @@ export class TilesetLoader {
         let content = await fileResponse.json();
         await tileset.onJsonLoaded(content);
       } catch (e) {
-        console.error(
-          "Error parsing tileset '" + tileset.name + "' definition"
-        );
+        console.error("Error parsing tileset '" + tileset.name + "' definition");
         console.error(e);
       }
     }
@@ -55,11 +53,17 @@ export class TilesetLoader {
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
-    let json = require("../../scenes/" +
-      SCENE_SET +
-      "/tilesets/" +
-      type +
-      "/tileset.jsx")["default"];
+    let json = require('../../scenes/' + SCENE_SET + '/tilesets/' + type + '/tileset.jsx')['default'];
+    instance.onJsonLoaded(json);
+    return instance;
+  }
+
+  // Load Tileset Directly (precompiled)
+  async loadJson(type, json) {
+    let tileset = this.tilesets[type];
+    if (tileset) return tileset;
+    let instance = new Tileset(this.engine);
+    this.tilesets[type] = instance;
     instance.onJsonLoaded(json);
     return instance;
   }
@@ -80,11 +84,7 @@ export class SpriteLoader {
       this.instances[type] = [];
     }
     // New Instance
-    let Type = require("../../scenes/" +
-      SCENE_SET +
-      "/sprites/" +
-      type +
-      ".jsx")["default"];
+    let Type = require('../../scenes/' + SCENE_SET + '/sprites/' + type + '.jsx')['default'];
     console.log(Type, type);
     let instance = new Type(this.engine);
     instance.templateLoaded = true;
@@ -96,7 +96,7 @@ export class SpriteLoader {
     if (runConfigure) runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      console.log("after load");
+      console.log('after load');
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
@@ -125,18 +125,16 @@ export class ObjectLoader {
     let modelreq = {
       obj: `pixos/models/${instance.type}.obj`,
       mtl: model.mtl ?? false,
-      mtlTextureRoot: "/pixos/models",
+      mtlTextureRoot: '/pixos/models',
       downloadMtlTextures: true,
       enableWTextureCoord: false,
       name: instance.id,
     };
-    let models = await this.engine.objLoader.downloadModels(this.engine.gl, [
-      modelreq,
-    ]);
-    console.log("downloading models ---> ", models);
+    let models = await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]);
+    console.log('downloading models ---> ', models);
     instance.mesh = models[model.id];
     instance.templateLoaded = true;
-    console.log("loaded model", instance);
+    console.log('loaded model', instance);
     // Update Existing
     this.instances[instance.id].forEach(function (instance) {
       if (instance.afterLoad) instance.afterLoad(instance.instance);
@@ -145,7 +143,7 @@ export class ObjectLoader {
     if (runConfigure) runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      console.log("after load");
+      console.log('after load');
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[instance.id].push({ instance, afterLoad });
     }
@@ -167,7 +165,7 @@ export class ActionLoader {
     this.assets = {};
 
     let time = new Date().getTime();
-    let id = sprite.id + "-" + type + "-" + time;
+    let id = sprite.id + '-' + type + '-' + time;
     return this.load(
       type,
       function (action) {
@@ -187,7 +185,7 @@ export class ActionLoader {
     }
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
-    Object.assign(instance, require("../actions/" + type + ".jsx")["default"]);
+    Object.assign(instance, require('../actions/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
     // Notify existing
     this.instances[type].forEach(function (instance) {
@@ -214,7 +212,7 @@ export class AudioLoader {
     // loop if set
     if (loop) {
       this.audio.addEventListener(
-        "ended",
+        'ended',
         function () {
           this.currentTime = 0;
           this.play();
