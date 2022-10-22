@@ -115,6 +115,9 @@ export default class DynamicScene extends Scene {
                 console.log('Initializing initial zone...' + manifest.initialZone);
                 world.loadZoneFromZip(manifest.initialZone, zip, true);
 
+                // start
+                menu.world.isPaused = false;
+
                 // Exit Menu
                 menu.completed = true;
               } catch (e) {
