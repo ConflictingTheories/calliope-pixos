@@ -110,15 +110,15 @@
   "scripts": [
     {
       "id": "load-scene",
-      "trigger": "async function () { await this.playScene('strange-legend'); }"
+      "trigger": "async () => { await this.playScene('strange-legend'); }"
     },
     {
       "id": "custom",
-      "trigger": "async function () { await this.spriteDialogue('earth', ['Lets get in there!']; }"
+      "trigger": "async () => { await this.spriteDialogue('earth', ['Lets get in there!']); }"
     },
     {
       "id": "clear-path",
-      "trigger": "async function () { await this.moveSprite('darkness', [8, 3, 0], true); }"
+      "trigger": "async () => { await this.moveSprite('darkness', [8, 3, 0], true); }"
     }
   ],
   "objects": [
