@@ -56,6 +56,8 @@
     "css-loader": "^6.7.1",
     "dexie": "^3.2.0",
     "file-saver": "^2.0.5",
+    "gl-transition": "^1.13.0",
+    "gl-transitions": "^1.43.0",
     "jszip": "^3.7.1",
     "prop-types": "^15.7.2",
     "realtime-bpm-analyzer": "^2.1.6",

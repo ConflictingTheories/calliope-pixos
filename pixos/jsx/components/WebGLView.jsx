@@ -162,13 +162,26 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
     const gamepad = gamepadRef.current;
     const fileUpload = fileRef.current;
 
-    // streams
-    let gameVideo = streamToVideo(canvas.captureStream());
-    let hudVideo = streamToVideo(hud.captureStream());
-
     // merge streams canvas
     const mergeCanvas = mergeCanvasRef.current;
     let mergeContext = mergeCanvas.getContext('2d');
+
+    // allow dragging preview video around
+    dragElement(previewBoxRef);
+
+    // Webgl Engine
+    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
+    
+    // stream video output (single canvas element?)
+    cStream = mergeCanvas.captureStream();
+    engine.streamToVideo(cStream, previewRef);
+
+    // setup recorder (todo -- move into the engine to access audio streams)
+    recorder = new MediaRecorder(cStream);
+
+    // capture streams
+    let gameVideo = engine.streamToVideo(canvas.captureStream());
+    let hudVideo = engine.streamToVideo(hud.captureStream());
 
     // merge hud + canvas into preview (for recording / screen capture)
     (function mergeStreams() {
@@ -176,19 +189,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
       mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // hud
       requestAnimationFrame(mergeStreams);
     })();
-
-    // stream video output (single canvas element?)
-    cStream = mergeCanvas.captureStream();
-    streamToVideo(cStream, previewRef);
-
-    // setup recorder (todo -- move into the engine to access audio streams)
-    recorder = new MediaRecorder(cStream);
-
-    // allow dragging preview video around
-    dragElement(previewBoxRef);
-
-    // Webgl Engine
-    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
 
     // load fonts
     await loadFonts();
