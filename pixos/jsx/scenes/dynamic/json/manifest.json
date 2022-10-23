@@ -1,7 +1,0 @@
-{
-  "initialZone": "room",
-  "maps": ["room"],
-  "tilesets": ["sewer"],
-  "sprites": ["avatar", "air-knight"],
-  "objects": []
-}

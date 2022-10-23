@@ -1,4 +1,5 @@
 {
+  "type": "avatar",
   "src": "player.gif",
   "portraitSrc": "hero_portrait.gif",
   "sheetSize": [128, 256],

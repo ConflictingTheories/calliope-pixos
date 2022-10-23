@@ -17,7 +17,7 @@ import World from '@Engine/core/world.jsx';
 import JSZip from 'jszip';
 
 // Scene Object
-export default class DynamicScene extends Scene {
+export default class ExampleDynamicScene extends Scene {
   // Init Scene
   init = async (engine) => {
     // game Engine & Timing
@@ -68,9 +68,13 @@ export default class DynamicScene extends Scene {
                 // read in zone files
                 let zones = await Promise.all(
                   manifest.maps.map(async (zoneId) => {
-                    let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string'));
-                    let zoneCells = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string'));
-                    return { id: zoneId, map: zoneJson, cells: zoneCells };
+                    try {
+                      let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string'));
+                      let zoneCells = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string'));
+                      return { id: zoneId, map: zoneJson, cells: zoneCells };
+                    } catch (e) {
+                      console.error(`Zone Not Found:: ${tilesetId} - ${e}`);
+                    }
                   })
                 );
                 console.log(zones);
@@ -78,8 +82,12 @@ export default class DynamicScene extends Scene {
                 // read in sprites
                 let sprites = await Promise.all(
                   manifest.sprites.map(async (spriteId) => {
-                    let spriteJson = JSON.parse(await zip.file('sprites/' + spriteId + '.json').async('string'));
-                    return { id: spriteId, sprite: spriteJson };
+                    try {
+                      let spriteJson = JSON.parse(await zip.file('sprites/' + spriteId + '.json').async('string'));
+                      return { id: spriteId, sprite: spriteJson };
+                    } catch (e) {
+                      console.error(`Sprite Not Found:: ${tilesetId} - ${e}`);
+                    }
                   })
                 );
                 console.log(sprites);
@@ -87,19 +95,29 @@ export default class DynamicScene extends Scene {
                 // read in objects
                 let objects = await Promise.all(
                   manifest.objects.map(async (objectId) => {
-                    let spriteJson = JSON.parse(await zip.file('objects/' + objectId + '.json').async('string'));
-                    return { id: objectId, sprite: spriteJson };
+                    try {
+                      let spriteJson = JSON.parse(await zip.file('objects/' + objectId + '.json').async('string'));
+                      return { id: objectId, sprite: spriteJson };
+                    } catch (e) {
+                      console.error(`Object Not Found:: ${tilesetId} - ${e}`);
+                    }
                   })
                 );
                 console.log(objects);
 
-                // read in tilesets
-                // let tilesets = await Promise.all(manifest.tilesets.map(async (tilesetId) => {
-                //   let tilesetJson = JSON.parse(zip.file('/tilesets/' + tilesetId + '.json').async('string'));
-                //   let tilesetGeo = JSON.parse(zip.file('/tilesets/' + tilesetId + '.json').async('string'));
-                //   return { id: tilesetId, tileset: tilesetJson, geometry: tilesetGeo };
-                // }));
-                // console.log(tilesets);
+                // confirm all manifest listed tilesets are found in tilesets
+                let tilesets = await Promise.all(
+                  manifest.tilesets.map(async (tilesetId) => {
+                    try {
+                      let tilesetJson = JSON.parse(await zip.file('tilesets/' + tilesetId + '.json').async('string'));
+                      let tilesetGeo = JSON.parse(await zip.file('tilesets/' + tilesetId + '.json').async('string'));
+                      return { id: tilesetId, tileset: tilesetJson, geometry: tilesetGeo };
+                    } catch (e) {
+                      console.error(`Tileset Not Found:: ${tilesetId} - ${e}`);
+                    }
+                  })
+                );
+                console.log(tilesets);
 
                 // todo read in assets / tilesets
 

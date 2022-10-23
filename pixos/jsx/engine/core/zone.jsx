@@ -15,8 +15,8 @@ import Resources from '@Engine/utils/resources.jsx';
 import ActionQueue from '@Engine/core/queue.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
-import { loadMap } from '@Scenes/dynamic/maps/map.jsx';
-import { dynamicCells } from '@Scenes/dynamic/maps/cells.jsx';
+import { loadMap } from '@Engine/dynamic/map.jsx';
+import { dynamicCells } from '@Engine/dynamic/cells.jsx';
 
 // for dynamic loading -- todo
 // import { loadMap } from "../../scenes/maps/dynamic/map";
@@ -117,7 +117,7 @@ export default class Zone {
   // Load from Json components -- For more Dynamic Evaluation
   // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
   // as it is reading everything from the prebundled zip
-  async loadZoneFromZip(zoneJson, cellJson, zip) {
+  async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
     try {
       // Extract and Read in Information
       console.log({ msg: 'zone load json', zoneJson, cellJson });
@@ -241,9 +241,9 @@ export default class Zone {
   }
 
   // Load Sprite
-  async loadSprite(_this, data, skipCache = false) {
+  async loadSprite(_this, data) {
     data.zone = _this;
-    if (skipCache || (!this.spriteDict[data.id] && !_this.spriteDict[data.id])) {
+    if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
       let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
@@ -251,12 +251,9 @@ export default class Zone {
   }
 
   // Load Sprite from zip bundle
-  async loadSpriteFromZip(_this, data, zip, skipCache = false) {
+  async loadSpriteFromZip(_this, data, zip) {
     data.zone = _this;
-    if (skipCache || (!this.spriteDict[data.id] && !_this.spriteDict[data.id])) {
-      // todo
-    console.log({msg: 'sprite'});
-
+    if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
       let newSprite = await this.spriteLoader.loadFromZip(data.type, this.sceneName, zip, (sprite) => sprite.onLoadFromZip(data, zip));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);

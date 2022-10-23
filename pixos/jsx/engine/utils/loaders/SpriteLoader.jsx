@@ -11,12 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from '@Engine/utils/resources.jsx';
-import Sprite from '@Engine/core/sprite.jsx';
-import ModelObject from '@Engine/core/object.jsx';
-import Tileset from '@Engine/core/tileset.jsx';
-import Action from '@Engine/core/action.jsx';
-import Event from '@Engine/core/event.jsx';
+import DynamicAvatar from '@Engine/dynamic/avatar.jsx';
+import DynamicSprite from '@Engine/dynamic/sprite.jsx';
+import DynamicNpc from '@Engine/dynamic/npc.jsx';
+import DynamicAnimatedTile from '@Engine/dynamic/animatedSprite.jsx';
+import DynamicAnimatedSprite from '@Engine/dynamic/animatedTile.jsx';
 
 // Helps Loads New Sprite Instance
 export class SpriteLoader {
@@ -64,9 +63,26 @@ export class SpriteLoader {
     // New Instance
     console.log('loading sprite from zip - ', type, sceneName, 'sprites/' + type + '.json');
 
-    let Type = JSON.parse(await zip.file(`sprites/${type}.json`).async('string'));
-
-    let instance = new Type(this.engine);
+    let json = JSON.parse(await zip.file(`sprites/${type}.json`).async('string'));
+    let instance = {};
+    switch (json.type) {
+      case 'animated-sprite':
+        instance = new DynamicAnimatedSprite(engine, json);
+        break;
+      case 'animated-tile':
+        instance = new DynamicAnimatedTile(engine, json);
+        break;
+      case 'avatar':
+        instance = new DynamicAvatar(engine, json);
+        break;
+      case 'npc':
+        instance = new DynamicNpc(engine, json);
+        break;
+      default:
+        instance = new DynamicSprite(engine, json);
+        break;
+    }
+    console.log({ msg: 'loading', instance });
     instance.templateLoaded = true;
     // Update Existing
     this.instances[type].forEach(function (instance) {

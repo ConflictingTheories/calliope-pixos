@@ -77,6 +77,10 @@ export class TilesetLoader {
 
   // load tileset data components and merge into config
   loadTilesetData(tilesetJson, Tiles, TilesetGeometry) {
+    let geometry = {};
+    Object.keys(tilesetJson.geometry).forEach((geo) => {
+      geometry[geo] = TilesetGeometry[tilesetJson.geometry[geo]];
+    });
     return {
       name: tilesetJson.name,
       src: tilesetJson.src,
@@ -89,7 +93,7 @@ export class TilesetLoader {
       textures: tilesetJson.textures,
       // Geometries for the tileset
       // type --> walkability -- 1/0 --> [down,left,up,right]
-      geometry: Object.keys(tilesetJson.geometry).map((geo) => TilesetGeometry[tilesetJson.geometry[geo]]),
+      geometry: geometry,
       // tiles to use
       tiles: Tiles,
     };

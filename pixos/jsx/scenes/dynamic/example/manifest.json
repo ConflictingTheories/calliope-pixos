@@ -1,0 +1,10 @@
+{
+  "initialZone": "room",
+  "maps": ["room"],
+  "tilesets": ["common", "sewer"],
+  "sprites": ["characters/male", "npc/air-knight"],
+  "objects": [],
+  "textures": [],
+  "fonts": [],
+  "audio": []
+}
