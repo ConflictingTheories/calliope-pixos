@@ -2,7 +2,12 @@
   "bounds": [0, 0, 17, 19],
   "tileset": "sewer",
   "sprites": [
-    
+    {
+      "id": "air-knight",
+      "type": "npc/air-knight",
+      "pos": [8, 7, 0],
+      "facing": "Left"
+    },    
     {
       "id": "avatar",
       "type": "characters/male",
