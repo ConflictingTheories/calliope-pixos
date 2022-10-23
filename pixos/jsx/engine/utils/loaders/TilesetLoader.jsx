@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "@Engine/utils/resources.jsx";
-import Tileset from "@Engine/core/tileset.jsx";
+import Resources from '@Engine/utils/resources.jsx';
+import Tileset from '@Engine/core/tileset.jsx';
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
@@ -43,15 +43,55 @@ export class TilesetLoader {
 
   // Load Tileset Directly (precompiled)
   async load(type, sceneName) {
-    console.log('loading tileset - ', this, type, sceneName)
+    console.log('loading tileset - ', this, type, sceneName);
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
     this.tilesets[type] = instance;
     instance.name = type;
-    let json = require("@Tilesets/" + type + "/tileset.jsx")["default"];
-    console.log('loading .... - ', json, type, sceneName)
+    let json = require('@Tilesets/' + type + '/tileset.jsx')['default'];
+    console.log('loading .... - ', json, type, sceneName);
     instance.onJsonLoaded(json);
     return instance;
+  }
+
+  // Load Tileset Directly (precompiled)
+  async loadFromZip(type, sceneName, zip) {
+    console.log('loading tileset from zip - ', this, type, sceneName);
+    let tileset = this.tilesets[type];
+    if (tileset) return tileset;
+    let instance = new Tileset(this.engine);
+    this.tilesets[type] = instance;
+    instance.name = type;
+
+    // extract component json files from zip file and compile into single config
+    let tilesetJson = JSON.parse(await zip.file(`tilesets/${type}/tileset.json`).async('string'));
+    let tilesetGeometry = JSON.parse(await zip.file(`tilesets/${type}/geometry.json`).async('string'));
+    let tilesetTiles = JSON.parse(await zip.file(`tilesets/${type}/tiles.json`).async('string'));
+    let tilesetData = this.loadTilesetData(tilesetJson, tilesetTiles, tilesetGeometry);
+    console.log('loading from zip .... - ', tilesetData, type, sceneName);
+
+    await instance.onJsonLoadedFromZip(tilesetData, zip);
+    return instance;
+  }
+
+  // load tileset data components and merge into config
+  loadTilesetData(tilesetJson, Tiles, TilesetGeometry) {
+    return {
+      name: tilesetJson.name,
+      src: tilesetJson.src,
+      sheetSize: tilesetJson.sheetSize,
+      sheetOffsetX: tilesetJson.sheetOffsetX,
+      sheetOffsetY: tilesetJson.sheetOffsetY,
+      tileSize: tilesetJson.tileSize,
+      bgColor: tilesetJson.bgColor,
+      // Tile Locations on resource (based on size)
+      textures: tilesetJson.textures,
+      // Geometries for the tileset
+      // type --> walkability -- 1/0 --> [down,left,up,right]
+      geometry: Object.keys(tilesetJson.geometry).map((geo) => TilesetGeometry[tilesetJson.geometry[geo]]),
+      // tiles to use
+      tiles: Tiles,
+    };
   }
 }

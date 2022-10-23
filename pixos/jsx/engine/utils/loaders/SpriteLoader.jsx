@@ -53,4 +53,33 @@ export class SpriteLoader {
 
     return instance;
   }
+
+  // Load Sprite
+  async loadFromZip(type, sceneName, zip) {
+    let afterLoad = arguments[2];
+    let runConfigure = arguments[3];
+    if (!this.instances[type]) {
+      this.instances[type] = [];
+    }
+    // New Instance
+    console.log('loading sprite from zip - ', type, sceneName, 'sprites/' + type + '.json');
+
+    let Type = JSON.parse(await zip.file(`sprites/${type}.json`).async('string'));
+
+    let instance = new Type(this.engine);
+    instance.templateLoaded = true;
+    // Update Existing
+    this.instances[type].forEach(function (instance) {
+      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    });
+    // Configure if needed
+    if (runConfigure) runConfigure(instance);
+    // once loaded
+    if (afterLoad) {
+      if (instance.templateLoaded) afterLoad(instance);
+      else this.instances[type].push({ instance, afterLoad });
+    }
+
+    return instance;
+  }
 }

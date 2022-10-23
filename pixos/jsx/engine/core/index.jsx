@@ -469,6 +469,19 @@ export default class GLEngine {
   }
 
   // load texture
+  async loadTextureFromZip(src, zip) {
+    if (this.textures[src]) return this.textures[src];
+
+    console.log({ src });
+    let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
+    let buffer = new Uint8Array(imageData);
+    let blob = new Blob([buffer.buffer]);
+    let dataUrl = URL.createObjectURL(blob);
+    this.textures[src] = new Texture(dataUrl, this);
+    return this.textures[src];
+  }
+
+  // load texture
   loadSpeech(src, canvas) {
     if (this.speeches[src]) return this.speeches[src];
     this.speeches[src] = new Speech(canvas, this, src);

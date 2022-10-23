@@ -43,6 +43,7 @@ export default class Zone {
     // bind
     this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
+    this.loadSpriteFromZip = this.loadSpriteFromZip.bind(this, this);
     this.loadSprite = this.loadSprite.bind(this, this);
     this.loadObject = this.loadObject.bind(this, this);
     this.checkInput = this.checkInput.bind(this);
@@ -116,7 +117,7 @@ export default class Zone {
   // Load from Json components -- For more Dynamic Evaluation
   // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
   // as it is reading everything from the prebundled zip
-  async loadJson(zoneJson, cellJson) {
+  async loadZoneFromZip(zoneJson, cellJson, zip) {
     try {
       // Extract and Read in Information
       console.log({ msg: 'zone load json', zoneJson, cellJson });
@@ -125,8 +126,9 @@ export default class Zone {
       // extract tileset from the zip and load
       //
 
-      let tileset = await this.tsLoader.load(zoneJson.tileset, this.sceneName);
+      let tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
       console.log({ msg: 'zone load tileset found', tileset });
+
       let cells = dynamicCells(cellJson, tileset.tiles);
       console.log({ msg: 'zone load map data', cells });
       let map = loadMap.call(this, zoneJson, cells);
@@ -159,7 +161,7 @@ export default class Zone {
       let self = this;
 
       // sprites
-      await Promise.all(self.sprites.map(self.loadSprite));
+      await Promise.all(self.sprites.map((sprite) => self.loadSpriteFromZip(sprite, zip, skipCache)));
 
       // sprites
       // await Promise.all(self.objects.map(self.loadObject));
@@ -243,6 +245,19 @@ export default class Zone {
     data.zone = _this;
     if (skipCache || (!this.spriteDict[data.id] && !_this.spriteDict[data.id])) {
       let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
+      this.spriteDict[data.id] = newSprite;
+      this.spriteList.push(newSprite);
+    }
+  }
+
+  // Load Sprite from zip bundle
+  async loadSpriteFromZip(_this, data, zip, skipCache = false) {
+    data.zone = _this;
+    if (skipCache || (!this.spriteDict[data.id] && !_this.spriteDict[data.id])) {
+      // todo
+    console.log({msg: 'sprite'});
+
+      let newSprite = await this.spriteLoader.loadFromZip(data.type, this.sceneName, zip, (sprite) => sprite.onLoadFromZip(data, zip));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -532,7 +547,7 @@ export default class Zone {
                 // trigger script
                 if (action.trigger) {
                   let sprite = action.scope.getSpriteById('avatar');
-                  console.log({msg: 'trigger', sprite});
+                  console.log({ msg: 'trigger', sprite });
                   if (sprite && action.trigger) {
                     sprite.addAction(new ActionLoader(self.engine, 'script', [action.trigger, action.scope, () => resolve(self)], sprite));
                   }
@@ -564,7 +579,7 @@ export default class Zone {
         }
         if (x.id === id) {
           // found scene
-          console.log({msg: 'scene', actions: x.actions});
+          console.log({ msg: 'scene', actions: x.actions });
           await self.runActions(x.actions);
         }
       } catch (e) {

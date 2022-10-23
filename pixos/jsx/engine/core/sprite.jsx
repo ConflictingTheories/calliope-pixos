@@ -90,6 +90,46 @@ export default class Sprite {
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
+  // Load Texture / Location
+  onLoadFromZip(instanceData, zip) {
+    if (this.loaded) return;
+    if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
+      console.error('Invalid sprite definition');
+      return;
+    }
+    // Zone Information
+    this.zone = instanceData.zone;
+    if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
+    if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
+    if (instanceData.onStep && typeof instanceData.onStep == 'function') {
+      let stepParent = this.onStep.bind(this);
+      this.onStep = () => {
+        instanceData.onStep();
+        stepParent();
+      };
+    }
+    // Texture Buffer
+    this.texture = this.engine.loadTextureFromZip(this.src, zip);
+    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
+
+    // // Speech bubble
+    if (this.enableSpeech) {
+      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+    }
+    // load Portrait
+    if (this.portraitSrc) {
+      this.portrait = this.engine.loadTexture(this.portraitSrc);
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    }
+    //
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+  }
+
   // Definition Loaded
   onTilesetDefinitionLoaded() {
     let s = this.zone.tileset.tileSize;

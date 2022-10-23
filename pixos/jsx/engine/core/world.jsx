@@ -70,7 +70,7 @@ export default class World {
 
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
-    await z.loadJson(zoneJson, cellJson);
+    await z.loadZoneFromZip(zoneJson, cellJson, zip);
 
     // audio
     this.zoneList.map((x) => x.audio.pauseAudio());

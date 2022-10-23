@@ -53,6 +53,23 @@ export default class Tileset {
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }
 
+    // Received tileset definition JSON
+    async onJsonLoadedFromZip(data,zip) {
+      // Merge tileset definition into this object
+      Object.keys(data).map((k) => {
+        this[k] = data[k];
+      });
+      // Definition actions must always run before loaded actions
+      this.definitionLoaded = true;
+      this.onDefinitionLoadActions.run();
+      // load texture
+      this.texture = await this.engine.loadTextureFromZip(this.src, zip);
+      this.texture.runWhenLoaded(this.onTextureLoaded);
+      console.log('texture loaded', this.texture);
+      // set background colour
+      if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
+    }
+
   // run when loaded
   onTextureLoaded() {
     this.loaded = true;
@@ -77,6 +94,7 @@ export default class Tileset {
 
   // determine walkability
   getWalkability(tileId) {
+    console.log({msg: 'walking', geo: this, tileId});
     return this.geometry[tileId].type;
   }
 
