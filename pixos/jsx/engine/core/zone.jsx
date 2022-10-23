@@ -254,7 +254,7 @@ export default class Zone {
   async loadSpriteFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.loadFromZip(data.type, this.sceneName, zip, (sprite) => sprite.onLoadFromZip(data, zip));
+      let newSprite = await this.spriteLoader.loadFromZip(data.type, this.sceneName, zip, async (sprite) => await sprite.onLoadFromZip(data, zip));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }

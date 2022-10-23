@@ -55,8 +55,8 @@ export class SpriteLoader {
 
   // Load Sprite
   async loadFromZip(type, sceneName, zip) {
-    let afterLoad = arguments[2];
-    let runConfigure = arguments[3];
+    let afterLoad = arguments[3];
+    let runConfigure = arguments[4];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
@@ -67,19 +67,19 @@ export class SpriteLoader {
     let instance = {};
     switch (json.type) {
       case 'animated-sprite':
-        instance = new DynamicAnimatedSprite(engine, json);
+        instance = new DynamicAnimatedSprite(this.engine, json);
         break;
       case 'animated-tile':
-        instance = new DynamicAnimatedTile(engine, json);
+        instance = new DynamicAnimatedTile(this.engine, json);
         break;
       case 'avatar':
-        instance = new DynamicAvatar(engine, json);
+        instance = new DynamicAvatar(this.engine, json);
         break;
       case 'npc':
-        instance = new DynamicNpc(engine, json);
+        instance = new DynamicNpc(this.engine, json);
         break;
       default:
-        instance = new DynamicSprite(engine, json);
+        instance = new DynamicSprite(this.engine, json);
         break;
     }
     console.log({ msg: 'loading', instance });
@@ -92,7 +92,7 @@ export class SpriteLoader {
     if (runConfigure) runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      if (instance.templateLoaded) afterLoad(instance);
+      if (instance.templateLoaded) await afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
 

@@ -91,7 +91,7 @@ export default class Sprite {
   }
 
   // Load Texture / Location
-  onLoadFromZip(instanceData, zip) {
+  async onLoadFromZip(instanceData, zip) {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
       console.error('Invalid sprite definition');
@@ -111,7 +111,7 @@ export default class Sprite {
       };
     }
     // Texture Buffer
-    this.texture = this.engine.loadTextureFromZip(this.src, zip);
+    this.texture = await this.engine.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
@@ -123,7 +123,7 @@ export default class Sprite {
     }
     // load Portrait
     if (this.portraitSrc) {
-      this.portrait = this.engine.loadTexture(this.portraitSrc);
+      this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //

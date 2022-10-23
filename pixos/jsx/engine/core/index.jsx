@@ -478,6 +478,7 @@ export default class GLEngine {
     let blob = new Blob([buffer.buffer]);
     let dataUrl = URL.createObjectURL(blob);
     this.textures[src] = new Texture(dataUrl, this);
+    console.log(this.textures[src]);
     return this.textures[src];
   }
 

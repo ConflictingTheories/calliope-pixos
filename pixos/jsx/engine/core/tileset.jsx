@@ -64,6 +64,7 @@ export default class Tileset {
       this.onDefinitionLoadActions.run();
       // load texture
       this.texture = await this.engine.loadTextureFromZip(this.src, zip);
+      console.log({texture: this.texture});
       this.texture.runWhenLoaded(this.onTextureLoaded);
       console.log('texture loaded', this.texture);
       // set background colour
