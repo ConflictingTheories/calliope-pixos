@@ -15,7 +15,6 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 // Map Information
 export function loadMap(json, cells) {
-  let _this = this;
   let xeval = eval;
   console.log({ json, cells });
 
@@ -45,6 +44,7 @@ export function loadMap(json, cells) {
             sprite: action.sprite,
             action: action.action,
             args: action.args,
+            scope: this
           };
         }
       }),
@@ -56,7 +56,7 @@ export function loadMap(json, cells) {
     try {
       let $statement =
         `
-        ((_this)=>{return{
+        (()=>{return{
           id: '` +
         script.id +
         `',
@@ -66,7 +66,7 @@ export function loadMap(json, cells) {
         }})
       `;
       console.log($statement);
-      let result = xeval($statement)(_this);
+      let result = xeval($statement).call(this);
       return result;
     } catch (e) {
       console.error(e);

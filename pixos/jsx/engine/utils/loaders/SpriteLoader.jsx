@@ -85,11 +85,11 @@ export class SpriteLoader {
     console.log({ msg: 'loading', instance });
     instance.templateLoaded = true;
     // Update Existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    this.instances[type].forEach(async function (instance) {
+      if (instance.afterLoad) await instance.afterLoad(instance.instance);
     });
     // Configure if needed
-    if (runConfigure) runConfigure(instance);
+    if (runConfigure) await runConfigure(instance);
     // once loaded
     if (afterLoad) {
       if (instance.templateLoaded) await afterLoad(instance);

@@ -122,15 +122,12 @@ export default class Zone {
       // Extract and Read in Information
       console.log({ msg: 'zone load json', zoneJson, cellJson });
 
-      // todo
-      // extract tileset from the zip and load
-      //
-
       let tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
       console.log({ msg: 'zone load tileset found', tileset });
 
       let cells = dynamicCells(cellJson, tileset.tiles);
       console.log({ msg: 'zone load map data', cells });
+
       let map = loadMap.call(this, zoneJson, cells);
       console.log({ msg: 'zone load map data', map });
 
@@ -148,31 +145,31 @@ export default class Zone {
       // Load tileset and create level geometry & trigger updates
       this.tileset = tileset;
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
-      this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
-      this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       console.log({ msg: 'zone load tileset loaded' });
 
+      let self = this;
       // Load sprites
       if (typeof this.sprites === 'string') {
-        this.sprites = eval.call(this, this.sprites).call(this, this.bounds, this);
+        this.sprites = eval.call(self, self.sprites).call(self, self.bounds, self);
       }
       console.log({ msg: 'zone load sprites identified' });
-
-      let self = this;
 
       // sprites
       await Promise.all(self.sprites.map((sprite) => self.loadSpriteFromZip(sprite, zip, skipCache)));
 
-      // sprites
-      // await Promise.all(self.objects.map(self.loadObject));
-
+      // objects
+      // await Promise.all(self.objects.map(self.loadObjectFromZip));
       console.log({ msg: 'zone load objects/sprites loaded' });
+
+      // notify when tilesets are loaded
+      this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+      this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
 
       // Notify the zone sprites when the new sprite has loaded
       self.spriteList.forEach((sprite) => sprite.runWhenLoaded(self.onTilesetOrSpriteLoaded));
 
       // load objects and notify others
-      // self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+      self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
     } catch (e) {
       console.error('Error parsing json zone ' + this.id);
       console.error(e);
@@ -181,8 +178,9 @@ export default class Zone {
 
   // Actions to run when the map has loaded
   runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
+    console.log({ msg: 'runnning action...', obj: this, action });
+    if (this.loaded) action.apply(this);
+    else this.onLoadActions.add(action.bind(this));
   }
 
   // When tileset loads
@@ -216,12 +214,14 @@ export default class Zone {
 
   // run after each tileset / sprite is loaded
   onTilesetOrSpriteLoaded() {
+    console.log('test load');
     if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded))
       return;
     // Load Scene Triggers
     let zone = this;
     this.scripts.forEach((x) => {
       if (x.id === 'load-scene') {
+        console.log({ msg: 'loading scene initial trigger', x });
         this.runWhenLoaded(x.trigger.bind(zone));
       }
     });
@@ -287,6 +287,7 @@ export default class Zone {
 
   // Remove an sprite from the zone
   getSpriteById(id) {
+    console.log({ msg: `grabbing sprite ${id}`, spriteDict: this.spriteDict[id] });
     return this.spriteDict[id];
   }
 
@@ -523,6 +524,7 @@ export default class Zone {
 
   // Run Action configuration from JSON description
   async runActions(actions) {
+    console.log({ msg: 'running actions', actions });
     let self = this;
     return await actions.reduce(async (prev, action) => {
       return await prev
@@ -533,9 +535,12 @@ export default class Zone {
               try {
                 if (!action.scope) action.scope = self;
                 if (action.sprite) {
+                  console.log({ msg: 'finding sprite....', action });
                   let sprite = action.scope.getSpriteById(action.sprite);
+                  console.log({ msg: 'finding sprite....', sprite });
                   // apply action
                   if (sprite && action.action) {
+                    console.log({ msg: 'loading action into sprite....', sprite });
                     let args = action.args;
                     let options = args.pop();
                     sprite.addAction(new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self)));
@@ -543,6 +548,7 @@ export default class Zone {
                 }
                 // trigger script
                 if (action.trigger) {
+                  console.log({ msg: 'Triggering action into avatar....' });
                   let sprite = action.scope.getSpriteById('avatar');
                   console.log({ msg: 'trigger', sprite });
                   if (sprite && action.trigger) {
@@ -567,6 +573,7 @@ export default class Zone {
       scenes = self.scenes;
     }
     scenes.forEach(async function runScene(x) {
+      console.log({ msg: 'running scene', x });
       try {
         if (!x.currentStep) {
           x.currentStep = 0; // Starting
