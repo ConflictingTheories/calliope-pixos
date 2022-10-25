@@ -51,9 +51,10 @@ export default class DynamicNpc extends NPC {
     // build state machine
     let evalStatement = ['switch (this.state) {\n '];
     states.forEach((state) => {
-      $actionString = this.loadActionDynamically(state); // load actions dynamically
-      evalStatement.push("case '" + state.name + "':\n\tthis.state = '" + config.next + "';" + $actionString + '\nbreak;');
-      return config;
+      console.log({ state });
+      let actionString = this.loadActionDynamically(state); // load actions dynamically
+      console.log({ actionString });
+      evalStatement.push("case '" + state.name + "':\n\tthis.state = '" + state.next + "';" + actionString + '\nbreak;');
     });
     evalStatement.push('default:\n\tbreak;\n}');
 
@@ -76,7 +77,7 @@ export default class DynamicNpc extends NPC {
           "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
           state.dialogue +
           "', false, { autoclose: true, onClose: () => finish(true) }, this," +
-          JSON.parse(state.callback) +
+          (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
           ');\n'
         );
       case 'animate':

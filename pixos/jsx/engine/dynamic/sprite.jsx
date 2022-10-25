@@ -51,14 +51,15 @@ export default class DynamicSprite extends Sprite {
     // build state machine
     let evalStatement = ['((_this)=> {switch (_this.state) {\n '];
     states.forEach((state) => {
-      $actionString = this.loadActionDynamically(state); // load actions dynamically
-      evalStatement.push("case '" + state.name + "':\n\t_this.state = '" + config.next + "';" + $actionString + '\nbreak;');
-      return config;
+      let actionString = this.loadActionDynamically(state); // load actions dynamically
+      evalStatement.push("case '" + state.name + "':\n\t_this.state = '" + state.next + "';" + actionString + '\nbreak;');
     });
     evalStatement.push('default:\n\tbreak;\n}\nconsole.log("hahahha"); if (ret) _this.addAction(ret);)');
 
     // evaluate state machine for npc
     xeval = eval;
+    console.log({ evalStatement });
+
     xeval(evalStatement.join(''))(this);
 
     // If completion handler passed through - call it when done
@@ -74,7 +75,7 @@ export default class DynamicSprite extends Sprite {
           "\n\tret = new _this.ActionLoader(_this.engine, 'dialogue', ['" +
           state.dialogue +
           "', false, { autoclose: true, onClose: () => finish(true) }, _this," +
-          JSON.parse(state.callback) +
+          (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
           ');\n'
         );
       case 'animate':

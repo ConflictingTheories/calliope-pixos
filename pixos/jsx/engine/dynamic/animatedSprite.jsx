@@ -58,37 +58,41 @@ export default class DynamicAnimatedSprite extends AnimatedSprite {
     let states = this.json.states ?? [];
 
     // build state machine
-    let evalStatement = ['switch (this.state) {\n '];
+    let evalStatement = ['((_this)=> {switch (_this.state) {\n '];
     states.forEach((state) => {
-      let config = {
-        state: state.name,
-        dialogue: state.dialogue,
-        callback: state.callback,
-      };
-      evalStatement.push(
-        "case '" +
-          config.state +
-          "':\n\tthis.state = '" +
-          config.next +
-          "';" +
-          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
-          config.dialogue +
-          "', false, { autoclose: true, onClose: () => finish(true) }, this," +
-          JSON.parse(config.callback) +
-          ');\n\nbreak;'
-      );
-      return config;
+      console.log({ state });
+      let actionString = this.loadActionDynamically(state); // load actions dynamically
+      console.log({ actionString });
+      evalStatement.push("case '" + state.name + "':\n\t_this.state = '" + state.next + "';" + actionString + '\nbreak;');
     });
-    evalStatement.push('default:\n\tbreak;\n}');
+    evalStatement.push('default:\n\tbreak;\n}\nconsole.log("hahahha"); if (ret) _this.addAction(ret);)');
+
+    let xeval = eval;
+    let statement = evalStatement.join('');
 
     // evaluate state machine for npc
-    eval.apply(this, evalStatement.join(''));
-
-    // assuming there is an action present - this will add it to the queue
-    if (ret) this.addAction(ret);
+    console.log({ evalstate: statement });
+    xeval(statement)(this);
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
     return ret;
+  }
+
+  // load string to eval based on type of action
+  loadActionDynamically(state) {
+    switch (state.type) {
+      case 'dialogue':
+        return (
+          "\n\tret = new _this.ActionLoader(_this.engine, 'dialogue', ['" +
+          state.dialogue +
+          "', false, { autoclose: true, onClose: () => finish(true) }, _this," +
+          (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
+          ');\n'
+        );
+      case 'animate':
+      default:
+        return '';
+    }
   }
 }

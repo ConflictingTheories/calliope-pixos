@@ -23,5 +23,19 @@
   },
   "drawOffset": [0, 1.001, 0.001],
   "hotspotOffset": [0.5, 0.5, 0],
-  "state": "closed"
+  "state": "closed",
+  "states": [
+    {
+      "name": "closed",
+      "next": "open",
+      "type": "dialogue",
+      "dialogue": "Door Open"
+    },
+    {
+      "name": "open",
+      "next": "closed",
+      "type": "animate",
+      "animate": [600, 3]
+    }
+  ]
 }
