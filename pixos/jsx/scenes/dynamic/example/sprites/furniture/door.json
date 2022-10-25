@@ -1,0 +1,27 @@
+{
+  "src": "room.gif",
+  "sheetSize": [256, 256],
+  "tileSize": [16, 32],
+  "fixed": true,
+  "frames": {
+    "up": [
+      [48, 64],
+      [48, 96]
+    ],
+    "right": [
+      [48, 64],
+      [48, 96]
+    ],
+    "left": [
+      [48, 64],
+      [48, 96]
+    ],
+    "down": [
+      [48, 64],
+      [48, 96]
+    ]
+  },
+  "drawOffset": [0, 1.001, 0.001],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "state": "closed"
+}

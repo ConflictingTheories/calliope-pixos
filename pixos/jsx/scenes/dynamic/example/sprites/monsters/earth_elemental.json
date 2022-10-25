@@ -1,0 +1,37 @@
+{
+  "type": "sprite",
+  "src": "elementals-2.gif",
+  "sheetSize": [64, 128],
+  "tileSize": [16, 18],
+  "drawOffset": [0, 1, 0.2],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "frames": {
+    "up": [
+      [0, 54],
+      [16, 54],
+      [32, 54],
+      [48, 54]
+    ],
+    "right": [
+      [0, 72],
+      [16, 72],
+      [32, 72],
+      [16, 72]
+    ],
+    "down": [
+      [0, 90],
+      [16, 90],
+      [32, 90],
+      [16, 90]
+    ],
+    "left": [
+      [48, 54],
+      [48, 72],
+      [48, 90],
+      [48, 72]
+    ]
+  },
+  "bindCamera": false,
+  "enableSpeech": true,
+  "state": "intro"
+}
