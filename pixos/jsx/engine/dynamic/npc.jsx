@@ -49,17 +49,19 @@ export default class DynamicNpc extends NPC {
     let states = this.json.states ?? [];
 
     // build state machine
-    let evalStatement = ['switch (this.state) {\n '];
+    let evalStatement = ['(()=>{switch (this.state) {\n '];
     states.forEach((state) => {
       console.log({ state });
       let actionString = this.loadActionDynamically(state); // load actions dynamically
-      console.log({ actionString });
-      evalStatement.push("case '" + state.name + "':\n\tthis.state = '" + state.next + "';" + actionString + '\nbreak;');
+      let statement = "case '" + state.name + "':\n\tthis.state = '" + state.next + "';" + actionString + '\nbreak;';
+      console.log({ statement });
+      evalStatement.push(statement);
     });
-    evalStatement.push('default:\n\tbreak;\n}');
+    evalStatement.push('default:\n\tbreak;\n}})');
+    console.log({ stat: evalStatement.join('') });
 
-    // evaluate state machine for npc
-    eval.apply(this, evalStatement.join(''));
+    let xeval = eval;
+    xeval(evalStatement.join('')).call(this);
 
     // assuming there is an action present - this will add it to the queue
     if (ret) this.addAction(ret);
@@ -74,9 +76,9 @@ export default class DynamicNpc extends NPC {
     switch (state.type) {
       case 'dialogue':
         return (
-          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
-          state.dialogue +
-          "', false, { autoclose: true, onClose: () => finish(true) }, this," +
+          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', [" +
+          JSON.stringify(state.dialogue) +
+          ', false, { autoclose: true, onClose: () => finish(true) }], this,' +
           (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
           ');\n'
         );

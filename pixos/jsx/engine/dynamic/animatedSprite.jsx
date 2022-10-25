@@ -58,21 +58,22 @@ export default class DynamicAnimatedSprite extends AnimatedSprite {
     let states = this.json.states ?? [];
 
     // build state machine
-    let evalStatement = ['((_this)=> {switch (_this.state) {\n '];
+    let evalStatement = ['(()=>{switch (this.state) {\n '];
     states.forEach((state) => {
       console.log({ state });
       let actionString = this.loadActionDynamically(state); // load actions dynamically
-      console.log({ actionString });
-      evalStatement.push("case '" + state.name + "':\n\t_this.state = '" + state.next + "';" + actionString + '\nbreak;');
+      let statement = "case '" + state.name + "':\n\tthis.state = '" + state.next + "';" + actionString + '\nbreak;';
+      console.log({ statement });
+      evalStatement.push(statement);
     });
-    evalStatement.push('default:\n\tbreak;\n}\nconsole.log("hahahha"); if (ret) _this.addAction(ret);)');
+    evalStatement.push('default:\n\tbreak;\n}})');
+    console.log({ stat: evalStatement.join('') });
 
     let xeval = eval;
-    let statement = evalStatement.join('');
+    xeval(evalStatement.join('')).call(this);
 
-    // evaluate state machine for npc
-    console.log({ evalstate: statement });
-    xeval(statement)(this);
+    // assuming there is an action present - this will add it to the queue
+    if (ret) this.addAction(ret);
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -84,9 +85,9 @@ export default class DynamicAnimatedSprite extends AnimatedSprite {
     switch (state.type) {
       case 'dialogue':
         return (
-          "\n\tret = new _this.ActionLoader(_this.engine, 'dialogue', ['" +
-          state.dialogue +
-          "', false, { autoclose: true, onClose: () => finish(true) }, _this," +
+          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
+          JSON.stringify(state.dialogue) +
+          "', false, { autoclose: true, onClose: () => finish(true) }], this," +
           (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
           ');\n'
         );
