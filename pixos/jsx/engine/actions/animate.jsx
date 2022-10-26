@@ -16,6 +16,7 @@ export default {
     this.length = length;
     this.untilFrame = untilFrame;
     this.finish = finish;
+    console.log({finish: this.finish});
   },
   tick: function (time) {
     if (!this.loaded) return;

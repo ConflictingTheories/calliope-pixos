@@ -13,7 +13,6 @@
 
 import DynamicAvatar from '@Engine/dynamic/avatar.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
-import DynamicNpc from '@Engine/dynamic/npc.jsx';
 import DynamicAnimatedTile from '@Engine/dynamic/animatedSprite.jsx';
 import DynamicAnimatedSprite from '@Engine/dynamic/animatedTile.jsx';
 
@@ -74,9 +73,6 @@ export class SpriteLoader {
         break;
       case 'avatar':
         instance = new DynamicAvatar(this.engine, json);
-        break;
-      case 'npc':
-        instance = new DynamicNpc(this.engine, json);
         break;
       default:
         instance = new DynamicSprite(this.engine, json);

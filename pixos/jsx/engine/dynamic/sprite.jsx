@@ -69,14 +69,15 @@ export default class DynamicSprite extends Sprite {
     evalStatement.push('default:\n\tbreak;\n}});');
     console.log({ stat: evalStatement.join('') });
 
-    let xeval = eval;
-    ret = xeval(evalStatement.join('')).call(this, this, finish);
-    console.log({msg:'ret', ret})
+    ret = eval.call(this, evalStatement.join('')).call(this, this, finish);
+
+    console.log({ msg: 'ret', ret });
     if (ret) this.addAction(ret);
-    console.log({msg:'fin', finish})
+    console.log({ msg: 'fin', finish });
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
+
     return ret;
   }
 
@@ -85,13 +86,20 @@ export default class DynamicSprite extends Sprite {
     switch (state.type) {
       case 'dialogue':
         return (
-          "\n\tconsole.log(_this); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', [" +
+          "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', [" +
           JSON.stringify(state.dialogue) +
           ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
-          (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
+          (state.callback && state.callback !== '' ? state.callback : '') +
           ');\n'
         );
       case 'animate':
+        return (
+          "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'animate', [" +
+          state.animate.join(',') +
+          ', () => finish(true) ], _this,' +
+          (state.callback && state.callback !== '' ? state.callback : '') +
+          ');\n'
+        );
       default:
         return '';
     }

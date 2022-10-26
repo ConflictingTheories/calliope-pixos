@@ -29,16 +29,16 @@
     {
       "name": "closed",
       "next": "open",
-      "type": "dialogue",
-      "dialogue": "Door Open",
-      "callback": ""
+      "type": "animate",
+      "animate": [600, 3],
+      "callback": "() => { console.log({here: _this}); _this.blocking = false; _this.override = true; }"
     },
     {
       "name": "open",
       "next": "closed",
-      "type": "dialogue",
-      "dialogue": "Door Closed",
-      "callback": ""
+      "type": "animate",
+      "animate": [600, 2],
+      "callback": "() => { console.log({here: _this}); _this.blocking = true; _this.override = false; }"
     }
   ]
 }

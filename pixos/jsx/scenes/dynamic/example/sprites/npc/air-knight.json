@@ -1,5 +1,5 @@
 {
-  "type": "npc",
+  "type": "sprite",
   "src": "air-knight.gif",
   "portraitSrc": "air_portrait.gif",
   "sheetSize": [128, 256],

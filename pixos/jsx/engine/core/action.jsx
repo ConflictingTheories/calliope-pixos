@@ -44,6 +44,7 @@ export default class Action {
   }
   // callback on completion
   onComplete() {
+    console.log('running complete...', this.callback, typeof this.callback);
     return this.callback ? this.callback() : null;
   }
 }
