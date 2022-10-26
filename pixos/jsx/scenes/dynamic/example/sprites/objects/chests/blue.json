@@ -1,4 +1,5 @@
 {
+  "type": "sprite",
   "src": "chests.gif",
   "sheetSize": [256, 256],
   "tileSize": [16, 24],
