@@ -32,7 +32,7 @@ export default class DynamicNpc extends NPC {
     this.portraitSrc = json.portraitSrc;
     this.sheetSize = json.sheetSize;
     this.tileSize = json.tileSize;
-    this.state = 'intro';
+    this.state = json.state ?? 'intro';
     // Frames
     this.frames = json.frames;
     // Offsets
@@ -47,7 +47,7 @@ export default class DynamicNpc extends NPC {
   interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
-    console.log({ msg: 'interaction with npc', npc: this, sprite });
+    console.log({ msg: 'interaction with npc', xsprite: this, sprite });
     // build state machine
     let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
     states.forEach((state) => {
@@ -56,9 +56,9 @@ export default class DynamicNpc extends NPC {
       let statement =
         "case '" +
         state.name +
-        "':console.log('switching state: " +
+        "':\n\tconsole.log('switching state: " +
         state.name +
-        "'); \t\n_this.state = '" +
+        "');\n\t_this.state = '" +
         state.next +
         "';" +
         actionString +
@@ -71,8 +71,9 @@ export default class DynamicNpc extends NPC {
 
     let xeval = eval;
     ret = xeval(evalStatement.join('')).call(this, this, finish);
-
+    console.log({msg:'ret', ret})
     if (ret) this.addAction(ret);
+    console.log({msg:'fin', finish})
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -92,11 +93,7 @@ export default class DynamicNpc extends NPC {
         );
       case 'animate':
       default:
-        return (
-          "\n\tconsole.log(_this); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', ['Can I help you, '" +
-          sprite.name +
-          "?' , false, { autoclose: true, onClose: () => finish(true) }], _this)';\n"
-        );
+        return '';
     }
   }
 }

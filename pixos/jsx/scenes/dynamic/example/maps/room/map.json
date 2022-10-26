@@ -7,12 +7,19 @@
       "type": "npc/air-knight",
       "pos": [8, 7, 0],
       "facing": "Left"
-    },    
+    },
     {
       "id": "avatar",
       "type": "characters/male",
       "pos": [8, 4, 0],
       "facing": "Down"
+    },
+    {
+      "id": "door",
+      "type": "furniture/door",
+      "pos": [2, 5, 0],
+      "facing": "Down",
+      "zones": ["room"]
     }
   ],
   "scenes": [

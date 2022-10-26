@@ -28,7 +28,7 @@ export default class DynamicAvatar extends Avatar {
     this.portraitSrc = json.portraitSrc;
     this.sheetSize = json.sheetSize;
     this.tileSize = json.tileSize;
-    this.state = 'intro';
+    this.state = json.state ?? 'intro';
     // Frames
     this.frames = json.frames;
     // Offsets

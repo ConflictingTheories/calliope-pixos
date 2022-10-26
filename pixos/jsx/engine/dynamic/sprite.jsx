@@ -32,7 +32,7 @@ export default class DynamicSprite extends Sprite {
     this.portraitSrc = json.portraitSrc;
     this.sheetSize = json.sheetSize;
     this.tileSize = json.tileSize;
-    this.state = 'intro';
+    this.state = json.state ?? 'intro';
     // Frames
     this.frames = json.frames;
     // Offsets
@@ -47,24 +47,33 @@ export default class DynamicSprite extends Sprite {
   interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
-
+    console.log({ msg: 'interaction with xsprite', xsprite: this, sprite });
     // build state machine
-    let evalStatement = ['(()=>{switch (this.state) {\n '];
+    let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
     states.forEach((state) => {
       console.log({ state });
-      let actionString = this.loadActionDynamically(state); // load actions dynamically
-      let statement = "case '" + state.name + "':\n\tthis.state = '" + state.next + "';" + actionString + '\nbreak;';
+      let actionString = this.loadActionDynamically(state, sprite); // load actions dynamically
+      let statement =
+        "case '" +
+        state.name +
+        "':\n\tconsole.log('switching state: " +
+        state.name +
+        "');\n\t_this.state = '" +
+        state.next +
+        "';" +
+        actionString +
+        '\nbreak;';
       console.log({ statement });
       evalStatement.push(statement);
     });
-    evalStatement.push('default:\n\tbreak;\n}})');
+    evalStatement.push('default:\n\tbreak;\n}});');
     console.log({ stat: evalStatement.join('') });
 
     let xeval = eval;
-    xeval(evalStatement.join('')).call(this);
-
-    // assuming there is an action present - this will add it to the queue
+    ret = xeval(evalStatement.join('')).call(this, this, finish);
+    console.log({msg:'ret', ret})
     if (ret) this.addAction(ret);
+    console.log({msg:'fin', finish})
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -72,13 +81,13 @@ export default class DynamicSprite extends Sprite {
   }
 
   // load string to eval based on type of action
-  loadActionDynamically(state) {
+  loadActionDynamically(state, sprite) {
     switch (state.type) {
       case 'dialogue':
         return (
-          "\n\tret = new this.ActionLoader(this.engine, 'dialogue', ['" +
+          "\n\tconsole.log(_this); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', [" +
           JSON.stringify(state.dialogue) +
-          "', false, { autoclose: true, onClose: () => finish(true) }], this," +
+          ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
           (state.callback && state.callback !== '' ? JSON.parse(state.callback) : '') +
           ');\n'
         );
