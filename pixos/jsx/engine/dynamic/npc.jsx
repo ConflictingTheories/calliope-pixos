@@ -52,7 +52,7 @@ export default class DynamicNpc extends NPC {
     let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
     states.forEach((state) => {
       console.log({ state });
-      let actionString = this.loadActionDynamically(state); // load actions dynamically
+      let actionString = this.loadActionDynamically(state, sprite); // load actions dynamically
       let statement =
         "case '" +
         state.name +
@@ -71,7 +71,7 @@ export default class DynamicNpc extends NPC {
 
     let xeval = eval;
     ret = xeval(evalStatement.join('')).call(this, this, finish);
-   
+
     if (ret) this.addAction(ret);
 
     // If completion handler passed through - call it when done
@@ -80,7 +80,7 @@ export default class DynamicNpc extends NPC {
   }
 
   // load string to eval based on type of action
-  loadActionDynamically(state) {
+  loadActionDynamically(state, sprite) {
     switch (state.type) {
       case 'dialogue':
         return (
@@ -92,7 +92,11 @@ export default class DynamicNpc extends NPC {
         );
       case 'animate':
       default:
-        return '';
+        return (
+          "\n\tconsole.log(_this); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', ['Can I help you, '" +
+          sprite.name +
+          "?' , false, { autoclose: true, onClose: () => finish(true) }], _this)';\n"
+        );
     }
   }
 }
