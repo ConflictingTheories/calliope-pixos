@@ -31,7 +31,7 @@
       "id": "spot-light",
       "pos": [7, 7, 1],
       "direction": [0.1, 0.1, 1],
-      "color": [1, 0, 0]
+      "color": [1, 1, 0]
     }
   ],
   "scenes": [

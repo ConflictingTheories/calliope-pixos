@@ -44,7 +44,7 @@ export default function vs() {
     vTextureCoord = aTextureCoord;
 
     vec3 ambientLight = vec3(0.8, 0.8, 0.8);
-    vec3 directionalLightColor = vec3(1, 1, 1);
+    vec3 directionalLightColor = uLightColor;
     vec3 directionalVector = normalize(vec3(1, 1, 0.75));
 
     vec3 transformedNormal = uNormalMatrix * aVertexNormal;
@@ -53,15 +53,14 @@ export default function vs() {
     // todo -- Calculate incoming light for all light sources
     if (useLighting == 1.0) {
       if (uLightIsDirectional == 1.0) {
-        // directionalLightColor = uLightColor;
-        //  directional = max(dot(transformedNormal, uLightDirection), 0.0);
+         directional = max(dot(transformedNormal.xyz, normalize(uLightDirection)), 0.0);
       } else {
-        // directionalLightColor = normalize(uLightPosition, vPosition.xyz);
-        // directional = max(dot(transformedNormal, directionalLightColor), 0.0);
+        directionalLightColor = normalize(uLightPosition.xyz) * dot(uLightPosition.xyz, vPosition.xyz);
+        directional = max(dot(transformedNormal.xyz, directionalLightColor), 0.0);
       }
     }
 
-    vec3 reflectedLightColor = (directionalLightColor * directional);
+    vec3 reflectedLightColor = directional * directionalLightColor;
     vLighting = ambientLight + reflectedLightColor; 
   }
 `;

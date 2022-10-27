@@ -49,7 +49,14 @@ export default class GLEngine {
     this.transitionDuration = 0;
     this.transitionTime = new Date().getMilliseconds();
     this.cameraAngle = 45;
-    this.lights = [];
+    this.lights = [
+      // {
+      //   id: 'ambient',
+      //   pos: [1, 1, 1],
+      //   direction: [1, 1, 0.75],
+      //   color: [1, 1, 1],
+      // },
+    ];
     this.fov = 45;
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
@@ -250,26 +257,12 @@ export default class GLEngine {
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
       // point lighting
-      let uLightPosition = [];
-      let uLightColor = [];
-      let uLightDirection = [];
-      let uLightIsDirectional = [];
-      if (self.lights.length === 0) {
-        gl.uniform1f(this.useLighting, 0.0);
-      } else {
-        gl.uniform1f(this.useLighting, 1.0);
-        self.lights.forEach((light) => {
-          uLightPosition.push(light.pos);
-          uLightColor.push(light.color);
-          uLightDirection.push(light.direction);
-          uLightIsDirectional.push(light.direction ? 1.0 : 0.0);
-        });
-        console.log({ lights: self.lights });
-        gl.uniform3fv(this.uLightPosition, uLightPosition);
-        gl.uniform3fv(this.uLightColor, uLightColor);
-        gl.uniform3fv(this.uLightDirection, uLightDirection);
-        gl.uniform1fv(this.uLightIsDirectional, uLightIsDirectional);
-      }
+      console.log({ lights: self.lights });
+      gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
+      gl.uniform3fv(this.uLightColor, self.lights[0].color);
+      gl.uniform3fv(this.uLightDirection, self.lights[0].direction);
+      gl.uniform1f(this.uLightIsDirectional, 1.0);
+      gl.uniform1f(this.useLighting, 1.0);
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
