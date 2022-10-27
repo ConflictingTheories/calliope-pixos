@@ -43,7 +43,7 @@ export default function vs() {
 
     vTextureCoord = aTextureCoord;
 
-    vec3 ambientLight = vec3(0.8, 0.8, 0.8);
+    vec3 ambientLight = 0.8 * uLightColor;
     vec3 directionalLightColor = uLightColor;
     vec3 directionalVector = normalize(vec3(1, 1, 0.75));
 

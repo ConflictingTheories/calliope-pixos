@@ -29,9 +29,9 @@
   "lights": [
     {
       "id": "spot-light",
-      "pos": [7, 7, 1],
-      "direction": [0.1, 0.1, 1],
-      "color": [1, 1, 0]
+      "pos": [2, 2, 1],
+      "color": [0.8, 0.8, 1],
+      "direction": [0.3, 0.3, 1]
     }
   ],
   "scenes": [

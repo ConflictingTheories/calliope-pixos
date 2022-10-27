@@ -260,7 +260,7 @@ export default class GLEngine {
       console.log({ lights: self.lights });
       gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
       gl.uniform3fv(this.uLightColor, self.lights[0].color);
-      gl.uniform3fv(this.uLightDirection, self.lights[0].direction);
+      gl.uniform3fv(this.uLightDirection, self.lights[0].direction ?? []);
       gl.uniform1f(this.uLightIsDirectional, 1.0);
       gl.uniform1f(this.useLighting, 1.0);
 
