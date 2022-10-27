@@ -26,6 +26,14 @@
     { "id": "chestred", "type": "objects/chests/red", "pos": [9, 14, 0], "facing": "Down" },
     { "id": "chestblue", "type": "objects/chests/blue", "pos": [7, 13, 0], "facing": "Left" }
   ],
+  "lights": [
+    {
+      "id": "spot-light",
+      "pos": [7, 7, 1],
+      "direction": [0.1, 0.1, 1],
+      "color": [1, 0, 0]
+    }
+  ],
   "scenes": [
     {
       "id": "strange-legend",

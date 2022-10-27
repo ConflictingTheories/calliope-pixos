@@ -32,6 +32,7 @@ export default class Zone {
     this.spriteList = [];
     this.objectDict = {};
     this.objectList = [];
+    this.lights = [];
     this.scenes = [];
     this.lastKey = Date.now();
     this.engine = world.engine;
@@ -142,6 +143,10 @@ export default class Zone {
       }
       console.log({ msg: 'zone load audio loaded' });
 
+      // load lights
+      this.lights = zoneJson.lights ?? [];
+      this.lights.forEach((light) => this.engine.addLight(light.id, light.pos, light.color, light.direction));
+
       // Load tileset and create level geometry & trigger updates
       this.tileset = tileset;
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
@@ -181,6 +186,12 @@ export default class Zone {
     console.log({ msg: 'runnning action...', obj: this, action });
     if (this.loaded) action.apply(this);
     else this.onLoadActions.add(action.bind(this));
+  }
+
+  // tear down
+  runWhenDeleted() {
+    // remove lights associated with zone
+    this.lights.forEach((light) => this.engine.removeLight(light.id));
   }
 
   // When tileset loads

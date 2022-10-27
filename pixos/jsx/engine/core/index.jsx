@@ -49,6 +49,7 @@ export default class GLEngine {
     this.transitionDuration = 0;
     this.transitionTime = new Date().getMilliseconds();
     this.cameraAngle = 45;
+    this.lights = [];
     this.fov = 45;
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
@@ -73,6 +74,21 @@ export default class GLEngine {
     // Store setup - session based
     store.pixos = {};
     this.store = store.pixos;
+  }
+
+  // add a light source to the renderer
+  addLight(id, pos, color, direction = null) {
+    this.lights.push({
+      id,
+      pos,
+      color,
+      direction,
+    });
+  }
+
+  // add a light source to the renderer
+  removeLight(id) {
+    this.lights = this.lights.filter((light) => light.id !== id);
   }
 
   // Initialize a Scene object
@@ -214,9 +230,16 @@ export default class GLEngine {
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, 'uNormalMatrix');
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, 'uSampler');
     shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, 'uDiffuseMap');
-    shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
+    // lighting
+    shaderProgram.uLightPosition = gl.getUniformLocation(shaderProgram, 'uLightPosition');
+    shaderProgram.uLightColor = gl.getUniformLocation(shaderProgram, 'uLightColor');
+    shaderProgram.uLightDirection = gl.getUniformLocation(shaderProgram, 'uLightDirection');
+    shaderProgram.uLightIsDirectional = gl.getUniformLocation(shaderProgram, 'uLightIsDirectional');
+
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
+    shaderProgram.useLighting = gl.getUniformLocation(shaderProgram, 'useLighting');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
+    shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
@@ -225,6 +248,29 @@ export default class GLEngine {
       self.normalMat = create3();
       normalFromMat4(self.normalMat, self.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
+
+      // point lighting
+      let uLightPosition = [];
+      let uLightColor = [];
+      let uLightDirection = [];
+      let uLightIsDirectional = [];
+      if (self.lights.length === 0) {
+        gl.uniform1f(this.useLighting, 0.0);
+      } else {
+        gl.uniform1f(this.useLighting, 1.0);
+        self.lights.forEach((light) => {
+          uLightPosition.push(light.pos);
+          uLightColor.push(light.color);
+          uLightDirection.push(light.direction);
+          uLightIsDirectional.push(light.direction ? 1.0 : 0.0);
+        });
+        console.log({ lights: self.lights });
+        gl.uniform3fv(this.uLightPosition, uLightPosition);
+        gl.uniform3fv(this.uLightColor, uLightColor);
+        gl.uniform3fv(this.uLightDirection, uLightDirection);
+        gl.uniform1fv(this.uLightIsDirectional, uLightIsDirectional);
+      }
+
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
       // use sampler or materials?
@@ -484,9 +530,7 @@ export default class GLEngine {
 
   // transition (fade, swipe, etc)
   startTransition(type, params) {
-
     // TODO --- NEEDS SOME WORK....
-
 
     let gl = this.gl;
 

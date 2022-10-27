@@ -20,12 +20,18 @@ export default function vs() {
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
   uniform mat3 uNormalMatrix;
-  
+  uniform float useLighting;
+
+  uniform vec3 uLightPosition;
+  uniform vec3 uLightColor;
+  uniform vec3 uLightDirection;
+  uniform float uLightIsDirectional;
+
   varying vec2 vTextureCoord;
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
 
-  varying highp vec3 vLighting;
+  varying vec3 vLighting;
   
   uniform vec3 u_scale;
 
@@ -37,14 +43,26 @@ export default function vs() {
 
     vTextureCoord = aTextureCoord;
 
-    highp vec3 ambientLight = vec3(0.8, 0.8, 0.8);
-    highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(1, 1, 0.75));
+    vec3 ambientLight = vec3(0.8, 0.8, 0.8);
+    vec3 directionalLightColor = vec3(1, 1, 1);
+    vec3 directionalVector = normalize(vec3(1, 1, 0.75));
 
-    highp vec3 transformedNormal = uNormalMatrix * aVertexNormal;
+    vec3 transformedNormal = uNormalMatrix * aVertexNormal;
+    float directional = max(dot(transformedNormal.xyz, directionalVector), 0.1);
+    
+    // todo -- Calculate incoming light for all light sources
+    if (useLighting == 1.0) {
+      if (uLightIsDirectional == 1.0) {
+        // directionalLightColor = uLightColor;
+        //  directional = max(dot(transformedNormal, uLightDirection), 0.0);
+      } else {
+        // directionalLightColor = normalize(uLightPosition, vPosition.xyz);
+        // directional = max(dot(transformedNormal, directionalLightColor), 0.0);
+      }
+    }
 
-    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.1);
-    vLighting = ambientLight + (directionalLightColor * directional);
+    vec3 reflectedLightColor = (directionalLightColor * directional);
+    vLighting = ambientLight + reflectedLightColor; 
   }
 `;
 }

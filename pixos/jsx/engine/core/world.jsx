@@ -111,6 +111,7 @@ export default class World {
       } else {
         zone.audio.pauseAudio();
         zone.removeAllSprites();
+        zone.runWhenDeleted();
       }
     });
     delete this.zoneDict[zoneId];
@@ -121,6 +122,7 @@ export default class World {
     this.zoneList.map((z) => {
       z.audio.pauseAudio();
       z.removeAllSprites();
+      zone.runWhenDeleted();
     });
     this.zoneList = [];
     this.zoneDict = {};
