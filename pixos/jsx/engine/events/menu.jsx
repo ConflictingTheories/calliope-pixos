@@ -21,8 +21,8 @@ export default {
     this.line = 0;
     this.options = options;
     this.completed = false;
+    this.onOpen = menu.start.onOpen;
     this.lastKey = new Date().getTime();
-    this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
     this.touches = [];
     this.menuDict = menu ?? {};
     this.activeMenus = activeMenus ?? [];
@@ -31,9 +31,11 @@ export default {
     this.isTouched = false;
     this.speechOutput = false;
     this.quittable = true;
+    this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
+    this.speechOutput = true;
+    console.log({ msg: 'inializing menu', menu, activeMenus, me: this });
     // load voices and then play
     window.speechSynthesis.onvoiceschanged = () => {
-      this.speechOutput = true;
     };
   },
   // Update & Scroll

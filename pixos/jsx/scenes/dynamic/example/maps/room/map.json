@@ -111,5 +111,24 @@
       "mtl": true,
       "pos": [6, 4, 1]
     }
-  ]
+  ],
+  "menu": {
+    "start": {
+      "text": "Example Game!",
+      "prompt": "Welcome Traveler!",
+      "x": 25,
+      "y": 25,
+      "w": 150,
+      "h": 75,
+      "quittable": false,
+      "colours": {
+        "top": "#333",
+        "bottom": "#777",
+        "background": "#999"
+      },
+      "onEnter": true,
+      "onOpen": "(menu) => {console.log({msg:'opening menu', menu, scope:this}); this.isPaused = true;}",
+      "trigger": "menu/main"
+    }
+  }
 }

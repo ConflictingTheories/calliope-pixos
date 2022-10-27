@@ -257,7 +257,6 @@ export default class GLEngine {
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
       // point lighting
-      console.log({ lights: self.lights });
       gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
       gl.uniform3fv(this.uLightColor, self.lights[0].color);
       gl.uniform3fv(this.uLightDirection, self.lights[0].direction ?? []);

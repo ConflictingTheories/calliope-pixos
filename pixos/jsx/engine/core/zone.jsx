@@ -115,6 +115,13 @@ export default class Zone {
     }
   }
 
+  // load trigger scripts from zip
+  async loadTriggerFromZip(trigger, zip) {
+    let triggerScript = await zip.file(`triggers/${trigger}.js`).async('string');
+    console.log({ msg: 'fetching trigger', triggerScript });
+    return eval.call(this, triggerScript);
+  }
+
   // Load from Json components -- For more Dynamic Evaluation
   // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
   // as it is reading everything from the prebundled zip
@@ -175,6 +182,28 @@ export default class Zone {
 
       // load objects and notify others
       self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
+
+      // load game menus
+      if (zoneJson.menu) {
+        let menus = {};
+        await Promise.all(
+          Object.keys(zoneJson.menu).map(async (id) => {
+            let menu = zoneJson.menu[id];
+            menu.id = id;
+            if (menu.onOpen) {
+              menu.onOpen = eval.call(self, menu.onOpen).bind(self.world);
+            }
+            if (menu.trigger) {
+              menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self);
+            }
+            console.log({ menu });
+            menus[id] = menu;
+          })
+        );
+        // launch the start menu
+        this.menus = menus;
+        this.world.startMenu(this.menus);
+      }
     } catch (e) {
       console.error('Error parsing json zone ' + this.id);
       console.error(e);

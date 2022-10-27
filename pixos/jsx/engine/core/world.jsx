@@ -64,7 +64,7 @@ export default class World {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
 
     console.log(zip);
-    
+
     let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string')); // main map file (/zip/maps/{zoneId}/map.json)
     let cellJson = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string')); // cells (/zip/maps/{zoneId}/cells.json)
 
@@ -153,6 +153,7 @@ export default class World {
 
   // open start menu
   startMenu(menuConfig, defaultMenus = ['start']) {
+    console.log({ msg: 'launching menu', menuConfig });
     this.addEvent(
       new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
