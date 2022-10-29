@@ -60,6 +60,14 @@ export default class Avatar extends Sprite {
       case 'c':
         this.bindCamera = false;
         break;
+      // adjust Camera
+      case 'x':
+        this.engine.panCameraCCW();
+        break;
+      // adjust Camera
+      case 'z':
+        this.engine.panCameraCW();
+        break;
       // show menu
       case 'm':
         return this.openMenu(
@@ -83,17 +91,6 @@ export default class Avatar extends Sprite {
           ['main']
         );
         break;
-      case 'z':
-        // this.zone.world.removeZone("room");
-        this.zone.world.removeZone('room');
-        this.zone.world.loadZone('dungeon-top');
-        this.zone.world.loadZone('dungeon-bottom');
-        break;
-      case 'y':
-        this.zone.world.removeZone('dungeon-top');
-        this.zone.world.removeZone('dungeon-bottom');
-        this.zone.world.loadZone('room');
-        break;
       // Interact with tile
       case 'k':
       case 'Enter':
@@ -105,7 +102,6 @@ export default class Avatar extends Sprite {
       case ' ':
         return new ActionLoader(this.engine, 'chat', ['>:', true, { autoclose: false }], this);
       // Clear Speech
-      case 'q':
       case 'Escape':
         this.speech.clearHud();
         break;
