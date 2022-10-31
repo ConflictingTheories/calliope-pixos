@@ -221,12 +221,16 @@ export default class Sprite {
     if (!this.loaded) return;
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
-    // Undo rotation so that character plane is normal to LOS
+    // position into scene
     translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+    
     // scale & rotate sprite to handle walls
-    // if (!this.fixed) this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
-    rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
+    if (!this.fixed) this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
+    // rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.x), [1, 0, 0]);
+    // rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.x), [1, 0, 0]);
+    // rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.y), [0, 1, 0]);
+    // rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.z), [0, 0, -1]);
     // Bind texture
     this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.aVertexPosition);
     this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.aTextureCoord);
@@ -244,7 +248,9 @@ export default class Sprite {
       // Undo rotation so that character plane is normal to LOS
       translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
       translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+      
       rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle), [1, 0, 0]);
+      
       // Bind texture for speech bubble
       this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.aVertexPosition);
       this.engine.bindBuffer(this.speechTexBuf, this.engine.shaderProgram.aTextureCoord);

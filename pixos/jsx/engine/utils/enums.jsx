@@ -113,6 +113,7 @@ export const Direction = {
 
   // sprite sequence facing (Needs work -- still not quite right)
   spriteSequence(dir, camera = 'N') {
+    console.log({ dir, camera });
     switch (camera) {
       case 'N':
         switch (dir) {
@@ -128,79 +129,79 @@ export const Direction = {
       case 'E':
         switch (dir) {
           case Direction.Up:
-            return 'E';
-          case Direction.Right:
-            return 'S';
-          case Direction.Down:
             return 'W';
-          case Direction.Left:
+          case Direction.Right:
             return 'N';
+          case Direction.Down:
+            return 'E';
+          case Direction.Left:
+            return 'S';
         }
       case 'S':
         switch (dir) {
           case Direction.Up:
             return 'S';
           case Direction.Right:
-            return 'W';
+            return 'E';
           case Direction.Down:
             return 'N';
           case Direction.Left:
-            return 'E';
+            return 'W';
         }
       case 'W':
         switch (dir) {
           case Direction.Up:
-            return 'W';
-          case Direction.Right:
-            return 'N';
-          case Direction.Down:
             return 'E';
-          case Direction.Left:
+          case Direction.Right:
             return 'S';
+          case Direction.Down:
+            return 'W';
+          case Direction.Left:
+            return 'N';
         }
       case 'NE':
         switch (dir) {
           case Direction.Up:
-            return 'NE';
+            return 'NW';
           case Direction.Right:
             return 'SE';
           case Direction.Down:
-            return 'SW';
+            return 'NE';
           case Direction.Left:
-            return 'NW';
+            return 'SW';
         }
       case 'SE':
         switch (dir) {
           case Direction.Up:
-            return 'SE';
+            return 'NE';
           case Direction.Right:
-            return 'SW';
+            return 'SE';
           case Direction.Down:
             return 'NW';
           case Direction.Left:
-            return 'NE';
+            return 'SW';
         }
       case 'SW':
         switch (dir) {
           case Direction.Up:
-            return 'NE';
-          case Direction.Right:
-            return 'SE';
-          case Direction.Down:
             return 'SW';
+          case Direction.Right:
+            return 'NE';
+          case Direction.Down:
+            return 'SE';
           case Direction.Left:
             return 'NW';
         }
       case 'NW':
         switch (dir) {
           case Direction.Up:
-            return 'NW';
+            return 'SE';
           case Direction.Right:
             return 'NE';
           case Direction.Down:
-            return 'SE';
-          case Direction.Left:
             return 'SW';
+          case Direction.Left:
+            return 'NW';
         }
     }
 
