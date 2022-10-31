@@ -49,7 +49,8 @@ export default class GLEngine {
     this.transitionDuration = 0;
     this.transitionTime = new Date().getMilliseconds();
     this.cameraAngle = 45;
-    this.cameraVector = [1, 0, 0];
+    this.cameraVector = new Vector(...[1, 0, 0]);
+    this.cameraFacing = 'NORTH';
     this.lights = [
       // {
       //   id: 'ambient',
@@ -314,50 +315,50 @@ export default class GLEngine {
   // Set Camera Pos & Angle
   setCamera() {
     translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector[0]), [1, 0, 0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector[1]), [0, 1, 0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector[2]), [0, 0, 1]);
+    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
+    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.y), [0, 1, 0]);
+    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.z), [0, 0, 1]);
     negate(this.cameraPosition, this.cameraOffset);
     translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
   }
 
   // Set Camera Pos & Angle
   panCameraCW(radians = Math.PI / 4) {
-    // this.cameraVector[2] = Math.max(-1, Math.min(1, this.cameraVector[2] - Math.cos(radians)));
-    this.cameraVector[2] -= Math.cos(radians);
+    // this.cameraVector.z = Math.max(-1, Math.min(1, this.cameraVector.z - Math.cos(radians)));
+    this.cameraVector.z -= Math.cos(radians);
 
     console.log(this.cameraVector);
   }
   panCameraCCW(radians = Math.PI / 4) {
     // different angles for facings
-    // [1. 0, 4] - N (Reversed) (up/down)
-    // [1. 0, 3] - NW (Iso)
+    // [1. 0, 4] - S (Reversed) (up/down)
+    // [1. 0, 3] - SW (Iso)
     // [1. 0, 2] - W (left/right)
-    // [1, 0, 1] - SW (Iso)
-    // [1, 0, 0] - S (Normal) (up/down)
-    // [1. 0, -1] - SE (Iso)
+    // [1, 0, 1] - NW (Iso)
+    // [1, 0, 0] - N (Normal) (up/down)
+    // [1. 0, -1] - NE (Iso)
     // [1. 0, -2] - E (left/right)
-    // [1. 0, -3] - NE (Iso)
-    this.cameraVector[2] += Math.cos(radians);
+    // [1. 0, -3] - SE (Iso)
+    this.cameraVector.z += Math.cos(radians);
     console.log(this.cameraVector);
   }
   // Set Camera Pos & Angle
   pitchCameraCW(radians = Math.PI / 4) {
-    this.cameraVector[0] -= Math.cos(radians);
+    this.cameraVector.x -= Math.cos(radians);
     console.log(this.cameraVector);
   }
   pitchCameraCCW(radians = Math.PI / 4) {
-    this.cameraVector[0] += Math.sin(radians);
-    console.log(this.cameraPosition);
+    this.cameraVector.x += Math.sin(radians);
+    console.log(this.cameraVector);
   }
   // Set Camera Pos & Angle
   tiltCameraCW(radians = Math.PI / 4) {
-    this.cameraVector[1] -= Math.cos(radians);
+    this.cameraVector.y -= Math.cos(radians);
     console.log(this.cameraVector);
   }
   tiltCameraCCW(radians = Math.PI / 4) {
-    this.cameraVector[1] += Math.sin(radians);
-    console.log(this.cameraPosition);
+    this.cameraVector.z += Math.sin(radians);
+    console.log(this.cameraVector);
   }
 
   // Clear Screen with Color (RGBA)

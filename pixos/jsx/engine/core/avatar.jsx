@@ -14,6 +14,7 @@
 import { Vector, set } from '@Engine/utils/math/vector.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 import Sprite from '@Engine/core/sprite.jsx';
 
 // Special class of Sprite which is controlled by the player
@@ -50,6 +51,8 @@ export default class Avatar extends Sprite {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
     let touchmap = this.engine.gamepad.checkInput();
+    let from = this.engine.cameraVector;
+    let to = this.engine.cameraVector;
     // Keyboard
     switch (key) {
       // Bind Camera
@@ -62,11 +65,17 @@ export default class Avatar extends Sprite {
         break;
       // adjust Camera
       case 'x':
-        this.engine.panCameraCCW();
+        from = this.engine.cameraVector;
+        to = this.engine.cameraVector.add(new Vector(...[0, 0, Math.cos(Math.PI / 4)]));
+        console.log({ from, to, msg: 'pan' });
+        this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // adjust Camera
       case 'z':
-        this.engine.panCameraCW();
+        from = this.engine.cameraVector;
+        to = this.engine.cameraVector.sub(new Vector(...[0, 0, Math.cos(Math.PI / 4)]));
+        console.log({ from, to, msg: 'pan' });
+        this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // show menu
       case 'm':
