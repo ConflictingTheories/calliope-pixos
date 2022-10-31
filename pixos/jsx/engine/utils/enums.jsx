@@ -82,75 +82,22 @@ export const Direction = {
     return Direction.None;
   },
 
-  adjustCameraDirection(camera, vec) {
-    console.log({ camera, vec });
-    switch (camera) {
-      case 'N':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'N';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'NE';
-        } else if (vec.z < 0) {
-          return 'NW';
-        }
-      case 'E':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'E';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'SE';
-        } else if (vec.z < 0) {
-          return 'NE';
-        }
-      case 'S':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'S';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'SW';
-        } else if (vec.z < 0) {
-          return 'SE';
-        }
-      case 'W':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'W';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'NW';
-        } else if (vec.z < 0) {
-          return 'SW';
-        }
-      case 'NE':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'NE';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'E';
-        } else if (vec.z < 0) {
-          return 'N';
-        }
-      case 'SE':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'SE';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'S';
-        } else if (vec.z < 0) {
-          return 'E';
-        }
-      case 'SW':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'SW';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'W';
-        } else if (vec.z < 0) {
-          return 'S';
-        }
-      case 'NW':
-        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'NE';
-        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
-          return 'N';
-        } else if (vec.z < 0) {
-          return 'W';
-        }
+  // determine which camera facing applies
+  adjustCameraDirection(vec) {
+    console.log({vec, check: Math.abs(vec.z)});
+    if (Math.abs(vec.z) < 1 && vec.z >= 0) {
+      return 'N';
+    } else if (Math.abs(vec.z) < 2 && vec.z >= 0) {
+      return vec.z > 0 ? 'NW' : 'SE';
+    } else if (Math.abs(vec.z) < 3 && vec.z >= 2) {
+      return vec.z > 0 ? 'W' : 'E';
+    } else if (Math.abs(vec.z) > 3 && vec.z < 4) {
+      return vec.z > 0 ? 'SW' : 'NE';
+    } else if (Math.round(vec.z) == 4) {
+      return 'S';
+    } else {
+      return 'N';
     }
-    return 'N';
   },
 
   // sprite sequence facing

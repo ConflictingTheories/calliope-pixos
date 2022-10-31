@@ -35,7 +35,7 @@ export default {
 
         console.log({engine: this.engine, scope: this});
         // Set Facing Direction for proper sprite rendering
-        this.engine.cameraDir = Direction.adjustCameraDirection(this.engine.cameraDir, to)
+        this.engine.cameraDir = Direction.adjustCameraDirection(to)
 
         // Then Adjust Facing Directions for Sprites
         // use lerp to smoothly transition based on completion
