@@ -82,25 +82,36 @@ export const Direction = {
     return Direction.None;
   },
 
-  // determine which camera facing applies
+  // determine which camera facing applies (seems to be working)
   adjustCameraDirection(vec) {
-    console.log({vec, check: Math.abs(vec.z)});
-    if (Math.abs(vec.z) < 1 && vec.z >= 0) {
-      return 'N';
-    } else if (Math.abs(vec.z) < 2 && vec.z >= 0) {
-      return vec.z > 0 ? 'NW' : 'SE';
-    } else if (Math.abs(vec.z) < 3 && vec.z >= 2) {
-      return vec.z > 0 ? 'W' : 'E';
-    } else if (Math.abs(vec.z) > 3 && vec.z < 4) {
-      return vec.z > 0 ? 'SW' : 'NE';
-    } else if (Math.round(vec.z) == 4) {
-      return 'S';
-    } else {
-      return 'N';
+    switch (vec.z % 8) {
+      case 0:
+        return 'N';
+      case 1:
+      case -7:
+        return 'NW';
+      case 2:
+      case -6:
+        return 'W';
+      case 3:
+      case -5:
+        return 'SW';
+      case 4:
+      case -4:
+        return 'S';
+      case 5:
+      case -3:
+        return 'SE';
+      case 6:
+      case -2:
+        return 'E';
+      case 7:
+      case -1:
+        return 'NE';
     }
   },
 
-  // sprite sequence facing
+  // sprite sequence facing (Needs work -- still not quite right)
   spriteSequence(dir, camera = 'N') {
     switch (camera) {
       case 'N':
@@ -195,6 +206,7 @@ export const Direction = {
 
     return 'S';
   },
+
   // object sequence rotation (TODO)
   objectSequence(dir) {
     switch (dir) {

@@ -31,6 +31,7 @@ export default {
         let frac = (time - this.startTime) / (this.options.duration * 1000);
         let from = this.options.from;
         let to = this.options.to;
+        to.z = Math.round(to.z);
         lerp(from, to, frac, this.engine.cameraVector);
 
         console.log({engine: this.engine, scope: this});
