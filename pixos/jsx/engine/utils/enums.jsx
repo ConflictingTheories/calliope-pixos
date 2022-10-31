@@ -18,6 +18,11 @@ export const Mouse = {
   MOVE: 3,
 };
 
+// Degrees to Radians
+function degToRad(degrees) {
+  return (degrees * Math.PI) / 180;
+}
+
 // Directions enumeration & methods
 export const Direction = {
   None: 0, //0000
@@ -76,19 +81,172 @@ export const Direction = {
     }
     return Direction.None;
   },
-  // sprite sequence facing
-  spriteSequence(dir) {
-    switch (dir) {
-      case Direction.Right:
-        return "right";
-      case Direction.Up:
-        return "up";
-      case Direction.Left:
-        return "left";
-      case Direction.Down:
-        return "down";
+
+  adjustCameraDirection(camera, vec) {
+    console.log({ camera, vec });
+    switch (camera) {
+      case 'N':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'N';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'NE';
+        } else if (vec.z < 0) {
+          return 'NW';
+        }
+      case 'E':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'E';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'SE';
+        } else if (vec.z < 0) {
+          return 'NE';
+        }
+      case 'S':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'S';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'SW';
+        } else if (vec.z < 0) {
+          return 'SE';
+        }
+      case 'W':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'W';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'NW';
+        } else if (vec.z < 0) {
+          return 'SW';
+        }
+      case 'NE':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'NE';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'E';
+        } else if (vec.z < 0) {
+          return 'N';
+        }
+      case 'SE':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'SE';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'S';
+        } else if (vec.z < 0) {
+          return 'E';
+        }
+      case 'SW':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'SW';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'W';
+        } else if (vec.z < 0) {
+          return 'S';
+        }
+      case 'NW':
+        if (vec.z - Math.cos(degToRad(45)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'NE';
+        } else if (vec.z - Math.cos(degToRad(90)) < Math.cos(degToRad(45)) / 2 && vec.z >= 0) {
+          return 'N';
+        } else if (vec.z < 0) {
+          return 'W';
+        }
     }
-    return "down";
+    return 'N';
+  },
+
+  // sprite sequence facing
+  spriteSequence(dir, camera = 'N') {
+    switch (camera) {
+      case 'N':
+        switch (dir) {
+          case Direction.Up:
+            return 'N';
+          case Direction.Right:
+            return 'E';
+          case Direction.Down:
+            return 'S';
+          case Direction.Left:
+            return 'W';
+        }
+      case 'E':
+        switch (dir) {
+          case Direction.Up:
+            return 'E';
+          case Direction.Right:
+            return 'S';
+          case Direction.Down:
+            return 'W';
+          case Direction.Left:
+            return 'N';
+        }
+      case 'S':
+        switch (dir) {
+          case Direction.Up:
+            return 'S';
+          case Direction.Right:
+            return 'W';
+          case Direction.Down:
+            return 'N';
+          case Direction.Left:
+            return 'E';
+        }
+      case 'W':
+        switch (dir) {
+          case Direction.Up:
+            return 'W';
+          case Direction.Right:
+            return 'N';
+          case Direction.Down:
+            return 'E';
+          case Direction.Left:
+            return 'S';
+        }
+      case 'NE':
+        switch (dir) {
+          case Direction.Up:
+            return 'NE';
+          case Direction.Right:
+            return 'SE';
+          case Direction.Down:
+            return 'SW';
+          case Direction.Left:
+            return 'NW';
+        }
+      case 'SE':
+        switch (dir) {
+          case Direction.Up:
+            return 'SE';
+          case Direction.Right:
+            return 'SW';
+          case Direction.Down:
+            return 'NW';
+          case Direction.Left:
+            return 'NE';
+        }
+      case 'SW':
+        switch (dir) {
+          case Direction.Up:
+            return 'NE';
+          case Direction.Right:
+            return 'SE';
+          case Direction.Down:
+            return 'SW';
+          case Direction.Left:
+            return 'NW';
+        }
+      case 'NW':
+        switch (dir) {
+          case Direction.Up:
+            return 'NW';
+          case Direction.Right:
+            return 'NE';
+          case Direction.Down:
+            return 'SE';
+          case Direction.Left:
+            return 'SW';
+        }
+    }
+
+    return 'S';
   },
   // object sequence rotation (TODO)
   objectSequence(dir) {

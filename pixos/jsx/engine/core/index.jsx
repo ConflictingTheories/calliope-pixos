@@ -50,7 +50,7 @@ export default class GLEngine {
     this.transitionTime = new Date().getMilliseconds();
     this.cameraAngle = 45;
     this.cameraVector = new Vector(...[1, 0, 0]);
-    this.cameraFacing = 'NORTH';
+    this.cameraDir = 'N';
     this.lights = [
       // {
       //   id: 'ambient',

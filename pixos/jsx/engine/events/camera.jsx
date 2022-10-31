@@ -11,6 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 import { lerp } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
   // Initialize Dialogue Object
@@ -31,7 +32,11 @@ export default {
         let from = this.options.from;
         let to = this.options.to;
         lerp(from, to, frac, this.engine.cameraVector);
-        // Pan from to
+
+        console.log({engine: this.engine, scope: this});
+        // Set Facing Direction for proper sprite rendering
+        this.engine.cameraDir = Direction.adjustCameraDirection(this.engine.cameraDir, to)
+
         // Then Adjust Facing Directions for Sprites
         // use lerp to smoothly transition based on completion
         break;

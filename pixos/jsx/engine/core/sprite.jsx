@@ -177,8 +177,8 @@ export default class Sprite {
 
   // Get Texture Coordinates
   getTexCoords() {
-    let frames = this.frames[Direction.spriteSequence(this.facing)] ?? this.frames['up']; //default up
-    let length = this.frames[Direction.spriteSequence(this.facing)].length;
+    let frames = this.frames[Direction.spriteSequence(this.facing, this.engine.cameraDir)] ?? this.frames['N']; //default up
+    let length = this.frames[Direction.spriteSequence(this.facing, this.engine.cameraDir)].length;
     let t = frames[this.animFrame % length];
     let ss = this.sheetSize;
     let ts = this.tileSize;
