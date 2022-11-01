@@ -68,7 +68,6 @@ export default class Avatar extends Sprite {
         from = this.engine.cameraVector;
         to = this.engine.cameraVector.add(new Vector(...[0, 0, 1]));
         to.z = to.z % 8;
-        console.log({ from, to, msg: 'pan' });
         this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // adjust Camera
@@ -76,7 +75,6 @@ export default class Avatar extends Sprite {
         from = this.engine.cameraVector;
         to = this.engine.cameraVector.sub(new Vector(...[0, 0, 1]));
         to.z = to.z % 8;
-        console.log({ from, to, msg: 'pan' });
         this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // show menu

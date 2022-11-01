@@ -27,6 +27,7 @@ export default class DynamicSprite extends Sprite {
 
   // load in json properties to object
   loadJson(json) {
+    this.update(json);
     this.json = json;
     this.src = json.src;
     this.portraitSrc = json.portraitSrc;

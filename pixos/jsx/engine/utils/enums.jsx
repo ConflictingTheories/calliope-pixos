@@ -142,11 +142,11 @@ export const Direction = {
           case Direction.Up:
             return 'S';
           case Direction.Right:
-            return 'E';
+            return 'W';
           case Direction.Down:
             return 'N';
           case Direction.Left:
-            return 'W';
+            return 'E';
         }
       case 'W':
         switch (dir) {
@@ -173,24 +173,24 @@ export const Direction = {
       case 'SE':
         switch (dir) {
           case Direction.Up:
-            return 'NE';
-          case Direction.Right:
-            return 'SE';
-          case Direction.Down:
-            return 'NW';
-          case Direction.Left:
             return 'SW';
+          case Direction.Right:
+            return 'NW';
+          case Direction.Down:
+            return 'SE';
+          case Direction.Left:
+            return 'NE';
         }
       case 'SW':
         switch (dir) {
           case Direction.Up:
-            return 'SW';
-          case Direction.Right:
             return 'NE';
+          case Direction.Right:
+            return 'SW';
           case Direction.Down:
-            return 'SE';
-          case Direction.Left:
             return 'NW';
+          case Direction.Left:
+            return 'SE';
         }
       case 'NW':
         switch (dir) {
