@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "../resources.jsx";
-import ModelObject from "@Engine/core/object.jsx";
+import Resources from '../resources.jsx';
+import ModelObject from '@Engine/core/object.jsx';
 
 //helps load models
 export class ObjectLoader {
@@ -34,12 +34,55 @@ export class ObjectLoader {
     let modelreq = {
       obj: `pixos/models/${instance.type}.obj`,
       mtl: model.mtl ?? false,
-      mtlTextureRoot: "/pixos/models",
+      mtlTextureRoot: '/pixos/models',
       downloadMtlTextures: true,
       enableWTextureCoord: false,
       name: instance.id,
     };
     let models = await this.engine.objLoader.downloadModels(this.engine.gl, [modelreq]);
+    instance.mesh = models[model.id];
+    instance.templateLoaded = true;
+    // Update Existing
+    this.instances[instance.id].forEach(function (instance) {
+      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    });
+    // Configure if needed
+    if (runConfigure) runConfigure(instance);
+    // once loaded
+    if (afterLoad) {
+      if (instance.templateLoaded) afterLoad(instance);
+      else this.instances[instance.id].push({ instance, afterLoad });
+    }
+    instance.loaded = true;
+    return instance;
+  }
+
+  // Load 3d model
+  async loadFromZip(model, zip) {
+    let afterLoad = arguments[1];
+    let runConfigure = arguments[2];
+    if (!this.instances[model.id]) {
+      this.instances[model.id] = [];
+    }
+
+    console.log('loading object from zip - ', model);
+
+    let instance = new ModelObject(this.engine);
+    instance.update(model);
+    // New Instance
+    let modelreq = {
+      obj: `${instance.type}.obj`,
+      mtl: model.mtl ?? false,
+      mtlTextureRoot: 'textures',
+      downloadMtlTextures: true,
+      enableWTextureCoord: false,
+      name: instance.id,
+    };
+    console.log({ msg: 'downloading models from zip - ', model, obj: this.engine.objLoader });
+
+    let models = await this.engine.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
+    console.log('read models from zip ---> ', models);
+
     instance.mesh = models[model.id];
     instance.templateLoaded = true;
     // Update Existing

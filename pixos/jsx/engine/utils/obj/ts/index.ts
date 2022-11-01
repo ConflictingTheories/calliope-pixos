@@ -9,6 +9,7 @@ import { Material, MaterialLibrary, Vec3, UVW, TextureMapData } from "./material
 import { Layout, TYPES, AttributeInfo, DuplicateAttributeException, Attribute } from "./layout";
 import {
     downloadModels,
+    downloadModelsFromZip,
     downloadMeshes,
     initMeshBuffers,
     deleteMeshBuffers,
@@ -30,6 +31,7 @@ export const OBJ = {
     Mesh,
     TYPES,
     downloadModels,
+    downloadModelsFromZip,
     downloadMeshes,
     initMeshBuffers,
     deleteMeshBuffers,
@@ -62,6 +64,7 @@ export {
     UVW,
     Vec3,
     downloadModels,
+    downloadModelsFromZip,
     downloadMeshes,
     initMeshBuffers,
     deleteMeshBuffers,

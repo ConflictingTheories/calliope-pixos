@@ -99,6 +99,58 @@ export default class ModelObject {
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
+  // Load Object and Materials
+  async onLoadFromZip(instanceData, zip) {
+    if (this.loaded) return;
+    // Zone Information
+    this.zone = instanceData.zone;
+    if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.rotation) set(instanceData.rotation, this.rotation);
+    if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
+    if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
+    let mesh = instanceData.mesh;
+    // Mesh bounds
+    let maxX,
+      minX = null;
+    let maxY,
+      minY = null;
+    let maxZ,
+      minZ = null;
+    for (let i = 0; i < mesh.vertices.length; i = i + 3) {
+      let v = mesh.vertices.slice(i, i + 3);
+      // calculate size
+      if (maxX == null || v[0] > maxX) maxX = v[0];
+      if (minX == null || v[0] < minX) minX = v[0];
+      if (maxY == null || v[1] > maxY) maxY = v[1];
+      if (minY == null || v[1] < minY) minY = v[1];
+      if (maxZ == null || v[2] > maxZ) maxZ = v[2];
+      if (minZ == null || v[2] < minZ) minZ = v[2];
+    }
+    // normalize x, y to fit in tile (todo)
+    let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
+    this.size = size;
+    this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
+    if (instanceData.useScale) this.scale = instanceData.useScale;
+    this.drawOffset = new Vector(0.5, 0.5, 0);
+    // mesh buffers
+    this.mesh = mesh;
+    this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    // Speech bubble
+    if (this.enableSpeech) {
+      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+    }
+    // load Portrait
+    if (this.portraitSrc) {
+      this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    }
+    //
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+  }
+
   // Definition Loaded
   onTilesetDefinitionLoaded() {
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));

@@ -44,6 +44,7 @@ export default class Zone {
     // bind
     this.onTilesetDefinitionLoaded = this.onTilesetDefinitionLoaded.bind(this);
     this.onTilesetOrSpriteLoaded = this.onTilesetOrSpriteLoaded.bind(this);
+    this.loadObjectFromZip = this.loadObjectFromZip.bind(this, this);
     this.loadSpriteFromZip = this.loadSpriteFromZip.bind(this, this);
     this.loadSprite = this.loadSprite.bind(this, this);
     this.loadObject = this.loadObject.bind(this, this);
@@ -126,52 +127,87 @@ export default class Zone {
   // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
   // as it is reading everything from the prebundled zip
   async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
+    let self = this;
     try {
-      // Extract and Read in Information
-      console.log({ msg: 'zone load json', zoneJson, cellJson });
+      try {
+        // Extract and Read in Information
+        console.log({ msg: 'zone load json', zoneJson, cellJson });
 
-      let tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
-      console.log({ msg: 'zone load tileset found', tileset });
+        var tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
+        console.log({ msg: 'zone load tileset found', tileset });
 
-      let cells = dynamicCells(cellJson, tileset.tiles);
-      console.log({ msg: 'zone load map data', cells });
+        var cells = dynamicCells(cellJson, tileset.tiles);
+        console.log({ msg: 'zone load map data', cells });
 
-      let map = loadMap.call(this, zoneJson, cells);
-      console.log({ msg: 'zone load map data', map });
+        var map = loadMap.call(this, zoneJson, cells);
+        console.log({ msg: 'zone load map data', map });
 
-      Object.assign(this, map);
+        Object.assign(this, map);
+      } catch (e) {
+        console.error({ msg: 'error reading in zone & cell data', e });
+      }
+
       // handle cells generator
-      if (typeof this.cells === 'string') {
-        this.cells = eval.call(this, this.cells).call(this, this.bounds, this);
+      try {
+        if (typeof this.cells === 'string') {
+          this.cells = eval.call(this, this.cells).call(this, this.bounds, this);
+        }
+      } catch (e) {
+        console.error({ msg: 'error loading cell function', e });
       }
+
       // audio loader
-      if (this.audioSrc) {
-        this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
+      try {
+        if (this.audioSrc) {
+          this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
+          console.log({ msg: 'zone load audio loaded' });
+        }
+      } catch (e) {
+        console.error({ msg: 'error loading audio track', e });
       }
-      console.log({ msg: 'zone load audio loaded' });
 
       // load lights
-      this.lights = zoneJson.lights ?? [];
-      this.lights.forEach((light) => this.engine.addLight(light.id, light.pos, light.color, light.direction));
+      try {
+        this.lights = zoneJson.lights ?? [];
+        this.lights.forEach((light) => this.engine.addLight(light.id, light.pos, light.color, light.direction));
+      } catch (e) {
+        console.error({ msg: 'error loading lights', e });
+      }
 
       // Load tileset and create level geometry & trigger updates
-      this.tileset = tileset;
-      this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
-      console.log({ msg: 'zone load tileset loaded' });
-
-      let self = this;
-      // Load sprites
-      if (typeof this.sprites === 'string') {
-        this.sprites = eval.call(self, self.sprites).call(self, self.bounds, self);
+      try {
+        this.tileset = tileset;
+        this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
+        console.log({ msg: 'zone load tileset loaded' });
+      } catch (e) {
+        console.error({ msg: 'error loading tileset', e });
       }
-      console.log({ msg: 'zone load sprites identified' });
+
+      // Load sprites (todo -- allow for generator scripts much like triggers)
+      try {
+        if (typeof this.sprites === 'string') {
+          this.sprites = eval.call(self, self.sprites).call(self, self.bounds, self);
+        }
+        console.log({ msg: 'zone load sprites identified' });
+      } catch (e) {
+        console.error({ msg: 'error loading sprite function', e });
+      }
 
       // sprites
-      await Promise.all(self.sprites.map((sprite) => self.loadSpriteFromZip(sprite, zip, skipCache)));
+      try {
+        await Promise.all(self.sprites.map((sprite) => self.loadSpriteFromZip(sprite, zip, skipCache)));
+        console.log({ msg: 'zone load sprites loaded' });
+      } catch (e) {
+        console.error({ msg: 'error loading objects from map', e });
+      }
 
       // objects
-      // await Promise.all(self.objects.map(self.loadObjectFromZip));
-      console.log({ msg: 'zone load objects/sprites loaded' });
+      try {
+        await Promise.all(self.objects.map((object) => self.loadObjectFromZip(object, zip)));
+        console.log({ msg: 'zone load objects loaded' });
+      } catch (e) {
+        console.error({ msg: 'error loading objects from map', e });
+      }
 
       // notify when tilesets are loaded
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -274,7 +310,17 @@ export default class Zone {
   async loadObject(_this, data) {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
-      let newObject = await this.objectLoader.load(data, (sprite) => sprite.onLoad(sprite));
+      let newObject = await this.objectLoader.load(data, (object) => object.onLoad(object));
+      this.objectDict[data.id] = newObject;
+      this.objectList.push(newObject);
+    }
+  }
+
+  // load obj model from zip bundle
+  async loadObjectFromZip(_this, data, zip) {
+    data.zone = _this;
+    if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
+      let newObject = await this.objectLoader.loadFromZip(data, zip, async (object) => await object.onLoadFromZip(object, zip));
       this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
     }
