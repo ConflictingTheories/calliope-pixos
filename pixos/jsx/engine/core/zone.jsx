@@ -468,6 +468,7 @@ export default class Zone {
         this.objectList[z++].draw();
       }
       // draw each sprite in front of floor tiles if positioned in front
+      // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
       while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
         this.spriteList[k++].draw(this.engine);
       }
@@ -476,9 +477,9 @@ export default class Zone {
       this.objectList[z++].draw();
     }
     // draw each sprite (fixes tearing)
-    while (k < this.spriteList.length) {
-      this.spriteList[k++].draw(this.engine);
-    }
+    // while (k < this.spriteList.length) {
+    //   this.spriteList[k++].draw(this.engine);
+    // }
     this.engine.mvPopMatrix();
   }
 
