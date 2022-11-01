@@ -198,7 +198,7 @@ export default class Zone {
         await Promise.all(self.sprites.map((sprite) => self.loadSpriteFromZip(sprite, zip, skipCache)));
         console.log({ msg: 'zone load sprites loaded' });
       } catch (e) {
-        console.error({ msg: 'error loading objects from map', e });
+        console.error({ msg: 'error loading sprites from map', e });
       }
 
       // objects

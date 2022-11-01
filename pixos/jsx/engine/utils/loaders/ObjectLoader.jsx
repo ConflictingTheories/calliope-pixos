@@ -59,8 +59,8 @@ export class ObjectLoader {
 
   // Load 3d model
   async loadFromZip(model, zip) {
-    let afterLoad = arguments[1];
-    let runConfigure = arguments[2];
+    let afterLoad = arguments[2];
+    let runConfigure = arguments[3];
     if (!this.instances[model.id]) {
       this.instances[model.id] = [];
     }
@@ -81,21 +81,30 @@ export class ObjectLoader {
     console.log({ msg: 'downloading models from zip - ', model, obj: this.engine.objLoader });
 
     let models = await this.engine.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
-    console.log('read models from zip ---> ', models);
+    console.log('read models from zip ---> ', model, models);
 
-    instance.mesh = models[model.id];
+    instance.mesh = models[model.type];
     instance.templateLoaded = true;
+    console.log({ msg: 'instance model ---> ', instance });
+
     // Update Existing
     this.instances[instance.id].forEach(function (instance) {
       if (instance.afterLoad) instance.afterLoad(instance.instance);
     });
+    console.log({ msg: 'update model ---> ', instances: this.instances });
+
     // Configure if needed
+    console.log({ msg: 'running configure', runConfigure });
     if (runConfigure) runConfigure(instance);
+
     // once loaded
+    console.log({ msg: 'running afterload', afterLoad });
     if (afterLoad) {
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[instance.id].push({ instance, afterLoad });
     }
+    console.log({ msg: 'running load' });
+
     instance.loaded = true;
     return instance;
   }

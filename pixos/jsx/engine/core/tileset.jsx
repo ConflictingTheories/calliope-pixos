@@ -95,7 +95,7 @@ export default class Tileset {
 
   // determine walkability
   getWalkability(tileId) {
-    console.log({msg: 'walking', geo: this, tileId});
+    // console.log({msg: 'walking', geo: this, tileId});
     return this.geometry[tileId].type;
   }
 

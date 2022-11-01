@@ -102,6 +102,7 @@ export default class ModelObject {
   // Load Object and Materials
   async onLoadFromZip(instanceData, zip) {
     if (this.loaded) return;
+    console.log({msg: "load model from zip...", instanceData})
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;

@@ -130,6 +130,7 @@ function downloadMtlTextures(gl, mtl, root) {
   return Promise.all(textures);
 }
 function downloadMtlTexturesFromZip(gl, mtl, root, zip) {
+  console.log({ mtl, root, zip });
   var e_1, _a;
   var mapAttributes = ['mapDiffuse', 'mapAmbient', 'mapSpecular', 'mapDissolve', 'mapBump', 'mapDisplacement', 'mapDecal', 'mapEmissive'];
   if (!root.endsWith('/')) {
@@ -147,6 +148,7 @@ function downloadMtlTexturesFromZip(gl, mtl, root, zip) {
         return 'continue';
       }
       var url = root + mapData.filename;
+      console.log({ url });
       textures.push(
         zip
           .file(url)
@@ -356,6 +358,7 @@ function downloadModels(gl, models) {
   });
 }
 function downloadModelsFromZip(gl, models, zip) {
+  console.log(`resolving.....${models}, ${zip}`);
   var e_2, _a;
   var finished = [];
   var _loop_2 = function (model) {
@@ -383,7 +386,7 @@ function downloadModelsFromZip(gl, models, zip) {
       var mtl_1 = getMtl(model);
       console.log({ msg: 'fetching model from zip ', model: name_1 });
       mtlPromise = zip
-        .file(`models/${name_1}`)
+        .file(`models/${name_1}.mtl`)
         .async('string')
         .then(function (data) {
           var material = new material_1.MaterialLibrary(data);
@@ -397,6 +400,7 @@ function downloadModelsFromZip(gl, models, zip) {
             // is resolved once all of the images it
             // contains are downloaded. These are then
             // attached to the map data objects
+            console.log({ msg: 'fetching textures from zip file ...', material, root });
             return Promise.all([Promise.resolve(material), downloadMtlTexturesFromZip(gl, material, root, zip)]);
           }
           return Promise.all([Promise.resolve(material), undefined]);
@@ -406,6 +410,7 @@ function downloadModelsFromZip(gl, models, zip) {
         });
     }
     var parsed = [namePromise, meshPromise, mtlPromise];
+    console.log({ msg: '-made it-', name_1 });
     finished.push(Promise.all(parsed));
   };
   try {

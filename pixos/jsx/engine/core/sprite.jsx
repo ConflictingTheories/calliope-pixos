@@ -228,7 +228,6 @@ export default class Sprite {
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
-    if(this.id == 'door') console.log({ door: this });
     if (!this.fixed) {
       this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
       // rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.x), [1, 0, 0]);
