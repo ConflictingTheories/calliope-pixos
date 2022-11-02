@@ -459,27 +459,51 @@ export default class Zone {
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
     this.engine.setCamera();
-    // Draw tile terrain row by row (back to front)
+    // Draw tile terrain row by row (back to front) (Needs work -- NOT WORKING RIGHT YET)
     let k = 0;
     let z = 0;
-    for (let j = 0; j < this.size[1]; j++) {
-      this.drawRow(j);
-      while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
-        this.objectList[z++].draw();
-      }
-      // draw each sprite in front of floor tiles if positioned in front
-      // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
-      while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
-        this.spriteList[k++].draw();
-      }
+    switch (this.engine.cameraDir) {
+      case 'N':
+      case 'NE':
+      case 'NW':
+      case 'E':
+        for (let j = 0; j < this.size[1]; j++) {
+          this.drawRow(j);
+          while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
+            this.objectList[z++].draw();
+          }
+          // draw each sprite in front of floor tiles if positioned in front
+          // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
+          while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
+            this.spriteList[k++].draw();
+          }
+        }
+        break;
+      case 'W':
+      case 'S':
+      case 'SW':
+      case 'SE':
+        for (let j = this.size[1] - 1; j >= 0; j--) {
+          this.drawRow(j);
+          while (z < this.objectList.length && this.bounds[1] - this.objectList[z].pos.y <= j) {
+            this.objectList[z++].draw();
+          }
+          // draw each sprite in front of floor tiles if positioned in front
+          // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
+          while (k < this.spriteList.length && this.bounds[1] - this.spriteList[k].pos.y <= j) {
+            this.spriteList[k++].draw();
+          }
+        }
+        break;
     }
+
     while (z < this.objectList.length) {
       this.objectList[z++].draw();
     }
     // draw each sprite (fixes tearing)
-    // while (k < this.spriteList.length) {
-    //   this.spriteList[k++].draw(this.engine);
-    // }
+    while (k < this.spriteList.length) {
+      this.spriteList[k++].draw(this.engine);
+    }
     this.engine.mvPopMatrix();
   }
 
