@@ -20,7 +20,7 @@ export class GamePad {
     this.showDebug = true;
     this.fontSize = 24;
     this.opacity = 0.4;
-    this.font = "minecraftia";
+    this.font = 'minecraftia';
     // Start & Select Buttons
     this.start = true;
     this.select = true;
@@ -54,28 +54,28 @@ export class GamePad {
         y: -this.radius / 4,
         r: (3 / 4) * this.radius,
         color: this.colours.red,
-        name: "b",
+        name: 'b',
       },
       {
         x: this.radius - this.radius / 2,
         y: -(this.radius + this.radius / 2),
         r: (3 / 4) * this.radius,
         color: this.colours.green,
-        name: "a",
+        name: 'a',
       },
       {
         x: this.radius - this.radius / 2,
         y: this.radius,
         r: (3 / 4) * this.radius,
         color: this.colours.blue,
-        name: "x",
+        name: 'x',
       },
       {
         x: this.radius * 3 - this.radius / 2 - this.radius / 4,
         y: 0 - this.radius / 4,
         r: (3 / 4) * this.radius,
         color: this.colours.yellow,
-        name: "y",
+        name: 'y',
       },
     ];
     if (this.start) {
@@ -84,7 +84,7 @@ export class GamePad {
         y: -55,
         w: 50,
         h: 15,
-        name: "start",
+        name: 'start',
       });
     }
     if (this.select) {
@@ -93,27 +93,17 @@ export class GamePad {
         w: 50,
         h: 15,
         color: this.colours.black,
-        name: "select",
+        name: 'select',
       });
     }
     // setup controller
     this.buttons_layout = buttons_layout;
-    this.controller = new Controller(
-      ctx,
-      buttons_layout,
-      this.button_offset,
-      this.map,
-      this.touches,
-      this.start,
-      this.select,
-      this.colours,
-      this
-    );
+    this.controller = new Controller(ctx, buttons_layout, this.button_offset, this.map, this.touches, this.start, this.select, this.colours, this);
     // use custom round Rect shape
   }
   // initialize widget
   init(options = {}) {
-    console.log("initing");
+    console.log('initing');
     this.setOptions(options);
     this.resize();
     this.loadCanvas();
@@ -134,14 +124,14 @@ export class GamePad {
   // setup canvas
   loadCanvas() {
     let { ctx, controller, width, height } = this;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 14px";
-    ctx.fillText("loading", width / 2, height / 2);
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 14px';
+    ctx.fillText('loading', width / 2, height / 2);
     controller.stick.draw();
     controller.buttons.draw();
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener('resize', () => this.resize());
     setTimeout(function () {
       this.ready = true;
     }, 250);
@@ -162,8 +152,8 @@ export class GamePad {
     let { ctx, touches, controller, buttons_layout } = this;
     if (e.type) {
       var type = e.type;
-      if (e.type.indexOf("mouse") != -1) {
-        e.identifier = "desktop";
+      if (e.type.indexOf('mouse') != -1) {
+        e.identifier = 'desktop';
         e = { touches: [e] };
       }
       let offset = this.getPosition(ctx.canvas);
@@ -182,17 +172,17 @@ export class GamePad {
 
       for (var id in touches) {
         switch (type) {
-          case "touchstart":
-          case "touchmove":
+          case 'touchstart':
+          case 'touchmove':
             this.disableScroll();
             controller.stick.state(id);
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n);
             }
             break;
-          case "mousedown":
-          case "mousemove":
-          case "mouseup":
+          case 'mousedown':
+          case 'mousemove':
+          case 'mouseup':
             controller.stick.state(id, type);
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n, type);
@@ -201,9 +191,9 @@ export class GamePad {
         }
       }
 
-      if (e.type == "touchend") {
+      if (e.type == 'touchend') {
         var id = e.changedTouches[0].identifier;
-        if (touches[id].id == "stick") {
+        if (touches[id].id == 'stick') {
           controller.stick.reset();
         }
         for (var n = 0; n < buttons_layout.length; n++) {
@@ -241,12 +231,12 @@ export class GamePad {
       var dir = 0;
       for (var prop in keys) {
         switch (prop) {
-          case "%": //left
+          case '%': //left
             if (keys[prop]) {
               dir += 1;
             }
             break;
-          case "&": //up
+          case '&': //up
             if (keys[prop]) {
               dir += 2;
             }
@@ -256,7 +246,7 @@ export class GamePad {
               dir += 4;
             }
             break;
-          case "(": //down
+          case '(': //down
             if (keys[prop]) {
               dir += 8;
             }
@@ -268,10 +258,10 @@ export class GamePad {
                   if (buttons_layout[n].key == prop) {
                     touches[buttons_layout[n].name] = {
                       id: buttons_layout[n].name,
-                      x: buttons_layout[n]["hit"].x[0] + buttons_layout[n].w / 2,
-                      y: buttons_layout[n]["hit"].y[0] + buttons_layout[n].h / 2,
+                      x: buttons_layout[n]['hit'].x[0] + buttons_layout[n].w / 2,
+                      y: buttons_layout[n]['hit'].y[0] + buttons_layout[n].h / 2,
                     };
-                    controller.buttons.state(buttons_layout[n].name, n, "mousedown");
+                    controller.buttons.state(buttons_layout[n].name, n, 'mousedown');
                   }
                 }
               }
@@ -327,11 +317,11 @@ export class GamePad {
             break;
         }
         if (dir != 0) {
-          touches["stick"] = { id: "stick" };
-          controller.stick.state("stick", "mousemove");
+          touches['stick'] = { id: 'stick' };
+          controller.stick.state('stick', 'mousemove');
         } else {
           controller.stick.reset();
-          delete touches["stick"];
+          delete touches['stick'];
         }
       }
     }
@@ -357,16 +347,16 @@ export class GamePad {
   debug() {
     let { ctx, map, touches } = this;
     this.dy = 30;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 20px";
-    ctx.fillText("debug", 10, this.dy);
-    ctx.font = "minecraftia 14px";
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 20px';
+    ctx.fillText('debug', 10, this.dy);
+    ctx.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in touches) {
       this.dy += 10;
-      let text = prop + " : " + JSON.stringify(touches[prop]).slice(1, -1);
+      let text = prop + ' : ' + JSON.stringify(touches[prop]).slice(1, -1);
       ctx.fillText(text, 10, this.dy);
     }
   }
@@ -375,16 +365,16 @@ export class GamePad {
   trace() {
     let { ctx, map } = this;
     this.dy = 30;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 20px";
-    ctx.fillText("trace", this.width - 10, this.dy);
-    ctx.font = "minecraftia 14px";
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 20px';
+    ctx.fillText('trace', this.width - 10, this.dy);
+    ctx.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in map) {
       this.dy += 10;
-      let text = prop + " : " + map[prop];
+      let text = prop + ' : ' + map[prop];
       ctx.fillText(text, this.width - 10, this.dy);
     }
   }
@@ -404,12 +394,12 @@ export class GamePad {
 
   // disable scroll while touching canvas
   enableScroll() {
-    document.body.removeEventListener("touchmove", this.preventDefault);
+    document.body.removeEventListener('touchmove', this.preventDefault);
   }
 
   // reenable once done
   disableScroll() {
-    document.body.addEventListener("touchmove", this.preventDefault, { passive: false });
+    document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
     // document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
   }
 
@@ -424,7 +414,7 @@ export class GamePad {
 class Controller {
   constructor(ctx, buttons_layout, button_offset, map, touches, start, select, colours, gamepad) {
     this.ctx = ctx;
-    this.gamepad = gamepad
+    this.gamepad = gamepad;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
     this.radius = 60;
@@ -449,7 +439,7 @@ class Controller {
       this.radius,
       this.gamepad
     );
-    console.log("loading Controller Manager - ", this);
+    console.log('loading Controller Manager - ', this);
   }
   // Initialize
   init() {
@@ -478,14 +468,14 @@ class ControllerStick {
     this.y = 0;
     this.dx = 0;
     this.dy = 0;
-    this.gamepad.map["x-dir"] = 0;
-    this.gamepad.map["y-dir"] = 0;
-    this.gamepad.map["x-axis"] = 0;
-    this.gamepad.map["y-axis"] = 0;
+    this.gamepad.map['x-dir'] = 0;
+    this.gamepad.map['y-dir'] = 0;
+    this.gamepad.map['x-axis'] = 0;
+    this.gamepad.map['y-axis'] = 0;
     this.colours = colours;
     this.init = this.init.bind(this);
     this.draw = this.draw.bind(this);
-    console.log("loading Controller Joystick - ", this);
+    console.log('loading Controller Joystick - ', this);
   }
   // Initialize
   init() {
@@ -494,10 +484,10 @@ class ControllerStick {
     this.y = layout.y + (3 * this.radius) / 8;
     this.dx = this.x;
     this.dy = this.y;
-    this.gamepad.map["x-dir"] = 0;
-    this.gamepad.map["y-dir"] = 0;
-    this.gamepad.map["x-axis"] = 0;
-    this.gamepad.map["y-axis"] = 0;
+    this.gamepad.map['x-dir'] = 0;
+    this.gamepad.map['y-dir'] = 0;
+    this.gamepad.map['x-axis'] = 0;
+    this.gamepad.map['y-axis'] = 0;
   }
   // draw joystick
   draw() {
@@ -528,7 +518,7 @@ class ControllerStick {
   }
   // manage event state
   state(id, type) {
-    let {gamepad } = this;
+    let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
     var touch = {
       x: touches[id].x,
@@ -539,36 +529,36 @@ class ControllerStick {
     var dist = parseInt(Math.sqrt(dx * dx + dy * dy));
     if (dist < this.radius * 1.5) {
       if (!type) {
-        touches[id].id = "stick";
+        touches[id].id = 'stick';
       } else {
         switch (type) {
-          case "mousedown":
-            touches[id].id = "stick";
+          case 'mousedown':
+            touches[id].id = 'stick';
             break;
-          case "mouseup":
+          case 'mouseup':
             delete touches[id].id;
             this.reset();
             break;
         }
       }
     }
-    if (touches[id].id == "stick") {
+    if (touches[id].id == 'stick') {
       if (Math.abs(parseInt(dx)) < this.radius / 2) {
         this.dx = this.x + dx;
       }
       if (Math.abs(parseInt(dy)) < this.radius / 2) {
         this.dy = this.y + dy;
       }
-      map["x-axis"] = (this.dx - this.x) / (this.radius / 2);
-      map["y-axis"] = (this.dy - this.y) / (this.radius / 2);
-      map["x-dir"] = Math.round(map["x-axis"]);
-      map["y-dir"] = Math.round(map["y-axis"]);
+      map['x-axis'] = (this.dx - this.x) / (this.radius / 2);
+      map['y-axis'] = (this.dy - this.y) / (this.radius / 2);
+      map['x-dir'] = Math.round(map['x-axis']);
+      map['y-dir'] = Math.round(map['y-axis']);
 
       if (dist > this.radius * 1.5) {
         this.reset();
         delete touches[id].id;
       }
-      if (typeof checkInput === "function") {
+      if (typeof checkInput === 'function') {
         this.gamepad.checkInput();
       }
     }
@@ -578,10 +568,10 @@ class ControllerStick {
     let { map } = this.gamepad;
     this.dx = this.x;
     this.dy = this.y;
-    map["x-dir"] = 0;
-    map["y-dir"] = 0;
-    map["x-axis"] = 0;
-    map["y-axis"] = 0;
+    map['x-dir'] = 0;
+    map['y-dir'] = 0;
+    map['x-axis'] = 0;
+    map['y-axis'] = 0;
   }
 }
 
@@ -598,7 +588,7 @@ class ControllerButtons {
     this.start = start;
     this.select = select;
     this.colours = colours;
-    console.log("loading Controller Buttons - ", this);
+    console.log('loading Controller Buttons - ', this);
   }
   // Initialize
   init() {
@@ -610,22 +600,22 @@ class ControllerButtons {
       var y = layout.y - button.y;
       if (button.r) {
         var r = button.r;
-        buttons_layout[n]["hit"] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
+        buttons_layout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
       } else {
         button.x = width / 2 - button.w;
         if (this.start && this.select) {
           switch (button.name) {
-            case "select":
+            case 'select':
               button.x = width / 2 - button.w - button.h * 2;
               break;
-            case "start":
+            case 'start':
               button.x = width / 2;
               break;
           }
         }
         var x = button.x;
         var y = layout.y - button.y;
-        buttons_layout[n]["hit"] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
+        buttons_layout[n]['hit'] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
       }
       this.gamepad.map[button.name] = 0;
     }
@@ -663,10 +653,10 @@ class ControllerButtons {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "rgba(255,255,255,1)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
         ctx.fillText(button.name, x, y);
       } else {
         var w = button.w;
@@ -684,19 +674,19 @@ class ControllerButtons {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
         ctx.fillText(button.name, x + w / 2, y + h * 2);
       }
 
       if (button.key && hint) {
-        ctx.fillStyle = "rgba(0,0,0,0.25)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
-        if (button.name == "start" || button.name == "select") {
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
+        if (button.name == 'start' || button.name == 'select') {
           x += w / 2;
         }
         ctx.fillText(button.key, x, y - r * 1.5);
@@ -705,9 +695,9 @@ class ControllerButtons {
   }
   // State of Buttons
   state(id, n, type) {
-    let {gamepad} = this;
+    let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
-    if (touches[id].id != "stick") {
+    if (touches[id].id != 'stick') {
       var touch = {
         x: touches[id].x,
         y: touches[id].y,
@@ -725,15 +715,15 @@ class ControllerButtons {
           dist = 0;
         }
       }
-      if (dist < this.radius && touches[id].id != "stick") {
+      if (dist < this.radius && touches[id].id != 'stick') {
         if (!type) {
           touches[id].id = name;
         } else {
           switch (type) {
-            case "mousedown":
+            case 'mousedown':
               touches[id].id = name;
               break;
-            case "mouseup":
+            case 'mouseup':
               delete touches[id].id;
               this.reset(n);
               break;
@@ -748,7 +738,7 @@ class ControllerButtons {
           this.gamepad.map[name] = 0;
           delete touches[id].id;
         }
-        if (typeof checkInput === "function") {
+        if (typeof checkInput === 'function') {
           this.gamepad.checkInput();
         }
       }

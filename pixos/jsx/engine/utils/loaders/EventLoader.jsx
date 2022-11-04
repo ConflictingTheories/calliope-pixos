@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Event from "@Engine/core/event.jsx";
+import Event from '@Engine/core/event.jsx';
 
 // Helps Loads New Event Instance
 export class EventLoader {
@@ -26,7 +26,7 @@ export class EventLoader {
     this.assets = {};
 
     let time = new Date().getTime();
-    let id = world.id + "-" + type + "-" + time;
+    let id = world.id + '-' + type + '-' + time;
     return this.load(
       type,
       function (event) {
@@ -46,7 +46,7 @@ export class EventLoader {
     }
     // New Instance (assigns properties loaded by type)
     let instance = new Event(this.type, this.world, this.callback);
-    Object.assign(instance, require("@Engine/events/" + type + ".jsx")["default"]);
+    Object.assign(instance, require('@Engine/events/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
     // Notify existing
     this.instances[type].forEach(function (instance) {

@@ -82,7 +82,7 @@ export default class DynamicSprite extends Sprite {
     return ret;
   }
 
-  // todo -- add step handler dynamically
+  // todo -- add step handler dynamically (onStep)
 
   // load string to eval based on type of action
   loadActionDynamically(state, sprite) {

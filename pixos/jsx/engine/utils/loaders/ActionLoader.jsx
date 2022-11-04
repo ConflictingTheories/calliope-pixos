@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Action from "@Engine/core/action.jsx";
+import Action from '@Engine/core/action.jsx';
 
 // Helps Loads New Action Instance
 export class ActionLoader {
@@ -26,7 +26,7 @@ export class ActionLoader {
     this.assets = {};
 
     let time = new Date().getTime();
-    let id = sprite.id + "-" + type + "-" + time;
+    let id = sprite.id + '-' + type + '-' + time;
     return this.load(
       type,
       function (action) {
@@ -46,7 +46,7 @@ export class ActionLoader {
     }
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
-    Object.assign(instance, require("@Engine/actions/" + type + ".jsx")["default"]);
+    Object.assign(instance, require('@Engine/actions/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
     // Notify existing
     this.instances[type].forEach(function (instance) {

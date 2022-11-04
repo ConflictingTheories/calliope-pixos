@@ -27,25 +27,24 @@ export default {
     if (!this.loaded) return;
     // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
     switch (this.cameraAction) {
-      case 'pan':
+      case 'pan': // rotate?
         let frac = (time - this.startTime) / (this.options.duration * 1000);
         let from = this.options.from;
         let to = this.options.to;
         to.z = Math.round(to.z);
-        lerp(from, to, frac, this.engine.cameraVector);
-
-        console.log({engine: this.engine, scope: this});
-        // Set Facing Direction for proper sprite rendering
-        this.engine.cameraDir = Direction.adjustCameraDirection(to)
-
-        // Then Adjust Facing Directions for Sprites
         // use lerp to smoothly transition based on completion
+        lerp(from, to, frac, this.engine.cameraVector);
+        // set Facing Direction for proper sprite rendering
+        this.engine.cameraDir = Direction.adjustCameraDirection(to);
         break;
       case 'zoom':
+        // todo
         break;
       case 'focus':
+        // todo
         break;
       case 'translate':
+        // todo
         break;
       default:
         break;

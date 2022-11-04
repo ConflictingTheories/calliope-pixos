@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Controller } from "@Engine/utils/gamepad/Controller.jsx";
+import { Controller } from '@Engine/utils/gamepad/Controller.jsx';
 export class GamePad {
   // courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
   constructor(ctx) {
@@ -21,7 +21,7 @@ export class GamePad {
     this.showDebug = true;
     this.fontSize = ctx.canvas.width / 12;
     this.opacity = 0.4;
-    this.font = "minecraftia";
+    this.font = 'minecraftia';
     // Start & Select Buttons
     this.start = false;
     this.select = false;
@@ -57,28 +57,28 @@ export class GamePad {
         y: -this.radius / 4,
         r: (3 / 4) * this.radius,
         color: this.colours.red,
-        name: "b",
+        name: 'b',
       },
       {
         x: this.radius - this.radius / 2,
         y: -(this.radius + this.radius / 2),
         r: (3 / 4) * this.radius,
         color: this.colours.green,
-        name: "a",
+        name: 'a',
       },
       {
         x: this.radius - this.radius / 2,
         y: this.radius,
         r: (3 / 4) * this.radius,
         color: this.colours.blue,
-        name: "x",
+        name: 'x',
       },
       {
         x: this.radius * 3 - this.radius / 2 - this.radius / 4,
         y: 0 - this.radius / 4,
         r: (3 / 4) * this.radius,
         color: this.colours.yellow,
-        name: "y",
+        name: 'y',
       },
     ];
     if (this.start) {
@@ -87,7 +87,7 @@ export class GamePad {
         y: -55,
         w: 50,
         h: 15,
-        name: "start",
+        name: 'start',
       });
     }
     if (this.select) {
@@ -96,7 +96,7 @@ export class GamePad {
         w: 50,
         h: 15,
         color: this.colours.black,
-        name: "select",
+        name: 'select',
       });
     }
     // setup controller
@@ -107,7 +107,7 @@ export class GamePad {
 
   // initialize widget
   init(options = {}) {
-    console.log("initing");
+    console.log('initing');
     this.setOptions(options);
     this.resize();
     this.loadCanvas();
@@ -138,14 +138,14 @@ export class GamePad {
   // setup canvas
   loadCanvas() {
     let { ctx, controller, width, height } = this;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 14px";
-    ctx.fillText("loading", width / 2, height / 2);
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 14px';
+    ctx.fillText('loading', width / 2, height / 2);
     controller.stick.draw();
     controller.buttons.draw();
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener('resize', () => this.resize());
     setTimeout(function () {
       this.ready = true;
     }, 250);
@@ -183,8 +183,8 @@ export class GamePad {
     let { ctx, touches, controller, buttons_layout } = this;
     if (e.type) {
       var type = e.type;
-      if (e.type.indexOf("mouse") != -1) {
-        e.identifier = "desktop";
+      if (e.type.indexOf('mouse') != -1) {
+        e.identifier = 'desktop';
         e = { touches: [e] };
       }
       let offset = this.getPosition(ctx.canvas);
@@ -210,8 +210,8 @@ export class GamePad {
       for (var id in touches) {
         // handle controller
         switch (type) {
-          case "touchstart":
-          case "touchmove":
+          case 'touchstart':
+          case 'touchmove':
             this.disableScroll();
             controller.stick.state(id);
             if (new Date().getTime() > this.lastKey + 150) {
@@ -221,14 +221,14 @@ export class GamePad {
               this.lastKey = new Date().getTime();
             }
             break;
-          case "touchend":
+          case 'touchend':
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.reset(n);
             }
             break;
-          case "mousedown":
-          case "mousemove":
-          case "mouseup":
+          case 'mousedown':
+          case 'mousemove':
+          case 'mouseup':
             controller.stick.state(id, type);
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n, type);
@@ -237,9 +237,9 @@ export class GamePad {
         }
       }
 
-      if (e.type == "touchend") {
+      if (e.type == 'touchend') {
         var id = e.changedTouches[0].identifier;
-        if (touches[id].id == "stick") {
+        if (touches[id].id == 'stick') {
           controller.stick.reset();
         }
         for (var n = 0; n < buttons_layout.length; n++) {
@@ -277,12 +277,12 @@ export class GamePad {
       var dir = 0;
       for (var prop in keys) {
         switch (prop) {
-          case "%": //left
+          case '%': //left
             if (keys[prop]) {
               dir += 1;
             }
             break;
-          case "&": //up
+          case '&': //up
             if (keys[prop]) {
               dir += 2;
             }
@@ -292,7 +292,7 @@ export class GamePad {
               dir += 4;
             }
             break;
-          case "(": //down
+          case '(': //down
             if (keys[prop]) {
               dir += 8;
             }
@@ -304,10 +304,10 @@ export class GamePad {
                   if (buttons_layout[n].key == prop) {
                     touches[buttons_layout[n].name] = {
                       id: buttons_layout[n].name,
-                      x: buttons_layout[n]["hit"].x[0] + buttons_layout[n].w / 2,
-                      y: buttons_layout[n]["hit"].y[0] + buttons_layout[n].h / 2,
+                      x: buttons_layout[n]['hit'].x[0] + buttons_layout[n].w / 2,
+                      y: buttons_layout[n]['hit'].y[0] + buttons_layout[n].h / 2,
                     };
-                    controller.buttons.state(buttons_layout[n].name, n, "mousedown");
+                    controller.buttons.state(buttons_layout[n].name, n, 'mousedown');
                   }
                 }
               }
@@ -363,11 +363,11 @@ export class GamePad {
             break;
         }
         if (dir != 0) {
-          touches["stick"] = { id: "stick" };
-          controller.stick.state("stick", "mousemove");
+          touches['stick'] = { id: 'stick' };
+          controller.stick.state('stick', 'mousemove');
         } else {
           controller.stick.reset();
-          delete touches["stick"];
+          delete touches['stick'];
         }
       }
     }
@@ -393,16 +393,16 @@ export class GamePad {
   debug() {
     let { ctx, map, touches } = this;
     this.dy = 30;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 20px";
-    ctx.fillText("debug", 10, this.dy);
-    ctx.font = "minecraftia 14px";
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 20px';
+    ctx.fillText('debug', 10, this.dy);
+    ctx.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in touches) {
       this.dy += 10;
-      let text = prop + " : " + JSON.stringify(touches[prop]).slice(1, -1);
+      let text = prop + ' : ' + JSON.stringify(touches[prop]).slice(1, -1);
       ctx.fillText(text, 10, this.dy);
     }
   }
@@ -411,16 +411,16 @@ export class GamePad {
   trace() {
     let { ctx, map } = this;
     this.dy = 30;
-    ctx.fillStyle = "rgba(70,70,70,0.5)";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.font = "minecraftia 20px";
-    ctx.fillText("trace", this.width - 10, this.dy);
-    ctx.font = "minecraftia 14px";
+    ctx.fillStyle = 'rgba(70,70,70,0.5)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'minecraftia 20px';
+    ctx.fillText('trace', this.width - 10, this.dy);
+    ctx.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in map) {
       this.dy += 10;
-      let text = prop + " : " + map[prop];
+      let text = prop + ' : ' + map[prop];
       ctx.fillText(text, this.width - 10, this.dy);
     }
   }
@@ -440,12 +440,12 @@ export class GamePad {
 
   // disable scroll while touching canvas
   enableScroll() {
-    document.body.removeEventListener("touchmove", this.preventDefault);
+    document.body.removeEventListener('touchmove', this.preventDefault);
   }
 
   // reenable once done
   disableScroll() {
-    document.body.addEventListener("touchmove", this.preventDefault, { passive: false });
+    document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
     // document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
   }
 

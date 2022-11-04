@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { store } from "react-recollect";
+import { store } from 'react-recollect';
 
-import { Vector } from "@Engine/utils/math/vector.jsx";
-import { Direction } from "@Engine/utils/enums.jsx";
+import { Vector } from '@Engine/utils/math/vector.jsx';
+import { Direction } from '@Engine/utils/enums.jsx';
 
 // Store Name
-export const STORE_NAME = "garden-tome";
+export const STORE_NAME = 'garden-tome';
 
 // generate random map zone
 export async function generateZone(self, gender, storeName, cyoa) {
@@ -47,7 +47,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
 
     // self.randomlyGenerateSprites();
     // self.randomlySprites();
-    await self.playScene("welcome");
+    await self.playScene('welcome');
   } else {
     // load Sprites
     await Promise.all(
@@ -115,19 +115,17 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // run custom scene
     let scene = [
       {
-        id: "new-space" + Math.random(),
+        id: 'new-space' + Math.random(),
         actions: [
           // manual actions
           // Scripted Dialogue Action Controls directly on sprites
           {
-            sprite: "avatar",
-            action: "dialogue",
+            sprite: 'avatar',
+            action: 'dialogue',
             args: [
               [
-                "Welcome traveler... I see you are exploring. Good. Please continue to look",
-                "You have travelled into the number " +
-                  (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) +
-                  " room",
+                'Welcome traveler... I see you are exploring. Good. Please continue to look',
+                'You have travelled into the number ' + (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) + ' room',
               ],
               false,
               { autoclose: true },
@@ -145,18 +143,13 @@ export async function generateZone(self, gender, storeName, cyoa) {
 export async function loadAvatar(zone, storeName) {
   // randomly pick gender & store
   let gender =
-    typeof store.pixos[storeName]?.gender !== "undefined"
-      ? store.pixos[storeName].gender
-      : ["male", "female"][Math.floor((2 * Math.random()) % 2)];
+    typeof store.pixos[storeName]?.gender !== 'undefined' ? store.pixos[storeName].gender : ['male', 'female'][Math.floor((2 * Math.random()) % 2)];
   // Load avatar (Male or Female)
   await zone.loadSprite.bind(self)({
-    id: "avatar",
-    type: "characters/" + gender,
+    id: 'avatar',
+    type: 'characters/' + gender,
     gender: gender,
-    pos:
-      typeof store.pixos[storeName]?.position !== "undefined"
-        ? store.pixos[storeName].position
-        : new Vector(...[8, 8, zone.getHeight(8, 8)]),
+    pos: typeof store.pixos[storeName]?.position !== 'undefined' ? store.pixos[storeName].position : new Vector(...[8, 8, zone.getHeight(8, 8)]),
     facing: Direction.Down,
   });
   return gender;

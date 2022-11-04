@@ -11,18 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { TilesetLoader } from "./TilesetLoader.jsx";
-import { SpriteLoader } from "./SpriteLoader.jsx";
-import { ObjectLoader } from "./ObjectLoader.jsx";
-import { ActionLoader } from "./ActionLoader.jsx";
-import { EventLoader } from "./EventLoader.jsx";
-import { AudioLoader } from "./AudioLoader.jsx";
+import { TilesetLoader } from './TilesetLoader.jsx';
+import { SpriteLoader } from './SpriteLoader.jsx';
+import { ObjectLoader } from './ObjectLoader.jsx';
+import { ActionLoader } from './ActionLoader.jsx';
+import { EventLoader } from './EventLoader.jsx';
+import { AudioLoader } from './AudioLoader.jsx';
 // Helps Loads New Tileset Instance
-export {
-  TilesetLoader,
-  SpriteLoader,
-  ObjectLoader,
-  ActionLoader,
-  EventLoader,
-  AudioLoader
-}
+export { TilesetLoader, SpriteLoader, ObjectLoader, ActionLoader, EventLoader, AudioLoader };

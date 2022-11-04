@@ -35,8 +35,7 @@ export default {
     this.speechOutput = true;
     console.log({ msg: 'inializing menu', menu, activeMenus, me: this });
     // load voices and then play
-    window.speechSynthesis.onvoiceschanged = () => {
-    };
+    window.speechSynthesis.onvoiceschanged = () => {};
   },
   // Update & Scroll
   tick: function (time) {

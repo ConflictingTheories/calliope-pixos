@@ -75,7 +75,7 @@ export class AudioTrack {
     // loop if set
     if (loop) {
       this.audio.addEventListener(
-        "ended",
+        'ended',
         function () {
           this.currentTime = 0;
           this.play();

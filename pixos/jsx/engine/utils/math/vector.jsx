@@ -169,12 +169,7 @@ export class Vector4 {
 // rect = { x, y, size }
 
 export function lineRectCollide(line, rect) {
-  return (
-    rect.y > line.y - rect.size / 2 &&
-    rect.y < line.y + rect.size / 2 &&
-    rect.x > line.x1 - rect.size / 2 &&
-    rect.x < line.x2 + rect.size / 2
-  );
+  return rect.y > line.y - rect.size / 2 && rect.y < line.y + rect.size / 2 && rect.x > line.x1 - rect.size / 2 && rect.x < line.x2 + rect.size / 2;
 }
 
 // rectRectCollide( r1, r2 )
@@ -208,9 +203,9 @@ export function set(w, v) {
 }
 
 export function negate(vec, dest) {
-  if(!dest) dest = new Vector(-vec.x,-vec.y,-vec.z);
-  dest.x = -vec.x
-  dest.y = -vec.y
+  if (!dest) dest = new Vector(-vec.x, -vec.y, -vec.z);
+  dest.x = -vec.x;
+  dest.y = -vec.y;
   dest.z = -vec.z;
   return dest;
 }

@@ -43,7 +43,6 @@ const create = () => {
   return matrix;
 };
 
-
 const create3 = () => {
   let matrix = new Float32Array(9);
   matrix[0] = 1;
@@ -179,33 +178,33 @@ function set(mat, dest) {
   dest[14] = mat[14];
   dest[15] = mat[15];
   return dest;
-};
+}
 
 /**
-* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {mat4} a Mat4 to derive the normal matrix from
-*
-* @returns {mat3} out
-*/
+ * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
+ *
+ * @param {mat3} out mat3 receiving operation result
+ * @param {mat4} a Mat4 to derive the normal matrix from
+ *
+ * @returns {mat3} out
+ */
 function normalFromMat4(out, a) {
   var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
+    a01 = a[1],
+    a02 = a[2],
+    a03 = a[3];
   var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
+    a11 = a[5],
+    a12 = a[6],
+    a13 = a[7];
   var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
+    a21 = a[9],
+    a22 = a[10],
+    a23 = a[11];
   var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
+    a31 = a[13],
+    a32 = a[14],
+    a33 = a[15];
 
   var b00 = a00 * a11 - a01 * a10;
   var b01 = a00 * a12 - a02 * a10;

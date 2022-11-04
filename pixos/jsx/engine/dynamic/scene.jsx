@@ -120,16 +120,6 @@ export default class ExampleDynamicScene extends Scene {
                 );
                 console.log(tilesets);
 
-                // todo read in assets / tilesets
-
-                // read content from manifest and load from zip
-                //
-                // -- only files in manifest are loaded.
-                // --
-                // -- they are applied by type and dynamically
-                // --
-                // -- loaded into memory.
-
                 // load initial zone from zip file
                 console.log('Initializing initial zone...' + manifest.initialZone);
                 world.loadZoneFromZip(manifest.initialZone, zip, true);
