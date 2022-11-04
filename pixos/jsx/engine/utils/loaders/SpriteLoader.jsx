@@ -13,8 +13,8 @@
 
 import DynamicAvatar from '@Engine/dynamic/avatar.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
-import DynamicAnimatedTile from '@Engine/dynamic/animatedSprite.jsx';
-import DynamicAnimatedSprite from '@Engine/dynamic/animatedTile.jsx';
+import DynamicAnimatedSprite from '@Engine/dynamic/animatedSprite.jsx';
+import DynamicAnimatedTile from '@Engine/dynamic/animatedTile.jsx';
 
 // Helps Loads New Sprite Instance
 export class SpriteLoader {

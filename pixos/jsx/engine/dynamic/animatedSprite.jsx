@@ -11,7 +11,6 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
 
@@ -28,6 +27,7 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
 
   // setup framerate
   init() {
+    console.log('Initializing sprite -->');
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
@@ -35,20 +35,23 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
     }
   }
 
-  // load in json properties to object
-  loadJson(json) {
-    this.src = json.src;
-    this.portraitSrc = json.portraitSrc;
-    this.sheetSize = json.sheetSize;
-    this.tileSize = json.tileSize;
-    this.state = json.state ?? 'intro';
-    // Frames
-    this.frames = json.frames;
-    // Offsets
-    this.drawOffset = new Vector(...json.drawOffset);
-    this.hotspotOffset = new Vector(...json.hotspotOffset);
-    // Should the camera follow the avatar?
-    this.bindCamera = json.bindCamera;
-    this.enableSpeech = json.enableSpeech; // speech bubble
+  // animate sprite on ticks
+  tick(time) {
+    if (this.lastTime == 0) {
+      this.lastTime = time;
+      return;
+    }
+    // wait enough time
+    this.accumTime += time - this.lastTime;
+    if (this.accumTime < this.frameTime || (this.animFrame == 0 && this.accumTime < this.triggerTime)) return;
+    // reset animation
+    if (this.animFrame == 5) {
+      this.setFrame(0);
+      this.triggerTime = 1000 + Math.floor(Math.random() * 4000);
+    } else {
+      this.setFrame(this.animFrame + 1);
+      this.accumTime = 0;
+      this.lastTime = time;
+    }
   }
 }

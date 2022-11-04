@@ -224,7 +224,7 @@ export default class Sprite {
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
     // position into scene
-    translate(this.engine.uViewMat, this.engine.uViewMat, [0.5, 0.5, -0.5]);
+    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray()); //[0.5, 0.5, -0.5]);
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls

@@ -1,5 +1,5 @@
 {
-  "type": "sprite",
+  "type": "animated-sprite",
   "src": "room.png",
   "sheetSize": [256, 256],
   "tileSize": [16, 32],

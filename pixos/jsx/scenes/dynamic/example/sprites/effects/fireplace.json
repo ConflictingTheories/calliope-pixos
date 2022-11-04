@@ -1,4 +1,5 @@
 {
+  "type": "animated-sprite",
   "src": "room.gif",
   "sheetSize": [256, 256],
   "tileSize": [48, 32],

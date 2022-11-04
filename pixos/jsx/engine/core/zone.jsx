@@ -486,7 +486,7 @@ export default class Zone {
           // draw each sprite in front of floor tiles if positioned in front
           // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
           while (k < this.spriteList.length && this.spriteList[k].pos.y - this.bounds[1] <= j) {
-            this.spriteList[k++].draw();
+            this.spriteList[k++].draw(this.engine);
           }
         }
         break;
@@ -502,7 +502,7 @@ export default class Zone {
           // draw each sprite in front of floor tiles if positioned in front
           // todo -- needs some work - needs to adjust with the camera angle. The position is camera dependent
           while (k < this.spriteList.length && this.bounds[1] - this.spriteList[k].pos.y <= j) {
-            this.spriteList[k++].draw();
+            this.spriteList[k++].draw(this.engine);
           }
         }
         break;

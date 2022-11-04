@@ -1,6 +1,7 @@
 {
   "bounds": [0, 0, 17, 19],
   "tileset": "sewer",
+  "audioSrc": "/pixos/audio/calm-escape.mp3",
   "sprites": [
     {
       "id": "air-knight",
@@ -21,6 +22,11 @@
       "facing": "Down",
       "zones": ["room"]
     },
+
+    { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up" },
+    { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 3, 0], "facing": "Up" },
+    { "id": "fireplace", "type": "effects/fireplace", "fixed": true, "pos": [11, 4, 0], "facing": "Up" },
+
     { "id": "chest", "type": "objects/chests/wood", "pos": [8, 14, 0], "facing": "Down" },
     { "id": "chestmetal", "type": "objects/chests/metal", "pos": [9, 13, 0], "facing": "Right" },
     { "id": "chestred", "type": "objects/chests/red", "pos": [9, 14, 0], "facing": "Down" },
