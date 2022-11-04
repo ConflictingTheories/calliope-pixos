@@ -137,10 +137,10 @@ export default class Zone {
             let menu = zoneJson.menu[id];
             menu.id = id;
             if (menu.onOpen) {
-              menu.onOpen = eval.call(self, menu.onOpen).bind(self.world);
+              menu.onOpen = (await self.loadTriggerFromZip(menu.onOpen, zip)).bind(self, self);
             }
             if (menu.trigger) {
-              menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self);
+              menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self, self);
             }
             console.log({ menu });
             menus[id] = menu;
@@ -294,16 +294,27 @@ export default class Zone {
     if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded))
       return;
     // Load Scene Triggers
+    // this.loadScripts(true);
+    // loaded
+    this.loaded = true;
+    this.onLoadActions.run();
+  }
+
+  // trigger scripts to load (useful for pausing game to show menu, etc.)
+  loadScripts(refresh = false) {
+    // Load Scene Triggers
+    if (this.world.isPaused) {
+      console.log({ msg: 'Game Paused -- not running script yet' });
+      return;
+    }
+
     let zone = this;
     this.scripts.forEach((x) => {
-      if (x.id === 'load-scene') {
+      if (x.id === 'load-scene' && refresh) {
         console.log({ msg: 'loading scene initial trigger', x });
         this.runWhenLoaded(x.trigger.bind(zone));
       }
     });
-    // loaded
-    this.loaded = true;
-    this.onLoadActions.run();
   }
 
   // load obj model

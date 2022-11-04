@@ -191,7 +191,7 @@ export default class World {
     // Run & Queue for Removal when complete
     let toRemove = [];
     this.eventList.forEach((event) => {
-      if (!event.loaded || event.startTime > time) return;
+      if (!event.loaded || event.startTime > time || event.pausable && this.isPaused) return;
       if (event.tick(time)) {
         toRemove.push(event); // remove from backlog
         event.onComplete(); // call completion handler

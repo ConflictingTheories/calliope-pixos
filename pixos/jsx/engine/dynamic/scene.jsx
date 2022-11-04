@@ -27,6 +27,7 @@ export default class ExampleDynamicScene extends Scene {
     // show start menu
     world.startMenu({
       start: {
+        pausable: false,
         text: 'Load Game File',
         prompt: 'Please select a file to load...',
         x: engine.screenSize().width / 2 - 75,

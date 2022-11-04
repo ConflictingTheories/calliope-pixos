@@ -120,6 +120,7 @@
       "y": 25,
       "w": 150,
       "h": 75,
+      "pausable": false,
       "quittable": false,
       "colours": {
         "top": "#333",
@@ -127,7 +128,7 @@
         "background": "#999"
       },
       "onEnter": true,
-      "onOpen": "(menu) => {console.log({msg:'opening menu', menu, scope:this}); this.isPaused = true;}",
+      "onOpen": "menu/main_on_open",
       "trigger": "menu/main"
     }
   }
