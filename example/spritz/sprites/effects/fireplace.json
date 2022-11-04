@@ -1,0 +1,18 @@
+{
+  "type": "animated-sprite",
+  "src": "room.gif",
+  "sheetSize": [256, 256],
+  "tileSize": [48, 32],
+  "fixed": true,
+  "frames": {
+    "N": [
+      [0, 144],
+      [48, 144],
+      [0, 176],
+      [48, 176]
+    ]
+  },
+  "drawOffset": [0, 1.8, 0.001],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "frameTime": 150
+}

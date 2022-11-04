@@ -1,0 +1,165 @@
+{
+  "bounds": [0, 0, 17, 19],
+  "tileset": "sewer",
+  "audioSrc": "/pixos/audio/calm-escape.mp3",
+  "sprites": [
+    {
+      "id": "air-knight",
+      "type": "npc/air-knight",
+      "pos": [8, 7, 0],
+      "facing": "Left"
+    },
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [8, 4, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "door",
+      "type": "furniture/door",
+      "pos": [2, 5, 0],
+      "facing": "Down",
+      "zones": ["room"]
+    },
+
+    { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up" },
+    { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 3, 0], "facing": "Up" },
+    { "id": "fireplace", "type": "effects/fireplace", "fixed": true, "pos": [11, 4, 0], "facing": "Up" },
+
+    { "id": "chest", "type": "objects/chests/wood", "pos": [8, 14, 0], "facing": "Down" },
+    { "id": "chestmetal", "type": "objects/chests/metal", "pos": [9, 13, 0], "facing": "Right" },
+    { "id": "chestred", "type": "objects/chests/red", "pos": [9, 14, 0], "facing": "Down" },
+    { "id": "chestblue", "type": "objects/chests/blue", "pos": [7, 13, 0], "facing": "Left" }
+  ],
+  "lights": [
+    {
+      "id": "spot-light",
+      "pos": [2, 2, 1],
+      "color": [0.8, 0.8, 1],
+      "direction": [0.3, 0.3, 1]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "strange-legend",
+      "actions": [
+        {
+          "sprite": "avatar",
+          "action": "dialogue",
+          "args": [
+            ["Long ago, in a dungeon far far away", "The sewer was backing up, and well...everyone was losing their $%#t", "But one had a plan..."],
+            false,
+            { "autoclose": true }
+          ]
+        },
+        {
+          "sprite": "avatar",
+          "action": "dialogue",
+          "args": [["But what was that plan?..."], false, { "autoclose": true }]
+        },
+        { "trigger": "custom" }
+      ]
+    }
+  ],
+  "scripts": [
+    {
+      "id": "load-scene",
+      "trigger": "zone/room_load"
+    },
+    {
+      "id": "custom",
+      "trigger": "zone/room_custom"
+    },
+    {
+      "id": "clear-path",
+      "trigger": "zone/room_clear_path"
+    }
+  ],
+  "objects": [
+    {
+      "id": "test-obj",
+      "type": "person",
+      "mtl": false,
+      "useScale": [0.1, 0.1, 0.1],
+      "pos": [10, 15, 0]
+    },
+    {
+      "id": "test-bed",
+      "type": "bed",
+      "mtl": true,
+      "pos": [14, 10, 0]
+    },
+    {
+      "id": "test-",
+      "random": true,
+      "type": "chair",
+      "mtl": true,
+      "pos": [12, 6, 0]
+    },
+    {
+      "id": "test",
+      "random": true,
+      "type": "cactus_short",
+      "mtl": true,
+      "pos": [11, 6, 0]
+    },
+    {
+      "id": "test-robot",
+      "type": "robot",
+      "mtl": false,
+      "pos": [7, 7, 1],
+      "rotation": [0, 90, 0]
+    },
+    {
+      "id": "test-cube",
+      "type": "die",
+      "mtl": true,
+      "pos": [6, 4, 1]
+    }
+  ],
+  "menu": {
+    "start": {
+      "text": "Example Game!",
+      "prompt": "Welcome Traveler!",
+      "x": 100,
+      "y": 100,
+      "w": 150,
+      "h": 75,
+      "quittable": false,
+      "pausable": false,
+      "onEnter": true,
+      "colours": {
+        "top": "#333",
+        "bottom": "#777",
+        "background": "#999"
+      },
+      "children": ["sub", "nested"]
+    },
+    "sub": {
+      "text": "Click Me Again",
+      "x": 310,
+      "y": 310,
+      "w": 150,
+      "h": 75,
+      "quittable": false,
+      "pausable": false,
+      "onEnter": true,
+      "colours": { "top": "#333", "bottom": "#777", "background": "#999" },
+      "children": ["start"]
+    },
+    "nested": {
+      "text": "Click Me ONE MORE",
+      "x": 210,
+      "y": 110,
+      "w": 150,
+      "h": 75,
+      "quittable": false,
+      "pausable": false,
+      "onEnter": true,
+      "colours": { "top": "#333", "bottom": "#777", "background": "#999" },
+      "onOpen": "menu/main_on_open",
+      "trigger": "menu/main"
+    }
+  }
+}

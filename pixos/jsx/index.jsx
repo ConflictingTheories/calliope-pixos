@@ -16,7 +16,7 @@ import { collect } from "react-recollect";
 // WebGL Component
 import WebGLView from "@Components/WebGLView.jsx";
 // Pixos Scene Provider
-import SceneProvider from "@Scenes/dynamic/example.jsx";
+import SceneProvider from "@Scenes/player.jsx";
 // Style Plugin
 import "../less/pixos.css";
 
