@@ -14,9 +14,8 @@
 import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 // Map Information
-export function loadMap(json, cells) {
-  let xeval = eval;
-  console.log({ json, cells });
+export async function loadMap(json, cells, zip) {
+  console.log({ json, cells, zip });
 
   // read sprites & handle functions
   let $sprites =
@@ -44,34 +43,39 @@ export function loadMap(json, cells) {
             sprite: action.sprite,
             action: action.action,
             args: action.args,
-            scope: this
+            scope: this,
           };
         }
       }),
       scope: this,
     };
   });
+
   console.log({ $scenes });
-  let $scripts = json.scripts.map((script) => {
-    try {
-      let $statement =
-        `
-        (()=>{return{
+
+  let $scripts = await Promise.all(
+    json.scripts.map(async (script) => {
+      try {
+        let triggerScript = (await zip.file(`triggers/${script.trigger}.js`).async('string')).replace(/\};/, '}');
+        let $statement =
+          `
+        ((_this)=>{return{
           id: '` +
-        script.id +
-        `',
+          script.id +
+          `',
           trigger: ` +
-        script.trigger +
-        `,
+          triggerScript +
+          `,
         }})
       `;
-      console.log($statement);
-      let result = xeval($statement).call(this);
-      return result;
-    } catch (e) {
-      console.error(e);
-    }
-  });
+        console.log($statement);
+        let result = eval.call(this, $statement).call(this, this);
+        return result;
+      } catch (e) {
+        console.error(e);
+      }
+    })
+  );
   console.log({ $scripts });
 
   let $objects = json.objects.map((object) => {

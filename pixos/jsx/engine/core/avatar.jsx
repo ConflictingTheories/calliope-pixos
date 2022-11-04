@@ -67,14 +67,26 @@ export default class Avatar extends Sprite {
       case 'x':
         from = this.engine.cameraVector;
         to = this.engine.cameraVector.add(new Vector(...[0, 0, 1]));
-        to.z = to.z % 8;
+        to.z = to.z % 9 ?? 8; // locked to every 45 degrees
+        if (to.z === 0 && from.z === 8) {
+          from.z = 0;
+        }
+        if (to.z === 0 && from.z === 7) {
+          to.z = 8;
+        }
         this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // adjust Camera
       case 'z':
         from = this.engine.cameraVector;
         to = this.engine.cameraVector.sub(new Vector(...[0, 0, 1]));
-        to.z = to.z % 8;
+        to.z = to.z % 9; // lock to every 45 degrees
+        if (to.z === 0 && from.z === 8) {
+          from.z = 0;
+        }
+        if (to.z === 0 && from.z === 7) {
+          to.z = 8;
+        }
         this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
         break;
       // show menu

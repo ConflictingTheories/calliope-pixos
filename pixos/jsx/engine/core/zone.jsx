@@ -129,6 +129,28 @@ export default class Zone {
   async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
     let self = this;
     try {
+      // load game menus & pause usually
+      if (zoneJson.menu) {
+        let menus = {};
+        await Promise.all(
+          Object.keys(zoneJson.menu).map(async (id) => {
+            let menu = zoneJson.menu[id];
+            menu.id = id;
+            if (menu.onOpen) {
+              menu.onOpen = eval.call(self, menu.onOpen).bind(self.world);
+            }
+            if (menu.trigger) {
+              menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self);
+            }
+            console.log({ menu });
+            menus[id] = menu;
+          })
+        );
+        // launch the start menu
+        this.menus = menus;
+        this.world.startMenu(this.menus);
+      }
+
       try {
         // Extract and Read in Information
         console.log({ msg: 'zone load json', zoneJson, cellJson });
@@ -139,7 +161,7 @@ export default class Zone {
         var cells = dynamicCells(cellJson, tileset.tiles);
         console.log({ msg: 'zone load map data', cells });
 
-        var map = loadMap.call(this, zoneJson, cells);
+        var map = await loadMap.call(this, zoneJson, cells, zip);
         console.log({ msg: 'zone load map data', map });
 
         Object.assign(this, map);
@@ -218,28 +240,6 @@ export default class Zone {
 
       // load objects and notify others
       self.objectList.forEach((object) => object.runWhenLoaded(self.onTilesetOrSpriteLoaded));
-
-      // load game menus
-      if (zoneJson.menu) {
-        let menus = {};
-        await Promise.all(
-          Object.keys(zoneJson.menu).map(async (id) => {
-            let menu = zoneJson.menu[id];
-            menu.id = id;
-            if (menu.onOpen) {
-              menu.onOpen = eval.call(self, menu.onOpen).bind(self.world);
-            }
-            if (menu.trigger) {
-              menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self);
-            }
-            console.log({ menu });
-            menus[id] = menu;
-          })
-        );
-        // launch the start menu
-        this.menus = menus;
-        this.world.startMenu(this.menus);
-      }
     } catch (e) {
       console.error('Error parsing json zone ' + this.id);
       console.error(e);

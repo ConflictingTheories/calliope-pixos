@@ -59,15 +59,15 @@
   "scripts": [
     {
       "id": "load-scene",
-      "trigger": "async function() { await this.playScene('strange-legend'); }"
+      "trigger": "zone/room_load"
     },
     {
       "id": "custom",
-      "trigger": "async function() { await this.spriteDialogue('avatar', ['Lets get in there!']); }"
+      "trigger": "zone/room_custom"
     },
     {
       "id": "clear-path",
-      "trigger": "async function() { await this.moveSprite('avatar', [8, 3, 0], true); }"
+      "trigger": "zone/room_clear_path"
     }
   ],
   "objects": [
