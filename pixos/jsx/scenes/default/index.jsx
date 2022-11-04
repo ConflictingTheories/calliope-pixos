@@ -23,7 +23,8 @@ export default class PixosScene extends Scene {
     // Init Game Engine Components
     let world = (Scene._instance.world = new World(engine, "scene"));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    await world.loadZone("room");
+    await world.loadZone("dungeon-top");
+    await world.loadZone("dungeon-bottom");
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log("loading...done")));
     // show start menu
     world.startMenu({
