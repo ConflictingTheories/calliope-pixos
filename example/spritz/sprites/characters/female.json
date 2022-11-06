@@ -1,5 +1,5 @@
 {
-  "type": "avatar",
+  "type": "sprite",
   "src": "character.png",
   "portraitSrc": "witch_portrait.gif",
   "sheetSize": [96, 384],
