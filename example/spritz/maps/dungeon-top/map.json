@@ -3,10 +3,10 @@
   "tileset": "sewer",
   "audioSrc": "/pixos/audio/calm-escape.mp3",
   "sprites": [
-    { "id": "darkness", "type": "characters/male", "pos": [10, 4, 0], "facing": "Down" },
-    { "id": "air", "type": "characters/male", "pos": [8, 4, 0], "facing": "Down" },
-    { "id": "fire", "type": "characters/male", "pos": [2, 9, 0], "facing": "Right" },
-    { "id": "earth", "type": "characters/male", "pos": [14, 7, 0], "facing": "Left" },
+    { "id": "darkness", "type": "npc/air-knight", "pos": [10, 4, 0], "facing": "Down" },
+    { "id": "air", "type": "npc/air-knight", "pos": [8, 4, 0], "facing": "Down" },
+    { "id": "fire", "type": "characters/female", "pos": [2, 9, 0], "facing": "Right" },
+    { "id": "earth", "type": "characters/female", "pos": [14, 7, 0], "facing": "Left" },
     {
       "id": "door",
       "type": "furniture/door",
@@ -20,7 +20,7 @@
       "pos": [8, 4, 0],
       "facing": "Down"
     },
-    { "id": "spurt1", "type": "effects/spurt", "pos": [10, 7, -1.5], "facing": "Up" },
+    { "id": "spurt1", "type": "effects/spurt", "pos": [10, 5, 0], "facing": "Up" },
     { "id": "spurt2", "type": "effects/spurt", "pos": [9, 6, -1.5], "facing": "Up" },
     { "id": "spurt3", "type": "effects/spurt", "pos": [10, 5, -1.5], "facing": "Up" },
     { "id": "spurt4", "type": "effects/spurt", "pos": [7, 6, -1.5], "facing": "Up" },

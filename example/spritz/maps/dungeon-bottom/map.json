@@ -2,9 +2,7 @@
   "bounds": [0, 10, 17, 19],
   "tileset": "sewer",
   "audioSrc": "/pixos/audio/calm-escape.mp3",
-  "sprites": [
-    { "id": "water", "type": "npc/air-knight", "pos": [8, 13, 0], "facing": "Up" }
-  ],
+  "sprites": [{ "id": "water", "type": "npc/air-knight", "pos": [8, 13, 0], "facing": "Up" }],
   "scripts": [],
   "scenes": [],
   "objects": [],

@@ -20,6 +20,8 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     // Initialize Sprite
     super(engine);
     // load in json
+    console.log('New Tile ... tile -->');
+
     this.loadJson(json);
     // store json config
     this.json = json;
@@ -28,7 +30,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
 
   // setup framerate
   init() {
-    console.log('Initializing tile -->');
+    console.log('Initializing ... tile -->');
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
@@ -38,7 +40,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
 
   // Update each frame
   tick(time) {
-    console.log('..>');
+    console.log('tile ..>');
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;
@@ -59,6 +61,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
 
   // Draw Frame
   draw(engine) {
+    console.log('---->>>>>>---->>>>>');
     if (!this.loaded) return;
     engine.mvPushMatrix();
     translate(engine.uViewMat, engine.uViewMat, this.pos.toArray());

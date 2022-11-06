@@ -18,6 +18,8 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
   constructor(engine, json) {
     // Initialize Sprite
     super(engine);
+    console.log('New Sprite ... sprite -->');
+
     // load in json
     this.loadJson(json);
     // store json config
