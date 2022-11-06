@@ -32,8 +32,11 @@ export default class DynamicAvatar extends Avatar {
     // Frames
     this.frames = json.frames;
     // Offsets
-    this.drawOffset = new Vector(...json.drawOffset);
     this.hotspotOffset = new Vector(...json.hotspotOffset);
+    this.drawOffset = {};
+    Object.keys(json.drawOffset).forEach((offset) => {
+      this.drawOffset[offset] = new Vector(...json.drawOffset[offset]);
+    });
     // Should the camera follow the avatar?
     this.bindCamera = json.bindCamera;
     this.enableSpeech = json.enableSpeech; // speech bubble

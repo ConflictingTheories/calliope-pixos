@@ -37,7 +37,10 @@ export default class DynamicSprite extends Sprite {
     // Frames
     this.frames = json.frames;
     // Offsets
-    this.drawOffset = new Vector(...json.drawOffset);
+    this.drawOffset = {};
+    Object.keys(json.drawOffset).forEach((offset) => {
+      this.drawOffset[offset] = new Vector(...json.drawOffset[offset]);
+    });
     this.hotspotOffset = new Vector(...json.hotspotOffset);
     // Should the camera follow the avatar?
     this.bindCamera = json.bindCamera;

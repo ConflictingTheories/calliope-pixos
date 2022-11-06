@@ -63,7 +63,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     engine.mvPushMatrix();
     translate(engine.uViewMat, engine.uViewMat, this.pos.toArray());
     // Lie flat on the ground
-    translate(engine.uViewMat, engine.uViewMat, this.drawOffset.toArray());
+    translate(engine.uViewMat, engine.uViewMat, this.drawOffset[engine.cameraDir].toArray());
     rotate(engine.uViewMat, engine.uViewMat, engine.degToRad(90), [1, 0, 0]);
     engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.aVertexPosition);
     engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.aTextureCoord);
