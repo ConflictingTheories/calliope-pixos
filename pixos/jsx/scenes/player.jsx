@@ -12,7 +12,7 @@
 \*                                                 */
 
 // Shaders
-import DyanmicScene from '@Engine/dynamic/scene.jsx';
+import DynamicScene from '@Engine/dynamic/scene.jsx';
 
 // Scene Object
-export default class ExampleDynamicScene extends DyanmicScene {}
+export default class ExampleDynamicScene extends DynamicScene {}

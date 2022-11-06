@@ -32,7 +32,9 @@ export class AudioLoader {
       Object.keys(loader.instances)
         .filter((instance) => src !== instance)
         .forEach(function (instance) {
-          loader.instances[instance].pauseAudio();
+          if (loader.instances[instance]) {
+            loader.instances[instance].pauseAudio();
+          }
         });
     }
     // once loaded

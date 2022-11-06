@@ -31,8 +31,8 @@ export default {
     }
     this.moveIndex = 1; // holds index position
     this.moveLength = moveLength; // length of time per move
-    if (this.zone.audio) this.zone.audio.pauseAudio();
-    this.audio.playAudio();
+    // if (this.zone.audio) this.zone.audio.pauseAudio();
+    // this.audio.playAudio();
   },
   tick: function (time) {
     if (!this.loaded) return;
@@ -77,8 +77,10 @@ export default {
       if (this.moveIndex + this.direction >= this.moveList.length) {
         this.direction *= -1;
         this.completed = true;
-        if (this.zone.audio) this.zone.audio.playAudio();
-        this.audio.pauseAudio();
+        if (this.zone.audio) {
+          this.zone.audio.playAudio();
+          this.audio.pauseAudio();
+        }
       }
       this.moveIndex += this.direction;
       this.startTime = time;
@@ -91,7 +93,9 @@ export default {
       switch (this.sprite.engine.keyboard.lastPressed('q')) {
         // close dialogue on q key press
         case 'q':
-          this.audio.pauseAudio();
+          if (this.audio) {
+            this.audio.pauseAudio();
+          }
           this.completed = true; // toggle
         default:
           this.lastKey = new Date().getTime();

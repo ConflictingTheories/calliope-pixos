@@ -14,6 +14,7 @@
 import ActionQueue from '@Engine/core/queue.jsx';
 export class Texture {
   constructor(src, engine) {
+    console.log({msg: 'setting texture', src});
     this.engine = engine;
     this.src = src;
     this.glTexture = engine.gl.createTexture();

@@ -1,4 +1,5 @@
 {
+  "type": "sprite",
   "src": "trees.png",
   "sheetSize": [512, 512],
   "tileSize": [96, 144],

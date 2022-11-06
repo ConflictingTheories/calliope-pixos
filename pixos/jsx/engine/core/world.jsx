@@ -73,7 +73,11 @@ export default class World {
     await z.loadZoneFromZip(zoneJson, cellJson, zip);
 
     // audio
-    this.zoneList.map((x) => x.audio.pauseAudio());
+    this.zoneList.map((x) => {
+      if (x.audio) {
+        x.audio.pauseAudio();
+      }
+    });
     if (z.audio) z.audio.playAudio();
 
     // add zone
@@ -93,7 +97,11 @@ export default class World {
     if (remotely) await z.loadRemote();
     else await z.load();
     // audio
-    this.zoneList.map((x) => x.audio.pauseAudio());
+    this.zoneList.map((x) => {
+      if (x.audio) {
+        x.audio.pauseAudio();
+      }
+    });
     if (z.audio) z.audio.playAudio();
     // add zone
     this.zoneDict[zoneId] = z;
@@ -109,7 +117,9 @@ export default class World {
       if (zone.id !== zoneId) {
         return true;
       } else {
-        zone.audio.pauseAudio();
+        if (zone.audio) {
+          zone.audio.pauseAudio();
+        }
         zone.removeAllSprites();
         zone.runWhenDeleted();
       }
@@ -120,7 +130,9 @@ export default class World {
   // Remove Zones
   removeAllZones() {
     this.zoneList.map((z) => {
-      z.audio.pauseAudio();
+      if (z.audio) {
+        z.audio.pauseAudio();
+      }
       z.removeAllSprites();
       zone.runWhenDeleted();
     });

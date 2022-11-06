@@ -92,7 +92,9 @@ export default {
       switch (this.sprite.engine.keyboard.lastPressed('q')) {
         // close dialogue on q key press
         case 'q':
-          this.audio.pauseAudio();
+          if (this.audio) {
+            this.audio.pauseAudio();
+          }
           this.completed = true; // toggle
         default:
           this.lastKey = new Date().getTime();

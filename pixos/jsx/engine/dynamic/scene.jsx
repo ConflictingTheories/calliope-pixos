@@ -96,8 +96,10 @@ export default class ExampleDynamicScene extends Scene {
         console.log(tilesets);
 
         // load initial zone from zip file
-        console.log('Initializing initial zone...' + manifest.initialZone);
-        world.loadZoneFromZip(manifest.initialZone, zip, true);
+        console.log('Initializing initial zone...' + manifest.initialZones);
+        manifest.initialZones.forEach((zone) => {
+          world.loadZoneFromZip(zone, zip, true);
+        });
 
         // start
         menu.world.isPaused = false;
