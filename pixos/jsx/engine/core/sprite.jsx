@@ -226,7 +226,7 @@ export default class Sprite {
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
     // position into scene
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset[this.engine.cameraDir].toArray()); //[0.5, 0.5, -0.5]);
+    translate(this.engine.uViewMat, this.engine.uViewMat, (this.drawOffset[this.engine.cameraDir] ?? this.drawOffset['N']).toArray()); //[0.5, 0.5, -0.5]);
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
@@ -251,7 +251,7 @@ export default class Sprite {
     if (this.enableSpeech) {
       this.engine.mvPushMatrix();
       // Undo rotation so that character plane is normal to LOS
-      translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset[this.engine.cameraDir].toArray());
+      translate(this.engine.uViewMat, this.engine.uViewMat, (this.drawOffset[this.engine.cameraDir] ?? this.drawOffset['N']).toArray());
       translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
       rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.z), [0, 0, -1]);
@@ -373,7 +373,6 @@ export default class Sprite {
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
-    console.log(this, this.gender, voices);
     // set voice
     speech.voice = this.gender ? (this.gender == 'male' ? voices[7] : voices[28]) : voices[0];
     if (rate) speech.rate = rate;

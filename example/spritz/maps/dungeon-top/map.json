@@ -20,7 +20,7 @@
       "pos": [8, 4, 0],
       "facing": "Down"
     },
-    { "id": "spurt1", "type": "effects/spurt", "pos": [10, 5, 0], "facing": "Up" },
+    { "id": "spurt1", "type": "effects/spurt", "pos": [10, 5, -1.5], "facing": "Up" },
     { "id": "spurt2", "type": "effects/spurt", "pos": [9, 6, -1.5], "facing": "Up" },
     { "id": "spurt3", "type": "effects/spurt", "pos": [10, 5, -1.5], "facing": "Up" },
     { "id": "spurt4", "type": "effects/spurt", "pos": [7, 6, -1.5], "facing": "Up" },

@@ -46,8 +46,6 @@ export default class PeacefulGarden extends Scene {
           this.isPaused = true;
         },
         trigger: (menu) => {
-          // on Click
-          console.log(menu);
           // start initial audio
           menu.world.zoneList
             .filter((x) => x.audio != null)

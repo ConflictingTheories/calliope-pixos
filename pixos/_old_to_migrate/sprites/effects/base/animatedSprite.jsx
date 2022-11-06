@@ -31,6 +31,7 @@ export default class AnimatedSprite extends Sprite {
   }
   // Update each frame
   tick(time) {
+    console.log('--t')
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;

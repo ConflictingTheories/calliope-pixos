@@ -279,7 +279,6 @@ export function downloadModelsFromZip(gl, models: DownloadModelsOptions[], zip: 
     const parts = model.obj.split('/');
     let name = parts[parts.length - 1].replace('.obj', '');
     const namePromise = Promise.resolve(name);
-    console.log(`---->>> Fetching Zip models/${name}.obj`);
     const meshPromise = zip
       .file(`models/${name}.obj`)
       .async('string')
@@ -291,7 +290,6 @@ export function downloadModelsFromZip(gl, models: DownloadModelsOptions[], zip: 
     // Download MaterialLibrary file?
     if (model.mtl) {
       const mtl = getMtl(model);
-      console.log(`---->>> Fetching Zip models/${mtl}`);
       mtlPromise = zip
         .file(`models/${mtl}`)
         .async('string')

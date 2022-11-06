@@ -119,7 +119,6 @@ export default class Zone {
   // load trigger scripts from zip
   async loadTriggerFromZip(trigger, zip) {
     let triggerScript = await zip.file(`triggers/${trigger}.js`).async('string');
-    console.log({ msg: 'fetching trigger', triggerScript });
     return eval.call(this, triggerScript);
   }
 
@@ -142,7 +141,6 @@ export default class Zone {
             if (menu.trigger) {
               menu.trigger = (await self.loadTriggerFromZip(menu.trigger, zip)).bind(self, self);
             }
-            console.log({ menu });
             menus[id] = menu;
           })
         );
@@ -153,16 +151,12 @@ export default class Zone {
 
       try {
         // Extract and Read in Information
-        console.log({ msg: 'zone load json', zoneJson, cellJson });
 
         var tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
-        console.log({ msg: 'zone load tileset found', tileset });
 
         var cells = dynamicCells(cellJson, tileset.tiles);
-        console.log({ msg: 'zone load map data', cells });
 
         var map = await loadMap.call(this, zoneJson, cells, zip);
-        console.log({ msg: 'zone load map data', map });
 
         Object.assign(this, map);
       } catch (e) {
@@ -182,7 +176,6 @@ export default class Zone {
       try {
         if (this.audioSrc) {
           this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
-          console.log({ msg: 'zone load audio loaded' });
         }
       } catch (e) {
         console.error({ msg: 'error loading audio track', e });
@@ -200,7 +193,6 @@ export default class Zone {
       try {
         this.tileset = tileset;
         this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
-        console.log({ msg: 'zone load tileset loaded' });
       } catch (e) {
         console.error({ msg: 'error loading tileset', e });
       }
@@ -210,7 +202,6 @@ export default class Zone {
         if (typeof this.sprites === 'string') {
           this.sprites = eval.call(self, self.sprites).call(self, self.bounds, self);
         }
-        console.log({ msg: 'zone load sprites identified' });
       } catch (e) {
         console.error({ msg: 'error loading sprite function', e });
       }
@@ -220,11 +211,9 @@ export default class Zone {
         await Promise.all(
           self.sprites.map(async (sprite) => {
             let sprit = await self.loadSpriteFromZip(sprite, zip, skipCache);
-            console.log({ sprit });
             return sprit;
           })
         );
-        console.log({ msg: 'zone load sprites loaded' });
       } catch (e) {
         console.error({ msg: 'error loading sprites from map', e });
       }
@@ -232,7 +221,6 @@ export default class Zone {
       // objects
       try {
         await Promise.all(self.objects.map((object) => self.loadObjectFromZip(object, zip)));
-        console.log({ msg: 'zone load objects loaded' });
       } catch (e) {
         console.error({ msg: 'error loading objects from map', e });
       }
@@ -254,7 +242,6 @@ export default class Zone {
 
   // Actions to run when the map has loaded
   runWhenLoaded(action) {
-    console.log({ msg: 'runnning action...', obj: this, action });
     if (this.loaded) action.apply(this);
     else this.onLoadActions.add(action.bind(this));
   }
@@ -296,11 +283,8 @@ export default class Zone {
 
   // run after each tileset / sprite is loaded
   onTilesetOrSpriteLoaded() {
-    console.log('test load');
     if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded))
       return;
-    // Load Scene Triggers
-    // this.loadScripts(true);
     // loaded
     this.loaded = true;
     this.onLoadActions.run();
@@ -310,14 +294,12 @@ export default class Zone {
   loadScripts(refresh = false) {
     // Load Scene Triggers
     if (this.world.isPaused) {
-      console.log({ msg: 'Game Paused -- not running script yet' });
       return;
     }
 
     let zone = this;
     this.scripts.forEach((x) => {
       if (x.id === 'load-scene' && refresh) {
-        console.log({ msg: 'loading scene initial trigger', x });
         this.runWhenLoaded(x.trigger.bind(zone));
       }
     });
@@ -390,7 +372,6 @@ export default class Zone {
 
   // Remove an sprite from the zone
   getSpriteById(id) {
-    console.log({ msg: `grabbing sprite ${id}`, spriteDict: this.spriteDict[id] });
     return this.spriteDict[id];
   }
 
@@ -538,7 +519,6 @@ export default class Zone {
       this.lastKey = time;
       switch (this.engine.keyboard.lastPressedKey('o')) {
         case 'o':
-          console.log(this.audio);
           await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
           if (this.audio) this.audio.playAudio();
           break;
@@ -554,7 +534,6 @@ export default class Zone {
   // Cell Walkable
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
-    console.log('check walk');
     for (let sprite in this.spriteDict) {
       if (
         // if sprite bypass & override
@@ -652,7 +631,6 @@ export default class Zone {
 
   // Run Action configuration from JSON description
   async runActions(actions) {
-    console.log({ msg: 'running actions', actions });
     let self = this;
     return await actions.reduce(async (prev, action) => {
       return await prev
@@ -663,12 +641,9 @@ export default class Zone {
               try {
                 if (!action.scope) action.scope = self;
                 if (action.sprite) {
-                  console.log({ msg: 'finding sprite....', action });
                   let sprite = action.scope.getSpriteById(action.sprite);
-                  console.log({ msg: 'finding sprite....', sprite });
                   // apply action
                   if (sprite && action.action) {
-                    console.log({ msg: 'loading action into sprite....', sprite });
                     let args = action.args;
                     let options = args.pop();
                     sprite.addAction(new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self)));
@@ -676,9 +651,7 @@ export default class Zone {
                 }
                 // trigger script
                 if (action.trigger) {
-                  console.log({ msg: 'Triggering action into avatar....' });
                   let sprite = action.scope.getSpriteById('avatar');
-                  console.log({ msg: 'trigger', sprite });
                   if (sprite && action.trigger) {
                     sprite.addAction(new ActionLoader(self.engine, 'script', [action.trigger, action.scope, () => resolve(self)], sprite));
                   }
@@ -701,7 +674,6 @@ export default class Zone {
       scenes = self.scenes;
     }
     scenes.forEach(async function runScene(x) {
-      console.log({ msg: 'running scene', x });
       try {
         if (!x.currentStep) {
           x.currentStep = 0; // Starting
@@ -711,7 +683,6 @@ export default class Zone {
         }
         if (x.id === id) {
           // found scene
-          console.log({ msg: 'scene', actions: x.actions });
           await self.runActions(x.actions);
         }
       } catch (e) {

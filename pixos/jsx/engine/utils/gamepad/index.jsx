@@ -107,7 +107,6 @@ export class GamePad {
 
   // initialize widget
   init(options = {}) {
-    console.log('initing');
     this.setOptions(options);
     this.resize();
     this.loadCanvas();

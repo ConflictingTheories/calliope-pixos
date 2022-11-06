@@ -18,19 +18,12 @@ import DynamicSprite from '@Engine/dynamic/sprite.jsx';
 export default class DynamicAnimatedTile extends DynamicSprite {
   constructor(engine, json) {
     // Initialize Sprite
-    super(engine);
+    super(engine, json);
     // load in json
-    console.log('New Tile ... tile -->');
-
-    this.loadJson(json);
-    // store json config
-    this.json = json;
-    this.ActionLoader = ActionLoader;
   }
 
   // setup framerate
   init() {
-    console.log('Initializing ... tile -->');
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
@@ -40,7 +33,6 @@ export default class DynamicAnimatedTile extends DynamicSprite {
 
   // Update each frame
   tick(time) {
-    console.log('tile ..>');
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;
@@ -61,12 +53,11 @@ export default class DynamicAnimatedTile extends DynamicSprite {
 
   // Draw Frame
   draw(engine) {
-    console.log('---->>>>>>---->>>>>');
     if (!this.loaded) return;
     engine.mvPushMatrix();
     translate(engine.uViewMat, engine.uViewMat, this.pos.toArray());
     // Lie flat on the ground
-    translate(engine.uViewMat, engine.uViewMat, this.drawOffset[engine.cameraDir].toArray());
+    translate(engine.uViewMat, engine.uViewMat, (this.drawOffset[engine.cameraDir] ?? this.drawOffset['N']).toArray());
     rotate(engine.uViewMat, engine.uViewMat, engine.degToRad(90), [1, 0, 0]);
     engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.aVertexPosition);
     engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.aTextureCoord);

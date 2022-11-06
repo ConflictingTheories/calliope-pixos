@@ -51,11 +51,9 @@ export default class DynamicSprite extends Sprite {
   interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
-    console.log({ msg: 'interaction with xsprite', xsprite: this, sprite });
     // build state machine
     let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
     states.forEach((state) => {
-      console.log({ state });
       let actionString = this.loadActionDynamically(state, sprite); // load actions dynamically
       let statement =
         "case '" +
@@ -67,17 +65,13 @@ export default class DynamicSprite extends Sprite {
         "';" +
         actionString +
         '\nbreak;';
-      console.log({ statement });
       evalStatement.push(statement);
     });
     evalStatement.push('default:\n\tbreak;\n}});');
-    console.log({ stat: evalStatement.join('') });
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, finish);
 
-    console.log({ msg: 'ret', ret });
     if (ret) this.addAction(ret);
-    console.log({ msg: 'fin', finish });
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);

@@ -63,8 +63,6 @@ export default class World {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
 
-    console.log(zip);
-
     let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string')); // main map file (/zip/maps/{zoneId}/map.json)
     let cellJson = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string')); // cells (/zip/maps/{zoneId}/cells.json)
 
@@ -165,7 +163,6 @@ export default class World {
 
   // open start menu
   startMenu(menuConfig, defaultMenus = ['start']) {
-    console.log({ msg: 'launching menu', menuConfig });
     this.addEvent(
       new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
@@ -274,7 +271,6 @@ export default class World {
       .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
       .filter((x) => x[0]);
     // Flatten Path from Segments
-    console.log('pathing', world, world.getNeighbours(x, y), visited, found, x, y, from, to, steps);
     return steps.flat();
   }
 

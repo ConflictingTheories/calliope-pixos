@@ -43,7 +43,6 @@ class Pixos extends Component {
   // Render World as Passed in String or FlatLand (Default)
   render() {
     const { updated, scene, zipData } = this.state;
-    console.log({ updated, scene, zipData });
     return (
       <div style={{ margin: 0, minHeight: '480px', maxHeight: '1080px' }}>
         <WebGLView class="pixos" key={`pixos-${updated}`} width={'480px'} height={'640px'} SceneProvider={scene} zipData={zipData ?? ''} />

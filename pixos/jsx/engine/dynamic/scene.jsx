@@ -32,71 +32,11 @@ export default class ExampleDynamicScene extends Scene {
         let file = engine.fileUpload.files[0];
         let zip = await JSZip.loadAsync(file);
 
-        // read file contents of zip
-        zip.forEach((path, file) => {
-          console.log(path);
-        });
-
         // find manifest and read
         let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
         console.log(manifest);
 
-        // read in zone files
-        let zones = await Promise.all(
-          manifest.maps.map(async (zoneId) => {
-            try {
-              let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string'));
-              let zoneCells = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string'));
-              return { id: zoneId, map: zoneJson, cells: zoneCells };
-            } catch (e) {
-              console.error(`Zone Not Found:: ${tilesetId} - ${e}`);
-            }
-          })
-        );
-        console.log(zones);
-
-        // read in sprites
-        let sprites = await Promise.all(
-          manifest.sprites.map(async (spriteId) => {
-            try {
-              let spriteJson = JSON.parse(await zip.file('sprites/' + spriteId + '.json').async('string'));
-              return { id: spriteId, sprite: spriteJson };
-            } catch (e) {
-              console.error(`Sprite Not Found:: ${tilesetId} - ${e}`);
-            }
-          })
-        );
-        console.log(sprites);
-
-        // read in objects
-        let objects = await Promise.all(
-          manifest.objects.map(async (objectId) => {
-            try {
-              let spriteJson = JSON.parse(await zip.file('objects/' + objectId + '.json').async('string'));
-              return { id: objectId, sprite: spriteJson };
-            } catch (e) {
-              console.error(`Object Not Found:: ${tilesetId} - ${e}`);
-            }
-          })
-        );
-        console.log(objects);
-
-        // confirm all manifest listed tilesets are found in tilesets
-        let tilesets = await Promise.all(
-          manifest.tilesets.map(async (tilesetId) => {
-            try {
-              let tilesetJson = JSON.parse(await zip.file('tilesets/' + tilesetId + '.json').async('string'));
-              let tilesetGeo = JSON.parse(await zip.file('tilesets/' + tilesetId + '.json').async('string'));
-              return { id: tilesetId, tileset: tilesetJson, geometry: tilesetGeo };
-            } catch (e) {
-              console.error(`Tileset Not Found:: ${tilesetId} - ${e}`);
-            }
-          })
-        );
-        console.log(tilesets);
-
         // load initial zone from zip file
-        console.log('Initializing initial zone...' + manifest.initialZones);
         manifest.initialZones.forEach((zone) => {
           world.loadZoneFromZip(zone, zip, true);
         });
@@ -147,7 +87,6 @@ export default class ExampleDynamicScene extends Scene {
           // loadZipFile(true);
         },
         trigger: async (menu) => {
-          console.log(menu);
           loadZipFile(menu);
         },
       },

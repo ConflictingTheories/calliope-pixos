@@ -324,10 +324,7 @@ export default class GLEngine {
 
   // Set Camera Pos & Angle
   panCameraCW(radians = Math.PI / 4) {
-    // this.cameraVector.z = Math.max(-1, Math.min(1, this.cameraVector.z - Math.cos(radians)));
     this.cameraVector.z -= Math.cos(radians);
-
-    console.log(this.cameraVector);
   }
   panCameraCCW(radians = Math.PI / 4) {
     // different angles for facings
@@ -340,25 +337,20 @@ export default class GLEngine {
     // [1. 0, -2] - E (left/right)
     // [1. 0, -3] - SE (Iso)
     this.cameraVector.z += Math.cos(radians);
-    console.log(this.cameraVector);
   }
   // Set Camera Pos & Angle
   pitchCameraCW(radians = Math.PI / 4) {
     this.cameraVector.x -= Math.cos(radians);
-    console.log(this.cameraVector);
   }
   pitchCameraCCW(radians = Math.PI / 4) {
     this.cameraVector.x += Math.sin(radians);
-    console.log(this.cameraVector);
   }
   // Set Camera Pos & Angle
   tiltCameraCW(radians = Math.PI / 4) {
     this.cameraVector.y -= Math.cos(radians);
-    console.log(this.cameraVector);
   }
   tiltCameraCCW(radians = Math.PI / 4) {
     this.cameraVector.z += Math.sin(radians);
-    console.log(this.cameraVector);
   }
 
   // Clear Screen with Color (RGBA)
@@ -398,7 +390,6 @@ export default class GLEngine {
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
-    console.log(voices);
     // set voice
     speech.voice = voices[0];
     if (rate) speech.rate = rate;
@@ -760,14 +751,11 @@ export default class GLEngine {
   // load texture
   async loadTextureFromZip(src, zip) {
     if (this.textures[src]) return this.textures[src];
-
-    console.log({ src });
     let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
     let buffer = new Uint8Array(imageData);
     let blob = new Blob([buffer.buffer]);
     let dataUrl = URL.createObjectURL(blob);
     this.textures[src] = new Texture(dataUrl, this);
-    console.log(this.textures[src]);
     return this.textures[src];
   }
 

@@ -17,19 +17,11 @@ import DynamicSprite from '@Engine/dynamic/sprite.jsx';
 export default class DynamicAnimatedSprite extends DynamicSprite {
   constructor(engine, json) {
     // Initialize Sprite
-    super(engine);
-    console.log('New Sprite ... sprite -->');
-
-    // load in json
-    this.loadJson(json);
-    // store json config
-    this.json = json;
-    this.ActionLoader = ActionLoader;
+    super(engine, json);
   }
 
   // setup framerate
   init() {
-    console.log('Initializing sprite -->');
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {

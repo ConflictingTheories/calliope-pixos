@@ -33,7 +33,6 @@ export default {
     this.quittable = true;
     this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
     this.speechOutput = true;
-    console.log({ msg: 'inializing menu', menu, activeMenus, me: this });
     // load voices and then play
     window.speechSynthesis.onvoiceschanged = () => {};
   },

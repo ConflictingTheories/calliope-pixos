@@ -62,8 +62,6 @@ export default class Scene {
           this.isPaused = true;
         },
         trigger: (menu) => {
-          // on Click
-          console.log(menu);
           // Unpause Gameplay
           menu.world.isPaused = false;
           // Exit Menu

@@ -47,7 +47,6 @@ export default {
       this.sprite.zone.world.runAfterTick(
         function () {
           this.toZone.addSprite(this.sprite);
-          console.log("sprite '" + this.sprite.id + "' changed zone from '" + this.fromZone.id + "' to '" + this.toZone.id + "'");
         }.bind(this)
       );
     }

@@ -66,7 +66,6 @@ export class AudioTrack {
       },
       pushTime: 2000,
       pushCallback: (err, bpm) => {
-        console.log('bpm', err, bpm);
         this.bpm = bpm;
       },
     });

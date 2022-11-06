@@ -32,7 +32,6 @@ export class SpriteLoader {
       this.instances[type] = [];
     }
     // New Instance
-    console.log('loading sprite from zip - ', type, sceneName, 'sprites/' + type + '.json');
     let json = '';
     try {
       json = JSON.parse(await zip.file(`sprites/${type}.json`).async('string'));
@@ -42,23 +41,18 @@ export class SpriteLoader {
     let instance = {};
     switch (json.type) {
       case 'animated-sprite':
-        console.log('animated-sprite');
         instance = new DynamicAnimatedSprite(this.engine, json);
         break;
       case 'animated-tile':
-        console.log('animated-tile');
         instance = new DynamicAnimatedTile(this.engine, json);
         break;
       case 'avatar':
-        console.log('avatar');
         instance = new DynamicAvatar(this.engine, json);
         break;
       default:
-        console.log('sprite');
         instance = new DynamicSprite(this.engine, json);
         break;
     }
-    console.log({ msg: 'loading', instance });
     instance.templateLoaded = true;
     // Update Existing
     this.instances[type].forEach(async function (instance) {

@@ -31,9 +31,7 @@ export default class MyAirElemental extends AirElemental {
   // hook init
   init() {
     let ret = new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), [7, 7, this.zone.getHeight(7, 7)], 200, this.zone], this, (x) => {
-      console.log('sssss', x);
     });
-    console.log('---->HERE', ret);
     this.addAction(ret);
   }
 }

@@ -20,10 +20,9 @@ export class TilesetLoader {
     this.engine = engine;
     this.tilesets = {};
   }
- 
+
   // load from zip
   async loadFromZip(type, sceneName, zip) {
-    console.log('loading tileset from zip - ', this, type, sceneName);
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
@@ -35,7 +34,6 @@ export class TilesetLoader {
     let tilesetGeometry = JSON.parse(await zip.file(`tilesets/${type}/geometry.json`).async('string'));
     let tilesetTiles = JSON.parse(await zip.file(`tilesets/${type}/tiles.json`).async('string'));
     let tilesetData = this.loadTilesetData(tilesetJson, tilesetTiles, tilesetGeometry);
-    console.log('loading from zip .... - ', tilesetData, type, sceneName);
 
     await instance.onJsonLoadedFromZip(tilesetData, zip);
     return instance;

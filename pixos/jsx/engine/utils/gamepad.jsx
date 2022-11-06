@@ -103,7 +103,6 @@ export class GamePad {
   }
   // initialize widget
   init(options = {}) {
-    console.log('initing');
     this.setOptions(options);
     this.resize();
     this.loadCanvas();
@@ -439,7 +438,6 @@ class Controller {
       this.radius,
       this.gamepad
     );
-    console.log('loading Controller Manager - ', this);
   }
   // Initialize
   init() {
@@ -475,7 +473,6 @@ class ControllerStick {
     this.colours = colours;
     this.init = this.init.bind(this);
     this.draw = this.draw.bind(this);
-    console.log('loading Controller Joystick - ', this);
   }
   // Initialize
   init() {
@@ -588,7 +585,6 @@ class ControllerButtons {
     this.start = start;
     this.select = select;
     this.colours = colours;
-    console.log('loading Controller Buttons - ', this);
   }
   // Initialize
   init() {

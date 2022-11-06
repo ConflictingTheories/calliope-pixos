@@ -22,7 +22,6 @@ export default {
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
     this.length = length;
     // interactions
-    console.log(this.zone);
     this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y);
   },
   // move
@@ -50,7 +49,6 @@ export default {
   },
   // Trigger interactions in sprite when finished moving
   onStep: function () {
-    console.log('on steppping', this.spriteList);
     if (this.spriteList.length === 0) this.completed = true;
     this.spriteList.forEach((sprite) => {
       return sprite.onStep ? this.zone.spriteDict[sprite.id].onStep(this.sprite) : null;

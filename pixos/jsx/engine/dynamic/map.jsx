@@ -15,8 +15,6 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 // Map Information
 export async function loadMap(json, cells, zip) {
-  console.log({ json, cells, zip });
-
   // read sprites & handle functions
   let $sprites =
     typeof json.sprites === 'string'
@@ -30,7 +28,6 @@ export async function loadMap(json, cells, zip) {
             zones: sprite.zones ?? null,
           };
         });
-  console.log({ $sprites });
 
   let $scenes = json.scenes.map((scene) => {
     return {
@@ -51,8 +48,6 @@ export async function loadMap(json, cells, zip) {
     };
   });
 
-  console.log({ $scenes });
-
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
       try {
@@ -68,7 +63,6 @@ export async function loadMap(json, cells, zip) {
           `,
         }})
       `;
-        console.log($statement);
         let result = eval.call(this, $statement).call(this, this);
         return result;
       } catch (e) {
@@ -76,7 +70,6 @@ export async function loadMap(json, cells, zip) {
       }
     })
   );
-  console.log({ $scripts });
 
   let $objects = json.objects.map((object) => {
     return {
@@ -88,7 +81,6 @@ export async function loadMap(json, cells, zip) {
       rotation: object.rotation ? new Vector(...object.rotation) : null,
     };
   });
-  console.log({ $objects });
 
   return {
     // size of map
