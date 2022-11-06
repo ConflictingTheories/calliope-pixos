@@ -179,8 +179,10 @@ export default class Sprite {
 
   // Get Texture Coordinates
   getTexCoords() {
-    let frames = this.frames[Direction.spriteSequence(this.facing, this.engine.cameraDir)] ?? this.frames['N']; //default up
-    let length = this.frames[Direction.spriteSequence(this.facing, this.engine.cameraDir)].length;
+    console.log('tex-coords');
+    let sequence = Direction.spriteSequence(this.facing, this.engine.cameraDir);
+    let frames = this.frames[sequence] ?? this.frames['N']; //default up
+    let length = this.frames[sequence].length;
     let t = frames[this.animFrame % length];
     let ss = this.sheetSize;
     let ts = this.tileSize;
@@ -228,7 +230,9 @@ export default class Sprite {
       this.engine.uViewMat,
       this.engine.uViewMat,
       // this.drawOffset.toArray()
-      this.fixed || !this.bindCamera ? this.drawOffset.toArray() : this.drawOffset.add(Direction.drawOffset(this.drawOffset, this.engine.cameraDir)).toArray()
+      this.fixed || !this.bindCamera
+        ? this.drawOffset.toArray()
+        : this.drawOffset.add(Direction.drawOffset(this.drawOffset, this.engine.cameraDir)).toArray()
     ); //[0.5, 0.5, -0.5]);
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
@@ -406,8 +410,8 @@ export default class Sprite {
   }
 
   // Set Facing
-  faceDir(facing) {
-    if (this.facing == facing || facing === Direction.None) return null;
+  faceDir(facing, override = false) {
+    if ((!override && this.facing == facing) || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
   }
 
