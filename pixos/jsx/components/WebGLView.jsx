@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import glEngine from '@Engine/core/index.jsx';
 import { minecraftia } from '@Engine/core/hud.jsx';
 //
-const WebGLView = ({ width, height, SceneProvider, class: string }) => {
+const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
   // Canvas
   const ref = useRef();
   const hudRef = useRef();
@@ -299,7 +299,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string }) => {
           <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
           <video style={{ display: isRecording ? 'none' : 'block' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={recordingRef}></video>
         </div>
-        <input type="file" ref={fileRef} hidden />
+        <input type="file" ref={fileRef} src={zipData ?? null} hidden />
         {/* Recording Buttons - todo - style and include video controls */}
         <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
           Record Gameplay

@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+import { Vector } from '@Engine/utils/math/vector.jsx';
 
 // Mouse event enumeration
 export const Mouse = {
@@ -206,6 +207,32 @@ export const Direction = {
     }
 
     return 'S';
+  },
+
+  // adjust draw offset based on rotation position
+  drawOffset(vec, camera = 'N') {
+    // return vec;
+    // todo -- needs work
+    switch (camera) {
+      case 'NE':
+        return vec.cross(new Vector(Math.sin(degToRad(315)), 2 * Math.cos(degToRad(315)), 0));
+      case 'NW':
+        return vec.cross(new Vector(-2 * Math.sin(degToRad(315)), -Math.cos(degToRad(315)), 0));
+      case 'SE':
+        return vec.cross(new Vector(Math.sin(degToRad(225)), Math.cos(degToRad(225)), 0));
+      case 'SW':
+        return vec.cross(new Vector(Math.sin(degToRad(135)), Math.cos(degToRad(135)), 0));
+      case 'E':
+        return vec.cross(new Vector(Math.sin(degToRad(270)), Math.cos(degToRad(270)), 0));
+      case 'W':
+        return vec.cross(new Vector(Math.sin(degToRad(90)), Math.cos(degToRad(90)), 0));
+      case 'S':
+        return vec.cross(new Vector(Math.sin(degToRad(180)), Math.cos(degToRad(180)), 0));
+      case 'N':
+        return vec.cross(new Vector(Math.sin(degToRad(0)), Math.cos(degToRad(0)), 0));
+      default:
+        return vec;
+    }
   },
 
   // object sequence rotation (TODO)

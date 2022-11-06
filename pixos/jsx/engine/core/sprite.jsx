@@ -224,7 +224,12 @@ export default class Sprite {
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
     // position into scene
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray()); //[0.5, 0.5, -0.5]);
+    translate(
+      this.engine.uViewMat,
+      this.engine.uViewMat,
+      // this.drawOffset.toArray()
+      this.fixed || !this.bindCamera ? this.drawOffset.toArray() : this.drawOffset.add(Direction.drawOffset(this.drawOffset, this.engine.cameraDir)).toArray()
+    ); //[0.5, 0.5, -0.5]);
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
@@ -249,7 +254,11 @@ export default class Sprite {
     if (this.enableSpeech) {
       this.engine.mvPushMatrix();
       // Undo rotation so that character plane is normal to LOS
-      translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
+      translate(
+        this.engine.uViewMat,
+        this.engine.uViewMat,
+        this.fixed ? this.drawOffset.toArray() : Direction.drawOffset(this.drawOffset, this.engine.cameraDir).toArray()
+      );
       translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 
       rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.z), [0, 0, -1]);

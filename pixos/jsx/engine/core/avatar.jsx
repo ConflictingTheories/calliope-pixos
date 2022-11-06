@@ -74,7 +74,10 @@ export default class Avatar extends Sprite {
         if (to.z === 0 && from.z === 7) {
           to.z = 8;
         }
-        this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
+        this.zone.world.addEvent(
+          new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world, () => this.faceDir(this.facing))
+        );
+        this.faceDir(this.facing);
         break;
       // adjust Camera
       case 'z':
@@ -87,7 +90,9 @@ export default class Avatar extends Sprite {
         if (to.z === 0 && from.z === 7) {
           to.z = 8;
         }
-        this.zone.world.addEvent(new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world));
+        this.zone.world.addEvent(
+          new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], this.zone.world, () => this.faceDir(this.facing))
+        );
         break;
       // show menu
       case 'm':

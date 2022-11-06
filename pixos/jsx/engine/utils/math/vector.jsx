@@ -81,6 +81,14 @@ export class Vector {
     return new Vector(this.x * n, this.y * n, this.z * n);
   }
 
+  mul3(n) {
+    return new Vector(this.x * n.x, this.y * n.y, this.z * n.z);
+  }
+
+  cross(n) {
+    return new Vector(this.x * n.x - this.y * n.y, this.y * n.y + this.x * n.x, this.z * n.z);
+  }
+
   length() {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
