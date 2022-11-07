@@ -31,7 +31,7 @@ class Dashboard extends React.Component {
     this.edit = this.edit.bind(this);
     this.create = this.create.bind(this);
     this.fetchLists = this.fetchLists.bind(this);
-    this.fetchPost = this.fetchPost.bind(this);
+    this.fetchFile = this.fetchFile.bind(this);
     this.renderPosts = this.renderPosts.bind(this);
     this.renderPages = this.renderPages.bind(this);
     this.profilePanel = this.renderPanel.bind(this);
@@ -65,8 +65,8 @@ class Dashboard extends React.Component {
     if (name === '') {
       name = 'untitled';
     }
-    const date = new Date().toISOString().split('.')[0].replaceAll(/[:-]/g, ''); // Date format (ISO - No TZ - Minimized)
-    const formattedName = `${date}_${name}.md`;
+    // const date = new Date().toISOString().split('.')[0].replaceAll(/[:-]/g, ''); // Date format (ISO - No TZ - Minimized)
+    const formattedName = name; // `${date}_${name}.md`;
     await save(formattedName, '', type); // Create Blank File
     await this.fetchLists();
     return formattedName;
@@ -81,17 +81,21 @@ class Dashboard extends React.Component {
     } else {
       // Fetch Post & Store Content
       if (post && post !== '' && store.selectedPost != post) {
-        this.fetchPost(post, type);
+        this.fetchFile(post, type);
       }
     }
   }
 
-  async fetchPost(post, type) {
-    const fileResponse = await fetch('/content/' + type + '/' + post);
+  async fetchFile(file, type) {
+    // read zip file contents
+    //
+    // todo --
+
+    const fileResponse = await fetch('/content/' + type + '/' + file);
     if (fileResponse.ok) {
       let content = await fileResponse.text();
       store.selectedType = type;
-      store.selectedPost = post;
+      store.selectedPost = file;
       store.selectedContent = content;
       store.isEditting = true;
       store.isSaved = true;
@@ -109,10 +113,10 @@ class Dashboard extends React.Component {
     if (result.isConfirmed) {
       await save(store.selectedPost, store.selectedContent, store.selectedType);
       Swal.fire('Saved!', '', 'success');
-      await this.fetchPost(store.editPost, store.selectedType);
+      await this.fetchFile(store.editPost, store.selectedType);
     } else if (result.isDenied) {
       Swal.fire('Changes are not saved', '', 'info');
-      await this.fetchPost(store.editPost, store.selectedType);
+      await this.fetchFile(store.editPost, store.selectedType);
     }
   }
 
@@ -120,33 +124,39 @@ class Dashboard extends React.Component {
     let result = await Swal.fire({
       title: 'Please enter the name of the new file',
       input: 'text',
-      inputPlaceholder: 'untitled',
+      inputPlaceholder: 'objects/my-awesome-sprite.json',
       showCancelButton: true,
       confirmButtonText: `Create`,
     });
     if (result.isConfirmed) {
+      // create a new file based on name and type
       let newFile = await this.create(store.selectedType, result.value);
       Swal.fire('Created!', '', 'success');
-      await this.fetchPost(newFile);
+
+      // fetch newly minted file for editting
+      await this.fetchFile(newFile);
     }
   }
 
-  renderPosts() {
+  renderSprites() {
     return (
       <React.Fragment>
         <Row>
           <Container className="calliope-list-item">
             <List>
-              {store.posts &&
-                store.posts?.map((post) => {
+              {store.sprites &&
+                store.sprites?.map((sprite) => {
                   return (
                     <List.Item>
                       <label>
-                        <a onClick={() => this.edit(post, 'posts')}>{post.replace(/\d+T\d+_/, '')}</a>{' '}
+                        <a onClick={() => this.edit(sprite, 'sprite')}>{sprite.replace(/\d+T\d+_/, '')}</a>{' '}
                         <a
                           onClick={async () => {
-                            await navigator.clipboard.writeText(`/embed/posts/${post.replace('.md', '')}`);
-                            await Swal.fire('Link Copied!', '', 'success');
+                            // todo -- delete - / rename / etc
+                            //
+                            //
+                            // await navigator.clipboard.writeText(`/embed/posts/${post.replace('.md', '')}`);
+                            // await Swal.fire('Link Copied!', '', 'success');
                           }}
                         >
                           <Icon icon="link"></Icon>
@@ -162,36 +172,6 @@ class Dashboard extends React.Component {
     );
   }
 
-  renderPages() {
-    return (
-      <React.Fragment>
-        <Row>
-          <Container className="calliope-list-item">
-            <List>
-              {store.pages &&
-                store.pages?.map((page) => {
-                  return (
-                    <List.Item>
-                      <label>
-                        <a onClick={() => this.edit(page, 'pages')}>{page.replace(/\d+T\d+_/, '')}</a>{' '}
-                        <a
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(`/embed/pages/${page.replace('.md', '')}`);
-                            await Swal.fire('Link Copied!', '', 'success');
-                          }}
-                        >
-                          <Icon icon="link"></Icon>
-                        </a>
-                      </label>
-                    </List.Item>
-                  );
-                })}
-            </List>
-          </Container>
-        </Row>
-      </React.Fragment>
-    );
-  }
   // PANELS & COMPONENTS
   renderPanel() {
     let content = store.selectedContent;
@@ -200,40 +180,112 @@ class Dashboard extends React.Component {
         <Content>
           <Row>
             <Col md={4}>
+              {/* Sprites */}
               <details open>
                 <summary>
-                  Posts{' '}
+                  Sprites{' '}
                   <button
                     onClick={async () => {
-                      store.selectedType = 'posts';
+                      store.selectedType = 'sprite';
                       await this.newFile();
                     }}
                   >
-                    + Add New Post
+                    + Add New Sprite
+                  </button>
+                  <button
+                    onClick={async () => {
+                      // todo -- file upload and then handle upload
+                    }}
+                  >
+                    + Upload New Sprite
                   </button>
                 </summary>
-                {this.renderPosts()}
+                {this.renderSprites()}
               </details>
+              {/* Tilesets */}
               <details open>
                 <summary>
-                  Pages{' '}
+                  Tilesets{' '}
                   <button
                     onClick={async () => {
-                      store.selectedType = 'pages';
+                      store.selectedType = 'tileset';
                       await this.newFile();
                     }}
                   >
-                    + Add New Page
+                    + Add New Tileset
+                  </button>
+                  <button
+                    onClick={async () => {
+                      // todo -- file upload and then handle upload
+                    }}
+                  >
+                    + Upload New Tileset
                   </button>
                 </summary>
-                {this.renderPages()}
+                {this.renderTilesets()}
+              </details>
+              {/* Maps */}
+              <details open>
+                <summary>
+                  Map{' '}
+                  <button
+                    onClick={async () => {
+                      store.selectedType = 'tileset';
+                      await this.newFile();
+                    }}
+                  >
+                    + Add New Map
+                  </button>
+                  <button
+                    onClick={async () => {
+                      // todo -- file upload and then handle upload
+                    }}
+                  >
+                    + Upload New Map
+                  </button>
+                </summary>
+                {this.renderMaps()}
+              </details>
+              {/* Models */}
+              <details open>
+                <summary>
+                  Models{' '}
+                  <button
+                    onClick={async () => {
+                      // todo -- file upload and then handle upload
+                    }}
+                  >
+                    + Upload New Model
+                  </button>
+                </summary>
+                {this.renderModels()}
+              </details>
+
+              {/* Textures */}
+              <details open>
+                <summary>
+                  Textures{' '}
+                  <button
+                    onClick={async () => {
+                      // todo -- file upload and then handle upload
+                    }}
+                  >
+                    + Upload New Texture
+                  </button>
+                </summary>
+                {this.renderTextures()}
               </details>
             </Col>
             <Col md={20}>
               {store.selectedPost && content !== null ? (
                 <MarkdownEdit content={content} />
               ) : (
-                <NonIdealState style={{ height: '87vh' }} icon={'build'} title="Getting Started" description={'Please select a post to edit'} />
+                <NonIdealState
+                  style={{ height: '87vh' }}
+                  icon={'build'}
+                  title="Spritz Editor"
+                  description={'Please upload a spritz package to edit'}
+                />
               )}
             </Col>
           </Row>
