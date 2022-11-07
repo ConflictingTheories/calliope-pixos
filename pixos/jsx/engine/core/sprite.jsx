@@ -182,7 +182,7 @@ export default class Sprite {
     console.log('tex-coords');
     let sequence = Direction.spriteSequence(this.facing, this.engine.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
-    let length = this.frames[sequence].length;
+    let length = frames.length;
     let t = frames[this.animFrame % length];
     let ss = this.sheetSize;
     let ts = this.tileSize;
