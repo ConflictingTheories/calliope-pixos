@@ -25,7 +25,7 @@ export class SpriteLoader {
   }
 
   // Load Sprite
-  async loadFromZip(type, sceneName, zip) {
+  async loadFromZip(zip, type, sceneName) {
     let afterLoad = arguments[3];
     let runConfigure = arguments[4];
     if (!this.instances[type]) {

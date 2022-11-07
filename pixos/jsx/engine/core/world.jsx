@@ -76,8 +76,10 @@ export default class World {
         x.audio.pauseAudio();
       }
     });
-    if (z.audio) z.audio.playAudio();
-
+    if (z.audio) {
+      console.log(z.audio);
+      z.audio.playAudio();
+    }
     // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
@@ -100,7 +102,10 @@ export default class World {
         x.audio.pauseAudio();
       }
     });
-    if (z.audio) z.audio.playAudio();
+    if (z.audio) {
+      console.log(z.audio);
+      z.audio.playAudio();
+    }
     // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);

@@ -152,7 +152,7 @@ export default class Zone {
       try {
         // Extract and Read in Information
 
-        var tileset = await this.tsLoader.loadFromZip(zoneJson.tileset, this.sceneName, zip);
+        var tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.sceneName);
 
         var cells = dynamicCells(cellJson, tileset.tiles);
 
@@ -174,8 +174,9 @@ export default class Zone {
 
       // audio loader
       try {
-        if (this.audioSrc) {
-          this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
+        console.log({ msg: 'audio....', src: zoneJson.audioSrc, scope: this });
+        if (zoneJson.audioSrc) {
+          this.audio = await this.engine.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); // loop background music
         }
       } catch (e) {
         console.error({ msg: 'error loading audio track', e });
@@ -319,7 +320,7 @@ export default class Zone {
   async loadObjectFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
-      let newObject = await this.objectLoader.loadFromZip(data, zip, async (object) => await object.onLoadFromZip(object, zip));
+      let newObject = await this.objectLoader.loadFromZip(zip, data, async (object) => await object.onLoadFromZip(object, zip));
       this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
     }
@@ -339,7 +340,7 @@ export default class Zone {
   async loadSpriteFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.loadFromZip(data.type, this.sceneName, zip, async (sprite) => await sprite.onLoadFromZip(data, zip));
+      let newSprite = await this.spriteLoader.loadFromZip(zip, data.type, this.sceneName, async (sprite) => await sprite.onLoadFromZip(data, zip));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -520,7 +521,10 @@ export default class Zone {
       switch (this.engine.keyboard.lastPressedKey('o')) {
         case 'o':
           await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
-          if (this.audio) this.audio.playAudio();
+          if (this.audio) {
+            console.log(this.audio);
+            this.audio.playAudio();
+          }
           break;
       } // play audio
     }

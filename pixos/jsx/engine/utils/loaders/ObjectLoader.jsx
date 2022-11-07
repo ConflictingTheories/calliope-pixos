@@ -23,7 +23,7 @@ export class ObjectLoader {
   }
 
   // Load 3d model
-  async loadFromZip(model, zip) {
+  async loadFromZip(zip, model) {
     let afterLoad = arguments[2];
     let runConfigure = arguments[3];
     if (!this.instances[model.id]) {

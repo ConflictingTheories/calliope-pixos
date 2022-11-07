@@ -22,7 +22,7 @@ export class TilesetLoader {
   }
 
   // load from zip
-  async loadFromZip(type, sceneName, zip) {
+  async loadFromZip(zip, type, sceneName) {
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);

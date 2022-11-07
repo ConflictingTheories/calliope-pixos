@@ -1,7 +1,7 @@
 {
   "bounds": [0, 0, 17, 10],
   "tileset": "sewer",
-  "audioSrc": "/pixos/audio/calm-escape.mp3",
+  "audioSrc": "calm-escape.mp3",
   "sprites": [
     { "id": "darkness", "type": "npc/air-knight", "pos": [10, 4, 0], "facing": "Down" },
     { "id": "air", "type": "npc/air-knight", "pos": [8, 4, 0], "facing": "Down" },

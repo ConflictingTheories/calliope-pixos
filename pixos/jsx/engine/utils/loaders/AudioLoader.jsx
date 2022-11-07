@@ -19,12 +19,47 @@ export class AudioLoader {
     this.definitions = [];
     this.instances = {};
   }
+
   // Load Audio Track
   load(src, loop = false) {
     if (this.instances[src]) {
       return this.instances[src];
     }
     let instance = new AudioTrack(src, loop);
+    this.instances[src] = instance;
+    // Stop other loops
+    let loader = this;
+    if (loop) {
+      Object.keys(loader.instances)
+        .filter((instance) => src !== instance)
+        .forEach(function (instance) {
+          if (loader.instances[instance]) {
+            loader.instances[instance].pauseAudio();
+          }
+        });
+    }
+    // once loaded
+    instance.loaded = true;
+    return instance;
+  }
+
+  // Load Audio Track
+  async loadFromZip(zip, src, loop = false) {
+    if (this.instances[src]) {
+      return this.instances[src];
+    }
+    console.log({ msg: 'let the beat roll in!' });
+    let blob = await zip
+      .file(`audio/${src}`)
+      .async('arrayBuffer')
+      .then((audioData) => {
+        let buffer = new Uint8Array(audioData);
+        return new Blob([buffer.buffer]);
+      });
+    let url = URL.createObjectURL(blob);
+    console.log({ msg: 'loading audio track...', url });
+
+    let instance = new AudioTrack(url, loop);
     this.instances[src] = instance;
     // Stop other loops
     let loader = this;

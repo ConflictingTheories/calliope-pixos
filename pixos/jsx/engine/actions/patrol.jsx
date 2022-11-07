@@ -78,8 +78,8 @@ export default {
         this.direction *= -1;
         this.completed = true;
         if (this.zone.audio) {
-          this.zone.audio.playAudio();
-          this.audio.pauseAudio();
+          this.zone.audio.audio.playAudio();
+          this.audio.audio.pauseAudio();
         }
       }
       this.moveIndex += this.direction;
