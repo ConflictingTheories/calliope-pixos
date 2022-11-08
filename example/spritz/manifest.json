@@ -1,5 +1,5 @@
 {
-  "initialZones": ["dungeon-top", "dungeon-bottom"],
+  "initialZones": ["room"],
   "maps": ["room", "dungeon-top", "dungeon-bottom"],
   "tilesets": ["common", "sewer"],
   "sprites": ["characters/male", "npc/air-knight"],
