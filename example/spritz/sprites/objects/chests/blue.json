@@ -48,18 +48,32 @@
     {
       "name": "closed",
       "next": "open",
-      "types": ["animate", "dialogue"],
-      "dialogue": "Chest Open",
-      "animate": [600, 3],
-      "callback": "chest_add_inventory"
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 3],
+          "callback": "chest_add_inventory"
+        },
+        {
+          "type": "dialogue",
+          "dialogue": "Chest Open"
+        }
+      ]
     },
     {
       "name": "open",
       "next": "closed",
-      "types": ["animate", "dialogue"],
-      "dialogue": "Chest Closed",
-      "animate": [600, 0],
-      "callback": ""
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 0],
+          "callback": ""
+        },
+        {
+          "type": "dialogue",
+          "dialogue": "Chest Closed"
+        }
+      ]
     }
   ]
 }

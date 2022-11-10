@@ -74,8 +74,7 @@ export default class DynamicSprite extends Sprite {
     console.log({ statement: evalStatement.join('') });
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, sprite, finish);
-
-    // if (ret) this.addAction(ret);
+    // if (ret) this.addAction(ret); // not needed?
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -83,38 +82,40 @@ export default class DynamicSprite extends Sprite {
     return ret;
   }
 
-  // todo -- add step handler dynamically (onStep)
-
   // load string to eval based on type of action
   async loadActionDynamically(state, sprite) {
     console.log({ sprite, state });
-    let callback =
-      state.callback && state.callback !== ''
-        ? (await this.zip.file('callbacks/' + state.callback + '.js').async('string')).replace(/[\r\n]+/g, '').replace(/;$/, '')
-        : '';
-    return state.types
-      .map((type) => {
-        switch (type) {
-          case 'dialogue':
-            return (
-              "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'dialogue', [" +
-              JSON.stringify(state.dialogue) +
-              ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
-              callback +
-              '));\n'
-            );
-          case 'animate':
-            return (
-              "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'animate', [" +
-              state.animate.join(',') +
-              ', () => finish(true) ], _this,' +
-              callback +
-              '));\n'
-            );
-          default:
-            return '';
-        }
-      })
-      .join('\n');
+    return (
+      await Promise.all(
+        state.actions.map(async (action) => {
+          let callback =
+            action.callback && action.callback !== ''
+              ? (await this.zip.file('callbacks/' + action.callback + '.js').async('string')).replace(/[\r\n]+/g, '').replace(/;$/, '')
+              : '';
+          switch (action.type) {
+            case 'dialogue':
+              return (
+                "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'dialogue', [" +
+                JSON.stringify(action.dialogue) +
+                ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
+                callback +
+                '));\n'
+              );
+            case 'animate':
+              return (
+                "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'animate', [" +
+                action.animate.join(',') +
+                ', () => finish(true) ], _this,' +
+                callback +
+                '));\n'
+              );
+            default:
+              return '';
+          }
+        })
+      )
+    ).join('\n');
   }
+
+  // todo -- add step handler dynamically (onStep)
 }

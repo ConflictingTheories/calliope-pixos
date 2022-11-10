@@ -38,16 +38,24 @@
     {
       "name": "closed",
       "next": "open",
-      "types": ["animate"],
-      "animate": [600, 3],
-      "callback": "door_closed"
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 3],
+          "callback": "door_closed"
+        }
+      ]
     },
     {
       "name": "open",
       "next": "closed",
-      "types": ["animate"],
-      "animate": [600, 2],
-      "callback": "door_opened"
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 2],
+          "callback": "door_opened"
+        }
+      ]
     }
   ]
 }

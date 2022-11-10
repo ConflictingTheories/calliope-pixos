@@ -48,23 +48,35 @@
     {
       "name": "intro",
       "next": "loop",
-      "types": ["dialogue"],
-      "dialogue": "Buying eh??",
-      "callback": ""
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "Buying eh??",
+          "callback": ""
+        }
+      ]
     },
     {
       "name": "loop",
       "next": "loop2",
-      "types": ["dialogue"],
-      "dialogue": "I heard about a strange legend once.",
-      "callback": ""
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "I heard about a strange legend once.",
+          "callback": ""
+        }
+      ]
     },
     {
       "name": "loop2",
       "next": "loop",
-      "types": ["dialogue"],
-      "dialogue": "Sorry, I don't remember the story at the moment",
-      "callback": ""
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "Sorry, I don't remember the story at the moment",
+          "callback": ""
+        }
+      ]
     }
   ]
 }
