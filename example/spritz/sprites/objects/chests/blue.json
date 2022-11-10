@@ -1,4 +1,5 @@
 {
+  "extends": ["objects/chests/metal"],
   "type": "sprite",
   "src": "chests.gif",
   "sheetSize": [256, 256],
@@ -43,37 +44,5 @@
   "bindCamera": false,
   "enableSpeech": true,
   "state": "closed",
-  "inventory": [],
-  "states": [
-    {
-      "name": "closed",
-      "next": "open",
-      "actions": [
-        {
-          "type": "animate",
-          "animate": [600, 3],
-          "callback": "chest_add_inventory"
-        },
-        {
-          "type": "dialogue",
-          "dialogue": "Chest Open"
-        }
-      ]
-    },
-    {
-      "name": "open",
-      "next": "closed",
-      "actions": [
-        {
-          "type": "animate",
-          "animate": [600, 0],
-          "callback": ""
-        },
-        {
-          "type": "dialogue",
-          "dialogue": "Chest Closed"
-        }
-      ]
-    }
-  ]
+  "inventory": []
 }

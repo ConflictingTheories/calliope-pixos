@@ -18,28 +18,40 @@ export default class DynamicAvatar extends Avatar {
   constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
-    // load in json
-    this.loadJson(json, zip);
+    this.json = json;
+    this.zip = zip;
   }
 
   // load in json properties to object
-  loadJson(json, zip) {
-    this.src = json.src;
-    this.zip = zip;
-    this.portraitSrc = json.portraitSrc;
-    this.sheetSize = json.sheetSize;
-    this.tileSize = json.tileSize;
-    this.state = json.state ?? 'intro';
+  async loadJson() {
+    // extended properties
+    if (this.json.extends) {
+      await Promise.all(
+        this.json.extends.map(async (file) => {
+          let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
+          Object.assign(this.json, stringD);
+        })
+      );
+      // unset
+      this.json.extends = null;
+    }
+    // core properties
+    this.update(this.json);
+    this.src = this.json.src;
+    this.portraitSrc = this.json.portraitSrc;
+    this.sheetSize = this.json.sheetSize;
+    this.tileSize = this.json.tileSize;
+    this.state = this.json.state ?? 'intro';
     // Frames
-    this.frames = json.frames;
+    this.frames = this.json.frames;
     // Offsets
-    this.hotspotOffset = new Vector(...json.hotspotOffset);
+    this.hotspotOffset = new Vector(...this.json.hotspotOffset);
     this.drawOffset = {};
-    Object.keys(json.drawOffset).forEach((offset) => {
-      this.drawOffset[offset] = new Vector(...json.drawOffset[offset]);
+    Object.keys(this.json.drawOffset).forEach((offset) => {
+      this.drawOffset[offset] = new Vector(...this.json.drawOffset[offset]);
     });
     // Should the camera follow the avatar?
-    this.bindCamera = json.bindCamera;
-    this.enableSpeech = json.enableSpeech; // speech bubble
+    this.bindCamera = this.json.bindCamera;
+    this.enableSpeech = this.json.enableSpeech; // speech bubble
   }
 }

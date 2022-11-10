@@ -42,15 +42,19 @@ export class SpriteLoader {
     switch (json.type) {
       case 'animated-sprite':
         instance = new DynamicAnimatedSprite(this.engine, json, zip);
+        await instance.loadJson();
         break;
       case 'animated-tile':
         instance = new DynamicAnimatedTile(this.engine, json, zip);
+        await instance.loadJson();
         break;
       case 'avatar':
         instance = new DynamicAvatar(this.engine, json, zip);
+        await instance.loadJson();
         break;
       default:
         instance = new DynamicSprite(this.engine, json, zip);
+        await instance.loadJson();
         break;
     }
     instance.templateLoaded = true;
