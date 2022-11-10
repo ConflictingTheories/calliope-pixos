@@ -1,9 +1,6 @@
 {
-  "type": "sprite",
+  "extends": ["monsters/elemental_base"],
   "src": "elementals-2.gif",
-  "sheetSize": [64, 128],
-  "tileSize": [16, 18],
-  "hotspotOffset": [0.5, 0.5, 0],
   "frames": {
     "N": [
       [0, 54],
@@ -29,18 +26,5 @@
       [48, 90],
       [48, 72]
     ]
-  },
-  "drawOffset": {
-    "N": [0, 1, 0.2],
-    "E": [0, 1, 0.2],
-    "S": [0, 1, 0.2],
-    "W": [0, 1, 0.2],
-    "NW": [0, 1, 0.2],
-    "NE": [0, 1, 0.2],
-    "SW": [0, 1, 0.2],
-    "SE": [0, 1, 0.2]
-  },
-  "bindCamera": false,
-  "enableSpeech": true,
-  "state": "intro"
+  }
 }

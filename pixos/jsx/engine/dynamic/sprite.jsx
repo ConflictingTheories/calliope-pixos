@@ -33,6 +33,7 @@ export default class DynamicSprite extends Sprite {
       await Promise.all(
         this.json.extends.map(async (file) => {
           let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
+          console.log({ old: this.json, new: stringD });
           Object.assign(this.json, stringD);
         })
       );

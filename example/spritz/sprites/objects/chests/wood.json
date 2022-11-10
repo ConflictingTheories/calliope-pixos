@@ -1,19 +1,5 @@
 {
-  "type": "sprite",
-  "src": "chests.gif",
-  "sheetSize": [256, 256],
-  "tileSize": [16, 24],
-  "drawOffset": {
-    "N": [0, 1, 0.2],
-    "E": [0, 1, 0.2],
-    "S": [0, 1, 0.2],
-    "W": [0, 1, 0.2],
-    "NW": [0, 1, 0.2],
-    "NE": [0, 1, 0.2],
-    "SW": [0, 1, 0.2],
-    "SE": [0, 1, 0.2]
-  },
-  "hotspotOffset": [0.5, 0.5, 0],
+  "extends": ["objects/chests/base"],
   "frames": {
     "S": [
       [0, 0],
@@ -40,40 +26,5 @@
       [128, 72]
     ]
   },
-  "bindCamera": false,
-  "enableSpeech": true,
-  "state": "closed",
-  "inventory": [],
-  "states": [
-    {
-      "name": "closed",
-      "next": "open",
-      "actions": [
-        {
-          "type": "animate",
-          "animate": [600, 3],
-          "callback": "chest_add_inventory"
-        },
-        {
-          "type": "dialogue",
-          "dialogue": "Chest Open"
-        }
-      ]
-    },
-    {
-      "name": "open",
-      "next": "closed",
-      "actions": [
-        {
-          "type": "animate",
-          "animate": [600, 0],
-          "callback": ""
-        },
-        {
-          "type": "dialogue",
-          "dialogue": "Chest Closed"
-        }
-      ]
-    }
-  ]
+  "inventory": []
 }
