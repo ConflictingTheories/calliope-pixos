@@ -58,7 +58,7 @@
       "next": "closed",
       "types": ["animate", "dialogue"],
       "dialogue": "Chest Closed",
-      "animate": [600, 1],
+      "animate": [600, 0],
       "callback": ""
     }
   ]

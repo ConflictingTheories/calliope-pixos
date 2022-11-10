@@ -53,7 +53,7 @@ export default class DynamicSprite extends Sprite {
     let ret = null;
     let states = this.json.states ?? [];
     // build state machine
-    let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
+    let evalStatement = ['((_this, sprite, finish)=>{switch (_this.state) {\n '];
     await Promise.all(
       states.map(async (state) => {
         let actionString = await this.loadActionDynamically(state, sprite); // load actions dynamically
@@ -73,7 +73,7 @@ export default class DynamicSprite extends Sprite {
     evalStatement.push('default:\n\tbreak;\n}});');
     console.log({ statement: evalStatement.join('') });
 
-    ret = eval.call(this, evalStatement.join('')).call(this, this, finish);
+    ret = eval.call(this, evalStatement.join('')).call(this, this, sprite, finish);
 
     // if (ret) this.addAction(ret);
 
