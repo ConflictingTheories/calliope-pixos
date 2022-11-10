@@ -16,19 +16,20 @@ import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import Sprite from '@Engine/core/sprite.jsx';
 
 export default class DynamicSprite extends Sprite {
-  constructor(engine, json) {
+  constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
     // load in json
-    this.loadJson(json);
+    this.loadJson(json, zip);
     // store json config
     this.ActionLoader = ActionLoader;
   }
 
   // load in json properties to object
-  loadJson(json) {
+  loadJson(json, zip) {
     this.update(json);
     this.json = json;
+    this.zip = zip;
     this.src = json.src;
     this.portraitSrc = json.portraitSrc;
     this.sheetSize = json.sheetSize;
@@ -48,25 +49,27 @@ export default class DynamicSprite extends Sprite {
   }
 
   // Interaction
-  interact(sprite, finish) {
+  async interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
     // build state machine
     let evalStatement = ['((_this, finish)=>{switch (_this.state) {\n '];
-    states.forEach((state) => {
-      let actionString = this.loadActionDynamically(state, sprite); // load actions dynamically
-      let statement =
-        "case '" +
-        state.name +
-        "':\n\tconsole.log('switching state: " +
-        state.name +
-        "');\n\t_this.state = '" +
-        state.next +
-        "';" +
-        actionString +
-        '\nbreak;';
-      evalStatement.push(statement);
-    });
+    await Promise.all(
+      states.map(async (state) => {
+        let actionString = await this.loadActionDynamically(state, sprite); // load actions dynamically
+        let statement =
+          "case '" +
+          state.name +
+          "':\n\tconsole.log('switching state: " +
+          state.name +
+          "');\n\t_this.state = '" +
+          state.next +
+          "';" +
+          actionString +
+          '\nbreak;';
+        evalStatement.push(statement);
+      })
+    );
     evalStatement.push('default:\n\tbreak;\n}});');
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, finish);
@@ -82,14 +85,19 @@ export default class DynamicSprite extends Sprite {
   // todo -- add step handler dynamically (onStep)
 
   // load string to eval based on type of action
-  loadActionDynamically(state, sprite) {
+  async loadActionDynamically(state, sprite) {
+    console.log({ sprite, state });
+    let callback =
+      state.callback && state.callback !== ''
+        ? (await this.zip.file('callbacks/' + state.callback + '.js').async('string')).replace(/[\r\n]+/g, '').replace(/;$/, '')
+        : '';
     switch (state.type) {
       case 'dialogue':
         return (
           "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', [" +
           JSON.stringify(state.dialogue) +
           ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
-          (state.callback && state.callback !== '' ? state.callback : '') +
+          callback +
           ');\n'
         );
       case 'animate':
@@ -97,7 +105,7 @@ export default class DynamicSprite extends Sprite {
           "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'animate', [" +
           state.animate.join(',') +
           ', () => finish(true) ], _this,' +
-          (state.callback && state.callback !== '' ? state.callback : '') +
+          callback +
           ');\n'
         );
       default:

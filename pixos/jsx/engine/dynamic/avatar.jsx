@@ -15,16 +15,17 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import Avatar from '@Engine/core/avatar.jsx';
 
 export default class DynamicAvatar extends Avatar {
-  constructor(engine, json) {
+  constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
     // load in json
-    this.loadJson(json);
+    this.loadJson(json, zip);
   }
 
   // load in json properties to object
-  loadJson(json) {
+  loadJson(json, zip) {
     this.src = json.src;
+    this.zip = zip;
     this.portraitSrc = json.portraitSrc;
     this.sheetSize = json.sheetSize;
     this.tileSize = json.tileSize;

@@ -19,7 +19,7 @@ export default class MyDarkness extends Darkness {
     super(engine);
   }
   // Interaction
-  interact(sprite, finish) {
+  async interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {

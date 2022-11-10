@@ -385,7 +385,7 @@ export default class Sprite {
   }
 
   // handles interaction -- default (should be overridden in definition)
-  interact(sprite, finish) {
+  async interact(sprite, finish) {
     let ret = null;
     // React based on internal state
     switch (this.state) {

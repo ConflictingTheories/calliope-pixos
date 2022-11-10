@@ -61,7 +61,7 @@ export default class Portal extends AnimatedSprite {
     this.triggerTime = 1000;
   }
   // Interact
-  interact(sprite, finish) {
+  async interact(sprite, finish) {
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state

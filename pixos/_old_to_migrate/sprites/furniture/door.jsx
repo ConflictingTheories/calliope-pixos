@@ -49,7 +49,7 @@ export default class Door extends Sprite {
   }
 
   // Interaction
-  interact(sprite, finish) {
+  async interact(sprite, finish) {
     let ret = null;
     this.startTime = Date.now();
     // React based on internal state

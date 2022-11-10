@@ -15,9 +15,9 @@ import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
 
 export default class DynamicAnimatedSprite extends DynamicSprite {
-  constructor(engine, json) {
+  constructor(engine, json, zip) {
     // Initialize Sprite
-    super(engine, json);
+    super(engine, json, zip);
   }
 
   // setup framerate
