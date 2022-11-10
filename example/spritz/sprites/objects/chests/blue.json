@@ -48,15 +48,17 @@
     {
       "name": "closed",
       "next": "open",
-      "type": "dialogue",
+      "types": ["animate", "dialogue"],
       "dialogue": "Chest Open",
-      "callback": ""
+      "animate": [600, 3],
+      "callback": "chest_add_inventory"
     },
     {
       "name": "open",
       "next": "closed",
-      "type": "dialogue",
+      "types": ["animate", "dialogue"],
       "dialogue": "Chest Closed",
+      "animate": [600, 1],
       "callback": ""
     }
   ]

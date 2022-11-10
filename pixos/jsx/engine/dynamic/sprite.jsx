@@ -71,10 +71,11 @@ export default class DynamicSprite extends Sprite {
       })
     );
     evalStatement.push('default:\n\tbreak;\n}});');
+    console.log({ statement: evalStatement.join('') });
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, finish);
 
-    if (ret) this.addAction(ret);
+    // if (ret) this.addAction(ret);
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -91,25 +92,29 @@ export default class DynamicSprite extends Sprite {
       state.callback && state.callback !== ''
         ? (await this.zip.file('callbacks/' + state.callback + '.js').async('string')).replace(/[\r\n]+/g, '').replace(/;$/, '')
         : '';
-    switch (state.type) {
-      case 'dialogue':
-        return (
-          "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'dialogue', [" +
-          JSON.stringify(state.dialogue) +
-          ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
-          callback +
-          ');\n'
-        );
-      case 'animate':
-        return (
-          "\n\tconsole.log({_this, finish}); \n\treturn new _this.ActionLoader(_this.engine, 'animate', [" +
-          state.animate.join(',') +
-          ', () => finish(true) ], _this,' +
-          callback +
-          ');\n'
-        );
-      default:
-        return '';
-    }
+    return state.types
+      .map((type) => {
+        switch (type) {
+          case 'dialogue':
+            return (
+              "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'dialogue', [" +
+              JSON.stringify(state.dialogue) +
+              ', false, { autoclose: true, onClose: () => finish(true) }], _this,' +
+              callback +
+              '));\n'
+            );
+          case 'animate':
+            return (
+              "\n\tconsole.log({_this, finish}); \n\t_this.addAction(new _this.ActionLoader(_this.engine, 'animate', [" +
+              state.animate.join(',') +
+              ', () => finish(true) ], _this,' +
+              callback +
+              '));\n'
+            );
+          default:
+            return '';
+        }
+      })
+      .join('\n');
   }
 }

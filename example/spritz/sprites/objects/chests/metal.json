@@ -48,14 +48,14 @@
     {
       "name": "closed",
       "next": "open",
-      "type": "dialogue",
+      "types": ["dialogue"],
       "dialogue": "Chest Open",
       "callback": ""
     },
     {
       "name": "open",
       "next": "closed",
-      "type": "dialogue",
+      "types": ["dialogue"],
       "dialogue": "Chest Closed",
       "callback": ""
     }

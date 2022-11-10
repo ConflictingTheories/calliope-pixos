@@ -179,7 +179,6 @@ export default class Sprite {
 
   // Get Texture Coordinates
   getTexCoords() {
-    console.log('tex-coords');
     let sequence = Direction.spriteSequence(this.facing, this.engine.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
     let length = frames.length;

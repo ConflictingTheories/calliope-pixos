@@ -38,14 +38,14 @@
     {
       "name": "closed",
       "next": "open",
-      "type": "animate",
+      "types": ["animate"],
       "animate": [600, 3],
       "callback": "door_closed"
     },
     {
       "name": "open",
       "next": "closed",
-      "type": "animate",
+      "types": ["animate"],
       "animate": [600, 2],
       "callback": "door_opened"
     }
