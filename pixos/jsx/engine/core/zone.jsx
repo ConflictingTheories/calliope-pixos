@@ -128,6 +128,34 @@ export default class Zone {
   async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
     let self = this;
     try {
+      // zone extensions
+      if (zoneJson.extends) {
+        await Promise.all(
+          zoneJson.extends.map(async (file) => {
+            let stringD = JSON.parse(await zip.file('maps/' + file + '/map.json').async('string'));
+            Object.assign(zoneJson, stringD);
+          })
+        );
+        // unset
+        zoneJson.extends = null;
+      }
+
+      // cell extensions
+      if (cellJson.extends) {
+        let cells = [];
+        await Promise.all(
+          cellJson.extends.map(async (file) => {
+            let stringD = JSON.parse(await zip.file('maps/' + file + '/cells.json').async('string'));
+            if (stringD.cells) {
+              cells = [].concat(stringD.cells, cells);
+            } else {
+              cells = [].concat(stringD, cells);
+            }
+          })
+        );
+        cellJson = [].concat(cells, cellJson.cells);
+      }
+
       // load game menus & pause usually
       if (zoneJson.menu) {
         let menus = {};
