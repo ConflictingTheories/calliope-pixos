@@ -50,7 +50,7 @@
         {
           "type": "animate",
           "animate": [600, 3],
-          "callback": "door_closed"
+          "callback": "portal_closed"
         }
       ]
     },
@@ -61,7 +61,7 @@
         {
           "type": "animate",
           "animate": [600, 2],
-          "callback": "door_opened"
+          "callback": "portal_opened"
         }
       ]
     }
