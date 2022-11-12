@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import glEngine from '@Engine/core/index.jsx';
 import { minecraftia } from '@Engine/core/hud.jsx';
 //
-const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
+const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => {
   // Canvas
   const ref = useRef();
   const hudRef = useRef();
@@ -25,6 +25,7 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
   const fileRef = useRef();
   const mmRef = useRef();
   const recordBtnRef = useRef();
+  const previewBtnRef = useRef();
   const recordingRef = useRef();
   const mergeCanvasRef = useRef();
   const previewRef = useRef();
@@ -38,6 +39,7 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
   // recording stream & media tracks
   let chunks = []; // recording
   let [isRecording, setRecording] = useState(false);
+  let [showRecording, setPreview] = useState(false);
   let [recorder, setRecorder] = useState();
   let [cStream, setStream] = useState();
 
@@ -79,25 +81,36 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
     recorder?.stop();
   }
 
-  function stopTouchScrolling(canvas){
+  function stopTouchScrolling(canvas) {
     // Prevent scrolling when touching the canvas
-    document.body.addEventListener("touchstart", function (e) {
+    document.body.addEventListener(
+      'touchstart',
+      function (e) {
         if (e.target == canvas) {
-            e.preventDefault();
+          e.preventDefault();
         }
-    }, { passive: false });
-    document.body.addEventListener("touchend", function (e) {
+      },
+      { passive: false }
+    );
+    document.body.addEventListener(
+      'touchend',
+      function (e) {
         if (e.target == canvas) {
-            e.preventDefault();
+          e.preventDefault();
         }
-    }, { passive: false });
-    document.body.addEventListener("touchmove", function (e) {
+      },
+      { passive: false }
+    );
+    document.body.addEventListener(
+      'touchmove',
+      function (e) {
         if (e.target == canvas) {
-            e.preventDefault();
+          e.preventDefault();
         }
-    }, { passive: false });
-    
-    }
+      },
+      { passive: false }
+    );
+  }
 
   // record gameplay to video stream
   function startRecording(cStream, recorder) {
@@ -133,6 +146,13 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
         chunks = [];
       }
     };
+  }
+
+  function hidePreview() {
+    setPreview(false);
+  }
+  function showPreview() {
+    setPreview(true);
   }
 
   // Provide Draggable Preview to move window around
@@ -191,7 +211,7 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
 
     // Webgl Engine
     engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
-    
+
     // stream video output (single canvas element?)
     cStream = mergeCanvas.captureStream();
     engine.streamToVideo(cStream, previewRef);
@@ -233,6 +253,26 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
   let canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
+  let recordBtnStyle = {
+    display: isRecording ? 'none' : 'block',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 100,
+    height: '2.5rem',
+    padding: '0.5rem',
+    opacity: 0.8,
+  };
+  let showRecordBtnStyle = {
+    display: showRecording ? 'none' : 'block',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 100,
+    height: '2.5rem',
+    padding: '0.5rem',
+    opacity: 0.8,
+  };
 
   return (
     <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>
@@ -248,87 +288,97 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
         onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
         tabIndex={0}
       >
-        {/* // WEBGL - For 3D Rendering */}
-        <canvas
-          style={{
-            position: 'absolute',
-            zIndex: 1,
-            top: 0,
-            left: 0,
-            maxHeight: '100vh',
-          }}
-          ref={ref}
-          width={canvasWidth}
-          height={canvasHeight}
-          className={string}
-        />
-        {/* HUD - For Dialogue / Menus / Overlays */}
-        <canvas
-          style={{
-            position: 'absolute',
-            zIndex: 2,
-            top: 0,
-            left: 0,
-            background: 'none',
-            maxHeight: '100vh',
-          }}
-          ref={hudRef}
-          width={canvasWidth}
-          height={canvasHeight}
-          className={string}
-          onMouseUp={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-          onMouseDown={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-          onMouseMove={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-        />
-        {/* Gamepad - For controls on Mobile Only*/}
-        <canvas
-          style={{
-            position: 'relative',
-            zIndex: 5,
-            top: 0,
-            left: 0,
-            background: 'none',
-            display: showGamepad ? 'block' : 'none',
-            maxHeight: '100vh',
-          }}
-          ref={gamepadRef}
-          hidden={!showGamepad}
-          width={canvasWidth}
-          height={wrapperHeight}
-          className={string}
-          onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
-          onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
-          onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
-        />
-        {/* MIPMAP - For Sprite Text / Speech / Titles */}
-        <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
-        {/* Merged Preview Canvas / Recording Source*/}
-        <canvas
-          width={canvasWidth}
-          height={canvasHeight}
-          ref={mergeCanvasRef}
-          style={{
-            display: 'none',
-          }}
-        ></canvas>
-      </div>
-      <div>
         {/* Preview & Recording */}
-        <div ref={previewBoxRef}>
+        <div style={{ display: !showRecording ? 'none' : 'block' }} ref={previewBoxRef}>
           <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
           <video style={{ display: isRecording ? 'none' : 'block' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={recordingRef}></video>
         </div>
+        {/* Game */}
+        <div style={{ display: showRecording ? 'none' : 'block' }}>
+          {/* // WEBGL - For 3D Rendering */}
+          <canvas
+            style={{
+              position: 'absolute',
+              zIndex: 1,
+              top: 0,
+              left: 0,
+              maxHeight: '100vh',
+            }}
+            ref={ref}
+            width={canvasWidth}
+            height={canvasHeight}
+            className={string}
+          />
+          {/* HUD - For Dialogue / Menus / Overlays */}
+          <canvas
+            style={{
+              position: 'absolute',
+              zIndex: 2,
+              top: 0,
+              left: 0,
+              background: 'none',
+              maxHeight: '100vh',
+            }}
+            ref={hudRef}
+            width={canvasWidth}
+            height={canvasHeight}
+            className={string}
+            onMouseUp={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
+            onMouseDown={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
+            onMouseMove={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
+          />
+          {/* Gamepad - For controls on Mobile Only*/}
+          <canvas
+            style={{
+              position: 'relative',
+              zIndex: 5,
+              top: 0,
+              left: 0,
+              background: 'none',
+              display: showGamepad ? 'block' : 'none',
+              maxHeight: '100vh',
+            }}
+            ref={gamepadRef}
+            hidden={!showGamepad}
+            width={canvasWidth}
+            height={wrapperHeight}
+            className={string}
+            onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
+            onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
+            onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
+            onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
+            onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
+            onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
+            onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
+          />
+          {/* MIPMAP - For Sprite Text / Speech / Titles */}
+          <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
+          {/* Merged Preview Canvas / Recording Source*/}
+          <canvas
+            width={canvasWidth}
+            height={canvasHeight}
+            ref={mergeCanvasRef}
+            style={{
+              display: 'none',
+            }}
+          ></canvas>
+        </div>
+      </div>
+      <div>
         <input type="file" ref={fileRef} src={zipData ?? null} hidden />
         {/* Recording Buttons - todo - style and include video controls */}
-        <button style={{ display: isRecording ? 'none' : 'block' }} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
+        <button style={recordBtnStyle} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
           Record Gameplay
         </button>
-        <button style={{ display: isRecording ? 'block' : 'none' }} ref={recordBtnRef} onClick={() => stopRecording(recorder)}>
+        <button style={{ ...recordBtnStyle, display: isRecording ? 'block' : 'none' }} ref={recordBtnRef} onClick={() => stopRecording(recorder)}>
           Stop Recording
+        </button>
+
+        <button style={{ ...showRecordBtnStyle }} ref={previewBtnRef} onClick={() => showPreview()}>
+          Show Recording
+        </button>
+        <button style={{ ...showRecordBtnStyle, display: showRecording ? 'block' : 'none' }} ref={previewBtnRef} onClick={() => hidePreview()}>
+          Show Game
         </button>
       </div>
     </div>
