@@ -154,3 +154,4 @@ export async function loadAvatar(zone, storeName) {
   });
   return gender;
 }
+

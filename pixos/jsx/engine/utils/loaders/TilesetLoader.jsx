@@ -13,6 +13,7 @@
 
 import Resources from '@Engine/utils/resources.jsx';
 import Tileset from '@Engine/core/tileset.jsx';
+import { mergeDeep } from '@Engine/utils/enums.jsx';
 
 // Helps Loads New Tileset Instance
 export class TilesetLoader {
@@ -47,36 +48,38 @@ export class TilesetLoader {
       await Promise.all(
         tilesetJson.extends.map(async (file) => {
           let stringD = JSON.parse(await zip.file('tilesets/' + file + '/tileset.json').async('string'));
-          Object.assign(tilesetJson, stringD);
+          tilesetJson = mergeDeep(tilesetJson, stringD);
         })
       );
       // unset
       tilesetJson.extends = null;
     }
-
+    console.log({tilesetJson});
     // extend tiles
     if (Tiles.extends) {
       await Promise.all(
         Tiles.extends.map(async (file) => {
           let stringD = JSON.parse(await zip.file('tilesets/' + file + '/tiles.json').async('string'));
-          Object.assign(Tiles, stringD);
+          Tiles = mergeDeep(Tiles, stringD);
         })
       );
       // unset
       Tiles.extends = null;
     }
+    console.log({Tiles});
 
     // extend geometry
     if (TilesetGeometry.extends) {
       await Promise.all(
         TilesetGeometry.extends.map(async (file) => {
           let stringD = JSON.parse(await zip.file('tilesets/' + file + '/geometry.json').async('string'));
-          Object.assign(TilesetGeometry, stringD);
+          TilesetGeometry = mergeDeep(TilesetGeometry, stringD);
         })
       );
       // unset
       TilesetGeometry.extends = null;
     }
+    console.log({TilesetGeometry});
 
     let geometry = {};
     Object.keys(tilesetJson.geometry).forEach((geo) => {

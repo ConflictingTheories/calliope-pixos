@@ -10,7 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { Direction } from '@Engine/utils/enums.jsx';
+import { Direction, mergeDeep } from '@Engine/utils/enums.jsx';
 import Resources from '@Engine/utils/resources.jsx';
 import ActionQueue from '@Engine/core/queue.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
@@ -130,16 +130,21 @@ export default class Zone {
     try {
       // zone extensions
       if (zoneJson.extends) {
+        console.log('extendings');
+        let extension = {};
         await Promise.all(
           zoneJson.extends.map(async (file) => {
             let stringD = JSON.parse(await zip.file('maps/' + file + '/map.json').async('string'));
-            Object.assign(zoneJson, stringD);
+            extension = mergeDeep(extension, stringD);
+            console.log(JSON.parse(JSON.stringify(extension)));
           })
         );
         // unset
         zoneJson.extends = null;
+        Object.assign(extension, zoneJson);
+        zoneJson = extension;
       }
-
+      console.log({ zoneJson });
       // cell extensions
       if (cellJson.extends) {
         let cells = [];
@@ -147,15 +152,15 @@ export default class Zone {
           cellJson.extends.map(async (file) => {
             let stringD = JSON.parse(await zip.file('maps/' + file + '/cells.json').async('string'));
             if (stringD.cells) {
-              cells = [].concat(stringD.cells, cells);
+              cells = cells.concat(stringD.cells);
             } else {
-              cells = [].concat(stringD, cells);
+              cells = cells.concat(stringD);
             }
           })
         );
-        cellJson = [].concat(cells, cellJson.cells);
+        cellJson = cells.concat(cellJson.cells);
       }
-
+      console.log({ cellJson });
       // load game menus & pause usually
       if (zoneJson.menu) {
         let menus = {};

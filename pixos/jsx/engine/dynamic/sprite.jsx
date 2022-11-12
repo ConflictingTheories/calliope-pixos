@@ -13,8 +13,8 @@
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
+import { mergeDeep } from '@Engine/utils/enums.jsx';
 import Sprite from '@Engine/core/sprite.jsx';
-import { forEach } from 'jszip';
 
 export default class DynamicSprite extends Sprite {
   constructor(engine, json, zip) {
@@ -34,7 +34,7 @@ export default class DynamicSprite extends Sprite {
         this.json.extends.map(async (file) => {
           let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
           console.log({ old: this.json, new: stringD });
-          Object.assign(this.json, stringD);
+          this.json = mergeDeep(this.json, stringD);
         })
       );
       // unset

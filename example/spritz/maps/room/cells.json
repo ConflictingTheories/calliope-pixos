@@ -1,4 +1,4 @@
 {
-  "extends": ["base"],
+  "extends": ["dungeon-top", "dungeon-bottom"],
   "cells": []
 }
