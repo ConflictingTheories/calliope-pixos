@@ -41,5 +41,29 @@
   },
   "hotspotOffset": [0.5, 0.5, 0],
   "frameTime": 150,
-  "state": "closed"
+  "state": "closed",
+  "states": [
+    {
+      "name": "closed",
+      "next": "open",
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 3],
+          "callback": "door_closed"
+        }
+      ]
+    },
+    {
+      "name": "open",
+      "next": "closed",
+      "actions": [
+        {
+          "type": "animate",
+          "animate": [600, 2],
+          "callback": "door_opened"
+        }
+      ]
+    }
+  ]
 }

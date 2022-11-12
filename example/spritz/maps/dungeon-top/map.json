@@ -15,6 +15,13 @@
       "zones": ["room"]
     },
     {
+      "id": "portal",
+      "type": "furniture/portal",
+      "pos": [3, 6, 0],
+      "facing": "Down",
+      "zones": ["room"]
+    },
+    {
       "id": "avatar",
       "type": "characters/male",
       "pos": [8, 4, 0],
