@@ -79,6 +79,26 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
     recorder?.stop();
   }
 
+  function stopTouchScrolling(canvas){
+    // Prevent scrolling when touching the canvas
+    document.body.addEventListener("touchstart", function (e) {
+        if (e.target == canvas) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    document.body.addEventListener("touchend", function (e) {
+        if (e.target == canvas) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    document.body.addEventListener("touchmove", function (e) {
+        if (e.target == canvas) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    }
+
   // record gameplay to video stream
   function startRecording(cStream, recorder) {
     setRecorder(recorder);
@@ -201,6 +221,9 @@ const WebGLView = ({ width, height, SceneProvider, class:string, zipData }) => {
 
     // cleanup
     return () => {
+      stopTouchScrolling(canvas);
+      stopTouchScrolling(gamepad);
+      stopTouchScrolling(hud);
       window.removeEventListener('resize', setDimension);
       engine.close();
     };
