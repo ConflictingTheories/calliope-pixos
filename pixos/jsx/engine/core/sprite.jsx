@@ -65,9 +65,9 @@ export default class Sprite {
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
       let stepParent = this.onStep.bind(this);
-      this.onStep = () => {
-        instanceData.onStep();
-        stepParent();
+      this.onStep = async () => {
+        await instanceData.onStep(this, this);
+        await stepParent(this, this);
       };
     }
     // Texture Buffer
@@ -107,11 +107,19 @@ export default class Sprite {
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
       let stepParent = this.onStep.bind(this);
-      this.onStep = () => {
-        instanceData.onStep();
-        stepParent();
+      this.onStep = async () => {
+        await instanceData.onStep(this, this);
+        await stepParent(this, this);
       };
     }
+
+    // if (instanceData.onStep) {
+    //   let stepParent = this.onStep.bind(this);
+    //   this.onStep = async () => {
+    //     eval.call(this, await this.zip.file(`triggers/${instanceData.onStep}.js`).async('string')).call(this, this);
+    //     await stepParent(this, this);
+    //   };
+    // }
     // Texture Buffer
     this.texture = await this.engine.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));

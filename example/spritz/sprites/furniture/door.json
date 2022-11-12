@@ -34,6 +34,7 @@
   },
   "hotspotOffset": [0.5, 0.5, 0],
   "state": "closed",
+  "stepTrigger": "event/portal",
   "states": [
     {
       "name": "closed",

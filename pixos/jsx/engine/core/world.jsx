@@ -137,7 +137,7 @@ export default class World {
         z.audio.pauseAudio();
       }
       z.removeAllSprites();
-      zone.runWhenDeleted();
+      z.runWhenDeleted();
     });
     this.zoneList = [];
     this.zoneDict = {};

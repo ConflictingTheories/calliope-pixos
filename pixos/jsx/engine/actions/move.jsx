@@ -48,10 +48,15 @@ export default {
     return time >= endTime;
   },
   // Trigger interactions in sprite when finished moving
-  onStep: function () {
+  onStep: async function () {
     if (this.spriteList.length === 0) this.completed = true;
-    this.spriteList.forEach((sprite) => {
-      return sprite.onStep ? this.zone.spriteDict[sprite.id].onStep(this.sprite) : null;
-    });
+    console.log({ step: this });
+
+    await Promise.all(
+      this.spriteList.map(async (sprite) => {
+        console.log({ sprite });
+        return sprite.onStep ? await sprite.onStep(sprite, sprite) : null;
+      })
+    );
   },
 };

@@ -130,4 +130,15 @@ export default class DynamicSprite extends Sprite {
   }
 
   // todo -- add step handler dynamically (onStep)
+  // Interaction
+  async onStep(_this, sprite) {
+    if (!this.stepTrigger) {
+      return;
+    }
+    console.log({ trigger: this.stepTrigger });
+    let evalStatement = await this.zip.file(`triggers/${this.stepTrigger}.js`).async('string');
+    console.log({ statement: evalStatement });
+    let ret = eval.call(this, evalStatement).call(this, this, sprite);
+    return ret;
+  }
 }
