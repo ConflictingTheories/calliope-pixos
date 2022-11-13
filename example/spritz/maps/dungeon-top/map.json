@@ -12,7 +12,7 @@
       "type": "furniture/door",
       "pos": [2, 5, 0],
       "facing": "Down",
-      "zones": ["room"]
+      "zones": ["base"]
     },
     {
       "id": "portal",
