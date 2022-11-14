@@ -282,6 +282,7 @@ export default class ModelObject {
         ]);
     }
     // Draw Object
+    console.log({mesh});
     if (!mesh.textures.length) {
       this.drawObj();
     } else {
@@ -344,7 +345,7 @@ export default class ModelObject {
 
   // Hook for sprite implementations
   init() {
-    console.log('- sprite hook', this.id, this.pos);
+    console.log('- object hook', this.id, this.pos);
   }
 
   // speak

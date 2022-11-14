@@ -45,7 +45,7 @@ export default function fs() {
       vec3 L = normalize(vec3(1.0, 1.0, 1.0));
       vec3 H = normalize(L + V);
       vec3 N = normalize(vLighting);
-      vec3 color = uDiffuse * dot(N, L) + uSpecular * pow(dot(H, N), uSpecularExponent);
+      vec3 color = uDiffuse * dot(N, L); //+ uSpecular * pow(dot(H, N), uSpecularExponent);
       if(useDiffuse == 1.0){
         if(texelColors != vec4(0.0,0.0,0.0,0.0)){
           color = texelColors.rgb * color;
