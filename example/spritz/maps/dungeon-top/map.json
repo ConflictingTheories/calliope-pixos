@@ -19,12 +19,13 @@
       "type": "furniture/portal",
       "pos": [3, 6, 0],
       "facing": "Down",
-      "zones": ["room"]
+      "zones": ["room"],
+      "state": "open"
     },
     {
       "id": "avatar",
       "type": "characters/male",
-      "pos": [8, 4, 0],
+      "pos": [8, 5, 0],
       "facing": "Down"
     },
     { "id": "spurt1", "type": "effects/spurt", "pos": [10, 5, -1.5], "facing": "Up" },

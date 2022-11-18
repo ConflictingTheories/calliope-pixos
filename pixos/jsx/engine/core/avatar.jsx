@@ -37,7 +37,7 @@ export default class Avatar extends Sprite {
     if (!this.actionList.length) {
       let ret = this.checkInput();
       if (ret) {
-        this.addAction(ret);
+        this.addAction(ret).then(()=>{});
       }
     }
     if (this.bindCamera) set(this.pos, this.engine.cameraPosition);

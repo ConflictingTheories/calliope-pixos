@@ -29,8 +29,8 @@ export class ActionLoader {
     let id = sprite.id + '-' + type + '-' + time;
     return this.load(
       type,
-      function (action) {
-        action.onLoad(args);
+      async function (action) {
+        await action.onLoad(args);
       },
       function (action) {
         action.configure(type, sprite, id, time, args);
@@ -38,7 +38,7 @@ export class ActionLoader {
     );
   }
   // Load Internal Action
-  load(type) {
+  async load(type) {
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
     if (!this.instances[type]) {
@@ -49,9 +49,11 @@ export class ActionLoader {
     Object.assign(instance, require('@Engine/actions/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
     // Notify existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
-    });
+    await Promise.all(
+      this.instances[type].map(async function (instance) {
+        if (instance.afterLoad) await instance.afterLoad(instance.instance);
+      })
+    );
     // construct
     if (runConfigure) runConfigure(instance);
     // load

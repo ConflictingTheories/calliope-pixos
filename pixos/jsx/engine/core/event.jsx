@@ -27,8 +27,8 @@ export default class Event {
     this.creationArgs = args;
   }
   // initialize on load
-  onLoad(args) {
-    this.init.apply(this, args);
+  async onLoad(args) {
+    await this.init.apply(this, args);
     this.loaded = true;
   }
   // serialize

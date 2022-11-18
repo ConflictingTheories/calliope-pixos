@@ -73,6 +73,7 @@ export default class GLEngine {
     this.objLoader = OBJ;
     this.voice = new SpeechSynthesisUtterance();
     this.audioLoader = new AudioLoader(this);
+    this.Vector = Vector;
     // database
     this.db = new Dexie('hyperspace');
     this.db.version(1).stores({

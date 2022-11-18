@@ -1,5 +1,11 @@
 {
   "extends": ["dungeon-top", "dungeon-bottom"],
   "tileset": "sewer",
-  "bounds": [0, 0, 17, 19]
+  "bounds": [0, 0, 17, 19],
+  "scripts":[
+    {
+      "id": "load-scene",
+      "trigger": "zone/room_clear_path"
+    }
+  ]
 }

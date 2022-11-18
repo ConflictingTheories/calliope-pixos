@@ -52,7 +52,7 @@ export default {
       } else {
         facing = this.sprite.facing == Direction.Up ? Direction.Left : Direction.Down;
       }
-      this.sprite.addAction(this.sprite.faceDir(facing));
+      this.sprite.addAction(this.sprite.faceDir(facing)).then(()=>{});
       this.startTime = time;
     }
 

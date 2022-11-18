@@ -301,7 +301,8 @@ export default class ModelObject {
   }
 
   // Add Action to Queue
-  addAction(action) {
+  async addAction(action) {
+    action = await Promise.resolve(action);
     if (this.actionDict[action.id]) this.removeAction(action.id);
     this.actionDict[action.id] = action;
     this.actionList.push(action);

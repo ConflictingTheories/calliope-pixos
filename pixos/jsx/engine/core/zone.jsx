@@ -14,7 +14,7 @@ import { Direction, mergeDeep } from '@Engine/utils/enums.jsx';
 import Resources from '@Engine/utils/resources.jsx';
 import ActionQueue from '@Engine/core/queue.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
-import { SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
+import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
 import { loadMap } from '@Engine/dynamic/map.jsx';
 import { dynamicCells } from '@Engine/dynamic/cells.jsx';
 
@@ -39,6 +39,7 @@ export default class Zone {
     this.onLoadActions = new ActionQueue();
     this.spriteLoader = new SpriteLoader(world.engine);
     this.objectLoader = new ObjectLoader(world.engine);
+    this.EventLoader = EventLoader
     this.tsLoader = new TilesetLoader(world.engine);
     this.audio = null;
     // bind
@@ -205,7 +206,7 @@ export default class Zone {
         console.error({ msg: 'error loading cell function', e });
       }
 
-      // audio loader
+      // load audio
       try {
         console.log({ msg: 'audio....', src: zoneJson.audioSrc, scope: this });
         if (zoneJson.audioSrc) {
@@ -240,7 +241,7 @@ export default class Zone {
         console.error({ msg: 'error loading sprite function', e });
       }
 
-      // sprites
+      // sprites from zip
       try {
         await Promise.all(
           self.sprites.map(async (sprite) => {
@@ -252,7 +253,7 @@ export default class Zone {
         console.error({ msg: 'error loading sprites from map', e });
       }
 
-      // objects
+      // objects from zip
       try {
         await Promise.all(self.objects.map((object) => self.loadObjectFromZip(object, zip)));
       } catch (e) {
@@ -321,6 +322,7 @@ export default class Zone {
       return;
     // loaded
     this.loaded = true;
+    this.loadScripts(true);
     this.onLoadActions.run();
   }
 
@@ -652,17 +654,17 @@ export default class Zone {
 
   // Move the sprite
   async moveSprite(id, location, running = false) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let sprite = this.getSpriteById(id);
-      sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
+      await sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
     });
   }
 
   // Sprite Dialogue
   async spriteDialogue(id, dialogue, options = { autoclose: true }) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let sprite = this.getSpriteById(id);
-      sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
+      await sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
     });
   }
 
@@ -673,7 +675,7 @@ export default class Zone {
       return await prev
         .then(
           async () =>
-            new Promise((resolve, reject) => {
+            new Promise(async (resolve, reject) => {
               if (!action) resolve();
               try {
                 if (!action.scope) action.scope = self;
@@ -683,14 +685,14 @@ export default class Zone {
                   if (sprite && action.action) {
                     let args = action.args;
                     let options = args.pop();
-                    sprite.addAction(new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self)));
+                    await sprite.addAction(new ActionLoader(self.engine, action.action, [...args, { ...options }], sprite, () => resolve(self)));
                   }
                 }
                 // trigger script
                 if (action.trigger) {
                   let sprite = action.scope.getSpriteById('avatar');
                   if (sprite && action.trigger) {
-                    sprite.addAction(new ActionLoader(self.engine, 'script', [action.trigger, action.scope, () => resolve(self)], sprite));
+                    await sprite.addAction(new ActionLoader(self.engine, 'script', [action.trigger, action.scope, () => resolve(self)], sprite));
                   }
                 }
               } catch (e) {

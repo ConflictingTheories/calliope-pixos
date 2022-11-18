@@ -16,14 +16,14 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default {
-  init: function (from, to, moveLength, zone) {
+  init: async function (from, to, moveLength, zone) {
     this.zone = zone;
     this.from = new Vector(...from);
     this.to = new Vector(...to);
     this.lastKey = new Date().getTime();
     this.completed = false;
     this.direction = 1;
-    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/sewer-beat.mp3');
+    this.audio = await this.zone.engine.audioLoader.loadFromZip(this.sprite.zip, 'sewer-beat.mp3', true);
     // Determine Path to Walk
     [this.hasMoves, this.moveList] = this.sprite.zone.world.pathFind(from, to);
     if (!this.hasMoves) {
@@ -67,10 +67,15 @@ export default {
           // Load Next move
           this.currentAction = new ActionLoader(this.sprite.engine, 'move', [last, move, this.moveLength, this.zone], this.sprite);
         }
-        // set facing
+
+        if (this.sprite.facing !== facing) {
+          this.currentAction = this.sprite.faceDir(facing);
+          // return this.completed;
+        }
+
         if (this.currentAction) {
           this.currentAction.facing = facing;
-          this.sprite.addAction(this.currentAction);
+          this.sprite.addAction(Promise.resolve(this.currentAction)).then(() => {});
         }
       }
       // stop when done
@@ -78,8 +83,8 @@ export default {
         this.direction *= -1;
         this.completed = true;
         if (this.zone.audio) {
-          this.zone.audio.audio.playAudio();
-          this.audio.audio.pauseAudio();
+          this.zone.audio.playAudio();
+          this.audio.pauseAudio();
         }
       }
       this.moveIndex += this.direction;
