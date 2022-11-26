@@ -10,30 +10,22 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-
-export default class ActionQueue {
+import ActionQueue from '@Engine/core/queue.jsx';
+export default class Loadable {
   /**
-   * Action/Event Queue
+   * Run action if loaded or add to queue
+   * @param {*} action
    */
-  constructor() {
-    this.actions = [];
+  runWhenLoaded(action) {
+    if (this.loaded) action();
+    else this.onLoadActions.add(action);
   }
 
   /**
-   * Add to Queue
-   * @param {*} action 
+   * update and override properties
+   * @param {*} data
    */
-  add(action) {
-    this.actions.push(action);
-  }
-
-  /**
-   * Run Action
-   */
-  run() {
-    let args = arguments;
-    this.actions = this.actions.filter((action) => {
-      return action(args);
-    });
+  update(data) {
+    Object.assign(this, data);
   }
 }

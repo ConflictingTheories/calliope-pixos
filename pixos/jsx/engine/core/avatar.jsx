@@ -17,36 +17,52 @@ import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 import Sprite from '@Engine/core/sprite.jsx';
 
-// Special class of Sprite which is controlled by the player
-//
-// -- Additional methods such as saving / importing and input handling
-//
 export default class Avatar extends Sprite {
+  /**
+   * Special class of Sprite which is controlled by the player
+   * @param {*} engine
+   */
   constructor(engine) {
     // Initialize Sprite
     super(engine);
     this.handleWalk = this.handleWalk.bind(this);
   }
-  // Initialization Hook
+
+  /**
+   * Initialization Hook
+   */
   init() {
     console.log('- avatar hook', this.id, this.pos);
   }
-  // Update
+
+  /**
+   * Tick - Logical Step / Update
+   * @param {number} time
+   */
   tick(time) {
     // ONLY ONE MOVE AT A TIME
     if (!this.actionList.length) {
       let ret = this.checkInput();
       if (ret) {
-        this.addAction(ret).then(()=>{});
+        this.addAction(ret).then(() => {});
       }
     }
     if (this.bindCamera) set(this.pos, this.engine.cameraPosition);
   }
-  // open menu
+  /**
+   * open menu
+   * @param {*} menuConfig
+   * @param {*} defaultMenus
+   * @returns
+   */
   openMenu(menuConfig = {}, defaultMenus = []) {
     return new ActionLoader(this.engine, 'prompt', [menuConfig, defaultMenus, false, { autoclose: false }], this);
   }
-  // Reads for Input to Respond to
+
+  /**
+   * Reads for Input to Respond to
+   * @returns
+   */
   checkInput() {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
@@ -173,7 +189,13 @@ export default class Avatar extends Sprite {
     // Walk
     return this.handleWalk(this.engine.keyboard.lastPressedKey(), touchmap);
   }
-  // walk between tiles
+
+  /**
+   * Handle the walking keys (wasd + extras (optonal))
+   * @param {*} key
+   * @param {*} touchmap
+   * @returns
+   */
   handleWalk(key, touchmap) {
     let moveTime = 600; // move time in ms
     let facing = Direction.None;

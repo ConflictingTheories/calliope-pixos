@@ -11,8 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 import ActionQueue from '@Engine/core/queue.jsx';
-export default class Tileset {
+import Loadable from '@Engine/core/loadable.jsx';
+export default class Tileset extends Loadable {
+  /**
+   * Tileset geometry and tiles
+   * @param {*} engine
+   */
   constructor(engine) {
+    super(engine);
     this.engine = engine;
     this.src = null;
     this.sheetSize = [0, 0];
@@ -24,19 +30,10 @@ export default class Tileset {
     this.onTextureLoaded = this.onTextureLoaded.bind(this);
   }
 
-  runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
-  }
-
-  // Actions to run after the tileset definition has loaded,
-  // but before the texture is ready
-  runWhenDefinitionLoaded(action) {
-    if (this.definitionLoaded) action();
-    else this.onDefinitionLoadActions.add(action);
-  }
-
-  // Received tileset definition JSON
+  /**
+   * Received tileset definition JSON
+   * @param {*} data
+   */
   onJsonLoaded(data) {
     // Merge tileset definition into this object
     Object.keys(data).map((k) => {
@@ -52,7 +49,11 @@ export default class Tileset {
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }
 
-  // Received tileset definition JSON
+  /**
+   * Received tileset definition JSON
+   * @param {*} data
+   * @param {*} zip
+   */
   async onJsonLoadedFromZip(data, zip) {
     // Merge tileset definition into this object
     Object.keys(data).map((k) => {
@@ -68,20 +69,42 @@ export default class Tileset {
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }
 
-  // run when loaded
+  /**
+   * run when loaded
+   */
   onTextureLoaded() {
     this.loaded = true;
     this.onLoadActions.run();
   }
 
-  // Get vertices for tile
+  /**
+   * Actions to run after the tileset definition has loaded,
+   * but before the texture is ready
+   * @param {*} action
+   */
+  runWhenDefinitionLoaded(action) {
+    if (this.definitionLoaded) action();
+    else this.onDefinitionLoadActions.add(action);
+  }
+
+  /**
+   * Get vertices for tile
+   * @param {*} id
+   * @param {*} offset
+   * @returns
+   */
   getTileVertices(id, offset) {
     return this.geometry[id].vertices
       .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + offset[1], vertex[2] + offset[2]]))
       .flat(3);
   }
 
-  // get texture coordinates
+  /**
+   * get texture coordinates
+   * @param {*} id
+   * @param {*} texId
+   * @returns
+   */
   getTileTexCoords(id, texId) {
     let tileOffset = this.textures[texId];
     let size = [this.tileSize / this.sheetSize[0], this.tileSize / this.sheetSize[1]];
@@ -90,12 +113,20 @@ export default class Tileset {
       .flat(3);
   }
 
-  // determine walkability
+  /**
+   * determine walkability
+   * @param {*} tileId
+   * @returns
+   */
   getWalkability(tileId) {
     return this.geometry[tileId].type;
   }
 
-  // get poly for walk
+  /**
+   * get poly for walk
+   * @param {*} tileId
+   * @returns
+   */
   getTileWalkPoly(tileId) {
     return this.geometry[tileId].walkPoly;
   }

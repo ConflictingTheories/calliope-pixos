@@ -15,8 +15,9 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import ActionQueue from './queue.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
+import Loadable from '@Engine/core/loadable.jsx';
 
-export default class Sprite {
+export default class Sprite extends Loadable {
   /**
    * Sprites are 2D objects
    * @param {*} engine
@@ -43,23 +44,6 @@ export default class Sprite {
     this.blocking = true; // default - cannot passthrough
     this.override = false;
     this.voice = new SpeechSynthesisUtterance();
-  }
-
-  /**
-   * update and override properties
-   * @param {*} data
-   */
-  update(data) {
-    Object.assign(this, data);
-  }
-
-  /**
-   * Run action or append to queue
-   * @param {*} action
-   */
-  runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
   }
 
   /**

@@ -16,7 +16,13 @@ import ActionQueue from './queue.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 import { _buildBuffer } from '@Engine/utils/obj/utils.js';
-export default class ModelObject {
+import Loadable from '@Engine/core/loadable.jsx';
+
+export default class ModelObject extends Loadable {
+  /**
+   * 3D Model Objects
+   * @param {*} engine
+   */
   constructor(engine) {
     this.engine = engine;
     this.templateLoaded = false;
@@ -38,18 +44,14 @@ export default class ModelObject {
     this.override = false;
   }
 
-  update(data) {
-    Object.assign(this, data);
-  }
-
-  runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
-  }
-
-  // Load Object and Materials
+  /**
+   * Load Object and Materials
+   * @param {*} instanceData
+   * @returns
+   */
   onLoad(instanceData) {
     if (this.loaded) return;
+
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -58,6 +60,7 @@ export default class ModelObject {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
+
     // Mesh bounds
     let maxX,
       minX = null;
@@ -75,33 +78,44 @@ export default class ModelObject {
       if (maxZ == null || v[2] > maxZ) maxZ = v[2];
       if (minZ == null || v[2] < minZ) minZ = v[2];
     }
+
     // normalize x, y to fit in tile (todo)
     let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
     this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
+
     // mesh buffers
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
+
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
+
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
-  // Load Object and Materials
+  /**
+   * Load Object and Materials
+   * @param {*} instanceData
+   * @param {*} zip
+   * @returns
+   */
   async onLoadFromZip(instanceData, zip) {
     if (this.loaded) return;
+
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -110,6 +124,7 @@ export default class ModelObject {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
+
     // Mesh bounds
     let maxX,
       minX = null;
@@ -127,36 +142,46 @@ export default class ModelObject {
       if (maxZ == null || v[2] > maxZ) maxZ = v[2];
       if (minZ == null || v[2] < minZ) minZ = v[2];
     }
+
     // normalize x, y to fit in tile (todo)
     let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
     this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
+
     // mesh buffers
     this.mesh = mesh;
     this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
+
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
+
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
-  // Definition Loaded
+  /**
+   * Definition Loaded
+   */
   onTilesetDefinitionLoaded() {
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
   }
 
-  // After Tileset / Texture Loaded
+  /**
+   * After Tileset / Texture Loaded
+   * @returns
+   */
   onTilesetOrTextureLoaded() {
     if (!this || this.loaded || (this.enableSpeech && this.speech && !this.speech.loaded) || (this.portrait && !this.portrait.loaded)) return;
 
@@ -172,7 +197,10 @@ export default class ModelObject {
     this.onLoadActions.run();
   }
 
-  // Speech Area texture
+  /**
+   * Speech Area texture
+   * @returns
+   */
   getSpeechBubbleTexture() {
     return [
       [1.0, 1.0],
@@ -184,7 +212,10 @@ export default class ModelObject {
     ].flat(3);
   }
 
-  // speech bubble position
+  /**
+   * speech bubble position
+   * @returns
+   */
   getSpeechBubbleVertices() {
     return [
       new Vector(...[2, 0, 4]).toArray(),
@@ -196,13 +227,20 @@ export default class ModelObject {
     ].flat(3);
   }
 
+  /**
+   * bind texture
+   * @param {*} texture
+   */
   attach(texture) {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(this.engine.shaderProgram.diffuseMapUniform, 0);
   }
-  // draw obj model with materials
+
+  /**
+   * draw obj model with materials and textures (needs work)
+   */
   drawTexturedObj() {
     let { engine, mesh } = this;
     // draw each piece of the object (per material)
@@ -247,7 +285,9 @@ export default class ModelObject {
     }
   }
 
-  // draw object with textures / materials
+  /**
+   * draw object with textures / materials
+   */
   drawObj() {
     let { engine, mesh } = this;
     engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
@@ -258,7 +298,10 @@ export default class ModelObject {
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 
-  // Draw Object
+  /**
+   * Draw Object
+   * @returns
+   */
   draw() {
     if (!this.loaded) return;
     let { engine, mesh } = this;
@@ -282,7 +325,7 @@ export default class ModelObject {
         ]);
     }
     // Draw Object
-    console.log({mesh});
+    console.log({ mesh });
     if (!mesh.textures.length) {
       this.drawObj();
     } else {
@@ -294,13 +337,19 @@ export default class ModelObject {
     engine.gl.disableVertexAttribArray(engine.shaderProgram.aVertexNormal);
   }
 
-  // Set Facing
+  /**
+   * Set Facing
+   * @param {*} facing
+   */
   setFacing(facing) {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }
 
-  // Add Action to Queue
+  /**
+   * Add Action to Queue
+   * @param {*} action
+   */
   async addAction(action) {
     action = await Promise.resolve(action);
     if (this.actionDict[action.id]) this.removeAction(action.id);
@@ -308,19 +357,28 @@ export default class ModelObject {
     this.actionList.push(action);
   }
 
-  // Remove Action
+  /**
+   * Remove Action
+   * @param {*} id
+   */
   removeAction(id) {
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
 
-  // Remove Action
+  /**
+   * Remove Action
+   */
   removeAllActions() {
     this.actionList = [];
     this.actionDict = {};
   }
 
-  // Tick
+  /**
+   * Outer Tick Handler
+   * @param {number} time
+   * @returns
+   */
   tickOuter(time) {
     if (!this.loaded) return;
     // Sort activities by increasing startTime, then by id
@@ -344,12 +402,18 @@ export default class ModelObject {
     if (this.tick) this.tick(time);
   }
 
-  // Hook for sprite implementations
+  /**
+   * Hook for sprite implementations
+   */
   init() {
     console.log('- object hook', this.id, this.pos);
   }
 
-  // speak
+  /**
+   * speak
+   * @param {*} text
+   * @param {*} showBubble
+   */
   speak(text, showBubble = false) {
     if (!text) this.speech.clearHud();
     else {
@@ -365,7 +429,12 @@ export default class ModelObject {
     }
   }
 
-  // handles interaction -- default (should be overridden in definition)
+  /**
+   * handles interaction -- default (should be overridden in definition)
+   * @param {*} sprite
+   * @param {*} finish
+   * @returns
+   */
   async interact(sprite, finish) {
     let ret = null;
     // React based on internal state
@@ -378,19 +447,28 @@ export default class ModelObject {
     return ret;
   }
 
-  // Set Facing
+  /**
+   * Set Facing
+   * @param {*} facing
+   */
   setFacing(facing) {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }
 
-  // Set Facing
+  /**
+   * Change direction
+   * @param {*} facing
+   * @returns
+   */
   faceDir(facing) {
     if (this.facing == facing || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
   }
 
-  // set message (for chat bubbles)
+  /**
+   * set message (for chat bubbles)
+   */
   setGreeting(greeting) {
     if (this.speech.clearHud) {
       this.speech.clearHud();

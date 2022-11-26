@@ -21,20 +21,25 @@ import World from '@Engine/core/world.jsx';
 
 // Scene Object
 export default class Scene {
+  /**
+   * Scenes represent an individual Pixospritz
+   * @returns
+   */
   constructor() {
-    // Shaders
     this.shaders = {
       fs: fs(),
       vs: vs(),
     };
-    // Singleton
     if (!Scene._instance) {
       Scene._instance = this;
     }
     return Scene._instance;
   }
 
-  // Init Scene
+  /**
+   * Init Scene
+   * @param {*} engine
+   */
   init = async (engine) => {
     // game Engine & Timing
     Scene._instance.engine = engine;
@@ -71,7 +76,10 @@ export default class Scene {
     });
   };
 
-  // Todo - Load scene remotely
+  /**
+   * Todo - Load scene remotely
+   * @param {string} src
+   */
   loadSceneManifest = async (src) => {
     // Put up loading Screen
     //
@@ -84,7 +92,11 @@ export default class Scene {
     // Start
   };
 
-  // Todo - Load avatar into scene
+  /**
+   * Todo - Load avatar into scene
+   * @param {string} src
+   * @param {string} zoneId
+   */
   loadAvatar = async (src, zoneId) => {
     // Put up loading Screen
     //
@@ -95,7 +107,9 @@ export default class Scene {
     // Add to Zone
   };
 
-  // Todo - Load avatar into scene
+  /**
+   * Todo - Load avatar into scene
+   */
   exportAvatar = async () => {
     let zip = new JSZip();
     let avatar = {}; // todo;
@@ -106,7 +120,11 @@ export default class Scene {
     saveAs(blob, 'avatar.zip');
   };
 
-  // Render Loop
+  /**
+   * Render Loop
+   * @param {*} engine
+   * @param {number} now
+   */
   render = (engine, now) => {
     // Build
     Scene._instance.world.tickOuter(now);
@@ -114,19 +132,28 @@ export default class Scene {
     this.draw(engine);
   };
 
-  // Draw Scene
+  /**
+   * Draw Scene
+   * @param {*} engine
+   */
   draw = (engine) => {
     Scene._instance.world.draw(engine);
   };
 
-  // Keyboard handler for Scene
+  /**
+   * Keyboard event handler for Scene
+   * @param {*} e
+   */
   onKeyEvent = (e) => {
     if (e.type === 'keydown') {
       Scene._instance.engine.keyboard.onKeyDown(e);
     } else Scene._instance.engine.keyboard.onKeyUp(e);
   };
 
-  // Mobile Touch handler for Scene
+  /**
+   * Mobile Touch event handler for Scene
+   * @param {*} e
+   */
   onTouchEvent = (e) => {
     switch (e.type) {
       case 'mousedown':

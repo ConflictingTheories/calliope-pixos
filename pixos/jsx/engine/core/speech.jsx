@@ -15,6 +15,12 @@ import ActionQueue from '@Engine/core/queue.jsx';
 import { textScrollBox } from '@Engine/core/hud.jsx';
 
 export default class Speech {
+  /**
+   * Speech Bubble and positioned text
+   * @param {*} canvas 
+   * @param {*} engine 
+   * @param {string} id 
+   */
   constructor(canvas, engine, id) {
     this.id = id;
     this.engine = engine;
@@ -26,12 +32,18 @@ export default class Speech {
     this.loadImage();
   }
 
+  /**
+   * Run action if loaded or add to queue
+   * @param {*} action
+   */
   runWhenLoaded(action) {
     if (this.loaded) action();
     else this.onLoadActions.add(action);
   }
 
-  // Load Texture from Image
+  /**
+   * Load Texture from Image
+   */
   loadImage() {
     let { gl } = this.engine;
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -46,7 +58,9 @@ export default class Speech {
     this.onLoadActions.run();
   }
 
-  // Bind texture to Uniform
+  /**
+   * Bind texture to Uniform
+   */
   attach() {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
@@ -54,14 +68,21 @@ export default class Speech {
     gl.uniform1i(this.engine.shaderProgram.samplerUniform, 0);
   }
 
-  // clear HUD overlay
+  /**
+   * clear HUD overlay
+   */
   clearHud() {
     const { ctx } = this;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     this.loadImage();
   }
 
-  // Write Text to HUD
+  /**
+   * Write Text to HUD
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   */
   writeText(text, x, y) {
     const { ctx } = this;
     ctx.save();
@@ -73,7 +94,13 @@ export default class Speech {
     ctx.restore();
   }
 
-  // Scrolling Textbox
+  /**
+   * Scrolling Textbox
+   * @param {string} text
+   * @param {boolean} scrolling
+   * @param {*} options
+   * @returns
+   */
   scrollText(text, scrolling = false, options = {}) {
     let txt = new textScrollBox(this.ctx);
     if (options.portrait) {

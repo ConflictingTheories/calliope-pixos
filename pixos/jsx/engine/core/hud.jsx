@@ -1,8 +1,11 @@
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
-// Scrolling Text Box UI (For Dialogue)
 export class textScrollBox {
-  // courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+  /**
+   * Scrolling Text Box UI (For Dialogue)
+   * --> courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+   * @param {*} ctx
+   */
   constructor(ctx) {
     this.ctx = ctx;
     this.dirty = true; // indicates that variouse setting need update
@@ -24,7 +27,16 @@ export class textScrollBox {
     this.fontStyle = 'white';
     this.lines = [];
   }
-  // initialize widget
+
+  /**
+   * initialize textbox
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {number} width
+   * @param {number} height
+   * @param {*} options
+   */
   init(text, x, y, width, height, options = {}) {
     this.text = text;
     this.x = x;
@@ -35,7 +47,11 @@ export class textScrollBox {
     this.setOptions(options);
     this.cleanit();
   }
-  // Clean & format text
+
+  /**
+   * Clean & format text
+   * @param {boolean} dontFitText
+   */
   cleanit(dontFitText) {
     if (this.dirty) {
       this.setFont();
@@ -46,7 +62,11 @@ export class textScrollBox {
       }
     }
   }
-  // Apply options
+
+  /**
+   * Apply options
+   * @param {*} options
+   */
   setOptions(options) {
     Object.keys(this).forEach((key) => {
       if (options[key] !== undefined) {
@@ -55,12 +75,18 @@ export class textScrollBox {
       }
     });
   }
-  // Apply font
+
+  /**
+   * Apply font
+   */
   setFont() {
     this.fontStr = this.fontSize + 'px ' + this.font;
     this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.05);
   }
-  // Get Text Position
+
+  /**
+   * Get Text Position
+   */
   getTextPos() {
     if (this.align === 'left') {
       this.textPos = 2;
@@ -70,7 +96,10 @@ export class textScrollBox {
       this.textPos = Math.floor((this.width - -this.scrollBox.width) / 2);
     }
   }
-  // Fit to Text box
+
+  /**
+   * Fit to Text box
+   */
   fitText() {
     let { ctx } = this;
     this.cleanit(true); // MUST PASS TRUE or will recurse to call stack overflow
@@ -104,7 +133,11 @@ export class textScrollBox {
     }
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;
   }
-  // Draw Textbox border
+
+  /**
+   * Draw Textbox border
+   * @param {boolean} portrait
+   */
   drawBorder(portrait = false) {
     let { ctx } = this;
     let bw = this.border.lineWidth / 2;
@@ -117,7 +150,10 @@ export class textScrollBox {
       ctx.strokeRect(this.x - bw, this.y - bw, this.width + 2 * bw, this.height + 2 * bw);
     }
   }
-  // Draw Scrollbar on the side
+
+  /**
+   * Draw Scrollbar on the side
+   */
   drawScrollBox() {
     let { ctx } = this;
     let scale = this.height / (this.lines.length * this.textHeight);
@@ -130,12 +166,19 @@ export class textScrollBox {
     }
     ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y - this.scrollY * scale, this.scrollBox.width, barsize);
   }
-  // Draw Scrollbar on the side
+
+  /**
+   * Draw Scrollbar on the side
+   */
   drawPortrait() {
     let { ctx } = this;
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
   }
-  // Scroll to position
+
+  /**
+   * Scroll to position
+   * @param {number} pos
+   */
   scroll(pos) {
     this.cleanit();
     this.scrollY = -pos;
@@ -145,7 +188,11 @@ export class textScrollBox {
       this.scrollY = -this.maxScroll;
     }
   }
-  // Scroll to position
+
+  /**
+   * Scroll to position
+   * @param {number} x
+   */
   scrollLines(x) {
     this.cleanit();
     this.scrollY = -this.textHeight * x;
@@ -155,7 +202,10 @@ export class textScrollBox {
       this.scrollY = -this.maxScroll;
     }
   }
-  // Draw
+
+  /**
+   * Draw
+   */
   render() {
     let { ctx } = this;
     this.cleanit();

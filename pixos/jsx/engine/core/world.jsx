@@ -46,19 +46,28 @@ export default class World {
     };
   }
 
-  // push action into next frame
+  /**
+   * push action into next frame
+   * @param {*} action
+   */
   runAfterTick(action) {
     this.afterTickActions.add(action);
   }
 
-  // Sort zones for correct render order
+  /**
+   * Sort zones for correct render order
+   */
   sortZones() {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
   }
 
-  // todo -- setup method to read in json objects from zip
-
-  // Fetch and Load Zone
+  /**
+   * Fetch and Load Zone
+   * @param {string} zoneId
+   * @param {Zip} zip
+   * @param {*} skipCache
+   * @returns
+   */
   async loadZoneFromZip(zoneId, zip, skipCache = false) {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
@@ -89,7 +98,13 @@ export default class World {
     return z;
   }
 
-  // Fetch and Load Zone
+  /**
+   * Fetch and Load Zone
+   * @param {string} zoneId
+   * @param {boolean} remotely
+   * @param {boolean} skipCache
+   * @returns
+   */
   async loadZone(zoneId, remotely = false, skipCache = false) {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
@@ -114,7 +129,10 @@ export default class World {
     return z;
   }
 
-  // Remove Zone
+  /**
+   * Remove Zone
+   * @param {string} zoneId
+   */
   removeZone(zoneId) {
     this.zoneList = this.zoneList.filter((zone) => {
       if (zone.id !== zoneId) {
@@ -130,7 +148,9 @@ export default class World {
     delete this.zoneDict[zoneId];
   }
 
-  // Remove Zones
+  /**
+   * Remove Zones
+   */
   removeAllZones() {
     this.zoneList.map((z) => {
       if (z.audio) {
@@ -143,13 +163,19 @@ export default class World {
     this.zoneDict = {};
   }
 
-  // Update
+  /**
+   * Update
+   * @param {number} time
+   */
   tick(time) {
     for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
   }
 
-  // read input (HIGHEST LEVEL)
+  /**
+   * read input (HIGHEST LEVEL)
+   * @param {number} time
+   */
   checkInput(time) {
     if (time > this.lastKey + 200) {
       let touchmap = this.engine.gamepad.checkInput();
@@ -166,33 +192,48 @@ export default class World {
     }
   }
 
-  // open start menu
+  /**
+   * open start menu
+   * @param {*} menuConfig
+   * @param {string[]} defaultMenus
+   */
   startMenu(menuConfig, defaultMenus = ['start']) {
     this.addEvent(
       new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
   }
 
-  // Add Event to Queue
+  /**
+   * Add Event to Queue
+   * @param {*} event
+   */
   addEvent(event) {
     if (this.eventDict[event.id]) this.removeAction(event.id);
     this.eventDict[event.id] = event;
     this.eventList.push(event);
   }
 
-  // Remove Action
+  /**
+   * Remove Action
+   * @param {string} id
+   */
   removeAction(id) {
     this.eventList = this.eventList.filter((event) => event.id !== id);
     delete this.eventDict[id];
   }
 
-  // Remove Action
+  /**
+   * Remove All Actions
+   */
   removeAllActions() {
     this.eventList = [];
     this.eventDict = {};
   }
 
-  // Tick
+  /**
+   * Outer Tick Handler - run events, actions and ticks for zones
+   * @param {number} time
+   */
   tickOuter(time) {
     // read input
     this.checkInput(time);
@@ -217,12 +258,19 @@ export default class World {
     if (this.tick && !this.isPaused) this.tick(time);
   }
 
-  // Draw Each Zone
+  /**
+   * Draw Each Zone
+   */
   draw() {
     for (let z in this.zoneDict) this.zoneDict[z].draw(this.engine);
   }
 
-  // Check for Cell inclusion
+  /**
+   * Check for Cell inclusion
+   * @param {number} x
+   * @param {number} y
+   * @returns
+   */
   zoneContaining(x, y) {
     for (let z in this.zoneDict) {
       let zone = this.zoneDict[z];
@@ -233,8 +281,9 @@ export default class World {
 
   /**
    * Finds a path if one exists between two points on the world
-   * @param Vector from
-   * @param Vector to
+   * @param {Vector} from
+   * @param {Vector} to
+   * @returns
    */
   pathFind(from, to) {
     // memory
@@ -281,8 +330,9 @@ export default class World {
 
   /**
    *  Gets adjacencies
-   * @param int x
-   * @param int y
+   * @param {int} x
+   * @param {int} y
+   * @returns
    */
   getNeighbours(x, y) {
     let top = [x, y + 1, Direction.Up],
@@ -292,7 +342,13 @@ export default class World {
     return [top, left, right, bottom];
   }
 
-  // Should we skip?
+  /**
+   * Should we skip?
+   * @param {*} neighbour
+   * @param {*} jsonNeighbour
+   * @param {*} visited
+   * @returns
+   */
   canWalk(neighbour, jsonNeighbour, visited) {
     let zone = this.zoneContaining(...neighbour);
     if (
@@ -307,7 +363,7 @@ export default class World {
   }
 }
 
-// Pathfinding Algorithm
+// Pathfinding Algorithm (Note: Needs some work -- has some issues, and is not efficient)
 // ---------------------
 // Start Point
 // Goal

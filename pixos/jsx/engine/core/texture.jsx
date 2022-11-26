@@ -12,7 +12,13 @@
 \*                                                 */
 
 import ActionQueue from '@Engine/core/queue.jsx';
-export class Texture {
+import Loadable from '@Engine/core/loadable.jsx';
+export class Texture extends Loadable {
+  /**
+   * Texture objects for use with the pixos engine
+   * @param {string} src
+   * @param {} engine
+   */
   constructor(src, engine) {
     this.engine = engine;
     this.src = src;
@@ -24,12 +30,9 @@ export class Texture {
     this.onLoadActions = new ActionQueue();
   }
 
-  runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
-  }
-
-  // Load Texture from Image
+  /**
+   * Load Texture from Image
+   */
   onImageLoaded() {
     let { gl } = this.engine;
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
@@ -41,7 +44,9 @@ export class Texture {
     this.onLoadActions.run();
   }
 
-  // Bind texture to Uniform
+  /**
+   * Bind texture to Uniform
+   */
   attach() {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
@@ -50,7 +55,12 @@ export class Texture {
   }
 }
 
-export class ColorTexture {
+export class ColorTexture extends Loadable {
+  /**
+   * Solid colour texture to use in engine
+   * @param {number[]} color
+   * @param {*} engine
+   */
   constructor(color, engine) {
     this.engine = engine;
     this.color = color;
@@ -60,12 +70,9 @@ export class ColorTexture {
     this.loadTexture();
   }
 
-  runWhenLoaded(action) {
-    if (this.loaded) action();
-    else this.onLoadActions.add(action);
-  }
-
-  // Load Texture from Image
+  /**
+   * Load Texture from Image
+   */
   loadTexture() {
     let { gl } = this.engine;
     const level = 0;
@@ -83,7 +90,9 @@ export class ColorTexture {
     this.onLoadActions.run();
   }
 
-  // Bind texture to Uniform
+  /**
+   * Bind texture to Uniform
+   */
   attach() {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);

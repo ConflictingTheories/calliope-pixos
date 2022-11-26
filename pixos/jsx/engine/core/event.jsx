@@ -11,6 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 export default class Event {
+  /**
+   * Events are High-Level Analogues to actions
+   * @param {string} type
+   * @param {World} world
+   * @param {*} callback
+   */
   constructor(type, world, callback) {
     this.type = type;
     this.world = world;
@@ -18,7 +24,15 @@ export default class Event {
     this.time = new Date().getTime();
     this.id = world.id + '-' + type + '-' + this.time;
   }
-  // configure action
+
+  /**
+   * configure event
+   * @param {string} type
+   * @param {World} world
+   * @param {string} id
+   * @param {number} time
+   * @param {*} args
+   */
   configure(type, world, id, time, args) {
     this.world = world;
     this.id = id;
@@ -26,12 +40,20 @@ export default class Event {
     this.startTime = time;
     this.creationArgs = args;
   }
-  // initialize on load
+
+  /**
+   * initialize on load
+   * @param {*} args
+   */
   async onLoad(args) {
     await this.init.apply(this, args);
     this.loaded = true;
   }
-  // serialize
+
+  /**
+   * serialize
+   * @returns
+   */
   serialize() {
     return {
       id: this.id,
@@ -41,7 +63,11 @@ export default class Event {
       args: this.creationArgs,
     };
   }
-  // callback on completion
+
+  /**
+   * callback on completion
+   * @returns
+   */
   onComplete() {
     return this.callback ? this.callback() : null;
   }

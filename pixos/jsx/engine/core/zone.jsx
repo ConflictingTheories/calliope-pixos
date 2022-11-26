@@ -17,12 +17,14 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
 import { loadMap } from '@Engine/dynamic/map.jsx';
 import { dynamicCells } from '@Engine/dynamic/cells.jsx';
+import Loadable from '@Engine/core/loadable.jsx';
 
-// for dynamic loading -- todo
-// import { loadMap } from "../../scenes/maps/dynamic/map";
-// import { dynamicCells } from "../../scenes/maps/dynamic/cells";
-
-export default class Zone {
+export default class Zone extends Loadable {
+  /**
+   * Zones represent Map Sections either standalone or part of a set
+   * @param {string} zoneId
+   * @param {World} world
+   */
   constructor(zoneId, world) {
     this.sceneName = world.id;
     this.id = zoneId;
@@ -39,7 +41,7 @@ export default class Zone {
     this.onLoadActions = new ActionQueue();
     this.spriteLoader = new SpriteLoader(world.engine);
     this.objectLoader = new ObjectLoader(world.engine);
-    this.EventLoader = EventLoader
+    this.EventLoader = EventLoader;
     this.tsLoader = new TilesetLoader(world.engine);
     this.audio = null;
     // bind
@@ -52,7 +54,9 @@ export default class Zone {
     this.checkInput = this.checkInput.bind(this);
   }
 
-  // Load Map Resource from URL
+  /**
+   * Load Map Resource from URL
+   */
   async loadRemote() {
     const fileResponse = await fetch(Resources.zoneRequestUrl(this.id));
     if (fileResponse.ok) {
@@ -82,7 +86,9 @@ export default class Zone {
     }
   }
 
-  // Load Tileset Directly (precompiled)
+  /**
+   * Load Tileset Directly (precompiled)
+   */
   async load() {
     try {
       // Extract and Read in Information
@@ -117,15 +123,26 @@ export default class Zone {
     }
   }
 
-  // load trigger scripts from zip
+  /**
+   * load trigger scripts from zip
+   * @param {string} trigger
+   * @param {Zip} zip
+   * @returns
+   */
   async loadTriggerFromZip(trigger, zip) {
     let triggerScript = await zip.file(`triggers/${trigger}.js`).async('string');
     return eval.call(this, triggerScript);
   }
 
-  // Load from Json components -- For more Dynamic Evaluation
-  // todo --- NEEDS TO access the JSON from the World Level to Load New Instances
-  // as it is reading everything from the prebundled zip
+  /**
+   * Load from Json components -- For more Dynamic Evaluation
+   * todo --- NEEDS TO access the JSON from the World Level to Load New Instances
+   * as it is reading everything from the prebundled zip
+   * @param {*} zoneJson
+   * @param {*} cellJson
+   * @param {Zip} zip
+   * @param {boolean} skipCache
+   */
   async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
     let self = this;
     try {
@@ -185,13 +202,9 @@ export default class Zone {
 
       try {
         // Extract and Read in Information
-
         var tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.sceneName);
-
         var cells = dynamicCells(cellJson, tileset.tiles);
-
         var map = await loadMap.call(this, zoneJson, cells, zip);
-
         Object.assign(this, map);
       } catch (e) {
         console.error({ msg: 'error reading in zone & cell data', e });
@@ -275,19 +288,17 @@ export default class Zone {
     }
   }
 
-  // Actions to run when the map has loaded
-  runWhenLoaded(action) {
-    if (this.loaded) action.apply(this);
-    else this.onLoadActions.add(action.bind(this));
-  }
-
-  // tear down
+  /**
+   * tear down
+   */
   runWhenDeleted() {
     // remove lights associated with zone
     this.lights.forEach((light) => this.engine.removeLight(light.id));
   }
 
-  // When tileset loads
+  /**
+   * When tileset loads
+   */
   onTilesetDefinitionLoaded() {
     this.vertexPosBuf = [];
     this.vertexTexBuf = [];
@@ -316,7 +327,10 @@ export default class Zone {
     }
   }
 
-  // run after each tileset / sprite is loaded
+  /**
+   * run after each tileset / sprite is loaded
+   * @returns
+   */
   onTilesetOrSpriteLoaded() {
     if (this.loaded || !this.tileset.loaded || !this.spriteList.every((sprite) => sprite.loaded) || !this.objectList.every((object) => object.loaded))
       return;
@@ -326,7 +340,11 @@ export default class Zone {
     this.onLoadActions.run();
   }
 
-  // trigger scripts to load (useful for pausing game to show menu, etc.)
+  /**
+   * trigger scripts to load (useful for pausing game to show menu, etc.)
+   * @param {boolean} refresh
+   * @returns
+   */
   loadScripts(refresh = false) {
     // Load Scene Triggers
     if (this.world.isPaused) {
@@ -341,7 +359,11 @@ export default class Zone {
     });
   }
 
-  // load obj model
+  /**
+   * load obj model
+   * @param {*} _this
+   * @param {*} data
+   */
   async loadObject(_this, data) {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
@@ -351,7 +373,12 @@ export default class Zone {
     }
   }
 
-  // load obj model from zip bundle
+  /**
+   * load obj model from zip bundle
+   * @param {*} _this
+   * @param {*} data
+   * @param {Zip} zip
+   */
   async loadObjectFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
@@ -361,7 +388,11 @@ export default class Zone {
     }
   }
 
-  // Load Sprite
+  /**
+   * Load Sprite
+   * @param {*} _this
+   * @param {*} data
+   */
   async loadSprite(_this, data) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
@@ -371,7 +402,12 @@ export default class Zone {
     }
   }
 
-  // Load Sprite from zip bundle
+  /**
+   * Load Sprite from zip bundle
+   * @param {*} _this
+   * @param {*} data
+   * @param {Zip} zip
+   */
   async loadSpriteFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
@@ -381,14 +417,20 @@ export default class Zone {
     }
   }
 
-  // Add an existing sprite to the zone
+  /**
+   * Add an existing sprite to the zone
+   * @param {Sprite} sprite
+   */
   addSprite(sprite) {
     sprite.zone = this;
     this.spriteDict[sprite.id] = sprite;
     this.spriteList.push(sprite);
   }
 
-  // Remove an sprite from the zone
+  /**
+   * Remove an sprite from the zone
+   * @param {string} id
+   */
   removeSprite(id) {
     this.spriteList = this.spriteList.filter((sprite) => {
       if (sprite.id !== id) {
@@ -400,18 +442,30 @@ export default class Zone {
     delete this.spriteDict[id];
   }
 
-  // Remove all sprites from the zone
+  /**
+   * Remove all sprites from the zone
+   */
   removeAllSprites() {
     this.spriteList = [];
     this.spriteDict = {};
   }
 
-  // Remove an sprite from the zone
+  /**
+   * Remove an sprite from the zone
+   * @param {string} id
+   * @returns
+   */
   getSpriteById(id) {
     return this.spriteDict[id];
   }
 
-  // add portal to provide list of sprites
+  /**
+   * add portal to provide list of sprites
+   * @param {Sprites[]} sprites
+   * @param {number} x
+   * @param {number} y
+   * @returns
+   */
   addPortal(sprites, x, y) {
     if (this.portals.length > 0 && this.getHeight(x, y) === 0) {
       let portal = this.portals.pop();
@@ -425,7 +479,12 @@ export default class Zone {
     return sprites;
   }
 
-  // Calculate the height of a point in the zone
+  /**
+   * Calculate the height of a point in the zone
+   * @param {number} x
+   * @param {number} y
+   * @returns
+   */
   getHeight(x, y) {
     if (!this.isInZone(x, y)) {
       console.error('Requesting height for [' + x + ', ' + y + '] outside zone bounds');
@@ -471,7 +530,10 @@ export default class Zone {
     return cell[2];
   }
 
-  // Draw Row of Zone
+  /**
+   * Draw Row of Zone
+   * @param {*} row
+   */
   drawRow(row) {
     // vertice positions
     this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.aVertexPosition);
@@ -485,7 +547,10 @@ export default class Zone {
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }
 
-  // Draw Frame
+  /**
+   * Draw Frame
+   * @returns
+   */
   draw() {
     if (!this.loaded) return;
     // Organize by Depth
@@ -541,14 +606,22 @@ export default class Zone {
     this.engine.mvPopMatrix();
   }
 
-  // Update
+  /**
+   * Update
+   * @param {number} time
+   * @param {boolean} isPaused
+   * @returns
+   */
   tick(time, isPaused) {
     if (!this.loaded || isPaused) return;
     this.checkInput(time);
     this.spriteList.forEach(async (sprite) => sprite.tickOuter(time));
   }
 
-  // read input
+  /**
+   * read input
+   * @param {number} time
+   */
   async checkInput(time) {
     if (time > this.lastKey + 100) {
       let touchmap = this.engine.gamepad.checkInput();
@@ -565,12 +638,23 @@ export default class Zone {
     }
   }
 
-  // Check for zone inclusion
+  /**
+   * Check for zone inclusion
+   * @param {number} x
+   * @param {number} y
+   * @returns
+   */
   isInZone(x, y) {
     return x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3];
   }
 
-  // Cell Walkable
+  /**
+   *
+   * @param {number} x
+   * @param {number} y
+   * @param {number} direction
+   * @returns
+   */
   isWalkable(x, y, direction) {
     if (!this.isInZone(x, y)) return null;
     for (let sprite in this.spriteDict) {
@@ -636,14 +720,24 @@ export default class Zone {
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + x - this.bounds[0]] & direction) != 0;
   }
 
-  // check cells
+  /**
+   * check cells for position inclusion
+   * @param {number} x
+   * @param {number} a
+   * @param {number} b
+   * @param {boolean} include
+   * @returns
+   */
   within(x, a, b, include = false) {
     if (include && x >= a && x <= b) return true;
     if (!include && x > a && x < b) return true;
     return false;
   }
 
-  // Trigger Script
+  /**
+   * Trigger Script
+   * @param {string} id
+   */
   triggerScript(id) {
     this.scripts.forEach((x) => {
       if (x.id === id) {
@@ -652,7 +746,13 @@ export default class Zone {
     });
   }
 
-  // Move the sprite
+  /**
+   * Move the sprite
+   * @param {string} id
+   * @param {number[]} location
+   * @param {*} running
+   * @returns
+   */
   async moveSprite(id, location, running = false) {
     return new Promise(async (resolve, reject) => {
       let sprite = this.getSpriteById(id);
@@ -660,7 +760,13 @@ export default class Zone {
     });
   }
 
-  // Sprite Dialogue
+  /**
+   * Sprite Dialogue
+   * @param {string} id
+   * @param {string} dialogue
+   * @param {*} options
+   * @returns
+   */
   async spriteDialogue(id, dialogue, options = { autoclose: true }) {
     return new Promise(async (resolve, reject) => {
       let sprite = this.getSpriteById(id);
@@ -668,7 +774,11 @@ export default class Zone {
     });
   }
 
-  // Run Action configuration from JSON description
+  /**
+   * Run Action configuration from JSON description
+   * @param {*} actions
+   * @returns
+   */
   async runActions(actions) {
     let self = this;
     return await actions.reduce(async (prev, action) => {
@@ -706,7 +816,11 @@ export default class Zone {
     }, Promise.resolve());
   }
 
-  // Play a scene
+  /**
+   * Play a scene
+   * @param {string} id
+   * @param {*} scenes
+   */
   async playScene(id, scenes = null) {
     let self = this;
     if (!scenes) {

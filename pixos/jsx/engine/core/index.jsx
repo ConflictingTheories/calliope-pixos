@@ -26,6 +26,16 @@ import Keyboard from '@Engine/utils/keyboard.jsx';
 import createTransition from 'gl-transition';
 
 export default class GLEngine {
+  /**
+   * Core Pixos Graphics & Game Engine
+   * @param {*} canvas
+   * @param {*} hud
+   * @param {*} mipmap
+   * @param {*} gamepadcanvas
+   * @param {*} fileUpload
+   * @param {*} width
+   * @param {*} height
+   */
   constructor(canvas, hud, mipmap, gamepadcanvas, fileUpload, width, height) {
     this.uViewMat = create();
     this.uProjMat = create();
@@ -85,7 +95,13 @@ export default class GLEngine {
     this.store = store.pixos;
   }
 
-  // add a light source to the renderer
+  /**
+   * add a light source to the renderer
+   * @param {*} id
+   * @param {*} pos
+   * @param {*} color
+   * @param {*} direction
+   */
   addLight(id, pos, color, direction = null) {
     this.lights.push({
       id,
@@ -95,12 +111,18 @@ export default class GLEngine {
     });
   }
 
-  // add a light source to the renderer
+  /**
+   * add a light source to the renderer
+   * @param {*} id
+   */
   removeLight(id) {
     this.lights = this.lights.filter((light) => light.id !== id);
   }
 
-  // Initialize a Scene object
+  /**
+   * Initialize a Scene object
+   * @param {*} scene
+   */
   async init(scene) {
     const ctx = this.hud.getContext('2d');
     const gl = this.canvas.getContext('webgl');
@@ -152,47 +174,92 @@ export default class GLEngine {
     await scene.init(this);
   }
 
-  // fetch value
+  /**
+   * fetch value
+   * @param {*} store
+   * @param {*} key
+   * @returns
+   */
   async dbGet(store, key) {
     return await this.db[store].get(key);
   }
 
-  // add key to db store and returns id
+  /**
+   * add key to db store and returns id
+   * @param {*} store
+   * @param {*} value
+   * @returns
+   */
   async dbAdd(store, value) {
     return await this.db[store].add({ ...value });
   }
 
-  // update key to db store returns number of rows
+  /**
+   * update key to db store returns number of rows
+   * @param {*} store
+   * @param {*} id
+   * @param {*} changes
+   * @returns
+   */
   async dbUpdate(store, id, changes) {
     return await this.db[store].update(id, { ...changes });
   }
 
-  // update key to db store returns number of rows
+  /**
+   * update key to db store returns number of rows
+   * @param {*} store
+   * @param {*} id
+   * @returns
+   */
   async dbRemove(store, id) {
     return await this.db[store].delete(id);
   }
 
-  // fetch value from store
+  /**
+   * fetch value from store
+   * @param {*} key
+   * @returns
+   */
   fetchStore(key) {
     return this.store[key];
   }
 
-  // add key to store and returns id
+  /**
+   * add key to store and returns id
+   * @param {*} key
+   * @param {*} value
+   * @returns
+   */
   addStore(key, value) {
     return (this.store[key] = { ...value });
   }
 
-  // update key in store returns number of rows
+  /**
+   * update key in store returns number of rows
+   * @param {*} key
+   * @param {*} changes
+   * @returns
+   */
   updateStore(key, changes) {
     return (this.store[key] = { ...changes });
   }
 
-  // delete key from store returns number of rows
+  /**
+   * delete key from store returns number of rows
+   * @param {*} key
+   * @returns
+   */
   delStore(key) {
     return (this.store[key] = null);
   }
 
-  // Load and Compile Shader Source
+  /**
+   * Load and Compile Shader Source
+   * @param {*} gl
+   * @param {*} type
+   * @param {*} source
+   * @returns
+   */
   loadShader(gl, type, source) {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -206,7 +273,12 @@ export default class GLEngine {
     return shader;
   }
 
-  // Initialize Shader Program
+  /**
+   * Initialize Shader Program
+   * @param {*} gl
+   * @param {*} param1
+   * @returns
+   */
   initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
     const self = this;
     const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
@@ -295,7 +367,10 @@ export default class GLEngine {
     return shaderProgram;
   };
 
-  // Set FOV and Perspective
+  /**
+   * Set FOV and Perspective
+   * @param {*} gl
+   */
   initProjection(gl) {
     const fieldOfView = this.degToRad(this.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -306,7 +381,9 @@ export default class GLEngine {
     this.uProjMat[5] *= -1;
   }
 
-  // Set Camera Pos & Angle
+  /**
+   * Set Camera Pos & Angle
+   */
   setCamera() {
     translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
     rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
@@ -347,7 +424,9 @@ export default class GLEngine {
     this.cameraVector.z += Math.sin(radians);
   }
 
-  // Clear Screen with Color (RGBA)
+  /**
+   * Clear Screen with Color (RGBA)
+   */
   clearScreen() {
     const { gl } = this;
     gl.viewport(0, 0, this.ctx.canvas.clientWidth, this.ctx.canvas.clientHeight);
@@ -356,13 +435,21 @@ export default class GLEngine {
     this.uViewMat = create();
   }
 
-  // clear HUD overlay
+  /**
+   * clear HUD overlay
+   */
   clearHud() {
     const { ctx } = this;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
-  // Write Text to HUD
+  /**
+   * Write Text to HUD
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {string} src
+   */
   writeText(text, x, y, src = null) {
     const { ctx } = this;
     ctx.save();
@@ -380,7 +467,15 @@ export default class GLEngine {
     ctx.restore();
   }
 
-  // Text to Speech output
+  /**
+   * Text to Speech output
+   * @param {string} text
+   * @param {SpeechSynthesisVoice} voice
+   * @param {string} lang
+   * @param {number} rate
+   * @param {number} volume
+   * @param {number} pitch
+   */
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
@@ -395,12 +490,21 @@ export default class GLEngine {
     window.speechSynthesis.speak(speech);
   }
 
-  // Greeting Text
+  /**
+   * Greeting Text
+   * @param {string} text
+   */
   setGreeting(text) {
     this.globalStore.greeting = text;
   }
 
-  // Scrolling Textbox
+  /**
+   * Scrolling Textbox
+   * @param {string} text
+   * @param {booleanq} scrolling
+   * @param {*} options
+   * @returns
+   */
   scrollText(text, scrolling = false, options = {}) {
     let txt = new textScrollBox(this.ctx);
     txt.init(text, 10, (2 * this.canvas.clientHeight) / 3, this.canvas.clientWidth - 20, this.canvas.clientHeight / 3 - 20, options);
@@ -412,7 +516,10 @@ export default class GLEngine {
     return txt;
   }
 
-  // Screensize
+  /**
+   * Screensize
+   * @returns
+   */
   screenSize() {
     return {
       width: this.canvas.clientWidth,
@@ -420,7 +527,15 @@ export default class GLEngine {
     };
   }
 
-  // Draws a button
+  /**
+   * Draws a button
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {number} w
+   * @param {number} h
+   * @param {*} colours
+   */
   drawButton(text, x, y, w, h, colours) {
     const { ctx } = this;
 
@@ -486,7 +601,9 @@ export default class GLEngine {
     ctx.restore();
   }
 
-  // Render Frame
+  /**
+   * Render Frame
+   */
   render() {
     this.requestId = requestAnimationFrame(this.render);
     this.clearScreen();
@@ -509,6 +626,9 @@ export default class GLEngine {
     }
   }
 
+  /**
+   * Go Fullscreen
+   */
   toggleFullscreen() {
     if (!this.fullscreen) {
       try {
@@ -527,7 +647,13 @@ export default class GLEngine {
     }
   }
 
-  // individual buffer
+  /**
+   * individual buffer
+   * @param {*} contents
+   * @param {*} type
+   * @param {*} itemSize
+   * @returns
+   */
   createBuffer(contents, type, itemSize) {
     let { gl } = this;
     let buf = gl.createBuffer();
@@ -539,7 +665,11 @@ export default class GLEngine {
     return buf;
   }
 
-  // update buffer
+  /**
+   * update buffer
+   * @param {*} buffer
+   * @param {*} contents
+   */
   updateBuffer(buffer, contents) {
     let { gl } = this;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -547,11 +677,170 @@ export default class GLEngine {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  // bind buffer
+  /**
+   * bind buffer
+   * @param {*} buffer
+   * @param {*} attribute
+   */
   bindBuffer(buffer, attribute) {
     let { gl } = this;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
+  }
+
+  /**
+   * convert a stream to a video
+   * @param {*} stream
+   * @param {*} ref
+   * @returns
+   */
+  streamToVideo(stream, ref) {
+    let video = document.createElement('video');
+    if (ref) {
+      video = ref.current;
+    }
+    video.srcObject = stream;
+    video.style.width = stream.width;
+    video.style.height = stream.height;
+    video.play();
+    return video;
+  }
+
+  /**
+   * convert a stream to an image
+   * @param {*} stream
+   * @param {*} ref
+   * @returns
+   */
+  streamToImage(stream, ref) {
+    let video = document.createElement('video');
+    if (ref) {
+      video = ref.current;
+    }
+    video.srcObject = stream;
+    video.style.width = stream.width;
+    video.style.height = stream.height;
+    video.play();
+    return video;
+  }
+
+  /**
+   * convert a stream to a texture
+   * @param {*} stream
+   * @param {*} ref
+   * @returns
+   */
+  streamToTexture(stream, ref) {
+    let video = document.createElement('video');
+    if (ref) {
+      video = ref.current;
+    }
+    video.srcObject = stream;
+    video.style.width = stream.width;
+    video.style.height = stream.height;
+    video.play();
+    return video;
+  }
+
+  /**
+   * load texture
+   * @param {*} src
+   * @returns
+   */
+  loadTexture(src) {
+    if (this.textures[src]) return this.textures[src];
+    this.textures[src] = new Texture(src, this);
+    return this.textures[src];
+  }
+
+  /**
+   * load texture from zip
+   * @param {*} src
+   * @param {*} zip
+   * @returns
+   */
+  async loadTextureFromZip(src, zip) {
+    if (this.textures[src]) return this.textures[src];
+    let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
+    let buffer = new Uint8Array(imageData);
+    let blob = new Blob([buffer.buffer]);
+    let dataUrl = URL.createObjectURL(blob);
+    this.textures[src] = new Texture(dataUrl, this);
+    return this.textures[src];
+  }
+
+  /**
+   * load speech
+   * @param {*} src
+   * @param {*} canvas
+   * @returns
+   */
+  loadSpeech(src, canvas) {
+    if (this.speeches[src]) return this.speeches[src];
+    this.speeches[src] = new Speech(canvas, this, src);
+    return this.speeches[src];
+  }
+
+  /**
+   * push new matrix to model stack
+   */
+  mvPushMatrix() {
+    let copy = create();
+    set(this.uViewMat, copy);
+    this.modelViewMatrixStack.push(copy);
+  }
+
+  /**
+   * Initalize Canvas from HUD and load as WebGL texture (TODO - make separate canvases)
+   * @returns
+   */
+  initCanvasTexture() {
+    let { gl } = this;
+    let canvasTexture = gl.createTexture();
+    this.handleLoadedTexture(canvasTexture, this.mipmap);
+    return canvasTexture;
+  }
+
+  /**
+   * Load canvas as texture
+   * @param {*} texture
+   * @param {*} textureCanvas
+   */
+  handleLoadedTexture(texture, textureCanvas) {
+    let { gl } = this;
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas); // This is the important line!
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
+  /**
+   * pop model stack and apply view
+   */
+  mvPopMatrix() {
+    if (this.modelViewMatrixStack.length == 0) {
+      throw 'Invalid popMatrix!';
+    }
+    this.uViewMat = this.modelViewMatrixStack.pop();
+  }
+
+  /**
+   * Clear Render Loop
+   */
+  close() {
+    cancelAnimationFrame(this.requestId);
+  }
+
+  /**
+   * Degrees to Radians
+   * @param {number} degrees
+   * @returns
+   */
+  degToRad(degrees) {
+    return (degrees * Math.PI) / 180;
   }
 
   // transition (fade, swipe, etc)
@@ -581,82 +870,82 @@ export default class GLEngine {
     switch (type) {
       case 'glitch':
         glsl = `
-          vec4 transition(vec2 p) {
-            vec2 block = floor(p.xy / vec2(16));
-            vec2 uv_noise = block / vec2(64);
-            uv_noise += floor(vec2(progress) * vec2(1200.0, 3500.0)) / vec2(64);
-            vec2 dist = progress > 0.0 ? (fract(uv_noise) - 0.5) * 0.3 *(1.0 -progress) : vec2(0.0);
-            vec2 red = p + dist * 0.2;
-            vec2 green = p + dist * .3;
-            vec2 blue = p + dist * .5;
-          
-            return vec4(mix(getFromColor(red), getToColor(red), progress).r,mix(getFromColor(green), getToColor(green), progress).g,mix(getFromColor(blue), getToColor(blue), progress).b,1.0);
-          }
-        `;
+            vec4 transition(vec2 p) {
+              vec2 block = floor(p.xy / vec2(16));
+              vec2 uv_noise = block / vec2(64);
+              uv_noise += floor(vec2(progress) * vec2(1200.0, 3500.0)) / vec2(64);
+              vec2 dist = progress > 0.0 ? (fract(uv_noise) - 0.5) * 0.3 *(1.0 -progress) : vec2(0.0);
+              vec2 red = p + dist * 0.2;
+              vec2 green = p + dist * .3;
+              vec2 blue = p + dist * .5;
+            
+              return vec4(mix(getFromColor(red), getToColor(red), progress).r,mix(getFromColor(green), getToColor(green), progress).g,mix(getFromColor(blue), getToColor(blue), progress).b,1.0);
+            }
+          `;
         break;
       case 'doorway':
         defaultParams = { reflection: 0.4, perspective: 0.4, depth: 3 };
         paramsTypes = { reflection: 'float', perspective: 'float', depth: 'float' };
         glsl = `
-            uniform float reflection; // = 0.4
-            uniform float perspective; // = 0.4
-            uniform float depth; // = 3
-
-            const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
-            const vec2 boundMin = vec2(0.0, 0.0);
-            const vec2 boundMax = vec2(1.0, 1.0);
-
-            bool inBounds (vec2 p) {
-              return all(lessThan(boundMin, p)) && all(lessThan(p, boundMax));
-            }
-
-            vec2 project (vec2 p) {
-              return p * vec2(1.0, -1.2) + vec2(0.0, -0.02);
-            }
-
-            vec4 bgColor (vec2 p, vec2 pto) {
-              vec4 c = black;
-              pto = project(pto);
-              if (inBounds(pto)) {
-                c += mix(black, getToColor(pto), reflection * mix(1.0, 0.0, pto.y));
+              uniform float reflection; // = 0.4
+              uniform float perspective; // = 0.4
+              uniform float depth; // = 3
+  
+              const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
+              const vec2 boundMin = vec2(0.0, 0.0);
+              const vec2 boundMax = vec2(1.0, 1.0);
+  
+              bool inBounds (vec2 p) {
+                return all(lessThan(boundMin, p)) && all(lessThan(p, boundMax));
               }
-              return c;
-            }
-
-            vec4 transition (vec2 p) {
-              vec2 pfr = vec2(-1.), pto = vec2(-1.);
-              float middleSlit = 2.0 * abs(p.x-0.5) - progress;
-              if (middleSlit > 0.0) {
-                pfr = p + (p.x > 0.5 ? -1.0 : 1.0) * vec2(0.5*progress, 0.0);
-                float d = 1.0/(1.0+perspective*progress*(1.0-middleSlit));
-                pfr.y -= d/2.;
-                pfr.y *= d;
-                pfr.y += d/2.;
+  
+              vec2 project (vec2 p) {
+                return p * vec2(1.0, -1.2) + vec2(0.0, -0.02);
               }
-              float size = mix(1.0, depth, 1.-progress);
-              pto = (p + vec2(-0.5, -0.5)) * vec2(size, size) + vec2(0.5, 0.5);
-              if (inBounds(pfr)) {
-                return getFromColor(pfr);
+  
+              vec4 bgColor (vec2 p, vec2 pto) {
+                vec4 c = black;
+                pto = project(pto);
+                if (inBounds(pto)) {
+                  c += mix(black, getToColor(pto), reflection * mix(1.0, 0.0, pto.y));
+                }
+                return c;
               }
-              else if (inBounds(pto)) {
-                return getToColor(pto);
+  
+              vec4 transition (vec2 p) {
+                vec2 pfr = vec2(-1.), pto = vec2(-1.);
+                float middleSlit = 2.0 * abs(p.x-0.5) - progress;
+                if (middleSlit > 0.0) {
+                  pfr = p + (p.x > 0.5 ? -1.0 : 1.0) * vec2(0.5*progress, 0.0);
+                  float d = 1.0/(1.0+perspective*progress*(1.0-middleSlit));
+                  pfr.y -= d/2.;
+                  pfr.y *= d;
+                  pfr.y += d/2.;
+                }
+                float size = mix(1.0, depth, 1.-progress);
+                pto = (p + vec2(-0.5, -0.5)) * vec2(size, size) + vec2(0.5, 0.5);
+                if (inBounds(pfr)) {
+                  return getFromColor(pfr);
+                }
+                else if (inBounds(pto)) {
+                  return getToColor(pto);
+                }
+                else {
+                  return bgColor(p, pto);
+                }
               }
-              else {
-                return bgColor(p, pto);
-              }
-            }
-          `;
+            `;
         break;
       case 'fade-out':
         glsl = `
-          vec4 transition (vec2 uv) {
-            return mix(
-              getFromColor(uv),
-              getToColor(uv),
-              progress
-            );
-          }
-        `;
+            vec4 transition (vec2 uv) {
+              return mix(
+                getFromColor(uv),
+                getToColor(uv),
+                progress
+              );
+            }
+          `;
         break;
       case 'swipe':
         break;
@@ -664,18 +953,18 @@ export default class GLEngine {
         defaultParams = { squaresMind: [20, 20], steps: 50 };
         paramsTypes = { squaresMind: 'vec2', steps: 'int' };
         glsl = `
-          uniform ivec2 squaresMin/* = ivec2(20) */; // minimum number of squares (when the effect is at its higher level)
-          uniform int steps /* = 50 */; // zero disable the stepping
-
-          float d = min(progress, 1.0 - progress);
-          float dist = steps>0 ? ceil(d * float(steps)) / float(steps) : d;
-          vec2 squareSize = 2.0 * dist / vec2(squaresMin);
-
-          vec4 transition(vec2 uv) {
-            vec2 p = dist>0.0 ? (floor(uv / squareSize) + 0.5) * squareSize : uv;
-            return mix(getFromColor(p), getToColor(p), progress);
-          }
-        `;
+            uniform ivec2 squaresMin/* = ivec2(20) */; // minimum number of squares (when the effect is at its higher level)
+            uniform int steps /* = 50 */; // zero disable the stepping
+  
+            float d = min(progress, 1.0 - progress);
+            float dist = steps>0 ? ceil(d * float(steps)) / float(steps) : d;
+            vec2 squareSize = 2.0 * dist / vec2(squaresMin);
+  
+            vec4 transition(vec2 uv) {
+              vec2 p = dist>0.0 ? (floor(uv / squareSize) + 0.5) * squareSize : uv;
+              return mix(getFromColor(p), getToColor(p), progress);
+            }
+          `;
         break;
     }
 
@@ -697,111 +986,5 @@ export default class GLEngine {
     this.transitionDuration = (params.duration ?? 1) * 1000;
     this.transitionTime = new Date().getMilliseconds + this.transitionDuration;
     this.transitionParams = params;
-  }
-
-  streamToVideo(stream, ref) {
-    let video = document.createElement('video');
-    if (ref) {
-      video = ref.current;
-    }
-    video.srcObject = stream;
-    video.style.width = stream.width;
-    video.style.height = stream.height;
-    video.play();
-    return video;
-  }
-
-  streamToImage(stream, ref) {
-    let video = document.createElement('video');
-    if (ref) {
-      video = ref.current;
-    }
-    video.srcObject = stream;
-    video.style.width = stream.width;
-    video.style.height = stream.height;
-    video.play();
-    return video;
-  }
-
-  streamToTexture(stream, ref) {
-    let video = document.createElement('video');
-    if (ref) {
-      video = ref.current;
-    }
-    video.srcObject = stream;
-    video.style.width = stream.width;
-    video.style.height = stream.height;
-    video.play();
-    return video;
-  }
-
-  // load texture
-  loadTexture(src) {
-    if (this.textures[src]) return this.textures[src];
-    this.textures[src] = new Texture(src, this);
-    return this.textures[src];
-  }
-
-  // load texture
-  async loadTextureFromZip(src, zip) {
-    if (this.textures[src]) return this.textures[src];
-    let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
-    let buffer = new Uint8Array(imageData);
-    let blob = new Blob([buffer.buffer]);
-    let dataUrl = URL.createObjectURL(blob);
-    this.textures[src] = new Texture(dataUrl, this);
-    return this.textures[src];
-  }
-
-  // load texture
-  loadSpeech(src, canvas) {
-    if (this.speeches[src]) return this.speeches[src];
-    this.speeches[src] = new Speech(canvas, this, src);
-    return this.speeches[src];
-  }
-
-  // push new matrix to model stack
-  mvPushMatrix() {
-    let copy = create();
-    set(this.uViewMat, copy);
-    this.modelViewMatrixStack.push(copy);
-  }
-
-  // Initalize Canvas from HUD and load as WebGL texture (TODO - make separate canvases)
-  initCanvasTexture() {
-    let { gl } = this;
-    let canvasTexture = gl.createTexture();
-    this.handleLoadedTexture(canvasTexture, this.mipmap);
-    return canvasTexture;
-  }
-
-  // Load canvas as texture
-  handleLoadedTexture(texture, textureCanvas) {
-    let { gl } = this;
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas); // This is the important line!
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-
-  // pop model stack and apply view
-  mvPopMatrix() {
-    if (this.modelViewMatrixStack.length == 0) {
-      throw 'Invalid popMatrix!';
-    }
-    this.uViewMat = this.modelViewMatrixStack.pop();
-  }
-
-  // Clear Render Loop
-  close() {
-    cancelAnimationFrame(this.requestId);
-  }
-
-  // Degrees to Radians
-  degToRad(degrees) {
-    return (degrees * Math.PI) / 180;
   }
 }
