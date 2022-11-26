@@ -17,6 +17,10 @@ import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 
 export default class Sprite {
+  /**
+   * Sprites are 2D objects
+   * @param {*} engine
+   */
   constructor(engine) {
     this.engine = engine;
     this.templateLoaded = false;
@@ -41,16 +45,28 @@ export default class Sprite {
     this.voice = new SpeechSynthesisUtterance();
   }
 
+  /**
+   * update and override properties
+   * @param {*} data
+   */
   update(data) {
     Object.assign(this, data);
   }
 
+  /**
+   * Run action or append to queue
+   * @param {*} action
+   */
   runWhenLoaded(action) {
     if (this.loaded) action();
     else this.onLoadActions.add(action);
   }
 
-  // Load Texture / Location
+  /**
+   * Load Sprite data and configure
+   * @param {*} instanceData
+   * @returns
+   */
   onLoad(instanceData) {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
@@ -90,13 +106,19 @@ export default class Sprite {
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
-  // Load Texture / Location
+  /**
+   * Load Texture / Location
+   * @param {*} instanceData
+   * @param {Zip} zip
+   * @returns
+   */
   async onLoadFromZip(instanceData, zip) {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
       console.error('Invalid sprite definition');
       return;
     }
+
     // Zone Information
     this.update(instanceData);
     this.zone = instanceData.zone;
@@ -113,6 +135,7 @@ export default class Sprite {
       };
     }
 
+    // Step Handler - todo
     // if (instanceData.onStep) {
     //   let stepParent = this.onStep.bind(this);
     //   this.onStep = async () => {
@@ -120,48 +143,67 @@ export default class Sprite {
     //     await stepParent(this, this);
     //   };
     // }
+
     // Texture Buffer
     this.texture = await this.engine.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
-    // // Speech bubble
+    // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
+
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
-    //
+
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
 
-  // Definition Loaded
+  /**
+   * Definition Loaded
+   */
   onTilesetDefinitionLoaded() {
-    let s = this.zone.tileset.tileSize;
-    let ts = [this.tileSize[0] / s, this.tileSize[1] / s];
-    let v = [
+    // size of tiles (1x1 squares are assumed)
+    let tileSize = this.zone.tileset.tileSize;
+
+    // normalize - ie scale the provided tile by the tile size
+    let normTile = [this.tileSize[0] / tileSize, this.tileSize[1] / tileSize];
+
+    // vertices
+    let verts = [
       [0, 0, 0],
-      [ts[0], 0, 0],
-      [ts[0], 0, ts[1]],
-      [0, 0, ts[1]],
+      [normTile[0], 0, 0],
+      [normTile[0], 0, normTile[1]],
+      [0, 0, normTile[1]],
     ];
+
+    // polys
     let poly = [
-      [v[2], v[3], v[0]],
-      [v[2], v[0], v[1]],
+      [verts[2], verts[3], verts[0]],
+      [verts[2], verts[0], verts[1]],
     ].flat(3);
+
+    // sprite data
     this.vertexPosBuf = this.engine.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
+
+    // speech bubble data - to account for proper height
     if (this.enableSpeech) {
       this.speechVerBuf = this.engine.createBuffer(this.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
     }
+
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
   }
 
-  // After Tileset / Texture Loaded
+  /**
+   * After Tileset / Texture Loaded
+   * @returns
+   */
   onTilesetOrTextureLoaded() {
     if (
       !this ||
@@ -185,7 +227,10 @@ export default class Sprite {
     this.onLoadActions.run();
   }
 
-  // Get Texture Coordinates
+  /**
+   * Get Texture Coordinates
+   * @returns
+   */
   getTexCoords() {
     let sequence = Direction.spriteSequence(this.facing, this.engine.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
@@ -203,7 +248,10 @@ export default class Sprite {
     return poly.flat(3);
   }
 
-  // Speech Area texture
+  /**
+   * Speech Area texture
+   * @returns
+   */
   getSpeechBubbleTexture() {
     return [
       [1.0, 1.0],
@@ -215,7 +263,10 @@ export default class Sprite {
     ].flat(3);
   }
 
-  // speech bubble position
+  /**
+   * speech bubble position
+   * @returns
+   */
   getSpeechBubbleVertices() {
     return [
       new Vector(...[2, 0, 4]).toArray(),
@@ -227,7 +278,10 @@ export default class Sprite {
     ].flat(3);
   }
 
-  // Draw Sprite Sprite
+  /**
+   * Draw Sprite Sprite
+   * @returns
+   */
   draw() {
     if (!this.loaded) return;
     // this.engine.disableObjAttributes();
@@ -276,19 +330,28 @@ export default class Sprite {
     }
   }
 
-  // Set Frame
+  /**
+   * Set Frame
+   * @param {number} frame
+   */
   setFrame(frame) {
     this.animFrame = frame;
     this.engine.updateBuffer(this.vertexTexBuf, this.getTexCoords());
   }
 
-  // Set Facing
+  /**
+   * Set Facing
+   * @param {string} facing
+   */
   setFacing(facing) {
     if (facing) this.facing = facing;
     this.setFrame(this.animFrame);
   }
 
-  // Add Action to Queue
+  /**
+   * Add Action to Queue
+   * @param {*} action
+   */
   async addAction(action) {
     action = await Promise.resolve(action);
     if (this.actionDict[action.id]) this.removeAction(action.id);
@@ -296,19 +359,28 @@ export default class Sprite {
     this.actionList.push(action);
   }
 
-  // Remove Action
+  /**
+   * Remove Action
+   * @param {string} id
+   */
   removeAction(id) {
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
 
-  // Remove Action
+  /**
+   * Remove all actions
+   */
   removeAllActions() {
     this.actionList = [];
     this.actionDict = {};
   }
 
-  // Tick
+  /**
+   * Tick Outer Wrapper - represents a logical cycle / step - runs the action queue & sprite actions
+   * @param {int} time
+   * @returns
+   */
   tickOuter(time) {
     if (!this.loaded) return;
     // Sort activities by increasing startTime, then by id
@@ -337,10 +409,15 @@ export default class Sprite {
     if (this.tick) this.tick(time);
   }
 
-  // Hook for sprite implementations
+  /**
+   * Hook for sprite implementations
+   */
   init() {}
 
-  // load from json specification
+  /**
+   * load from json specification
+   * @param {string} url
+   */
   async loadRemote(url) {
     let response = await fetch(url);
     if (!response.ok) {
@@ -349,25 +426,36 @@ export default class Sprite {
     this.processJson(response.json());
   }
 
-  // process json object
+  /**
+   * process json object
+   * @param {*} json
+   */
   processJson(json) {
     // TODO -- process json details
-    //
-
     this.update(json);
   }
 
-  // speak
-  speak(text, showBubble = false, dialogue = false) {
+  /**
+   * Output Dialogue to the HUD
+   * @param {string} text
+   * @param {boolean} showBubble
+   * @param {*} dialogue
+   */
+  speak(text, showBubble = false, dialogue = {}) {
     if (!text && this.speech.clearHud) this.speech.clearHud();
     else {
+      // speech tts output
       if (dialogue.speechOutput) {
         this.speechSynthesis(text);
         dialogue.speechOutput = false;
       }
+
+      // dialogue box
       this.textbox = this.engine.scrollText(this.id + ':> ' + text, true, {
         portrait: this.portrait ?? false,
       });
+
+      // speech bubble?
       if (showBubble && this.speech) {
         this.speech.scrollText(text, false, {
           portrait: this.portrait ?? false,
@@ -377,10 +465,19 @@ export default class Sprite {
     }
   }
 
-  // Text to Speech output
+  /**
+   * Text to Speech output
+   * @param {string} text
+   * @param {SpeechSynthesisVoice} voice
+   * @param {string} lang
+   * @param {number} rate
+   * @param {number} volume
+   * @param {number} pitch
+   */
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
+
     // set voice
     speech.voice = this.gender ? (this.gender == 'male' ? voices[7] : voices[28]) : voices[0];
     if (rate) speech.rate = rate;
@@ -388,11 +485,17 @@ export default class Sprite {
     if (pitch) speech.pitch = pitch;
     speech.text = text;
     speech.lang = lang;
+
     // speak
     window.speechSynthesis.speak(speech);
   }
 
-  // handles interaction -- default (should be overridden in definition)
+  /**
+   * handles interaction -- default (should be overridden in definition)
+   * @param {*} sprite sprite which triggered interaction
+   * @param {*} finish callback to call on completion
+   * @returns
+   */
   async interact(sprite, finish) {
     let ret = null;
     // React based on internal state
@@ -405,13 +508,22 @@ export default class Sprite {
     return ret;
   }
 
-  // Set Facing
+  /**
+   * Set Facing
+   * @param {string} facing
+   * @param {boolean} override
+   * @returns
+   */
   faceDir(facing, override = false) {
     if ((!override && this.facing == facing) || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
   }
 
-  // set message (for chat bubbles)
+  /**
+   * set message (for chat bubble above objects/sprites)
+   * @param {string} greeting
+   * @returns
+   */
   setGreeting(greeting) {
     if (this.speech.clearHud) {
       this.speech.clearHud();

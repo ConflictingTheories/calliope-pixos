@@ -33,7 +33,7 @@ async () => {
 
   await _this.spriteDialogue('avatar', ['Welcome! This is Pixospritz!']);
 
-  await _this.moveSprite('avatar', [3, 6, 0], false);
+  await _this.moveSprite('avatar', [2, 7, 0], false);
 
   await _this.spriteDialogue('avatar', ['CHECK IT! This is Pixospritz!']);
 

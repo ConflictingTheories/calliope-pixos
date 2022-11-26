@@ -51,14 +51,7 @@ export default class GLEngine {
     this.cameraAngle = 45;
     this.cameraVector = new Vector(...[1, 0, 0]);
     this.cameraDir = 'N';
-    this.lights = [
-      // {
-      //   id: 'ambient',
-      //   pos: [1, 1, 1],
-      //   direction: [1, 1, 0.75],
-      //   color: [1, 1, 1],
-      // },
-    ];
+    this.lights = [];
     this.fov = 45;
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);

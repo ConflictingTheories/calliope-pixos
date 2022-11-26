@@ -14,17 +14,16 @@
 import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
-  init: function (moveLength, zone) {
+  init: async function (moveLength, zone) {
     this.zone = zone;
     this.moveLength = moveLength;
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/sewer-beat.mp3', true);
-    // if (this.zone.audio) this.zone.audio.pauseAudio();
+    this.audio = await this.zone.engine.audioLoader.loadFromZip(this.sprite.zip, this.sprite.danceSound ?? '/pixos/audio/sewer-beat.mp3', true);
 
-    // analyze the audio context
-    this.audio.playAudio();
+    if (this.zone.audio) this.zone.audio.pauseAudio();
+    if (this.audio) this.audio.playAudio();
   },
   tick: function (time) {
     if (!this.loaded) return;
@@ -52,7 +51,7 @@ export default {
       } else {
         facing = this.sprite.facing == Direction.Up ? Direction.Left : Direction.Down;
       }
-      this.sprite.addAction(this.sprite.faceDir(facing)).then(()=>{});
+      this.sprite.addAction(this.sprite.faceDir(facing)).then(() => {});
       this.startTime = time;
     }
 
