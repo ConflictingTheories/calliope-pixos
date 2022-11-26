@@ -15,8 +15,7 @@ import Resources from '@Engine/utils/resources.jsx';
 import ActionQueue from '@Engine/core/queue.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
-import { loadMap } from '@Engine/dynamic/map.jsx';
-import { dynamicCells } from '@Engine/dynamic/cells.jsx';
+import { loadMap, dynamicCells } from '@Engine/dynamic/map.jsx';
 import Loadable from '@Engine/core/loadable.jsx';
 
 export default class Zone extends Loadable {

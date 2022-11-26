@@ -13,7 +13,13 @@
 
 import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
-// Map Information
+/**
+ * Load Map Information
+ * @param {*} json
+ * @param {*} cells
+ * @param {*} zip
+ * @returns
+ */
 export async function loadMap(json, cells, zip) {
   // read sprites & handle functions
   let $sprites =
@@ -98,4 +104,25 @@ export async function loadMap(json, cells, zip) {
     // objects // 3d
     objects: $objects,
   };
+}
+
+/**
+ * Generate Map Cells from Tileset
+ * @param {*} cells
+ * @param {*} Tileset
+ * @returns
+ */
+export function dynamicCells(cells, Tileset) {
+  // handle cells generator
+  if (typeof cells === 'string') {
+    return cells;
+  }
+  let result = [];
+  cells.forEach((row, i) => {
+    let len = row.length;
+    row.forEach((cell, j) => {
+      result[i * len + j] = Tileset[cell];
+    });
+  });
+  return result;
 }

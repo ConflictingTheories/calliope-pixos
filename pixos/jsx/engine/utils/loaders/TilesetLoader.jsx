@@ -54,7 +54,7 @@ export class TilesetLoader {
       // unset
       tilesetJson.extends = null;
     }
-    console.log({tilesetJson});
+    console.log({ tilesetJson });
     // extend tiles
     if (Tiles.extends) {
       await Promise.all(
@@ -66,7 +66,7 @@ export class TilesetLoader {
       // unset
       Tiles.extends = null;
     }
-    console.log({Tiles});
+    console.log({ Tiles });
 
     // extend geometry
     if (TilesetGeometry.extends) {
@@ -79,7 +79,7 @@ export class TilesetLoader {
       // unset
       TilesetGeometry.extends = null;
     }
-    console.log({TilesetGeometry});
+    console.log({ TilesetGeometry });
 
     let geometry = {};
     Object.keys(tilesetJson.geometry).forEach((geo) => {
