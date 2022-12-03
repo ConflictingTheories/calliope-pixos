@@ -18,7 +18,7 @@ export default class Tileset extends Loadable {
    * @param {*} engine
    */
   constructor(engine) {
-    super(engine);
+    super();
     this.engine = engine;
     this.src = null;
     this.sheetSize = [0, 0];

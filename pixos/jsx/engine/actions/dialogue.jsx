@@ -30,7 +30,7 @@ export default {
     if (!this.loaded) return;
     // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
+      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + (this.options.duration * 1000 ?? 10000); // 10 seconds default if autoclose
       if (time > this.endTime) {
         this.completed = true;
       }

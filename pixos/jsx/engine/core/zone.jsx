@@ -25,6 +25,7 @@ export default class Zone extends Loadable {
    * @param {World} world
    */
   constructor(zoneId, world) {
+    super();
     this.sceneName = world.id;
     this.id = zoneId;
     this.world = world;

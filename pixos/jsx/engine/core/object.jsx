@@ -24,6 +24,7 @@ export default class ModelObject extends Loadable {
    * @param {*} engine
    */
   constructor(engine) {
+    super();
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);

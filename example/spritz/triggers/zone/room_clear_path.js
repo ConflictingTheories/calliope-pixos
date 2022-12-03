@@ -31,10 +31,9 @@ async () => {
   // move to center
   await _this.moveSprite('avatar', [8, 8, 0], false);
 
-  await _this.spriteDialogue('avatar', ['Welcome! This is Pixospritz!']);
+  await _this.spriteDialogue('avatar', ['Welcome! This is Pixospritz!'], { duration: 3, autoclose: true });
 
   await _this.moveSprite('avatar', [2, 7, 0], false);
 
-  await _this.spriteDialogue('avatar', ['CHECK IT! This is Pixospritz!']);
-
+  await _this.spriteDialogue('avatar', ['CHECK IT! This is Pixospritz!'], { duration: 3, autoclose: true });
 };

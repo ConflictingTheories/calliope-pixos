@@ -20,6 +20,7 @@ export class Texture extends Loadable {
    * @param {} engine
    */
   constructor(src, engine) {
+    super();
     this.engine = engine;
     this.src = src;
     this.glTexture = engine.gl.createTexture();
