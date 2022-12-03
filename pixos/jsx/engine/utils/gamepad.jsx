@@ -28,8 +28,9 @@ export class GamePad {
     this.map = {};
     // Joystick Radius
     this.radius = 40;
+    this.buttonRadius = 30;
     // Button placement
-    this.button_offset = { x: this.radius * 2.5, y: this.radius * 3 };
+    this.button_offset = { x: this.width / 2 + this.radius * 1.5, y: this.radius * 1.5 };
     // Button Colours
     this.colours = {
       red: `rgba(255,0,0,${this.opacity})`,
@@ -50,30 +51,30 @@ export class GamePad {
     // Button Layouts
     let buttons_layout = [
       {
-        x: -this.radius - this.radius / 2 + this.radius / 4,
-        y: -this.radius / 4,
-        r: (3 / 4) * this.radius,
+        x: -50,
+        y: -10,
+        r: this.buttonRadius,
         color: this.colours.red,
         name: 'b',
       },
       {
-        x: this.radius - this.radius / 2,
-        y: -(this.radius + this.radius / 2),
-        r: (3 / 4) * this.radius,
+        x: 20,
+        y: -20,
+        r: this.buttonRadius,
         color: this.colours.green,
         name: 'a',
       },
       {
-        x: this.radius - this.radius / 2,
-        y: this.radius,
-        r: (3 / 4) * this.radius,
+        x: 20,
+        y: 40,
+        r: this.buttonRadius,
         color: this.colours.blue,
         name: 'x',
       },
       {
-        x: this.radius * 3 - this.radius / 2 - this.radius / 4,
-        y: 0 - this.radius / 4,
-        r: (3 / 4) * this.radius,
+        x: 90,
+        y: -10,
+        r: this.buttonRadius,
         color: this.colours.yellow,
         name: 'y',
       },
@@ -416,7 +417,7 @@ class Controller {
     this.gamepad = gamepad;
     this.width = ctx.canvas.width;
     this.height = ctx.canvas.height;
-    this.radius = 60;
+    this.radius = 25;
     this.touches = touches;
     this.map = map;
     this.start = start;
@@ -438,6 +439,7 @@ class Controller {
       this.radius,
       this.gamepad
     );
+    console.log({ layout: this.layout, _this: this });
   }
   // Initialize
   init() {
@@ -596,7 +598,7 @@ class ControllerButtons {
       var y = layout.y - button.y;
       if (button.r) {
         var r = button.r;
-        buttons_layout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
+        buttons_layout[n]['hit'] = { x: [x - r, x + r], y: [y - r, y + r], active: false };
       } else {
         button.x = width / 2 - button.w;
         if (this.start && this.select) {
