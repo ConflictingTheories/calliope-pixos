@@ -15,8 +15,8 @@ import React, { Component } from 'react';
 import { collect } from 'react-recollect';
 // WebGL Component
 import WebGLView from '@Components/WebGLView.jsx';
-// Pixos Scene Provider
-import SceneProvider from '@Scenes/player.jsx';
+// Pixos Spritz Provider
+import SpritzProvider from '@Spritz/player.jsx';
 // Style Plugin
 import '../css/pixos.css';
 
@@ -24,7 +24,7 @@ class Pixos extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      scene: new SceneProvider(),
+      spritz: new SpritzProvider(),
       updated: Date.now(),
       zipData: props.zipData,
     };
@@ -42,10 +42,10 @@ class Pixos extends Component {
 
   // Render World as Passed in String or FlatLand (Default)
   render() {
-    const { updated, scene, zipData } = this.state;
+    const { updated, spritz, zipData } = this.state;
     return (
       <div style={{ margin: 0, minHeight: '480px', maxHeight: '1080px' }}>
-        <WebGLView class="pixos" key={`pixos-${updated}`} width={'480px'} height={'640px'} SceneProvider={scene} zipData={zipData ?? ''} />
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={'480px'} height={'640px'} SpritzProvider={spritz} zipData={zipData ?? ''} />
       </div>
     );
   }

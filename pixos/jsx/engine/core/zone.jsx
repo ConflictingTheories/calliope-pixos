@@ -26,7 +26,7 @@ export default class Zone extends Loadable {
    */
   constructor(zoneId, world) {
     super();
-    this.sceneName = world.id;
+    this.spritzName = world.id;
     this.id = zoneId;
     this.world = world;
     this.data = {};
@@ -35,7 +35,7 @@ export default class Zone extends Loadable {
     this.objectDict = {};
     this.objectList = [];
     this.lights = [];
-    this.scenes = [];
+    this.spritz = [];
     this.lastKey = Date.now();
     this.engine = world.engine;
     this.onLoadActions = new ActionQueue();
@@ -70,7 +70,7 @@ export default class Zone extends Loadable {
         // sprites
         this.sprites = typeof data.sprites == 'function' ? data.sprites(this.bounds, this) : data.sprites;
         // Load tileset and create level geometry & trigger updates
-        this.tileset = await this.tsLoader.load(data.tileset, this.sceneName);
+        this.tileset = await this.tsLoader.load(data.tileset, this.spritzName);
         this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
         this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
         // Load sprites from tileset
@@ -92,7 +92,7 @@ export default class Zone extends Loadable {
   async load() {
     try {
       // Extract and Read in Information
-      let data = require('@Scenes/' + this.sceneName + '/maps/' + this.id + '/map.jsx')['default'];
+      let data = require('@Spritz/' + this.spritzName + '/maps/' + this.id + '/map.jsx')['default'];
       Object.assign(this, data);
       // handle cells generator
       if (typeof this.cells == 'function') {
@@ -104,7 +104,7 @@ export default class Zone extends Loadable {
       }
       // Load tileset and create level geometry & trigger updates
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
-      this.tileset = await this.tsLoader.load(this.tileset, this.sceneName);
+      this.tileset = await this.tsLoader.load(this.tileset, this.spritzName);
       this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
       this.tileset.runWhenLoaded(this.onTilesetOrSpriteLoaded.bind(this));
       // Load sprites
@@ -202,7 +202,7 @@ export default class Zone extends Loadable {
 
       try {
         // Extract and Read in Information
-        var tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.sceneName);
+        var tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.spritzName);
         var cells = dynamicCells(cellJson, tileset.tiles);
         var map = await loadMap.call(this, zoneJson, cells, zip);
         Object.assign(this, map);
@@ -346,14 +346,14 @@ export default class Zone extends Loadable {
    * @returns
    */
   loadScripts(refresh = false) {
-    // Load Scene Triggers
+    // Load Spritz Triggers
     if (this.world.isPaused) {
       return;
     }
 
     let zone = this;
     this.scripts.forEach((x) => {
-      if (x.id === 'load-scene' && refresh) {
+      if (x.id === 'load-spritz' && refresh) {
         this.runWhenLoaded(x.trigger.bind(zone));
       }
     });
@@ -396,7 +396,7 @@ export default class Zone extends Loadable {
   async loadSprite(_this, data) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.load(data.type, this.sceneName, (sprite) => sprite.onLoad(data));
+      let newSprite = await this.spriteLoader.load(data.type, this.spritzName, (sprite) => sprite.onLoad(data));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -411,7 +411,7 @@ export default class Zone extends Loadable {
   async loadSpriteFromZip(_this, data, zip) {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
-      let newSprite = await this.spriteLoader.loadFromZip(zip, data.type, this.sceneName, async (sprite) => await sprite.onLoadFromZip(data, zip));
+      let newSprite = await this.spriteLoader.loadFromZip(zip, data.type, this.spritzName, async (sprite) => await sprite.onLoadFromZip(data, zip));
       this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
     }
@@ -817,25 +817,25 @@ export default class Zone extends Loadable {
   }
 
   /**
-   * Play a scene
+   * Play a spritz
    * @param {string} id
-   * @param {*} scenes
+   * @param {*} spritz
    */
-  async playScene(id, scenes = null) {
+  async playCutScen(id, spritz = null) {
     let self = this;
-    if (!scenes) {
-      scenes = self.scenes;
+    if (!spritz) {
+      spritz = self.spritz;
     }
-    scenes.forEach(async function runScene(x) {
+    spritz.forEach(async function runSpritz(x) {
       try {
         if (!x.currentStep) {
           x.currentStep = 0; // Starting
         }
-        if (x.currentStep > scenes.length) {
-          return; // scene finished
+        if (x.currentStep > spritz.length) {
+          return; // spritz finished
         }
         if (x.id === id) {
-          // found scene
+          // found spritz
           await self.runActions(x.actions);
         }
       } catch (e) {

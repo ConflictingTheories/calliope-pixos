@@ -12,21 +12,21 @@
 \*                                                 */
 
 // Shaders
-import Scene from '@Engine/core/scene.jsx';
+import Spritz from '@Engine/core/spritz.jsx';
 import World from '@Engine/core/world.jsx';
 import JSZip from 'jszip';
 
-// Scene Object
-export default class ExampleDynamicScene extends Scene {
-  // Init Scene
+// Spritz Object
+export default class ExampleDynamicSpritz extends Spritz {
+  // Init Spritz
   init = async (engine) => {
     // game Engine & Timing
-    Scene._instance.engine = engine;
+    Spritz._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine, 'dynamic'));
+    let world = (Spritz._instance.world = new World(engine, 'dynamic'));
 
-    // load scene
-    async function loadScene(menu) {
+    // load spritz
+    async function loadSpritz(menu) {
       try {
         // read zip from uploaded file
         let file = engine.fileUpload.files[0];
@@ -56,11 +56,11 @@ export default class ExampleDynamicScene extends Scene {
     function loadZipFile(menu, skipClick = false) {
       if (!skipClick || engine.fileUpload.files.length === 0) {
         engine.fileUpload.click();
-        engine.fileUpload.onchange = (e) => loadScene(menu);
+        engine.fileUpload.onchange = (e) => loadSpritz(menu);
         return;
       } else {
         // autoload if passed in
-        loadScene(null);
+        loadSpritz(null);
       }
     }
 

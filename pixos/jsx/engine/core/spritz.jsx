@@ -17,12 +17,15 @@ import * as JSZip from 'jszip';
 // Shaders
 import fs from '@Engine/shaders/fs.jsx';
 import vs from '@Engine/shaders/vs.jsx';
+import blurFs from '@Engine/shaders/blur/fs.jsx';
+import blurVs from '@Engine/shaders/blur/vs.jsx';
+import blur from '@Engine/shaders/blur/callback.jsx';
 import World from '@Engine/core/world.jsx';
 
-// Scene Object
-export default class Scene {
+// Spritz Object
+export default class Spritz {
   /**
-   * Scenes represent an individual Pixospritz
+   * Spritz represent an individual Pixospritz
    * @returns
    */
   constructor() {
@@ -30,21 +33,30 @@ export default class Scene {
       fs: fs(),
       vs: vs(),
     };
-    if (!Scene._instance) {
-      Scene._instance = this;
+    this.effects = {
+      // todo - make more dynamic and support for custom effects
+      blur: {
+        id: 'blur',
+        fs: blurFs(),
+        vs: blurVs(),
+        callback: blur,
+      },
+    };
+    if (!Spritz._instance) {
+      Spritz._instance = this;
     }
-    return Scene._instance;
+    return Spritz._instance;
   }
 
   /**
-   * Init Scene
+   * Init Spritz
    * @param {*} engine
    */
   init = async (engine) => {
     // game Engine & Timing
-    Scene._instance.engine = engine;
+    Spritz._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Scene._instance.world = new World(engine, 'scene'));
+    let world = (Spritz._instance.world = new World(engine, 'spritz'));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log('loading...done')));
     // show start menu
@@ -77,10 +89,10 @@ export default class Scene {
   };
 
   /**
-   * Todo - Load scene remotely
+   * Todo - Load spritz remotely
    * @param {string} src
    */
-  loadSceneManifest = async (src) => {
+  loadSpritzManifest = async (src) => {
     // Put up loading Screen
     //
     // Fetch Manifest Remotely from Src
@@ -93,7 +105,7 @@ export default class Scene {
   };
 
   /**
-   * Todo - Load avatar into scene
+   * Todo - Load avatar into spritz
    * @param {string} src
    * @param {string} zoneId
    */
@@ -108,7 +120,7 @@ export default class Scene {
   };
 
   /**
-   * Todo - Load avatar into scene
+   * Todo - Load avatar into spritz
    */
   exportAvatar = async () => {
     let zip = new JSZip();
@@ -127,31 +139,33 @@ export default class Scene {
    */
   render = (engine, now) => {
     // Build
-    Scene._instance.world.tickOuter(now);
+    Spritz._instance.world.tickOuter(now);
+    // use core shader
+    Spritz._instance.engine.activateShaderProgram();
     // Draw Frame
     this.draw(engine);
   };
 
   /**
-   * Draw Scene
+   * Draw Spritz
    * @param {*} engine
    */
   draw = (engine) => {
-    Scene._instance.world.draw(engine);
+    Spritz._instance.world.draw(engine);
   };
 
   /**
-   * Keyboard event handler for Scene
+   * Keyboard event handler for Spritz
    * @param {*} e
    */
   onKeyEvent = (e) => {
     if (e.type === 'keydown') {
-      Scene._instance.engine.keyboard.onKeyDown(e);
-    } else Scene._instance.engine.keyboard.onKeyUp(e);
+      Spritz._instance.engine.keyboard.onKeyDown(e);
+    } else Spritz._instance.engine.keyboard.onKeyUp(e);
   };
 
   /**
-   * Mobile Touch event handler for Scene
+   * Mobile Touch event handler for Spritz
    * @param {*} e
    */
   onTouchEvent = (e) => {
@@ -164,7 +178,7 @@ export default class Scene {
       case 'touchmove':
       case 'touchcancel':
       default:
-        Scene._instance.engine.touch(e);
+        Spritz._instance.engine.touch(e);
         break;
     }
   };

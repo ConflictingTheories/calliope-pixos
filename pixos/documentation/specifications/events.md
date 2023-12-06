@@ -9,7 +9,7 @@ The currently support Events are:
 - `menu`
 - `chat`
 
-The purpose of the events is typically to control the scene outside of the direct players vicinity. This may occur during a cutscene for example, or it may be used to pause controls in order to ensure a particular series of events can play out, and it is also used to run async logic which could take some time or may be indefinite in nature. 
+The purpose of the events is typically to control the spritz outside of the direct players vicinity. This may occur during a cutspritz for example, or it may be used to pause controls in order to ensure a particular series of events can play out, and it is also used to run async logic which could take some time or may be indefinite in nature. 
 
 There are lots of areas which events will play a role, and while the above is limited, the future will likely include addiitonal support such as the following:
 - network: Networking will be asynchronous in nature and will require that it occurs in its own loop. It will be necessary to have control over the game loop at times and will need to correlate state betwen the local events and those coming from the network. In order to ensure smooth order and that events are not mixed up, this cannot be part of the main loop.

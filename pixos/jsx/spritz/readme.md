@@ -1,4 +1,4 @@
-# Dynamically Loaded Games and Scenes
+# Dynamically Loaded Games and Spritz
 
 The main idea is to move all the game assets and descriptive content into a package which can be loaded up by the player.
 

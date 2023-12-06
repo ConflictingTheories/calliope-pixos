@@ -21,7 +21,7 @@ export const STORE_NAME = 'garden-tome';
 
 // generate random map zone
 export async function generateZone(self, gender, storeName, cyoa) {
-  // load current scene or play welcome
+  // load current spritz or play welcome
   let tome = self.engine.fetchStore(storeName);
 
   if (!tome) {
@@ -32,7 +32,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
       selected: -2,
       rain: true,
       snow: false,
-      scenes: [],
+      spritz: [],
       sprites: [],
       objects: [],
     };
@@ -42,12 +42,12 @@ export async function generateZone(self, gender, storeName, cyoa) {
 
     self.engine.addStore(storeName, tome);
 
-    // Generate a collection of scenes programmably
-    // and append them to the scenes collection.
+    // Generate a collection of spritz programmably
+    // and append them to the spritz collection.
 
     // self.randomlyGenerateSprites();
     // self.randomlySprites();
-    await self.playScene('welcome');
+    await self.playCutScen('welcome');
   } else {
     // load Sprites
     await Promise.all(
@@ -87,7 +87,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
         })
     );
 
-    // Apply any Triggers & Setup New Scenes if needed
+    // Apply any Triggers & Setup New Spritz if needed
     await Promise.all(
       tome.triggers
         .filter((x) => {
@@ -101,19 +101,19 @@ export async function generateZone(self, gender, storeName, cyoa) {
         })
     );
 
-    // Finally - Play appropriate scenes
+    // Finally - Play appropriate spritz
     await Promise.all(
-      tome.scenes
+      tome.spritz
         .filter((x) => {
           return x.id == tome.selected;
         })
-        .map(async (scene) => {
-          await self.playScene(scene.id, tome.scenes);
+        .map(async (spritz) => {
+          await self.playCutScen(spritz.id, tome.spritz);
         })
     );
 
-    // run custom scene
-    let scene = [
+    // run custom spritz
+    let spritz = [
       {
         id: 'new-space' + Math.random(),
         actions: [
@@ -135,7 +135,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
         ],
       },
     ];
-    await self.playScene(scene[0].id, scene);
+    await self.playCutScen(spritz[0].id, spritz);
   }
 }
 

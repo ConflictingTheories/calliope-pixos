@@ -6,7 +6,7 @@
     { "id": "water", "type": "npc/air-knight", "pos": [8, 13, 0], "facing": "Up" }
   ],
   "scripts": [],
-  "scenes": [],
+  "spritz": [],
   "objects": [],
   "lights": [
     {

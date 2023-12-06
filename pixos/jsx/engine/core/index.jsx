@@ -62,6 +62,7 @@ export default class GLEngine {
     this.cameraVector = new Vector(...[1, 0, 0]);
     this.cameraDir = 'N';
     this.lights = [];
+    this.effects = [];
     this.fov = 45;
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
@@ -120,12 +121,12 @@ export default class GLEngine {
   }
 
   /**
-   * Initialize a Scene object
-   * @param {*} scene
+   * Initialize a Spritz object
+   * @param {*} spritz
    */
-  async init(scene) {
+  async init(spritz) {
     const ctx = this.hud.getContext('2d');
-    const gl = this.canvas.getContext('webgl');
+    const gl = this.canvas.getContext('webgl2');
     const gp = this.gamepadcanvas.getContext('2d');
 
     if (!gl) {
@@ -151,7 +152,7 @@ export default class GLEngine {
     this.ctx = ctx;
     this.gp = gp;
     this.time = new Date().getTime();
-    this.scene = scene;
+    this.spritz = spritz;
     this.keyboard = new Keyboard();
     this.fullscreen = false;
     this.touch = gamepad.listen.bind(gamepad);
@@ -165,13 +166,21 @@ export default class GLEngine {
     gl.enable(gl.BLEND);
 
     // Initialize Shader
-    this.initShaderProgram(gl, scene.shaders);
+    this.initShaderProgram(gl, spritz.shaders);
+
+    // Initialize Effects
+    if (spritz.effects) {
+      for (let i in spritz.effects) {
+        // todo --- needs work --> Doesn't apply filter correctly
+        // this.initShaderEffects(gl, spritz.effects[i]);
+      }
+    }
 
     // Initialize Project Matrix
     this.initProjection(gl);
 
-    // Initialize Scene
-    await scene.init(this);
+    // Initialize Spritz
+    await spritz.init(this);
   }
 
   /**
@@ -365,6 +374,50 @@ export default class GLEngine {
     // return
     this.shaderProgram = shaderProgram;
     return shaderProgram;
+  };
+
+  /**
+   * Initialize Shader Effect (blur, depth of field, etc)
+   * @returns
+   */
+  activateShaderProgram = () => {
+    this.gl.useProgram(this.shaderProgram);
+  };
+
+  /**
+   * Initialize Shader Effect (blur, depth of field, etc)
+   * @param {*} id
+   * @returns
+   */
+  activateShaderEffectProgram = (id) => {
+    this.gl.useProgram(this.effects[id]);
+  };
+
+  /**
+   * Initialize Shader Effect (blur, depth of field, etc)
+   * @param {*} gl
+   * @param {*} param1
+   * @returns
+   */
+  initShaderEffects = (gl, { vs: vsSource, fs: fsSource, id: id, callback: callback }) => {
+    const self = this;
+    console.log({ id, callback, vsSource, fsSource });
+    const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
+    console.log({ vsSource, vertexShader });
+    const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    console.log({ fsSource, fragmentShader });
+
+    // generate shader
+    let effectProgram = gl.createProgram();
+    gl.attachShader(effectProgram, vertexShader);
+    gl.attachShader(effectProgram, fragmentShader);
+    gl.linkProgram(effectProgram);
+    if (!gl.getProgramParameter(effectProgram, gl.LINK_STATUS)) {
+      throw new Error(`WebGL unable to initialize the shader effect program: ${effectProgram}`);
+    }
+    // apply calLback
+    this.effects[id] = callback.call(self, effectProgram);
+    return this.effects[id];
   };
 
   /**
@@ -608,8 +661,20 @@ export default class GLEngine {
     this.requestId = requestAnimationFrame(this.render);
     this.clearScreen();
     this.clearHud();
+
+    // core render loop
+    this.activateShaderProgram();
     this.gamepad.render();
-    this.scene.render(this, new Date().getTime());
+    this.spritz.render(this, new Date().getTime());
+
+    // effect rendering - ex) blur depth of field
+    Object.keys(this.effects).map((id) => {
+      console.log([id]);
+      this.activateShaderEffectProgram(id);
+      this.effects[id].draw();
+    });
+
+    // transitions - todo - not working
     if (this.isTransitioning) {
       let now = new Date().getMilliseconds();
       this.transition.draw(
@@ -808,8 +873,8 @@ export default class GLEngine {
    */
   handleLoadedTexture(texture, textureCanvas) {
     let { gl } = this;
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas); // This is the important line!
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);

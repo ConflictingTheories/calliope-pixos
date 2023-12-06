@@ -24,7 +24,7 @@ export default {
   audioSrc: '/pixos/audio/deep-unknown-beat.mp3',
   // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
   cells: cells,
-  // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
+  // Sprites and Objects to be Loaded in the Spritz & their Starting Points (includes effect tiles)
   sprites: [
     // Objects
     { id: 'chest', type: 'objects/chests/wood', pos: new Vector(...[8, 14, 0]), facing: Direction.Down },
@@ -52,8 +52,8 @@ export default {
     // Presently - avatar is treated like a normal sprite (TODO - needs to be loaded dynamically via entry point)
     // { id: "avatar", type: "characters/default", pos: new Vector(...[9, 2, 0]), facing: Direction.Down },
   ],
-  // Scenes + Scenarios
-  scenes: [
+  // Spritz + Scenarios
+  spritz: [
     {
       id: 'strange-legend',
       actions: [
@@ -83,10 +83,10 @@ export default {
   // Scripts / Triggers for the Zone
   scripts: [
     {
-      id: 'load-scene', // **runs automatically when loaded
+      id: 'load-spritz', // **runs automatically when loaded
       trigger: async function () {
         await loadAvatar(this, STORE_NAME);
-        await this.playScene('strange-legend');
+        await this.playCutScen('strange-legend');
       },
     },
     {

@@ -22,7 +22,7 @@ export default {
   tileset: 'void',
   audioSrc: '/pixos/audio/dungeon-beat.mp3',
   cells: cells,
-  // Sprites and Objects to be Loaded in the Scene & their Starting Points
+  // Sprites and Objects to be Loaded in the Spritz & their Starting Points
   sprites: [
     // NPCs
     { id: 'darkness', type: 'npc/darkness', pos: new Vector(...[10, 4, 0]), facing: Direction.Down },
@@ -52,15 +52,15 @@ export default {
   // Scripts / Triggers
   scripts: [
     {
-      id: 'load-scene',
+      id: 'load-spritz',
       trigger: async function () {
         await loadAvatar(this, STORE_NAME);
       },
     },
   ],
-  // TODO - Add in Scenes / Dialogue
+  // TODO - Add in Spritz / Dialogue
   //
-  scenes: [],
+  spritz: [],
   //
   // objects // 3d
   objects: [],

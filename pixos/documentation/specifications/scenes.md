@@ -1,4 +1,4 @@
-# Pixospritz - Scenes Specification
+# Pixospritz - Spritz Specification
 
 ## Introduction
 

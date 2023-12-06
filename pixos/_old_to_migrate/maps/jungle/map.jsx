@@ -144,10 +144,10 @@ export default {
     });
     return sprites;
   },
-  // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
+  // Sprites and Objects to be Loaded in the Spritz & their Starting Points (includes effect tiles)
   defaultSprites: [],
-  // Scenes + Scenarios
-  scenes: [
+  // Spritz + Scenarios
+  spritz: [
     {
       id: 'welcome',
       actions: [
@@ -175,7 +175,7 @@ export default {
   // Scripts / Triggers for the Zone
   scripts: [
     {
-      id: 'load-scene', // **runs automatically when loaded
+      id: 'load-spritz', // **runs automatically when loaded
       trigger: async function () {
         // randomly pick gender & store
         let gender = await loadAvatar(this, STORE_NAME);

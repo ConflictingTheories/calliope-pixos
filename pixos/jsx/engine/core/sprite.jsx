@@ -271,7 +271,7 @@ export default class Sprite extends Loadable {
     if (!this.loaded) return;
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
-    // position into scene
+    // position
     translate(this.engine.uViewMat, this.engine.uViewMat, (this.drawOffset[this.engine.cameraDir] ?? this.drawOffset['N']).toArray()); //[0.5, 0.5, -0.5]);
     translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
 

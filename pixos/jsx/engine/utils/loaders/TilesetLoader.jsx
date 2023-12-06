@@ -23,8 +23,8 @@ export class TilesetLoader {
   }
 
   // load from zip
-  async loadFromZip(zip, type, sceneName) {
-    console.log('loading tileset from zip: ' + type + ' for ' + sceneName);
+  async loadFromZip(zip, type, spritzName) {
+    console.log('loading tileset from zip: ' + type + ' for ' + spritzName);
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);

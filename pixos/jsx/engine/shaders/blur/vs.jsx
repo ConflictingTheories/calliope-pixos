@@ -11,8 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Shaders
-import DynamicScene from '@Engine/dynamic/scene.jsx';
-
-// Scene Object
-export default class ExampleDynamicScene extends DynamicScene {}
+export default function vs() {
+  return `
+  attribute vec4 aVertexPosition;
+  
+  void main() {
+      gl_Position = aVertexPosition;
+  }  
+`;
+}

@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import glEngine from '@Engine/core/index.jsx';
 import { minecraftia } from '@Engine/core/hud.jsx';
 //
-const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => {
+const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) => {
   // Canvas
   const ref = useRef();
   const hudRef = useRef();
@@ -32,8 +32,8 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
   const previewBoxRef = useRef();
 
   // keyboard & touch
-  let onKeyEvent = SceneProvider.onKeyEvent;
-  let onTouchEvent = SceneProvider.onTouchEvent;
+  let onKeyEvent = SpritzProvider.onKeyEvent;
+  let onTouchEvent = SpritzProvider.onTouchEvent;
   let engine = null;
 
   // recording stream & media tracks
@@ -49,6 +49,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
     dynamicHeight: window.innerHeight,
   });
 
+  // window dimensions
   const setDimension = () => {
     getDimension({
       dynamicWidth: window.innerWidth,
@@ -62,25 +63,10 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
     document.fonts.add(minecraftia);
   }
 
-  // convert stream to video
-  function streamToVideo(stream, ref) {
-    let video = document.createElement('video');
-    if (ref) {
-      video = ref.current;
-    }
-    video.srcObject = stream;
-    video.style.width = stream.width;
-    video.style.height = stream.height;
-    video.play();
-    return video;
-  }
-
-  // stop recording and display recording
   function stopRecording(recorder) {
     recordingRef.current.pause();
     recorder?.stop();
   }
-
   function stopTouchScrolling(canvas) {
     // Prevent scrolling when touching the canvas
     document.body.addEventListener(
@@ -111,8 +97,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
       { passive: false }
     );
   }
-
-  // record gameplay to video stream
   function startRecording(cStream, recorder) {
     setRecorder(recorder);
     setStream(cStream);
@@ -147,7 +131,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
       }
     };
   }
-
   function hidePreview() {
     setPreview(false);
   }
@@ -192,26 +175,8 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
     }
   }
 
-  useEffect(async () => {
-    // handle resize
-    window.addEventListener('resize', setDimension);
-    // setup canvases
-    const canvas = ref.current;
-    const hud = hudRef.current;
-    const mipmap = mmRef.current;
-    const gamepad = gamepadRef.current;
-    const fileUpload = fileRef.current;
-
-    // merge streams canvas
-    const mergeCanvas = mergeCanvasRef.current;
-    let mergeContext = mergeCanvas.getContext('2d');
-
-    // allow dragging preview video around
-    dragElement(previewBoxRef);
-
-    // Webgl Engine
-    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
-
+  // Screen capture from spritz and hud
+  function captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext) {
     // stream video output (single canvas element?)
     cStream = mergeCanvas.captureStream();
     engine.streamToVideo(cStream, previewRef);
@@ -229,12 +194,34 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
       mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // hud
       requestAnimationFrame(mergeStreams);
     })();
+  }
+
+  useEffect(async () => {
+    // handle resize
+    window.addEventListener('resize', setDimension);
+    // setup canvases
+    const canvas = ref.current;
+    const hud = hudRef.current;
+    const mipmap = mmRef.current;
+    const gamepad = gamepadRef.current;
+    const fileUpload = fileRef.current;
+
+    // merge streams canvas
+    const mergeCanvas = mergeCanvasRef.current;
+    let mergeContext = mergeCanvas.getContext('2d');
+
+    // Webgl Engine
+    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
+
+    // screen capture
+    dragElement(previewBoxRef);
+    captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext);
 
     // load fonts
     await loadFonts();
 
-    // Initialize Scene
-    await engine.init(SceneProvider);
+    // Initialize Spritz
+    await engine.init(SpritzProvider);
 
     // render loop
     engine.render();
@@ -247,7 +234,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
       window.removeEventListener('resize', setDimension);
       engine.close();
     };
-  }, [SceneProvider]);
+  }, [SpritzProvider]);
 
   let wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
@@ -373,7 +360,6 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
         <button style={{ ...recordBtnStyle, display: isRecording ? 'block' : 'none' }} ref={recordBtnRef} onClick={() => stopRecording(recorder)}>
           Stop Recording
         </button>
-
         <button style={{ ...showRecordBtnStyle }} ref={previewBtnRef} onClick={() => showPreview()}>
           Show Recording
         </button>
@@ -388,7 +374,7 @@ const WebGLView = ({ width, height, SceneProvider, class: string, zipData }) => 
 WebGLView.propTypes = {
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
-  SceneProvider: PropTypes.object.isRequired,
+  SpritzProvider: PropTypes.object.isRequired,
   class: PropTypes.string.isRequired,
 };
 

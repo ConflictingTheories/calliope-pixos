@@ -18,7 +18,7 @@ const config = {
       '@Engine': path.resolve(__dirname, 'pixos/jsx/engine'),
       '@Sprites': path.resolve(__dirname, 'pixos/jsx/sprites'),
       '@Tilesets': path.resolve(__dirname, 'pixos/jsx/tilesets'),
-      '@Scenes': path.resolve(__dirname, 'pixos/jsx/scenes'),
+      '@Spritz': path.resolve(__dirname, 'pixos/jsx/spritz'),
     },
     fallback: {
       buffer: require.resolve('buffer/'),

@@ -1,7 +1,7 @@
 # Pixospritz - Specification alpha-v0.7.x
 
 ##  Getting Started With Pixospritz
-**Pixospritz** is designed around declarative mini-game architecture that focuses on an open format and interoperability on the platform. Rather than locking down the format with a particular engine implementation, or focusing on using it solely for compiling games, it focuses on a generalized *Player* or *Reader* which can interpret the Pixospritz packages and render them. This idea is to promote a community around sharing pixospritz games and scenes that can be ported to different platforms through open-source support. 
+**Pixospritz** is designed around declarative mini-game architecture that focuses on an open format and interoperability on the platform. Rather than locking down the format with a particular engine implementation, or focusing on using it solely for compiling games, it focuses on a generalized *Player* or *Reader* which can interpret the Pixospritz packages and render them. This idea is to promote a community around sharing pixospritz games and spritz that can be ported to different platforms through open-source support. 
 
 Rather than having it tied to a particular engine, platform, or even hardware - the Pixospritz format will be open by design with the hopes it can be shared and experienced by as many people. Imagine playing a game in your browser, then saving it to a mmicroSD card, putting that in your raspberry pi or pi-clone and then playing it with a DIY controller that you put together running on a DIY game console and pickup exactly where you left-off in your web-browser, then save it via IPFS and share the experience, replay, or straight up your character. 
 
@@ -75,10 +75,10 @@ Unlike triggers which tend to be more involved and take on a particular scope of
 
 ex) addInventory callback to add inventory from a container which could be assigned to chests, barrels except occasionally, you may wish to trigger a trap instead and have a triggerTrap callback.
 
-### Scenes
-*Scenes will be found in the `/scenes` folder - TBB*
+### Spritz
+*Spritz will be found in the `/spritz` folder - TBB*
 
-Scenes are essentially prescripted collections of actions, events, and various game logic that are intended to play out. These may link between one another, or may be instead stand-alone.
+Spritz are essentially prescripted collections of actions, events, and various game logic that are intended to play out. These may link between one another, or may be instead stand-alone.
 
     TBB.
 
@@ -115,7 +115,7 @@ All audio will reside within the `/audio` folder within the package. This can be
 
 ## Menu Specification
 
-## Scene Specification
+## Spritz Specification
 
 ## Trigger Specification
 

@@ -40,7 +40,7 @@
       "direction": [0.3, 0.3, 1]
     }
   ],
-  "scenes": [
+  "spritz": [
     {
       "id": "strange-legend",
       "actions": [
@@ -64,7 +64,7 @@
   ],
   "scripts": [
     {
-      "id": "load-scene",
+      "id": "load-spritz",
       "trigger": "zone/room_load"
     },
     {

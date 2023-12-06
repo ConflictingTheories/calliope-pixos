@@ -25,8 +25,8 @@ export class SpriteLoader {
   }
 
   // Load Sprite
-  async loadFromZip(zip, type, sceneName) {
-    console.log('loading sprite from zip: ' + type + ' for ' + sceneName);
+  async loadFromZip(zip, type, spritzName) {
+    console.log('loading sprite from zip: ' + type + ' for ' + spritzName);
     let afterLoad = arguments[3];
     let runConfigure = arguments[4];
     if (!this.instances[type]) {

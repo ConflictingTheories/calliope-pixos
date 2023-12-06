@@ -4,7 +4,7 @@
   "bounds": [0, 0, 17, 19],
   "scripts":[
     {
-      "id": "load-scene",
+      "id": "load-spritz",
       "trigger": "zone/room_clear_path"
     }
   ]
