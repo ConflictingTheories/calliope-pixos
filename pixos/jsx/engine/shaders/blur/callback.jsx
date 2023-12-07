@@ -54,7 +54,8 @@ export default function callback(effectProgram) {
 
   // draw
   effectProgram.draw = function () {
-    // gl.uniform1i(effectProgram.depthLocation, 2);
+    gl.uniform1i(effectProgram.depthLocation, 2);
+
     ////////////////////
     // HORIZONTAL BLUR
     ////////////////////

@@ -22,6 +22,7 @@ import { GamePad } from '@Engine/utils/gamepad/index.jsx';
 import { OBJ } from '@Engine/utils/obj';
 import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
 import Speech from '@Engine/core/speech.jsx';
+import Light from '@Engine/core/light.jsx';
 import Keyboard from '@Engine/utils/keyboard.jsx';
 import createTransition from 'gl-transition';
 
@@ -101,15 +102,11 @@ export default class GLEngine {
    * @param {*} id
    * @param {*} pos
    * @param {*} color
-   * @param {*} direction
+   * @param {*} attentuation
+   * @param {*} enabled
    */
-  addLight(id, pos, color, direction = null) {
-    this.lights.push({
-      id,
-      pos,
-      color,
-      direction,
-    });
+  addLight(id, pos, color, attentuation = [0.5, 0.1, 0.0], enabled = true) {
+    this.lights.push(new Light(id, color, pos, attentuation, enabled));
   }
 
   /**
@@ -326,10 +323,21 @@ export default class GLEngine {
     shaderProgram.uLightDirection = gl.getUniformLocation(shaderProgram, 'uLightDirection');
     shaderProgram.uLightIsDirectional = gl.getUniformLocation(shaderProgram, 'uLightIsDirectional');
 
+    shaderProgram.uLightPosition = gl.getUniformLocation(shaderProgram, 'uLightPosition');
+    shaderProgram.uLightColor = gl.getUniformLocation(shaderProgram, 'uLightColor');
+    shaderProgram.uLightDirection = gl.getUniformLocation(shaderProgram, 'uLightDirection');
+    shaderProgram.uLightIsDirectional = gl.getUniformLocation(shaderProgram, 'uLightIsDirectional');
+
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
     shaderProgram.useLighting = gl.getUniformLocation(shaderProgram, 'useLighting');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
+
+    // light uniforms
+    shaderProgram.uLights = gl.getUniformLocation(shaderProgram, 'uLights');
+    shaderProgram.uLightVMatrix = gl.getUniformLocation(shaderProgram, 'uLightVMatrix');
+    shaderProgram.uLightPMatrix = gl.getUniformLocation(shaderProgram, 'uLightPMatrix');
+
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
@@ -339,12 +347,24 @@ export default class GLEngine {
       normalFromMat4(self.normalMat, self.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
-      // point lighting
+      // point lighting (OLD)
       gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
       gl.uniform3fv(this.uLightColor, self.lights[0].color);
       gl.uniform3fv(this.uLightDirection, self.lights[0].direction ?? []);
       gl.uniform1f(this.uLightIsDirectional, 1.0);
       gl.uniform1f(this.useLighting, 1.0);
+
+      for (let i = 0; i < self.lights.length; i++) {
+        self.lights[i].tick();
+        console.log([self.lights, this.uLights]);
+        // todo -- not working right
+        if(this.uLights){
+          gl.uniform1f(this.uLights[i].enabled, self.lights[i].enabled);
+          gl.uniform3fv(this.uLights[i].attenuation, self.lights[i].attenuation);
+          gl.uniform3fv(this.uLights[i].color, self.lights[i].color);
+          gl.uniform3fv(this.uLights[i].position, self.lights[i].pos);
+        }
+      }
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
@@ -375,6 +395,24 @@ export default class GLEngine {
     this.shaderProgram = shaderProgram;
     return shaderProgram;
   };
+
+  /**
+   * Update Point lighting
+   * @returns
+   */
+  updateLights(shaderProgram) {
+    for (let i = 0; i < this.lights.length; i++) {
+      this.lights[i].tick();
+      if (this.shaderProgram && this.shaderProgram.uLights) {
+        console.log(this.lights);
+        // todo -- not working right
+        // this.gl.uniform1f(shaderProgram.uLights[i].enabled, this.lights[i].enabled);
+        // this.gl.uniform3fv(shaderProgram.uLights[i].attenuation, this.lights[i].attenuation);
+        // this.gl.uniform3fv(shaderProgram.uLights[i].color, this.lights[i].color);
+        // this.gl.uniform3fv(shaderProgram.uLights[i].position, this.lights[i].position);
+      }
+    }
+  }
 
   /**
    * Initialize Shader Effect (blur, depth of field, etc)
@@ -664,6 +702,7 @@ export default class GLEngine {
 
     // core render loop
     this.activateShaderProgram();
+    this.updateLights();
     this.gamepad.render();
     this.spritz.render(this, new Date().getTime());
 
@@ -1015,6 +1054,7 @@ export default class GLEngine {
       case 'swipe':
         break;
       case 'pixelize':
+      default:
         defaultParams = { squaresMind: [20, 20], steps: 50 };
         paramsTypes = { squaresMind: 'vec2', steps: 'int' };
         glsl = `

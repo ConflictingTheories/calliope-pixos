@@ -21,6 +21,8 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
  * @returns
  */
 export async function loadMap(json, cells, zip) {
+  console.log('loading map....');
+
   // read sprites & handle functions
   let $sprites =
     typeof json.sprites === 'string'
@@ -34,6 +36,7 @@ export async function loadMap(json, cells, zip) {
             zones: sprite.zones ?? null,
           };
         });
+        console.log('loading map....');
 
   let $scenes = json.scenes.map((scene) => {
     return {
@@ -53,6 +56,7 @@ export async function loadMap(json, cells, zip) {
       scope: this,
     };
   });
+  console.log('loading map....');
 
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
@@ -88,6 +92,19 @@ export async function loadMap(json, cells, zip) {
     };
   });
 
+  // let $lights = json.lights.map((light) => {
+  //   console.log(light);
+  //   return {
+  //     id: light.id,
+  //     pos: light.pos ? new Vector(...light.pos) : null,
+  //     color: light.color ? new Vector(...light.color) : null,
+  //     direction: light.direction ? new Vector(...light.direction) : null,
+  //     attentuation: light.attentuation ? new Vector(...light.attentuation) : null,
+  //     enabled: light.enabled ?? false,
+  //   };
+  // });
+  console.log('loading map....');
+
   return {
     // size of map
     bounds: json.bounds,
@@ -103,6 +120,8 @@ export async function loadMap(json, cells, zip) {
     scripts: $scripts,
     // objects // 3d
     objects: $objects,
+    // lights
+    lights: json.lights,
   };
 }
 

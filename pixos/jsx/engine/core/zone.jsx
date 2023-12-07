@@ -203,10 +203,15 @@ export default class Zone extends Loadable {
       try {
         // Extract and Read in Information
         var tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.spritzName);
+        console.log('tileset');
         var cells = dynamicCells(cellJson, tileset.tiles);
+        console.log('cells');
         var map = await loadMap.call(this, zoneJson, cells, zip);
+        console.log('map');
         Object.assign(this, map);
+        console.log('map assign');
       } catch (e) {
+        console.log(this);
         console.error({ msg: 'error reading in zone & cell data', e });
       }
 
@@ -232,7 +237,7 @@ export default class Zone extends Loadable {
       // load lights
       try {
         this.lights = zoneJson.lights ?? [];
-        this.lights.forEach((light) => this.engine.addLight(light.id, light.pos, light.color, light.direction));
+        this.lights.forEach((light) => this.engine.addLight(light.id, light.pos, light.color, light.attenuation, light.enabled));
       } catch (e) {
         console.error({ msg: 'error loading lights', e });
       }

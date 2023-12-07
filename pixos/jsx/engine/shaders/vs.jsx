@@ -27,9 +27,13 @@ export default function vs() {
   uniform vec3 uLightDirection;
   uniform float uLightIsDirectional;
 
-  varying vec2 vTextureCoord;
+  uniform mat4 uLightVMatrix;
+  uniform mat4 uLightPMatrix;
+
+  varying vec4 vWorldVertex;
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
+  varying vec2 vTextureCoord;
 
   varying vec3 vLighting;
   
@@ -37,6 +41,8 @@ export default function vs() {
 
   void main(void) {
 
+    vWorldVertex = uMVMatrix * vec4(aVertexPosition, 1.0);
+    
     vec3 scaledPosition = aVertexPosition * u_scale;
     vPosition = uMVMatrix * vec4(scaledPosition, 1.0);
     gl_Position = uPMatrix * vPosition;
