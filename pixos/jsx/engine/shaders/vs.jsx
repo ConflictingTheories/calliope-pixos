@@ -59,10 +59,10 @@ export default function vs() {
     // todo -- Calculate incoming light for all light sources
     if (useLighting == 1.0) {
       if (uLightIsDirectional == 1.0) {
-         directional = max(dot(transformedNormal.xyz, normalize(uLightDirection)), 0.0);
+        directional = max(dot(transformedNormal.xyz, normalize(uLightDirection)), 0.0);
       } else {
-        directionalLightColor = normalize(uLightPosition.xyz) * dot(uLightPosition.xyz, vPosition.xyz);
-        directional = max(dot(transformedNormal.xyz, directionalLightColor), 0.0);
+        vec3 lightDirection = normalize(uLightPosition.xyz - vPosition.xyz);
+        directional = max(dot(transformedNormal.xyz, lightDirection), 0.0);
       }
     }
 

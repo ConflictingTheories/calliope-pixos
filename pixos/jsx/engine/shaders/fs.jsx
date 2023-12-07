@@ -56,13 +56,14 @@ export default function fs() {
     for (int i=0; i<4; i++) {
       if (uLights[i].enabled < 0.5)
         continue;
-      vec3 lightVec = normalize(uLights[i].position - vWorldVertex.xyz);
+      
+      vec3 lightVec = normalize(uLights[i].position - vPosition.xyz);
       float l = dot(normal, lightVec);
   
       if (l <= 0.0)
         continue;
   
-      float d = distance(vWorldVertex.xyz, uLights[i].position);
+      float d = distance(vPosition.xyz, uLights[i].position);
       float a = 1.0/(
         uLights[i].attenuation.x +
         uLights[i].attenuation.y*d + 
@@ -74,21 +75,40 @@ export default function fs() {
   }
 
   void main(void) {
-    vec4 texelColors = texture2D(uSampler, vTextureCoord);
-    vec3 color = texelColors.rgb;
     float shadow = 1.0;
     
-    if(texelColors.a < 0.1)
-      discard;
-
     if(useSampler == 1.0){
-      color = setLights(color);
-      gl_FragColor = clamp(vec4(texelColors.rgb*color*shadow, 1.0), 0.0, 1.0);
-    } else {
-      if(vLighting != vec3(0.0,0.0,0.0))
-        color = color * vLighting;
+      vec4 texelColors = texture2D(uSampler, vTextureCoord);
+      vec3 color = texelColors.rgb;
+      
+      if(texelColors.a < 0.1)
+        discard;
+
+      if(vLighting != vec3(0.0,0.0,0.0)){
+        color = texelColors.rgb * vLighting;
+      }else{
+        color = texelColors.rgb;
+      }
+
       color = setLights(color);
       gl_FragColor = clamp(vec4(texelColors.rgb*color*shadow, texelColors.a), 0.0, 1.0);
+    } else {
+      vec4 texelColors = texture2D(uDiffuseMap, vTextureCoord);
+      vec3 V = -normalize(vPosition.xyz);
+      vec3 L = normalize(vec3(1.0, 1.0, 1.0));
+      vec3 H = normalize(L + V);
+      vec3 N = normalize(vLighting);
+      vec3 color = uDiffuse * dot(N, L);
+      if(useDiffuse == 1.0){
+        if(texelColors != vec4(0.0,0.0,0.0,0.0)){
+          color = texelColors.rgb * color;
+        }
+      }
+
+      if(vLighting != vec3(0.0,0.0,0.0))
+        gl_FragColor = vec4(color * vLighting, 1.0);
+      else
+        gl_FragColor = vec4(color, 1.0);
     }
   }
 `;

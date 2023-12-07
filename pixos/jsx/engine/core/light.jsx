@@ -26,7 +26,7 @@ export default class Light {
 
   // light flicker
   tick() {
-    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
+    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.00005 * this.frame * 180) / Math.PI) * 0.002;
     this.frame++;
   }
 }

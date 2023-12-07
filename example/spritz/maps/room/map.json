@@ -7,5 +7,15 @@
       "id": "load-spritz",
       "trigger": "zone/room_clear_path"
     }
+  ],
+  "lights": [
+    {
+      "id": "spot-light",
+      "pos": [2, 2, 0],
+      "color": [0.8, 0.8, 1],
+      "direction": [0.3, 0.3, 1],
+      "attenuation": [0.8, 0.8, 0.8],
+      "enabled": true
+    }
   ]
 }

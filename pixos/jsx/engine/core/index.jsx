@@ -11,15 +11,19 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+// Third-party imports
 import { store } from 'react-recollect';
 import Dexie from 'dexie';
 
+// Absolute imports
 import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '@Engine/utils/math/matrix4.jsx';
 import { Vector, negate } from '@Engine/utils/math/vector.jsx';
 import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
 import { textScrollBox } from '@Engine/core/hud.jsx';
 import { GamePad } from '@Engine/utils/gamepad/index.jsx';
 import { OBJ } from '@Engine/utils/obj';
+
+// Relative imports
 import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
 import Speech from '@Engine/core/speech.jsx';
 import Light from '@Engine/core/light.jsx';
@@ -27,6 +31,7 @@ import Keyboard from '@Engine/utils/keyboard.jsx';
 import createTransition from 'gl-transition';
 
 export default class GLEngine {
+  
   /**
    * Core Pixos Graphics & Game Engine
    * @param {*} canvas
@@ -355,7 +360,7 @@ export default class GLEngine {
       gl.uniform1f(this.useLighting, 1.0);
 
       for (let i = 0; i < self.lights.length; i++) {
-        self.lights[i].tick();
+        // self.lights[i].tick();
         console.log([self.lights, this.uLights]);
         // todo -- not working right
         if(this.uLights){
@@ -406,10 +411,10 @@ export default class GLEngine {
       if (this.shaderProgram && this.shaderProgram.uLights) {
         console.log(this.lights);
         // todo -- not working right
-        // this.gl.uniform1f(shaderProgram.uLights[i].enabled, this.lights[i].enabled);
-        // this.gl.uniform3fv(shaderProgram.uLights[i].attenuation, this.lights[i].attenuation);
-        // this.gl.uniform3fv(shaderProgram.uLights[i].color, this.lights[i].color);
-        // this.gl.uniform3fv(shaderProgram.uLights[i].position, this.lights[i].position);
+        this.gl.uniform1f(shaderProgram.uLights[i].enabled, this.lights[i].enabled);
+        this.gl.uniform3fv(shaderProgram.uLights[i].attenuation, this.lights[i].attenuation);
+        this.gl.uniform3fv(shaderProgram.uLights[i].color, this.lights[i].color);
+        this.gl.uniform3fv(shaderProgram.uLights[i].position, this.lights[i].position);
       }
     }
   }
