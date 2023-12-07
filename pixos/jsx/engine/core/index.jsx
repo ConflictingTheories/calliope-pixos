@@ -352,24 +352,15 @@ export default class GLEngine {
       normalFromMat4(self.normalMat, self.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
-      // point lighting (OLD)
+      // main - point lighting (OLD)
       gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
       gl.uniform3fv(this.uLightColor, self.lights[0].color);
       gl.uniform3fv(this.uLightDirection, self.lights[0].direction ?? []);
-      gl.uniform1f(this.uLightIsDirectional, 1.0);
-      gl.uniform1f(this.useLighting, 1.0);
+      gl.uniform1f(this.uLightIsDirectional, 0.0);
+      gl.uniform1f(this.useLighting, 0.0);
 
-      for (let i = 0; i < self.lights.length; i++) {
-        // self.lights[i].tick();
-        console.log([self.lights, this.uLights]);
-        // todo -- not working right
-        if(this.uLights){
-          gl.uniform1f(this.uLights[i].enabled, self.lights[i].enabled);
-          gl.uniform3fv(this.uLights[i].attenuation, self.lights[i].attenuation);
-          gl.uniform3fv(this.uLights[i].color, self.lights[i].color);
-          gl.uniform3fv(this.uLights[i].position, self.lights[i].pos);
-        }
-      }
+      // point lights
+      self.updateLights();
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
@@ -405,16 +396,15 @@ export default class GLEngine {
    * Update Point lighting
    * @returns
    */
-  updateLights(shaderProgram) {
+  updateLights() {
     for (let i = 0; i < this.lights.length; i++) {
       this.lights[i].tick();
       if (this.shaderProgram && this.shaderProgram.uLights) {
-        console.log(this.lights);
-        // todo -- not working right
-        this.gl.uniform1f(shaderProgram.uLights[i].enabled, this.lights[i].enabled);
-        this.gl.uniform3fv(shaderProgram.uLights[i].attenuation, this.lights[i].attenuation);
-        this.gl.uniform3fv(shaderProgram.uLights[i].color, this.lights[i].color);
-        this.gl.uniform3fv(shaderProgram.uLights[i].position, this.lights[i].position);
+        let lightUniforms = this.shaderProgram.uLights[i];
+        gl.uniform1f(lightUniforms.enabled, this.lights[i].enabled ? 1.0 : 0.0);
+        gl.uniform3fv(lightUniforms.position, this.lights[i].pos);
+        gl.uniform3fv(lightUniforms.color, this.lights[i].color);
+        gl.uniform3fv(lightUniforms.attenuation, this.lights[i].attenuation);
       }
     }
   }
@@ -707,7 +697,7 @@ export default class GLEngine {
 
     // core render loop
     this.activateShaderProgram();
-    this.updateLights();
+    // this.updateLights();
     this.gamepad.render();
     this.spritz.render(this, new Date().getTime());
 

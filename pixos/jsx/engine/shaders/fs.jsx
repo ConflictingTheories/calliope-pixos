@@ -59,56 +59,62 @@ export default function fs() {
       
       vec3 lightVec = normalize(uLights[i].position - vPosition.xyz);
       float l = dot(normal, lightVec);
-  
-      if (l <= 0.0)
-        continue;
-  
-      float d = distance(vPosition.xyz, uLights[i].position);
-      float a = 1.0/(
-        uLights[i].attenuation.x +
-        uLights[i].attenuation.y*d + 
-        uLights[i].attenuation.z*d*d
-      );
-      color += l*a*uLights[i].color;
+    
+      if (l > 0.0) {
+        float d = distance(vPosition.xyz, uLights[i].position);
+        float a = 1.0/(
+          uLights[i].attenuation.x +
+          uLights[i].attenuation.y*d + 
+          uLights[i].attenuation.z*d*d
+        );
+        color += a*l*uLights[i].color;
+      }
     }
     return color;
   }
+  
+  // Diffuse Colour Calculation
+   vec3 calculateDiffuse(){
+    vec4 texelColors = texture2D(uDiffuseMap, vTextureCoord);
+    vec3 V = -normalize(vPosition.xyz);
+    vec3 L = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 H = normalize(L + V);
+    vec3 N = normalize(vLighting);
+    vec3 color = uDiffuse * dot(N, L);
+    if(useDiffuse == 1.0){
+      if(texelColors != vec4(0.0,0.0,0.0,0.0)){
+        color = texelColors.rgb * color;
+      }
+    }
+    return color;
+   }
+
+   // Sampler Texture Colour Calculation
+   vec3 calculateSampler(vec4 texelColors){
+    vec3 color = texelColors.rgb;
+    if(texelColors.a < 0.1)
+      discard;
+    if(vLighting != vec3(0.0,0.0,0.0)){
+      return texelColors.rgb * vLighting;
+    }
+    return color;
+   }
+
 
   void main(void) {
     float shadow = 1.0;
     
+    // sampler
     if(useSampler == 1.0){
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
-      vec3 color = texelColors.rgb;
-      
-      if(texelColors.a < 0.1)
-        discard;
-
-      if(vLighting != vec3(0.0,0.0,0.0)){
-        color = texelColors.rgb * vLighting;
-      }else{
-        color = texelColors.rgb;
-      }
-
-      color = setLights(color);
-      gl_FragColor = clamp(vec4(texelColors.rgb*color*shadow, texelColors.a), 0.0, 1.0);
-    } else {
-      vec4 texelColors = texture2D(uDiffuseMap, vTextureCoord);
-      vec3 V = -normalize(vPosition.xyz);
-      vec3 L = normalize(vec3(1.0, 1.0, 1.0));
-      vec3 H = normalize(L + V);
-      vec3 N = normalize(vLighting);
-      vec3 color = uDiffuse * dot(N, L);
-      if(useDiffuse == 1.0){
-        if(texelColors != vec4(0.0,0.0,0.0,0.0)){
-          color = texelColors.rgb * color;
-        }
-      }
-
+      vec3 color = calculateSampler(texelColors);
+      gl_FragColor = clamp(vec4(color.rgb * setLights(color) * shadow, texelColors.a), 0.0, 1.0);
+    } else { // diffuse
+      vec3 color = calculateDiffuse();
       if(vLighting != vec3(0.0,0.0,0.0))
-        gl_FragColor = vec4(color * vLighting, 1.0);
+        gl_FragColor = vec4(setLights(color) * vLighting, 1.0);
       else
-        gl_FragColor = vec4(color, 1.0);
+        gl_FragColor = vec4(setLights(color), 1.0);
     }
   }
 `;

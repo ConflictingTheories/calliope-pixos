@@ -44,7 +44,15 @@
       "pos": [2, 2, 0],
       "color": [0.8, 0.8, 1],
       "direction": [0.3, 0.3, 1],
-      "attenuation": [0.8, 0.8, 0.8],
+      "attenuation": [0.2, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "spot-light",
+      "pos": [2, 2, 0],
+      "color": [0.8, 0.8, 1],
+      "direction": [0.3, 0.3, 1],
+      "attenuation": [0.2, 0.1, 0.05],
       "enabled": true
     }
   ],
