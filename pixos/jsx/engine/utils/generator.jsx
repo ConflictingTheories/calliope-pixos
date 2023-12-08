@@ -22,7 +22,7 @@ export const STORE_NAME = 'garden-tome';
 // generate random map zone
 export async function generateZone(self, gender, storeName, cyoa) {
   // load current spritz or play welcome
-  let tome = self.engine.fetchStore(storeName);
+  let tome = self.engine.store.fetchStore(storeName);
 
   if (!tome) {
     // Initialize the garden
@@ -40,7 +40,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // Load CYOA config
     Object.assign(tome, cyoa);
 
-    self.engine.addStore(storeName, tome);
+    self.engine.store.addStore(storeName, tome);
 
     // Generate a collection of spritz programmably
     // and append them to the spritz collection.

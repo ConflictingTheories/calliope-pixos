@@ -51,14 +51,14 @@ export default {
         if (section.active) {
           colors['background'] = '#555';
         }
-        this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        this.engine.hud.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
       });
 
-    this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
 
     if (this.completed) {
       this.unhookListener();
-      // this.engine.clearHud();
+      // this.engine.hud.clearHud();
     }
     return this.completed;
   },

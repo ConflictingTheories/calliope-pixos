@@ -11,15 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Third-party imports
-import { store } from 'react-recollect';
-import Dexie from 'dexie';
-
 // Absolute imports
 import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '@Engine/utils/math/matrix4.jsx';
-import { Vector, negate } from '@Engine/utils/math/vector.jsx';
+import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
 import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
-import { textScrollBox } from '@Engine/core/hud.jsx';
 import { GamePad } from '@Engine/utils/gamepad/index.jsx';
 import { OBJ } from '@Engine/utils/obj';
 
@@ -29,77 +24,71 @@ import Speech from '@Engine/core/speech.jsx';
 import Light from '@Engine/core/light.jsx';
 import Keyboard from '@Engine/utils/keyboard.jsx';
 import createTransition from 'gl-transition';
+import Camera from './camera.jsx';
+import Database from './database.jsx';
+import Store from './store.jsx';
+import Hud from './hud.jsx';
 
 export default class GLEngine {
-  
   /**
    * Core Pixos Graphics & Game Engine
    * @param {*} canvas
-   * @param {*} hud
+   * @param {*} hudcanvas
    * @param {*} mipmap
    * @param {*} gamepadcanvas
    * @param {*} fileUpload
    * @param {*} width
    * @param {*} height
    */
-  constructor(canvas, hud, mipmap, gamepadcanvas, fileUpload, width, height) {
+  constructor(canvas, hudcanvas, mipmap, gamepadcanvas, fileUpload, width, height) {
+    // CANVASES
+    this.canvas = canvas;
+    this.hudcanvas = hudcanvas;
+    this.gamepadcanvas = gamepadcanvas;
+    this.mipmap = mipmap;
+
+    // INPUTS
+    this.fileUpload = fileUpload;
+
+    // SCREEN
+    this.width = width;
+    this.height = height;
+
+    // WEBGL & STATE
     this.uViewMat = create();
     this.uProjMat = create();
     this.normalMat = create3();
     this.scale = new Vector(1, 1, 1);
-    this.canvas = canvas;
-    this.hud = hud;
-    this.gamepadcanvas = gamepadcanvas;
-    this.mipmap = mipmap;
-    this.fileUpload = fileUpload;
-    this.width = width;
-    this.height = height;
     this.modelViewMatrixStack = [];
-    this.globalStore = {};
     this.textures = [];
+    this.globalStore = {};
     this.speeches = [];
+    this.lights = [];
+    this.effects = [];
+    this.render = this.render.bind(this);
+    this.objLoader = OBJ;
+    this.Vector = Vector;
+
+    // TRANSITIONS
     this.isTransitioning = false;
     this.transition = null;
     this.transitionParams = {};
     this.transitionTexture = null;
     this.transitionDuration = 0;
     this.transitionTime = new Date().getMilliseconds();
-    this.cameraAngle = 45;
-    this.cameraVector = new Vector(...[1, 0, 0]);
-    this.cameraDir = 'N';
-    this.lights = [];
-    this.effects = [];
-    this.fov = 45;
-    this.cameraPosition = new Vector(8, 8, -1);
-    this.cameraOffset = new Vector(0, 0, 0);
-    this.setCamera = this.setCamera.bind(this);
-    this.render = this.render.bind(this);
-    this.panCameraCCW = this.panCameraCCW.bind(this);
-    this.panCameraCW = this.panCameraCW.bind(this);
-    this.tiltCameraCCW = this.tiltCameraCCW.bind(this);
-    this.tiltCameraCW = this.tiltCameraCW.bind(this);
-    this.pitchCameraCCW = this.pitchCameraCCW.bind(this);
-    this.pitchCameraCW = this.pitchCameraCW.bind(this);
-    this.objLoader = OBJ;
+
+    // CAMERA
+    this.camera = new Camera(this.uViewMat);
+
+    // AUDIO & VOICE
     this.voice = new SpeechSynthesisUtterance();
     this.audioLoader = new AudioLoader(this);
-    this.Vector = Vector;
-    // database
-    this.db = new Dexie('hyperspace');
-    this.db.version(1).stores({
-      tileset: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
-      inventory: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
-      spirits: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
-      abilities: '++id, name, creator, type checksum, signature, timestamp', // Primary key and indexed props
-      models: '++id, name, creator, type, checksum, signature, timestamp', // Primary key and indexed props
-      accounts: '++id, name, type, checksum, signature, timestamp', // Primary key and indexed props
-      dht: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
-      msg: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
-      tmp: '++id, key, value, timestamp', // key-store
-    });
-    // Store setup - session based
-    store.pixos = {};
-    this.store = store.pixos;
+
+    // DATABASE
+    this.database = new Database();
+
+    // STORE
+    this.store = new Store();
   }
 
   /**
@@ -123,11 +112,28 @@ export default class GLEngine {
   }
 
   /**
+   * Update Point lighting
+   * @returns
+   */
+  updateLights() {
+    for (let i = 0; i < this.lights.length; i++) {
+      this.lights[i].tick();
+      if (this.shaderProgram && this.shaderProgram.uLights) {
+        let lightUniforms = this.shaderProgram.uLights[i];
+        gl.uniform1f(lightUniforms.enabled, this.lights[i].enabled ? 1.0 : 0.0);
+        gl.uniform3fv(lightUniforms.position, this.lights[i].pos);
+        gl.uniform3fv(lightUniforms.color, this.lights[i].color);
+        gl.uniform3fv(lightUniforms.attenuation, this.lights[i].attenuation);
+      }
+    }
+  }
+
+  /**
    * Initialize a Spritz object
    * @param {*} spritz
    */
   async init(spritz) {
-    const ctx = this.hud.getContext('2d');
+    const ctx = this.hudcanvas.getContext('2d');
     const gl = this.canvas.getContext('webgl2');
     const gp = this.gamepadcanvas.getContext('2d');
 
@@ -141,13 +147,10 @@ export default class GLEngine {
       throw new Error('Gamepad : unable to initialize Mobile Canvas');
     }
 
-    // gamepad controller
-    const gamepad = new GamePad(gp);
-    gamepad.init();
-
     // Configure HUD
     ctx.canvas.width = gl.canvas.clientWidth;
     ctx.canvas.height = gl.canvas.clientHeight;
+    this.hud = new Hud(ctx);
 
     this.initializedWebGl = true;
     this.gl = gl;
@@ -157,6 +160,10 @@ export default class GLEngine {
     this.spritz = spritz;
     this.keyboard = new Keyboard();
     this.fullscreen = false;
+
+    // gamepad controller
+    const gamepad = new GamePad(gp);
+    gamepad.init();
     this.touch = gamepad.listen.bind(gamepad);
     this.gamepad = gamepad;
 
@@ -183,85 +190,6 @@ export default class GLEngine {
 
     // Initialize Spritz
     await spritz.init(this);
-  }
-
-  /**
-   * fetch value
-   * @param {*} store
-   * @param {*} key
-   * @returns
-   */
-  async dbGet(store, key) {
-    return await this.db[store].get(key);
-  }
-
-  /**
-   * add key to db store and returns id
-   * @param {*} store
-   * @param {*} value
-   * @returns
-   */
-  async dbAdd(store, value) {
-    return await this.db[store].add({ ...value });
-  }
-
-  /**
-   * update key to db store returns number of rows
-   * @param {*} store
-   * @param {*} id
-   * @param {*} changes
-   * @returns
-   */
-  async dbUpdate(store, id, changes) {
-    return await this.db[store].update(id, { ...changes });
-  }
-
-  /**
-   * update key to db store returns number of rows
-   * @param {*} store
-   * @param {*} id
-   * @returns
-   */
-  async dbRemove(store, id) {
-    return await this.db[store].delete(id);
-  }
-
-  /**
-   * fetch value from store
-   * @param {*} key
-   * @returns
-   */
-  fetchStore(key) {
-    return this.store[key];
-  }
-
-  /**
-   * add key to store and returns id
-   * @param {*} key
-   * @param {*} value
-   * @returns
-   */
-  addStore(key, value) {
-    return (this.store[key] = { ...value });
-  }
-
-  /**
-   * update key in store returns number of rows
-   * @param {*} key
-   * @param {*} changes
-   * @returns
-   */
-  updateStore(key, changes) {
-    return (this.store[key] = { ...changes });
-  }
-
-  /**
-   * delete key from store returns number of rows
-   * @param {*} key
-   * @returns
-   */
-  delStore(key) {
-    return (this.store[key] = null);
   }
 
   /**
@@ -346,10 +274,10 @@ export default class GLEngine {
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
-      gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.uViewMat);
+      gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.camera.uViewMat);
       // normal
       self.normalMat = create3();
-      normalFromMat4(self.normalMat, self.uViewMat);
+      normalFromMat4(self.normalMat, self.camera.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
       // main - point lighting (OLD)
@@ -391,23 +319,6 @@ export default class GLEngine {
     this.shaderProgram = shaderProgram;
     return shaderProgram;
   };
-
-  /**
-   * Update Point lighting
-   * @returns
-   */
-  updateLights() {
-    for (let i = 0; i < this.lights.length; i++) {
-      this.lights[i].tick();
-      if (this.shaderProgram && this.shaderProgram.uLights) {
-        let lightUniforms = this.shaderProgram.uLights[i];
-        gl.uniform1f(lightUniforms.enabled, this.lights[i].enabled ? 1.0 : 0.0);
-        gl.uniform3fv(lightUniforms.position, this.lights[i].pos);
-        gl.uniform3fv(lightUniforms.color, this.lights[i].color);
-        gl.uniform3fv(lightUniforms.attenuation, this.lights[i].attenuation);
-      }
-    }
-  }
 
   /**
    * Initialize Shader Effect (blur, depth of field, etc)
@@ -458,56 +369,13 @@ export default class GLEngine {
    * @param {*} gl
    */
   initProjection(gl) {
-    const fieldOfView = this.degToRad(this.fov);
+    const fieldOfView = degToRad(this.camera.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
-    this.uViewMat = create();
+    this.camera.uViewMat = create();
     this.uProjMat[5] *= -1;
-  }
-
-  /**
-   * Set Camera Pos & Angle
-   */
-  setCamera() {
-    translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.y), [0, 1, 0]);
-    rotate(this.uViewMat, this.uViewMat, this.degToRad(this.cameraAngle * this.cameraVector.z), [0, 0, 1]);
-    negate(this.cameraPosition, this.cameraOffset);
-    translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
-  }
-
-  // Set Camera Pos & Angle
-  panCameraCW(radians = Math.PI / 4) {
-    this.cameraVector.z -= Math.cos(radians);
-  }
-  panCameraCCW(radians = Math.PI / 4) {
-    // different angles for facings
-    // [1. 0, 4] - S (Reversed) (up/down)
-    // [1. 0, 3] - SW (Iso)
-    // [1. 0, 2] - W (left/right)
-    // [1, 0, 1] - NW (Iso)
-    // [1, 0, 0] - N (Normal) (up/down)
-    // [1. 0, -1] - NE (Iso)
-    // [1. 0, -2] - E (left/right)
-    // [1. 0, -3] - SE (Iso)
-    this.cameraVector.z += Math.cos(radians);
-  }
-  // Set Camera Pos & Angle
-  pitchCameraCW(radians = Math.PI / 4) {
-    this.cameraVector.x -= Math.cos(radians);
-  }
-  pitchCameraCCW(radians = Math.PI / 4) {
-    this.cameraVector.x += Math.sin(radians);
-  }
-  // Set Camera Pos & Angle
-  tiltCameraCW(radians = Math.PI / 4) {
-    this.cameraVector.y -= Math.cos(radians);
-  }
-  tiltCameraCCW(radians = Math.PI / 4) {
-    this.cameraVector.z += Math.sin(radians);
   }
 
   /**
@@ -517,40 +385,8 @@ export default class GLEngine {
     const { gl } = this;
     gl.viewport(0, 0, this.ctx.canvas.clientWidth, this.ctx.canvas.clientHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    perspective(this.degToRad(this.fov), this.ctx.canvas.clientWidth / this.ctx.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
-    this.uViewMat = create();
-  }
-
-  /**
-   * clear HUD overlay
-   */
-  clearHud() {
-    const { ctx } = this;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  }
-
-  /**
-   * Write Text to HUD
-   * @param {string} text
-   * @param {number} x
-   * @param {number} y
-   * @param {string} src
-   */
-  writeText(text, x, y, src = null) {
-    const { ctx } = this;
-    ctx.save();
-    ctx.font = '20px invasion2000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'white';
-    if (src) {
-      // draw portrait if set
-      ctx.fillText(text, x ?? ctx.canvas.width / 2 + 76, y ?? ctx.canvas.height / 2);
-      ctx.drawImage(src, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2, 76, 76);
-    } else {
-      ctx.fillText(text, x ?? ctx.canvas.width / 2, y ?? ctx.canvas.height / 2);
-    }
-    ctx.restore();
+    perspective(degToRad(this.camera.fov), this.ctx.canvas.clientWidth / this.ctx.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
+    this.camera.uViewMat = create();
   }
 
   /**
@@ -585,24 +421,6 @@ export default class GLEngine {
   }
 
   /**
-   * Scrolling Textbox
-   * @param {string} text
-   * @param {booleanq} scrolling
-   * @param {*} options
-   * @returns
-   */
-  scrollText(text, scrolling = false, options = {}) {
-    let txt = new textScrollBox(this.ctx);
-    txt.init(text, 10, (2 * this.canvas.clientHeight) / 3, this.canvas.clientWidth - 20, this.canvas.clientHeight / 3 - 20, options);
-    txt.setOptions(options);
-    if (scrolling) {
-      txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
-    }
-    txt.render();
-    return txt;
-  }
-
-  /**
    * Screensize
    * @returns
    */
@@ -614,86 +432,12 @@ export default class GLEngine {
   }
 
   /**
-   * Draws a button
-   * @param {string} text
-   * @param {number} x
-   * @param {number} y
-   * @param {number} w
-   * @param {number} h
-   * @param {*} colours
-   */
-  drawButton(text, x, y, w, h, colours) {
-    const { ctx } = this;
-
-    let halfHeight = h / 2;
-
-    ctx.save();
-
-    // draw the button
-    ctx.fillStyle = colours.background;
-
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.rect(x, y, w, h);
-    ctx.fill();
-    ctx.clip();
-
-    // light gradient
-    var grad = ctx.createLinearGradient(x, y, x, y + halfHeight);
-    grad.addColorStop(0, 'rgb(221,181,155)');
-    grad.addColorStop(1, 'rgb(22,13,8)');
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.5;
-    ctx.fillRect(x, y, w, h);
-
-    // draw the top half of the button
-    ctx.fillStyle = colours.top;
-
-    // draw the top and bottom particles
-    for (var i = 0; i < h; i += halfHeight) {
-      ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
-
-      for (var j = 0; j < 50; j++) {
-        // get random values for particle
-        var partX = x + Math.random() * w;
-        var partY = y + i + Math.random() * halfHeight;
-        var width = Math.random() * 10;
-        var height = Math.random() * 10;
-        var rotation = Math.random() * 360;
-        var alpha = Math.random();
-
-        ctx.save();
-
-        // rotate the canvas by 'rotation'
-        ctx.translate(partX, partY);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.translate(-partX, -partY);
-
-        // set alpha transparency to 'alpha'
-        ctx.globalAlpha = alpha;
-
-        ctx.fillRect(partX, partY, width, height);
-
-        ctx.restore();
-      }
-    }
-
-    ctx.font = '20px invasion2000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'white';
-    ctx.fillText(text, x + w / 2, y + h / 2, w);
-
-    ctx.restore();
-  }
-
-  /**
    * Render Frame
    */
   render() {
     this.requestId = requestAnimationFrame(this.render);
-    this.clearScreen();
-    this.clearHud();
+    this.hud.clearHud();
+    this.clearScreen(); // todo - move into view
 
     // core render loop
     this.activateShaderProgram();
@@ -885,7 +629,7 @@ export default class GLEngine {
    */
   mvPushMatrix() {
     let copy = create();
-    set(this.uViewMat, copy);
+    set(this.camera.uViewMat, copy);
     this.modelViewMatrixStack.push(copy);
   }
 
@@ -923,7 +667,7 @@ export default class GLEngine {
     if (this.modelViewMatrixStack.length == 0) {
       throw 'Invalid popMatrix!';
     }
-    this.uViewMat = this.modelViewMatrixStack.pop();
+    this.camera.uViewMat = this.modelViewMatrixStack.pop();
   }
 
   /**
@@ -933,14 +677,7 @@ export default class GLEngine {
     cancelAnimationFrame(this.requestId);
   }
 
-  /**
-   * Degrees to Radians
-   * @param {number} degrees
-   * @returns
-   */
-  degToRad(degrees) {
-    return (degrees * Math.PI) / 180;
-  }
+
 
   // transition (fade, swipe, etc)
   startTransition(type, params) {

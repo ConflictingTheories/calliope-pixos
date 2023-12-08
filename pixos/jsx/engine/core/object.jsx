@@ -17,7 +17,7 @@ import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 import { _buildBuffer } from '@Engine/utils/obj/utils.js';
 import Loadable from '@Engine/core/loadable.jsx';
-
+import { degToRad } from '../utils/math/vector.jsx';
 export default class ModelObject extends Loadable {
   /**
    * 3D Model Objects
@@ -312,14 +312,14 @@ export default class ModelObject extends Loadable {
     // initialize buffers
     engine.mvPushMatrix();
     // position object
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.drawOffset.toArray());
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
-    rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(90), [1, 0, 0]);
+    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.drawOffset.toArray());
+    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
+    rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(90), [1, 0, 0]);
     // rotate object
     if (this.rotation && this.rotation.toArray) {
       let rotation = Math.max(...this.rotation.toArray());
       if (rotation > 0)
-        rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(rotation), [
+        rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(rotation), [
           this.rotation.x / rotation,
           this.rotation.y / rotation,
           this.rotation.z / rotation,
@@ -418,7 +418,7 @@ export default class ModelObject extends Loadable {
   speak(text, showBubble = false) {
     if (!text) this.speech.clearHud();
     else {
-      this.textbox = this.engine.scrollText(this.id + ':> ' + text, true, {
+      this.textbox = this.engine.hud.scrollText(this.id + ':> ' + text, true, {
         portrait: this.portrait ?? false,
       });
       if (showBubble && this.speech) {

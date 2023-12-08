@@ -58,12 +58,12 @@ export default {
         if (section.active) {
           colors['background'] = '#555';
         }
-        this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        this.engine.hud.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
         if (section.prompt) {
           if (this.speechOutput) {
             this.engine.speechSynthesis(section.prompt);
           }
-          this.textbox = this.engine.scrollText(section.prompt, this.scrolling, this.options);
+          this.textbox = this.engine.hud.scrollText(section.prompt, this.scrolling, this.options);
         }
       });
     // don't keep repeating speech

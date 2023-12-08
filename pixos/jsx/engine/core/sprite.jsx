@@ -16,6 +16,7 @@ import ActionQueue from './queue.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 import Loadable from '@Engine/core/loadable.jsx';
+import { degToRad } from '../utils/math/vector.jsx';
 
 export default class Sprite extends Loadable {
   /**
@@ -217,7 +218,7 @@ export default class Sprite extends Loadable {
    * @returns
    */
   getTexCoords() {
-    let sequence = Direction.spriteSequence(this.facing, this.engine.cameraDir);
+    let sequence = Direction.spriteSequence(this.facing, this.engine.camera.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
     let length = frames.length;
     let t = frames[this.animFrame % length];
@@ -272,15 +273,15 @@ export default class Sprite extends Loadable {
     // this.engine.disableObjAttributes();
     this.engine.mvPushMatrix();
     // position
-    translate(this.engine.uViewMat, this.engine.uViewMat, (this.drawOffset[this.engine.cameraDir] ?? this.drawOffset['N']).toArray()); //[0.5, 0.5, -0.5]);
-    translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()); //[0.5, 0.5, -0.5]);
+    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
-      this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.cameraAngle / 180), 1));
-      translate(this.engine.uViewMat, this.engine.uViewMat, [0.5 * this.engine.cameraVector.x, 0.5 * this.engine.cameraVector.y, 0]);
-      rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.z), [0, 0, -1]);
-      translate(this.engine.uViewMat, this.engine.uViewMat, [-0.5 * this.engine.cameraVector.x, -0.5 * this.engine.cameraVector.y, 0]);
+      this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.camera.cameraAngle / 180), 1));
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [0.5 * this.engine.camera.cameraVector.x, 0.5 * this.engine.camera.cameraVector.y, 0]);
+      rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z), [0, 0, -1]);
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [-0.5 * this.engine.camera.cameraVector.x, -0.5 * this.engine.camera.cameraVector.y, 0]);
     }
     // Bind texture
     this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.aVertexPosition);
@@ -297,10 +298,10 @@ export default class Sprite extends Loadable {
     if (this.enableSpeech) {
       this.engine.mvPushMatrix();
       // Undo rotation so that character plane is normal to LOS
-      translate(this.engine.uViewMat, this.engine.uViewMat, (this.drawOffset[this.engine.cameraDir] ?? this.drawOffset['N']).toArray());
-      translate(this.engine.uViewMat, this.engine.uViewMat, this.pos.toArray());
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray());
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
 
-      rotate(this.engine.uViewMat, this.engine.uViewMat, this.engine.degToRad(this.engine.cameraAngle * this.engine.cameraVector.z), [0, 0, -1]);
+      rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z), [0, 0, -1]);
 
       // Bind texture for speech bubble
       this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.aVertexPosition);
@@ -436,7 +437,7 @@ export default class Sprite extends Loadable {
       }
 
       // dialogue box
-      this.textbox = this.engine.scrollText(this.id + ':> ' + text, true, {
+      this.textbox = this.engine.hud.scrollText(this.id + ':> ' + text, true, {
         portrait: this.portrait ?? false,
       });
 

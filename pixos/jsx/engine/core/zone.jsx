@@ -562,11 +562,11 @@ export default class Zone extends Loadable {
     this.spriteList?.sort((a, b) => a.pos.y - b.pos.y);
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.mvPushMatrix();
-    this.engine.setCamera();
+    this.engine.camera.setCamera();
     // Draw tile terrain row by row (back to front) (Needs work -- NOT WORKING RIGHT YET)
     let k = 0;
     let z = 0;
-    switch (this.engine.cameraDir) {
+    switch (this.engine.camera.cameraDir) {
       case 'N':
       case 'NE':
       case 'NW':

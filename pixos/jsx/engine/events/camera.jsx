@@ -33,9 +33,9 @@ export default {
         let to = this.options.to;
         to.z = Math.round(to.z);
         // use lerp to smoothly transition based on completion
-        lerp(from, to, frac, this.engine.cameraVector);
+        lerp(from, to, frac, this.engine.camera.cameraVector);
         // set Facing Direction for proper sprite rendering
-        this.engine.cameraDir = Direction.adjustCameraDirection(to);
+        this.engine.camera.cameraDir = Direction.adjustCameraDirection(to);
         break;
       case 'zoom':
         // todo

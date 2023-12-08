@@ -1,5 +1,136 @@
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
+export default class Hud {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  /**
+   * Draws a button
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {number} w
+   * @param {number} h
+   * @param {*} colours
+   */
+  drawButton(text, x, y, w, h, colours) {
+    const { ctx } = this;
+
+    let halfHeight = h / 2;
+
+    ctx.save();
+
+    // draw the button
+    ctx.fillStyle = colours.background;
+
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.rect(x, y, w, h);
+    ctx.fill();
+    ctx.clip();
+
+    // light gradient
+    var grad = ctx.createLinearGradient(x, y, x, y + halfHeight);
+    grad.addColorStop(0, 'rgb(221,181,155)');
+    grad.addColorStop(1, 'rgb(22,13,8)');
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = 0.5;
+    ctx.fillRect(x, y, w, h);
+
+    // draw the top half of the button
+    ctx.fillStyle = colours.top;
+
+    // draw the top and bottom particles
+    for (var i = 0; i < h; i += halfHeight) {
+      ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
+
+      for (var j = 0; j < 50; j++) {
+        // get random values for particle
+        var partX = x + Math.random() * w;
+        var partY = y + i + Math.random() * halfHeight;
+        var width = Math.random() * 10;
+        var height = Math.random() * 10;
+        var rotation = Math.random() * 360;
+        var alpha = Math.random();
+
+        ctx.save();
+
+        // rotate the canvas by 'rotation'
+        ctx.translate(partX, partY);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-partX, -partY);
+
+        // set alpha transparency to 'alpha'
+        ctx.globalAlpha = alpha;
+
+        ctx.fillRect(partX, partY, width, height);
+
+        ctx.restore();
+      }
+    }
+
+    ctx.font = '20px invasion2000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
+    ctx.fillText(text, x + w / 2, y + h / 2, w);
+
+    ctx.restore();
+  }
+
+  /**
+   * clear HUD overlay
+   */
+  clearHud() {
+    const { ctx } = this;
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  }
+
+  /**
+   * Write Text to HUD
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {string} src
+   */
+  writeText(text, x, y, src = null) {
+    const { ctx } = this;
+    ctx.save();
+    ctx.font = '20px invasion2000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
+    if (src) {
+      // draw portrait if set
+      ctx.fillText(text, x ?? ctx.canvas.clientWidth / 2 + 76, y ?? ctx.canvas.clientHeight / 2);
+      ctx.drawImage(src, x ?? ctx.canvas.clientWidth / 2, y ?? ctx.canvas.clientHeight / 2, 76, 76);
+    } else {
+      ctx.fillText(text, x ?? ctx.canvas.clientWidth / 2, y ?? ctx.canvas.clientHeight / 2);
+    }
+    ctx.restore();
+  }
+
+  /**
+   * Scrolling Textbox
+   * @param {string} text
+   * @param {booleanq} scrolling
+   * @param {*} options
+   * @returns
+   */
+  scrollText(text, scrolling = false, options = {}) {
+    let { ctx } = this;
+    let txt = new textScrollBox(ctx);
+    txt.init(text, 10, (2 * ctx.canvas.height) / 3, ctx.canvas.width - 20, ctx.canvas.height / 3 - 20, options);
+    txt.setOptions(options);
+    if (scrolling) {
+      txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
+    }
+    txt.render();
+    return txt;
+  }
+}
+
 export class textScrollBox {
   /**
    * Scrolling Text Box UI (For Dialogue)
@@ -26,6 +157,8 @@ export class textScrollBox {
     };
     this.fontStyle = 'white';
     this.lines = [];
+    this.x = 0;
+    this.y = 0;
   }
 
   /**

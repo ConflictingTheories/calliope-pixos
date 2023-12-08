@@ -168,6 +168,7 @@ export class Vector4 {
   negate() {
     return new Vector(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
   }
+  
 }
 
 // lineRectCollide( line, rect )
@@ -229,3 +230,12 @@ export function lerp(vec, vec2, lerp, dest) {
 
   return dest;
 }
+
+  /**
+   * Degrees to Radians
+   * @param {number} degrees
+   * @returns
+   */
+  export function degToRad(degrees) {
+    return (degrees * Math.PI) / 180;
+  }

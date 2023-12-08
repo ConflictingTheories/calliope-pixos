@@ -35,7 +35,7 @@ export default {
     }
     // Handle Input
     this.checkInput(time);
-    this.textbox = this.engine.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
     return this.completed;
   },
   // Handle Keyboard

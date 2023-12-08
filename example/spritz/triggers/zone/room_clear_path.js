@@ -1,7 +1,7 @@
 async () => {
   // setup camera
-  let from = _this.engine.cameraVector;
-  let to = _this.engine.cameraVector.sub(new _this.engine.Vector(...[0, 0, 1]));
+  let from = _this.engine.camera.cameraVector;
+  let to = _this.engine.camera.cameraVector.sub(new _this.engine.Vector(...[0, 0, 1]));
   to.z = to.z % 9; // lock to every 45 degrees
   if (to.z === 0 && from.z === 8) {
     from.z = 0;

@@ -14,6 +14,7 @@
 import { translate, rotate } from '@Engine/utils/math/matrix4.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
+import { degToRad } from '../utils/math/vector.jsx';
 
 export default class DynamicAnimatedTile extends DynamicSprite {
   constructor(engine, json, zip) {
@@ -54,10 +55,10 @@ export default class DynamicAnimatedTile extends DynamicSprite {
   draw(engine) {
     if (!this.loaded) return;
     engine.mvPushMatrix();
-    translate(engine.uViewMat, engine.uViewMat, this.pos.toArray());
+    translate(engine.camera.uViewMat, engine.camera.uViewMat, this.pos.toArray());
     // Lie flat on the ground
-    translate(engine.uViewMat, engine.uViewMat, (this.drawOffset[engine.cameraDir] ?? this.drawOffset['N']).toArray());
-    rotate(engine.uViewMat, engine.uViewMat, engine.degToRad(90), [1, 0, 0]);
+    translate(engine.camera.uViewMat, engine.camera.uViewMat, (this.drawOffset[engine.camera.cameraDir] ?? this.drawOffset['N']).toArray());
+    rotate(engine.camera.uViewMat, engine.camera.uViewMat, degToRad(90), [1, 0, 0]);
     engine.bindBuffer(this.vertexPosBuf, engine.shaderProgram.aVertexPosition);
     engine.bindBuffer(this.vertexTexBuf, engine.shaderProgram.aTextureCoord);
     this.texture.attach();
