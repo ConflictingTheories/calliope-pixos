@@ -21,7 +21,7 @@ The overall architecture is split into two areas of application:
 ```mermaid
 graph LR
     WWW[Internet] <--> NC[Network Controller]
-    subgraph "GLEngine"
+    subgraph "PixoSpritz::Engine"
         subgraph "GLEngine::Core"
             SP[Coordinator] --> GM
             SP --- P[Package Loader] 
@@ -34,10 +34,16 @@ graph LR
         GM ----> PH[Physics Engine]
         GM ----> IO[Input Handler]
         GM ---> AM[Asset Manager]
+        GM ----> SR[Scripting Manager]
+        GM ----> UI[UI Manager]
+        GM ----> AU[Audio Manager]
         end
-
         subgraph "GLEngine::Network"
             NC <--> SP
+        end
+        subgraph "GLEngine::Profiler"
+            DB[Debugger / Profiler] --> SP
+            MC[Memory Controller] --> SP
         end
         subgraph "GLEngine::ZoneManager"
             ZN ----> SC[Scene Graph]
@@ -49,6 +55,23 @@ graph LR
             RD --> F[Light]
             RD --> G[Camera]
             RD --> H[Mesh]
+            RD --> V[Sprite]
+        end
+        subgraph "GLEngine::Audio"
+            AU --> MU[Music]
+            AU --> SF[Sound Effects]
+            AU --> SH[Speech]
+        end
+        subgraph "GLEngine::UI"
+            UI --> Tx[Text]
+            UI --> Bt[Buttons]
+            UI --> Sh[Shapes]
+            UI --> Mn[Menus]
+        end
+        subgraph "GLEngine::Scripting"
+            SR --> Tr[Triggers]
+            SR --> Ca[Callbacks]
+            SR --> Sc[Scenes]
         end
         subgraph "GLEngine::Physics"
             PH --> I[Collision Detection]
