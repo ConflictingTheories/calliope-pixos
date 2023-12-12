@@ -26,10 +26,10 @@ export default function vs() {
   uniform vec3 uLightColor;
   uniform vec3 uLightDirection;
   uniform float uLightIsDirectional;
-
+  
   uniform mat4 uLightVMatrix;
   uniform mat4 uLightPMatrix;
-
+  
   varying vec4 vWorldVertex;
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
@@ -61,7 +61,7 @@ export default function vs() {
       if (uLightIsDirectional == 1.0) {
         directional = max(dot(transformedNormal.xyz, normalize(uLightDirection)), 0.0);
       } else {
-        vec3 lightDirection = normalize(uLightPosition.xyz - vPosition.xyz);
+        vec3 lightDirection = normalize(vPosition.xyz - uLightPosition.xyz);
         directional = max(dot(transformedNormal.xyz, lightDirection), 0.0);
       }
     }
