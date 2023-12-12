@@ -23,7 +23,7 @@ graph LR
     WWW[Internet] <--> NC[Network Controller]
     subgraph "PixoSpritz::Engine"
         subgraph "GLEngine::Core"
-            SP[Coordinator] --> GM
+            SP[Coordinator] <--> GM
             SP --- P[Package Loader] 
             SP -.- Q[Event Queue] 
             subgraph "GLEngine::Game"
@@ -42,8 +42,8 @@ graph LR
             NC <--> SP
         end
         subgraph "GLEngine::Profiler"
-            DB[Debugger / Profiler] --> SP
-            MC[Memory Controller] --> SP
+            DB[Debugger / Profiler] <--> SP
+            MC[Memory Controller] <--> SP
         end
         subgraph "GLEngine::ZoneManager"
             ZN ----> SC[Scene Graph]
