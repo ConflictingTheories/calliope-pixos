@@ -14,9 +14,8 @@ export default function fs() {
   return `
   precision mediump float;
 
-  const float Near = 1.0;
-  const float Far = 30.0;
-  const float LinearDepthConstant = 1.0 / (Far - Near);
+  const float Near = 0.1;
+  const float Far = 50.0;
   
   struct PointLight
   {
@@ -100,6 +99,19 @@ export default function fs() {
     return color;
    }
 
+   // linearize depth
+   float LinearizeDepth(float depth) 
+   {
+       float z = depth * 2.0 - 1.0; // back to NDC 
+       return (2.0 * Near * Far) / (Far + Near - z * (Far - Near));	
+   }
+
+   // fog effect based on depth
+   vec4 fogEffect(vec4 color4){
+    float depth = LinearizeDepth(gl_FragCoord.z) / Far;
+    vec4 depthVec4 = vec4(vec3(pow(depth, 1.4)), 1.0);
+    return (color4 * (1.0 - depth)) + depthVec4;
+   }
 
   void main(void) {
     float shadow = 1.0;
@@ -108,13 +120,16 @@ export default function fs() {
     if(useSampler == 1.0){
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);
-      gl_FragColor = clamp(vec4(color.rgb * setLights(color) * shadow, texelColors.a), 0.0, 1.0);
+      vec4 color4 = clamp(vec4(color.rgb * setLights(color) * shadow, texelColors.a), 0.0, 1.0);
+      // fog effect
+      gl_FragColor = fogEffect(color4);
     } else { // diffuse
       vec3 color = calculateDiffuse();
+      vec4 color4 = vec4(setLights(color), 1.0);
       if(vLighting != vec3(0.0,0.0,0.0))
-        gl_FragColor = vec4(setLights(color) * vLighting, 1.0);
-      else
-        gl_FragColor = vec4(setLights(color), 1.0);
+        color4 = vec4(color4.rgb * vLighting, 1.0);
+      // fog effect
+      gl_FragColor = fogEffect(color4);
     }
   }
 `;
