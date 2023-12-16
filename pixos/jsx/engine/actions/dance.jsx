@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -20,7 +20,7 @@ export default {
     this.startTime = new Date().getTime();
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.audio = await this.zone.engine.audioLoader.loadFromZip(this.sprite.zip, this.sprite.danceSound ?? '/pixos/audio/sewer-beat.mp3', true);
+    this.audio = await this.zone.engine.resourceManager.audioLoader.loadFromZip(this.sprite.zip, this.sprite.danceSound ?? '/pixos/audio/sewer-beat.mp3', true);
 
     if (this.zone.audio) this.zone.audio.pauseAudio();
     if (this.audio) this.audio.playAudio();

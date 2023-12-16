@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -42,7 +42,7 @@ export class ObjectLoader {
       name: instance.id,
     };
 
-    let models = await this.engine.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
+    let models = await this.engine.resourceManager.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
 
     instance.mesh = models[model.type];
     instance.templateLoaded = true;

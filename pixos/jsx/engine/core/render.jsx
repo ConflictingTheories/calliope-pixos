@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -58,6 +58,7 @@ export default class RenderManager {
     // LIGHTS
     this.lightManager = new LightManager(this);
 
+    // Methods
     this.initShaderProgram = this.initShaderProgram.bind(this);
     this.initShaderEffects = this.initShaderEffects.bind(this);
     this.activateShaderProgram = this.activateShaderProgram.bind(this);

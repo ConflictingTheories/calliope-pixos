@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -43,7 +43,7 @@ export default class Tileset extends Loadable {
     this.definitionLoaded = true;
     this.onDefinitionLoadActions.run();
     // load texture
-    this.texture = this.engine.loadTexture(this.src);
+    this.texture = this.engine.resourceManager.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTextureLoaded);
     // set background colour
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
@@ -63,7 +63,7 @@ export default class Tileset extends Loadable {
     this.definitionLoaded = true;
     this.onDefinitionLoadActions.run();
     // load texture
-    this.texture = await this.engine.loadTextureFromZip(this.src, zip);
+    this.texture = await this.engine.resourceManager.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTextureLoaded);
     // set background colour
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);

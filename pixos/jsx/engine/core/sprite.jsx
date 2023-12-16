@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -73,19 +73,19 @@ export default class Sprite extends Loadable {
       };
     }
     // Texture Buffer
-    this.texture = this.engine.loadTexture(this.src);
+    this.texture = this.engine.resourceManager.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // // Speech bubble
     if (this.enableSpeech) {
-      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
-      this.portrait = this.engine.loadTexture(this.portraitSrc);
+      this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
     //
@@ -131,20 +131,20 @@ export default class Sprite extends Loadable {
     // }
 
     // Texture Buffer
-    this.texture = await this.engine.loadTextureFromZip(this.src, zip);
+    this.texture = await this.engine.resourceManager.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // Speech bubble
     if (this.enableSpeech) {
-      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
-      this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
+      this.portrait = await this.engine.resourceManager.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 

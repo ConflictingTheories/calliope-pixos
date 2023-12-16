@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -89,18 +89,18 @@ export default class ModelObject extends Loadable {
 
     // mesh buffers
     this.mesh = mesh;
-    this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {
-      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
-      this.portrait = this.engine.loadTexture(this.portraitSrc);
+      this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 
@@ -153,18 +153,18 @@ export default class ModelObject extends Loadable {
 
     // mesh buffers
     this.mesh = mesh;
-    this.engine.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {
-      this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
+      this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
-      this.portrait = await this.engine.loadTextureFromZip(this.portraitSrc, zip);
+      this.portrait = await this.engine.resourceManager.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -100,7 +100,7 @@ export default class Zone extends Loadable {
       }
       // audio loader
       if (this.audioSrc) {
-        this.audio = this.engine.audioLoader.load(this.audioSrc, true); // loop background music
+        this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true); // loop background music
       }
       // Load tileset and create level geometry & trigger updates
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
@@ -228,7 +228,7 @@ export default class Zone extends Loadable {
       try {
         console.log({ msg: 'audio....', src: zoneJson.audioSrc, scope: this });
         if (zoneJson.audioSrc) {
-          this.audio = await this.engine.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); // loop background music
+          this.audio = await this.engine.resourceManager.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); // loop background music
         }
       } catch (e) {
         console.error({ msg: 'error loading audio track', e });

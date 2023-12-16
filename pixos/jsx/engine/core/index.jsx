@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,22 +11,17 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import createTransition from 'gl-transition';
-
 // Absolute imports
 import { Vector, negate, degToRad } from '../utils/math/vector.jsx';
-import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
 import { GamePad } from '../utils/gamepad/index.jsx';
-import { OBJ } from '../utils/obj';
 import Keyboard from '../utils/keyboard.jsx';
 
 // Relative imports
-import { Texture, ColorTexture } from './texture.jsx';
-import Speech from './speech.jsx';
 import Database from './database.jsx';
 import Store from './store.jsx';
 import Hud from './hud.jsx';
 import RenderManager from './render.jsx';
+import ResourceManager from './resource.jsx';
 
 export default class GLEngine {
   /**
@@ -53,13 +48,12 @@ export default class GLEngine {
     this.width = width;
     this.height = height;
 
-    // ASSETS
-    this.objLoader = OBJ;
-    this.textures = [];
-    this.speeches = [];
-
     this.Vector = Vector;
-    this.globalStore = {};
+
+    // RESOURCES
+    this.resourceManager = new ResourceManager(this);
+    this.objLoader = this.resourceManager.objLoader;
+    this.audioLoader = this.resourceManager.audioLoader;
 
     // RENDERING (Graphics, Lights, Camera)
     this.renderManager = new RenderManager(this);
@@ -77,7 +71,6 @@ export default class GLEngine {
 
     // AUDIO & VOICE
     this.voice = new SpeechSynthesisUtterance();
-    this.audioLoader = new AudioLoader(this);
 
     // DATABASE
     this.database = new Database();
@@ -127,7 +120,7 @@ export default class GLEngine {
 
     // init keyboard
     this.keyboard.init();
-    
+
     // initialize hud
     this.hud.init(ctx);
 
@@ -174,6 +167,15 @@ export default class GLEngine {
   }
 
   /**
+   * Greeting Text
+   * @param {string} text
+   */
+  setGreeting(text) {
+    console.log('setting GREETING');
+    this.globalStore.greeting = text;
+  }
+
+  /**
    * Text to Speech output
    * @param {string} text
    * @param {SpeechSynthesisVoice} voice
@@ -194,15 +196,6 @@ export default class GLEngine {
     speech.lang = lang;
     // speak
     window.speechSynthesis.speak(speech);
-  }
-
-  /**
-   * Greeting Text
-   * @param {string} text
-   */
-  setGreeting(text) {
-    console.log('setting GREETING');
-    this.globalStore.greeting = text;
   }
 
   /**
@@ -257,45 +250,6 @@ export default class GLEngine {
     video.style.height = stream.height;
     video.play();
     return video;
-  }
-
-  /**
-   * load texture
-   * @param {*} src
-   * @returns
-   */
-  loadTexture(src) {
-    if (this.textures[src]) return this.textures[src];
-    this.textures[src] = new Texture(src, this);
-    return this.textures[src];
-  }
-
-  /**
-   * load texture from zip
-   * @param {*} src
-   * @param {*} zip
-   * @returns
-   */
-  async loadTextureFromZip(src, zip) {
-    if (this.textures[src]) return this.textures[src];
-    let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
-    let buffer = new Uint8Array(imageData);
-    let blob = new Blob([buffer.buffer]);
-    let dataUrl = URL.createObjectURL(blob);
-    this.textures[src] = new Texture(dataUrl, this);
-    return this.textures[src];
-  }
-
-  /**
-   * load speech
-   * @param {*} src
-   * @param {*} canvas
-   * @returns
-   */
-  loadSpeech(src, canvas) {
-    if (this.speeches[src]) return this.speeches[src];
-    this.speeches[src] = new Speech(canvas, this, src);
-    return this.speeches[src];
   }
 
   /**
