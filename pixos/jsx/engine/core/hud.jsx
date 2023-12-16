@@ -1,7 +1,23 @@
+import GLEngine from "./index.jsx";
+
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
 export default class Hud {
-  constructor(ctx) {
+  /**
+   * 
+   * @param {GLEngine} engine 
+   * @returns 
+   */
+  constructor(engine) {
+    if (!Hud._instance) {
+      this.engine = engine;
+      Hud._instance = this;
+    }
+    return Hud._instance;
+  }
+
+  init(ctx){
+    // setup anything needed at the start (run once)
     this.ctx = ctx;
   }
 

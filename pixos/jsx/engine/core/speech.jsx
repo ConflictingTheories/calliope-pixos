@@ -65,7 +65,7 @@ export default class Speech {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-    gl.uniform1i(this.engine.shaderProgram.samplerUniform, 0);
+    gl.uniform1i(this.engine.renderManager.shaderProgram.samplerUniform, 0);
   }
 
   /**

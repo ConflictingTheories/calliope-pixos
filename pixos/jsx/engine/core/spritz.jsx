@@ -19,7 +19,7 @@ import fs from '@Engine/shaders/fs.jsx';
 import vs from '@Engine/shaders/vs.jsx';
 import blurFs from '@Engine/shaders/blur/fs.jsx';
 import blurVs from '@Engine/shaders/blur/vs.jsx';
-import blur from '@Engine/shaders/blur/callback.jsx';
+import blurInit from '@Engine/shaders/blur/init.jsx';
 import World from '@Engine/core/world.jsx';
 
 // Spritz Object
@@ -39,9 +39,11 @@ export default class Spritz {
         id: 'blur',
         fs: blurFs(),
         vs: blurVs(),
-        callback: blur,
+        init: blurInit,
       },
     };
+    this.effectPrograms = {};
+
     if (!Spritz._instance) {
       Spritz._instance = this;
     }
@@ -141,9 +143,17 @@ export default class Spritz {
     // Build
     Spritz._instance.world.tickOuter(now);
     // use core shader
-    Spritz._instance.engine.activateShaderProgram();
+    Spritz._instance.engine.renderManager.activateShaderProgram();
+
     // Draw Frame
     this.draw(engine);
+
+    // effect rendering - ex) blur depth of field
+    Object.keys(this.effects).map((id) => {
+      console.log([id]);
+      Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
+      this.effectPrograms[id]?.draw();
+    });
   };
 
   /**

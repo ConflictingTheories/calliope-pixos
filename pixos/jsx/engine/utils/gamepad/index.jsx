@@ -10,46 +10,71 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+import GLEngine from '@Engine/core/index.jsx';
 
 import { Controller } from '@Engine/utils/gamepad/Controller.jsx';
 export class GamePad {
-  // courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
-  constructor(ctx) {
+  /** Game Pad
+   * inspired by https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+   *
+   * @param {GLEngine} engine
+   * @returns
+   */
+  constructor(engine) {
+    if (!GamePad._instance) {
+      this.engine = engine;
+      this.dirty = true;
+      this.showTrace = true;
+      this.showDebug = true;
+      this.opacity = 0.4;
+      this.font = 'minecraftia';
+
+      // Start & Select Buttons
+      this.start = false;
+      this.select = false;
+      this.touches = {};
+      this.lastKey = new Date().getTime();
+      this.listeners = [];
+      this.map = {};
+
+      // Button Colours
+      this.colours = {
+        red: `rgba(255,0,0,${this.opacity})`,
+        green: `rgba(5,220,30,${this.opacity})`,
+        blue: `rgba(5,30,220,${this.opacity})`,
+        purple: `rgba(240,5,240,${this.opacity})`,
+        yellow: `rgba(240,240,5,${this.opacity})`,
+        cyan: `rgba(5,240,240,${this.opacity})`,
+        black: `rgba(5,5,5,${this.opacity})`,
+        white: `rgba(250,250,250,${this.opacity})`,
+        joystick: {
+          base: `rgba(0,0,0,${this.opacity})`,
+          dust: `rgba(0,0,0,${this.opacity})`,
+          stick: `rgba(214,214,214,1)`,
+          ball: `rgba(245,245,245,1)`,
+        },
+      };
+      GamePad._instance = this;
+    }
+    return GamePad._instance;
+  }
+
+  /**
+   *
+   * @param {*} ctx
+   */
+  init(ctx) {
     this.ctx = ctx;
-    this.dirty = true;
-    this.showTrace = true;
-    this.showDebug = true;
+
+    // Font
     this.fontSize = ctx.canvas.width / 12;
-    this.opacity = 0.4;
-    this.font = 'minecraftia';
-    // Start & Select Buttons
-    this.start = false;
-    this.select = false;
-    this.touches = {};
-    this.lastKey = new Date().getTime();
-    this.listeners = [];
-    this.map = {};
+
     // Joystick Radius
     this.radius = ctx.canvas.width / 12;
+
     // Button placement
     this.button_offset = { x: this.radius * 2.5, y: 105 };
-    // Button Colours
-    this.colours = {
-      red: `rgba(255,0,0,${this.opacity})`,
-      green: `rgba(5,220,30,${this.opacity})`,
-      blue: `rgba(5,30,220,${this.opacity})`,
-      purple: `rgba(240,5,240,${this.opacity})`,
-      yellow: `rgba(240,240,5,${this.opacity})`,
-      cyan: `rgba(5,240,240,${this.opacity})`,
-      black: `rgba(5,5,5,${this.opacity})`,
-      white: `rgba(250,250,250,${this.opacity})`,
-      joystick: {
-        base: `rgba(0,0,0,${this.opacity})`,
-        dust: `rgba(0,0,0,${this.opacity})`,
-        stick: `rgba(214,214,214,1)`,
-        ball: `rgba(245,245,245,1)`,
-      },
-    };
+
     // Button Layouts
     let buttons_layout = [
       {
@@ -99,14 +124,15 @@ export class GamePad {
         name: 'select',
       });
     }
+
     // setup controller
     this.buttons_layout = buttons_layout;
     this.controller = new Controller(ctx, this.button_offset, this.touches, this.start, this.select, this.colours, this);
-    // use custom round Rect shape
+    this.initOptions();
   }
 
   // initialize widget
-  init(options = {}) {
+  initOptions(options = {}) {
     this.setOptions(options);
     this.resize();
     this.loadCanvas();

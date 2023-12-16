@@ -10,17 +10,28 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+import GLEngine from '@Engine/core/index.jsx';
 
 export default class Keyboard {
-  constructor() {
+  /**
+   *
+   * @param {GLEngine} engine
+   * @returns
+   */
+  constructor(engine) {
     // Instance
     if (!Keyboard._instance) {
       this.activeKeys = [];
       this.activeCodes = [];
       this.shift = false;
+      this.engine = engine;
       Keyboard._instance = this;
     }
     return Keyboard._instance;
+  }
+
+  init() {
+    // setup initial event listeners
   }
 
   onKeyDown(e) {

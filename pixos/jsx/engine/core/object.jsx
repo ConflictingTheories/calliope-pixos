@@ -95,7 +95,7 @@ export default class ModelObject extends Loadable {
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
@@ -159,7 +159,7 @@ export default class ModelObject extends Loadable {
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
@@ -236,7 +236,7 @@ export default class ModelObject extends Loadable {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(this.engine.shaderProgram.diffuseMapUniform, 0);
+    gl.uniform1i(this.engine.renderManager.shaderProgram.diffuseMapUniform, 0);
   }
 
   /**
@@ -248,40 +248,40 @@ export default class ModelObject extends Loadable {
     if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
-        engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
+        engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
         // texture
-        engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
+        engine.renderManager.bindBuffer(mesh.textureBuffer, engine.renderManager.shaderProgram.aTextureCoord);
         // normal
-        engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
+        engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
         // Diffuse
-        engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
-        engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+        engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
+        engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         // TODO -- Texture is not being displayed (needs fixing)
         if (mesh.materialsByIndex[i]?.mapDiffuse?.glTexture) this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
         // Specular
-        engine.gl.uniform3fv(engine.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
+        engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
         // Specular Exponent
-        engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+        engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-        engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+        engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 0.0);
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
       // no materials
       // vertices
-      engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
-      engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
-      engine.bindBuffer(mesh.textureBuffer, engine.shaderProgram.aTextureCoord);
+      engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
+      engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
+      engine.renderManager.bindBuffer(mesh.textureBuffer, engine.renderManager.shaderProgram.aTextureCoord);
       engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
       // Diffuse
-      engine.gl.uniform3fv(engine.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
+      engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
       // Specular
-      engine.gl.uniform3fv(engine.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
+      engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
       // Specular Exponent
-      engine.gl.uniform1f(engine.shaderProgram.uSpecularExponent, 2);
-      engine.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+      engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
+      engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 0.0);
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
   }
@@ -291,11 +291,11 @@ export default class ModelObject extends Loadable {
    */
   drawObj() {
     let { engine, mesh } = this;
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.aTextureCoord);
-    engine.bindBuffer(mesh.vertexBuffer, engine.shaderProgram.aVertexPosition);
-    engine.bindBuffer(mesh.normalBuffer, engine.shaderProgram.aVertexNormal);
+    engine.gl.disableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
+    engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
+    engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    engine.shaderProgram.setMatrixUniforms(this.scale, 1.0);
+    engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 1.0);
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -307,10 +307,10 @@ export default class ModelObject extends Loadable {
     if (!this.loaded) return;
     let { engine, mesh } = this;
     // setup obj attributes
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.aVertexNormal);
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
+    engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);
+    engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
     // initialize buffers
-    engine.mvPushMatrix();
+    engine.renderManager.mvPushMatrix();
     // position object
     translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.drawOffset.toArray());
     translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
@@ -332,10 +332,10 @@ export default class ModelObject extends Loadable {
     } else {
       this.drawTexturedObj();
     }
-    engine.mvPopMatrix();
+    engine.renderManager.mvPopMatrix();
     // clear obj rendering attributes
-    engine.gl.enableVertexAttribArray(engine.shaderProgram.aTextureCoord);
-    engine.gl.disableVertexAttribArray(engine.shaderProgram.aVertexNormal);
+    engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
+    engine.gl.disableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);
   }
 
   /**

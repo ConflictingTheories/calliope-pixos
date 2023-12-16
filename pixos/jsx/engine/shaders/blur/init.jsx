@@ -1,4 +1,4 @@
-export default function callback(effectProgram) {
+export default function init(effectProgram) {
   // Depth of Field Blur Effect
   const gl = this.gl;
 

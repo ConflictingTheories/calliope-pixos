@@ -75,13 +75,13 @@ export default class Sprite extends Loadable {
     // Texture Buffer
     this.texture = this.engine.loadTexture(this.src);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-    this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
+    this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
@@ -133,13 +133,13 @@ export default class Sprite extends Loadable {
     // Texture Buffer
     this.texture = await this.engine.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-    this.vertexTexBuf = this.engine.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
+    this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
-      this.speechTexBuf = this.engine.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
@@ -176,11 +176,11 @@ export default class Sprite extends Loadable {
     ].flat(3);
 
     // sprite data
-    this.vertexPosBuf = this.engine.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
+    this.vertexPosBuf = this.engine.renderManager.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
 
     // speech bubble data - to account for proper height
     if (this.enableSpeech) {
-      this.speechVerBuf = this.engine.createBuffer(this.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
+      this.speechVerBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
     }
 
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
@@ -270,49 +270,81 @@ export default class Sprite extends Loadable {
    */
   draw() {
     if (!this.loaded) return;
-    // this.engine.disableObjAttributes();
-    this.engine.mvPushMatrix();
+
+    this.engine.renderManager.mvPushMatrix();
+
     // position
-    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()); //[0.5, 0.5, -0.5]);
+    translate(
+      this.engine.camera.uViewMat,
+      this.engine.camera.uViewMat,
+      (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+    );
     translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
-      this.engine.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.camera.cameraAngle / 180), 1));
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [0.5 * this.engine.camera.cameraVector.x, 0.5 * this.engine.camera.cameraVector.y, 0]);
-      rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z), [0, 0, -1]);
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [-0.5 * this.engine.camera.cameraVector.x, -0.5 * this.engine.camera.cameraVector.y, 0]);
+      this.engine.renderManager.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.camera.cameraAngle / 180), 1));
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [
+        0.5 * this.engine.camera.cameraVector.x,
+        0.5 * this.engine.camera.cameraVector.y,
+        0,
+      ]);
+      rotate(
+        this.engine.camera.uViewMat,
+        this.engine.camera.uViewMat,
+        degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
+        [0, 0, -1]
+      );
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [
+        -0.5 * this.engine.camera.cameraVector.x,
+        -0.5 * this.engine.camera.cameraVector.y,
+        0,
+      ]);
     }
+
     // Bind texture
-    this.engine.bindBuffer(this.vertexPosBuf, this.engine.shaderProgram.aVertexPosition);
-    this.engine.bindBuffer(this.vertexTexBuf, this.engine.shaderProgram.aTextureCoord);
+    this.engine.renderManager.bindBuffer(this.vertexPosBuf, this.engine.renderManager.shaderProgram.aVertexPosition);
+    this.engine.renderManager.bindBuffer(this.vertexTexBuf, this.engine.renderManager.shaderProgram.aTextureCoord);
     this.texture.attach();
+
     // Draw
-    // if (this.fixed)
-    this.engine.shaderProgram.setMatrixUniforms();
+    this.engine.renderManager.shaderProgram.setMatrixUniforms();
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
-    this.engine.mvPopMatrix();
+
+    this.engine.renderManager.mvPopMatrix();
+
     // Draw Speech
     if (this.enableSpeech) {
-      this.engine.mvPushMatrix();
-      // Undo rotation so that character plane is normal to LOS
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray());
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
+      this.engine.renderManager.mvPushMatrix();
 
-      rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z), [0, 0, -1]);
+      // Undo rotation so that character plane is normal to LOS
+      translate(
+        this.engine.camera.uViewMat,
+        this.engine.camera.uViewMat,
+        (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+      );
+      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
+      rotate(
+        this.engine.camera.uViewMat,
+        this.engine.camera.uViewMat,
+        degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
+        [0, 0, -1]
+      );
 
       // Bind texture for speech bubble
-      this.engine.bindBuffer(this.speechVerBuf, this.engine.shaderProgram.aVertexPosition);
-      this.engine.bindBuffer(this.speechTexBuf, this.engine.shaderProgram.aTextureCoord);
+      this.engine.renderManager.bindBuffer(this.speechVerBuf, this.engine.renderManager.shaderProgram.aVertexPosition);
+      this.engine.renderManager.bindBuffer(this.speechTexBuf, this.engine.renderManager.shaderProgram.aTextureCoord);
       this.speech.attach();
-      // // Draw Speech
-      this.engine.shaderProgram.setMatrixUniforms();
+
+      // Draw Speech bubble
+      this.engine.renderManager.shaderProgram.setMatrixUniforms();
       this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
       this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.speechVerBuf.numItems);
       this.engine.gl.depthFunc(this.engine.gl.LESS);
-      this.engine.mvPopMatrix();
+
+      this.engine.renderManager.mvPopMatrix();
     }
   }
 
@@ -322,7 +354,7 @@ export default class Sprite extends Loadable {
    */
   setFrame(frame) {
     this.animFrame = frame;
-    this.engine.updateBuffer(this.vertexTexBuf, this.getTexCoords());
+    this.engine.renderManager.updateBuffer(this.vertexTexBuf, this.getTexCoords());
   }
 
   /**

@@ -327,8 +327,8 @@ export default class Zone extends Loadable {
         // Custom walkability
         if (cell.length == 3 * n + 1) this.walkability[k] = cell[3 * n];
       }
-      this.vertexPosBuf[j] = this.engine.createBuffer(vertices, this.engine.gl.STATIC_DRAW, 3);
-      this.vertexTexBuf[j] = this.engine.createBuffer(vertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
+      this.vertexPosBuf[j] = this.engine.renderManager.createBuffer(vertices, this.engine.gl.STATIC_DRAW, 3);
+      this.vertexTexBuf[j] = this.engine.renderManager.createBuffer(vertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
     }
   }
 
@@ -541,13 +541,13 @@ export default class Zone extends Loadable {
    */
   drawRow(row) {
     // vertice positions
-    this.engine.bindBuffer(this.vertexPosBuf[row], this.engine.shaderProgram.aVertexPosition);
+    this.engine.renderManager.bindBuffer(this.vertexPosBuf[row], this.engine.renderManager.shaderProgram.aVertexPosition);
     // texture positions
-    this.engine.bindBuffer(this.vertexTexBuf[row], this.engine.shaderProgram.aTextureCoord);
+    this.engine.renderManager.bindBuffer(this.vertexTexBuf[row], this.engine.renderManager.shaderProgram.aTextureCoord);
     // texturize
     this.tileset.texture.attach();
     // set shader
-    this.engine.shaderProgram.setMatrixUniforms();
+    this.engine.renderManager.shaderProgram.setMatrixUniforms();
     // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }
@@ -561,7 +561,7 @@ export default class Zone extends Loadable {
     // Organize by Depth
     this.spriteList?.sort((a, b) => a.pos.y - b.pos.y);
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
-    this.engine.mvPushMatrix();
+    this.engine.renderManager.mvPushMatrix();
     this.engine.camera.setCamera();
     // Draw tile terrain row by row (back to front) (Needs work -- NOT WORKING RIGHT YET)
     let k = 0;
@@ -608,7 +608,7 @@ export default class Zone extends Loadable {
     while (k < this.spriteList.length) {
       this.spriteList[k++].draw(this.engine);
     }
-    this.engine.mvPopMatrix();
+    this.engine.renderManager.mvPopMatrix();
   }
 
   /**

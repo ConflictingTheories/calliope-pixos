@@ -12,16 +12,16 @@
 \*                                                 */
 import { normalize, rotate, translate, set } from '@Engine/utils/math/matrix4.jsx';
 import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
-import GLEngine from './index.jsx';
+import RenderManager from './render.jsx';
 
 export default class Camera {
   /**
    *
-   * @param {GLEngine} engine
+   * @param {RenderManager} renderingManager
    */
-  constructor(engine) {
-    this.engine = engine;
-    this.uViewMat = engine.uViewMat;
+  constructor(renderingManager) {
+    this.renderingManager = renderingManager;
+    this.uViewMat = renderingManager.uViewMat;
     this.fov = 45;
     this.cameraAngle = 45;
     this.cameraVector = new Vector(...[1, 0, 0]);
