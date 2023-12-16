@@ -11,17 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-// Absolute imports
-import { Vector, negate, degToRad } from '../utils/math/vector.jsx';
+import Utils from '../utils/index.jsx';
 import { GamePad } from '../utils/gamepad/index.jsx';
 import Keyboard from '../utils/keyboard.jsx';
-
-// Relative imports
 import Database from './database.jsx';
 import Store from './store.jsx';
 import Hud from './hud.jsx';
-import RenderManager from './render.jsx';
-import ResourceManager from './resource.jsx';
+import RenderManager from './render/manager.jsx';
+import ResourceManager from './resource/manager.jsx';
 
 export default class GLEngine {
   /**
@@ -48,7 +45,8 @@ export default class GLEngine {
     this.width = width;
     this.height = height;
 
-    this.Vector = Vector;
+    // UTILITIES
+    this.utils = Utils;
 
     // RESOURCES
     this.resourceManager = new ResourceManager(this);

@@ -12,11 +12,11 @@
 \*                                                 */
 import { Vector, set } from '@Engine/utils/math/vector.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
-import ActionQueue from './queue.jsx';
+import ActionQueue from '../queue/index.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
-import Loadable from '@Engine/core/loadable.jsx';
-import { degToRad } from '../utils/math/vector.jsx';
+import Loadable from '@Engine/core/queue/loadable.jsx';
+import { degToRad } from '../../utils/math/vector.jsx';
 
 export default class Sprite extends Loadable {
   /**

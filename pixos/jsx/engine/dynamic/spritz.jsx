@@ -12,8 +12,8 @@
 \*                                                 */
 
 // Shaders
-import Spritz from '@Engine/core/spritz.jsx';
-import World from '@Engine/core/world.jsx';
+import Spritz from '@Engine/core/scene/spritz.jsx';
+import World from '@Engine/core/scene/world.jsx';
 import JSZip from 'jszip';
 
 // Spritz Object

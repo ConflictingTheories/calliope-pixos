@@ -10,7 +10,6 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import ActionQueue from '@Engine/core/queue.jsx';
 export default class Loadable {
   /**
    * Run action if loaded or add to queue

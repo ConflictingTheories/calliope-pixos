@@ -12,7 +12,7 @@
 \*                                                 */
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
-import Avatar from '@Engine/core/avatar.jsx';
+import Avatar from '@Engine/core/scene/avatar.jsx';
 
 export default class DynamicAvatar extends Avatar {
   constructor(engine, json, zip) {

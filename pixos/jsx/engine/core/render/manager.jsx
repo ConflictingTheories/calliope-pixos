@@ -14,13 +14,13 @@
 import createTransition from 'gl-transition';
 
 // Absolute imports
-import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '../utils/math/matrix4.jsx';
-import { Vector, negate, degToRad } from '../utils/math/vector.jsx';
-import { OBJ } from '../utils/obj';
+import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '../../utils/math/matrix4.jsx';
+import { Vector, negate, degToRad } from '../../utils/math/vector.jsx';
+import { OBJ } from '../../utils/obj/index.js';
 
 import Camera from './camera.jsx';
 import LightManager from './light.jsx';
-import GLEngine from './index.jsx';
+import GLEngine from '../index.jsx';
 
 export default class RenderManager {
   /** Rendering Manager for Engine

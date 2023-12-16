@@ -12,7 +12,7 @@
 \*                                                 */
 import { normalize, rotate, translate, set } from '@Engine/utils/math/matrix4.jsx';
 import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
-import RenderManager from './render.jsx';
+import RenderManager from './manager.jsx';
 
 export default class Camera {
   /**

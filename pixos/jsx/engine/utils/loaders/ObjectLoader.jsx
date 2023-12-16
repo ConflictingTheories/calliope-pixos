@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Resources from '../resources.jsx';
-import ModelObject from '@Engine/core/object.jsx';
+import ModelObject from '@Engine/core/resource/object.jsx';
 
 //helps load models
 export class ObjectLoader {

@@ -12,11 +12,11 @@
 \*                                                 */
 import { Direction, mergeDeep } from '@Engine/utils/enums.jsx';
 import Resources from '@Engine/utils/resources.jsx';
-import ActionQueue from '@Engine/core/queue.jsx';
+import ActionQueue from '@Engine/core/queue/index.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.jsx';
-import Loadable from '@Engine/core/loadable.jsx';
+import Loadable from '@Engine/core/queue/loadable.jsx';
 
 export default class Zone extends Loadable {
   /**

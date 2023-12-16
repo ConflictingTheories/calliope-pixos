@@ -14,7 +14,7 @@
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { mergeDeep } from '@Engine/utils/enums.jsx';
-import Sprite from '@Engine/core/sprite.jsx';
+import Sprite from '@Engine/core/scene/sprite.jsx';
 
 export default class DynamicSprite extends Sprite {
   constructor(engine, json, zip) {

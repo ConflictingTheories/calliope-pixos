@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Event from '@Engine/core/event.jsx';
+import Event from '@Engine/core/queue/event.jsx';
 
 // Helps Loads New Event Instance
 export class EventLoader {

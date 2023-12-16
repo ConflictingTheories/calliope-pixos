@@ -12,7 +12,6 @@
 \*                                                 */
 
 import { translate, rotate } from '@Engine/utils/math/matrix4.jsx';
-import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import DynamicSprite from '@Engine/dynamic/sprite.jsx';
 import { degToRad } from '../utils/math/vector.jsx';
 

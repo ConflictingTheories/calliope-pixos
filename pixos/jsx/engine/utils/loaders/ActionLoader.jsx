@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Action from '@Engine/core/action.jsx';
+import Action from '@Engine/core/queue/action.jsx';
 
 // Helps Loads New Action Instance
 export class ActionLoader {

@@ -12,15 +12,15 @@
 \*                                                 */
 
 // Absolute imports
-import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
+import { AudioLoader } from '../../utils/loaders/AudioLoader.jsx';
 
 // Relative imports
 import { Texture, ColorTexture } from './texture.jsx';
-import Speech from './speech.jsx';
+import Speech from '../scene/speech.jsx';
 
 // Absolute imports
-import { OBJ } from '../utils/obj';
-import GLEngine from './index.jsx';
+import { OBJ } from '../../utils/obj/index.js';
+import GLEngine from '../index.jsx';
 
 export default class ResourceManager {
   /** Rendering Manager for Engine
@@ -33,6 +33,14 @@ export default class ResourceManager {
 
       this.objLoader = OBJ;
       this.audioLoader = new AudioLoader(this);
+
+      // todo - need to move all resources into this class
+      // --> tilesets
+      // --> textures
+      // --> audio
+      // --> models
+      // --> fonts
+      // --> possibly shaders....
   
       // ASSETS
       this.textures = [];

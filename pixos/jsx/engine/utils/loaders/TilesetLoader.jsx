@@ -11,8 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from '@Engine/utils/resources.jsx';
-import Tileset from '@Engine/core/tileset.jsx';
+import Tileset from '@Engine/core/resource/tileset.jsx';
 import { mergeDeep } from '@Engine/utils/enums.jsx';
 
 // Helps Loads New Tileset Instance

@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import GLEngine from './index.jsx';
+import GLEngine from '../index.jsx';
 
 export default class LightManager {
   /** Light Manager for Scene

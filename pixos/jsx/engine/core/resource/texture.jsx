@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import ActionQueue from '@Engine/core/queue.jsx';
-import Loadable from '@Engine/core/loadable.jsx';
+import ActionQueue from '@Engine/core/queue/index.jsx';
+import Loadable from '@Engine/core/queue/loadable.jsx';
 export class Texture extends Loadable {
   /**
    * Texture objects for use with the pixos engine

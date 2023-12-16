@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Zone from './zone.jsx';
-import ActionQueue from './queue.jsx';
+import ActionQueue from '../queue/index.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
 import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 

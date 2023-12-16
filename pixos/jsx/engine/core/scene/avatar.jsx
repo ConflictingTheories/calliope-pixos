@@ -15,7 +15,7 @@ import { Vector, set } from '@Engine/utils/math/vector.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { EventLoader } from '@Engine/utils/loaders/index.jsx';
-import Sprite from '@Engine/core/sprite.jsx';
+import Sprite from '@Engine/core/scene/sprite.jsx';
 
 export default class Avatar extends Sprite {
   /**
