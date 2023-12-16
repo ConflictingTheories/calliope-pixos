@@ -52,24 +52,26 @@ export default function fs() {
 
   vec3 setLights(vec3 color){
     vec3 normal = normalize(vTransformedNormal);
+    vec3 lightcolor = vec3(0.0, 0.0, 0.0);
     for (int i=0; i<4; i++) {
       if (uLights[i].enabled < 0.5)
         continue;
       
       vec3 lightVec = normalize(uLights[i].position - vPosition.xyz);
-      float l = dot(normal, lightVec);
+      float light = dot(normal, lightVec);
     
-      if (l > 0.0) {
-        float d = distance(vPosition.xyz, uLights[i].position);
-        float a = 1.0/(
+      if (light > 0.0) {
+        float dist = distance(vPosition.xyz, uLights[i].position);
+        float attenuation = 1.0/(
           uLights[i].attenuation.x +
-          uLights[i].attenuation.y*d + 
-          uLights[i].attenuation.z*d*d
+          uLights[i].attenuation.y*dist + 
+          uLights[i].attenuation.z*dist*dist
         );
-        color += a*l*uLights[i].color;
+        lightcolor += attenuation * light * uLights[i].color;
       }
     }
-    return color;
+
+    return color + lightcolor;
   }
   
   // Diffuse Colour Calculation
@@ -120,7 +122,7 @@ export default function fs() {
     if(useSampler == 1.0){
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);
-      vec4 color4 = clamp(vec4(color.rgb * setLights(color) * shadow, texelColors.a), 0.0, 1.0);
+      vec4 color4 = clamp(vec4(setLights(color) * shadow, texelColors.a), 0.0, 1.0);
       // fog effect
       gl_FragColor = fogEffect(color4);
     } else { // diffuse

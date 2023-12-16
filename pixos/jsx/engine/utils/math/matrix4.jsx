@@ -104,6 +104,10 @@ const translate = (m1, m2, v) => {
   return matrix;
 };
 
+const subtractVectors = (a, b) => {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+};
+
 const rotate = (m1, m2, rad, axis) => {
   let matrix = m1;
   let [x, y, z] = axis;
@@ -242,4 +246,9 @@ function normalFromMat4(out, a) {
   return out;
 }
 
-export { from, normalFromMat4, create, create3, perspective, translate, rotate, isPowerOf2, set };
+const normalize = (v) => {
+  let len = Math.hypot(...v);
+  return [v[0] / len, v[1] / len, v[2] / len];
+};
+
+export { from, normalize, subtractVectors, normalFromMat4, create, create3, perspective, translate, rotate, isPowerOf2, set };

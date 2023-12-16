@@ -11,20 +11,21 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import createTransition from 'gl-transition';
+
 // Absolute imports
-import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '@Engine/utils/math/matrix4.jsx';
-import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
-import { Texture, ColorTexture } from '@Engine/core/texture.jsx';
-import { GamePad } from '@Engine/utils/gamepad/index.jsx';
-import { OBJ } from '@Engine/utils/obj';
+import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '../utils/math/matrix4.jsx';
+import { Vector, negate, degToRad } from '../utils/math/vector.jsx';
+import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
+import { GamePad } from '../utils/gamepad/index.jsx';
+import { OBJ } from '../utils/obj';
+import Keyboard from '../utils/keyboard.jsx';
 
 // Relative imports
-import { AudioLoader } from '../utils/loaders/AudioLoader.jsx';
-import Speech from '@Engine/core/speech.jsx';
-import Light from '@Engine/core/light.jsx';
-import Keyboard from '@Engine/utils/keyboard.jsx';
-import createTransition from 'gl-transition';
+import { Texture, ColorTexture } from './texture.jsx';
+import LightManager from './light.jsx';
 import Camera from './camera.jsx';
+import Speech from './speech.jsx';
 import Database from './database.jsx';
 import Store from './store.jsx';
 import Hud from './hud.jsx';
@@ -60,14 +61,15 @@ export default class GLEngine {
     this.normalMat = create3();
     this.scale = new Vector(1, 1, 1);
     this.modelViewMatrixStack = [];
-    this.textures = [];
-    this.globalStore = {};
-    this.speeches = [];
-    this.lights = [];
-    this.effects = [];
     this.render = this.render.bind(this);
+    this.effects = [];
+
     this.objLoader = OBJ;
+    this.textures = [];
+    this.speeches = [];
+
     this.Vector = Vector;
+    this.globalStore = {};
 
     // TRANSITIONS
     this.isTransitioning = false;
@@ -77,8 +79,11 @@ export default class GLEngine {
     this.transitionDuration = 0;
     this.transitionTime = new Date().getMilliseconds();
 
+    // LIGHTS
+    this.lightManager = new LightManager(this);
+
     // CAMERA
-    this.camera = new Camera(this.uViewMat);
+    this.camera = new Camera(this);
 
     // AUDIO & VOICE
     this.voice = new SpeechSynthesisUtterance();
@@ -89,43 +94,6 @@ export default class GLEngine {
 
     // STORE
     this.store = new Store();
-  }
-
-  /**
-   * add a light source to the renderer
-   * @param {*} id
-   * @param {*} pos
-   * @param {*} color
-   * @param {*} attentuation
-   * @param {*} enabled
-   */
-  addLight(id, pos, color, attentuation = [0.5, 0.1, 0.0], enabled = true) {
-    this.lights.push(new Light(id, color, pos, attentuation, enabled));
-  }
-
-  /**
-   * add a light source to the renderer
-   * @param {*} id
-   */
-  removeLight(id) {
-    this.lights = this.lights.filter((light) => light.id !== id);
-  }
-
-  /**
-   * Update Point lighting
-   * @returns
-   */
-  updateLights() {
-    for (let i = 0; i < this.lights.length; i++) {
-      this.lights[i].tick();
-      if (this.shaderProgram && this.shaderProgram.uLights) {
-        let lightUniforms = this.shaderProgram.uLights[i];
-        gl.uniform1f(lightUniforms.enabled, this.lights[i].enabled ? 1.0 : 0.0);
-        gl.uniform3fv(lightUniforms.position, this.lights[i].pos);
-        gl.uniform3fv(lightUniforms.color, this.lights[i].color);
-        gl.uniform3fv(lightUniforms.attenuation, this.lights[i].attenuation);
-      }
-    }
   }
 
   /**
@@ -161,12 +129,6 @@ export default class GLEngine {
     this.keyboard = new Keyboard();
     this.fullscreen = false;
 
-    // gamepad controller
-    const gamepad = new GamePad(gp);
-    gamepad.init();
-    this.touch = gamepad.listen.bind(gamepad);
-    this.gamepad = gamepad;
-
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
@@ -187,6 +149,12 @@ export default class GLEngine {
 
     // Initialize Project Matrix
     this.initProjection(gl);
+
+    // gamepad controller
+    const gamepad = new GamePad(gp);
+    gamepad.init();
+    this.touch = gamepad.listen.bind(gamepad);
+    this.gamepad = gamepad;
 
     // Initialize Spritz
     await spritz.init(this);
@@ -267,6 +235,7 @@ export default class GLEngine {
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
 
     // light uniforms
+    shaderProgram.maxLights = 4;
     shaderProgram.uLights = gl.getUniformLocation(shaderProgram, 'uLights');
     shaderProgram.uLightVMatrix = gl.getUniformLocation(shaderProgram, 'uLightVMatrix');
     shaderProgram.uLightPMatrix = gl.getUniformLocation(shaderProgram, 'uLightPMatrix');
@@ -280,15 +249,8 @@ export default class GLEngine {
       normalFromMat4(self.normalMat, self.camera.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
-      // main - point lighting (OLD)
-      gl.uniform3fv(this.uLightPosition, self.lights[0].pos);
-      gl.uniform3fv(this.uLightColor, self.lights[0].color);
-      gl.uniform3fv(this.uLightDirection, self.lights[0].direction ?? []);
-      gl.uniform1f(this.uLightIsDirectional, 0.0);
-      gl.uniform1f(this.useLighting, 0.0);
-
       // point lights
-      self.updateLights();
+      self.lightManager.setMatrixUniforms(this);
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
@@ -390,37 +352,6 @@ export default class GLEngine {
   }
 
   /**
-   * Text to Speech output
-   * @param {string} text
-   * @param {SpeechSynthesisVoice} voice
-   * @param {string} lang
-   * @param {number} rate
-   * @param {number} volume
-   * @param {number} pitch
-   */
-  speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
-    let speech = this.voice;
-    let voices = window.speechSynthesis.getVoices() ?? [];
-    // set voice
-    speech.voice = voices[0];
-    if (rate) speech.rate = rate;
-    if (volume) speech.volume = volume;
-    if (pitch) speech.pitch = pitch;
-    speech.text = text;
-    speech.lang = lang;
-    // speak
-    window.speechSynthesis.speak(speech);
-  }
-
-  /**
-   * Greeting Text
-   * @param {string} text
-   */
-  setGreeting(text) {
-    this.globalStore.greeting = text;
-  }
-
-  /**
    * Screensize
    * @returns
    */
@@ -429,6 +360,27 @@ export default class GLEngine {
       width: this.canvas.clientWidth,
       height: this.canvas.clientHeight,
     };
+  }
+
+  /**
+   * Go Fullscreen
+   */
+  toggleFullscreen() {
+    if (!this.fullscreen) {
+      try {
+        this.gamepadcanvas.parentElement.requestFullscreen();
+        this.fullscreen = true;
+      } catch (e) {
+        //
+      }
+    } else {
+      try {
+        document.exitFullscreen();
+      } catch (e) {
+        //
+      }
+      this.fullscreen = false;
+    }
   }
 
   /**
@@ -441,7 +393,7 @@ export default class GLEngine {
 
     // core render loop
     this.activateShaderProgram();
-    // this.updateLights();
+    // this.lightManager.render();
     this.gamepad.render();
     this.spritz.render(this, new Date().getTime());
 
@@ -470,24 +422,41 @@ export default class GLEngine {
   }
 
   /**
-   * Go Fullscreen
+   * Clear Render Loop
    */
-  toggleFullscreen() {
-    if (!this.fullscreen) {
-      try {
-        this.gamepadcanvas.parentElement.requestFullscreen();
-        this.fullscreen = true;
-      } catch (e) {
-        //
-      }
-    } else {
-      try {
-        document.exitFullscreen();
-      } catch (e) {
-        //
-      }
-      this.fullscreen = false;
-    }
+  close() {
+    cancelAnimationFrame(this.requestId);
+  }
+
+  /**
+   * Text to Speech output
+   * @param {string} text
+   * @param {SpeechSynthesisVoice} voice
+   * @param {string} lang
+   * @param {number} rate
+   * @param {number} volume
+   * @param {number} pitch
+   */
+  speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
+    let speech = this.voice;
+    let voices = window.speechSynthesis.getVoices() ?? [];
+    // set voice
+    speech.voice = voices[0];
+    if (rate) speech.rate = rate;
+    if (volume) speech.volume = volume;
+    if (pitch) speech.pitch = pitch;
+    speech.text = text;
+    speech.lang = lang;
+    // speak
+    window.speechSynthesis.speak(speech);
+  }
+
+  /**
+   * Greeting Text
+   * @param {string} text
+   */
+  setGreeting(text) {
+    this.globalStore.greeting = text;
   }
 
   /**
@@ -634,33 +603,6 @@ export default class GLEngine {
   }
 
   /**
-   * Initalize Canvas from HUD and load as WebGL texture (TODO - make separate canvases)
-   * @returns
-   */
-  initCanvasTexture() {
-    let { gl } = this;
-    let canvasTexture = gl.createTexture();
-    this.handleLoadedTexture(canvasTexture, this.mipmap);
-    return canvasTexture;
-  }
-
-  /**
-   * Load canvas as texture
-   * @param {*} texture
-   * @param {*} textureCanvas
-   */
-  handleLoadedTexture(texture, textureCanvas) {
-    let { gl } = this;
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas); // This is the important line!
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-
-  /**
    * pop model stack and apply view
    */
   mvPopMatrix() {
@@ -669,15 +611,6 @@ export default class GLEngine {
     }
     this.camera.uViewMat = this.modelViewMatrixStack.pop();
   }
-
-  /**
-   * Clear Render Loop
-   */
-  close() {
-    cancelAnimationFrame(this.requestId);
-  }
-
-
 
   // transition (fade, swipe, etc)
   startTransition(type, params) {

@@ -38,7 +38,7 @@
       "pos": [2, 2, 0],
       "color": [0, 0, 0],
       "direction": [0.3, 0.3, 1],
-      "attenuation": [0.2, 0.1, 0.05],
+      "attenuation": [0.2, 0.1, 1],
       "enabled": true
     },
     {
@@ -46,15 +46,15 @@
       "pos": [11, 1, 0],
       "color": [0.1, 0.05, 0.05],
       "direction": [0, 0, 0],
-      "attenuation": [1, 1, 0.05],
+      "attenuation": [0.1, 0.2, 1],
       "enabled": true
     },
     {
       "id": "spot-light-3",
-      "pos": [3, 7, 0],
+      "pos": [0.3, 0.7, 0],
       "color": [0.05, 0.1, 0.05],
       "direction": [0, 0, 0],
-      "attenuation": [1, 1, 0.05],
+      "attenuation": [0.1, 0.1, 0.8],
       "enabled": true
     }
   ],
