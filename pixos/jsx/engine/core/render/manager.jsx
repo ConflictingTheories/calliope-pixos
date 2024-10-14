@@ -161,22 +161,21 @@ export default class RenderManager {
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, 'uSampler');
     shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, 'uDiffuseMap');
 
-    // lighting
-    shaderProgram.uLightPosition = gl.getUniformLocation(shaderProgram, 'uLightPosition');
-    shaderProgram.uLightColor = gl.getUniformLocation(shaderProgram, 'uLightColor');
-    shaderProgram.uLightDirection = gl.getUniformLocation(shaderProgram, 'uLightDirection');
-    shaderProgram.uLightIsDirectional = gl.getUniformLocation(shaderProgram, 'uLightIsDirectional');
-
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
-    shaderProgram.useLighting = gl.getUniformLocation(shaderProgram, 'useLighting');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
 
     // light uniforms
     shaderProgram.maxLights = 4;
-    shaderProgram.uLights = gl.getUniformLocation(shaderProgram, 'uLights');
-    shaderProgram.uLightVMatrix = gl.getUniformLocation(shaderProgram, 'uLightVMatrix');
-    shaderProgram.uLightPMatrix = gl.getUniformLocation(shaderProgram, 'uLightPMatrix');
+    shaderProgram.uLights = [];
+    for (let i = 0; i < shaderProgram.maxLights; i++) {
+      shaderProgram.uLights[i] = {
+        enabled: gl.getUniformLocation(shaderProgram, `uLights[${i}].enabled`),
+        color: gl.getUniformLocation(shaderProgram, `uLights[${i}].color`),
+        position: gl.getUniformLocation(shaderProgram, `uLights[${i}].position`),
+        attenuation: gl.getUniformLocation(shaderProgram, `uLights[${i}].attenuation`)
+      };
+    }
 
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
@@ -188,7 +187,7 @@ export default class RenderManager {
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
       // point lights
-      self.lightManager.setMatrixUniforms(this);
+      self.lightManager.setMatrixUniforms();
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());

@@ -214,7 +214,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
 
     // screen capture
-    dragElement(previewBoxRef);
+    // dragElement(previewBoxRef);
     captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext);
 
     // load fonts

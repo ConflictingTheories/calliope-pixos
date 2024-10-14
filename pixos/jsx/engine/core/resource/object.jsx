@@ -326,7 +326,7 @@ export default class ModelObject extends Loadable {
         ]);
     }
     // Draw Object
-    console.log({ mesh });
+    // console.log({ mesh });
     if (!mesh.textures.length) {
       this.drawObj();
     } else {

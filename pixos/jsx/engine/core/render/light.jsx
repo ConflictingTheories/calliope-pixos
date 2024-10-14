@@ -12,6 +12,7 @@
 \*                                                 */
 
 import GLEngine from '../index.jsx';
+import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
 
 export default class LightManager {
   /** Light Manager for Scene
@@ -41,7 +42,7 @@ export default class LightManager {
     const { shaderProgram } = this.engine;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
-    this.lights.push(new PointLight(id, color, pos, attentuation, enabled));
+    this.lights.push(new PointLight(this.engine, id, color, pos, attentuation, enabled));
   }
 
   /**
@@ -66,10 +67,12 @@ export default class LightManager {
   render() {
     const { gl, shaderProgram } = this.engine;
     let lightUniforms = shaderProgram.uLights;
+
     if(!lightUniforms) return;
     
-    for (let i = 0; i < lightUniforms.length; i++) {
-      if (!this.lights[i].enabled) continue;
+    for (let i = 0; i < shaderProgram.maxLights; i++) {
+      if(!this.lights[i]) continue;
+      if (!this.lights[i]?.enabled) continue;
       this.lights[i].draw(lightUniforms[i]);
     }
   }
@@ -77,16 +80,6 @@ export default class LightManager {
   /** draw to frame
    */
   setMatrixUniforms() {
-    const { gl, shaderProgram } = this.engine;
-    // TODO - main - OLD direction lighting
-    if (this.lights.length > 0) {
-      gl.uniform3fv(shaderProgram.uLightPosition, this.lights[0].pos);
-      gl.uniform3fv(shaderProgram.uLightColor, this.lights[0].color);
-      gl.uniform3fv(shaderProgram.uLightDirection, this.lights[0].direction ?? []);
-    }
-    gl.uniform1f(shaderProgram.uLightIsDirectional, 0.0);
-    gl.uniform1f(shaderProgram.useLighting, 0.0);
-
     // update lights
     this.tick();
 
@@ -99,7 +92,8 @@ export class PointLight {
   /**
    * Point Light
    */
-  constructor(id, color, position, attenuation, enabled) {
+  constructor(engine, id, color, position, attenuation, enabled) {
+    this.engine = engine;
     this.id = id ?? 'light';
     this.color = color ? color : [1.0, 1.0, 1.0];
     this.pos = position ? position : [0.0, 0.0, 0.0];
@@ -114,9 +108,9 @@ export class PointLight {
   // update light (ex. for flicker)
   tick() {
     for (var i = 0; i < 3; i++) {
-      this.color[i] += Math.sin((0.000005 * this.frame * 180) / Math.PI) * 0.0002;
-      // this.pos[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
-      // this.attenuation[i] += Math.sin((0.05 * this.frame * 180) / Math.PI) * 0.02;
+      // this.color[i] += Math.sin((0.000005 * this.frame * 180) / Math.PI) * 0.012;
+    // //   // this.pos[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
+      this.attenuation[i] += Math.sin((0.05 * this.frame * 180) / Math.PI) * 0.02;
     }
     this.frame++;
   }
@@ -124,6 +118,14 @@ export class PointLight {
   // draw light
   draw(lightUniforms) {
     const { gl } = this.engine;
+
+    // translate(
+    //   this.engine.camera.uViewMat,
+    //   this.engine.camera.uViewMat,
+    //   [0,0,0]
+    // );
+    // translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos);
+      
     // todo: draw light
     gl.uniform1f(lightUniforms.enabled, this.enabled);
     gl.uniform3fv(lightUniforms.position, this.pos);

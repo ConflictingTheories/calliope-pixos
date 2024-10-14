@@ -103,6 +103,7 @@ export async function loadMap(json, cells, zip) {
   //     enabled: light.enabled ?? false,
   //   };
   // });
+
   console.log('loading map....');
 
   return {

@@ -13,6 +13,7 @@
 import { normalize, rotate, translate, set } from '@Engine/utils/math/matrix4.jsx';
 import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
 import RenderManager from './manager.jsx';
+import { subtractVectors } from '../../utils/math/matrix4.jsx';
 
 export default class Camera {
   /**
@@ -20,9 +21,15 @@ export default class Camera {
    * @param {RenderManager} renderingManager
    */
   constructor(renderingManager) {
+    // add support -- todo - move into utils
+    Number.prototype.clamp = function(min, max) {
+      return (this < min ? min : (this > max ? max : this));
+    };
+
     this.renderingManager = renderingManager;
     this.uViewMat = renderingManager.uViewMat;
     this.fov = 45;
+    this.thetaLimits = new Vector(...[1.5 * Math.PI, 1.8 * Math.PI, 0]);
     this.cameraAngle = 45;
     this.cameraVector = new Vector(...[1, 0, 0]);
     this.cameraDir = 'N';
@@ -36,6 +43,7 @@ export default class Camera {
     this.tiltCW = this.tiltCW.bind(this);
     this.pitchCCW = this.pitchCCW.bind(this);
     this.pitchCW = this.pitchCW.bind(this);
+    this.changeAngle = this.changeAngle.bind(this);
   }
 
   /**
@@ -48,6 +56,14 @@ export default class Camera {
     rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.z), [0, 0, 1]);
     negate(this.cameraPosition, this.cameraOffset);
     translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
+  }
+
+  /** Change Camera Angle
+   *
+   * @param {*} dTheta
+   */
+  changeAngle(dTheta) {
+    this.lookAt(this.cameraPosition.toArray(), this.cameraOffset.toArray(), dTheta);
   }
 
   /** Manually Position Camera and look at target
@@ -64,9 +80,9 @@ export default class Camera {
     this.cameraVector = new Vector(...up);
 
     // calculate new view matrix
-    const zAxis = normalize(subtractVectors(pos, target));
-    const xAxis = cross(up, zAxis);
-    const yAxis = cross(zAxis, xAxis);
+    const zAxis = new Vector(...normalize(subtractVectors(pos, target)));
+    const xAxis = (new Vector(...up)).cross(zAxis);
+    const yAxis = zAxis.cross(xAxis);
     const newViewMat = [
       ...[xAxis.x, xAxis.y, xAxis.z, 0],
       ...[yAxis.x, yAxis.y, yAxis.z, 0],

@@ -8,9 +8,9 @@
   "objects": [],
   "lights": [
     {
-      "id": "spot-light",
-      "pos": [12, 12, 0],
-      "color": [1, 0.8, 0.8],
+      "id": "spot-light-3",
+      "pos": [8, 13, 0],
+      "color": [1, 0.1, 0.8],
       "direction": [0.3, 0.3, 1],
       "attenuation": [0.2, 0.1, 0.05],
       "enabled": true

@@ -150,7 +150,6 @@ export default class Spritz {
 
     // effect rendering - ex) blur depth of field
     Object.keys(this.effects).map((id) => {
-      console.log([id]);
       Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
       this.effectPrograms[id]?.draw();
     });
