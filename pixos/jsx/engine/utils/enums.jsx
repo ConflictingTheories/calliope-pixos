@@ -114,7 +114,6 @@ export const Direction = {
 
   // sprite sequence facing (Needs work -- still not quite right)
   spriteSequence(dir, camera = 'N') {
-    // console.log({ dir, camera });
     switch (camera) {
       case 'N':
         switch (dir) {

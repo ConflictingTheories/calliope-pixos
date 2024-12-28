@@ -329,7 +329,6 @@ export default class RenderManager {
     let m = create();
     set(this.camera.uViewMat, m);
     this.modelViewMatrixStack.push([copy,m]);
-    console.log(this.modelViewMatrixStack);
   }
 
   /**
