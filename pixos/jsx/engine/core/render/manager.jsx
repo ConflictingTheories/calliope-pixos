@@ -32,7 +32,6 @@ export default class RenderManager {
     this.fullscreen = engine.fullscreen;
 
     // Matrices
-    this.uViewMat = create();
     this.uProjMat = create();
     this.normalMat = create3();
     this.modelViewMatrixStack = [];
@@ -181,18 +180,20 @@ export default class RenderManager {
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.camera.uViewMat);
+      
       // normal
       self.normalMat = create3();
       normalFromMat4(self.normalMat, self.camera.uViewMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
-      // point lights
-      self.lightManager.setMatrixUniforms();
-
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+      
       // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);
+
+      // point lights
+      self.lightManager.setMatrixUniforms();
     };
 
     const attrs = {

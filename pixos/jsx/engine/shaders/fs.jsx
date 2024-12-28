@@ -31,6 +31,7 @@ export default function fs() {
   }
 
   varying vec4 vWorldVertex;
+  varying vec3 vWorldNormal;
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
   varying vec2 vTextureCoord;
@@ -65,11 +66,11 @@ export default function fs() {
   }
 
   vec3 getReflectedLightColor(vec3 color) {
-    vec3 reflectedLightColor;
-
-    for(int i = 0; i < 4; i ++) {
+    vec3 reflectedLightColor = vec3(0.0);
+  
+    for(int i = 0; i < 4; i++) {
       if(uLights[i].enabled <= 0.5) continue;
-
+  
       vec3 specular_color;
       vec3 diffuse_color;
       vec3 to_light;
@@ -77,48 +78,94 @@ export default function fs() {
       vec3 to_camera;
       float cos_angle;
       float attenuation;
-      
+      vec3 normal;
+  
       // Calculate a vector from the fragment location to the light source
-      to_light = uLights[i].position - vPosition.xyz;
-
-      // DIFFUSE  calculations
-      // Calculate the cosine of the angle between the vertex's normal
-      // vector and the vector going to the light.
-       if (useSampler == 1.0) {
+      to_light = normalize(uLights[i].position - vPosition.xyz);
+      normal = normalize(vWorldNormal);
+  
+      // DIFFUSE calculations
+      if (useSampler == 1.0) {
         cos_angle = 0.67; // billboard sprites
       } else {
-        cos_angle = dot(vTransformedNormal, to_light);
+        cos_angle = dot(normal, to_light);
         cos_angle = clamp(cos_angle, 0.0, 1.0);
       }
-
+  
       // Scale the color of this fragment based on its angle to the light.
       diffuse_color = uLights[i].color * cos_angle;
-
-      // SPECULAR  calculations
-      // Calculate the reflection vector
-      reflection = 2.0 * dot(vTransformedNormal, to_light) * vTransformedNormal - to_light;
+  
+      // SPECULAR calculations
+      reflection = 2.0 * dot(normal, to_light) * normal - to_light;
       reflection = normalize(reflection);
-
-      // Calculate a vector from the fragment location to the camera.
-      // The camera is at the origin, so just negate the fragment location
-      to_camera = - 1.0 * vPosition.xyz;
+  
+      to_camera = -1.0 * vPosition.xyz;
       to_camera = normalize(to_camera);
-
-      // Calculate the cosine of the angle between the reflection vector
-      // and the vector going to the camera.
+  
       cos_angle = dot(reflection, to_camera);
       cos_angle = clamp(cos_angle, 0.0, 1.0);
       specular_color = uLights[i].color * cos_angle;
-
-      // ATTENUATION  calculations
+  
+      // ATTENUATION calculations
       attenuation = getAttenuation(uLights[i]);
-      
+  
       // Combine and attenuate the colors from this light source
-      reflectedLightColor = attenuation * (diffuse_color + specular_color);
-      reflectedLightColor += clamp(reflectedLightColor, 0.0, 1.0);
+      reflectedLightColor += attenuation * (diffuse_color + specular_color);
     }
+  
+    return clamp(0.5 * color + reflectedLightColor, 0.0, 1.0);
+  }
 
-    return clamp(0.5*color + reflectedLightColor, 0.0, 1.0);
+  vec3 calculateLight(vec3 color) {
+    vec3 reflectedLightColor = vec3(0.0);
+  
+    for(int i = 0; i < 4; i++) {
+      if(uLights[i].enabled <= 0.5) continue;
+  
+      vec3 specular_color;
+      vec3 diffuse_color;
+      vec3 to_light;
+      vec3 reflection;
+      vec3 to_camera;
+      float cos_angle;
+      float attenuation;
+      vec3 normal;
+  
+      // Calculate a vector from the fragment location to the light source
+      to_light = normalize(uLights[i].position - vec3(0.1,0.1,0.1) - vWorldVertex.xyz);
+      normal = normalize(vWorldNormal);
+  
+      // DIFFUSE calculations
+      if (useSampler == 1.0) {
+        cos_angle = dot(normalize(vTransformedNormal), to_light);
+        cos_angle = clamp(cos_angle, 0.0, 1.0);
+      } else {
+        cos_angle = dot(normal, to_light);
+        cos_angle = clamp(cos_angle, 0.0, 1.0);
+      }
+  
+      // Scale the color of this fragment based on its angle to the light.
+      diffuse_color = uLights[i].color * cos_angle;
+  
+      // SPECULAR calculations
+      reflection = 2.0 * dot(normal, to_light) * normal - to_light;
+      reflection = normalize(reflection);
+  
+      to_camera = -1.0 * vWorldVertex.xyz;
+      to_camera = normalize(to_camera);
+  
+      cos_angle = dot(reflection, to_camera);
+      cos_angle = clamp(cos_angle, 0.0, 1.0);
+      specular_color = uLights[i].color * cos_angle;
+  
+      // ATTENUATION calculations
+      attenuation = getAttenuation(uLights[i]);
+  
+      // Combine and attenuate the colors from this light source
+      reflectedLightColor += attenuation * (diffuse_color + specular_color);
+    }
+  
+    return clamp(0.5 * color + reflectedLightColor, 0.0, 1.0);
   }
 
     // Diffuse Colour Calculation
@@ -158,11 +205,11 @@ export default function fs() {
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);
       vec4 color4 = vec4(getReflectedLightColor(color), texelColors.a);
-      gl_FragColor = fogEffect(color4);
+      gl_FragColor = vec4(color, texelColors.a) * fogEffect(color4);
     } else { // diffuse
       vec3 color = calculateDiffuse();
       vec4 color4 = vec4((getReflectedLightColor(color)), 1.0);
-      gl_FragColor = fogEffect(color4);
+      gl_FragColor = vec4(color,1.0) * fogEffect(color4);
     }
   }
 `;

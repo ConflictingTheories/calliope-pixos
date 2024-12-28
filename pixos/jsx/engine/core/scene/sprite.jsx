@@ -45,6 +45,9 @@ export default class Sprite extends Loadable {
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
+    this.isLit = false;
+    this.lightIndex = -1;
+    this.lightColor = [0.1,1.0,0.1];
     this.voice = new SpeechSynthesisUtterance();
   }
 
@@ -63,6 +66,8 @@ export default class Sprite extends Loadable {
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
+    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
@@ -88,6 +93,10 @@ export default class Sprite extends Loadable {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
+    if(this.isLit){
+      console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
+      this.lightIndex = this.engine.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor);
+    }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
@@ -109,6 +118,7 @@ export default class Sprite extends Loadable {
     this.update(instanceData);
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
     if (instanceData.fixed) this.fixed = instanceData.fixed;
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
@@ -146,6 +156,11 @@ export default class Sprite extends Loadable {
     if (this.portraitSrc) {
       this.portrait = await this.engine.resourceManager.loadTextureFromZip(this.portraitSrc, zip);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    }
+
+    if(this.isLit){
+      console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
+      this.lightIndex = this.engine.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
     }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -272,7 +287,14 @@ export default class Sprite extends Loadable {
     if (!this.loaded) return;
 
     this.engine.renderManager.mvPushMatrix();
-
+    
+    //update light position
+    if(this.isLit){
+     let pos =  this.pos.toArray()
+    //  pos[2] = -1;
+      this.engine.lightManager.updateLight(this.lightIndex, pos);
+    }
+    
     // position
     translate(
       this.engine.camera.uViewMat,

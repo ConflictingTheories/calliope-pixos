@@ -22,8 +22,11 @@ export default function vs() {
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
   uniform mat3 uNormalMatrix;
+  uniform mat3 uCamPos;
+
 
   varying vec4 vWorldVertex;
+  varying vec3 vWorldNormal;
   varying vec3 vTransformedNormal;
   varying vec4 vPosition;
   varying vec2 vTextureCoord;
@@ -37,6 +40,7 @@ export default function vs() {
     vPosition = uMVMatrix * vec4(scaledPosition, 1.0);
     vTextureCoord = aTextureCoord;
     vTransformedNormal = uNormalMatrix * aVertexNormal;
+    vWorldNormal = normalize(mat3(uMVMatrix) * aVertexNormal);
 
     gl_Position = uPMatrix * vPosition;
   }

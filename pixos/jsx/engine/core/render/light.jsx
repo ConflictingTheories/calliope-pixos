@@ -13,6 +13,7 @@
 
 import GLEngine from '../index.jsx';
 import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
+import { degToRad } from '../../utils/math/vector.jsx';
 
 export default class LightManager {
   /** Light Manager for Scene
@@ -37,12 +38,35 @@ export default class LightManager {
    * @param {*} color
    * @param {*} attentuation
    * @param {*} enabled
+   * @returns index
    */
   addLight(id, pos, color, attentuation = [0.5, 0.1, 0.0], enabled = true) {
     const { shaderProgram } = this.engine;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
-    this.lights.push(new PointLight(this.engine, id, color, pos, attentuation, enabled));
+    let light = new PointLight(this.engine, id, color, pos, attentuation, enabled);
+    this.lights.push(light);
+    return index;
+  }
+
+  /**
+   *
+   * @param {*} id
+   * @param {*} pos
+   * @param {*} color
+   * @param {*} attentuation
+   * @param {*} enabled
+   */
+  updateLight(id, pos, color, attentuation, enabled) {
+    this.lights = this.lights.map((light) => {
+      if (light.id === id) {
+        if (pos) light.pos = pos;
+        if (color) light.color = color;
+        if (attentuation) light.attenuation = attentuation;
+        if (enabled) light.enabled = enabled;
+      }
+      return light;
+    });
   }
 
   /**
@@ -68,11 +92,11 @@ export default class LightManager {
     const { gl, shaderProgram } = this.engine;
     let lightUniforms = shaderProgram.uLights;
 
-    if(!lightUniforms) return;
-    
+    if (!lightUniforms) return;
+
     for (let i = 0; i < shaderProgram.maxLights; i++) {
-      if(!this.lights[i]) continue;
-      if (!this.lights[i]?.enabled) continue;
+      if (!this.lights[i]) continue;
+      if (!this.lights[i].enabled) continue;
       this.lights[i].draw(lightUniforms[i]);
     }
   }
@@ -107,26 +131,14 @@ export class PointLight {
 
   // update light (ex. for flicker)
   tick() {
-    for (var i = 0; i < 3; i++) {
-      // this.color[i] += Math.sin((0.000005 * this.frame * 180) / Math.PI) * 0.012;
-    // //   // this.pos[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
-      this.attenuation[i] += Math.sin((0.05 * this.frame * 180) / Math.PI) * 0.02;
-    }
+    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
+
     this.frame++;
   }
 
   // draw light
   draw(lightUniforms) {
-    const { gl } = this.engine;
-
-    // translate(
-    //   this.engine.camera.uViewMat,
-    //   this.engine.camera.uViewMat,
-    //   [0,0,0]
-    // );
-    // translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos);
-      
-    // todo: draw light
+    const { gl, renderManager, camera } = this.engine;
     gl.uniform1f(lightUniforms.enabled, this.enabled);
     gl.uniform3fv(lightUniforms.position, this.pos);
     gl.uniform3fv(lightUniforms.color, this.color);

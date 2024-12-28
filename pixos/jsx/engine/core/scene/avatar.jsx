@@ -26,13 +26,14 @@ export default class Avatar extends Sprite {
     // Initialize Sprite
     super(engine);
     this.handleWalk = this.handleWalk.bind(this);
+    this.isLit = true;
   }
 
   /**
    * Initialization Hook
    */
   init() {
-    console.log('- avatar hook', this.id, this.pos);
+    console.log({msg: '- avatar hook', id: this.id, pos: this.pos, avatar: this});
   }
 
   /**
@@ -205,6 +206,12 @@ export default class Avatar extends Sprite {
       // Movement
       case 'w':
         facing = Direction.Up;
+        break;
+      case 'y':
+        this.pos.z++;
+        break;
+      case 'f':
+        this.pos.z--;
         break;
       case 's':
         facing = Direction.Down;
