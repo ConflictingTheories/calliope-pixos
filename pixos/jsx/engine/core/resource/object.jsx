@@ -312,14 +312,14 @@ export default class ModelObject extends Loadable {
     // initialize buffers
     engine.renderManager.mvPushMatrix();
     // position object
-    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.drawOffset.toArray());
-    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
-    rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(90), [1, 0, 0]);
+    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.drawOffset.toArray());
+    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
+    rotate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, degToRad(90), [1, 0, 0]);
     // rotate object
     if (this.rotation && this.rotation.toArray) {
       let rotation = Math.max(...this.rotation.toArray());
       if (rotation > 0)
-        rotate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, degToRad(rotation), [
+        rotate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, degToRad(rotation), [
           this.rotation.x / rotation,
           this.rotation.y / rotation,
           this.rotation.z / rotation,

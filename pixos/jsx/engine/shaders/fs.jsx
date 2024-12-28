@@ -23,6 +23,9 @@ export default function fs() {
   vec3 color;
   vec3 position;
   vec3 attenuation;
+  vec3 direction;
+  vec3 scatteringCoefficients;
+  float density;
   };
 
   float unpack(vec4 color) {
@@ -49,6 +52,11 @@ export default function fs() {
   uniform vec3 uDiffuse;
   uniform vec3 uSpecular;
   uniform float uSpecularExponent;
+
+  uniform vec3 uLightColor;
+  varying vec3 vFragPos;
+  varying vec3 vLightDir;
+  varying vec3 vViewDir;
 
   float getAttenuation(PointLight light) {
     float distance_from_light;
@@ -81,12 +89,13 @@ export default function fs() {
       vec3 normal;
   
       // Calculate a vector from the fragment location to the light source
-      to_light = normalize(uLights[i].position - vPosition.xyz);
+      to_light = normalize(vec3(uLights[i].position.x,-uLights[i].position.z,-uLights[i].position.y) - vFragPos);
       normal = normalize(vWorldNormal);
   
       // DIFFUSE calculations
       if (useSampler == 1.0) {
         cos_angle = 0.67; // billboard sprites
+        cos_angle += dot(to_camera, to_light);
       } else {
         cos_angle = dot(normal, to_light);
         cos_angle = clamp(cos_angle, 0.0, 1.0);
@@ -99,8 +108,7 @@ export default function fs() {
       reflection = 2.0 * dot(normal, to_light) * normal - to_light;
       reflection = normalize(reflection);
   
-      to_camera = -1.0 * vPosition.xyz;
-      to_camera = normalize(to_camera);
+      to_camera = normalize(vViewDir);
   
       cos_angle = dot(reflection, to_camera);
       cos_angle = clamp(cos_angle, 0.0, 1.0);
@@ -132,7 +140,7 @@ export default function fs() {
       vec3 normal;
   
       // Calculate a vector from the fragment location to the light source
-      to_light = normalize(uLights[i].position - vec3(0.1,0.1,0.1) - vWorldVertex.xyz);
+      to_light = normalize(vec3(uLights[i].position.x,uLights[i].position.z,uLights[i].position.y) - vWorldVertex.xyz);
       normal = normalize(vWorldNormal);
   
       // DIFFUSE calculations
@@ -201,6 +209,34 @@ export default function fs() {
   }
 
   void main(void) {
+    vec3 finalColor;
+
+    for(int i = 0; i < 4; i++) {
+      if(uLights[i].enabled <= 0.5) continue;
+        
+      // Calculate the distance from the fragment to the light
+      float distance = length(uLights[i].position - vFragPos);
+
+      // Calculate the scattering effect
+      float scattering = exp(-uLights[i].density * distance);
+      vec3 scatteredLight = uLights[i].color * scattering * uLights[i].scatteringCoefficients;
+
+      // Combine the scattered light with the existing lighting
+
+      if(useSampler == 1.0) { // sampler
+        vec4 texelColors = texture2D(uSampler, vTextureCoord);
+        vec3 color = calculateSampler(texelColors);
+        finalColor += scatteredLight * color;
+      } else { // diffuse
+        vec3 color = calculateDiffuse();
+        finalColor += scatteredLight * color;
+      }
+    }
+
+    // Existing code...
+    // vec4 color4 = vec4(getReflectedLightColor(finalColor),1.0);
+    // gl_FragColor = vec4(finalColor,1.0) * fogEffect(color4);
+
     if(useSampler == 1.0) { // sampler
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);

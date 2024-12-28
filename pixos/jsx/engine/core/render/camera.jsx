@@ -10,7 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { normalize, rotate, translate, set } from '@Engine/utils/math/matrix4.jsx';
+import { create, normalize, rotate, translate, set } from '@Engine/utils/math/matrix4.jsx';
 import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
 import RenderManager from './manager.jsx';
 import { subtractVectors } from '../../utils/math/matrix4.jsx';
@@ -27,7 +27,7 @@ export default class Camera {
     };
 
     this.renderingManager = renderingManager;
-    this.uViewMat = renderingManager.uViewMat;
+    this.uViewMat = create()
     this.fov = 45;
     this.thetaLimits = new Vector(...[1.5 * Math.PI, 1.8 * Math.PI, 0]);
     this.cameraAngle = 45;

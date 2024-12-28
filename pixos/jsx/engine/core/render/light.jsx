@@ -37,14 +37,17 @@ export default class LightManager {
    * @param {*} pos
    * @param {*} color
    * @param {*} attentuation
+   * @param {*} direction
+   * @param {*} density
+   * @param {*} scatteringCoefficients
    * @param {*} enabled
    * @returns index
    */
-  addLight(id, pos, color, attentuation = [0.5, 0.1, 0.0], enabled = true) {
+  addLight(id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1,1,1], density = 1.0, scatteringCoefficients = [1,1,1], enabled = true) {
     const { shaderProgram } = this.engine;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
-    let light = new PointLight(this.engine, id, color, pos, attentuation, enabled);
+    let light = new PointLight(this.engine, id, color, pos, attentuation, direction, density, scatteringCoefficients, enabled);
     this.lights.push(light);
     return index;
   }
@@ -55,14 +58,20 @@ export default class LightManager {
    * @param {*} pos
    * @param {*} color
    * @param {*} attentuation
+   * @param {*} direction
+   * @param {*} density
+   * @param {*} scatteringCoefficients
    * @param {*} enabled
    */
-  updateLight(id, pos, color, attentuation, enabled) {
+  updateLight(id, pos, color, attentuation, direction, density, scatteringCoefficients, enabled) {
     this.lights = this.lights.map((light) => {
       if (light.id === id) {
         if (pos) light.pos = pos;
         if (color) light.color = color;
         if (attentuation) light.attenuation = attentuation;
+        if (direction) light.direction = direction;
+        if (density) light.density = density;
+        if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
         if (enabled) light.enabled = enabled;
       }
       return light;
@@ -93,10 +102,11 @@ export default class LightManager {
     let lightUniforms = shaderProgram.uLights;
 
     if (!lightUniforms) return;
-
+    
     for (let i = 0; i < shaderProgram.maxLights; i++) {
       if (!this.lights[i]) continue;
       if (!this.lights[i].enabled) continue;
+
       this.lights[i].draw(lightUniforms[i]);
     }
   }
@@ -116,13 +126,16 @@ export class PointLight {
   /**
    * Point Light
    */
-  constructor(engine, id, color, position, attenuation, enabled) {
+  constructor(engine, id, color, position, attenuation, direction, density, scatteringCoefficients, enabled) {
     this.engine = engine;
     this.id = id ?? 'light';
-    this.color = color ? color : [1.0, 1.0, 1.0];
-    this.pos = position ? position : [0.0, 0.0, 0.0];
-    this.attenuation = attenuation ? attenuation : [0.5, 0.1, 0.0];
-    this.enabled = enabled ? enabled : true;
+    this.color = color ?? [1.0, 1.0, 1.0];
+    this.pos = position ?? [0.0, 0.0, 0.0];
+    this.attenuation = attenuation ?? [0.5, 0.1, 0.0];
+    this.density = density ?? 0.8;
+    this.scatteringCoefficients = scatteringCoefficients ?? [0.5, 0.5, 0.5];
+    this.direction = direction ?? [1.0, 1.0, 1.0];
+    this.enabled = enabled ?? true;
     this.frame = 0;
     // methods
     this.draw = this.draw.bind(this);
@@ -131,7 +144,7 @@ export class PointLight {
 
   // update light (ex. for flicker)
   tick() {
-    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
+    // for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
 
     this.frame++;
   }
@@ -143,5 +156,10 @@ export class PointLight {
     gl.uniform3fv(lightUniforms.position, this.pos);
     gl.uniform3fv(lightUniforms.color, this.color);
     gl.uniform3fv(lightUniforms.attenuation, this.attenuation);
+
+    // Set new uniforms for volumetric lighting
+    gl.uniform3fv(lightUniforms.direction, this.direction);
+    gl.uniform3fv(lightUniforms.scatteringCoefficients, this.scatteringCoefficients);
+    gl.uniform1f(lightUniforms.density, this.density);
   }
 }

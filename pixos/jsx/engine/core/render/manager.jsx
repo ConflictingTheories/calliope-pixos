@@ -33,6 +33,7 @@ export default class RenderManager {
 
     // Matrices
     this.uProjMat = create();
+    this.uModelMat = create();
     this.normalMat = create3();
     this.modelViewMatrixStack = [];
 
@@ -154,11 +155,15 @@ export default class RenderManager {
     shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, 'uDiffuse');
     shaderProgram.uSpecular = gl.getUniformLocation(shaderProgram, 'uSpecular');
     shaderProgram.uSpecularExponent = gl.getUniformLocation(shaderProgram, 'uSpecularExponent');
-    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uPMatrix');
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
+    shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, 'uModelMatrix');
+    shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, 'uViewMatrix');
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, 'uNormalMatrix');
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, 'uSampler');
     shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, 'uDiffuseMap');
+
+    shaderProgram.cameraPosition = gl.getUniformLocation(shaderProgram, `uCameraPosition`);
+    
 
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
@@ -172,18 +177,22 @@ export default class RenderManager {
         enabled: gl.getUniformLocation(shaderProgram, `uLights[${i}].enabled`),
         color: gl.getUniformLocation(shaderProgram, `uLights[${i}].color`),
         position: gl.getUniformLocation(shaderProgram, `uLights[${i}].position`),
-        attenuation: gl.getUniformLocation(shaderProgram, `uLights[${i}].attenuation`)
+        attenuation: gl.getUniformLocation(shaderProgram, `uLights[${i}].attenuation`),
+        direction: gl.getUniformLocation(shaderProgram, `uLights[${i}].direction`),
+        scatteringCoefficients: gl.getUniformLocation(shaderProgram, `uLights[${i}].scatteringCoefficients`),
+        density: gl.getUniformLocation(shaderProgram, `uLights[${i}].density`),
       };
     }
 
     // Uniform apply
     shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
-      gl.uniformMatrix4fv(this.mvMatrixUniform, false, self.camera.uViewMat);
+      gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
+      gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
       
       // normal
       self.normalMat = create3();
-      normalFromMat4(self.normalMat, self.camera.uViewMat);
+      normalFromMat4(self.normalMat, self.uModelMat);
       gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
 
       // scale
@@ -191,6 +200,9 @@ export default class RenderManager {
       
       // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);
+
+      // camera position
+      gl.uniform3fv(this.cameraPosition, self.camera.cameraPosition.toArray());
 
       // point lights
       self.lightManager.setMatrixUniforms();
@@ -313,8 +325,11 @@ export default class RenderManager {
    */
   mvPushMatrix() {
     let copy = create();
-    set(this.camera.uViewMat, copy);
-    this.modelViewMatrixStack.push(copy);
+    set(this.uModelMat, copy);
+    let m = create();
+    set(this.camera.uViewMat, m);
+    this.modelViewMatrixStack.push([copy,m]);
+    console.log(this.modelViewMatrixStack);
   }
 
   /**
@@ -324,7 +339,7 @@ export default class RenderManager {
     if (this.modelViewMatrixStack.length == 0) {
       throw 'Invalid popMatrix!';
     }
-    this.camera.uViewMat = this.modelViewMatrixStack.pop();
+    [this.uModelMat, this.camera.uViewMat] = this.modelViewMatrixStack.pop();
   }
 
   /**

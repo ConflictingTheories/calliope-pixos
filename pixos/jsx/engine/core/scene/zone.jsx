@@ -237,7 +237,7 @@ export default class Zone extends Loadable {
       // load lights
       try {
         this.lights = zoneJson.lights ?? [];
-        this.lights.forEach((light) => this.engine.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.enabled));
+        this.lights.forEach((light) => this.engine.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.direction, light.density, light.scatteringCoefficients, light.enabled));
       } catch (e) {
         console.error({ msg: 'error loading lights', e });
       }

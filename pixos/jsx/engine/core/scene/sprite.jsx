@@ -297,27 +297,27 @@ export default class Sprite extends Loadable {
     
     // position
     translate(
-      this.engine.camera.uViewMat,
-      this.engine.camera.uViewMat,
+      this.engine.renderManager.uModelMat,
+      this.engine.renderManager.uModelMat,
       (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
     );
-    translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
+    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
       this.engine.renderManager.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.camera.cameraAngle / 180), 1));
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [
+      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
         0.5 * this.engine.camera.cameraVector.x,
         0.5 * this.engine.camera.cameraVector.y,
         0,
       ]);
       rotate(
-        this.engine.camera.uViewMat,
-        this.engine.camera.uViewMat,
+        this.engine.renderManager.uModelMat,
+        this.engine.renderManager.uModelMat,
         degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
         [0, 0, -1]
       );
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, [
+      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
         -0.5 * this.engine.camera.cameraVector.x,
         -0.5 * this.engine.camera.cameraVector.y,
         0,
@@ -343,14 +343,14 @@ export default class Sprite extends Loadable {
 
       // Undo rotation so that character plane is normal to LOS
       translate(
-        this.engine.camera.uViewMat,
-        this.engine.camera.uViewMat,
+        this.engine.renderManager.uModelMat,
+        this.engine.renderManager.uModelMat,
         (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
       );
-      translate(this.engine.camera.uViewMat, this.engine.camera.uViewMat, this.pos.toArray());
+      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
       rotate(
-        this.engine.camera.uViewMat,
-        this.engine.camera.uViewMat,
+        this.engine.renderManager.uModelMat,
+        this.engine.renderManager.uModelMat,
         degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
         [0, 0, -1]
       );
