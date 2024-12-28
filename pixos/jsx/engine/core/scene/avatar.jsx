@@ -48,7 +48,7 @@ export default class Avatar extends Sprite {
         this.addAction(ret).then(() => {});
       }
     }
-    if (this.bindCamera) set(this.pos, this.engine.camera.cameraPosition);
+    if (this.bindCamera) set(this.pos, this.engine.renderManager.camera.cameraPosition);
   }
   /**
    * open menu
@@ -68,8 +68,8 @@ export default class Avatar extends Sprite {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
     let touchmap = this.engine.gamepad.checkInput();
-    let from = this.engine.camera.cameraVector;
-    let to = this.engine.camera.cameraVector;
+    let from = this.engine.renderManager.camera.cameraVector;
+    let to = this.engine.renderManager.camera.cameraVector;
     // Keyboard
     switch (key) {
       // Bind Camera
@@ -82,9 +82,9 @@ export default class Avatar extends Sprite {
         break;
       // adjust Camera
       case 'x':
-        from = this.engine.camera.cameraVector;
-        console.log(this.engine.camera);
-        to = this.engine.camera.cameraVector.add(new Vector(...[0, 0, 1]));
+        from = this.engine.renderManager.camera.cameraVector;
+        console.log(this.engine.renderManager.camera);
+        to = this.engine.renderManager.camera.cameraVector.add(new Vector(...[0, 0, 1]));
         to.z = to.z % 9 ?? 8; // locked to every 45 degrees
         if (to.z === 0 && from.z === 8) {
           from.z = 0;
@@ -101,8 +101,8 @@ export default class Avatar extends Sprite {
         break;
       // adjust Camera
       case 'z':
-        from = this.engine.camera.cameraVector;
-        to = this.engine.camera.cameraVector.sub(new Vector(...[0, 0, 1]));
+        from = this.engine.renderManager.camera.cameraVector;
+        to = this.engine.renderManager.camera.cameraVector.sub(new Vector(...[0, 0, 1]));
         to.z = to.z % 9; // lock to every 45 degrees
         if (to.z === 0 && from.z === 8) {
           from.z = 0;

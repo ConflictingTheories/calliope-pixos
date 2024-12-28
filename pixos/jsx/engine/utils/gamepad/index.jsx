@@ -257,7 +257,7 @@ export class GamePad {
             if (touches[id].leftClick) { // camera move - needs work - not aligned with camera
               let rotateSpeed = 0.01;
               let angleChange = [touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed + touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed - touches[id].y * rotateSpeed,];
-              this.engine.camera.changeAngle(angleChange);
+              this.engine.renderManager.camera.changeAngle(angleChange);
             }
           case 'mousedown':
             if (e.touches && e.touches[0]?.which) {

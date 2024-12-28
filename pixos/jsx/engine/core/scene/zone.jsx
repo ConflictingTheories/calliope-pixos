@@ -237,7 +237,7 @@ export default class Zone extends Loadable {
       // load lights
       try {
         this.lights = zoneJson.lights ?? [];
-        this.lights.forEach((light) => this.engine.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.direction, light.density, light.scatteringCoefficients, light.enabled));
+        this.lights.forEach((light) => this.engine.renderManager.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.direction, light.density, light.scatteringCoefficients, light.enabled));
       } catch (e) {
         console.error({ msg: 'error loading lights', e });
       }
@@ -298,7 +298,7 @@ export default class Zone extends Loadable {
    */
   runWhenDeleted() {
     // remove lights associated with zone
-    this.lights.forEach((light) => this.engine.lightManager.removeLight(light.id));
+    this.lights.forEach((light) => this.engine.renderManager.lightManager.removeLight(light.id));
   }
 
   /**
@@ -562,11 +562,11 @@ export default class Zone extends Loadable {
     this.spriteList?.sort((a, b) => a.pos.y - b.pos.y);
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.renderManager.mvPushMatrix();
-    this.engine.camera.setCamera();
+    this.engine.renderManager.camera.setCamera();
     // Draw tile terrain row by row (back to front) (Needs work -- NOT WORKING RIGHT YET)
     let k = 0;
     let z = 0;
-    switch (this.engine.camera.cameraDir) {
+    switch (this.engine.renderManager.camera.cameraDir) {
       case 'N':
       case 'NE':
       case 'NW':

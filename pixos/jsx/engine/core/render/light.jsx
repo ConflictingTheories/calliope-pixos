@@ -20,8 +20,9 @@ export default class LightManager {
    *
    * @param {GLEngine} engine
    */
-  constructor(engine) {
-    this.engine = engine;
+  constructor(renderManager) {
+    this.renderManager = renderManager;
+    this.engine = renderManager.engine;
     this.lights = [];
     // methods
     this.addLight = this.addLight.bind(this);
@@ -44,7 +45,7 @@ export default class LightManager {
    * @returns index
    */
   addLight(id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1,1,1], density = 1.0, scatteringCoefficients = [1,1,1], enabled = true) {
-    const { shaderProgram } = this.engine;
+    const { shaderProgram } = this.renderManager;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
     let light = new PointLight(this.engine, id, color, pos, attentuation, direction, density, scatteringCoefficients, enabled);
@@ -73,6 +74,9 @@ export default class LightManager {
         if (density) light.density = density;
         if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
         if (enabled) light.enabled = enabled;
+        if(pos !== light.pos){
+          console.log({msg:"Updating Light", id, pos, man: this.renderManager.lightManager});
+        }
       }
       return light;
     });
@@ -98,7 +102,7 @@ export default class LightManager {
 
   // Draw Lights to scene
   render() {
-    const { gl, shaderProgram } = this.engine;
+    const { shaderProgram } = this.renderManager;
     let lightUniforms = shaderProgram.uLights;
 
     if (!lightUniforms) return;
@@ -144,14 +148,13 @@ export class PointLight {
 
   // update light (ex. for flicker)
   tick() {
-    // for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
-
+    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
     this.frame++;
   }
 
   // draw light
   draw(lightUniforms) {
-    const { gl, renderManager, camera } = this.engine;
+    const { gl } = this.engine;
     gl.uniform1f(lightUniforms.enabled, this.enabled);
     gl.uniform3fv(lightUniforms.position, this.pos);
     gl.uniform3fv(lightUniforms.color, this.color);

@@ -95,7 +95,7 @@ export default class Sprite extends Loadable {
     }
     if(this.isLit){
       console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
     }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -119,6 +119,7 @@ export default class Sprite extends Loadable {
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.isLit) set(instanceData.isLit, this.isLit);
+    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
     if (instanceData.fixed) this.fixed = instanceData.fixed;
     if (instanceData.pos) set(instanceData.pos, this.pos);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
@@ -160,7 +161,7 @@ export default class Sprite extends Loadable {
 
     if(this.isLit){
       console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
     }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -233,7 +234,7 @@ export default class Sprite extends Loadable {
    * @returns
    */
   getTexCoords() {
-    let sequence = Direction.spriteSequence(this.facing, this.engine.camera.cameraDir);
+    let sequence = Direction.spriteSequence(this.facing, this.engine.renderManager.camera.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
     let length = frames.length;
     let t = frames[this.animFrame % length];
@@ -286,40 +287,38 @@ export default class Sprite extends Loadable {
   draw() {
     if (!this.loaded) return;
 
-    this.engine.renderManager.mvPushMatrix();
-    
     //update light position
     if(this.isLit){
      let pos =  this.pos.toArray()
-    //  pos[2] = -1;
-      this.engine.lightManager.updateLight(this.lightIndex, pos);
+      this.engine.renderManager.lightManager.updateLight(this.lightIndex, pos);
     }
     
+    this.engine.renderManager.mvPushMatrix();
     // position
     translate(
       this.engine.renderManager.uModelMat,
       this.engine.renderManager.uModelMat,
-      (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+      (this.drawOffset[this.engine.renderManager.camera.cameraDir] ?? this.drawOffset['N']).toArray()
     );
     translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.camera.cameraAngle / 180), 1));
+      this.engine.renderManager.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1));
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
-        0.5 * this.engine.camera.cameraVector.x,
-        0.5 * this.engine.camera.cameraVector.y,
+        0.5 * this.engine.renderManager.camera.cameraVector.x,
+        0.5 * this.engine.renderManager.camera.cameraVector.y,
         0,
       ]);
       rotate(
         this.engine.renderManager.uModelMat,
         this.engine.renderManager.uModelMat,
-        degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
+        degToRad(this.engine.renderManager.camera.cameraAngle * this.engine.renderManager.camera.cameraVector.z),
         [0, 0, -1]
       );
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
-        -0.5 * this.engine.camera.cameraVector.x,
-        -0.5 * this.engine.camera.cameraVector.y,
+        -0.5 * this.engine.renderManager.camera.cameraVector.x,
+        -0.5 * this.engine.renderManager.camera.cameraVector.y,
         0,
       ]);
     }
@@ -345,13 +344,13 @@ export default class Sprite extends Loadable {
       translate(
         this.engine.renderManager.uModelMat,
         this.engine.renderManager.uModelMat,
-        (this.drawOffset[this.engine.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+        (this.drawOffset[this.engine.renderManager.camera.cameraDir] ?? this.drawOffset['N']).toArray()
       );
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
       rotate(
         this.engine.renderManager.uModelMat,
         this.engine.renderManager.uModelMat,
-        degToRad(this.engine.camera.cameraAngle * this.engine.camera.cameraVector.z),
+        degToRad(this.engine.renderManager.camera.cameraAngle * this.engine.renderManager.camera.cameraVector.z),
         [0, 0, -1]
       );
 
