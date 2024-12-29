@@ -13,21 +13,19 @@
       "id": "avatar",
       "type": "characters/male",
       "pos": [8, 4, 0],
-      "facing": "Down",
-      "isLit": true
+      "facing": "Down"
     },
     {
       "id": "door",
       "type": "furniture/door",
       "pos": [2, 2, 0],
       "facing": "Down",
-      "zones": ["room"],
-      "isLit": true, "lightColor": [0.7,0.4,0.2]
+      "zones": ["room"]
     },
 
-    { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up" },
-    { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true, "lightColor": [0.7,0.4,0.2]},
-    { "id": "fireplace", "type": "effects/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true, "lightColor": [0.7,0.4,0.2]},
+    { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up", "isLit": true},
+    { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true},
+    { "id": "fireplace", "type": "effects/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true},
 
     { "id": "chest", "type": "objects/chests/wood", "pos": [8, 14, 0], "facing": "Down" },
     { "id": "chestmetal", "type": "objects/chests/metal", "pos": [9, 13, 0], "facing": "Right" },
@@ -35,6 +33,36 @@
     { "id": "chestblue", "type": "objects/chests/blue", "pos": [7, 13, 0], "facing": "Left" }
   ],
   "lights": [
+    {
+      "id": "spot-light-3",
+      "pos": [8, 13, 10],
+      "color": [1, 0.1, 0.8],
+      "density": 0.1,
+      "direction": [1.0, 1.0, 1.0],
+      "scatteringCoefficients": [0.5, 0.5, 0.5],
+      "attenuation": [0.0, 0.0, 0.0],
+      "enabled": true
+    },
+    {
+      "id": "fire-light",
+      "pos": [11, 2, 0],
+      "color": [1, 0.1, 0.1],
+      "density": 0.2,
+      "direction": [1.0, 1.0, 1.0],
+      "scatteringCoefficients": [0.5, 0.5, 0.5],
+      "attenuation": [0.01, 0.01, 0.01],
+      "enabled": true
+    },
+    {
+      "id": "fire-light3",
+      "pos": [11, 2, 0],
+      "color": [1, 1, 1],
+      "density": 0.3,
+      "direction": [1.0, 1.0, 1.0],
+      "scatteringCoefficients": [0.5, 0.5, 0.5],
+      "attenuation": [0.01, 0.01, 0.01],
+      "enabled": true
+    }
   ],
   "scenes": [
     {

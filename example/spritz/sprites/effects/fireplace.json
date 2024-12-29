@@ -4,6 +4,10 @@
   "sheetSize": [256, 256],
   "tileSize": [48, 32],
   "fixed": true,
+  "isLit": true,
+  "lightColor": [0.7,0.5,0.001],
+  "attenuation": [0.01,0.01,0.01],
+  "density": 0.1,
   "frames": {
     "N": [
       [0, 144],

@@ -59,10 +59,12 @@ export default class ModelObject extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) set(instanceData.pos, this.pos);
-    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
-    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
-    if (instanceData.rotation) set(instanceData.rotation, this.rotation);
+    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.isLit) this.isLit = instanceData.isLit;
+    if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
+    if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
+    if (instanceData.direction) this.direction = instanceData.direction;
+    if (instanceData.rotation) this.rotation = instanceData.rotation;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
@@ -130,8 +132,14 @@ export default class ModelObject extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) set(instanceData.pos, this.pos);
-    if (instanceData.rotation) set(instanceData.rotation, this.rotation);
+    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.isLit) this.isLit = instanceData.isLit;
+    if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
+    if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
+    if (instanceData.density) this.density = instanceData.density;
+    if (instanceData.scatteringCoefficients) this.scatteringCoefficients = instanceData.scatteringCoefficients;
+    if (instanceData.direction) this.direction = instanceData.direction;
+    if (instanceData.rotation) this.rotation = instanceData.rotation;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
@@ -180,9 +188,9 @@ export default class ModelObject extends Loadable {
 
     // lighting?
     if (this.isLit) {
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation, this.direction, this.density, this.scatteringCoefficients, true);
     }
-    
+
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }

@@ -48,6 +48,7 @@ export default class Sprite extends Loadable {
     this.isLit = true;
     this.lightIndex = null;
     this.lightColor = [0.1,1.0,0.1];
+    this.density = 1;
     this.voice = new SpeechSynthesisUtterance();
   }
 
@@ -66,9 +67,15 @@ export default class Sprite extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) set(instanceData.pos, this.pos);
-    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
-    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
+    if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.isLit) this.isLit = instanceData.isLit;
+    if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
+    if (instanceData.direction) this.direction = instanceData.direction;
+    if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
+    if (instanceData.density) this.density = instanceData.density;
+    if (instanceData.scatteringCoefficients) this.scatteringCoefficients = instanceData.scatteringCoefficients;
+    if (instanceData.rotation) this.rotation = instanceData.rotation;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
@@ -94,10 +101,10 @@ export default class Sprite extends Loadable {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
-    // if(this.isLit){
-      // console.log({msg:"Adding Light Loaded", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
-    // }
+    if(this.isLit){
+      console.log({msg:"Adding Light Loaded", id:this.id, pos:this.pos.toArray()});
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation ?? [0.01,0.01,0.01], this.direction, this.density, this.scatteringCoefficients, true);
+    }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
@@ -121,10 +128,14 @@ export default class Sprite extends Loadable {
     this.update(instanceData);
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
-    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
+    if (instanceData.isLit) this.isLit = instanceData.isLit;
+    if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
+    if (instanceData.density) this.density = instanceData.density;
+    if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
+    if (instanceData.direction) this.direction = instanceData.direction;
+    if (instanceData.scatteringCoefficients) this.scatteringCoefficients = instanceData.scatteringCoefficients;
     if (instanceData.fixed) this.fixed = instanceData.fixed;
-    if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.pos) this.pos = instanceData.pos;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
@@ -162,10 +173,11 @@ export default class Sprite extends Loadable {
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 
-    // if(this.isLit){
+    // lighting
+    if(this.isLit){
       console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
-    // }
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation ?? [0.01,0.01,0.01], this.direction, this.density, this.scatteringCoefficients, true);
+    }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }

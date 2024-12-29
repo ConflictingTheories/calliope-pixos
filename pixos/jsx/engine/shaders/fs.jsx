@@ -41,7 +41,7 @@ export default function fs() {
 
   varying vec3 vLighting;
 
-  uniform PointLight uLights[16];
+  uniform PointLight uLights[32];
   uniform sampler2D uDepthMap;
 
   uniform float useSampler;
@@ -76,7 +76,7 @@ export default function fs() {
   vec3 getReflectedLightColor(vec3 color) {
     vec3 reflectedLightColor = vec3(0.0);
   
-    for(int i = 0; i < 16; i++) {
+    for(int i = 0; i < 32; i++) {
       if(uLights[i].enabled <= 0.5) continue;
   
       vec3 specular_color;
@@ -164,7 +164,14 @@ export default function fs() {
       if(uLights[i].enabled <= 0.5) continue;
         
       // Calculate the distance from the fragment to the light
-      float distance = length(uLights[i].position - vFragPos);
+      float distance = length(uLights[i].position - vec3(vWorldVertex));
+
+      // if(length(uLights[i].direction) > 0.0){
+      //   // Calculate the angle between the light direction and the fragment
+      //   float cos_angle = dot(normalize(uLights[i].direction), normalize(vFragPos - uLights[i].position));
+      //   // If the fragment is not within the light cone, skip this light
+      //   if(cos_angle <= 0.0) continue;
+      // }
 
       // Calculate the scattering effect
       float scattering = exp(-uLights[i].density * distance);

@@ -20,6 +20,7 @@ export default class DynamicSprite extends Sprite {
   constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
+    this.engine = engine;
     this.json = json;
     this.zip = zip;
     // store json config
@@ -47,6 +48,9 @@ export default class DynamicSprite extends Sprite {
     this.sheetSize = this.json.sheetSize;
     this.tileSize = this.json.tileSize;
     this.isLit = this.json.isLit;
+    this.direction = this.json.direction;
+    this.attenuation = this.json.attenuation;
+    this.density = this.json.density;
     this.lightColor = this.json.lightColor;
     this.state = this.json.state ?? 'intro';
     // Frames

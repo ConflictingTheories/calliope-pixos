@@ -238,6 +238,7 @@ export default class Zone extends Loadable {
       try {
         this.lights = zoneJson.lights ?? [];
         this.lights.forEach((light) => this.engine.renderManager.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.direction, light.density, light.scatteringCoefficients, light.enabled));
+        console.log({ msg: 'lights....', lm: this.engine.renderManager.lightManager });
       } catch (e) {
         console.error({ msg: 'error loading lights', e });
       }
@@ -245,6 +246,7 @@ export default class Zone extends Loadable {
       // Load tileset and create level geometry & trigger updates
       try {
         this.tileset = tileset;
+        console.log({ msg: 'tileset....', tileset: this.tileset });
         this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
       } catch (e) {
         console.error({ msg: 'error loading tileset', e });

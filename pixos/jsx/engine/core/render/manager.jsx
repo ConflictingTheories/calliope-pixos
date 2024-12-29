@@ -170,7 +170,7 @@ export default class RenderManager {
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
 
     // light uniforms
-    shaderProgram.maxLights = 15;
+    shaderProgram.maxLights = 32;
     shaderProgram.uLights = [];
     for (let i = 0; i < shaderProgram.maxLights; i++) {
       shaderProgram.uLights[i] = {
