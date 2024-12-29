@@ -46,6 +46,8 @@ export default class DynamicSprite extends Sprite {
     this.portraitSrc = this.json.portraitSrc;
     this.sheetSize = this.json.sheetSize;
     this.tileSize = this.json.tileSize;
+    this.isLit = this.json.isLit;
+    this.lightColor = this.json.lightColor;
     this.state = this.json.state ?? 'intro';
     // Frames
     this.frames = this.json.frames;

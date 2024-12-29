@@ -41,7 +41,7 @@ export default function fs() {
 
   varying vec3 vLighting;
 
-  uniform PointLight uLights[4];
+  uniform PointLight uLights[16];
   uniform sampler2D uDepthMap;
 
   uniform float useSampler;
@@ -76,7 +76,7 @@ export default function fs() {
   vec3 getReflectedLightColor(vec3 color) {
     vec3 reflectedLightColor = vec3(0.0);
   
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 16; i++) {
       if(uLights[i].enabled <= 0.5) continue;
   
       vec3 specular_color;
@@ -160,7 +160,7 @@ export default function fs() {
   vec4 volumetricCalculation(vec4 color4) {
     vec3 finalColor;
 
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 16; i++) {
       if(uLights[i].enabled <= 0.5) continue;
         
       // Calculate the distance from the fragment to the light

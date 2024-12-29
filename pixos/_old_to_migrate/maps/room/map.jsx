@@ -43,7 +43,7 @@ export default {
     { id: 'tree', type: 'furniture/tree', fixed: true, pos: new Vector(...[8, 13, 0]), facing: Direction.Up },
     // Furniture / Wall Decorations
     { id: 'fireplace', type: 'furniture/fireplace', fixed: true, pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
-    { id: 'fireplace', type: 'effects/fireplace', fixed: true, pos: new Vector(...[11, 1, 0]), facing: Direction.Up },
+    { id: 'fireplace', type: 'effects/fireplace', fixed: true, pos: new Vector(...[11, 1, 0]), facing: Direction.Up, isLit:true },
     // NPCs
     { id: 'darkness', type: 'npc/darkness', pos: new Vector(...[6, 5, 0]), facing: Direction.Down },
     { id: 'air', type: 'npc/air-knight', pos: new Vector(...[8, 2, 0]), facing: Direction.Down },

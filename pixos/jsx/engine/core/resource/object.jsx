@@ -38,6 +38,9 @@ export default class ModelObject extends Loadable {
     this.actionList = [];
     this.speech = {};
     this.portrait = null;
+    this.isLit = true;
+    this.lightColor = [1.0, 1.0, 1.0];
+    this.lightIndex = null;
     this.onLoadActions = new ActionQueue();
     this.inventory = [];
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
@@ -57,6 +60,8 @@ export default class ModelObject extends Loadable {
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) set(instanceData.pos, this.pos);
+    if (instanceData.isLit) set(instanceData.isLit, this.isLit);
+    if (instanceData.lightColor) set(instanceData.lightColor, this.lightColor);
     if (instanceData.rotation) set(instanceData.rotation, this.rotation);
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
@@ -102,6 +107,11 @@ export default class ModelObject extends Loadable {
     if (this.portraitSrc) {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    }
+
+    // lighting?
+    if (this.isLit) {
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
     }
 
     //
@@ -168,6 +178,11 @@ export default class ModelObject extends Loadable {
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 
+    // lighting?
+    if (this.isLit) {
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
+    }
+    
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }

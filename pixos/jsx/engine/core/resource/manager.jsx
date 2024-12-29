@@ -41,11 +41,11 @@ export default class ResourceManager {
       // --> models
       // --> fonts
       // --> possibly shaders....
-  
+
       // ASSETS
       this.textures = [];
       this.speeches = [];
-  
+
       this.loadSpeech = this.loadSpeech.bind(this);
       this.loadTexture = this.loadTexture.bind(this);
       this.loadTextureFromZip = this.loadTextureFromZip.bind(this);

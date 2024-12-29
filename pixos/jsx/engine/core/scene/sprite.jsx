@@ -45,8 +45,8 @@ export default class Sprite extends Loadable {
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
-    this.isLit = false;
-    this.lightIndex = -1;
+    this.isLit = true;
+    this.lightIndex = null;
     this.lightColor = [0.1,1.0,0.1];
     this.voice = new SpeechSynthesisUtterance();
   }
@@ -62,6 +62,7 @@ export default class Sprite extends Loadable {
       console.error('Invalid sprite definition');
       return;
     }
+    console.log({msg: 'sprite load', instanceData});
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
@@ -93,10 +94,10 @@ export default class Sprite extends Loadable {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
-    if(this.isLit){
-      console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
+    // if(this.isLit){
+      // console.log({msg:"Adding Light Loaded", id:this.id, pos:this.pos.toArray()});
       this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
-    }
+    // }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }
@@ -113,6 +114,8 @@ export default class Sprite extends Loadable {
       console.error('Invalid sprite definition');
       return;
     }
+
+    console.log({msg: 'sprite load from zip', instanceData});
 
     // Zone Information
     this.update(instanceData);
@@ -159,10 +162,10 @@ export default class Sprite extends Loadable {
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
 
-    if(this.isLit){
+    // if(this.isLit){
       console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
       this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
-    }
+    // }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
   }

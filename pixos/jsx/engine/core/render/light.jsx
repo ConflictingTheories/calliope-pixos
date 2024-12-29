@@ -20,7 +20,7 @@ export default class LightManager {
    * @param {GLEngine} engine
    */
   constructor() {
-    this.lights = [];
+    this.lights = {};
     // methods
     this.addLight = this.addLight.bind(this);
     this.removeLight = this.removeLight.bind(this);
@@ -70,7 +70,7 @@ export default class LightManager {
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
     let light = new PointLight(this.renderManager.engine, id, color, pos, attentuation, direction, density, scatteringCoefficients, enabled);
-    this.lights.push(light);
+    this.lights[id] = light;
     return id;
   }
 
@@ -86,21 +86,16 @@ export default class LightManager {
    * @param {*} enabled
    */
   updateLight(id, pos, color, attentuation, direction, density, scatteringCoefficients, enabled) {
-    this.lights = this.lights.map((light) => {
-      if (light.id === id) {
-        if (pos) light.pos = pos;
-        if (color) light.color = color;
-        if (attentuation) light.attenuation = attentuation;
-        if (direction) light.direction = direction;
-        if (density) light.density = density;
-        if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
-        if (enabled) light.enabled = enabled;
-        if (pos !== light.pos) {
-          console.log({ msg: 'Updating Light', id, pos, man: LightManager.instance });
-        }
-      }
-      return light;
-    });
+    let light = this.lights[id];
+    if (!light) return;
+    if (pos) light.pos = pos;
+    if (color) light.color = color;
+    if (attentuation) light.attenuation = attentuation;
+    if (direction) light.direction = direction;
+    if (density) light.density = density;
+    if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
+    if (enabled) light.enabled = enabled;
+    this.lights[id] = light;
   }
 
   /**
@@ -108,7 +103,7 @@ export default class LightManager {
    * @param {*} id
    */
   removeLight(id) {
-    this.lights = this.lights.filter((light) => light.id !== id);
+    delete this.lights[id];
   }
 
   /**
@@ -116,8 +111,9 @@ export default class LightManager {
    * @returns
    */
   tick() {
-    for (let i = 0; i < this.lights.length; i++) {
-      this.lights[i].tick();
+    let keys = Object.keys(this.lights);
+    for (let i = 0; i < keys.length; i++) {
+      this.lights[keys[i]].tick();
     }
   }
 
@@ -129,10 +125,12 @@ export default class LightManager {
     if (!lightUniforms) return;
 
     for (let i = 0; i < shaderProgram.maxLights; i++) {
-      if (!this.lights[i]) continue;
-      if (!this.lights[i].enabled) continue;
+      let keys = Object.keys(this.lights);
 
-      this.lights[i].draw(lightUniforms[i]);
+      if (!this.lights[keys[i]]) continue;
+      if (!this.lights[keys[i]].enabled) continue;
+
+      this.lights[keys[i]].draw(lightUniforms[i]);
     }
   }
 
@@ -169,7 +167,7 @@ export class PointLight {
 
   // update light (ex. for flicker)
   tick() {
-    for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
+    // for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
     this.frame++;
   }
 
