@@ -61,16 +61,13 @@ export class GamePad {
 
   /**
    *
-   * @param {*} ctx
    */
-  init(ctx) {
-    this.ctx = ctx;
-
+  init() {
     // Font
-    this.fontSize = ctx.canvas.width / 12;
+    this.fontSize = this.engine.gp.canvas.width / 12;
 
     // Joystick Radius
-    this.radius = ctx.canvas.width / 12;
+    this.radius = this.engine.gp.canvas.width / 12;
 
     // Button placement
     this.button_offset = { x: this.radius * 2.5, y: 105 };
@@ -127,7 +124,7 @@ export class GamePad {
 
     // setup controller
     this.buttons_layout = buttons_layout;
-    this.controller = new Controller(ctx, this.button_offset, this.touches, this.start, this.select, this.colours, this);
+    this.controller = new Controller(this.engine.gp, this.button_offset, this.touches, this.start, this.select, this.colours, this);
     this.initOptions();
   }
 
@@ -155,19 +152,19 @@ export class GamePad {
 
   // Handle resize (TODO - needs work)
   resize() {
-    this.width = this.ctx.canvas.width;
-    this.height = this.ctx.canvas.height;
+    this.width = this.engine.gp.canvas.width;
+    this.height = this.engine.gp.canvas.height;
     this.controller.init();
   }
 
   // setup canvas
   loadCanvas() {
-    let { ctx, controller, width, height } = this;
-    ctx.fillStyle = 'rgba(70,70,70,0.5)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'minecraftia 14px';
-    ctx.fillText('loading', width / 2, height / 2);
+    let { controller, width, height } = this;
+    this.engine.gp.fillStyle = 'rgba(70,70,70,0.5)';
+    this.engine.gp.textAlign = 'center';
+    this.engine.gp.textBaseline = 'middle';
+    this.engine.gp.font = 'minecraftia 14px';
+    this.engine.gp.fillText('loading', width / 2, height / 2);
     controller.stick.draw();
     controller.buttons.draw();
     window.addEventListener('resize', () => this.resize());
@@ -205,14 +202,14 @@ export class GamePad {
 
   // Event Listener
   listen(e) {
-    let { ctx, touches, controller, buttons_layout } = this;
+    let { touches, controller, buttons_layout } = this;
     if (e.type) {
       var type = e.type;
       if (e.type.indexOf('mouse') != -1) {
         e.identifier = 'desktop';
         e = { touches: [e] };
       }
-      let offset = this.getPosition(ctx.canvas);
+      let offset = this.getPosition(this.engine.gp.canvas);
       // run against attached listeners
       this.listeners.map((l) => {
         if (l[type]) {
@@ -425,8 +422,7 @@ export class GamePad {
 
   // Draw
   render() {
-    let { ctx } = this;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    this.engine.gp.clearRect(0, 0, this.engine.gp.canvas.width, this.engine.gp.canvas.height);
     if (this.showDebug) {
       this.debug();
     }
@@ -439,37 +435,37 @@ export class GamePad {
 
   // debug information
   debug() {
-    let { ctx, map, touches } = this;
+    let { gp, map, touches } = this;
     this.dy = 30;
-    ctx.fillStyle = 'rgba(70,70,70,0.5)';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'minecraftia 20px';
-    ctx.fillText('debug', 10, this.dy);
-    ctx.font = 'minecraftia 14px';
+    this.engine.gp.fillStyle = 'rgba(70,70,70,0.5)';
+    this.engine.gp.textAlign = 'left';
+    this.engine.gp.textBaseline = 'middle';
+    this.engine.gp.font = 'minecraftia 20px';
+    this.engine.gp.fillText('debug', 10, this.dy);
+    this.engine.gp.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in touches) {
       this.dy += 10;
       let text = prop + ' : ' + JSON.stringify(touches[prop]).slice(1, -1);
-      ctx.fillText(text, 10, this.dy);
+      this.engine.gp.fillText(text, 10, this.dy);
     }
   }
 
   // map trace output
   trace() {
-    let { ctx, map } = this;
+    let { map } = this;
     this.dy = 30;
-    ctx.fillStyle = 'rgba(70,70,70,0.5)';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'minecraftia 20px';
-    ctx.fillText('trace', this.width - 10, this.dy);
-    ctx.font = 'minecraftia 14px';
+    this.engine.gp.fillStyle = 'rgba(70,70,70,0.5)';
+    this.engine.gp.textAlign = 'right';
+    this.engine.gp.textBaseline = 'middle';
+    this.engine.gp.font = 'minecraftia 20px';
+    this.engine.gp.fillText('trace', this.width - 10, this.dy);
+    this.engine.gp.font = 'minecraftia 14px';
     this.dy += 5;
     for (var prop in map) {
       this.dy += 10;
       let text = prop + ' : ' + map[prop];
-      ctx.fillText(text, this.width - 10, this.dy);
+      this.engine.gp.fillText(text, this.width - 10, this.dy);
     }
   }
 
@@ -494,7 +490,6 @@ export class GamePad {
   // reenable once done
   disableScroll() {
     document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
-    // document.body.addEventListener("touchstart", this.preventDefault, { passive: false });
   }
 
   // stop event

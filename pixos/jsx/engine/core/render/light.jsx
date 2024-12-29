@@ -12,17 +12,14 @@
 \*                                                 */
 
 import GLEngine from '../index.jsx';
-import { rotate, translate } from '@Engine/utils/math/matrix4.jsx';
-import { degToRad } from '../../utils/math/vector.jsx';
+import RenderManager from './manager.jsx';
 
 export default class LightManager {
   /** Light Manager for Scene
    *
    * @param {GLEngine} engine
    */
-  constructor(renderManager) {
-    this.renderManager = renderManager;
-    this.engine = renderManager.engine;
+  constructor() {
     this.lights = [];
     // methods
     this.addLight = this.addLight.bind(this);
@@ -30,6 +27,30 @@ export default class LightManager {
     this.tick = this.tick.bind(this);
     this.render = this.render.bind(this);
     this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
+  }
+
+  /**
+   * Get the instance of the Camera Manager
+   * @returns {CameraManager} The Camera Manager instance
+   */
+  static getInstance() {
+    if (!LightManager.instance) {
+      LightManager.instance = new LightManager();
+    }
+    return LightManager.instance;
+  }
+
+  /**
+   * Create a new camera instance
+   * @param {RenderManager} renderManager The rendering manager
+   * @returns {LightManager} The camera instance
+   */
+  createLightManager(renderManager) {
+    if (!this.renderManager) {
+      this.renderManager = renderManager;
+      this.engine = renderManager.engine;
+    }
+    return LightManager.instance;
   }
 
   /**
@@ -42,15 +63,15 @@ export default class LightManager {
    * @param {*} density
    * @param {*} scatteringCoefficients
    * @param {*} enabled
-   * @returns index
+   * @returns id
    */
-  addLight(id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1,1,1], density = 1.0, scatteringCoefficients = [1,1,1], enabled = true) {
+  addLight(id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1, 1, 1], density = 1.0, scatteringCoefficients = [1, 1, 1], enabled = true) {
     const { shaderProgram } = this.renderManager;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
-    let light = new PointLight(this.engine, id, color, pos, attentuation, direction, density, scatteringCoefficients, enabled);
+    let light = new PointLight(this.renderManager.engine, id, color, pos, attentuation, direction, density, scatteringCoefficients, enabled);
     this.lights.push(light);
-    return index;
+    return id;
   }
 
   /**
@@ -74,8 +95,8 @@ export default class LightManager {
         if (density) light.density = density;
         if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
         if (enabled) light.enabled = enabled;
-        if(pos !== light.pos){
-          console.log({msg:"Updating Light", id, pos, man: this.renderManager.lightManager});
+        if (pos !== light.pos) {
+          console.log({ msg: 'Updating Light', id, pos, man: LightManager.instance });
         }
       }
       return light;
@@ -106,7 +127,7 @@ export default class LightManager {
     let lightUniforms = shaderProgram.uLights;
 
     if (!lightUniforms) return;
-    
+
     for (let i = 0; i < shaderProgram.maxLights; i++) {
       if (!this.lights[i]) continue;
       if (!this.lights[i].enabled) continue;

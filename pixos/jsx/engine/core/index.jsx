@@ -50,13 +50,9 @@ export default class GLEngine {
 
     // RESOURCES
     this.resourceManager = new ResourceManager(this);
-    this.objLoader = this.resourceManager.objLoader;
-    this.audioLoader = this.resourceManager.audioLoader;
 
     // RENDERING (Graphics, Lights, Camera)
     this.renderManager = new RenderManager(this);
-    this.lightManager = this.renderManager.lightManager;
-    this.camera = this.renderManager.camera;
 
     //HUD
     this.hud = new Hud(this);
@@ -120,13 +116,13 @@ export default class GLEngine {
     this.keyboard.init();
 
     // initialize hud
-    this.hud.init(ctx);
+    this.hud.init();
 
     // initialize render manager
-    this.renderManager.init(gl);
+    this.renderManager.init();
 
     // Configure Gamepad & touch
-    this.gamepad.init(gp);
+    this.gamepad.init();
     this.touch = this.gamepad.listen.bind(this.gamepad);
 
     // Initialize Spritz
@@ -147,7 +143,6 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
 
     // core render loop
-    // this.lightManager.render();
     this.gamepad.render();
     this.spritz.render(this, new Date().getTime());
 

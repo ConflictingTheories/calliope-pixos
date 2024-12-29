@@ -15,19 +15,19 @@ import { Vector, negate, degToRad } from '@Engine/utils/math/vector.jsx';
 import RenderManager from './manager.jsx';
 import { subtractVectors } from '../../utils/math/matrix4.jsx';
 
-export default class Camera {
+export class Camera {
   /**
    *
    * @param {RenderManager} renderingManager
    */
   constructor(renderingManager) {
     // add support -- todo - move into utils
-    Number.prototype.clamp = function(min, max) {
-      return (this < min ? min : (this > max ? max : this));
+    Number.prototype.clamp = function (min, max) {
+      return this < min ? min : this > max ? max : this;
     };
 
     this.renderingManager = renderingManager;
-    this.uViewMat = create()
+    this.uViewMat = create();
     this.fov = 45;
     this.thetaLimits = new Vector(...[1.5 * Math.PI, 1.8 * Math.PI, 0]);
     this.cameraAngle = 45;
@@ -81,7 +81,7 @@ export default class Camera {
 
     // calculate new view matrix
     const zAxis = new Vector(...normalize(subtractVectors(pos, target)));
-    const xAxis = (new Vector(...up)).cross(zAxis);
+    const xAxis = new Vector(...up).cross(zAxis);
     const yAxis = zAxis.cross(xAxis);
     const newViewMat = [
       ...[xAxis.x, xAxis.y, xAxis.z, 0],
@@ -148,5 +148,35 @@ export default class Camera {
    */
   tiltCCW(radians = Math.PI / 4) {
     this.cameraVector.z += Math.sin(radians);
+  }
+}
+
+// Singleton Factory for Camera Manager
+export default class CameraManager {
+  constructor() {
+    this.camera = null;
+  }
+
+  /**
+   * Get the instance of the Camera Manager
+   * @returns {CameraManager} The Camera Manager instance
+   */
+  static getInstance() {
+    if (!CameraManager.instance) {
+      CameraManager.instance = new CameraManager();
+    }
+    return CameraManager.instance;
+  }
+
+  /**
+   * Create a new camera instance
+   * @param {RenderManager} renderingManager The rendering manager
+   * @returns {Camera} The camera instance
+   */
+  createCamera(renderingManager) {
+    if (!this.camera) {
+      this.camera = new Camera(renderingManager);
+    }
+    return this.camera;
   }
 }

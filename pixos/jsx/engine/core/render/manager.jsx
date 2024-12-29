@@ -18,7 +18,7 @@ import { create, create3, normalFromMat4, rotate, translate, perspective, set } 
 import { Vector, negate, degToRad } from '../../utils/math/vector.jsx';
 import { OBJ } from '../../utils/obj/index.js';
 
-import Camera from './camera.jsx';
+import CameraManager from './camera.jsx';
 import LightManager from './light.jsx';
 import GLEngine from '../index.jsx';
 
@@ -28,49 +28,50 @@ export default class RenderManager {
    * @param {GLEngine} engine
    */
   constructor(engine) {
-    this.engine = engine;
-    this.fullscreen = engine.fullscreen;
+    if (!RenderManager._instance) {
+      this.engine = engine;
+      this.fullscreen = engine.fullscreen;
+      // Matrices
+      this.uProjMat = create();
+      this.uModelMat = create();
+      this.normalMat = create3();
+      this.modelViewMatrixStack = [];
 
-    // Matrices
-    this.uProjMat = create();
-    this.uModelMat = create();
-    this.normalMat = create3();
-    this.modelViewMatrixStack = [];
+      // Properties
+      this.scale = new Vector(1, 1, 1);
+      this.initializedWebGl = false;
 
-    // Properties
-    this.scale = new Vector(1, 1, 1);
-    this.initializedWebGl = false;
+      // Effects
+      this.effects = [];
 
-    // Effects
-    this.effects = [];
+      // Transitions
+      this.isTransitioning = false;
+      this.transition = null;
+      this.transitionParams = {};
+      this.transitionTexture = null;
+      this.transitionDuration = 0;
+      this.transitionTime = new Date().getMilliseconds();
 
-    // Transitions
-    this.isTransitioning = false;
-    this.transition = null;
-    this.transitionParams = {};
-    this.transitionTexture = null;
-    this.transitionDuration = 0;
-    this.transitionTime = new Date().getMilliseconds();
+      // Camera
+      this.camera = CameraManager.getInstance().createCamera(this);
 
-    // Camera
-    this.camera = new Camera(this);
+      // Lights
+      this.lightManager = LightManager.getInstance().createLightManager(this);
 
-    // LIGHTS
-    this.lightManager = new LightManager(this);
-
-    // Methods
-    this.initShaderProgram = this.initShaderProgram.bind(this);
-    this.initShaderEffects = this.initShaderEffects.bind(this);
-    this.activateShaderProgram = this.activateShaderProgram.bind(this);
-    this.activateShaderEffectProgram = this.activateShaderEffectProgram.bind(this);
+      // Methods
+      this.initShaderProgram = this.initShaderProgram.bind(this);
+      this.initShaderEffects = this.initShaderEffects.bind(this);
+      this.activateShaderProgram = this.activateShaderProgram.bind(this);
+      this.activateShaderEffectProgram = this.activateShaderEffectProgram.bind(this);
+    }
+    return RenderManager._instance;
   }
 
   /**
    *
    */
-  init(gl) {
-    this.gl = gl;
-    const { spritz } = this.engine;
+  init() {
+    const { spritz, gl } = this.engine;
 
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
@@ -80,7 +81,7 @@ export default class RenderManager {
     gl.enable(gl.BLEND);
 
     // Initialize Shader Programs
-    this.initShaderProgram(gl, spritz.shaders);
+    this.initShaderProgram(spritz.shaders);
 
     // Initialize Effects
     if (spritz.effects) {
@@ -91,19 +92,19 @@ export default class RenderManager {
     }
 
     // Initialize Project Matrix
-    this.initProjection(gl);
+    this.initProjection();
 
     this.initializedWebGl = true;
   }
 
   /**
    * Load and Compile Shader Source
-   * @param {*} gl
    * @param {*} type
    * @param {*} source
    * @returns
    */
-  loadShader(gl, type, source) {
+  loadShader(type, source) {
+    const { gl } = this.engine;
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -118,14 +119,14 @@ export default class RenderManager {
 
   /**
    * Initialize Shader Program
-   * @param {*} gl
    * @param {*} param1
    * @returns
    */
-  initShaderProgram = (gl, { vs: vsSource, fs: fsSource }) => {
+  initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
+    const { gl } = this.engine;
     const self = this;
-    const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // generate shader
     let shaderProgram = gl.createProgram();
@@ -163,7 +164,6 @@ export default class RenderManager {
     shaderProgram.diffuseMapUniform = gl.getUniformLocation(shaderProgram, 'uDiffuseMap');
 
     shaderProgram.cameraPosition = gl.getUniformLocation(shaderProgram, `uCameraPosition`);
-    
 
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
@@ -189,7 +189,7 @@ export default class RenderManager {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
-      
+
       // normal
       self.normalMat = create3();
       normalFromMat4(self.normalMat, self.uModelMat);
@@ -197,7 +197,7 @@ export default class RenderManager {
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
-      
+
       // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);
 
@@ -237,7 +237,8 @@ export default class RenderManager {
    * @returns
    */
   activateShaderProgram = () => {
-    this.gl.useProgram(this.shaderProgram);
+    const { gl } = this.engine;
+    gl.useProgram(this.shaderProgram);
   };
 
   /**
@@ -246,19 +247,20 @@ export default class RenderManager {
    * @returns
    */
   activateShaderEffectProgram = (id) => {
-    this.gl.useProgram(this.effects[id]);
+    const { gl } = this.engine;
+    gl.useProgram(this.effects[id]);
   };
 
   /**
    * Initialize Shader Effect (blur, depth of field, etc)
-   * @param {*} gl
    * @param {*} param1
    * @returns
    */
-  initShaderEffects = (gl, { vs: vsSource, fs: fsSource, id: id, init: init }) => {
+  initShaderEffects = ({ vs: vsSource, fs: fsSource, id: id, init: init }) => {
+    const { gl } = this.engine;
     const self = this;
-    const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // generate shader
     let effectProgram = gl.createProgram();
@@ -276,9 +278,9 @@ export default class RenderManager {
 
   /**
    * Set FOV and Perspective
-   * @param {*} gl
    */
-  initProjection(gl) {
+  initProjection() {
+    const { gl } = this.engine;
     const fieldOfView = degToRad(this.camera.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
@@ -292,10 +294,10 @@ export default class RenderManager {
    * Clear Screen with Color (RGBA)
    */
   clearScreen() {
-    const { gl } = this;
-    gl.viewport(0, 0, this.gl.canvas.clientWidth, this.gl.canvas.clientHeight);
+    const { gl } = this.engine;
+    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    perspective(degToRad(this.camera.fov), this.gl.canvas.clientWidth / this.gl.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
+    perspective(degToRad(this.camera.fov), gl.canvas.clientWidth / gl.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
     this.camera.uViewMat = create();
   }
 
@@ -328,7 +330,7 @@ export default class RenderManager {
     set(this.uModelMat, copy);
     let m = create();
     set(this.camera.uViewMat, m);
-    this.modelViewMatrixStack.push([copy,m]);
+    this.modelViewMatrixStack.push([copy, m]);
   }
 
   /**
@@ -350,8 +352,8 @@ export default class RenderManager {
       ((this.transitionTime - now) / this.transitionDuration) % 1,
       this.transitionTexture,
       this.transitionTexture,
-      this.gl.canvas.width,
-      this.gl.canvas.height,
+      this.engine.gl.canvas.width,
+      this.engine.gl.canvas.height,
       this.transitionParams
     );
     if (now >= this.transitionTime) {
@@ -367,7 +369,7 @@ export default class RenderManager {
    * @returns
    */
   createBuffer(contents, type, itemSize) {
-    let { gl } = this;
+    let { gl } = this.engine;
     let buf = gl.createBuffer();
     buf.itemSize = itemSize;
     buf.numItems = contents.length / itemSize;
@@ -383,7 +385,7 @@ export default class RenderManager {
    * @param {*} contents
    */
   updateBuffer(buffer, contents) {
-    let { gl } = this;
+    let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -395,7 +397,7 @@ export default class RenderManager {
    * @param {*} attribute
    */
   bindBuffer(buffer, attribute) {
-    let { gl } = this;
+    let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
   }
@@ -403,8 +405,7 @@ export default class RenderManager {
   // transition (fade, swipe, etc)
   startTransition(type, params) {
     // TODO --- NEEDS SOME WORK....
-
-    let gl = this.gl;
+    let { gl } = this.engine;
 
     // transition textures
     this.transitionTexture = gl.createTexture();

@@ -1,12 +1,12 @@
-import GLEngine from "./index.jsx";
+import GLEngine from './index.jsx';
 
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
 export default class Hud {
   /**
-   * 
-   * @param {GLEngine} engine 
-   * @returns 
+   *
+   * @param {GLEngine} engine
+   * @returns
    */
   constructor(engine) {
     if (!Hud._instance) {
@@ -16,9 +16,9 @@ export default class Hud {
     return Hud._instance;
   }
 
-  init(ctx){
+  init() {
     // setup anything needed at the start (run once)
-    this.ctx = ctx;
+    this.ctx = this.engine.ctx;
   }
 
   /**
@@ -35,31 +35,31 @@ export default class Hud {
 
     let halfHeight = h / 2;
 
-    ctx.save();
+    this.engine.ctx.save();
 
     // draw the button
-    ctx.fillStyle = colours.background;
+    this.engine.ctx.fillStyle = colours.background;
 
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.rect(x, y, w, h);
-    ctx.fill();
-    ctx.clip();
+    this.engine.ctx.beginPath();
+    this.engine.ctx.rect(x, y, w, h);
+    this.engine.ctx.rect(x, y, w, h);
+    this.engine.ctx.fill();
+    this.engine.ctx.clip();
 
     // light gradient
-    var grad = ctx.createLinearGradient(x, y, x, y + halfHeight);
+    var grad = this.engine.ctx.createLinearGradient(x, y, x, y + halfHeight);
     grad.addColorStop(0, 'rgb(221,181,155)');
     grad.addColorStop(1, 'rgb(22,13,8)');
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.5;
-    ctx.fillRect(x, y, w, h);
+    this.engine.ctx.fillStyle = grad;
+    this.engine.ctx.globalAlpha = 0.5;
+    this.engine.ctx.fillRect(x, y, w, h);
 
     // draw the top half of the button
-    ctx.fillStyle = colours.top;
+    this.engine.ctx.fillStyle = colours.top;
 
     // draw the top and bottom particles
     for (var i = 0; i < h; i += halfHeight) {
-      ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
+      this.engine.ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
 
       for (var j = 0; j < 50; j++) {
         // get random values for particle
@@ -70,37 +70,36 @@ export default class Hud {
         var rotation = Math.random() * 360;
         var alpha = Math.random();
 
-        ctx.save();
+        this.engine.ctx.save();
 
         // rotate the canvas by 'rotation'
-        ctx.translate(partX, partY);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.translate(-partX, -partY);
+        this.engine.ctx.translate(partX, partY);
+        this.engine.ctx.rotate((rotation * Math.PI) / 180);
+        this.engine.ctx.translate(-partX, -partY);
 
         // set alpha transparency to 'alpha'
-        ctx.globalAlpha = alpha;
+        this.engine.ctx.globalAlpha = alpha;
 
-        ctx.fillRect(partX, partY, width, height);
+        this.engine.ctx.fillRect(partX, partY, width, height);
 
-        ctx.restore();
+        this.engine.ctx.restore();
       }
     }
 
-    ctx.font = '20px invasion2000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'white';
-    ctx.fillText(text, x + w / 2, y + h / 2, w);
+    this.engine.ctx.font = '20px invasion2000';
+    this.engine.ctx.textAlign = 'center';
+    this.engine.ctx.textBaseline = 'middle';
+    this.engine.ctx.fillStyle = 'white';
+    this.engine.ctx.fillText(text, x + w / 2, y + h / 2, w);
 
-    ctx.restore();
+    this.engine.ctx.restore();
   }
 
   /**
    * clear HUD overlay
    */
   clearHud() {
-    const { ctx } = this;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    this.engine.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
   }
 
   /**
@@ -111,20 +110,19 @@ export default class Hud {
    * @param {string} src
    */
   writeText(text, x, y, src = null) {
-    const { ctx } = this;
-    ctx.save();
-    ctx.font = '20px invasion2000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'white';
+    this.engine.ctx.save();
+    this.engine.ctx.font = '20px invasion2000';
+    this.engine.ctx.textAlign = 'center';
+    this.engine.ctx.textBaseline = 'middle';
+    this.engine.ctx.fillStyle = 'white';
     if (src) {
       // draw portrait if set
-      ctx.fillText(text, x ?? ctx.canvas.clientWidth / 2 + 76, y ?? ctx.canvas.clientHeight / 2);
-      ctx.drawImage(src, x ?? ctx.canvas.clientWidth / 2, y ?? ctx.canvas.clientHeight / 2, 76, 76);
+      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2 + 76, y ?? this.engine.ctx.canvas.clientHeight / 2);
+      this.engine.ctx.drawImage(src, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2, 76, 76);
     } else {
-      ctx.fillText(text, x ?? ctx.canvas.clientWidth / 2, y ?? ctx.canvas.clientHeight / 2);
+      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2);
     }
-    ctx.restore();
+    this.engine.ctx.restore();
   }
 
   /**
@@ -135,9 +133,8 @@ export default class Hud {
    * @returns
    */
   scrollText(text, scrolling = false, options = {}) {
-    let { ctx } = this;
-    let txt = new textScrollBox(ctx);
-    txt.init(text, 10, (2 * ctx.canvas.height) / 3, ctx.canvas.width - 20, ctx.canvas.height / 3 - 20, options);
+    let txt = new textScrollBox(this.engine.ctx);
+    txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
     txt.setOptions(options);
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
