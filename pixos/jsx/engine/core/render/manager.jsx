@@ -138,7 +138,6 @@ export default class RenderManager {
     }
 
     // Configure Shader
-    gl.useProgram(shaderProgram);
 
     // Normals (needs work)
     shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
@@ -227,6 +226,9 @@ export default class RenderManager {
       }
     };
     gl.disableVertexAttribArray(shaderProgram.aVertexNormal);
+
+    gl.useProgram(shaderProgram);
+    
     // return
     this.shaderProgram = shaderProgram;
     return shaderProgram;
