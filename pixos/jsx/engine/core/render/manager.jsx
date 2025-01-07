@@ -165,6 +165,7 @@ export default class RenderManager {
 
     shaderProgram.cameraPosition = gl.getUniformLocation(shaderProgram, `uCameraPosition`);
 
+    shaderProgram.runTransition = gl.getUniformLocation(shaderProgram, 'runTransition');
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
@@ -200,6 +201,9 @@ export default class RenderManager {
 
       // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);
+
+      // transitiion
+      gl.uniform1f(this.runTransition, self.isTransitioning ? 1.0 : 0.0);
 
       // camera position
       gl.uniform3fv(this.cameraPosition, self.camera.cameraPosition.toArray());
@@ -403,147 +407,13 @@ export default class RenderManager {
   }
 
   // transition (fade, swipe, etc)
-  startTransition(type, params) {
-    // TODO --- NEEDS SOME WORK....
-    let { gl } = this.engine;
-
-    // transition textures
-    this.transitionTexture = gl.createTexture();
-
-    // create and bind to framebuffer
-    const fb = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.bindTexture(gl.TEXTURE_2D, this.transitionTexture);
-
-    // render to the canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    // attach the texture as the first color attachment
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.transitionTexture, 0);
-
-    // determine shader for the transition
-    let glsl = '';
-    let defaultParams = {};
-    let paramsTypes = {};
-    switch (type) {
-      case 'glitch':
-        glsl = `
-            vec4 transition(vec2 p) {
-              vec2 block = floor(p.xy / vec2(16));
-              vec2 uv_noise = block / vec2(64);
-              uv_noise += floor(vec2(progress) * vec2(1200.0, 3500.0)) / vec2(64);
-              vec2 dist = progress > 0.0 ? (fract(uv_noise) - 0.5) * 0.3 *(1.0 -progress) : vec2(0.0);
-              vec2 red = p + dist * 0.2;
-              vec2 green = p + dist * .3;
-              vec2 blue = p + dist * .5;
-            
-              return vec4(mix(getFromColor(red), getToColor(red), progress).r,mix(getFromColor(green), getToColor(green), progress).g,mix(getFromColor(blue), getToColor(blue), progress).b,1.0);
-            }
-          `;
-        break;
-      case 'doorway':
-        defaultParams = { reflection: 0.4, perspective: 0.4, depth: 3 };
-        paramsTypes = { reflection: 'float', perspective: 'float', depth: 'float' };
-        glsl = `
-              uniform float reflection; // = 0.4
-              uniform float perspective; // = 0.4
-              uniform float depth; // = 3
-  
-              const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
-              const vec2 boundMin = vec2(0.0, 0.0);
-              const vec2 boundMax = vec2(1.0, 1.0);
-  
-              bool inBounds (vec2 p) {
-                return all(lessThan(boundMin, p)) && all(lessThan(p, boundMax));
-              }
-  
-              vec2 project (vec2 p) {
-                return p * vec2(1.0, -1.2) + vec2(0.0, -0.02);
-              }
-  
-              vec4 bgColor (vec2 p, vec2 pto) {
-                vec4 c = black;
-                pto = project(pto);
-                if (inBounds(pto)) {
-                  c += mix(black, getToColor(pto), reflection * mix(1.0, 0.0, pto.y));
-                }
-                return c;
-              }
-  
-              vec4 transition (vec2 p) {
-                vec2 pfr = vec2(-1.), pto = vec2(-1.);
-                float middleSlit = 2.0 * abs(p.x-0.5) - progress;
-                if (middleSlit > 0.0) {
-                  pfr = p + (p.x > 0.5 ? -1.0 : 1.0) * vec2(0.5*progress, 0.0);
-                  float d = 1.0/(1.0+perspective*progress*(1.0-middleSlit));
-                  pfr.y -= d/2.;
-                  pfr.y *= d;
-                  pfr.y += d/2.;
-                }
-                float size = mix(1.0, depth, 1.-progress);
-                pto = (p + vec2(-0.5, -0.5)) * vec2(size, size) + vec2(0.5, 0.5);
-                if (inBounds(pfr)) {
-                  return getFromColor(pfr);
-                }
-                else if (inBounds(pto)) {
-                  return getToColor(pto);
-                }
-                else {
-                  return bgColor(p, pto);
-                }
-              }
-            `;
-        break;
-      case 'fade-out':
-        glsl = `
-            vec4 transition (vec2 uv) {
-              return mix(
-                getFromColor(uv),
-                getToColor(uv),
-                progress
-              );
-            }
-          `;
-        break;
-      case 'swipe':
-        break;
-      case 'pixelize':
-      default:
-        defaultParams = { squaresMind: [20, 20], steps: 50 };
-        paramsTypes = { squaresMind: 'vec2', steps: 'int' };
-        glsl = `
-            uniform ivec2 squaresMin/* = ivec2(20) */; // minimum number of squares (when the effect is at its higher level)
-            uniform int steps /* = 50 */; // zero disable the stepping
-  
-            float d = min(progress, 1.0 - progress);
-            float dist = steps>0 ? ceil(d * float(steps)) / float(steps) : d;
-            vec2 squareSize = 2.0 * dist / vec2(squaresMin);
-  
-            vec4 transition(vec2 uv) {
-              vec2 p = dist>0.0 ? (floor(uv / squareSize) + 0.5) * squareSize : uv;
-              return mix(getFromColor(p), getToColor(p), progress);
-            }
-          `;
-        break;
-    }
-
-    // transition object
-    let transitionObject = {
-      name: params.name ?? 'transition',
-      author: params.author ?? 'unknown',
-      license: params.author ?? 'unknown',
-      glsl: glsl,
-      defaultParams: defaultParams,
-      paramsTypes: paramsTypes,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // setup transition & duration
-    this.transition = createTransition(gl, transitionObject);
+  startTransition(params) {
+    let duration = params.duration || 1000;
+    let time = new Date().getMilliseconds();
     this.isTransitioning = true;
-    this.transitionDuration = (params.duration ?? 1) * 1000;
-    this.transitionTime = new Date().getMilliseconds + this.transitionDuration;
-    this.transitionParams = params;
+    while(time + duration > new Date().getMilliseconds()){
+      // do nothig
+    }
+    this.isTransitioning = false;
   }
 }

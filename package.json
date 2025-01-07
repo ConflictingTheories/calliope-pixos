@@ -60,6 +60,7 @@
     "gl-transition": "^1.13.0",
     "gl-transitions": "^1.43.0",
     "jszip": "^3.7.1",
+    "lua-in-js": "^2.2.5",
     "prop-types": "^15.7.2",
     "realtime-bpm-analyzer": "^2.1.6",
     "style-loader": "^3.3.1"

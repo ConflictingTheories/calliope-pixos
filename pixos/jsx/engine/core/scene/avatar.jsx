@@ -231,8 +231,8 @@ export default class Avatar extends Sprite {
       // Run
       case 'r':
         return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
-      case 't':
-        this.engine.renderManager.startTransition('pixelize', { duration: 2 });
+      case 't':        
+        this.engine.renderManager.startTransition({ duration: 2 });
         return;
     }
 

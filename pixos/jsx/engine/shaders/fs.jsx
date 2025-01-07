@@ -44,6 +44,7 @@ export default function fs() {
   uniform PointLight uLights[32];
   uniform sampler2D uDepthMap;
 
+  uniform float runTransition;
   uniform float useSampler;
   uniform float useDiffuse;
   uniform sampler2D uSampler;
@@ -160,12 +161,13 @@ export default function fs() {
   vec4 volumetricCalculation(vec4 color4) {
     vec3 finalColor;
 
-    for(int i = 0; i < 16; i++) {
+    for(int i = 0; i < 32; i++) {
       if(uLights[i].enabled <= 0.5) continue;
         
       // Calculate the distance from the fragment to the light
       float distance = length(uLights[i].position - vec3(vWorldVertex));
 
+      // directional lighting - not working atm
       // if(length(uLights[i].direction) > 0.0){
       //   // Calculate the angle between the light direction and the fragment
       //   float cos_angle = dot(normalize(uLights[i].direction), normalize(vFragPos - uLights[i].position));
@@ -184,6 +186,11 @@ export default function fs() {
   }
 
   void main(void) {
+    if(runTransition == 1.0) {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+      return;
+    }
+
     if(useSampler == 1.0) { // sampler
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);
