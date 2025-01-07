@@ -15,6 +15,7 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { mergeDeep } from '@Engine/utils/enums.jsx';
 import Sprite from '@Engine/core/scene/sprite.jsx';
+// import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
 
 export default class DynamicSprite extends Sprite {
   constructor(engine, json, zip) {
@@ -90,6 +91,12 @@ export default class DynamicSprite extends Sprite {
     );
     evalStatement.push('default:\n\tbreak;\n}});');
     console.log({ statement: evalStatement.join('') });
+
+    // todo -- add lua interpreter
+    // let interpreter = new PixosLuaInterpreter();
+    // interpreter.setScope({ _this: this, sprite: sprite });
+    // interpreter.initLibrary(this.engine);
+    // interpreter.run('print("hello world lua")');
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, sprite, finish);
     // if (ret) this.addAction(ret); // not needed?
