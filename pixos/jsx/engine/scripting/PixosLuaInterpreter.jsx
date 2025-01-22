@@ -1,8 +1,8 @@
 import PixosLuaLibrary from '@Engine/scripting/PixosLuaLibrary.jsx';
-const luainjs = require('lua-in-js');
-
+import * as luainjs from 'lua-in-js';
 export default class PixosLuaInterpreter {
-  constructor() {
+  constructor(engine) {
+    this.engine = engine;
     this.lua = luainjs;
     this.pixosLib = new PixosLuaLibrary(this.lua);
     this.scope = {};
@@ -23,15 +23,15 @@ export default class PixosLuaInterpreter {
     return this.env;
   };
 
-  initLibrary = (engine) => {
+  initLibrary = () => {
     if (!this.env) this.createEnv();
-    this.library = this.pixosLib.getLibrary(engine, this.scope);
+    this.library = this.pixosLib.getLibrary(this.engine, this.scope);
     this.env.loadLib('pixos', this.library);
   };
 
   run = async (script) => {
     if (!this.env) this.createEnv();
-    if (!this.library) this.initLibrary(this.scope);
+    if (!this.library) this.initLibrary();
     return this.env.parse(script).exec();
   };
 }

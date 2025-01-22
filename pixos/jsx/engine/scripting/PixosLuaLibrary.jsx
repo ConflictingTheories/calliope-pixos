@@ -38,6 +38,15 @@ export default class PixosLuaLibrary {
       load_zone_from_zip: (z, zip) => {
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
+      log: (msg) => {
+        console.log(msg);
+      },
+      from: (obj, key) => {
+        return obj[key];
+      },
+      length: (tbl) => {
+        return tbl.length || 0;
+      },
       ...envScope,
     });
   };

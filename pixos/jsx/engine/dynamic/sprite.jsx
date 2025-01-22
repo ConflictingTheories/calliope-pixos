@@ -15,7 +15,7 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 import { mergeDeep } from '@Engine/utils/enums.jsx';
 import Sprite from '@Engine/core/scene/sprite.jsx';
-// import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
+import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
 
 export default class DynamicSprite extends Sprite {
   constructor(engine, json, zip) {
@@ -76,6 +76,8 @@ export default class DynamicSprite extends Sprite {
     await Promise.all(
       states.map(async (state) => {
         let actionString = await this.loadActionDynamically(state, sprite); // load actions dynamically
+        console.log({ msg: 'loading actionString', actionString });
+
         let statement =
           "case '" +
           state.name +
@@ -90,7 +92,10 @@ export default class DynamicSprite extends Sprite {
       })
     );
     evalStatement.push('default:\n\tbreak;\n}});');
-    console.log({ statement: evalStatement.join('') });
+
+    console.log({ msg: 'loading evalStatement', evalstatment: evalStatement.join('') });
+
+    console.log('TODO :: Add Lua Interpreter');
 
     // todo -- add lua interpreter
     // let interpreter = new PixosLuaInterpreter();
@@ -149,9 +154,28 @@ export default class DynamicSprite extends Sprite {
       return;
     }
     console.log({ trigger: this.stepTrigger });
+    let luaScript = '';
     let evalStatement = await this.zip.file(`triggers/${this.stepTrigger}.js`).async('string');
-    console.log({ statement: evalStatement });
+    
+    try {
+      luaScript = await this.zip.file(`triggers/${this.stepTrigger}.lua`).async('string');
+      console.log({ msg: 'trigger eval statement', evalStatement, luaScript });
+      console.log('TODO :: Add Lua Interpreter');
+
+      // todo -- add lua interpreter
+      let interpreter = new PixosLuaInterpreter(this.engine);
+      interpreter.setScope({ _this: this, sprite: sprite });
+      interpreter.initLibrary();
+      interpreter.run('print("hello world lua")');
+      let ret = interpreter.run(luaScript);
+      console.log({ msg: 'trigger lua script', ret });
+      return ret;
+    } catch (e) {
+      console.log({ msg: 'no lua script found', e });
+    }
+
     let ret = eval.call(this, evalStatement).call(this, this, sprite);
+    console.log({ msg: 'trigger eval statement', ret });
     return ret;
   }
 }
