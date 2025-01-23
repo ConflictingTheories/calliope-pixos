@@ -35,20 +35,20 @@ export default class PixosLuaLibrary {
       },
       
       // zone functions
-      play_cutscene: (cutscene) => {
+      play_cutscene: async (cutscene) => {
         console.log({ msg: 'playing cutscene via lua', zone: envScope._this, cutscene });
         if (envScope._this.playCutscene) {
           console.log({ msg: 'cutscene function found' });
-          return envScope._this.playCutscene(cutscene);
+          return await envScope._this.playCutscene(cutscene);
         }
       },
-      sprite_dialogue: (spriteId, dialogue) => {
+      sprite_dialogue: async (spriteId, dialogue) => {
         console.log({ msg: 'playing dialogue via lua', zone: envScope._this, spriteId, dialogue });
-        envScope._this.spriteDialogue(spriteId, dialogue);
+        return await envScope._this.spriteDialogue(spriteId, dialogue);
       },
-      move_sprite: (spriteId, x, y) => {
+      move_sprite: async (spriteId, x, y) => {
         console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, x, y });
-        envScope._this.moveSprite(spriteId, x, y);
+        return await envScope._this.moveSprite(spriteId, x, y);
       },
       
       // sprite functions

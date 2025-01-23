@@ -30,10 +30,10 @@ pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', zone = _this }));
 --   )
 -- );
 
-pixos.move_sprite('avatar', {8, 8, 0}, false);
+pixos.move_sprite('avatar', pixos.as_obj({8, 8, 0}), false);
 
-pixos.sprite_dialogue('avatar', {'Welcome! This is Pixospritz!'}, { duration = 3, autoclose = true });
+pixos.sprite_dialogue('avatar', pixos.as_obj({'Welcome! This is Pixospritz!'}), pixos.as_obj({ duration = 3, autoclose = true }));
 
-pixos.move_sprite('avatar', {2, 7, 0}, false);
+pixos.move_sprite('avatar', pixos.as_obj({2, 7, 0}), false);
 
-pixos.sprite_dialogue('avatar', {'This is the first room!'}, { duration = 3, autoclose = true });
+pixos.sprite_dialogue('avatar', pixos.as_obj({'This is the first room!'}), pixos.as_obj({ duration = 3, autoclose = true }));
