@@ -36,6 +36,7 @@ export default class PixosLuaLibrary {
       
       // zone functions
       play_cutscene: async (cutscene) => {
+        // todo - not working
         console.log({ msg: 'playing cutscene via lua', zone: envScope._this, cutscene });
         if (envScope._this.playCutscene) {
           console.log({ msg: 'cutscene function found' });
@@ -43,12 +44,18 @@ export default class PixosLuaLibrary {
         }
       },
       sprite_dialogue: async (spriteId, dialogue) => {
+        // todo - not working
         console.log({ msg: 'playing dialogue via lua', zone: envScope._this, spriteId, dialogue });
-        return await envScope._this.spriteDialogue(spriteId, dialogue);
+        return await envScope._this.spriteDialogue(spriteId, dialogue).then(()=>{
+          console.log('moved sprite');
+        });
       },
       move_sprite: async (spriteId, x, y) => {
+        // todo - not working
         console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, x, y });
-        return await envScope._this.moveSprite(spriteId, x, y);
+        return await envScope._this.moveSprite(spriteId, x, y).then(()=>{
+          console.log('moved sprite');
+        });
       },
       
       // sprite functions
