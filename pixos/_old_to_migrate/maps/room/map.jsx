@@ -86,7 +86,7 @@ export default {
       id: 'load-spritz', // **runs automatically when loaded
       trigger: async function () {
         await loadAvatar(this, STORE_NAME);
-        await this.playCutScen('strange-legend');
+        await this.playCutScene('strange-legend');
       },
     },
     {

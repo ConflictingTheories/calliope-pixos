@@ -13,6 +13,8 @@
 
 import { Direction } from '@Engine/utils/enums.jsx';
 import { Vector } from '@Engine/utils/math/vector.jsx';
+import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
+
 /**
  * Load Map Information
  * @param {*} json
@@ -36,7 +38,7 @@ export async function loadMap(json, cells, zip) {
             zones: sprite.zones ?? null,
           };
         });
-        console.log('loading map....');
+  console.log('loading map....');
 
   let $scenes = json.scenes.map((scene) => {
     return {
@@ -61,19 +63,48 @@ export async function loadMap(json, cells, zip) {
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
       try {
+        
+        // Lua Scripting
+        try {
+          let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
+          console.log({ msg: 'lua script', luaScript });
+
+          // defer execution of lua until trigger is called
+          let result = ((_this) => {
+            let interpreter = new PixosLuaInterpreter(this.engine);
+            interpreter.setScope({ _this });
+            interpreter.initLibrary();
+            interpreter.run('print("hello world lua - zone")');
+            return {
+              id: script.id,
+              trigger: async () => interpreter.run(luaScript),
+            };
+          }).call(this, this);
+          console.log({ msg: 'zone trigger Lua eval response', result });
+         
+          return result;
+        } catch (e) {
+          console.error(e);
+        }
+
+        // JS scripting
         let triggerScript = (await zip.file(`triggers/${script.trigger}.js`).async('string')).replace(/\};/, '}');
         let $statement =
           `
-        ((_this)=>{return{
-          id: '` +
+          ((_this)=>{return{
+            id: '` +
           script.id +
           `',
-          trigger: ` +
+            trigger: ` +
           triggerScript +
           `,
-        }})
-      `;
+          }})
+        `;
+        console.log({ msg: 'zone trigger JS eval statement', $statement });
+
         let result = eval.call(this, $statement).call(this, this);
+        console.log({ msg: 'zone trigger JS eval response', result });
+
         return result;
       } catch (e) {
         console.error(e);
@@ -103,6 +134,7 @@ export async function loadMap(json, cells, zip) {
   //     enabled: light.enabled ?? false,
   //   };
   // });
+  // console.log('adding lights....' + $lights.length);
 
   console.log('loading map....');
 

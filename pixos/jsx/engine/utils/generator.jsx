@@ -47,7 +47,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
 
     // self.randomlyGenerateSprites();
     // self.randomlySprites();
-    await self.playCutScen('welcome');
+    await self.playCutScene('welcome');
   } else {
     // load Sprites
     await Promise.all(
@@ -108,7 +108,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
           return x.id == tome.selected;
         })
         .map(async (spritz) => {
-          await self.playCutScen(spritz.id, tome.spritz);
+          await self.playCutScene(spritz.id, tome.spritz);
         })
     );
 
@@ -135,7 +135,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
         ],
       },
     ];
-    await self.playCutScen(spritz[0].id, spritz);
+    await self.playCutScene(spritz[0].id, spritz);
   }
 }
 

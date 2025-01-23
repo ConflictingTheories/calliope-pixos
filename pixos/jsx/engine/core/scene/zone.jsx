@@ -50,6 +50,7 @@ export default class Zone extends Loadable {
     this.loadObjectFromZip = this.loadObjectFromZip.bind(this, this);
     this.loadSpriteFromZip = this.loadSpriteFromZip.bind(this, this);
     this.loadSprite = this.loadSprite.bind(this, this);
+    this.playCutScene = this.playCutScene.bind(this, this);
     this.loadObject = this.loadObject.bind(this, this);
     this.checkInput = this.checkInput.bind(this);
   }
@@ -831,7 +832,7 @@ export default class Zone extends Loadable {
    * @param {string} id
    * @param {*} spritz
    */
-  async playCutScen(id, spritz = null) {
+  async playCutScene(id, spritz = null) {
     let self = this;
     if (!spritz) {
       spritz = self.spritz;

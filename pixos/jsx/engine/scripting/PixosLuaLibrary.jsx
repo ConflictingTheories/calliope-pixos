@@ -40,6 +40,12 @@ export default class PixosLuaLibrary {
         console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
+      play_cutscene: async (cutscene) => {
+        console.log({ msg: 'playing cutscene via lua', zone: envScope._this, cutscene });
+        if(envScope._this.playCutscene){
+          return await envScope._this.playCutscene(cutscene);
+        }
+      },
       log: (msg) => {
         console.log(msg);
       },
