@@ -63,7 +63,6 @@ export async function loadMap(json, cells, zip) {
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
       try {
-        
         // Lua Scripting
         try {
           let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
@@ -77,11 +76,14 @@ export async function loadMap(json, cells, zip) {
             interpreter.run('print("hello world lua - zone")');
             return {
               id: script.id,
-              trigger: async () => interpreter.run(luaScript),
+              trigger: async () => {
+                console.log('running actual trigger');
+                return interpreter.run(luaScript);
+              },
             };
           }).call(this, this);
           console.log({ msg: 'zone trigger Lua eval response', result });
-         
+
           return result;
         } catch (e) {
           console.error(e);

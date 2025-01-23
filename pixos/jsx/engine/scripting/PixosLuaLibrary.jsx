@@ -13,16 +13,7 @@ export default class PixosLuaLibrary {
    */
   getLibrary = (engine, envScope) => {
     return new this.lua.Table({
-      as_obj: (tbl) => {
-        return tbl.toObject();
-      },
-      as_table: (obj) => {
-        const table = new this.lua.Table();
-        for (const [key, value] of Object.entries(obj)) {
-          table.set(key, value);
-        }
-        return table;
-      },
+      // core functions
       get_caller: () => {
         return envScope._this;
       },
@@ -32,19 +23,47 @@ export default class PixosLuaLibrary {
       get_world: () => {
         return engine.spritz.world;
       },
+      
+      // world functions
       remove_all_zones: () => {
-        console.log({ msg: 'removing all zones via lua'});
+        console.log({ msg: 'removing all zones via lua' });
         return engine.spritz.world.removeAllZones();
       },
       load_zone_from_zip: (z, zip) => {
         console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
-      play_cutscene: async (cutscene) => {
+      
+      // zone functions
+      play_cutscene: (cutscene) => {
         console.log({ msg: 'playing cutscene via lua', zone: envScope._this, cutscene });
-        if(envScope._this.playCutscene){
-          return await envScope._this.playCutscene(cutscene);
+        if (envScope._this.playCutscene) {
+          console.log({ msg: 'cutscene function found' });
+          return envScope._this.playCutscene(cutscene);
         }
+      },
+      sprite_dialogue: (spriteId, dialogue) => {
+        console.log({ msg: 'playing dialogue via lua', zone: envScope._this, spriteId, dialogue });
+        envScope._this.spriteDialogue(spriteId, dialogue);
+      },
+      move_sprite: (spriteId, x, y) => {
+        console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, x, y });
+        envScope._this.moveSprite(spriteId, x, y);
+      },
+      
+      // sprite functions
+      // ...
+
+      // misc utils & functions
+      as_obj: (tbl) => {
+        return tbl.toObject();
+      },
+      as_table: (obj) => {
+        const table = new this.lua.Table();
+        for (const [key, value] of Object.entries(obj)) {
+          table.set(key, value);
+        }
+        return table;
       },
       log: (msg) => {
         console.log(msg);
