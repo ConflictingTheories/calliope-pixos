@@ -34,6 +34,7 @@ export default class World {
     this.isPaused = true;
     this.afterTickActions = new ActionQueue();
     this.sortZones = this.sortZones.bind(this);
+    this.getZoneById = this.getZoneById.bind(this);
     this.canWalk = this.canWalk.bind(this);
     this.pathFind = this.pathFind.bind(this);
     this.menuConfig = {
@@ -73,7 +74,7 @@ export default class World {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
 
     console.log('Loading Zone from Zip:', zoneId);
-    
+
     let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string')); // main map file (/zip/maps/{zoneId}/map.json)
     let cellJson = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string')); // cells (/zip/maps/{zoneId}/cells.json)
 
@@ -328,6 +329,15 @@ export default class World {
       .filter((x) => x[0]);
     // Flatten Path from Segments
     return steps.flat();
+  }
+
+  /**
+   * Get Zone by ID
+   * @param {string} id
+   * @returns
+   */ 
+  getZoneById(id) {
+    return this.zoneDict[id];
   }
 
   /**
