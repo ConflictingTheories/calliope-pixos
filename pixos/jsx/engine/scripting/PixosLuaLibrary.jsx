@@ -33,9 +33,11 @@ export default class PixosLuaLibrary {
         return engine.spritz.world;
       },
       remove_all_zones: () => {
+        console.log({ msg: 'removing all zones via lua'});
         return engine.spritz.world.removeAllZones();
       },
       load_zone_from_zip: (z, zip) => {
+        console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
       log: (msg) => {

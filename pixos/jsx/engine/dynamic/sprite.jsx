@@ -154,12 +154,13 @@ export default class DynamicSprite extends Sprite {
       return;
     }
     console.log({ trigger: this.stepTrigger });
-    let luaScript = '';
-    let evalStatement = await this.zip.file(`triggers/${this.stepTrigger}.js`).async('string');
-    
+
     try {
-      luaScript = await this.zip.file(`triggers/${this.stepTrigger}.lua`).async('string');
-      console.log({ msg: 'trigger eval statement', evalStatement, luaScript });
+      let file = this.zip.file(`triggers/${this.stepTrigger}.lua`);
+      console.log({ msg: 'trigger eval file', file });
+      if (!file) throw new Error('No Lua Script Found');
+      let luaScript = await file.async('string');
+      console.log({ msg: 'trigger eval statement', luaScript });
       console.log('TODO :: Add Lua Interpreter');
 
       // todo -- add lua interpreter
@@ -167,15 +168,18 @@ export default class DynamicSprite extends Sprite {
       interpreter.setScope({ _this: this, sprite: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');
-      let ret = interpreter.run(luaScript);
-      console.log({ msg: 'trigger lua script', ret });
-      return ret;
+      let ret = await interpreter.run(luaScript);
+      console.log({ msg: 'trigger eval response', ret });
+      return null;
     } catch (e) {
       console.log({ msg: 'no lua script found', e });
+      let file = await this.zip.file(`triggers/${this.stepTrigger}.js`);
+      if (!file) throw new Error('No JS Script Found');
+      let evalStatement = file.async('string');
+      console.log({ msg: 'trigger eval statement', evalStatement });
+      let ret = eval.call(this, evalStatement).call(this, this, sprite);
+      console.log({ msg: 'trigger eval statement', ret });
+      return ret;
     }
-
-    let ret = eval.call(this, evalStatement).call(this, this, sprite);
-    console.log({ msg: 'trigger eval statement', ret });
-    return ret;
   }
 }

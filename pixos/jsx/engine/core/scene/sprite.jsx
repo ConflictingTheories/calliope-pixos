@@ -82,6 +82,7 @@ export default class Sprite extends Loadable {
       let stepParent = this.onStep.bind(this);
       this.onStep = async () => {
         await instanceData.onStep(this, this);
+        console.log('made it to here');
         await stepParent(this, this);
       };
     }

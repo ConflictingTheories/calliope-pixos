@@ -145,11 +145,14 @@ export default class Zone extends Loadable {
    */
   async loadZoneFromZip(zoneJson, cellJson, zip, skipCache = false) {
     let self = this;
+    console.log('loading zip');
+
     try {
       // zone extensions
       if (zoneJson.extends) {
         console.log('extendings');
         let extension = {};
+        console.log({ zoneJson, cellJson, zip });
         await Promise.all(
           zoneJson.extends.map(async (file) => {
             let stringD = JSON.parse(await zip.file('maps/' + file + '/map.json').async('string'));
