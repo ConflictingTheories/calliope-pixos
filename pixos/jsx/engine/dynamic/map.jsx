@@ -70,7 +70,7 @@ export async function loadMap(json, cells, zip) {
 
           // defer execution of lua until trigger is called
           let result = ((_this) => {
-            let interpreter = new PixosLuaInterpreter(this.engine);
+            let interpreter = new PixosLuaInterpreter(_this.engine);
             interpreter.setScope({ _this });
             interpreter.initLibrary();
             interpreter.run('print("hello world lua - zone")');
@@ -81,7 +81,7 @@ export async function loadMap(json, cells, zip) {
                 return interpreter.run(luaScript);
               },
             };
-          }).call(this, this);
+          }).bind(this)(this);
           console.log({ msg: 'zone trigger Lua eval response', result });
 
           return result;
