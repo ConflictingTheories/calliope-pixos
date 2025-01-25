@@ -35,7 +35,7 @@ export default class PixosLuaLibrary {
       },
 
       // zone functions
-      play_cutscene: async (cutscene) => {
+      play_cutscene: (cutscene) => {
         // todo - not working
         return () =>
           new Promise((resolve) => {
@@ -45,6 +45,8 @@ export default class PixosLuaLibrary {
               return envScope._this.playCutscene(cutscene).then(() => {
                 resolve();
               });
+            }else{
+              resolve();
             }
           });
       },

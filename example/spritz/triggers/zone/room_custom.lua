@@ -1,4 +1,4 @@
   local _this = pixos.get_caller();
   pixos.log({msg = 'trigger:: room_custom', zone = _this});
 
-  pixos.sprite_dialogue('avatar', ['Lets get in there!']);
+  pixos.sync({pixos.sprite_dialogue('avatar', ['Lets get in there!'])});
