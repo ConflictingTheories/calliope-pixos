@@ -766,6 +766,7 @@ export default class Zone extends Loadable {
    */
   async moveSprite(id, location, running = false) {
     return new Promise(async (resolve, reject) => {
+      console.log({msg:'moving sprite', id, location, running});
       let sprite = this.getSpriteById(id);
       await sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
     });
@@ -780,6 +781,7 @@ export default class Zone extends Loadable {
    */
   async spriteDialogue(id, dialogue, options = { autoclose: true }) {
     return new Promise(async (resolve, reject) => {
+      console.log({msg:'sprite dialogue', id, dialogue, options});
       let sprite = this.getSpriteById(id);
       await sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
     });

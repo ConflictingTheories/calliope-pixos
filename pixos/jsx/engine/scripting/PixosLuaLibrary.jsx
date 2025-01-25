@@ -23,7 +23,7 @@ export default class PixosLuaLibrary {
       get_world: () => {
         return engine.spritz.world;
       },
-      
+
       // world functions
       remove_all_zones: () => {
         console.log({ msg: 'removing all zones via lua' });
@@ -33,7 +33,7 @@ export default class PixosLuaLibrary {
         console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
-      
+
       // zone functions
       play_cutscene: async (cutscene) => {
         // todo - not working
@@ -43,27 +43,30 @@ export default class PixosLuaLibrary {
           return await envScope._this.playCutscene(cutscene);
         }
       },
-      sprite_dialogue: async (spriteId, dialogue) => {
+      sprite_dialogue: async (spriteId, dialogue, options = {}) => {
         // todo - not working
         console.log({ msg: 'playing dialogue via lua', zone: envScope._this, spriteId, dialogue });
-        return await envScope._this.spriteDialogue(spriteId, dialogue).then(()=>{
-          console.log('moved sprite');
+        return envScope._this.spriteDialogue(spriteId, dialogue, options).then(() => {
+          console.log({ msg: 'played dialogue via lua', zone: envScope._this, spriteId, dialogue });
         });
       },
-      move_sprite: async (spriteId, x, y) => {
+      move_sprite: async (spriteId, location, running) => {
         // todo - not working
-        console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, x, y });
-        return await envScope._this.moveSprite(spriteId, x, y).then(()=>{
-          console.log('moved sprite');
+        console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, location, running });
+        return await envScope._this.moveSprite(spriteId, this.lua.utils.ensureArray(location.toObject()), running).then(() => {
+          console.log({ msg: 'moved sprite via lua', zone: envScope._this, spriteId, location, running });
         });
       },
-      
+
       // sprite functions
       // ...
 
       // misc utils & functions
       as_obj: (tbl) => {
         return tbl.toObject();
+      },
+      as_array: (tbl) => {
+        return this.lua.utils.ensureArray(tbl.toObject());
       },
       as_table: (obj) => {
         const table = new this.lua.Table();
