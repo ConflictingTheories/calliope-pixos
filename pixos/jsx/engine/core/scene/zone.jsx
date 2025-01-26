@@ -131,6 +131,9 @@ export default class Zone extends Loadable {
    * @returns
    */
   async loadTriggerFromZip(trigger, zip) {
+    // todo - need to add lua interpreter
+    // -- should be able to run lua scripts
+
     let triggerScript = await zip.file(`triggers/${trigger}.js`).async('string');
     return eval.call(this, triggerScript);
   }

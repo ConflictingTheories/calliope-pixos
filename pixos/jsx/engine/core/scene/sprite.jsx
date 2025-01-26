@@ -151,6 +151,8 @@ export default class Sprite extends Loadable {
     // if (instanceData.onStep) {
     //   let stepParent = this.onStep.bind(this);
     //   this.onStep = async () => {
+    //     // todo - need to add lua interpreter
+    //     // -- should be able to run lua scripts
     //     eval.call(this, await this.zip.file(`triggers/${instanceData.onStep}.js`).async('string')).call(this, this);
     //     await stepParent(this, this);
     //   };

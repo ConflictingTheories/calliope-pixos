@@ -89,6 +89,9 @@ export async function loadMap(json, cells, zip) {
           console.error(e);
         }
 
+        // add lua scripting
+        // -- needs to run lua script for trigger
+
         // JS scripting
         let triggerScript = (await zip.file(`triggers/${script.trigger}.js`).async('string')).replace(/\};/, '}');
         let $statement =

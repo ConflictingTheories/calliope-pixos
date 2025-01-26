@@ -115,6 +115,11 @@ export default class DynamicSprite extends Sprite {
   // load string to eval based on type of action
   async loadActionDynamically(state, sprite) {
     console.log({ sprite, state });
+
+    // todo -- add lua interpreter
+    // -- need to run the lua script as well as handle
+    // -- the wrapper above.
+
     return (
       await Promise.all(
         state.actions.map(async (action) => {
