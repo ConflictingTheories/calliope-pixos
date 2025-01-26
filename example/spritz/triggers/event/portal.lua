@@ -2,7 +2,7 @@
 
 -- The portal is the object that the sprite is entering.
 
-local user_sprite = pixos.get_sprite();
+local user_sprite = pixos.get_subject();
 local portal = pixos.get_caller();
 
 pixos.log({ msg = 'entering portal', portal = portal, user_sprite = user_sprite });

@@ -71,6 +71,33 @@ export default class DynamicSprite extends Sprite {
   async interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
+    // Lua scripting
+    // build state machine
+
+    // todo -- add lua interpreter
+
+    // try{
+    //   let luaScript = await this.zip.file(`actions/${state.name}.lua`).async('string');
+    //   console.log({msg:'lua script', luaScript});
+    //   let interpreter = new PixosLuaInterpreter(this.engine);
+    //   interpreter.setScope({ _this: this, sprite: sprite });
+    //   interpreter.initLibrary();
+    //   interpreter.run('print("hello world lua - sprite")');
+
+    //   // todo - need to implement action execution
+    //   switch (action.type) {
+    //     case 'dialogue':
+    //     case 'animate':
+    //     default:
+    //       return '';
+    //   }
+    // }catch(e){
+    //   console.log({msg:'error loading action dynamically', e});
+    // }
+
+    console.log('TODO :: Add Lua Interpreter');
+
+    // JS scripting
     // build state machine
     let evalStatement = ['((_this, sprite, finish)=>{switch (_this.state) {\n '];
     await Promise.all(
@@ -92,16 +119,7 @@ export default class DynamicSprite extends Sprite {
       })
     );
     evalStatement.push('default:\n\tbreak;\n}});');
-
     console.log({ msg: 'loading evalStatement', evalstatment: evalStatement.join('') });
-
-    console.log('TODO :: Add Lua Interpreter');
-
-    // todo -- add lua interpreter
-    // let interpreter = new PixosLuaInterpreter();
-    // interpreter.setScope({ _this: this, sprite: sprite });
-    // interpreter.initLibrary(this.engine);
-    // interpreter.run('print("hello world lua")');
 
     ret = eval.call(this, evalStatement.join('')).call(this, this, sprite, finish);
     // if (ret) this.addAction(ret); // not needed?
@@ -112,14 +130,9 @@ export default class DynamicSprite extends Sprite {
     return ret;
   }
 
-  // load string to eval based on type of action
+  // load string to eval based on type of action (todo - needs to be converted to lua + regular js)
   async loadActionDynamically(state, sprite) {
     console.log({ sprite, state });
-
-    // todo -- add lua interpreter
-    // -- need to run the lua script as well as handle
-    // -- the wrapper above.
-
     return (
       await Promise.all(
         state.actions.map(async (action) => {
@@ -127,6 +140,7 @@ export default class DynamicSprite extends Sprite {
             action.callback && action.callback !== ''
               ? (await this.zip.file('callbacks/' + action.callback + '.js').async('string')).replace(/[\r\n]+/g, '').replace(/;$/, '')
               : '';
+
           switch (action.type) {
             case 'dialogue':
               return (
@@ -170,7 +184,7 @@ export default class DynamicSprite extends Sprite {
 
       // todo -- add lua interpreter
       let interpreter = new PixosLuaInterpreter(this.engine);
-      interpreter.setScope({ _this: this, sprite: sprite });
+      interpreter.setScope({ _this: this, subject: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');
       let ret = await interpreter.run(luaScript);

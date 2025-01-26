@@ -63,11 +63,12 @@ export async function loadMap(json, cells, zip) {
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
       try {
+        
         // Lua Scripting
         try {
           let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
           console.log({ msg: 'lua script', luaScript });
-
+          
           // defer execution of lua until trigger is called
           let result = ((_this) => {
             let interpreter = new PixosLuaInterpreter(_this.engine);
@@ -88,9 +89,6 @@ export async function loadMap(json, cells, zip) {
         } catch (e) {
           console.error(e);
         }
-
-        // add lua scripting
-        // -- needs to run lua script for trigger
 
         // JS scripting
         let triggerScript = (await zip.file(`triggers/${script.trigger}.js`).async('string')).replace(/\};/, '}');

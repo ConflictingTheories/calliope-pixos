@@ -17,11 +17,8 @@ export default class PixosLuaLibrary {
       get_caller: () => {
         return envScope._this;
       },
-      get_sprite: () => {
-        return envScope.sprite;
-      },
-      get_menu: () => {
-        return envScope.menu;
+      get_subject: () => {
+        return envScope.subject;
       },
       get_map: () => {
         return envScope.map || envScope.zone;
@@ -77,7 +74,8 @@ export default class PixosLuaLibrary {
           });
       },
       load_scripts: (scripts) => {
-        return envScope._this.runScripts(scripts);
+        console.log({ msg: 'loading scripts via lua', scripts, envScope });
+        return envScope._this.loadScripts(scripts);
       },
 
       // sprite functions

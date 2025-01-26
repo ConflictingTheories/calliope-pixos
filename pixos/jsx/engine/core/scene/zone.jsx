@@ -17,6 +17,7 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.jsx';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.jsx';
 import Loadable from '@Engine/core/queue/loadable.jsx';
+import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
 
 export default class Zone extends Loadable {
   /**
@@ -131,9 +132,23 @@ export default class Zone extends Loadable {
    * @returns
    */
   async loadTriggerFromZip(trigger, zip) {
-    // todo - need to add lua interpreter
-    // -- should be able to run lua scripts
+    // lua scripting
+    try{
+      let luaScript = await zip.file(`triggers/${trigger}.lua`).async('string');
+      console.log({ msg: 'lua script', luaScript });
 
+      return ((_this, subject)=>{
+        let interpreter = new PixosLuaInterpreter(_this.engine);
+        interpreter.setScope({ _this, subject });
+        interpreter.initLibrary();
+        interpreter.run('print("hello world lua - zone trigger from zip")');
+        return interpreter.run(luaScript);
+      })
+    }catch(e){
+      console.error({ msg: 'error loading lua script', e });
+    }
+
+    // JS scripting
     let triggerScript = await zip.file(`triggers/${trigger}.js`).async('string');
     return eval.call(this, triggerScript);
   }
