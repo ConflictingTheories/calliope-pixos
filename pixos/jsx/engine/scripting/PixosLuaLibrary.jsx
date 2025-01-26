@@ -20,6 +20,12 @@ export default class PixosLuaLibrary {
       get_sprite: () => {
         return envScope.sprite;
       },
+      get_menu: () => {
+        return envScope.menu;
+      },
+      get_map: () => {
+        return envScope.map || envScope.zone;
+      },
       get_world: () => {
         return engine.spritz.world;
       },
@@ -70,6 +76,9 @@ export default class PixosLuaLibrary {
             });
           });
       },
+      load_scripts: (scripts) => {
+        return envScope._this.runScripts(scripts);
+      },
 
       // sprite functions
       // ...
@@ -95,6 +104,11 @@ export default class PixosLuaLibrary {
       },
       log: (msg) => {
         console.log(msg);
+      },
+      to: (obj, tbl) => {
+        for (const [key, value] of Object.entries(tbl.toObject())) {
+          obj[key] = value;
+        }
       },
       from: (obj, key) => {
         return obj[key];
