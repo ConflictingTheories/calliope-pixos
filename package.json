@@ -1,12 +1,11 @@
 {
   "name": "calliope-pixos",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Pixos is a mini interactive spritz avatar plugin for calliope static site generator for generating pixospritz'.",
   "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf build",
-    "compile:wasm": "cd pixos/rs/pixos-rs && wasm-pack build --target web --out-dir pkg",
     "compile": "npm run clean && cross-env NODE_ENV=production babel pixos/jsx --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
     "webpack": "npx webpack"
   },
@@ -48,8 +47,8 @@
     "webpack-dev-server": "^4.9.0"
   },
   "peerDependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^18.0.2",
+    "react-dom": "^18.0.2",
     "react-recollect": "^5.2.3"
   },
   "dependencies": {
@@ -58,7 +57,6 @@
     "dexie": "^3.2.0",
     "file-saver": "^2.0.5",
     "gl-transition": "^1.13.0",
-    "gl-transitions": "^1.43.0",
     "jszip": "^3.7.1",
     "lua-in-js": "^2.2.5",
     "prop-types": "^15.7.2",

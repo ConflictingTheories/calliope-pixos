@@ -1,0 +1,9 @@
+{
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "name": "Pixospritz Chrome Extension",
+    "action": {
+        "default_popup": "js/index.html",
+        "default_title": "Pixospritz"
+    }
+}
