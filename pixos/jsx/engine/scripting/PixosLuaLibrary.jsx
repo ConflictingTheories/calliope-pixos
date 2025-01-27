@@ -114,6 +114,7 @@ export default class PixosLuaLibrary {
       length: (tbl) => {
         return tbl.length || 0;
       },
+      // passed in scope
       ...envScope,
     });
   };

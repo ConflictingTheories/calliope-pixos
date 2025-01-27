@@ -88,10 +88,10 @@ export default class DynamicSprite extends Sprite {
     );
     console.log({ msg: 'loading stateMachine', stateMachine });
 
-    ret = stateMachine[this.state].map((action) => {
-      console.log({ msg: 'running action', action });
-      action(this, sprite, finish);
-    });
+    ret = [];
+    for(const action of stateMachine[this.state]){
+      ret.push(action(this, sprite, finish));
+    }
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -105,6 +105,7 @@ export default class DynamicSprite extends Sprite {
     return await Promise.all(
       // load actions based on state
       state.actions.map(async (action) => {
+        console.log({ action });
         let luaCallback =
           action.callback && action.callback !== ''
             ? await this.zip.file('callbacks/' + action.callback + '.lua').async('string')
