@@ -39,18 +39,24 @@ export class ActionLoader {
   }
   // Load Internal Action
   async load(type) {
+    console.log('Loading Action: ' + type);
+
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
+    console.log({afterLoad, runConfigure})
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
     Object.assign(instance, require('@Engine/actions/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
+    console.log('Notifying in Action: ' + type);
+
     // Notify existing
     await Promise.all(
       this.instances[type].map(async function (instance) {
+        console.log({instance});
         if (instance.afterLoad) await instance.afterLoad(instance.instance);
       })
     );
@@ -61,6 +67,8 @@ export class ActionLoader {
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
+
+    console.log('Ending load Action: ' + type);
 
     return instance;
   }
