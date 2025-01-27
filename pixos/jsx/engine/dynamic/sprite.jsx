@@ -71,7 +71,7 @@ export default class DynamicSprite extends Sprite {
   async interact(sprite, finish) {
     let ret = null;
     let states = this.json.states ?? [];
-    // Lua scripting
+    
     // build state machine
     let stateMachine = {};
     await Promise.all(
@@ -82,16 +82,19 @@ export default class DynamicSprite extends Sprite {
           console.log({ msg: 'loading action', action });
         }
         console.log({ msg: 'switching state', state: state.name });
-        stateMachine[state.name] = actions;
-        this.state = state.next;
+        stateMachine[state.name] = {next:state.next, actions};
       })
     );
     console.log({ msg: 'loading stateMachine', stateMachine });
 
+    // run state actions
     ret = [];
-    for(const action of stateMachine[this.state]){
-      ret.push(action(this, sprite, finish));
+    for(const action of stateMachine[this.state].actions){
+      ret.push(await action(this, sprite, finish));
     }
+
+    // update state
+    this.state = stateMachine[this.state].next;
 
     // If completion handler passed through - call it when done
     if (finish) finish(false);
@@ -99,13 +102,13 @@ export default class DynamicSprite extends Sprite {
     return ret;
   }
 
-  // load string to eval based on type of action (todo - needs to be converted to lua + regular js)
+  // load actions based on provided state and load lua callbacks as needed
   async loadActionDynamically(state, sprite, finish) {
     console.log({ sprite, state });
     return await Promise.all(
       // load actions based on state
       state.actions.map(async (action) => {
-        console.log({ action });
+        console.log({ msg: 'preping actions', action });
         let luaCallback =
           action.callback && action.callback !== ''
             ? await this.zip.file('callbacks/' + action.callback + '.lua').async('string')
@@ -115,17 +118,17 @@ export default class DynamicSprite extends Sprite {
         let callback = () => {
           console.log('calling callback');
           let interpreter = new PixosLuaInterpreter(this.engine);
-          interpreter.setScope({ _this: this, sprite: sprite, finish: finish });
+          interpreter.setScope({ _this: this, subject: sprite, finish: finish });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - sprite callback")');
           return interpreter.run(luaCallback);
         };
 
-        // support action types
+        // supported action types
         switch (action.type) {
           case 'dialogue':
             console.log({ _this: this, finish });
-            return (_this, sprite, finish) => {
+            return async (_this, sprite, finish) => {
               console.log({ msg: 'dialogue' });
               let actionToLoad = new _this.ActionLoader(
                 _this.engine,
@@ -139,14 +142,14 @@ export default class DynamicSprite extends Sprite {
             };
           case 'animate':
             console.log({ _this: this, finish });
-            return (_this, sprite, finish) => {
-              console.log({ msg: 'animate', _this, sprite, finish });
+            return async (_this, sprite, finish) => {
+              console.log({ msg: 'animate', _this, sprite, finish, action });
               let actionToLoad = new _this.ActionLoader(_this.engine, 'animate', [...action.animate, () => finish(true)], _this, callback);
               console.log({ msg: 'action to load', actionToLoad });
               _this.addAction(actionToLoad);
             };
           default:
-            return (_this, sprite, _finish) => {
+            return async (_this, sprite, _finish) => {
               console.log({ msg: 'no action found', _this, sprite, _finish });
             };
         }

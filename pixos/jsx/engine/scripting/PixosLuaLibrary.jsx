@@ -12,7 +12,12 @@ export default class PixosLuaLibrary {
    * Create Script Environment
    */
   getLibrary = (engine, envScope) => {
+
+    console.log({ msg: 'creating lua library', envScope });
+
     return new this.lua.Table({
+      // passed in scope
+      ...envScope,
       // core functions
       get_caller: () => {
         return envScope._this;
@@ -48,7 +53,7 @@ export default class PixosLuaLibrary {
               return envScope._this.playCutscene(cutscene).then(() => {
                 resolve();
               });
-            }else{
+            } else {
               resolve();
             }
           });
@@ -114,8 +119,12 @@ export default class PixosLuaLibrary {
       length: (tbl) => {
         return tbl.length || 0;
       },
-      // passed in scope
-      ...envScope,
+      callback_finish: (success) => {
+        console.log({ msg: 'callback finish', success });
+        if(envScope.finish){
+          envScope.finish(success > 0);
+        }
+      },
     });
   };
 }
