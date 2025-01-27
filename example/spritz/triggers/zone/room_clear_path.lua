@@ -1,6 +1,8 @@
 local _this = pixos.get_caller();
 pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', zone = _this }));
 
+-- todo - need to convert to lua 
+
 -- // setup camera
 -- let from = _this.engine.renderManager.camera.cameraVector;
 -- let to = _this.engine.renderManager.camera.cameraVector.sub(new _this.engine.utils.Vector(...[0, 0, 1]));
@@ -30,7 +32,7 @@ pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', zone = _this }));
 --   )
 -- );
 
--- not quite working. -- the movement seems fine amongst itself but the sprite dialogue is running too fast.
+-- run synchronously
 pixos.sync({
     pixos.move_sprite('avatar', {8, 8, 0}, false),
     pixos.sprite_dialogue('avatar', pixos.as_obj({'Welcome! This is Pixospritz!'}), pixos.as_obj({ duration = 3, autoclose = true })),
