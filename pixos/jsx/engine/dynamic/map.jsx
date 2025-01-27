@@ -38,7 +38,6 @@ export async function loadMap(json, cells, zip) {
             zones: sprite.zones ?? null,
           };
         });
-  console.log('loading map....');
 
   let $scenes = json.scenes.map((scene) => {
     return {
@@ -58,55 +57,29 @@ export async function loadMap(json, cells, zip) {
       scope: this,
     };
   });
-  console.log('loading map....');
 
   let $scripts = await Promise.all(
     json.scripts.map(async (script) => {
+      // Lua Scripting
       try {
-        
-        // Lua Scripting
-        try {
-          let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
-          console.log({ msg: 'lua script', luaScript });
-          
-          // defer execution of lua until trigger is called
-          let result = ((_this) => {
-            let interpreter = new PixosLuaInterpreter(_this.engine);
-            interpreter.setScope({ _this });
-            interpreter.initLibrary();
-            interpreter.run('print("hello world lua - zone")');
-            return {
-              id: script.id,
-              trigger: async () => {
-                console.log('running actual trigger');
-                return interpreter.run(luaScript);
-              },
-            };
-          }).bind(this)(this);
-          console.log({ msg: 'zone trigger Lua eval response', result });
+        let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
+        console.log({ msg: 'lua script', luaScript });
 
-          return result;
-        } catch (e) {
-          console.error(e);
-        }
-
-        // JS scripting
-        let triggerScript = (await zip.file(`triggers/${script.trigger}.js`).async('string')).replace(/\};/, '}');
-        let $statement =
-          `
-          ((_this)=>{return{
-            id: '` +
-          script.id +
-          `',
-            trigger: ` +
-          triggerScript +
-          `,
-          }})
-        `;
-        console.log({ msg: 'zone trigger JS eval statement', $statement });
-
-        let result = eval.call(this, $statement).call(this, this);
-        console.log({ msg: 'zone trigger JS eval response', result });
+        // defer execution of lua until trigger is called
+        let result = ((_this) => {
+          let interpreter = new PixosLuaInterpreter(_this.engine);
+          interpreter.setScope({ _this });
+          interpreter.initLibrary();
+          interpreter.run('print("hello world lua - zone")');
+          return {
+            id: script.id,
+            trigger: async () => {
+              console.log('running actual trigger');
+              return interpreter.run(luaScript);
+            },
+          };
+        }).bind(this)(this);
+        console.log({ msg: 'zone trigger Lua eval response', result });
 
         return result;
       } catch (e) {
@@ -138,8 +111,6 @@ export async function loadMap(json, cells, zip) {
   //   };
   // });
   // console.log('adding lights....' + $lights.length);
-
-  console.log('loading map....');
 
   return {
     // size of map

@@ -18,4 +18,4 @@
   pixos.to(sprite, { inventory = existingInventory });
 
   -- look into figuring this call back out.
-  -- finish(true);
+  pixos.finish(true);
