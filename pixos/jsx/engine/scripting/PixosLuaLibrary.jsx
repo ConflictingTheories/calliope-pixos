@@ -1,3 +1,5 @@
+import { EventLoader } from '@Engine/utils/loaders/index.jsx';
+
 export default class PixosLuaLibrary {
   /**
    * Constructor
@@ -12,7 +14,6 @@ export default class PixosLuaLibrary {
    * Create Script Environment
    */
   getLibrary = (engine, envScope) => {
-
     console.log({ msg: 'creating lua library', envScope });
 
     return new this.lua.Table({
@@ -83,8 +84,84 @@ export default class PixosLuaLibrary {
         return envScope._this.loadScripts(scripts);
       },
 
+      // camera functions
+      // ...
+      set_camera: () => {
+        engine.renderManager.camera.setCamera();
+      },
+      get_camera_vector: () => {
+        return engine.renderManager.camera.cameraVector;
+      },
+      look_at: (pos, trgt, up) => {
+        let position = this.lua.utils.ensureArray(pos.toObject());
+        let target = this.lua.utils.ensureArray(trgt.toObject());
+        let upDir = this.lua.utils.ensureArray(up.toObject());
+        engine.renderManager.camera.lookAt(position, target, upDir);
+      },
+      pan_camera: (from, to, duration) => {
+        console.log({ msg: 'panning camera via lua', from, to, duration });
+        return () =>
+          new Promise((resolve) => {
+            engine.spritz.world.addEvent(
+              new EventLoader(
+                engine,
+                'camera',
+                [
+                  'pan',
+                  {
+                    from: from,
+                    to: to,
+                    duration: duration,
+                  },
+                ],
+                engine.spritz.world,
+                async () => {
+                  resolve();
+                }
+              )
+            );
+          });
+      },
+      
+      _pan: (direction, radians = Math.PI / 4) => {
+        if (direction === 'CCW') {
+          engine.renderManager.camera.panCCW(this.luainjs.CoerceArgToFloat(radians));
+        } else {
+          engine.renderManager.camera.panCW(this.luainjs.CoerceArgToFloat(radians));
+        }
+      },
+      pitch: (direction, radians = Math.PI / 4) => {
+        if (direction === 'CCW') {
+          engine.renderManager.camera.pitchCCW(this.luainjs.CoerceArgToFloat(radians));
+        } else {
+          engine.renderManager.camera.pitchCW(this.luainjs.CoerceArgToFloat(radians));
+        }
+      },
+      tilt: (direction, radians = Math.PI / 4) => {
+        if (direction === 'CCW') {
+          engine.renderManager.camera.tiltCCW(this.luainjs.CoerceArgToFloat(radians));
+        } else {
+          engine.renderManager.camera.tiltCW(this.luainjs.CoerceArgToFloat(radians));
+        }
+      },
+
+      // input functions
+      // ...
+
+      // audio functions
+      // ...
+
       // sprite functions
       // ...
+
+      // math functions
+      vector: (tbl) => {
+        let [x, y, z] = this.lua.utils.ensureArray(tbl.toObject());
+        return new engine.utils.Vector(x, y, z);
+      },
+      vec_sub: (a, b) => {
+        return a.sub(b);
+      },
 
       // misc utils & functions
       sync: async (p) => {
@@ -121,7 +198,7 @@ export default class PixosLuaLibrary {
       },
       callback_finish: (success) => {
         console.log({ msg: 'callback finish', success });
-        if(envScope.finish){
+        if (envScope.finish) {
           envScope.finish(success > 0);
         }
       },

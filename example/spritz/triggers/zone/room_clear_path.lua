@@ -1,36 +1,25 @@
 local _this = pixos.get_caller();
 pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', zone = _this }));
 
--- todo - need to convert to lua 
+-- setup camera
+local from = pixos.get_camera_vector();
+local to = pixos.vec_sub(pixos.get_camera_vector(),pixos.vector({0, 0, 1}));
 
--- // setup camera
--- let from = _this.engine.renderManager.camera.cameraVector;
--- let to = _this.engine.renderManager.camera.cameraVector.sub(new _this.engine.utils.Vector(...[0, 0, 1]));
--- to.z = to.z % 9; // lock to every 45 degrees
--- if (to.z === 0 && from.z === 8) {
+-- lock to every 45 degrees
+pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', from = from, to = to }));
+
+-- to.z = to.z % 9;
+-- if (to.z === 0 && from.z === 8) then
 --   from.z = 0;
--- }
--- if (to.z === 0 && from.z === 7) {
+-- end;
+-- if (to.z === 0 && from.z === 7) then
 --   to.z = 8;
--- }
+-- end;
 
--- // pan camera
--- await _this.world.addEvent(
---   new _this.EventLoader(
---     _this.engine,
---     'camera',
---     [
---       'pan',
---       {
---         from,
---         to,
---         duration: 1,
---       },
---     ],
---     _this.world,
---     async () => {}
---   )
--- );
+-- run synchronously
+pixos.sync({
+    pixos.pan_camera(from, to, 1),
+});
 
 -- run synchronously
 pixos.sync({
