@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React from 'react';
-import SplashScreen from './splash';
+import React from "react";
+import SplashScreen from "./splash";
 // ASSETS & APP STYLES
-import '../../theme/less/App.less';
+import "../../theme/less/App.less";
 // Splash Screen
 export default function withSplashScreen(WrappedComponent) {
   return class extends React.Component {

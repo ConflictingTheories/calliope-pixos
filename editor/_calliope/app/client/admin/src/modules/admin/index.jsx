@@ -11,27 +11,34 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React from 'react';
-import { collect, store } from 'react-recollect';
+import React from "react";
+import { collect, store } from "react-recollect";
 
 // RSuite UI Library
-import { Container, Content, Row, Col, Notification, Placeholder } from 'rsuite';
-import 'rsuite/dist/styles/rsuite-default.css';
+import {
+  Container,
+  Content,
+  Row,
+  Col,
+  Notification,
+  Placeholder,
+} from "rsuite";
+import "rsuite/dist/styles/rsuite-default.css";
 
 // BLUEPRINT STYLES
-import { Intent, Callout } from '@blueprintjs/core';
+import { Intent, Callout } from "@blueprintjs/core";
 // BLUEPRINT STYLES
-import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/icons/lib/css/blueprint-icons.css';
+import "@blueprintjs/core/lib/css/blueprint.css";
+import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
-import NavBar from '../../components/nav';
-import SideMenu from '../../components/menu';
-import Post from '../../components/post';
+import NavBar from "../../components/nav";
+import SideMenu from "../../components/menu";
+import Post from "../../components/post";
 // ASSETS & APP STYLES
-import '../../theme/less/App.less';
+import "../../theme/less/App.less";
 
 //SERVICES
-import { posts } from '../../services/content';
+import { posts } from "../../services/content";
 
 const { Paragraph } = Placeholder;
 
@@ -69,7 +76,7 @@ class Dashboard extends React.Component {
       setTimeout(
         () =>
           Notification.open({
-            title: 'Welcome to Calliope',
+            title: "Welcome to Calliope",
             description: <Paragraph width={320} rows={3} />,
           }),
         ~~(Math.random() * 10000)
@@ -81,16 +88,24 @@ class Dashboard extends React.Component {
     return (
       <div
         style={{
-          display: 'flex',
+          display: "flex",
           flex: 1,
-          flexDirection: 'row',
-          minHeight: '100vh',
+          flexDirection: "row",
+          minHeight: "100vh",
         }}
       >
-        <SideMenu activeKey={'1'} style={{ flex: 1, flexShrink: 1, flexGrow: 0 }} />
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
+        <SideMenu
+          activeKey={"1"}
+          style={{ flex: 1, flexShrink: 1, flexGrow: 0 }}
+        />
+        <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
           <Container className="calliope-container">
-            <NavBar isLogin={false} renderBrand={this.renderClientSelect} renderBar={() => null} renderRight={() => null} />
+            <NavBar
+              isLogin={false}
+              renderBrand={this.renderClientSelect}
+              renderBar={() => null}
+              renderRight={() => null}
+            />
             <Content>{this.renderPosts()}</Content>
           </Container>
         </div>

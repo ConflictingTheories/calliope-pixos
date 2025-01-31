@@ -1,62 +1,65 @@
 // Techno Cyberpunk Mode (Can be set in config)
 //
-const fonts = ['https://fonts.googleapis.com/css?family=Rock+Salt', 'https://fonts.googleapis.com/css?family=Orbitron'];
+const fonts = [
+  "https://fonts.googleapis.com/css?family=Rock+Salt",
+  "https://fonts.googleapis.com/css?family=Orbitron",
+];
 
 // Dark Mode Colours
 const dark = {
   // Colours
-  primaryColor: 'rgba(37, 1, 63, 0.52)',
-  secondaryColor: '#ab00aa77',
-  dark: '#222',
-  textColor: 'hotpink',
-  linkColor: 'hsl( 300deg, 20%, 50% )',
+  primaryColor: "rgba(37, 1, 63, 0.52)",
+  secondaryColor: "#ab00aa77",
+  dark: "#222",
+  textColor: "hotpink",
+  linkColor: "hsl( 300deg, 20%, 50% )",
 
   // Grays
-  darkGray: '#444',
-  midGray: '#777',
-  lightGray: '#aaa',
-  slateGray: '#30404d',
+  darkGray: "#444",
+  midGray: "#777",
+  lightGray: "#aaa",
+  slateGray: "#30404d",
 
   // Mid Tones
-  coldGray: '#455',
-  rustGray: '#544',
-  warmGray: '#664',
+  coldGray: "#455",
+  rustGray: "#544",
+  warmGray: "#664",
 
   // Gradients
-  primaryGrad: 'linear-gradient(45deg, @primaryColor, black)',
-  secondaryGrad: 'linear-gradient(45deg,indigo,black)',
+  primaryGrad: "linear-gradient(45deg, @primaryColor, black)",
+  secondaryGrad: "linear-gradient(45deg,indigo,black)",
 };
 
 // Light Mode (Default)
 const light = {
   // Colours
-  primaryColor: '#5BBFBA',
-  secondaryColor: '#5F6CAF',
-  dark: '#222',
-  textColor: '#111',
-  linkColor: '#61dafb',
+  primaryColor: "#5BBFBA",
+  secondaryColor: "#5F6CAF",
+  dark: "#222",
+  textColor: "#111",
+  linkColor: "#61dafb",
 
   // Mid Tones
-  green: '#A4D4AE',
-  orange: '#F0CF85',
-  yellow: '#E7F0C3',
+  green: "#A4D4AE",
+  orange: "#F0CF85",
+  yellow: "#E7F0C3",
 
   // Grays
-  darkGray: '#444',
-  midGray: '#777',
-  lightGray: '#aaa',
-  slateGray: '#30404d',
+  darkGray: "#444",
+  midGray: "#777",
+  lightGray: "#aaa",
+  slateGray: "#30404d",
 
   // Gradients
-  primaryGrad: 'linear-gradient(45deg, #5BBFBA, #5F6CAF)',
-  secondaryGrad: 'linear-gradient(45deg,#5F6CAF,white)',
+  primaryGrad: "linear-gradient(45deg, #5BBFBA, #5F6CAF)",
+  secondaryGrad: "linear-gradient(45deg,#5F6CAF,white)",
 };
 
 // Theme Initialization Hook
 const initializeTheme = (c) => {
   var w = (c.width = window.innerWidth),
     h = (c.height = window.innerHeight),
-    ctx = c.getContext('2d'),
+    ctx = c.getContext("2d"),
     minDist = 10,
     maxDist = 30,
     initialWidth = 10,
@@ -91,15 +94,15 @@ const initializeTheme = (c) => {
 
     for (var i = 0; i < initialLines; ++i) lines.push(new Line(starter));
 
-    ctx.fillStyle = '#222';
+    ctx.fillStyle = "#222";
     ctx.fillRect(0, 0, w, h);
 
     // if you want a cookie ;)
-    ctx.lineCap = 'round';
+    ctx.lineCap = "round";
   }
   // Get Techno Colour
   function getColor(x) {
-    return 'hsl( hue, 20%, 50% )'.replace('hue', (x / w) * 360 + frame);
+    return "hsl( hue, 20%, 50% )".replace("hue", (x / w) * 360 + frame);
   }
   // Animate
   function anim() {
@@ -142,7 +145,10 @@ const initializeTheme = (c) => {
       var dir = dirs[(Math.random() * dirs.length) | 0];
       this.vx = dir[0];
       this.vy = dir[1];
-    } while ((this.vx === -parent.vx && this.vy === -parent.vy) || (this.vx === parent.vx && this.vy === parent.vy));
+    } while (
+      (this.vx === -parent.vx && this.vy === -parent.vy) ||
+      (this.vx === parent.vx && this.vy === parent.vy)
+    );
 
     this.vx *= speed;
     this.vy *= speed;
@@ -162,7 +168,8 @@ const initializeTheme = (c) => {
     if (this.dist <= 0 && this.width > 1) {
       this.dist = Math.random() * (maxDist - minDist) + minDist;
       if (lines.length < maxLines) lines.push(new Line(this));
-      if (lines.length < maxLines && Math.random() < 0.5) lines.push(new Line(this));
+      if (lines.length < maxLines && Math.random() < 0.5)
+        lines.push(new Line(this));
       if (Math.random() < 0.2) dead = true;
     }
     // Stroke
@@ -178,7 +185,7 @@ const initializeTheme = (c) => {
   init();
   anim();
   // Refresh on Resize Events
-  window.addEventListener('resize', function () {
+  window.addEventListener("resize", function () {
     w = c.width = window.innerWidth;
     h = c.height = window.innerHeight;
     starter.x = ~~(Math.random() * w) / 2;

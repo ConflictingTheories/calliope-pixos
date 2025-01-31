@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from 'react';
-import { collect } from 'react-recollect';
+import React, { Component } from "react";
+import { collect } from "react-recollect";
 
 class SideMenu extends Component {
   constructor(props) {
