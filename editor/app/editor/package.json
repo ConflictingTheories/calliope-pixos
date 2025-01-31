@@ -4,6 +4,7 @@
   "private": true,
   "author": "Kyle Derby MacInnis",
   "homepage": "/editor",
+  "license": "AGPL-3.0",
   "scripts": {
     "test": "craco test",
     "eject": "react-scripts eject"

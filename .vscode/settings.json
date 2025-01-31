@@ -5,7 +5,11 @@
     "example/node_modules": true,
     "node_modules": true,
     "example/build": true,
-    "build": true
+    "build": true,
+    "editor/node_modules": true,
+    "editor/app/node_modules": true,
+    "editor/app/editor/node_modules": true,
+    "extension/node_modules": true
   },
   "workspace.isHidden": true
 }

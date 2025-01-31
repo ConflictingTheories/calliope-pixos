@@ -24,7 +24,7 @@ import "@sweetalert2/themes/dark/dark.min.css";
 // Components
 import NavBar from "../../components/nav";
 import SideMenu from "../../components/menu";
-import MarkdownEdit from "../../components/edit";
+import ScriptEdit from "../../components/script";
 
 // ASSETS & APP STYLES
 import "../../theme/less/App.less";
@@ -39,10 +39,10 @@ class Dashboard extends React.Component {
     super(props);
     this.edit = this.edit.bind(this);
     this.create = this.create.bind(this);
-    this.fetchLists = this.fetchLists.bind(this);
-    this.fetchPost = this.fetchPost.bind(this);
-    this.renderPosts = this.renderPosts.bind(this);
-    this.renderPages = this.renderPages.bind(this);
+    this.fetchFileLists = this.fetchFileLists.bind(this);
+    this.fetchScript = this.fetchScript.bind(this);
+    this.renderCallbacks = this.renderCallbacks.bind(this);
+    this.renderTriggers = this.renderTriggers.bind(this);
     this.profilePanel = this.renderPanel.bind(this);
   }
 
@@ -51,7 +51,7 @@ class Dashboard extends React.Component {
     store.show = false;
     store.isEditting = false;
     store.isSaved = true;
-    await this.fetchLists();
+    await this.fetchFileLists();
     setTimeout(
       () =>
         Notification.open({
@@ -62,11 +62,15 @@ class Dashboard extends React.Component {
     );
   }
 
-  async fetchLists() {
+  async fetchFileLists() {
+    // todo - fetch scripts and different files
     const resultPosts = await posts();
     const resultPages = await pages();
-    store.posts = resultPosts;
-    store.pages = resultPages;
+
+    //
+
+    store.triggers = resultPosts;
+    store.callbacks = resultPages;
   }
 
   async create(type, name = "untitled") {
@@ -74,33 +78,32 @@ class Dashboard extends React.Component {
     if (name === "") {
       name = "untitled";
     }
-    const date = new Date().toISOString().split(".")[0].replaceAll(/[:-]/g, ""); // Date format (ISO - No TZ - Minimized)
-    const formattedName = `${date}_${name}.md`;
+    const formattedName = `${name}.lua`;
     await save(formattedName, "", type); // Create Blank File
-    await this.fetchLists();
+    await this.fetchFileLists();
     return formattedName;
   }
 
-  async edit(post, type) {
-    store.editPost = post;
+  async edit(script, type) {
+    store.editScript = script;
     store.selectedType = type;
     // Prompt to Save if Changing
-    if (store.selectedPost != post && store.isEditting && !store.isSaved) {
+    if (store.selectedScript != script && store.isEditting && !store.isSaved) {
       this.saveChanges();
     } else {
-      // Fetch Post & Store Content
-      if (post && post !== "" && store.selectedPost != post) {
-        this.fetchPost(post, type);
+      // Fetch Script & Store Content
+      if (script && script !== "" && store.selectedScript != script) {
+        this.fetchScript(script, type);
       }
     }
   }
 
-  async fetchPost(post, type) {
-    const fileResponse = await fetch("/content/" + type + "/" + post);
+  async fetchScript(script, type) {
+    const fileResponse = await fetch("/content/" + type + "/" + script);
     if (fileResponse.ok) {
       let content = await fileResponse.text();
       store.selectedType = type;
-      store.selectedPost = post;
+      store.selectedScript = script;
       store.selectedContent = content;
       store.isEditting = true;
       store.isSaved = true;
@@ -116,12 +119,12 @@ class Dashboard extends React.Component {
       denyButtonText: `Don't save`,
     });
     if (result.isConfirmed) {
-      await save(store.selectedPost, store.selectedContent, store.selectedType);
+      await save(store.selectedScript, store.selectedContent, store.selectedType);
       Swal.fire("Saved!", "", "success");
-      await this.fetchPost(store.editPost, store.selectedType);
+      await this.fetchScript(store.editCallback, store.selectedType);
     } else if (result.isDenied) {
       Swal.fire("Changes are not saved", "", "info");
-      await this.fetchPost(store.editPost,store.selectedType);
+      await this.fetchScript(store.editCallback,store.selectedType);
     }
   }
 
@@ -136,27 +139,27 @@ class Dashboard extends React.Component {
     if (result.isConfirmed) {
       let newFile = await this.create(store.selectedType, result.value);
       Swal.fire("Created!", "", "success");
-      await this.fetchPost(newFile);
+      await this.fetchScript(newFile);
     }
   }
 
-  renderPosts() {
+  renderCallbacks() {
     return (
       <React.Fragment>
         <Row>
           <Container className="pixos-list-item">
             <List>
-              {store.posts &&
-                store.posts?.map((post) => {
+              {store.callbacks &&
+                store.callbacks?.map((callback) => {
                   return (
                     <List.Item>
                       <label>
-                        <a onClick={() => this.edit(post, "posts")}>
-                          {post.replace(/\d+T\d+_/, "")}
+                        <a onClick={() => this.edit(callback, "callbacks")}>
+                          {callback.replace(/\d+T\d+_/, "")}
                         </a>{" "}
                         <a
                           onClick={async () =>{
-                            await navigator.clipboard.writeText(`/embed/posts/${post.replace(".md","")}`);
+                            await navigator.clipboard.writeText(`/embed/callbacks/${callback.replace(".md","")}`);
                             await Swal.fire("Link Copied!", "", "success");
                           }}
                         >
@@ -173,23 +176,23 @@ class Dashboard extends React.Component {
     );
   }
 
-  renderPages() {
+  renderTriggers() {
     return (
       <React.Fragment>
         <Row>
           <Container className="pixos-list-item">
             <List>
-              {store.pages &&
-                store.pages?.map((page) => {
+              {store.triggers &&
+                store.triggers?.map((trigger) => {
                   return (
                     <List.Item>
                       <label>
-                        <a onClick={() => this.edit(page, "pages")}>
-                          {page.replace(/\d+T\d+_/, "")}
+                        <a onClick={() => this.edit(trigger, "triggers")}>
+                          {trigger.replace(/\d+T\d+_/, "")}
                         </a>{" "}
                         <a
                             onClick={async () =>{
-                              await navigator.clipboard.writeText(`/embed/pages/${page.replace(".md","")}`);
+                              await navigator.clipboard.writeText(`/embed/triggers/${trigger.replace(".lua","")}`);
                               await Swal.fire("Link Copied!", "", "success");
                             }                          }
                         >
@@ -215,42 +218,47 @@ class Dashboard extends React.Component {
             <Col md={4}>
               <details open>
                 <summary>
-                  Posts{" "}
-                  <button
-                    onClick={async () => {
-                      store.selectedType = "posts";
-                      await this.newFile();
-                    }}
-                  >
-                    + Add New Post
-                  </button>
+                  Scripts{" "}
+                  <details>
+                    <summary>
+                      Triggers{" "}
+                      <button
+                        onClick={async () => {
+                          store.selectedType = "trigger";
+                          await this.newFile();
+                        }}
+                      >
+                        + Add New Trigger
+                      </button>
+                    </summary>
+                    {this.renderTriggers()}
+                  </details>
+                  <details>
+                    <summary>
+                      Callbacks{" "}
+                      <button
+                        onClick={async () => {
+                          store.selectedType = "callback";
+                          await this.newFile();
+                        }}
+                      >
+                        + Add New Callback
+                      </button>
+                    </summary>
+                    {this.renderCallbacks()}
+                  </details>
                 </summary>
-                {this.renderPosts()}
-              </details>
-              <details open>
-                <summary>
-                  Pages{" "}
-                  <button
-                    onClick={async () => {
-                      store.selectedType = "pages";
-                      await this.newFile();
-                    }}
-                  >
-                    + Add New Page
-                  </button>
-                </summary>
-                {this.renderPages()}
               </details>
             </Col>
             <Col md={20}>
-              {store.selectedPost && content !== null ? (
-                <MarkdownEdit content={content} />
+              {store.selectedScript && content !== null ? (
+                <ScriptEdit content={content} />
               ) : (
                 <NonIdealState
                   style={{ height: "87vh" }}
                   icon={"build"}
                   title="Getting Started"
-                  description={"Please select a post to edit"}
+                  description={"Please select a script to edit"}
                 />
               )}
             </Col>

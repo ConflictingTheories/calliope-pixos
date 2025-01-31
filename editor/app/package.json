@@ -1,20 +1,20 @@
 {
-  "name": "pixos-ssg",
+  "name": "pixos-edito",
   "version": "1.0.0",
   "author": {
     "name": "Kyle Derby MacInnis",
     "url": "https://conflictingtheories.com"
   },
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0",
   "repository": {
     "url": "https://github.com/ConflictingTheories/pixos"
   },
   "main": "./electron/main.js",
   "homepage": "/",
   "build": {
-    "appId": "com.kderbyma.pixos",
+    "appId": "com.kderbyma.pixosEditor",
     "productName": "Pixos",
-    "copyright": "Copyright © 2020-2021 ${author}",
+    "copyright": "Copyright © 2022-2025 ${author}",
     "win": {
       "icon": "/config/public/logo512.png"
     },
@@ -41,10 +41,10 @@
     "aws-sdk": "^2.761.0",
     "babel-preset-react-app": "^10.0.0",
     "body-parser": "^1.19.0",
-    "pixos-blockworld": "^0.1.7",
-    "pixos-ipfs-stream": "^0.1.7",
-    "pixos-mermaid": "^0.1.7",
-    "pixos-pixos": "0.4.23",
+    "calliope-blockworld": "^0.1.7",
+    "calliope-ipfs-stream": "^0.1.7",
+    "calliope-mermaid": "^0.1.7",
+    "calliope-pixos": "0.4.23",
     "config": "^3.3.2",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",

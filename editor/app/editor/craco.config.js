@@ -13,8 +13,8 @@
 
 const CracoLessPlugin = require('craco-less');
 
-const Env = require('../../config/env');
-const themeSettings = require(`../../config/themes/${Env.PIXOS_THEME || 'default'}`);
+const Env = require('../config/env');
+const themeSettings = require(`../config/themes/${Env.PIXOS_THEME || 'default'}`);
 const theme = Env.THEME_DARK ? themeSettings.dark : themeSettings.light;
 
 module.exports = {

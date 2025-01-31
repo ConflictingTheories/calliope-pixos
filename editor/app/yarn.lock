@@ -4244,34 +4244,34 @@ caller-path@^2.0.0:
   dependencies:
     caller-callsite "^2.0.0"
 
-pixos-blockworld@^0.1.7:
+calliope-blockworld@^0.1.7:
   version "0.1.8"
-  resolved "https://registry.yarnpkg.com/pixos-blockworld/-/pixos-blockworld-0.1.8.tgz#ffae07bfc1e74e05b2a83dec59d57fee48c8c19c"
+  resolved "https://registry.yarnpkg.com/calliope-blockworld/-/calliope-blockworld-0.1.8.tgz#ffae07bfc1e74e05b2a83dec59d57fee48c8c19c"
   integrity sha512-Q6qAog7CDhi6areDAmZmIF5SmHS3mNy5oV00lFdwuNH3ETD7baB2MNCRQIJy8yGlpQj8xWPoDZUXX5rdqneafQ==
   dependencies:
     babel-loader "^8.2.3"
     css-loader "^6.5.1"
     style-loader "^3.3.1"
 
-pixos-ipfs-stream@^0.1.7:
+calliope-ipfs-stream@^0.1.7:
   version "0.1.8"
-  resolved "https://registry.yarnpkg.com/pixos-ipfs-stream/-/pixos-ipfs-stream-0.1.8.tgz#bfb56f45edfda70ce1a9c6fd7a5d76061136aa0b"
+  resolved "https://registry.yarnpkg.com/calliope-ipfs-stream/-/calliope-ipfs-stream-0.1.8.tgz#bfb56f45edfda70ce1a9c6fd7a5d76061136aa0b"
   integrity sha512-BYQXo3wiyel8m0QY+BQ8/wbXj8vMJ06fxK03zVJTiLQPvieFn0LXuGHZA2SqX1IwBbpEzcpPjqbxPNBaB7VsBg==
   dependencies:
     hls.js "^1.1.1"
     hlsjs-ipfs-loader "^0.3.1"
     ipfs-core "^0.12.1"
 
-pixos-mermaid@^0.1.7:
+calliope-mermaid@^0.1.7:
   version "0.1.8"
-  resolved "https://registry.yarnpkg.com/pixos-mermaid/-/pixos-mermaid-0.1.8.tgz#e8c0cdda684e95c0b747725e9b991b4f55c226b9"
+  resolved "https://registry.yarnpkg.com/calliope-mermaid/-/calliope-mermaid-0.1.8.tgz#e8c0cdda684e95c0b747725e9b991b4f55c226b9"
   integrity sha512-RvuOwqRH9L9bqFlrwmktmOslp2BYfpxw2VhuATfaRp12qXoPW2Qml+Bw87w8O6i1nyKbVaoY+lfNMM+xDWkVMw==
   dependencies:
     react-mermaid2 "^0.1.4"
 
-pixos-pixos@0.4.23:
+calliope-pixos@0.4.23:
   version "0.4.23"
-  resolved "https://registry.yarnpkg.com/pixos-pixos/-/pixos-pixos-0.4.23.tgz#0269a5e665182c415fa04867c9afbea6db1b8974"
+  resolved "https://registry.yarnpkg.com/calliope-pixos/-/calliope-pixos-0.4.23.tgz#0269a5e665182c415fa04867c9afbea6db1b8974"
   integrity sha512-s8eMTFG5CjCScHrliTB1b6uJHimp0PDOimasQcOwUDBs0fXd8NoMXiKTloLTW5Aa7xATJMK8Qoga106/qO1pfQ==
   dependencies:
     babel-loader "^8.2.3"
