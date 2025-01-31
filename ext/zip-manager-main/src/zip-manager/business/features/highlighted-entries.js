@@ -128,11 +128,21 @@ function getHighlightedEntriesFeatures({
     });
   }
 
-  function openPromptExtract(entry = highlightedEntry) {
+  function openFile(entry = highlightedEntry) {
     const options = {
       entries: [entry],
       filename: entry.name,
     };
+
+    // todo -- this is where we can add additional
+    // functionality to handle the various file types
+    // and their locations.
+
+    // ex) if lua - open in lua editor
+    // ex) if image - open in image viewer
+    // etc.
+
+    // prompt to save file
     if (filesystemService.savePickersSupported()) {
       extract(options);
     } else {
@@ -202,7 +212,7 @@ function getHighlightedEntriesFeatures({
     openConfirmDeleteEntries,
     deleteEntries,
     closeConfirmDeleteEntries,
-    openPromptExtract,
+    openFile,
     extract,
     closePromptExtract,
     onHighlightedEntriesKeyUp,

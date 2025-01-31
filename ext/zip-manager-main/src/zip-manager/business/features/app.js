@@ -11,7 +11,7 @@ function getAppFeatures({
   setHistory,
   setClickedButtonName,
   goIntoFolder,
-  openPromptExtract,
+  openFile,
   refreshSelectedFolder,
   modifierKeyPressed,
   stylesheetService,
@@ -54,7 +54,7 @@ function getAppFeatures({
     if (entry.directory) {
       goIntoFolder(entry);
     } else {
-      openPromptExtract(entry);
+      openFile(entry);
     }
   }
 
