@@ -1,0 +1,375 @@
+@font-face {
+  font-family: "DOS-VGA-437";
+  src: url("/assets/fonts/dos-vga-9x16.ttf");
+  font-display: swap;
+}
+
+.skin-dos {
+  --gap-inline-size: 2ch;
+  --gap-block-size: calc(1em * 1.25);
+  --border-width: 0;
+  --button-padding-inline-size: var(--gap-inline-size);
+  --button-padding-block-size: 0;
+  --border-radius-width: 0;
+  --list-item-padding-inline-size: 0;
+  --list-item-padding-block-size: 0;
+  --outline-color: var(--accent-color);
+  --outline-width: 0;
+  --dialog-margin-block-start: calc(
+    var(--gap-block-size) + var(--small-gap-block-size) -
+      var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos * {
+  line-height: 1.25;
+}
+
+.skin-dos body {
+  font-family: "DOS-VGA-437", monospace;
+}
+
+.skin-dos body::after {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.skin-dos dialog[open] form::after {
+  top: calc(-1 * var(--smaller-gap-inline-size));
+  left: calc(-1 * var(--smaller-gap-block-size));
+  width: calc(100% + 2 * var(--small-gap-inline-size));
+  height: calc(100% + 2 * var(--small-gap-block-size));
+}
+
+.skin-dos main,
+.skin-dos dialog {
+  position: relative;
+  overflow: visible;
+  border-width: var(--smaller-gap-block-size) var(--smaller-gap-inline-size);
+}
+
+.skin-dos main::before,
+.skin-dos dialog::before,
+.skin-dos main:after,
+.skin-dos dialog::after {
+  position: absolute;
+  content: "";
+  background-color: var(--darker-accent-color);
+}
+
+.skin-dos main::before {
+  top: var(--smaller-gap-block-size);
+  right: calc(
+    -1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size)
+  );
+  inline-size: var(--small-gap-inline-size);
+  block-size: calc(
+    100% + var(--small-gap-block-size) - var(--smaller-gap-block-size) +
+      var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos main:after {
+  left: var(--smaller-gap-inline-size);
+  bottom: calc(
+    -1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+  inline-size: calc(100% + var(--small-gap-inline-size));
+  block-size: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos dialog::before {
+  right: calc(
+    -1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size)
+  );
+  inline-size: var(--small-gap-inline-size);
+  block-size: calc(
+    100% + var(--small-gap-block-size) - var(--smaller-gap-block-size)
+  );
+}
+
+.skin-dos dialog::after {
+  left: var(--smaller-gap-inline-size);
+  bottom: calc(
+    -1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+  inline-size: calc(100% + var(--small-gap-inline-size));
+  block-size: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos main {
+  margin-block-start: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+  min-inline-size: min(85dvw, 132ch);
+  inline-size: min(85dvw, 132ch);
+  inline-size: min(round(up, 85dvw, 1ch), 132ch);
+}
+
+.skin-dos main,
+.skin-dos main > *,
+.skin-dos dialog {
+  border-style: double;
+}
+
+.skin-dos main > * {
+  padding-inline: var(--smaller-gap-inline-size);
+  padding-block: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+  border-block-end-width: var(--smaller-gap-block-size);
+}
+
+.skin-dos button {
+  margin: 0;
+}
+
+.skin-dos button:focus {
+  filter: brightness(var(--brightness-hover));
+  outline-width: 0;
+}
+
+.skin-dos .scrollable::-webkit-scrollbar {
+  inline-size: var(--small-gap-inline-size);
+  background-color: var(--bg-disabled-button-color);
+}
+
+.skin-dos .scrollable::-webkit-scrollbar-thumb,
+.skin-dos .scrollable::-webkit-scrollbar-track {
+  border-radius: 0;
+}
+
+.skin-dos input[type="checkbox"] {
+  font-family: "DOS-VGA-437", monospace;
+  accent-color: var(--text-color);
+  appearance: none;
+  cursor: pointer;
+}
+
+.skin-dos input[type="checkbox"]:after {
+  content: "[ ]";
+}
+
+.skin-dos input[type="checkbox"]:focus:after {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+.skin-dos input[type="checkbox"]:checked::after {
+  content: "[■]";
+}
+
+.skin-dos .button-bar,
+.skin-dos .button-bar .button-group {
+  row-gap: var(--small-gap-block-size);
+}
+
+.skin-dos .history-buttons button {
+  font-family: "DOS-VGA-437", monospace;
+  padding-inline: var(--button-padding-inline-size);
+}
+
+.skin-dos .navigation-bar {
+  column-gap: var(--small-gap-inline-size);
+}
+
+.skin-dos .breadcrumb ol,
+.skin-dos .breadcrumb li,
+.skin-dos .entries .entry-name {
+  column-gap: var(--small-gap-inline-size);
+}
+
+.skin-dos .breadcrumb .breadcrumb-item-active,
+.skin-dos .breadcrumb .breadcrumb-item-active:focus {
+  text-decoration: underline var(--accent-color) var(--large-border-width);
+}
+
+.skin-dos .breadcrumb .breadcrumb-item {
+  margin: 0;
+}
+
+.skin-dos .breadcrumb .breadcrumb-item-active:focus {
+  outline: 0;
+  filter: brightness(var(--brightness-hover));
+}
+
+.skin-dos .entries {
+  padding-block-start: 0;
+  margin-block-start: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos .entries li {
+  column-gap: var(--small-gap-inline-size);
+}
+
+.skin-dos .entries .entry-select {
+  color: var(--text-color);
+}
+
+.skin-dos .entries .entry-select:checked {
+  color: var(--bg-color);
+}
+
+.skin-dos .entries .entry-select:focus:after {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.skin-dos .entries .entry-select:checked:focus:after {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+.skin-dos .info-bar {
+  margin-block-end: 0;
+  padding-block: var(--gap-block-size);
+  min-block-size: var(--gap-block-size);
+  font-size: 0.8em;
+}
+
+.skin-dos .info-bar canvas {
+  bottom: calc(-1.25 * var(--gap-block-size));
+}
+
+.skin-dos dialog {
+  min-inline-size: min(75dvw, 50ch);
+  inline-size: min(75dvw, 50ch);
+  inline-size: min(round(up, 75dvw, 1ch), 50ch);
+  padding-inline: var(--smaller-gap-inline-size);
+  padding-block: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
+  );
+}
+
+.skin-dos dialog form,
+.skin-dos dialog form p {
+  row-gap: 0;
+}
+
+.skin-dos dialog form p {
+  margin: 0;
+  padding-inline: var(--small-gap-inline-size);
+  padding-block-start: var(--large-gap-block-size);
+}
+
+.skin-dos dialog form .dialog-title {
+  padding-inline-start: var(--small-gap-inline-size);
+  padding-block-end: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4
+  );
+  border-block-end: solid var(--accent-color)
+    calc(var(--smaller-gap-block-size) / 2);
+}
+
+.skin-dos dialog form p {
+  row-gap: var(--gap-block-size);
+  padding-block-start: calc(
+    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4
+  );
+  padding-block-end: 0;
+}
+
+.skin-dos dialog label {
+  row-gap: 0;
+}
+
+.skin-dos dialog input {
+  appearance: textfield;
+  caret-shape: underscore;
+}
+
+.skin-dos dialog select {
+  appearance: none;
+}
+
+.skin-dos dialog input::-webkit-inner-spin-button {
+  appearance: none;
+}
+
+.skin-dos dialog input,
+.skin-dos dialog select {
+  padding: 0;
+  block-size: var(--gap-block-size);
+  inline-size: 100%;
+}
+
+.skin-dos dialog select:focus {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+.skin-dos .options-dialog label {
+  min-block-size: auto;
+}
+
+.skin-dos .options-dialog form p {
+  row-gap: 0;
+}
+
+.skin-dos .options-dialog input[type="checkbox"] {
+  inline-size: inherit;
+  block-size: inherit;
+  accent-color: inherit;
+}
+
+.skin-dos .options-dialog input,
+.skin-dos .options-dialog select {
+  inline-size: min(10ch, 100%);
+  text-align: right;
+}
+
+.skin-dos .downloads,
+.main-container.hidden-downloads .button-bar-bottom {
+  border-block-end-width: 0;
+}
+
+@media (display-mode: standalone) or (orientation: portrait) or (max-aspect-ratio: 7/5) {
+  .skin-dos .main-container:not(.hidden-footer) .downloads,
+  .main-container.hidden-downloads:not(.hidden-footer) .button-bar-bottom {
+    border-block-end-width: var(--smaller-gap-block-size);
+  }
+
+  .skin-dos main {
+    inline-size: 100%;
+    inline-size: round(down, 100%, 1ch);
+    margin-block-start: 0;
+    border-width: 0;
+  }
+
+  .skin-dos main::before,
+  .skin-dos main:after {
+    content: none;
+  }
+
+  .skin-dos main > :first-child {
+    padding-block-start: var(--small-gap-block-size);
+    padding-inline: var(--small-gap-inline-size);
+  }
+
+  .skin-dos main > * {
+    padding-inline: var(--small-gap-inline-size);
+  }
+
+  .skin-dos .info-bar {
+    margin-block-start: var(--small-gap-block-size);
+    padding-block: var(--small-gap-inline-size);
+  }
+
+  .skin-dos .info-bar canvas {
+    bottom: calc(-0.75 * var(--gap-block-size));
+  }
+
+  .skin-dos dialog {
+    margin-block-start: calc(
+      var(--gap-block-size) - var(--smaller-gap-block-size) / 2
+    );
+  }
+}

@@ -13,7 +13,7 @@
   "homepage": "/",
   "build": {
     "appId": "com.kderbyma.pixosEditor",
-    "productName": "Pixos",
+    "productName": "Pixospritz Editor",
     "copyright": "Copyright © 2022-2025 ${author}",
     "win": {
       "icon": "/config/public/logo512.png"
@@ -34,6 +34,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.31.0",
     "@fec/remark-a11y-emoji": "^2.0.0",
+    "@monaco-editor/react": "^4.6.0",
     "@nvd/use-webgl": "^0.1.0",
     "@sweetalert2/themes": "^4.0.2",
     "@uiw/react-md-editor": "^3.7.0",
@@ -76,6 +77,7 @@
     "rsuite": "^4.8.2",
     "sequelize": "^6.3.5",
     "shelljs": "^0.8.4",
+    "styled-components": "^6.1.14",
     "sweetalert2": "^10.13.0"
   },
   "scripts": {

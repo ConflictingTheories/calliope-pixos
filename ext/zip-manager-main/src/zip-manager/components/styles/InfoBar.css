@@ -1,0 +1,101 @@
+.info-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: var(--gap-block-size);
+  margin-inline: var(--gap-inline-size);
+  inline-size: 100%;
+  overflow: hidden;
+}
+
+.info-bar .source-link {
+  display: inline;
+  color: var(--basic-text-color);
+  text-align: center;
+  position: relative;
+  overflow: visible;
+}
+
+.info-bar .source-link * {
+  font-size: 0.8rem;
+}
+
+.info-bar .source-link a {
+  text-decoration: none;
+}
+
+.info-bar .source-link a svg {
+  width: 1em;
+  height: 1em;
+  margin-bottom: -2px;
+}
+
+.info-bar .player-active :not(canvas) {
+  opacity: 0.5;
+  color: var(--basic-text-color);
+  transition: all 0.2s;
+}
+
+.info-bar .player-active .label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.info-bar:hover .source-link.player-active canvas {
+  opacity: 0.2;
+}
+
+.info-bar:hover .player-active * {
+  opacity: 1;
+  pointer-events: inherit;
+}
+
+.info-bar:hover .source-link.player-active .icon {
+  color: var(--accent-color);
+  opacity: 1;
+}
+
+.info-bar .icon {
+  display: inline-block;
+  color: var(--accent-color);
+  inline-size: 1.75ch;
+  user-select: none;
+}
+
+.info-bar .icon-music-player {
+  inline-size: 2.25ch;
+}
+
+.info-bar input[type="color"],
+.info-bar .icon-music-player {
+  cursor: pointer;
+  outline-width: 0;
+}
+
+.icon-music-player.paused {
+  color: inherit;
+}
+
+.info-bar .icon:hover {
+  filter: brightness(var(--brightness-hover));
+}
+
+.info-bar input[type="color"] {
+  position: relative;
+  left: -1.75ch;
+  margin-right: -1.8ch;
+  inline-size: 1.8ch;
+  block-size: 1.25em;
+  padding: 0;
+  filter: opacity(0);
+}
+
+.info-bar canvas {
+  position: absolute;
+  bottom: calc(-1 * var(--gap-block-size));
+  left: -7.5%;
+  z-index: -1;
+  inline-size: 115%;
+  block-size: calc(100% + var(--gap-block-size));
+  opacity: 0.4;
+}

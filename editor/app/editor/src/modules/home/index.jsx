@@ -22,6 +22,7 @@ import '../../theme/less/App.less';
 
 //SERVICES
 import { posts, pages, save } from '../../services/content';
+import Zip from '../../components/zip';
 
 const { Paragraph } = Placeholder;
 
@@ -202,7 +203,10 @@ class Dashboard extends React.Component {
       <Panel style={{ width: '100%', maxWidth: '100vw' }}>
         <Content>
           <Row>
-            <Col md={4}>
+          <Col md={4}>
+             <Zip />
+            </Col>
+            {/* <Col md={4}>
               <details open>
                 <summary>
                   Scripts{' '}
@@ -236,7 +240,7 @@ class Dashboard extends React.Component {
                   </details>
                 </summary>
               </details>
-            </Col>
+            </Col> */}
             <Col md={20}>
               {store.selectedScript && content !== null ? (
                 <ScriptEdit content={content} />
