@@ -23,7 +23,7 @@ function getHighlightedEntriesFeatures({
   openDisplayError,
   filesystemService,
   modifierKeyPressed,
-  constants
+  constants,
 }) {
   const {
     CUT_KEY,
@@ -35,19 +35,19 @@ function getHighlightedEntriesFeatures({
     EXTRACT_BUTTON_NAME,
     RENAME_BUTTON_NAME,
     DELETE_KEYS,
-    DELETE_BUTTON_NAME
+    DELETE_BUTTON_NAME,
   } = constants;
 
   function copy() {
     setClipboardData({
-      entries: highlightedEntries.map((entry) => entry.clone(true))
+      entries: highlightedEntries.map((entry) => entry.clone(true)),
     });
   }
 
   function cut() {
     setClipboardData({
       entries: highlightedEntries,
-      cut: true
+      cut: true,
     });
   }
 
@@ -55,8 +55,8 @@ function getHighlightedEntriesFeatures({
     setDialogs({
       ...dialogs,
       rename: {
-        filename: highlightedEntry.name
-      }
+        filename: highlightedEntry.name,
+      },
     });
   }
 
@@ -73,14 +73,14 @@ function getHighlightedEntriesFeatures({
   function closePromptRename() {
     setDialogs({
       ...dialogs,
-      rename: null
+      rename: null,
     });
   }
 
   function openConfirmDeleteEntries() {
     setDialogs({
       ...dialogs,
-      deleteEntries: {}
+      deleteEntries: {},
     });
   }
 
@@ -94,31 +94,25 @@ function getHighlightedEntriesFeatures({
           .map(({ index }) => index)
       );
       let indexNextEntry = indexEntry;
-      while (
-        indexNextEntry < entries.length &&
-        highlightedIds.includes(entries[indexNextEntry].id)
-      ) {
+      while (indexNextEntry < entries.length && highlightedIds.includes(entries[indexNextEntry].id)) {
         indexNextEntry++;
       }
       if (indexNextEntry === entries.length) {
         indexNextEntry = indexEntry;
-        while (
-          indexNextEntry >= 0 &&
-          highlightedIds.includes(entries[indexNextEntry].id)
-        ) {
+        while (indexNextEntry >= 0 && highlightedIds.includes(entries[indexNextEntry].id)) {
           indexNextEntry--;
         }
       }
       if (entries[indexNextEntry]) {
         setNavigation({
           ...navigation,
-          previousHighlight: entries[indexNextEntry]
+          previousHighlight: entries[indexNextEntry],
         });
         setHighlightedIds([entries[indexNextEntry].id]);
       } else {
         setNavigation({
           ...navigation,
-          previousHighlight: null
+          previousHighlight: null,
         });
         setHighlightedIds([]);
       }
@@ -130,21 +124,21 @@ function getHighlightedEntriesFeatures({
   function closeConfirmDeleteEntries() {
     setDialogs({
       ...dialogs,
-      deleteEntries: null
+      deleteEntries: null,
     });
   }
 
   function openPromptExtract(entry = highlightedEntry) {
     const options = {
       entries: [entry],
-      filename: entry.name
+      filename: entry.name,
     };
     if (filesystemService.savePickersSupported()) {
       extract(options);
     } else {
       setDialogs({
         ...dialogs,
-        extract: options
+        extract: options,
       });
     }
   }
@@ -166,7 +160,7 @@ function getHighlightedEntriesFeatures({
   function closePromptExtract() {
     setDialogs({
       ...dialogs,
-      extract: null
+      extract: null,
     });
   }
 
@@ -212,7 +206,7 @@ function getHighlightedEntriesFeatures({
     extract,
     closePromptExtract,
     onHighlightedEntriesKeyUp,
-    onHighlightedEntriesKeyDown
+    onHighlightedEntriesKeyDown,
   };
 }
 

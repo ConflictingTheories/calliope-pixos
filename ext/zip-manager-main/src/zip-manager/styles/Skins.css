@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "DOS-VGA-437";
-  src: url("/assets/fonts/dos-vga-9x16.ttf");
+  font-family: 'DOS-VGA-437';
+  src: url('/assets/fonts/dos-vga-9x16.ttf');
   font-display: swap;
 }
 
@@ -15,10 +15,7 @@
   --list-item-padding-block-size: 0;
   --outline-color: var(--accent-color);
   --outline-width: 0;
-  --dialog-margin-block-start: calc(
-    var(--gap-block-size) + var(--small-gap-block-size) -
-      var(--smaller-gap-block-size) / 2
-  );
+  --dialog-margin-block-start: calc(var(--gap-block-size) + var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos * {
@@ -26,7 +23,7 @@
 }
 
 .skin-dos body {
-  font-family: "DOS-VGA-437", monospace;
+  font-family: 'DOS-VGA-437', monospace;
 }
 
 .skin-dos body::after {
@@ -55,58 +52,39 @@
 .skin-dos main:after,
 .skin-dos dialog::after {
   position: absolute;
-  content: "";
+  content: '';
   background-color: var(--darker-accent-color);
 }
 
 .skin-dos main::before {
   top: var(--smaller-gap-block-size);
-  right: calc(
-    -1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size)
-  );
+  right: calc(-1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size));
   inline-size: var(--small-gap-inline-size);
-  block-size: calc(
-    100% + var(--small-gap-block-size) - var(--smaller-gap-block-size) +
-      var(--smaller-gap-block-size) / 2
-  );
+  block-size: calc(100% + var(--small-gap-block-size) - var(--smaller-gap-block-size) + var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos main:after {
   left: var(--smaller-gap-inline-size);
-  bottom: calc(
-    -1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  bottom: calc(-1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
   inline-size: calc(100% + var(--small-gap-inline-size));
-  block-size: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  block-size: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos dialog::before {
-  right: calc(
-    -1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size)
-  );
+  right: calc(-1 * var(--smaller-gap-inline-size) - var(--small-gap-inline-size));
   inline-size: var(--small-gap-inline-size);
-  block-size: calc(
-    100% + var(--small-gap-block-size) - var(--smaller-gap-block-size)
-  );
+  block-size: calc(100% + var(--small-gap-block-size) - var(--smaller-gap-block-size));
 }
 
 .skin-dos dialog::after {
   left: var(--smaller-gap-inline-size);
-  bottom: calc(
-    -1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  bottom: calc(-1 * var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
   inline-size: calc(100% + var(--small-gap-inline-size));
-  block-size: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  block-size: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos main {
-  margin-block-start: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  margin-block-start: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
   min-inline-size: min(85dvw, 132ch);
   inline-size: min(85dvw, 132ch);
   inline-size: min(round(up, 85dvw, 1ch), 132ch);
@@ -120,9 +98,7 @@
 
 .skin-dos main > * {
   padding-inline: var(--smaller-gap-inline-size);
-  padding-block: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  padding-block: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
   border-block-end-width: var(--smaller-gap-block-size);
 }
 
@@ -145,24 +121,24 @@
   border-radius: 0;
 }
 
-.skin-dos input[type="checkbox"] {
-  font-family: "DOS-VGA-437", monospace;
+.skin-dos input[type='checkbox'] {
+  font-family: 'DOS-VGA-437', monospace;
   accent-color: var(--text-color);
   appearance: none;
   cursor: pointer;
 }
 
-.skin-dos input[type="checkbox"]:after {
-  content: "[ ]";
+.skin-dos input[type='checkbox']:after {
+  content: '[ ]';
 }
 
-.skin-dos input[type="checkbox"]:focus:after {
+.skin-dos input[type='checkbox']:focus:after {
   background-color: var(--text-color);
   color: var(--bg-color);
 }
 
-.skin-dos input[type="checkbox"]:checked::after {
-  content: "[■]";
+.skin-dos input[type='checkbox']:checked::after {
+  content: '[■]';
 }
 
 .skin-dos .button-bar,
@@ -171,7 +147,7 @@
 }
 
 .skin-dos .history-buttons button {
-  font-family: "DOS-VGA-437", monospace;
+  font-family: 'DOS-VGA-437', monospace;
   padding-inline: var(--button-padding-inline-size);
 }
 
@@ -201,9 +177,7 @@
 
 .skin-dos .entries {
   padding-block-start: 0;
-  margin-block-start: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  margin-block-start: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos .entries li {
@@ -244,9 +218,7 @@
   inline-size: min(75dvw, 50ch);
   inline-size: min(round(up, 75dvw, 1ch), 50ch);
   padding-inline: var(--smaller-gap-inline-size);
-  padding-block: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2
-  );
+  padding-block: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos dialog form,
@@ -262,18 +234,13 @@
 
 .skin-dos dialog form .dialog-title {
   padding-inline-start: var(--small-gap-inline-size);
-  padding-block-end: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4
-  );
-  border-block-end: solid var(--accent-color)
-    calc(var(--smaller-gap-block-size) / 2);
+  padding-block-end: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4);
+  border-block-end: solid var(--accent-color) calc(var(--smaller-gap-block-size) / 2);
 }
 
 .skin-dos dialog form p {
   row-gap: var(--gap-block-size);
-  padding-block-start: calc(
-    var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4
-  );
+  padding-block-start: calc(var(--small-gap-block-size) - var(--smaller-gap-block-size) / 4);
   padding-block-end: 0;
 }
 
@@ -314,7 +281,7 @@
   row-gap: 0;
 }
 
-.skin-dos .options-dialog input[type="checkbox"] {
+.skin-dos .options-dialog input[type='checkbox'] {
   inline-size: inherit;
   block-size: inherit;
   accent-color: inherit;
@@ -368,8 +335,6 @@
   }
 
   .skin-dos dialog {
-    margin-block-start: calc(
-      var(--gap-block-size) - var(--smaller-gap-block-size) / 2
-    );
+    margin-block-start: calc(var(--gap-block-size) - var(--smaller-gap-block-size) / 2);
   }
 }

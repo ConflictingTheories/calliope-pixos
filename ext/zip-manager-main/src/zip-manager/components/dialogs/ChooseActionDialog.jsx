@@ -1,12 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-function ChooseActionDialog({
-  data,
-  onImportZipFile,
-  onAddFiles,
-  onClose,
-  messages
-}) {
+function ChooseActionDialog({ data, onImportZipFile, onAddFiles, onClose, messages }) {
   const dialogRef = useRef(null);
 
   function handleClose() {
@@ -41,9 +35,7 @@ function ChooseActionDialog({
           <div className="button-bar">
             <div className="button-group"></div>
             <div className="button-group">
-              <button type="reset">
-                {messages.DIALOG_CANCEL_BUTTON_LABEL}
-              </button>
+              <button type="reset">{messages.DIALOG_CANCEL_BUTTON_LABEL}</button>
               <button type="submit" onClick={handleAddFileClick}>
                 {messages.CHOOSE_ACTION_DIALOG_ADD_FILE_BUTTON_LABEL}
               </button>

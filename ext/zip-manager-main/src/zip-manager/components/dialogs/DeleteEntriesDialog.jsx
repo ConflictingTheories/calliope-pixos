@@ -1,4 +1,4 @@
-import Dialog from "./Dialog.jsx";
+import Dialog from './Dialog.jsx';
 
 function DeleteEntriesDialog({ data, onDeleteEntries, onClose, messages }) {
   return (

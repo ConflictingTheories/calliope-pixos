@@ -66,7 +66,7 @@
   inline-size: 2.25ch;
 }
 
-.info-bar input[type="color"],
+.info-bar input[type='color'],
 .info-bar .icon-music-player {
   cursor: pointer;
   outline-width: 0;
@@ -80,7 +80,7 @@
   filter: brightness(var(--brightness-hover));
 }
 
-.info-bar input[type="color"] {
+.info-bar input[type='color'] {
   position: relative;
   left: -1.75ch;
   margin-right: -1.8ch;

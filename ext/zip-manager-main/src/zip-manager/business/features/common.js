@@ -1,12 +1,4 @@
-function getCommonFeatures({
-  dialogs,
-  setDownloads,
-  setDialogs,
-  removeDownload,
-  downloadService,
-  filesystemService,
-  environmentService
-}) {
+function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload, downloadService, filesystemService, environmentService }) {
   const isMacOSPlatform = environmentService.isMacOSPlatform();
 
   async function saveEntries(entries, filename, options, parentHandle) {
@@ -23,11 +15,7 @@ function getCommonFeatures({
         }
       }
     }
-    await Promise.all(
-      entries.map(async (entry) =>
-        saveFile(entry, filename, options, parentHandle)
-      )
-    );
+    await Promise.all(entries.map(async (entry) => saveFile(entry, filename, options, parentHandle)));
   }
 
   async function saveFile(entry, filename, options, parentHandle) {
@@ -44,7 +32,7 @@ function getCommonFeatures({
           name,
           controller: downloadService.createAbortController(),
           progressValue: null,
-          progressMax: null
+          progressMax: null,
         };
         await saveFileEntry(name, entry, options, download, parentHandle);
       }
@@ -61,20 +49,19 @@ function getCommonFeatures({
 
   async function saveDirectoryEntry(name, entry, options, parentHandle) {
     const directoryHandle = await parentHandle.getDirectoryHandle(name, {
-      create: true
+      create: true,
     });
     await saveEntries(entry.children, null, options, directoryHandle);
   }
 
   async function saveFileEntry(name, entry, options, download, parentHandle) {
     const { signal } = download.controller;
-    const onprogress = (progressValue, progressMax) =>
-      onDownloadProgress(download.id, progressValue, progressMax);
+    const onprogress = (progressValue, progressMax) => onDownloadProgress(download.id, progressValue, progressMax);
     let fileHandle, writable, blob;
     if (filesystemService.savePickersSupported()) {
       if (parentHandle) {
         fileHandle = await parentHandle.getFileHandle(name, {
-          create: true
+          create: true,
         });
       } else {
         fileHandle = await getFileHandle(name);
@@ -90,7 +77,7 @@ function getCommonFeatures({
       nextId = nextId + 1;
       return {
         nextId,
-        queue: [download, ...downloads.queue]
+        queue: [download, ...downloads.queue],
       };
     });
     await entry.getWritable(writable, { signal, onprogress, ...options });
@@ -106,22 +93,22 @@ function getCommonFeatures({
     const blob = new Response(readable).blob();
     return {
       blob,
-      writable
+      writable,
     };
   }
 
   function getParentHandle() {
     return filesystemService.showDirectoryPicker({
-      mode: "readwrite",
-      startIn: "downloads"
+      mode: 'readwrite',
+      startIn: 'downloads',
     });
   }
 
   function getFileHandle(suggestedName) {
     return filesystemService.showSaveFilePicker({
       suggestedName,
-      mode: "readwrite",
-      startIn: "downloads"
+      mode: 'readwrite',
+      startIn: 'downloads',
     });
   }
 
@@ -133,25 +120,25 @@ function getCommonFeatures({
           download = {
             ...download,
             progressValue,
-            progressMax
+            progressMax,
           };
         }
         return download;
-      })
+      }),
     }));
   }
 
   function openDisplayError(message) {
     setDialogs({
       ...dialogs,
-      displayError: { message }
+      displayError: { message },
     });
   }
 
   function closeDisplayError() {
     setDialogs({
       ...dialogs,
-      displayError: null
+      displayError: null,
     });
   }
 
@@ -164,7 +151,7 @@ function getCommonFeatures({
     saveZipFile: saveFile,
     saveEntries,
     openDisplayError,
-    closeDisplayError
+    closeDisplayError,
   };
 }
 

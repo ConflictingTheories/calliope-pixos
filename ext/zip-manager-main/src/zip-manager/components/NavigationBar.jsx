@@ -1,7 +1,7 @@
-import "./styles/NavigationBar.css";
+import './styles/NavigationBar.css';
 
-import History from "./History.jsx";
-import Breadcrumb from "./Breadcrumb.jsx";
+import History from './History.jsx';
+import Breadcrumb from './Breadcrumb.jsx';
 
 function NavigationBar({
   hidden,
@@ -15,17 +15,13 @@ function NavigationBar({
   onGoIntoFolder,
   onClickedButton,
   constants,
-  messages
+  messages,
 }) {
   if (hidden) {
     return;
   } else {
     return (
-      <div
-        className="navigation-bar"
-        role="toolbar"
-        aria-label={messages.FOLDERS_LABEL}
-      >
+      <div className="navigation-bar" role="toolbar" aria-label={messages.FOLDERS_LABEL}>
         <History
           disabledBackButton={disabledBackButton}
           disabledForwardButton={disabledForwardButton}

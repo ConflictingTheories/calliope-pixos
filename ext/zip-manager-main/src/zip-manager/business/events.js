@@ -8,7 +8,7 @@ function getEventHandlers({
   onAppKeyUp,
   onEntriesKeyDown,
   onHighlightedEntriesKeyDown,
-  onSelectedFolderKeyDown
+  onSelectedFolderKeyDown,
 }) {
   function handleKeyUp(event) {
     if (!dialogDisplayed) {
@@ -30,14 +30,14 @@ function getEventHandlers({
   function handlePageUnload(event) {
     if (entries.length || downloads.length) {
       event.preventDefault();
-      event.returnValue = "";
+      event.returnValue = '';
     }
   }
 
   return {
     handlePageUnload,
     handleKeyUp,
-    handleKeyDown
+    handleKeyDown,
   };
 }
 

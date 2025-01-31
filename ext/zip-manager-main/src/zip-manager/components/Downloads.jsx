@@ -1,32 +1,15 @@
-import "./styles/Downloads.css";
+import './styles/Downloads.css';
 
-function Downloads({
-  hidden,
-  downloads,
-  onAbortDownload,
-  i18n,
-  constants,
-  messages
-}) {
+function Downloads({ hidden, downloads, onAbortDownload, i18n, constants, messages }) {
   if (hidden) {
     return;
   } else {
     return (
-      <div
-        className="downloads scrollable"
-        aria-label={messages.DOWNLOADS_LABEL}
-        role="navigation"
-      >
+      <div className="downloads scrollable" aria-label={messages.DOWNLOADS_LABEL} role="navigation">
         <ol>
           {downloads.queue.map((download) => (
             <li key={download.id}>
-              <DownloadEntry
-                download={download}
-                onAbortDownload={onAbortDownload}
-                i18n={i18n}
-                constants={constants}
-                messages={messages}
-              />
+              <DownloadEntry download={download} onAbortDownload={onAbortDownload} i18n={i18n} constants={constants} messages={messages} />
             </li>
           ))}
         </ol>
@@ -35,21 +18,10 @@ function Downloads({
   }
 }
 
-function DownloadEntry({
-  download,
-  onAbortDownload,
-  i18n,
-  constants,
-  messages
-}) {
+function DownloadEntry({ download, onAbortDownload, i18n, constants, messages }) {
   return (
     <>
-      <DownloadEntryInfo
-        download={download}
-        onAbortDownload={onAbortDownload}
-        constants={constants}
-        messages={messages}
-      />
+      <DownloadEntryInfo download={download} onAbortDownload={onAbortDownload} constants={constants} messages={messages} />
       <DownloadEntryProgress download={download} i18n={i18n} />
     </>
   );
@@ -58,25 +30,13 @@ function DownloadEntry({
 function DownloadEntryInfo({ download, onAbortDownload, constants, messages }) {
   return (
     <div className="download-entry">
-      <span className="list-item-name download-entry-name">
-        {download.name}
-      </span>
-      <DeleteDownloadEntryButton
-        download={download}
-        onAbortDownload={onAbortDownload}
-        constants={constants}
-        messages={messages}
-      />
+      <span className="list-item-name download-entry-name">{download.name}</span>
+      <DeleteDownloadEntryButton download={download} onAbortDownload={onAbortDownload} constants={constants} messages={messages} />
     </div>
   );
 }
 
-function DeleteDownloadEntryButton({
-  download,
-  onAbortDownload,
-  constants,
-  messages
-}) {
+function DeleteDownloadEntryButton({ download, onAbortDownload, constants, messages }) {
   function handleClick() {
     onAbortDownload(download);
   }
@@ -88,13 +48,7 @@ function DeleteDownloadEntryButton({
   }
 
   return (
-    <span
-      className="list-item-button download-entry-abort-button"
-      role="button"
-      onClick={handleClick}
-      onKeyUp={handleKeyUp}
-      tabIndex={0}
-    >
+    <span className="list-item-button download-entry-abort-button" role="button" onClick={handleClick} onKeyUp={handleKeyUp} tabIndex={0}>
       {messages.ABORT_DOWNLOAD_BUTTON_LABEL}
     </span>
   );
@@ -103,16 +57,9 @@ function DeleteDownloadEntryButton({
 function DownloadEntryProgress({ download, i18n }) {
   return (
     <progress
-      value={
-        download.progressValue && Math.floor(download.progressValue / 1000)
-      }
+      value={download.progressValue && Math.floor(download.progressValue / 1000)}
       max={download.progressMax && Math.floor(download.progressMax / 1000)}
-      title={
-        download.progressValue &&
-        i18n.formatPercentValue(
-          (100 * download.progressValue) / download.progressMax
-        )
-      }
+      title={download.progressValue && i18n.formatPercentValue((100 * download.progressValue) / download.progressMax)}
     />
   );
 }

@@ -4,7 +4,7 @@ function getClipboardFeatures({ setClipboardData }) {
   }
 
   return {
-    resetClipboardData
+    resetClipboardData,
   };
 }
 

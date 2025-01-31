@@ -1,27 +1,17 @@
-import "./styles/InfoBar.css";
+import './styles/InfoBar.css';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
-function InfoBar({
-  hidden,
-  theme,
-  musicData,
-  onPlayMusic,
-  onStopMusic,
-  onSetTheme,
-  musicPlayerActive,
-  constants,
-  messages
-}) {
-  const PLAYER_ICON_CLASSNAME = "icon icon-music-player";
-  const PLAYER_PAUSED_CLASSNAME = " paused";
+function InfoBar({ hidden, theme, musicData, onPlayMusic, onStopMusic, onSetTheme, musicPlayerActive, constants, messages }) {
+  const PLAYER_ICON_CLASSNAME = 'icon icon-music-player';
+  const PLAYER_PAUSED_CLASSNAME = ' paused';
   const PLAYER_PAUSED = {
     label: messages.PAUSED_MUSIC_ICON,
-    className: PLAYER_ICON_CLASSNAME + PLAYER_PAUSED_CLASSNAME
+    className: PLAYER_ICON_CLASSNAME + PLAYER_PAUSED_CLASSNAME,
   };
   const PLAYER_ACTIVE = {
     label: messages.PLAYING_MUSIC_ICON,
-    className: PLAYER_ICON_CLASSNAME
+    className: PLAYER_ICON_CLASSNAME,
   };
 
   const [iconPlayer, setIconPlayer] = useState(PLAYER_PAUSED);
@@ -40,26 +30,11 @@ function InfoBar({
   } else {
     return (
       <footer className="info-bar">
-        <div
-          className={
-            "source-link" + (musicPlayerActive ? " player-active" : "")
-          }
-        >
+        <div className={'source-link' + (musicPlayerActive ? ' player-active' : '')}>
           <span className="label">
             {messages.INFO_LABEL[0]}
-            <a
-              href="https://github.com/gildas-lormeau/zip-manager"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="See the source code on GitHub"
-            >
-              <svg
-                width="24px"
-                height="24px"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+            <a href="https://github.com/gildas-lormeau/zip-manager" target="_blank" rel="noreferrer" aria-label="See the source code on GitHub">
+              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g>
                   <path
                     id="Vector"
@@ -85,19 +60,11 @@ function InfoBar({
           </span>
           <span className="label">
             {messages.INFO_LABEL[2]}
-            <AccentColorPickerButton
-              accentColor={theme.accentColor}
-              onSetAccentColor={handleChangeAccentColor}
-              messages={messages}
-            >
+            <AccentColorPickerButton accentColor={theme.accentColor} onSetAccentColor={handleChangeAccentColor} messages={messages}>
               {messages.INFO_LABEL[3]}
             </AccentColorPickerButton>
             {messages.INFO_LABEL[4]}
-            <a
-              href={messages.CITY_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href={messages.CITY_URL} target="_blank" rel="noreferrer">
               {messages.INFO_LABEL[5]}
             </a>
           </span>
@@ -114,12 +81,7 @@ function InfoBar({
   }
 }
 
-function AccentColorPickerButton({
-  accentColor,
-  onSetAccentColor,
-  children,
-  messages
-}) {
+function AccentColorPickerButton({ accentColor, onSetAccentColor, children, messages }) {
   const colorInputRef = useRef(null);
 
   function handleChange() {
@@ -134,24 +96,12 @@ function AccentColorPickerButton({
   return (
     <>
       <span className="icon">{children}</span>
-      <input
-        type="color"
-        aria-label={messages.ACCENT_COLOR_LABEL}
-        onChange={handleChange}
-        ref={colorInputRef}
-        tabIndex={-1}
-      />
+      <input type="color" aria-label={messages.ACCENT_COLOR_LABEL} onChange={handleChange} ref={colorInputRef} tabIndex={-1} />
     </>
   );
 }
 
-function MusicPlayerButton({
-  playMusic,
-  stopMusic,
-  musicPlayerActive,
-  iconPlayer,
-  onSetIconPlayer
-}) {
+function MusicPlayerButton({ playMusic, stopMusic, musicPlayerActive, iconPlayer, onSetIconPlayer }) {
   function handlePlayButtonClick() {
     if (musicPlayerActive) {
       stopMusic();
@@ -164,24 +114,14 @@ function MusicPlayerButton({
 
   return (
     <>
-      <span
-        className={iconPlayer.className}
-        onClick={handlePlayButtonClick}
-        tabIndex={0}
-      >
+      <span className={iconPlayer.className} onClick={handlePlayButtonClick} tabIndex={0}>
         {iconPlayer.label}
       </span>
     </>
   );
 }
 
-function MusicVisualizer({
-  skin,
-  musicData,
-  accentColor,
-  musicPlayerActive,
-  constants
-}) {
+function MusicVisualizer({ skin, musicData, accentColor, musicPlayerActive, constants }) {
   const CANVAS_WIDTH = 128;
   const CANVAS_HEIGTH = 64;
   const CANVAS_BLOCK_OFFSET = CANVAS_HEIGTH / 8;
@@ -193,7 +133,7 @@ function MusicVisualizer({
   updateBarWidth();
   if (canvasRef.current) {
     if (!audioContextRef.current) {
-      audioContextRef.current = canvasRef.current.getContext("2d");
+      audioContextRef.current = canvasRef.current.getContext('2d');
       updateColor();
       updateBarWidth();
     }
@@ -201,16 +141,9 @@ function MusicVisualizer({
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGTH);
     if (musicPlayerActive) {
       musicData.frequencyData.forEach((byteTimeDomain, index) => {
-        const barHeight =
-          (CANVAS_BLOCK_OFFSET - byteTimeDomain) /
-          (MAX_FFT_VALUE / CANVAS_HEIGTH);
+        const barHeight = (CANVAS_BLOCK_OFFSET - byteTimeDomain) / (MAX_FFT_VALUE / CANVAS_HEIGTH);
         context.fillRect(index * barWidth, CANVAS_HEIGTH, barWidth, barHeight);
-        context.fillRect(
-          CANVAS_WIDTH - index * barWidth - barWidth,
-          CANVAS_HEIGTH,
-          barWidth,
-          barHeight
-        );
+        context.fillRect(CANVAS_WIDTH - index * barWidth - barWidth, CANVAS_HEIGTH, barWidth, barHeight);
       });
     }
   }
@@ -220,7 +153,7 @@ function MusicVisualizer({
     const gradient = context.createLinearGradient(0, 0, 0, CANVAS_HEIGTH);
     gradient.addColorStop(0, accentColor);
     gradient.addColorStop(0.7, accentColor);
-    gradient.addColorStop(1, "transparent");
+    gradient.addColorStop(1, 'transparent');
     context.fillStyle = gradient;
   }
 
@@ -236,13 +169,7 @@ function MusicVisualizer({
     }
   }, [accentColor]);
   useEffect(updateBarWidth, [skin]);
-  return (
-    <canvas
-      ref={canvasRef}
-      width={CANVAS_WIDTH}
-      height={CANVAS_HEIGTH}
-    ></canvas>
-  );
+  return <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGTH}></canvas>;
 }
 
 export default InfoBar;

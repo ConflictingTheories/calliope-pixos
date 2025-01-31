@@ -7,10 +7,9 @@ function getOptionsFeatures({
   stylesheetService,
   environmentService,
   themeService,
-  constants
+  constants,
 }) {
-  const { DEFAULT_OPTIONS, OPTIONS_KEY_NAME, FONT_SIZE_PROPERTY_NAME } =
-    constants;
+  const { DEFAULT_OPTIONS, OPTIONS_KEY_NAME, FONT_SIZE_PROPERTY_NAME } = constants;
 
   function initOptionsFeatures() {
     applyOptions(getOptions());
@@ -25,14 +24,14 @@ function getOptionsFeatures({
   function openOptions() {
     setDialogs({
       ...dialogs,
-      options: getOptions()
+      options: getOptions(),
     });
   }
 
   function closeOptions() {
     setDialogs({
       ...dialogs,
-      options: null
+      options: null,
     });
   }
 
@@ -41,7 +40,7 @@ function getOptionsFeatures({
     options.maxWorkers = environmentService.getMaximumWorkers();
     setDialogs({
       ...dialogs,
-      options
+      options,
     });
   }
 
@@ -92,15 +91,12 @@ function getOptionsFeatures({
     const { maxWorkers, chunkSize } = options;
     zipService.configure({
       maxWorkers,
-      chunkSize
+      chunkSize,
     });
   }
 
   function configureZoomFactor({ zoomFactor }) {
-    stylesheetService.setStyle(
-      FONT_SIZE_PROPERTY_NAME,
-      zoomFactor / 100 + "rem"
-    );
+    stylesheetService.setStyle(FONT_SIZE_PROPERTY_NAME, zoomFactor / 100 + 'rem');
   }
 
   function configureTheme({ accentColor, skin }) {
@@ -114,7 +110,7 @@ function getOptionsFeatures({
     setOptions,
     openOptions,
     closeOptions,
-    resetOptions
+    resetOptions,
   };
 }
 

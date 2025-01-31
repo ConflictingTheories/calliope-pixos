@@ -1,13 +1,6 @@
-import "./styles/TopButtonBar.css";
+import './styles/TopButtonBar.css';
 
-import {
-  AddFilesButton,
-  CreateFolderButton,
-  ImportZipButton,
-  ExportZipButton,
-  ResetButton,
-  OptionsButton
-} from "./Buttons.jsx";
+import { AddFilesButton, CreateFolderButton, ImportZipButton, ExportZipButton, ResetButton, OptionsButton } from './Buttons.jsx';
 
 function TopButtonBar({
   disabledExportZipButton,
@@ -22,7 +15,7 @@ function TopButtonBar({
   onShowAddFilesPicker,
   onClickedButton,
   constants,
-  messages
+  messages,
 }) {
   function handleDragOver(event) {
     event.preventDefault();
@@ -77,11 +70,7 @@ function TopButtonBar({
         />
       </div>
       <div className="button-group">
-        <ResetButton
-          disabled={disabledResetButton}
-          onReset={onReset}
-          messages={messages}
-        />
+        <ResetButton disabled={disabledResetButton} onReset={onReset} messages={messages} />
         <OptionsButton onOpenOptions={onOpenOptions} messages={messages} />
       </div>
     </div>

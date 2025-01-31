@@ -1,18 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-function Dialog({
-  className,
-  data,
-  title,
-  resetLabel,
-  cancelLabel,
-  submitLabel,
-  children,
-  onOpen,
-  onSubmit,
-  onReset,
-  onClose
-}) {
+function Dialog({ className, data, title, resetLabel, cancelLabel, submitLabel, children, onOpen, onSubmit, onReset, onClose }) {
   const dialogRef = useRef(null);
 
   function handleButtonReset(event) {

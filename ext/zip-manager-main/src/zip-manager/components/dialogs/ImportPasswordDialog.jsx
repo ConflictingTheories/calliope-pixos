@@ -1,16 +1,16 @@
-import Dialog from "./Dialog.jsx";
+import Dialog from './Dialog.jsx';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 function PasswordDialog({ data, onClose, messages }) {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
 
   function handleChangePassword(event) {
     setPassword(event.target.value);
   }
 
   function handleClose() {
-    setPassword("");
+    setPassword('');
     data.onSetImportPassword({ password });
     onClose();
   }
@@ -25,13 +25,7 @@ function PasswordDialog({ data, onClose, messages }) {
     >
       <label>
         {messages.IMPORT_PASSWORD_LABEL}
-        <input
-          type="password"
-          autoComplete="off"
-          value={password}
-          required
-          onChange={handleChangePassword}
-        />
+        <input type="password" autoComplete="off" value={password} required onChange={handleChangePassword} />
       </label>
     </Dialog>
   );

@@ -1,6 +1,6 @@
-import "./styles/BottomButtonBar.css";
+import './styles/BottomButtonBar.css';
 
-import { useRef } from "react";
+import { useRef } from 'react';
 
 import {
   CopyEntryButton,
@@ -10,8 +10,8 @@ import {
   ExtractEntryButton,
   HighlightAllButton,
   RenameEntryButton,
-  DeleteEntriesButton
-} from "./Buttons.jsx";
+  DeleteEntriesButton,
+} from './Buttons.jsx';
 
 function BottomButtonBar({
   disabledCopyButton,
@@ -35,7 +35,7 @@ function BottomButtonBar({
   onUpdateElementHeight,
   onClickedButton,
   constants,
-  messages
+  messages,
 }) {
   const previousTouchClientY = useRef(0);
 
@@ -122,11 +122,7 @@ function BottomButtonBar({
           constants={constants}
           messages={messages}
         />
-        <ResetClipboardDataButton
-          disabled={disabledResetClipboardDataButton}
-          onResetClipboardData={onResetClipboardData}
-          messages={messages}
-        />
+        <ResetClipboardDataButton disabled={disabledResetClipboardDataButton} onResetClipboardData={onResetClipboardData} messages={messages} />
       </div>
     </div>
   );

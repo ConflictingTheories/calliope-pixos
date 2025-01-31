@@ -23,19 +23,9 @@ function getEntriesFeatures({
   modifierKeyPressed,
   documentService,
   windowService,
-  constants
+  constants,
 }) {
-  const {
-    ACTION_KEY,
-    DOWN_KEY,
-    UP_KEY,
-    PAGE_UP_KEY,
-    PAGE_DOWN_KEY,
-    HOME_KEY,
-    END_KEY,
-    HIGHLIGHT_ALL_KEY,
-    HIGHLIGHT_ALL_BUTTON_NAME
-  } = constants;
+  const { ACTION_KEY, DOWN_KEY, UP_KEY, PAGE_UP_KEY, PAGE_DOWN_KEY, HOME_KEY, END_KEY, HIGHLIGHT_ALL_KEY, HIGHLIGHT_ALL_BUTTON_NAME } = constants;
 
   function getEntriesElementHeight() {
     return documentService.getHeight(entriesElement);
@@ -50,8 +40,7 @@ function getEntriesFeatures({
 
   function highlightPrevious() {
     const indexEntry = getHighlightedEntryIndex();
-    const previousEntry =
-      entries[(indexEntry - 1 + entries.length) % entries.length];
+    const previousEntry = entries[(indexEntry - 1 + entries.length) % entries.length];
     highlightEntry(previousEntry);
   }
 
@@ -82,11 +71,7 @@ function getEntriesFeatures({
   }
 
   function highlightFirstLetter(letter) {
-    const filteredEntries = entries.filter(
-      (entry) =>
-        entry.name &&
-        entry.name.toLocaleLowerCase().startsWith(letter.toLocaleLowerCase())
-    );
+    const filteredEntries = entries.filter((entry) => entry.name && entry.name.toLocaleLowerCase().startsWith(letter.toLocaleLowerCase()));
     if (filteredEntries.length) {
       const firstEntry = filteredEntries[0];
       if (filteredEntries.length === 1) {
@@ -94,7 +79,7 @@ function getEntriesFeatures({
       } else {
         setNavigation(() => ({
           previousHighlight: firstEntry,
-          direction: 0
+          direction: 0,
         }));
         setHighlightedIds(filteredEntries.reverse().map((entry) => entry.id));
       }
@@ -108,15 +93,13 @@ function getEntriesFeatures({
   function highlightEntries(entries) {
     setNavigation(() => ({
       previousHighlight: entries[entries.length - 1],
-      direction: 0
+      direction: 0,
     }));
     setHighlightedIds(entries.map((entry) => entry.id));
   }
 
   function highlightAll() {
-    const selectedFolderHighlightedIds = highlightedIds.filter((id) =>
-      selectedFolderEntries.find((entry) => entry.id === id)
-    );
+    const selectedFolderHighlightedIds = highlightedIds.filter((id) => selectedFolderEntries.find((entry) => entry.id === id));
     setHighlightedIds(
       entries
         .filter((entry) => !selectedFolderHighlightedIds.includes(entry.id))
@@ -130,7 +113,7 @@ function getEntriesFeatures({
     let newIds = getToggledHighlightedIds(highlightedIds, entry);
     setNavigation(() => ({
       previousHighlight: entry,
-      direction: 0
+      direction: 0,
     }));
     if (newIds.length < highlightedIds.length) {
       resetHighlightedEntryElement();
@@ -142,39 +125,26 @@ function getEntriesFeatures({
   function highlightEntry(entry) {
     setNavigation(() => ({
       previousHighlight: entry,
-      direction: 0
+      direction: 0,
     }));
     setHighlightedIds([entry.id]);
   }
 
-  function toggleRange(
-    targetEntry,
-    previousHighlightedEntryIndex = getPreviousHighlightedEntryIndex()
-  ) {
-    const highlightedEntryIndex = entries.findIndex(
-      (entry) => entry.id === targetEntry.id
-    );
+  function toggleRange(targetEntry, previousHighlightedEntryIndex = getPreviousHighlightedEntryIndex()) {
+    const highlightedEntryIndex = entries.findIndex((entry) => entry.id === targetEntry.id);
     let newIds = [...highlightedIds];
     if (previousHighlightedEntryIndex < highlightedEntryIndex) {
-      for (
-        let indexEntry = previousHighlightedEntryIndex + 1;
-        indexEntry <= highlightedEntryIndex;
-        indexEntry++
-      ) {
+      for (let indexEntry = previousHighlightedEntryIndex + 1; indexEntry <= highlightedEntryIndex; indexEntry++) {
         newIds = getToggledHighlightedIds(newIds, entries[indexEntry]);
       }
     } else if (previousHighlightedEntryIndex > highlightedEntryIndex) {
-      for (
-        let indexEntry = previousHighlightedEntryIndex - 1;
-        indexEntry >= highlightedEntryIndex;
-        indexEntry--
-      ) {
+      for (let indexEntry = previousHighlightedEntryIndex - 1; indexEntry >= highlightedEntryIndex; indexEntry--) {
         newIds = getToggledHighlightedIds(newIds, entries[indexEntry]);
       }
     }
     setNavigation(() => ({
       previousHighlight: targetEntry,
-      direction: 0
+      direction: 0,
     }));
     setHighlightedIds(newIds);
   }
@@ -197,10 +167,7 @@ function getEntriesFeatures({
         toggle(navigation.previousHighlight);
       } else if (indexEntry > 0) {
         const previousEntry = entries[indexEntry - 1];
-        if (
-          highlightedIds.length === 1 &&
-          highlightedIds.includes(previousEntry.id)
-        ) {
+        if (highlightedIds.length === 1 && highlightedIds.includes(previousEntry.id)) {
           if (indexEntry > 1) {
             toggle(entries[indexEntry - 2]);
           }
@@ -210,7 +177,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: -1
+        direction: -1,
       }));
     }
   }
@@ -222,10 +189,7 @@ function getEntriesFeatures({
         toggle(navigation.previousHighlight);
       } else if (indexEntry < entries.length - 1) {
         const nextEntry = entries[indexEntry + 1];
-        if (
-          highlightedIds.length === 1 &&
-          highlightedIds.includes(nextEntry.id)
-        ) {
+        if (highlightedIds.length === 1 && highlightedIds.includes(nextEntry.id)) {
           if (indexEntry < entries.length - 2) {
             toggle(entries[indexEntry + 2]);
           }
@@ -235,7 +199,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: 1
+        direction: 1,
       }));
     }
   }
@@ -251,7 +215,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: -1
+        direction: -1,
       }));
     }
   }
@@ -267,7 +231,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: 1
+        direction: 1,
       }));
     }
   }
@@ -283,7 +247,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: -1
+        direction: -1,
       }));
     }
   }
@@ -299,7 +263,7 @@ function getEntriesFeatures({
       }
       setNavigation((navigation) => ({
         ...navigation,
-        direction: 1
+        direction: 1,
       }));
     }
   }
@@ -309,15 +273,11 @@ function getEntriesFeatures({
   }
 
   function getNextPageEntry(indexEntry) {
-    return entries[
-      Math.min(indexEntry + getEntriesHeight(), entries.length - 1)
-    ];
+    return entries[Math.min(indexEntry + getEntriesHeight(), entries.length - 1)];
   }
 
   function getPreviousHighlightedEntryIndex() {
-    return entries.findIndex(
-      (highlightedEntry) => highlightedEntry === navigation.previousHighlight
-    );
+    return entries.findIndex((highlightedEntry) => highlightedEntry === navigation.previousHighlight);
   }
 
   function getHighlightedEntryIndex() {
@@ -331,12 +291,7 @@ function getEntriesFeatures({
 
   function updateEntriesHeight() {
     if (entriesElement && getHighlightedEntryElement()) {
-      setEntriesHeight(
-        Math.max(
-          Math.ceil(getEntriesElementHeight() / getHightlightedEntryHeight()),
-          1
-        )
-      );
+      setEntriesHeight(Math.max(Math.ceil(getEntriesElementHeight() / getHightlightedEntryHeight()), 1));
     }
   }
 
@@ -355,15 +310,7 @@ function getEntriesFeatures({
 
   function updateEntriesElementHeightEnd() {
     const entriesElementHeight = getEntriesElementHeight();
-    setEntriesElementHeight(
-      Math.max(
-        Math.min(
-          entriesElementHeight + entriesDeltaHeight,
-          entriesElementHeight
-        ),
-        entriesElementHeight
-      )
-    );
+    setEntriesElementHeight(Math.max(Math.min(entriesElementHeight + entriesDeltaHeight, entriesElementHeight), entriesElementHeight));
     setEntriesDeltaHeight(0);
   }
 
@@ -470,7 +417,7 @@ function getEntriesFeatures({
     updateHighlightedEntries,
     registerResizeEntriesHandler,
     onEntriesKeyUp,
-    onEntriesKeyDown
+    onEntriesKeyDown,
   };
 }
 

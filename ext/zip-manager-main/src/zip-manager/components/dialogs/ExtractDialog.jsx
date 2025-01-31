@@ -1,11 +1,11 @@
-import Dialog from "./Dialog.jsx";
+import Dialog from './Dialog.jsx';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 function ExtractDialog({ data, onExtract, onClose, messages }) {
   const filenameInputRef = useRef(null);
   const filenameTextSelected = useRef(false);
-  const [filename, setFilename] = useState("");
+  const [filename, setFilename] = useState('');
 
   function handleChangeFilename(event) {
     setFilename(event.target.value);
@@ -20,7 +20,7 @@ function ExtractDialog({ data, onExtract, onClose, messages }) {
   }
 
   function handleClose() {
-    setFilename("");
+    setFilename('');
     filenameTextSelected.current = false;
     onClose();
   }
@@ -43,14 +43,7 @@ function ExtractDialog({ data, onExtract, onClose, messages }) {
     >
       <label>
         {messages.EXTRACT_FILENAME_LABEL}
-        <input
-          spellCheck="false"
-          type="text"
-          value={filename}
-          required
-          onChange={handleChangeFilename}
-          ref={filenameInputRef}
-        />
+        <input spellCheck="false" type="text" value={filename} required onChange={handleChangeFilename} ref={filenameInputRef} />
       </label>
     </Dialog>
   );

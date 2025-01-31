@@ -1,4 +1,4 @@
-import { BackButton, ForwardButton } from "./Buttons.jsx";
+import { BackButton, ForwardButton } from './Buttons.jsx';
 
 function History({
   disabledBackButton,
@@ -8,7 +8,7 @@ function History({
   onNavigateForward,
   onClickedButton,
   constants,
-  messages
+  messages,
 }) {
   return (
     <span className="history-buttons">

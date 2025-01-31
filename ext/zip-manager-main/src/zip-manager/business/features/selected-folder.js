@@ -19,7 +19,7 @@ function getSelectedFolderFeatures({
   fileHandlersService,
   shareTargetService,
   modifierKeyPressed,
-  constants
+  constants,
 }) {
   const {
     ZIP_EXTENSION,
@@ -34,7 +34,7 @@ function getSelectedFolderFeatures({
     ADD_FILES_BUTTON_NAME,
     IMPORT_ZIP_BUTTON_NAME,
     EXPORT_ZIP_BUTTON_NAME,
-    PASTE_BUTTON_NAME
+    PASTE_BUTTON_NAME,
   } = constants;
 
   function initSelectedFolderFeatures() {
@@ -45,7 +45,7 @@ function getSelectedFolderFeatures({
   function openPromptCreateFolder() {
     setDialogs({
       ...dialogs,
-      createFolder: {}
+      createFolder: {},
     });
   }
 
@@ -62,7 +62,7 @@ function getSelectedFolderFeatures({
   function closePromptCreateFolder() {
     setDialogs({
       ...dialogs,
-      createFolder: null
+      createFolder: null,
     });
   }
 
@@ -75,8 +75,7 @@ function getSelectedFolderFeatures({
           try {
             addedEntries.push(selectedFolder.addFile(file, options));
           } catch (error) {
-            const message =
-              error.message + (file ? " (" + file.name + ")" : "");
+            const message = error.message + (file ? ' (' + file.name + ')' : '');
             throw new Error(message);
           }
         });
@@ -105,17 +104,13 @@ function getSelectedFolderFeatures({
           const results = await Promise.allSettled(
             handles.map(async (handle) => {
               const entries = await selectedFolder.addFileSystemHandle(
-                handle.getAsFileSystemHandle
-                  ? await handle.getAsFileSystemHandle()
-                  : handle.webkitGetAsEntry(),
+                handle.getAsFileSystemHandle ? await handle.getAsFileSystemHandle() : handle.webkitGetAsEntry(),
                 options
               );
               droppedEntries = droppedEntries.concat(entries);
             })
           );
-          const errorResult = results.find(
-            (result) => result.status === "rejected"
-          );
+          const errorResult = results.find((result) => result.status === 'rejected');
           if (errorResult) {
             throw errorResult.reason;
           }
@@ -123,9 +118,7 @@ function getSelectedFolderFeatures({
       } catch (error) {
         openDisplayError(error.message);
       } finally {
-        const addedEntries = selectedFolder.children.filter((entry) =>
-          droppedEntries.includes(entry)
-        );
+        const addedEntries = selectedFolder.children.filter((entry) => droppedEntries.includes(entry));
         if (addedEntries.length) {
           highlightSortedEntries(addedEntries);
         }
@@ -137,17 +130,14 @@ function getSelectedFolderFeatures({
   }
 
   function handleZipFile(files, callback, { forceAddFiles }) {
-    const zipFileDetected =
-      files.length === 1 &&
-      ZIP_EXTENSIONS.find((extension) => files[0].name.endsWith(extension)) &&
-      !forceAddFiles;
+    const zipFileDetected = files.length === 1 && ZIP_EXTENSIONS.find((extension) => files[0].name.endsWith(extension)) && !forceAddFiles;
     if (zipFileDetected) {
       if (dialogs.chooseAction) {
         callback(files, { forceAddFiles: true });
       } else {
         setDialogs({
           ...dialogs,
-          chooseAction: { files }
+          chooseAction: { files },
         });
       }
     }
@@ -157,7 +147,7 @@ function getSelectedFolderFeatures({
   function closeChooseAction() {
     setDialogs({
       ...dialogs,
-      chooseAction: null
+      chooseAction: null,
     });
   }
 
@@ -167,42 +157,30 @@ function getSelectedFolderFeatures({
         addedEntries = [];
       try {
         importedEntries = await selectedFolder.importBlob(zipFile, options);
-        const isPasswordProtected = (
-          await Promise.all(
-            importedEntries.map(
-              (entry) => !entry.directory && entry.isPasswordProtected()
-            )
-          )
-        ).includes(true);
+        const isPasswordProtected = (await Promise.all(importedEntries.map((entry) => !entry.directory && entry.isPasswordProtected()))).includes(
+          true
+        );
         if (isPasswordProtected && !options.password) {
           cleanup(importedEntries);
           const { password } = await new Promise((resolve) =>
             setDialogs({
               ...dialogs,
-              enterImportPassword: { onSetImportPassword: resolve }
+              enterImportPassword: { onSetImportPassword: resolve },
             })
           );
-          const isValidPassword = !(
-            await Promise.all(
-              importedEntries.map(
-                (entry) => entry.directory || entry.checkPassword(password)
-              )
-            )
-          ).includes(false);
+          const isValidPassword = !(await Promise.all(importedEntries.map((entry) => entry.directory || entry.checkPassword(password)))).includes(
+            false
+          );
           importZipFile(zipFile, isValidPassword ? { password } : {});
         }
       } catch (error) {
         cleanup(importedEntries);
         const entry = error?.cause?.entry;
-        const paths = entry && entry.filename.split("/");
-        const message =
-          error.message +
-          (paths && paths.length ? " (" + paths.pop() + ")" : "");
+        const paths = entry && entry.filename.split('/');
+        const message = error.message + (paths && paths.length ? ' (' + paths.pop() + ')' : '');
         openDisplayError(message);
       } finally {
-        addedEntries = selectedFolder.children.filter((entry) =>
-          importedEntries.includes(entry)
-        );
+        addedEntries = selectedFolder.children.filter((entry) => importedEntries.includes(entry));
         if (addedEntries.length) {
           highlightSortedEntries(addedEntries);
         }
@@ -211,45 +189,29 @@ function getSelectedFolderFeatures({
     }
 
     function cleanup(importedEntries) {
-      importedEntries.forEach(
-        (entry) => !entry.directory && zipFilesystem.remove(entry)
-      );
-      importedEntries.forEach(
-        (entry) =>
-          entry.directory &&
-          !entry.children.length &&
-          zipFilesystem.remove(entry)
-      );
+      importedEntries.forEach((entry) => !entry.directory && zipFilesystem.remove(entry));
+      importedEntries.forEach((entry) => entry.directory && !entry.children.length && zipFilesystem.remove(entry));
     }
 
     updateZipFile();
   }
 
   function highlightSortedEntries(entries) {
-    highlightEntries(
-      entries.sort((previousChild, nextChild) =>
-        nextChild.name.localeCompare(previousChild.name)
-      )
-    );
+    highlightEntries(entries.sort((previousChild, nextChild) => nextChild.name.localeCompare(previousChild.name)));
   }
 
   function openPromptExportZip() {
-    const filename = selectedFolder.name
-      ? selectedFolder.name + ZIP_EXTENSION
-      : rootZipFilename;
+    const filename = selectedFolder.name ? selectedFolder.name + ZIP_EXTENSION : rootZipFilename;
     const options = getOptions();
     const password = options.defaultExportPassword;
-    if (
-      !filesystemService.savePickersSupported() ||
-      options.promptForExportPassword
-    ) {
+    if (!filesystemService.savePickersSupported() || options.promptForExportPassword) {
       setDialogs({
         ...dialogs,
         exportZip: {
           filename,
           filenameHidden: filesystemService.savePickersSupported(),
-          password
-        }
+          password,
+        },
       });
     } else {
       exportZip({ filename, password });
@@ -259,7 +221,7 @@ function getSelectedFolderFeatures({
   function showAddFilesPicker() {
     async function showAddFilesPicker() {
       const files = await filesystemService.showOpenFilePicker({
-        multiple: true
+        multiple: true,
       });
       addFiles(files);
     }
@@ -272,7 +234,7 @@ function getSelectedFolderFeatures({
       const files = await filesystemService.showOpenFilePicker({
         multiple: false,
         description,
-        accept: ZIP_EXTENSIONS_ACCEPT
+        accept: ZIP_EXTENSIONS_ACCEPT,
       });
       if (files.length) {
         importZipFile(files[0]);
@@ -285,7 +247,7 @@ function getSelectedFolderFeatures({
   function closePromptExportZip() {
     setDialogs({
       ...dialogs,
-      exportZip: null
+      exportZip: null,
     });
   }
 
@@ -301,8 +263,8 @@ function getSelectedFolderFeatures({
           ...options,
           password,
           readerOptions: {
-            checkSignature: options.checkSignature
-          }
+            checkSignature: options.checkSignature,
+          },
         });
       } catch (error) {
         openDisplayError(error.message);
@@ -340,7 +302,7 @@ function getSelectedFolderFeatures({
         zipFilesystem.move(entry, selectedFolder);
         pastedEntries.push(entry);
       } catch (error) {
-        const message = error.message + (" (" + entry.name + ")");
+        const message = error.message + (' (' + entry.name + ')');
         throw new Error(message);
       }
     }
@@ -349,7 +311,7 @@ function getSelectedFolderFeatures({
   function closePromptImportPassword() {
     setDialogs({
       ...dialogs,
-      enterImportPassword: null
+      enterImportPassword: null,
     });
   }
 
@@ -394,7 +356,7 @@ function getSelectedFolderFeatures({
     closePromptImportPassword,
     showAddFilesPicker,
     showImportZipFilePicker,
-    onSelectedFolderKeyDown
+    onSelectedFolderKeyDown,
   };
 }
 

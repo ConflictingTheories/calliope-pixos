@@ -1,11 +1,4 @@
-function CopyEntryButton({
-  disabled,
-  clickedButtonName,
-  onCopy,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function CopyEntryButton({ disabled, clickedButtonName, onCopy, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.COPY_BUTTON_NAME}
@@ -19,14 +12,7 @@ function CopyEntryButton({
   );
 }
 
-function CutEntryButton({
-  disabled,
-  clickedButtonName,
-  onCut,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function CutEntryButton({ disabled, clickedButtonName, onCut, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.CUT_BUTTON_NAME}
@@ -40,14 +26,7 @@ function CutEntryButton({
   );
 }
 
-function PasteEntryButton({
-  disabled,
-  clickedButtonName,
-  onPaste,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function PasteEntryButton({ disabled, clickedButtonName, onPaste, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.PASTE_BUTTON_NAME}
@@ -61,28 +40,11 @@ function PasteEntryButton({
   );
 }
 
-function ResetClipboardDataButton({
-  disabled,
-  onResetClipboardData,
-  messages
-}) {
-  return (
-    <Button
-      label={messages.RESET_CLIPBOARD_BUTTON_LABEL}
-      disabled={disabled}
-      onClick={onResetClipboardData}
-    />
-  );
+function ResetClipboardDataButton({ disabled, onResetClipboardData, messages }) {
+  return <Button label={messages.RESET_CLIPBOARD_BUTTON_LABEL} disabled={disabled} onClick={onResetClipboardData} />;
 }
 
-function HighlightAllButton({
-  disabled,
-  clickedButtonName,
-  onHighlightAll,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function HighlightAllButton({ disabled, clickedButtonName, onHighlightAll, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.HIGHLIGHT_ALL_BUTTON_NAME}
@@ -96,14 +58,7 @@ function HighlightAllButton({
   );
 }
 
-function ExtractEntryButton({
-  disabled,
-  clickedButtonName,
-  onExtract,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function ExtractEntryButton({ disabled, clickedButtonName, onExtract, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.EXTRACT_BUTTON_NAME}
@@ -117,14 +72,7 @@ function ExtractEntryButton({
   );
 }
 
-function RenameEntryButton({
-  disabled,
-  clickedButtonName,
-  onRename,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function RenameEntryButton({ disabled, clickedButtonName, onRename, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.RENAME_BUTTON_NAME}
@@ -138,14 +86,7 @@ function RenameEntryButton({
   );
 }
 
-function DeleteEntriesButton({
-  disabled,
-  clickedButtonName,
-  onRemove,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function DeleteEntriesButton({ disabled, clickedButtonName, onRemove, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.DELETE_BUTTON_NAME}
@@ -159,13 +100,7 @@ function DeleteEntriesButton({
   );
 }
 
-function CreateFolderButton({
-  clickedButtonName,
-  onCreateFolder,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function CreateFolderButton({ clickedButtonName, onCreateFolder, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.CREATE_FOLDER_BUTTON_NAME}
@@ -178,13 +113,7 @@ function CreateFolderButton({
   );
 }
 
-function AddFilesButton({
-  clickedButtonName,
-  onShowAddFilesPicker,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function AddFilesButton({ clickedButtonName, onShowAddFilesPicker, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.ADD_FILES_BUTTON_NAME}
@@ -197,18 +126,12 @@ function AddFilesButton({
   );
 }
 
-function ImportZipButton({
-  clickedButtonName,
-  onShowImportZipFilePicker,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function ImportZipButton({ clickedButtonName, onShowImportZipFilePicker, onClickedButton, constants, messages }) {
   const { IMPORT_ZIP_BUTTON_NAME } = constants;
 
   function handleClick() {
     onShowImportZipFilePicker({
-      description: messages.ZIP_FILE_DESCRIPTION_LABEL
+      description: messages.ZIP_FILE_DESCRIPTION_LABEL,
     });
   }
 
@@ -224,14 +147,7 @@ function ImportZipButton({
   );
 }
 
-function ExportZipButton({
-  disabled,
-  clickedButtonName,
-  onExportZip,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function ExportZipButton({ disabled, clickedButtonName, onExportZip, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.EXPORT_ZIP_BUTTON_NAME}
@@ -246,29 +162,14 @@ function ExportZipButton({
 }
 
 function ResetButton({ disabled, onReset, messages }) {
-  return (
-    <Button
-      label={messages.RESET_BUTTON_LABEL}
-      disabled={disabled}
-      onClick={onReset}
-    />
-  );
+  return <Button label={messages.RESET_BUTTON_LABEL} disabled={disabled} onClick={onReset} />;
 }
 
 function OptionsButton({ onOpenOptions, messages }) {
-  return (
-    <Button label={messages.OPTIONS_BUTTON_LABEL} onClick={onOpenOptions} />
-  );
+  return <Button label={messages.OPTIONS_BUTTON_LABEL} onClick={onOpenOptions} />;
 }
 
-function BackButton({
-  disabled,
-  clickedButtonName,
-  onNavigateBack,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function BackButton({ disabled, clickedButtonName, onNavigateBack, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.BACK_BUTTON_NAME}
@@ -283,14 +184,7 @@ function BackButton({
   );
 }
 
-function ForwardButton({
-  disabled,
-  clickedButtonName,
-  onNavigateForward,
-  onClickedButton,
-  constants,
-  messages
-}) {
+function ForwardButton({ disabled, clickedButtonName, onNavigateForward, onClickedButton, constants, messages }) {
   return (
     <Button
       name={constants.FORWARD_BUTTON_NAME}
@@ -305,16 +199,7 @@ function ForwardButton({
   );
 }
 
-function Button({
-  name,
-  title,
-  label,
-  disabled,
-  ariaLabel,
-  clickedButtonName,
-  onClick,
-  onClickedButton
-}) {
+function Button({ name, title, label, disabled, ariaLabel, clickedButtonName, onClick, onClickedButton }) {
   let className;
 
   function handleAnimationEnd() {
@@ -324,17 +209,10 @@ function Button({
   }
 
   if (clickedButtonName && clickedButtonName === name) {
-    className = "flashing-button";
+    className = 'flashing-button';
   }
   return (
-    <button
-      className={className}
-      title={title}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      onClick={onClick}
-      onAnimationEnd={handleAnimationEnd}
-    >
+    <button className={className} title={title} disabled={disabled} aria-label={ariaLabel} onClick={onClick} onAnimationEnd={handleAnimationEnd}>
       {label}
     </button>
   );
@@ -356,5 +234,5 @@ export {
   ResetButton,
   OptionsButton,
   BackButton,
-  ForwardButton
+  ForwardButton,
 };

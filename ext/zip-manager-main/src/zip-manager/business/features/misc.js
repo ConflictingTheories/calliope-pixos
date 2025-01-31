@@ -8,7 +8,7 @@ function getMiscFeatures({
   stylesheetService,
   themeService,
   musicService,
-  constants
+  constants,
 }) {
   const { ACCENT_COLOR_CUSTOM_PROPERTY_NAME } = themeService;
 
@@ -24,9 +24,9 @@ function getMiscFeatures({
     musicService.play({
       onSetFrequencyData: (frequencyData) => {
         setMusicData(() => ({
-          frequencyData
+          frequencyData,
         }));
-      }
+      },
     });
   }
 
@@ -44,10 +44,7 @@ function getMiscFeatures({
   function updateAccentColor() {
     const { accentColor, skin } = theme;
     if (accentColor) {
-      stylesheetService.setStyle(
-        ACCENT_COLOR_CUSTOM_PROPERTY_NAME,
-        theme.accentColor
-      );
+      stylesheetService.setStyle(ACCENT_COLOR_CUSTOM_PROPERTY_NAME, theme.accentColor);
       themeService.setTheme({ accentColor, skin });
       const options = getOptions();
       setOptions({ ...options, accentColor });
@@ -59,7 +56,7 @@ function getMiscFeatures({
     stopMusic,
     updateAccentColor,
     updateSkin,
-    initMiscFeatures
+    initMiscFeatures,
   };
 }
 
