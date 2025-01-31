@@ -6,12 +6,12 @@ cd $BUILD_PATH;
 . $BUILD_PATH/env
 
 # Copy Environment Variables
-cp env $BUILD_PATH/../_calliope/.env
-cd $BUILD_PATH/../_calliope/app
+cp env $BUILD_PATH/../.env
+cd $BUILD_PATH/../app
 
 # Copy Content to Storage For Build
-rm -rf $BUILD_PATH/../_calliope/app/storage/* 
-cp -R $BUILD_PATH/content/* $BUILD_PATH/../_calliope/app/storage
+rm -rf $BUILD_PATH/../app/storage/* 
+cp -R $BUILD_PATH/content/* $BUILD_PATH/../app/storage
 
 yarn --production=false     # Install
 yarn deploy                 # Build Site
@@ -20,7 +20,7 @@ yarn export                 # Export
 # Move Site Export
 mkdir -p $BUILD_PATH/output
 rm -rf $BUILD_PATH/output/*
-cd $BUILD_PATH/../_calliope
+cd $BUILD_PATH/../app
 cp -R output/site/* $BUILD_PATH/output
 cp $BUILD_PATH/favicon.ico $BUILD_PATH/output
 echo "/*    /index.html   200" > $BUILD_PATH/output/_redirects
