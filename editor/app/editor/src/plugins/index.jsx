@@ -10,12 +10,12 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import React from "react";
+import React from 'react';
 // Plugins
-import ipfsStream from "pixos-ipfs-stream";
-import MermaidDiagram from "pixos-mermaid";
-import BlockWorld from "pixos-blockworld";
-import Pixos from "pixos-pixos";
+import ipfsStream from 'calliope-ipfs-stream';
+import MermaidDiagram from 'calliope-mermaid';
+import BlockWorld from 'calliope-blockworld';
+import Pixos from 'calliope-pixos';
 
 // TODO - Add Theme Injection Somehow (Or Wrapper)
 
@@ -23,7 +23,7 @@ export default function plugins(props) {
   console.log(props);
   switch (props.identifier) {
     // IPFS Video Streams (HLS)
-    case "ipfsStream":
+    case 'ipfsStream':
       console.log(ipfsStream);
       let { ipfsHash, audioOnly } = props.attributes;
       if (audioOnly) {
@@ -32,7 +32,7 @@ export default function plugins(props) {
         return <ipfsStream.Video ipfsHash={ipfsHash} />;
       }
     // Mermaid Diagrams
-    case "mermaid":
+    case 'mermaid':
       console.log(MermaidDiagram);
       let { diagram } = props.attributes;
       if (diagram) {
@@ -41,7 +41,7 @@ export default function plugins(props) {
         return <></>;
       }
     // Blockworld Diagrams
-    case "blockworld":
+    case 'blockworld':
       console.log(BlockWorld);
       let { networkString } = props.attributes;
       if (networkString) {
@@ -50,9 +50,9 @@ export default function plugins(props) {
         return <></>;
       }
     // Pixos
-    case "pixos":
-      let PixosPlugin = Pixos["pixos-pixos"].default;
-      return <PixosPlugin style={{ height: "550px" }} />;
+    case 'pixos':
+      let PixosPlugin = Pixos['calliope-pixos'].default;
+      return <PixosPlugin style={{ height: '550px' }} />;
     default:
       return <>{JSON.stringify(props)}</>;
   }

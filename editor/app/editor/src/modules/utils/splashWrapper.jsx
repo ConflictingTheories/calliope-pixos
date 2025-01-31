@@ -11,10 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React from "react";
-import SplashScreen from "./splash";
+import React from 'react';
+import SplashScreen from './splash';
 // ASSETS & APP STYLES
-import "../../theme/less/App.less";
+import '../../theme/less/App.less';
 // Splash Screen
 export default function withSplashScreen(WrappedComponent) {
   return class extends React.Component {
@@ -30,7 +30,7 @@ export default function withSplashScreen(WrappedComponent) {
           this.setState({
             loading: false,
           });
-        }, 5500);
+        }, 1500);
       } catch (err) {
         console.log(err);
         this.setState({

@@ -11,30 +11,30 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from "react";
-import { collect, store } from "react-recollect";
+import React, { Component } from 'react';
+import { collect, store } from 'react-recollect';
 
-import MDEditor, { commands } from "@uiw/react-md-editor";
-import htmlParser from "react-markdown/plugins/html-parser";
+import MDEditor, { commands } from '@uiw/react-md-editor';
+import htmlParser from 'react-markdown/plugins/html-parser';
 
 // RSuite UI Library
-import { Panel, Row, Col, Container } from "rsuite";
-import "rsuite/dist/styles/rsuite-default.css";
+import { Panel, Row, Col, Container } from 'rsuite';
+import 'rsuite/dist/styles/rsuite-default.css';
 
-import math from "remark-math";
-import a11yEmoji from "@fec/remark-a11y-emoji";
-import html from "remark-html";
-import slug from "remark-slug";
-import emoji from "remark-emoji";
-import headings from "remark-autolink-headings";
-import shortcodes from "remark-shortcodes";
+import math from 'remark-math';
+import a11yEmoji from '@fec/remark-a11y-emoji';
+import html from 'remark-html';
+import slug from 'remark-slug';
+import emoji from 'remark-emoji';
+import headings from 'remark-autolink-headings';
+import shortcodes from 'remark-shortcodes';
 
-import { renderers } from "../../theme/jsx";
-import { save } from "../../services/content";
-import Post from "../post";
+import { renderers } from '../../theme/jsx';
+import { save } from '../../services/content';
+import Post from '../post';
 
 const parseHtml = htmlParser({
-  isValidNode: (node) => node.type !== "script",
+  isValidNode: (node) => node.type !== 'script',
   processingInstructions: [
     /* ... */
   ],
@@ -44,7 +44,7 @@ class EditMarkdown extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      content: props.content || "please start your edits :)",
+      content: props.content || 'please start your edits :)',
     };
     this.saveChanges = this.saveChanges.bind(this);
   }
@@ -75,17 +75,17 @@ class EditMarkdown extends Component {
               bordered
               bodyFill
               style={{
-                height: "87vh",
-                overflow: "overlay",
-                background: "#121216",
-                width: "100%",
+                height: '87vh',
+                overflow: 'overlay',
+                background: '#121216',
+                width: '100%',
               }}
             >
-              <Container style={{ minHeight: "100%" }}>
+              <Container style={{ minHeight: '100%' }}>
                 <MDEditor
-                  style={{ height: "100%", minHeight: "87vh" }}
-                  height={"100%"}
-                  preview={"edit"}
+                  style={{ height: '100%', minHeight: '87vh' }}
+                  height={'100%'}
+                  preview={'edit'}
                   value={content}
                   autoFocus={false}
                   visiableDragbar={false}
@@ -95,13 +95,7 @@ class EditMarkdown extends Component {
                     this.setState({ content: value });
                   }}
                   // Toolbar Settings
-                  commands={[
-                    commands.bold,
-                    commands.hr,
-                    commands.italic,
-                    commands.divider,
-                    commands.fullscreen,
-                  ]}
+                  commands={[commands.bold, commands.hr, commands.italic, commands.divider, commands.fullscreen]}
                   // Markdown Options
                   previewOptions={{
                     astPlugins: [parseHtml],
@@ -111,8 +105,8 @@ class EditMarkdown extends Component {
                       [
                         shortcodes,
                         {
-                          startBlock: "[[",
-                          endBlock: "]]",
+                          startBlock: '[[',
+                          endBlock: ']]',
                           inlineMode: true,
                         },
                       ],
@@ -134,10 +128,10 @@ class EditMarkdown extends Component {
             <Panel
               bordered
               style={{
-                height: "87vh",
-                overflow: "overlay",
-                background: "#121216",
-                width: "100%",
+                height: '87vh',
+                overflow: 'overlay',
+                background: '#121216',
+                width: '100%',
               }}
             >
               <Post hideEmbed={true} content={content} />

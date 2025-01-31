@@ -11,30 +11,22 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-
-import React from "react";
-import { collect } from "react-recollect";
+import React from 'react';
+import { collect } from 'react-recollect';
 
 // BLUEPRINT STYLES
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+import '@blueprintjs/core/lib/css/blueprint.css';
+import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 
 // RSuite UI Library
-import {
-  Container,
-  Header,
-  Content,
-  Sidebar,
-  FlexboxGrid,
-  Panel,
-} from "rsuite";
-import "rsuite/dist/styles/rsuite-default.css";
+import { Container, Header, Content, Sidebar, FlexboxGrid, Panel } from 'rsuite';
+import 'rsuite/dist/styles/rsuite-default.css';
 
 // ASSETS & APP STYLES
-import Logo from "../../assets/logo.svg";
-import "../../theme/less/App.less";
+import Logo from '../../assets/logo.svg';
+import '../../theme/less/App.less';
 
-import { logout } from "../../services/auth";
+import { logout } from '../../services/auth';
 
 class Logout extends React.Component {
   async componentDidMount() {
@@ -42,7 +34,7 @@ class Logout extends React.Component {
       await logout();
     } finally {
       const { from } = this.props.location.state || {
-        from: { pathname: "/home" },
+        from: { pathname: '/home' },
       };
       this.props.history.push(from);
     }
@@ -51,32 +43,27 @@ class Logout extends React.Component {
     return (
       <Container
         style={{
-          background: "linear-gradient(45deg, rgba(37, 1, 63, 0.52), black)",
+          background: 'linear-gradient(45deg, rgba(37, 1, 63, 0.52), black)',
         }}
       >
         <Header></Header>
         <Content>
           <FlexboxGrid justify="center">
             <FlexboxGrid.Item colspan={24}>
-              <div
-                className="App-splash"
-                style={{ backgroundColor: "transparent" }}
-              >
+              <div className="App-splash" style={{ backgroundColor: 'transparent' }}>
                 <Panel bodyFill>
-                  <Container style={{ backgroundColor: "#30404d" }}>
-                    <Sidebar style={{ width: "320px" }}>
+                  <Container style={{ backgroundColor: '#30404d' }}>
+                    <Sidebar style={{ width: '320px' }}>
                       <img
                         src={Logo}
                         height="320"
                         style={{
-                          background: "linear-gradient(45deg,indigo,black)",
+                          background: 'linear-gradient(45deg,indigo,black)',
                         }}
                       />
                     </Sidebar>
-                    <Container style={{ width: "320px" }}>
-                      <Content style={{ padding: "1em" }}>
-                        Please Wait - Returning to Login
-                      </Content>
+                    <Container style={{ width: '320px' }}>
+                      <Content style={{ padding: '1em' }}>Please Wait - Returning to Login</Content>
                     </Container>
                   </Container>
                 </Panel>

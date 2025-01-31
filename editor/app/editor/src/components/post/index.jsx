@@ -11,27 +11,27 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from "react";
-import { collect } from "react-recollect";
+import React, { Component } from 'react';
+import { collect } from 'react-recollect';
 
-import ReactMarkdownWithHtml from "react-markdown/with-html";
+import ReactMarkdownWithHtml from 'react-markdown/with-html';
 
-import htmlParser from "react-markdown/plugins/html-parser";
+import htmlParser from 'react-markdown/plugins/html-parser';
 
-import math from "remark-math";
-import a11yEmoji from "@fec/remark-a11y-emoji";
-import html from "remark-html";
-import emoji from "remark-emoji";
-import headings from "remark-autolink-headings";
-import shortcodes from "remark-shortcodes";
+import math from 'remark-math';
+import a11yEmoji from '@fec/remark-a11y-emoji';
+import html from 'remark-html';
+import emoji from 'remark-emoji';
+import headings from 'remark-autolink-headings';
+import shortcodes from 'remark-shortcodes';
 
-import { renderers } from "../../theme/jsx";
-import { Icon } from "@blueprintjs/core";
-import Swal from "sweetalert2";
-import "@sweetalert2/themes/dark/dark.css";
+import { renderers } from '../../theme/jsx';
+import { Icon } from '@blueprintjs/core';
+import Swal from 'sweetalert2';
+import '@sweetalert2/themes/dark/dark.css';
 
 const parseHtml = htmlParser({
-  isValidNode: (node) => node.type !== "script",
+  isValidNode: (node) => node.type !== 'script',
   processingInstructions: [
     /* ... */
   ],
@@ -40,8 +40,8 @@ class Post extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      src: props.src || "",
-      type: props.t || "posts",
+      src: props.src || '',
+      type: props.t || 'posts',
       hideEmbed: props.hideEmbed,
       content: null,
     };
@@ -49,17 +49,14 @@ class Post extends Component {
 
   async componentDidMount() {
     //Fetch Source and Render Content
-    if (this.state.src && this.state.src !== "") {
-      const fileResponse = await fetch(
-        "/content/" + this.state.type + "/" + this.state.src
-      );
+    if (this.state.src && this.state.src !== '') {
+      const fileResponse = await fetch('/content/' + this.state.type + '/' + this.state.src);
       if (fileResponse.ok) {
         let content = await fileResponse.text();
         this.setState({ content });
       } else {
         this.setState({
-          content:
-            "# 404\n## Page Not Found\n\nSorry, but that page does not exist. 😬😬😬",
+          content: '# 404\n## Page Not Found\n\nSorry, but that page does not exist. 😬😬😬',
         });
       }
     }
@@ -75,9 +72,7 @@ class Post extends Component {
 
   async showEmbed(type, src) {
     // Url to Post
-    let url = `${window.location.protocol}//${
-      window.location.host
-    }/embed/${type}/${src.replaceAll(".md", "")}`;
+    let url = `${window.location.protocol}//${window.location.host}/embed/${type}/${src.replaceAll('.md', '')}`;
     console.log(type, src, url);
     // Iframe Link
     let embedLink = `
@@ -87,9 +82,9 @@ class Post extends Component {
     src="${url}" height="448" width="448"></iframe>`;
     // Popup
     await Swal.fire({
-      customClass: "pixos-modal pixos-post",
-      background: "rgba(4, 21, 27, 0.99)",
-      title: "Embed and Share!",
+      customClass: 'pixos-modal pixos-post',
+      background: 'rgba(4, 21, 27, 0.99)',
+      title: 'Embed and Share!',
       html: `<div><p>Link to this Post using the URL below</p>
         <br/><input class="pixos-input" type="text" value="${url}"/>
         <br/><br/><p>Or paste this inside of any HTML website</p>
@@ -109,18 +104,8 @@ class Post extends Component {
             astPlugins={[parseHtml]}
             escapeHtml={false}
             parserOptions={{ gfm: true }}
-            plugins={[
-              [
-                shortcodes,
-                { startBlock: "[[", endBlock: "]]", inlineMode: true },
-              ],
-              emoji,
-              a11yEmoji,
-              math,
-              headings,
-              html,
-            ]}
-            children={content || ""}
+            plugins={[[shortcodes, { startBlock: '[[', endBlock: ']]', inlineMode: true }], emoji, a11yEmoji, math, headings, html]}
+            children={content || ''}
             renderers={renderers}
             allowDangerousHtml
           />
@@ -128,11 +113,11 @@ class Post extends Component {
           {hideEmbed ?? (
             <footer>
               <a
-                className={"pixos-share"}
+                className={'pixos-share'}
                 style={{
-                  margin: "5px 1em 2.5em 0",
-                  padding: "0.5em",
-                  float: "right",
+                  margin: '5px 1em 2.5em 0',
+                  padding: '0.5em',
+                  float: 'right',
                 }}
                 onClick={() => this.showEmbed(type, src)}
               >

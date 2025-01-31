@@ -15,9 +15,9 @@ import React, { Component } from 'react';
 import { collect, store } from 'react-recollect';
 
 import htmlParser from 'react-markdown/plugins/html-parser';
-import Pixos from 'pixos-pixos';
+import Pixos from 'calliope-pixos';
 
-const PixosPlayer = Pixos['pixos-pixos'].default;
+const PixosPlayer = Pixos['calliope-pixos'].default;
 
 const parseHtml = htmlParser({
   isValidNode: (node) => node.type !== 'script',

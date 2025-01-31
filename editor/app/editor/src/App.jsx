@@ -36,7 +36,7 @@ import PublicScreen from './modules/home';
 // ADMIN SCREENS
 import LoginScreen from './modules/login';
 import LogoutScreen from './modules/login/logout';
-import AdminScreen from './modules/editor';
+import AdminScreen from './modules/admin';
 
 import { initializeTheme, onResize } from './theme';
 

@@ -1,36 +1,27 @@
-import React from "react";
-import { collect, store } from "react-recollect";
+import React from 'react';
+import { collect, store } from 'react-recollect';
 
 // RSuite UI Library
-import {
-  Container,
-  Content,
-  Panel,
-  Row,
-  Col,
-  Notification,
-  Placeholder,
-  List,
-} from "rsuite";
-import "rsuite/dist/styles/rsuite-default.css";
+import { Container, Content, Panel, Row, Col, Notification, Placeholder, List } from 'rsuite';
+import 'rsuite/dist/styles/rsuite-default.css';
 // Blueprint
-import { NonIdealState, Tabs, Tab, Icon } from "@blueprintjs/core";
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+import { NonIdealState, Tabs, Tab, Icon } from '@blueprintjs/core';
+import '@blueprintjs/core/lib/css/blueprint.css';
+import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 // Misc
-import Swal from "sweetalert2";
-import "@sweetalert2/themes/dark/dark.min.css";
+import Swal from 'sweetalert2';
+import '@sweetalert2/themes/dark/dark.min.css';
 
 // Components
-import NavBar from "../../components/nav";
-import SideMenu from "../../components/menu";
-import ScriptEdit from "../../components/script";
+import NavBar from '../../components/nav';
+import SideMenu from '../../components/menu';
+import ScriptEdit from '../../components/script';
 
 // ASSETS & APP STYLES
-import "../../theme/less/App.less";
+import '../../theme/less/App.less';
 
 //SERVICES
-import { posts, pages, save } from "../../services/content";
+import { posts, pages, save } from '../../services/content';
 
 const { Paragraph } = Placeholder;
 
@@ -55,7 +46,7 @@ class Dashboard extends React.Component {
     setTimeout(
       () =>
         Notification.open({
-          title: "Welcome to Pixos",
+          title: 'Welcome to Pixos',
           description: <Paragraph width={320} rows={3} />,
         }),
       ~~(Math.random() * 10000)
@@ -73,13 +64,13 @@ class Dashboard extends React.Component {
     store.callbacks = resultPages;
   }
 
-  async create(type, name = "untitled") {
+  async create(type, name = 'untitled') {
     // New Post
-    if (name === "") {
-      name = "untitled";
+    if (name === '') {
+      name = 'untitled';
     }
     const formattedName = `${name}.lua`;
-    await save(formattedName, "", type); // Create Blank File
+    await save(formattedName, '', type); // Create Blank File
     await this.fetchFileLists();
     return formattedName;
   }
@@ -92,14 +83,14 @@ class Dashboard extends React.Component {
       this.saveChanges();
     } else {
       // Fetch Script & Store Content
-      if (script && script !== "" && store.selectedScript != script) {
+      if (script && script !== '' && store.selectedScript != script) {
         this.fetchScript(script, type);
       }
     }
   }
 
   async fetchScript(script, type) {
-    const fileResponse = await fetch("/content/" + type + "/" + script);
+    const fileResponse = await fetch('/content/' + type + '/' + script);
     if (fileResponse.ok) {
       let content = await fileResponse.text();
       store.selectedType = type;
@@ -112,7 +103,7 @@ class Dashboard extends React.Component {
 
   async saveChanges() {
     let result = await Swal.fire({
-      title: "Do you want to save the changes?",
+      title: 'Do you want to save the changes?',
       showDenyButton: true,
       showCancelButton: true,
       confirmButtonText: `Save`,
@@ -120,25 +111,25 @@ class Dashboard extends React.Component {
     });
     if (result.isConfirmed) {
       await save(store.selectedScript, store.selectedContent, store.selectedType);
-      Swal.fire("Saved!", "", "success");
+      Swal.fire('Saved!', '', 'success');
       await this.fetchScript(store.editCallback, store.selectedType);
     } else if (result.isDenied) {
-      Swal.fire("Changes are not saved", "", "info");
-      await this.fetchScript(store.editCallback,store.selectedType);
+      Swal.fire('Changes are not saved', '', 'info');
+      await this.fetchScript(store.editCallback, store.selectedType);
     }
   }
 
   async newFile() {
     let result = await Swal.fire({
-      title: "Please enter the name of the new file",
-      input: "text",
-      inputPlaceholder: "untitled",
+      title: 'Please enter the name of the new file',
+      input: 'text',
+      inputPlaceholder: 'untitled',
       showCancelButton: true,
       confirmButtonText: `Create`,
     });
     if (result.isConfirmed) {
       let newFile = await this.create(store.selectedType, result.value);
-      Swal.fire("Created!", "", "success");
+      Swal.fire('Created!', '', 'success');
       await this.fetchScript(newFile);
     }
   }
@@ -154,13 +145,11 @@ class Dashboard extends React.Component {
                   return (
                     <List.Item>
                       <label>
-                        <a onClick={() => this.edit(callback, "callbacks")}>
-                          {callback.replace(/\d+T\d+_/, "")}
-                        </a>{" "}
+                        <a onClick={() => this.edit(callback, 'callbacks')}>{callback.replace(/\d+T\d+_/, '')}</a>{' '}
                         <a
-                          onClick={async () =>{
-                            await navigator.clipboard.writeText(`/embed/callbacks/${callback.replace(".md","")}`);
-                            await Swal.fire("Link Copied!", "", "success");
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(`/embed/callbacks/${callback.replace('.md', '')}`);
+                            await Swal.fire('Link Copied!', '', 'success');
                           }}
                         >
                           <Icon icon="link"></Icon>
@@ -187,14 +176,12 @@ class Dashboard extends React.Component {
                   return (
                     <List.Item>
                       <label>
-                        <a onClick={() => this.edit(trigger, "triggers")}>
-                          {trigger.replace(/\d+T\d+_/, "")}
-                        </a>{" "}
+                        <a onClick={() => this.edit(trigger, 'triggers')}>{trigger.replace(/\d+T\d+_/, '')}</a>{' '}
                         <a
-                            onClick={async () =>{
-                              await navigator.clipboard.writeText(`/embed/triggers/${trigger.replace(".lua","")}`);
-                              await Swal.fire("Link Copied!", "", "success");
-                            }                          }
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(`/embed/triggers/${trigger.replace('.lua', '')}`);
+                            await Swal.fire('Link Copied!', '', 'success');
+                          }}
                         >
                           <Icon icon="link"></Icon>
                         </a>
@@ -212,19 +199,19 @@ class Dashboard extends React.Component {
   renderPanel() {
     let content = store.selectedContent;
     return (
-      <Panel style={{ width: "100%", maxWidth: "100vw" }}>
+      <Panel style={{ width: '100%', maxWidth: '100vw' }}>
         <Content>
           <Row>
             <Col md={4}>
               <details open>
                 <summary>
-                  Scripts{" "}
+                  Scripts{' '}
                   <details>
                     <summary>
-                      Triggers{" "}
+                      Triggers{' '}
                       <button
                         onClick={async () => {
-                          store.selectedType = "trigger";
+                          store.selectedType = 'trigger';
                           await this.newFile();
                         }}
                       >
@@ -235,10 +222,10 @@ class Dashboard extends React.Component {
                   </details>
                   <details>
                     <summary>
-                      Callbacks{" "}
+                      Callbacks{' '}
                       <button
                         onClick={async () => {
-                          store.selectedType = "callback";
+                          store.selectedType = 'callback';
                           await this.newFile();
                         }}
                       >
@@ -254,12 +241,7 @@ class Dashboard extends React.Component {
               {store.selectedScript && content !== null ? (
                 <ScriptEdit content={content} />
               ) : (
-                <NonIdealState
-                  style={{ height: "87vh" }}
-                  icon={"build"}
-                  title="Getting Started"
-                  description={"Please select a script to edit"}
-                />
+                <NonIdealState style={{ height: '87vh' }} icon={'build'} title="Getting Started" description={'Please select a script to edit'} />
               )}
             </Col>
           </Row>
@@ -272,26 +254,17 @@ class Dashboard extends React.Component {
     return (
       <div
         style={{
-          display: "flex",
+          display: 'flex',
           flex: 1,
-          flexDirection: "row",
-          minHeight: "100vh",
+          flexDirection: 'row',
+          minHeight: '100vh',
         }}
       >
-        <SideMenu
-          activeKey={"1"}
-          style={{ flex: 1, flexShrink: 1, flexGrow: 0 }}
-        />
-        <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
+        <SideMenu activeKey={'1'} style={{ flex: 1, flexShrink: 1, flexGrow: 0 }} />
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
           <Container className="pixos-admin">
-            <NavBar
-              isAdmin={true}
-              isLogin={false}
-              renderBrand={this.renderClientSelect}
-              renderBar={() => null}
-              renderRight={() => null}
-            />
-            <Content style={{ marginTop: "3em" }}>{this.renderPanel()}</Content>
+            <NavBar isAdmin={true} isLogin={false} renderBrand={this.renderClientSelect} renderBar={() => null} renderRight={() => null} />
+            <Content style={{ marginTop: '3em' }}>{this.renderPanel()}</Content>
           </Container>
         </div>
       </div>

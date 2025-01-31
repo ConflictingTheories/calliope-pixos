@@ -11,18 +11,18 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React from "react";
-import { collect } from "react-recollect";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { collect } from 'react-recollect';
+import { Link } from 'react-router-dom';
 
 // BLUEPRINT STYLES UI LIBRARY
-import { Button, Colors, Navbar, Alignment } from "@blueprintjs/core";
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+import { Button, Colors, Navbar, Alignment } from '@blueprintjs/core';
+import '@blueprintjs/core/lib/css/blueprint.css';
+import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 
 // ASSETS & APP STYLES
-import "../../theme/less/App.less";
-import { exportZip } from "../../services/content";
+import '../../theme/less/App.less';
+import { exportZip } from '../../services/content';
 
 // APP
 class ArchNavBar extends React.Component {
@@ -79,21 +79,13 @@ class ArchNavBar extends React.Component {
   render() {
     return this.state.isLogin ? (
       <Navbar className="App-nav">
-        <Navbar.Group align={Alignment.LEFT}>
-          {this.state.renderBrand()}
-        </Navbar.Group>
-        <Navbar.Group align={Alignment.RIGHT}>
-          {this.state.renderRight()}
-        </Navbar.Group>
+        <Navbar.Group align={Alignment.LEFT}>{this.state.renderBrand()}</Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>{this.state.renderRight()}</Navbar.Group>
       </Navbar>
     ) : this.state.isAdmin ? (
       <Navbar className="App-nav">
-        <Navbar.Group align={Alignment.LEFT}>
-          {this.state.renderBrand()}
-        </Navbar.Group>
-        <Navbar.Group align={Alignment.RIGHT}>
-          {this.state.renderAdmin()}
-        </Navbar.Group>
+        <Navbar.Group align={Alignment.LEFT}>{this.state.renderBrand()}</Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>{this.state.renderAdmin()}</Navbar.Group>
       </Navbar>
     ) : (
       <Navbar className="App-nav">
@@ -101,9 +93,7 @@ class ArchNavBar extends React.Component {
           {this.state.renderBrand()}
           {this.state.renderBar()}
         </Navbar.Group>
-        <Navbar.Group align={Alignment.RIGHT}>
-          {this.state.renderRight()}
-        </Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>{this.state.renderRight()}</Navbar.Group>
       </Navbar>
     );
   }

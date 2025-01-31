@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { useRef, useEffect } from "react";
-import { initializeTheme } from "../../theme";
+import React, { useRef, useEffect } from 'react';
+import { initializeTheme } from '../../theme';
 
 // ASSETS & APP STYLES
-import quotes from "../../assets/quotes.json";
-import logo from "../../assets/logo.svg";
-import "../../theme/less/App.less";
+import quotes from '../../assets/quotes.json';
+import logo from '../../assets/logo.svg';
+import '../../theme/less/App.less';
 // Random Index
 function randomFrom(arr) {
   const index = ~~((Math.random() * arr.length) % arr.length);
@@ -39,9 +39,7 @@ export default function SplashScreen() {
       <header className="App-splash container">
         <img src={logo} className="App-logo" alt="logo" />
         <p>{quote.text}</p>
-        <p style={{ textAlign: "left", fontStyle: "italic" }}>
-          ~{quote.author}
-        </p>
+        <p style={{ textAlign: 'left', fontStyle: 'italic' }}>~{quote.author}</p>
       </header>
     </div>
   );

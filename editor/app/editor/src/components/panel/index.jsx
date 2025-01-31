@@ -11,13 +11,13 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from "react";
-import { collect, store } from "react-recollect";
+import React, { Component } from 'react';
+import { collect, store } from 'react-recollect';
 
 // RSuite UI Library
-import { Container, Icon, Panel, Content, Row, Col, InputGroup } from "../../modules/home/node_modules/rsuite";
+import { Container, Icon, Panel, Content, Row, Col, InputGroup } from '../../modules/home/node_modules/rsuite';
 
-import "rsuite/dist/styles/rsuite-default.css";
+import 'rsuite/dist/styles/rsuite-default.css';
 
 class WBPanel extends Component {
   constructor(props) {
