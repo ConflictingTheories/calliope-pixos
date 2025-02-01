@@ -3,7 +3,6 @@ import './styles/index.css';
 import { useEffect, useState, useRef } from 'react';
 
 import { i18nService, zipService } from './services/index.js';
-import { constants, features, getUIState, getEventHandlers } from './business/index.js';
 import {
   TopButtonBar,
   NavigationBar,
@@ -24,8 +23,10 @@ import {
 } from './components/index.jsx';
 import { getMessages } from './messages/index.js';
 import { getHooks } from './hooks/hooks.js';
-
-const {
+import * as constants from './business/constants.js';
+import getUIState from './business/ui-state.js';
+import getEventHandlers from './business/events.js';
+import {
   getCommonFeatures,
   getEntriesFeatures,
   getFoldersFeatures,
@@ -37,7 +38,8 @@ const {
   getOptionsFeatures,
   getAppFeatures,
   getMiscFeatures,
-} = features;
+} from './business/features/index.js';
+
 const messages = getMessages();
 const apiFilesystem = zipService.createZipFileSystem();
 const { root } = apiFilesystem;

@@ -1,30 +1,24 @@
 /* global Intl, navigator */
 
-const DEFAULT_LANGUAGE_ID = "en-US";
-const LANGUAGE_IDS = [DEFAULT_LANGUAGE_ID, "de-DE", "es-ES", "fr-FR", "it-IT", "pt-PT"];
+const DEFAULT_LANGUAGE_ID = 'en-US';
+const LANGUAGE_IDS = [DEFAULT_LANGUAGE_ID, 'de-DE', 'es-ES', 'fr-FR', 'it-IT', 'pt-PT'];
 
-const SIZE_NUMBER_FORMATS = [
-  "kilobyte",
-  "megabyte",
-  "gigabyte",
-  "terabyte",
-  "petabyte"
-].map(
+const SIZE_NUMBER_FORMATS = ['kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'].map(
   (unit) =>
     new Intl.NumberFormat(getLanguageId(), {
-      style: "unit",
+      style: 'unit',
       maximumFractionDigits: 1,
-      unit
+      unit,
     })
 );
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat(getLanguageId(), {
-  dateStyle: "short",
-  timeStyle: "short"
+  dateStyle: 'short',
+  timeStyle: 'short',
 });
 const PERCENT_VALUE_FORMAT = new Intl.NumberFormat(getLanguageId(), {
-  style: "unit",
+  style: 'unit',
   maximumFractionDigits: 0,
-  unit: "percent"
+  unit: 'percent',
 });
 
 function formatSize(number) {
@@ -46,9 +40,7 @@ function formatPercentValue(value) {
 }
 
 function getLanguageId() {
-  return LANGUAGE_IDS.includes(navigator.language)
-    ? navigator.language
-    : DEFAULT_LANGUAGE_ID;
+  return LANGUAGE_IDS.includes(navigator.language) ? navigator.language : DEFAULT_LANGUAGE_ID;
 }
 
 export { formatSize, formatDate, formatPercentValue, getLanguageId };

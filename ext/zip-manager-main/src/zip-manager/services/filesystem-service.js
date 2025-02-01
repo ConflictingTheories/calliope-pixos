@@ -1,24 +1,24 @@
 /* global window, document, URL */
 
-const FILESYSTEM_FILE_KIND = "file";
-const ABORT_ERROR_NAME = "AbortError";
+const FILESYSTEM_FILE_KIND = 'file';
+const ABORT_ERROR_NAME = 'AbortError';
 
 async function showOpenFilePicker({ multiple, description, accept } = {}) {
   const excludeAcceptAllOption = Boolean(accept);
-  if ("showOpenFilePicker" in window) {
+  if ('showOpenFilePicker' in window) {
     try {
       const options = {
         excludeAcceptAllOption,
-        multiple
+        multiple,
       };
       if (excludeAcceptAllOption) {
         Object.assign(options, {
           types: [
             {
               description,
-              accept
-            }
-          ]
+              accept,
+            },
+          ],
         });
       }
       const fileHandles = await window.showOpenFilePicker(options);
@@ -31,11 +31,11 @@ async function showOpenFilePicker({ multiple, description, accept } = {}) {
       }
     }
   } else {
-    const fileInputElement = document.createElement("input");
+    const fileInputElement = document.createElement('input');
     Object.assign(fileInputElement, {
-      type: "file",
-      accept: accept ? Object.keys(accept).join(",") : "",
-      multiple
+      type: 'file',
+      accept: accept ? Object.keys(accept).join(',') : '',
+      multiple,
     });
     return new Promise((resolve) => {
       fileInputElement.onchange = ({ target }) => {
@@ -57,22 +57,15 @@ function showSaveFilePicker(options) {
 }
 
 function savePickersSupported() {
-  return "showSaveFilePicker" in window && "showDirectoryPicker" in window;
+  return 'showSaveFilePicker' in window && 'showDirectoryPicker' in window;
 }
 
 function saveBlob(blob, filename) {
   const href = URL.createObjectURL(blob);
-  const anchorElement = document.createElement("a");
+  const anchorElement = document.createElement('a');
   Object.assign(anchorElement, { href, download: filename });
   anchorElement.click();
   URL.revokeObjectURL(href);
 }
 
-export {
-  FILESYSTEM_FILE_KIND,
-  showOpenFilePicker,
-  showDirectoryPicker,
-  savePickersSupported,
-  showSaveFilePicker,
-  saveBlob
-};
+export { FILESYSTEM_FILE_KIND, showOpenFilePicker, showDirectoryPicker, savePickersSupported, showSaveFilePicker, saveBlob };

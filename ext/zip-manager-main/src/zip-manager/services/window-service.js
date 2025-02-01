@@ -1,7 +1,7 @@
 /* global addEventListener, removeEventListener */
 
-const RESIZE_EVENT_NAME = "resize";
-const BEFORE_UNLOAD_EVENT_NAME = "beforeunload";
+const RESIZE_EVENT_NAME = 'resize';
+const BEFORE_UNLOAD_EVENT_NAME = 'beforeunload';
 
 function addUnloadListener(listener) {
   addEventListener(BEFORE_UNLOAD_EVENT_NAME, listener);
@@ -19,9 +19,4 @@ function removeResizeListener(listener) {
   removeEventListener(RESIZE_EVENT_NAME, listener);
 }
 
-export {
-  addUnloadListener,
-  removeUnloadListener,
-  addResizeListener,
-  removeResizeListener
-};
+export { addUnloadListener, removeUnloadListener, addResizeListener, removeResizeListener };

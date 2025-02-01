@@ -1,6 +1,6 @@
 /* global navigator */
 
-const MACOS_PLATFORMS = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"];
+const MACOS_PLATFORMS = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
 
 function getMaximumWorkers() {
   return navigator.hardwareConcurrency;

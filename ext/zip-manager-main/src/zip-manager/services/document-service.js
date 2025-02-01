@@ -1,7 +1,7 @@
 /* global document, getComputedStyle, ResizeObserver */
 
 function scrollIntoView(element) {
-  element.scrollIntoView({ block: "nearest" });
+  element.scrollIntoView({ block: 'nearest' });
 }
 
 function getHeight(element) {
@@ -27,11 +27,4 @@ function setDocumentLanguage(language) {
   document.documentElement.lang = language;
 }
 
-export {
-  getHeight,
-  getRowHeight,
-  scrollIntoView,
-  removeDocumentAttribute,
-  addResizeObserver,
-  setDocumentLanguage
-};
+export { getHeight, getRowHeight, scrollIntoView, removeDocumentAttribute, addResizeObserver, setDocumentLanguage };

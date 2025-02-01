@@ -1,4 +1,4 @@
-import { fs, configure } from "@zip.js/zip.js";
+import { fs, configure } from '@zip.js/zip.js';
 
 const { FS } = fs;
 

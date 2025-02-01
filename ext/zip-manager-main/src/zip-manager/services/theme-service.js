@@ -1,16 +1,16 @@
 /* global document */
 
-const ACCENT_COLOR_CUSTOM_PROPERTY_NAME = "--accent-color";
+const ACCENT_COLOR_CUSTOM_PROPERTY_NAME = '--accent-color';
 
 function setTheme({ accentColor, skin }) {
   const documentClasses = [skin];
   const brightNessAccentColor = getBrightNess(accentColor);
   if (brightNessAccentColor > 224) {
-    documentClasses.push("dark");
+    documentClasses.push('dark');
   } else if (brightNessAccentColor < 32) {
-    documentClasses.push("light");
+    documentClasses.push('light');
   }
-  document.documentElement.className = documentClasses.join(" ");
+  document.documentElement.className = documentClasses.join(' ');
 }
 
 function getBrightNess(color) {
