@@ -1,4 +1,8 @@
-function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload, downloadService, filesystemService, environmentService }) {
+import { filesystemService } from '../../services/index.js'; // Import the i18nService module
+import { downloadService } from '../../services/index.js'; // Import the i18nService module
+import { environmentService } from '../../services/index.js'; // Import the i18nService module
+
+function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }) {
   const isMacOSPlatform = environmentService.isMacOSPlatform();
 
   async function saveEntries(entries, filename, options, parentHandle) {

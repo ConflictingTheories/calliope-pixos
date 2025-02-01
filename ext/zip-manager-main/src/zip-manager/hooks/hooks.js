@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
+import { keyboardService } from '../services/index.js'; // Import the i18nService module
+import { windowService } from '../services/index.js'; // Import the i18nService module
 
-function getHooks({ keyboardService, windowService }) {
+
+function getHooks() {
   function useKeyUp(handleKeyUp) {
     useEffect(registerKeyUpHandler);
 

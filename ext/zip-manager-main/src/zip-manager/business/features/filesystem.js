@@ -1,4 +1,6 @@
-function getFilesystemFeatures({ dialogs, setZipFilesystem, setDialogs, zipService }) {
+import { zipService } from '../../services/index.js'; // Import the zipService module
+
+function getFilesystemFeatures({ dialogs, setZipFilesystem, setDialogs }) {
   function openConfirmReset() {
     setDialogs({
       ...dialogs,

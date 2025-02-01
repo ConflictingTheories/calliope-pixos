@@ -1,4 +1,6 @@
-function getDownloadsFeatures({ setDownloads, downloadService }) {
+import { downloadService } from '../../services/index.js'; // Import the downloadService module
+
+function getDownloadsFeatures({ setDownloads }) {
   function abortDownload(deletedDownload) {
     removeDownload(deletedDownload);
     downloadService.abortDownload(deletedDownload.controller);

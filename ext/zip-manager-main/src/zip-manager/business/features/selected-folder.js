@@ -1,3 +1,8 @@
+import * as constants from '../constants'; // Import the constants module
+import { shareTargetService } from '../../services/index.js'; // Import the stylesheetService module
+import { fileHandlersService } from '../../services/index.js'; // Import the stylesheetService module
+import { filesystemService } from '../../services/index.js'; // Import the stylesheetService module
+
 function getSelectedFolderFeatures({
   disabledPaste,
   disabledExportZip,
@@ -15,11 +20,7 @@ function getSelectedFolderFeatures({
   saveZipFile,
   getOptions,
   openDisplayError,
-  filesystemService,
-  fileHandlersService,
-  shareTargetService,
   modifierKeyPressed,
-  constants,
 }) {
   const {
     ZIP_EXTENSION,

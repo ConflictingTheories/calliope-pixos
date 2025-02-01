@@ -1,10 +1,12 @@
+import * as constants from '../constants'; // Import the constants module
+import { filesystemService } from '../../services/index.js'; // Import the stylesheetService module
+
 function getHighlightedEntriesFeatures({
   disabledCopy,
   disabledCut,
   disabledExtract,
   disabledRename,
   disabledDelete,
-  zipFilesystem,
   entries,
   highlightedIds,
   highlightedEntry,
@@ -15,15 +17,14 @@ function getHighlightedEntriesFeatures({
   setHighlightedIds,
   setNavigation,
   setDialogs,
+  zipFilesystem,
   setClickedButtonName,
   refreshSelectedFolder,
   updateHistoryData,
   saveEntries,
   getOptions,
   openDisplayError,
-  filesystemService,
   modifierKeyPressed,
-  constants,
 }) {
   const {
     CUT_KEY,

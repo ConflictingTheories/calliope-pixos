@@ -1,3 +1,5 @@
+import * as constants from '../constants'; // Import the constants module
+
 function getFoldersFeatures({
   disabledBack,
   disabledForward,
@@ -11,7 +13,6 @@ function getFoldersFeatures({
   setHighlightedIds,
   setClickedButtonName,
   modifierKeyPressed,
-  constants,
 }) {
   const { LEFT_KEY, RIGHT_KEY, BACK_KEY, FORWARD_KEY, BACK_BUTTON_NAME, FORWARD_BUTTON_NAME } = constants;
 

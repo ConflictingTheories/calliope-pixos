@@ -2,22 +2,7 @@ import './styles/index.css';
 
 import { useEffect, useState, useRef } from 'react';
 
-import {
-  filesystemService,
-  downloadService,
-  i18nService,
-  storageService,
-  zipService,
-  shareTargetService,
-  fileHandlersService,
-  stylesheetService,
-  environmentService,
-  keyboardService,
-  themeService,
-  documentService,
-  windowService,
-  musicService,
-} from './services/index.js';
+import { i18nService, zipService } from './services/index.js';
 import { constants, features, getUIState, getEventHandlers } from './business/index.js';
 import {
   TopButtonBar,
@@ -53,7 +38,7 @@ const {
   getAppFeatures,
   getMiscFeatures,
 } = features;
-const messages = getMessages({ i18nService });
+const messages = getMessages();
 const apiFilesystem = zipService.createZipFileSystem();
 const { root } = apiFilesystem;
 const rootZipFilename = messages.ROOT_ZIP_FILENAME;
@@ -98,7 +83,6 @@ function ZipManager() {
 
   const { abortDownload, removeDownload } = getDownloadsFeatures({
     setDownloads,
-    downloadService,
   });
 
   const { modifierKeyPressed, saveZipFile, saveEntries, openDisplayError, closeDisplayError } = getCommonFeatures({
@@ -106,21 +90,12 @@ function ZipManager() {
     setDownloads,
     setDialogs,
     removeDownload,
-    downloadService,
-    filesystemService,
-    environmentService,
   });
 
   const { initOptionsFeatures, setOptions, getOptions, openOptions, closeOptions, resetOptions } = getOptionsFeatures({
     dialogs,
     setDialogs,
     setTheme,
-    zipService,
-    storageService,
-    stylesheetService,
-    environmentService,
-    themeService,
-    constants,
   });
 
   const {
@@ -155,7 +130,6 @@ function ZipManager() {
     history,
     getOptions,
     dialogs,
-    filesystemService,
   });
 
   const {
@@ -195,9 +169,6 @@ function ZipManager() {
     getHighlightedEntryElement,
     getOptions,
     modifierKeyPressed,
-    documentService,
-    windowService,
-    constants,
   });
 
   const { goIntoFolder, navigateBack, navigateForward, refreshSelectedFolder, updateHistoryData, onFoldersKeyUp } = getFoldersFeatures({
@@ -213,7 +184,6 @@ function ZipManager() {
     setHighlightedIds,
     setClickedButtonName,
     modifierKeyPressed,
-    constants,
   });
 
   const {
@@ -250,11 +220,7 @@ function ZipManager() {
     saveZipFile,
     getOptions,
     openDisplayError,
-    filesystemService,
-    fileHandlersService,
-    shareTargetService,
     modifierKeyPressed,
-    constants,
   });
 
   const {
@@ -277,7 +243,6 @@ function ZipManager() {
     disabledExtract,
     disabledRename,
     disabledDelete,
-    zipFilesystem,
     entries,
     highlightedIds,
     highlightedEntry,
@@ -294,16 +259,13 @@ function ZipManager() {
     saveEntries,
     getOptions,
     openDisplayError,
-    filesystemService,
     modifierKeyPressed,
-    constants,
   });
 
   const { openConfirmReset, reset, closeConfirmReset } = getFilesystemFeatures({
     dialogs,
     setZipFilesystem,
     setDialogs,
-    zipService,
   });
 
   const { resetClipboardData } = getClipboardFeatures({
@@ -317,10 +279,6 @@ function ZipManager() {
     setMusicData,
     setPlayerActive,
     getOptions,
-    stylesheetService,
-    themeService,
-    musicService,
-    constants,
   });
 
   const { enterEntry, initAppFeatures, updateZipFilesystem, resetClickedButtonName, getAppClassName, onAppKeyUp } = getAppFeatures({
@@ -339,17 +297,10 @@ function ZipManager() {
     openFile,
     refreshSelectedFolder,
     modifierKeyPressed,
-    stylesheetService,
-    documentService,
-    i18nService,
-    constants,
     messages,
   });
 
-  const { useKeyUp, useKeyDown, usePageUnload } = getHooks({
-    keyboardService,
-    windowService,
-  });
+  const { useKeyUp, useKeyDown, usePageUnload } = getHooks();
 
   const { handleKeyUp, handleKeyDown, handlePageUnload } = getEventHandlers({
     entries,

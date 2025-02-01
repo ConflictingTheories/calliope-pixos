@@ -1,4 +1,6 @@
-function getUIState({ entries, highlightedIds, selectedFolder, clipboardData, history, dialogs, getOptions, filesystemService }) {
+import { filesystemService } from '../services/index.js';
+
+function getUIState({ entries, highlightedIds, selectedFolder, clipboardData, history, dialogs, getOptions }) {
   const entriesEmpty = !entries.length;
   const parentFolderHighlighted = !highlightedIds.length || (selectedFolder.parent && highlightedIds.includes(selectedFolder.parent.id));
   const subFolderHighlighted = highlightedIds.find((id) => {

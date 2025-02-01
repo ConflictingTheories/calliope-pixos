@@ -1,15 +1,9 @@
-function getMiscFeatures({
-  theme,
-  setOptions,
-  setTheme,
-  setMusicData,
-  setPlayerActive,
-  getOptions,
-  stylesheetService,
-  themeService,
-  musicService,
-  constants,
-}) {
+import * as constants from '../constants'; // Import the constants module
+import { stylesheetService } from '../../services/index.js'; // Import the stylesheetService module
+import { themeService } from '../../services/index.js'; // Import the documentService module
+import { musicService } from '../../services/index.js'; // Import the i18nService module
+
+function getMiscFeatures({ theme, setOptions, setTheme, setMusicData, setPlayerActive, getOptions }) {
   const { ACCENT_COLOR_CUSTOM_PROPERTY_NAME } = themeService;
 
   function initMiscFeatures() {

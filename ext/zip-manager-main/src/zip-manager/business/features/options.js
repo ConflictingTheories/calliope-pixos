@@ -1,14 +1,11 @@
-function getOptionsFeatures({
-  dialogs,
-  setDialogs,
-  setTheme,
-  zipService,
-  storageService,
-  stylesheetService,
-  environmentService,
-  themeService,
-  constants,
-}) {
+import * as constants from '../constants'; // Import the constants module
+import { stylesheetService } from '../../services/index.js'; // Import the stylesheetService module
+import { environmentService } from '../../services/index.js'; // Import the stylesheetService module
+import { themeService } from '../../services/index.js'; // Import the stylesheetService module
+import { zipService } from '../../services/index.js'; // Import the stylesheetService module
+import { storageService } from '../../services/index.js'; // Import the stylesheetService module
+
+function getOptionsFeatures({ dialogs, setDialogs, setTheme }) {
   const { DEFAULT_OPTIONS, OPTIONS_KEY_NAME, FONT_SIZE_PROPERTY_NAME } = constants;
 
   function initOptionsFeatures() {

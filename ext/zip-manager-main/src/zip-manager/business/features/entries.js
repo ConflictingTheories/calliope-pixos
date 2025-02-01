@@ -1,3 +1,7 @@
+import * as constants from '../constants'; // Import the constants module
+import { documentService } from '../../services/index.js'; // Import the stylesheetService module
+import { windowService } from '../../services/index.js'; // Import the stylesheetService module
+
 function getEntriesFeatures({
   disabledNavigation,
   disabledHighlightAll,
@@ -21,9 +25,6 @@ function getEntriesFeatures({
   getHighlightedEntryElement,
   getOptions,
   modifierKeyPressed,
-  documentService,
-  windowService,
-  constants,
 }) {
   const { ACTION_KEY, DOWN_KEY, UP_KEY, PAGE_UP_KEY, PAGE_DOWN_KEY, HOME_KEY, END_KEY, HIGHLIGHT_ALL_KEY, HIGHLIGHT_ALL_BUTTON_NAME } = constants;
 

@@ -1,3 +1,8 @@
+import * as constants from '../constants'; // Import the constants module
+import { stylesheetService } from '../../services/index.js'; // Import the stylesheetService module
+import { documentService } from '../../services/index.js'; // Import the documentService module
+import { i18nService } from '../../services/index.js'; // Import the i18nService module
+
 function getAppFeatures({
   disabledEnterEntry,
   zipFilesystem,
@@ -14,10 +19,6 @@ function getAppFeatures({
   openFile,
   refreshSelectedFolder,
   modifierKeyPressed,
-  stylesheetService,
-  documentService,
-  i18nService,
-  constants,
   messages,
 }) {
   const {
