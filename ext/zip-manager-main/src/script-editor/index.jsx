@@ -84,7 +84,7 @@ class ScriptEditor extends Component {
             </Col>
           )}
         </Row>
-        <Row>
+        <Row style={{padding:'10px'}}>
           <button onClick={() => this.saveChanges()}>Save Changes</button>
         </Row>
       </Container>

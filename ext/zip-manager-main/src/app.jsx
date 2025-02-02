@@ -19,6 +19,20 @@ import scriptEditor from './script-editor/index.jsx';
 const App = () => {
   const [contents, setContents] = useState([]);
 
+  async function getData(entry, lang) {
+    // read file stream from zip entry
+    let stream = new TransformStream();
+    await entry.data.getData(stream.writable);
+    let data = new Response(stream.readable).text();
+
+    let options = {};
+    options.lang = lang;
+    options.type = 'script-only';
+    options.content = await data;
+
+    setContents([new scriptEditor(options)]);
+  }
+
   /** Determine which module to load based on the selected file from zip package */
   function openFile(entry = highlightedEntry) {
     const options = {
@@ -30,33 +44,19 @@ const App = () => {
 
     if (entry.name.includes('.lua')) {
       console.log('open in lua editor');
-
-      options.lang = 'lua';
-      options.type = 'script-only';
-      options.content = entry.contents;
-
-      setContents([new scriptEditor(options)]);
+      getData(entry, 'lua');
 
       // todo - add better context handling (trigger, callback, etc.)
     }
 
     if (entry.name.includes('.txt')) {
       console.log('open in text editor');
-
-      options.lang = 'plaintext';
-      options.type = 'script-only';
-
-      setContents([new scriptEditor(options)]);
+      getData(entry, 'plaintext');
     }
 
     if (entry.name.includes('.json')) {
       console.log('open in json editor');
-
-      options.lang = 'json';
-      options.type = 'script-only';
-
-      setContents([new scriptEditor(options)]);
-
+      getData(entry, 'json');
       // todo - add better context handling (sprite, object, map, etc.)
     }
 
@@ -90,7 +90,12 @@ const App = () => {
 
       <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Header className="page-header"> </Header>
-        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>{contents.map(x=>{console.log({x}); return x.render()})}</Content>
+        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>
+          {contents.map((x) => {
+            console.log({ x });
+            return x.render();
+          })}
+        </Content>
       </Container>
     </Container>
   );
