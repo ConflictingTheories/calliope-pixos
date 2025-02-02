@@ -57,14 +57,14 @@ class ScriptEditor extends Component {
               bordered
               bodyFill
               style={{
-                height: '87vh',
+                height: '86vh',
                 overflow: 'overlay',
                 background: '#121216',
                 width: '100%',
               }}
             >
-              <Container style={{ minHeight: '100%' }}>
-                <Editor height="100%" defaultLanguage={this.state.lang} defaultValue="" />
+              <Container style={{ minHeight: '80vh' }}>
+                <Editor theme="vs-dark" height="86vh" defaultLanguage={this.state.lang} defaultValue="" />
               </Container>
             </Panel>
           </Col>
@@ -73,7 +73,7 @@ class ScriptEditor extends Component {
               <Panel
                 bordered
                 style={{
-                  height: '87vh',
+                  height: '86vh',
                   overflow: 'overlay',
                   background: '#121216',
                   width: '100%',

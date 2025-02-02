@@ -55,7 +55,7 @@ const App = () => {
       options.lang = 'json';
       options.type = 'script-only';
 
-      setContents([<scriptEditor {...options}/>]);
+      setContents([new scriptEditor(options)]);
 
       // todo - add better context handling (sprite, object, map, etc.)
     }
@@ -90,7 +90,7 @@ const App = () => {
 
       <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Header className="page-header"> </Header>
-        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>{contents.map(x=>{console.log({x}); return x})}</Content>
+        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>{contents.map(x=>{console.log({x}); return x.render()})}</Content>
       </Container>
     </Container>
   );
