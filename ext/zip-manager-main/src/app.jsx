@@ -21,14 +21,18 @@ const App = () => {
 
   async function getData(entry, lang) {
     // read file stream from zip entry
+    console.log('getData', entry, lang);
+
     let stream = new TransformStream();
-    await entry.data.getData(stream.writable);
     let data = new Response(stream.readable).text();
+    await entry.data.getData(stream.writable);
+    let script = await data;
+    console.log('data', script);
 
     let options = {};
     options.lang = lang;
     options.type = 'script-only';
-    options.content = await data;
+    options.content = script;
 
     setContents([new scriptEditor(options)]);
   }
@@ -44,7 +48,9 @@ const App = () => {
 
     if (entry.name.includes('.lua')) {
       console.log('open in lua editor');
-      getData(entry, 'lua');
+      getData(entry, 'lua').then(() => {
+        console.log('done');
+      });
 
       // todo - add better context handling (trigger, callback, etc.)
     }

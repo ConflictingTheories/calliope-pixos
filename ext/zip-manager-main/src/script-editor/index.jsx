@@ -22,6 +22,7 @@ import { Panel, Row, Col, Container } from 'rsuite';
 class ScriptEditor extends Component {
   constructor(props) {
     super(props);
+    console.log('ScriptEditor', props);
     this.state = {
       content: props.content || 'please start your edits :)',
       lang: props.lang || 'lua',
@@ -64,7 +65,7 @@ class ScriptEditor extends Component {
               }}
             >
               <Container style={{ minHeight: '80vh' }}>
-                <Editor theme="vs-dark" height="86vh" defaultLanguage={this.state.lang} defaultValue="" />
+                <Editor theme="vs-dark" height="86vh" value={this.state.content} defaultLanguage={this.state.lang} defaultValue={this.props.content} />
               </Container>
             </Panel>
           </Col>
