@@ -65,7 +65,7 @@ class ScriptEditor extends Component {
               }}
             >
               <Container style={{ minHeight: '80vh' }}>
-                <Editor theme="vs-dark" height="86vh" value={this.state.content} defaultLanguage={this.state.lang} defaultValue={this.props.content} />
+                <Editor theme="vs-dark" height="86vh" value={this.state.content} language={this.state.lang} defaultValue={this.props.content} />
               </Container>
             </Panel>
           </Col>
