@@ -33,8 +33,9 @@ const App = () => {
 
       options.lang = 'lua';
       options.type = 'script-only';
+      options.content = entry.contents;
 
-      setContents([scriptEditor(options)]);
+      setContents([new scriptEditor(options)]);
 
       // todo - add better context handling (trigger, callback, etc.)
     }
@@ -45,7 +46,7 @@ const App = () => {
       options.lang = 'plaintext';
       options.type = 'script-only';
 
-      setContents([scriptEditor(options)]);
+      setContents([new scriptEditor(options)]);
     }
 
     if (entry.name.includes('.json')) {
@@ -54,7 +55,7 @@ const App = () => {
       options.lang = 'json';
       options.type = 'script-only';
 
-      setContents([scriptEditor(options)]);
+      setContents([<scriptEditor {...options}/>]);
 
       // todo - add better context handling (sprite, object, map, etc.)
     }
@@ -80,6 +81,7 @@ const App = () => {
     }
   }
 
+  console.log('App', contents);
   return (
     <Container style={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
       <Sidebar style={{ display: 'flex', flexDirection: 'column', marginBottom: '30px' }} width={420} collapsible>
@@ -88,7 +90,7 @@ const App = () => {
 
       <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Header className="page-header"> </Header>
-        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>{contents.map((x) => x)}</Content>
+        <Content style={{ flexGrow: true, marginTop: '20px', marginBottom: '88px' }}>{contents.map(x=>{console.log({x}); return x})}</Content>
       </Container>
     </Container>
   );
