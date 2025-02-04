@@ -56,7 +56,6 @@ main > * {
 
 @media (display-mode: standalone) or (orientation: portrait) or (max-aspect-ratio: 7/5) {
   main {
-    inline-size: 100dvw;
     margin: 0;
     border-width: 0;
     margin-block-end: 0;

@@ -35,6 +35,7 @@ class ScriptEditor extends Component {
     if (this.props != nextProps) {
       this.setState({
         content: nextProps.content,
+        lang: nextProps.lang,
       });
     }
   }
