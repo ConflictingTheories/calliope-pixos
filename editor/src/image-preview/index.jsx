@@ -14,24 +14,28 @@
 import React, { Component } from 'react';
 import { collect, store } from 'react-recollect';
 
-import Pixos from 'calliope-pixos';
-
-const PixosPlayer = Pixos['calliope-pixos'].default;
-
-
-class GamePreview extends Component {
+class ImagePreview extends Component {
   constructor(props) {
     super(props);
     this.state = {
       src: props?.src || '',
-      content: null,
+      content: props?.content || null,
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props != nextProps) {
+      this.setState({
+        content: nextProps.content,
+        src: nextProps.src,
+      });
+    }
+  }
+
   async componentDidMount() {
-    // TODO -- Fetch zip based on src provider from router
+    // TODO -- Fetch image based on src from zip
     //
-    // ie) if external zip src is provided.
+    // ie) if external image src is provided.
 
     //Fetch Source and Render Content
     if (this.state.src && this.state.src !== '') {
@@ -55,7 +59,7 @@ class GamePreview extends Component {
       res = (
         <React.Fragment>
           <hr />
-          <PixosPlayer zipData={content} />
+            <img src={content} />
           <hr />
         </React.Fragment>
       );
@@ -66,4 +70,4 @@ class GamePreview extends Component {
   }
 }
 
-export default collect(GamePreview);
+export default collect(ImagePreview);

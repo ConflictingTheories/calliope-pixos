@@ -15,27 +15,56 @@ import React, { useState } from 'react';
 import { Container, Header, Sidebar, Content } from 'rsuite';
 import ZipManager from './zip-manager/index.jsx';
 import scriptEditor from './script-editor/index.jsx';
+import { set } from './zip-manager/services/storage-service.js';
+import imagePreview from './image-preview/index.jsx';
 
 const App = () => {
   const [contents, setContents] = useState([]);
 
-  async function getData(entry, lang) {
+  async function getData(entry) {
     // read file stream from zip entry
-    console.log('getData', entry, lang);
+    console.log('getData', entry);
 
     let stream = new TransformStream();
     let data = new Response(stream.readable).text();
     await entry.data.getData(stream.writable);
-    let script = await data;
+    return await data;
+  }
 
+  /**
+   * render script editor
+   * @param {*} entry
+   * @param {string} lang
+   */
+  async function renderScriptEditor(entry, lang) {
+    let script = await getData(entry);
     let options = {};
     options.lang = lang;
     options.type = 'script-only';
     options.content = script;
 
     console.log('options', options);
-    
+
     setContents([new scriptEditor(options)]);
+  }
+
+  /**
+   * render image preview
+   * @param {*} entry
+   */
+  async function renderImagePreview(entry) {
+    console.log('todo - render image preview');
+    
+    let imageBytes = await getData(entry);
+    console.log({ imageBytes });
+
+    let extension = entry.name.split('.').pop();
+    let image = new Uint8Array(imageBytes.split(''));
+    let base64Image = btoa(unescape(encodeURIComponent(imageBytes)));
+
+    console.log({ imageBytes, extension, image, base64Image, url: 'data:image/' + extension + ';base64,' + base64Image });
+
+    setContents([new imagePreview({ content: 'data:image/' + extension + ';base64,' + base64Image })]);
   }
 
   /** Determine which module to load based on the selected file from zip package */
@@ -49,21 +78,18 @@ const App = () => {
 
     if (entry.name.includes('.lua')) {
       console.log('open in lua editor');
-      getData(entry, 'lua').then(() => {
-        console.log('done');
-      });
-
+      renderScriptEditor(entry, 'lua');
       // todo - add better context handling (trigger, callback, etc.)
     }
 
     if (entry.name.includes('.txt')) {
       console.log('open in text editor');
-      getData(entry, 'plaintext');
+      renderScriptEditor(entry, 'plaintext');
     }
 
     if (entry.name.includes('.json')) {
       console.log('open in json editor');
-      getData(entry, 'json');
+      renderScriptEditor(entry, 'json');
       // todo - add better context handling (sprite, object, map, etc.)
     }
 
@@ -75,7 +101,7 @@ const App = () => {
       entry.name.includes('.bmp')
     ) {
       console.log('todo - open in image viewer');
-
+      renderImagePreview(entry);
       // todo - add better context handling (texture, image, tilemap, etc)
     }
 
