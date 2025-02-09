@@ -143,16 +143,16 @@ export default class Spritz {
     // Build
     Spritz._instance.world.tickOuter(now);
     // use core shader
-    Spritz._instance.engine.renderManager.activateShaderProgram();
+    // Spritz._instance.engine.renderManager.activateShaderProgram();
 
     // Draw Frame
     this.draw(engine);
 
-    // effect rendering - ex) blur depth of field
-    Object.keys(this.effects).map((id) => {
-      Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
-      this.effectPrograms[id]?.draw();
-    });
+    // effect rendering - ex) blur depth of field -- todo - revisit
+    // Object.keys(this.effects).map((id) => {
+    //   Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
+    //   this.effectPrograms[id]?.draw();
+    // });
   };
 
   /**

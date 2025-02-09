@@ -43,6 +43,7 @@ export default class RenderManager {
 
       // Effects
       this.effects = [];
+      this.effectPrograms = {};
 
       // Transitions
       this.isTransitioning = false;
@@ -82,6 +83,14 @@ export default class RenderManager {
 
     // Initialize Shader Programs
     this.initShaderProgram(spritz.shaders);
+
+    // intiialize picker shader (special shader which allows for picking objects on screen)
+   this.initShaderEffects({
+      id: 'picker',
+      vs: require('../../shaders/picker/vs.jsx').default(),
+      fs: require('../../shaders/picker/fs.jsx').default(),
+      init: require('../../shaders/picker/init.jsx').default,
+    });
 
     // Initialize Effects
     if (spritz.effects) {
@@ -186,7 +195,7 @@ export default class RenderManager {
     }
 
     // Uniform apply
-    shaderProgram.setMatrixUniforms = function (scale = null, sampler = 1.0) {
+    shaderProgram.setMatrixUniforms = function ({scale = null, sampler = 1.0}) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -246,13 +255,22 @@ export default class RenderManager {
   };
 
   /**
+   * Initialize Shader Picker for selection of objects
+   * @returns
+   */
+  activatePickerShaderProgram = () => {
+    const { gl } = this.engine;
+    gl.useProgram(this.effectPrograms['picker']);
+  };
+
+  /**
    * Initialize Shader Effect (blur, depth of field, etc)
    * @param {*} id
    * @returns
    */
   activateShaderEffectProgram = (id) => {
     const { gl } = this.engine;
-    gl.useProgram(this.effects[id]);
+    gl.useProgram(this.effectPrograms[id]);
   };
 
   /**
@@ -276,8 +294,10 @@ export default class RenderManager {
     }
 
     // apply calLback
-    this.effects[id] = init.call(self, effectProgram);
-    return this.effects[id];
+    this.effectPrograms[id] = init.call(self, effectProgram);
+    this.effects.push(id);
+
+    return this.effectPrograms[id];
   };
 
   /**
@@ -411,7 +431,7 @@ export default class RenderManager {
     let duration = params.duration || 1000;
     let time = new Date().getMilliseconds();
     this.isTransitioning = true;
-    while(time + duration > new Date().getMilliseconds()){
+    while (time + duration > new Date().getMilliseconds()) {
       // do nothig
     }
     this.isTransitioning = false;

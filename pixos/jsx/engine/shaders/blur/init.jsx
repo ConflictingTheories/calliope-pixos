@@ -2,7 +2,7 @@ export default function init(effectProgram) {
   // Depth of Field Blur Effect
   const gl = this.gl;
 
-  console.log({ msg: 'made it' });
+  // console.log({ msg: 'made it' });
 
   effectProgram.hblurBuffer = gl.createFramebuffer();
   effectProgram.dofUniformBuffer = gl.createBuffer();

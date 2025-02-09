@@ -58,7 +58,7 @@ export default class ModelObject extends Loadable {
 
     // Zone Information
     this.zone = instanceData.zone;
-    if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.id) this.id = Math.random() * 100000 + '-' + instanceData.id;
     if (instanceData.pos) this.pos = instanceData.pos;
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
@@ -288,7 +288,10 @@ export default class ModelObject extends Loadable {
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-        engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+        
+        // picking id
+
+        engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0, id: this.getPickingId() });
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
@@ -304,9 +307,23 @@ export default class ModelObject extends Loadable {
       engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
       // Specular Exponent
       engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
-      engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 0.0);
+      engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0, id: this.getPickingId()});
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
+  }
+
+  /**
+   * Return id for picking
+   * @returns 
+   */
+  getPickingId(){
+    const id = [
+      ((this.id >>  0) & 0xFF) / 0xFF,
+      ((this.id >>  8) & 0xFF) / 0xFF,
+      ((this.id >> 16) & 0xFF) / 0xFF,
+      ((this.id >> 24) & 0xFF) / 0xFF,
+    ];
+    return id;
   }
 
   /**
@@ -318,7 +335,7 @@ export default class ModelObject extends Loadable {
     engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
     engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    engine.renderManager.shaderProgram.setMatrixUniforms(this.scale, 1.0);
+    engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 1.0, id: this.getPickingId()});
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 

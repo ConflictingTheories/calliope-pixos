@@ -47,7 +47,7 @@ export default class Sprite extends Loadable {
     this.override = false;
     this.isLit = true;
     this.lightIndex = null;
-    this.lightColor = [0.1,1.0,0.1];
+    this.lightColor = [0.1, 1.0, 0.1];
     this.density = 1;
     this.voice = new SpeechSynthesisUtterance();
   }
@@ -63,11 +63,10 @@ export default class Sprite extends Loadable {
       console.error('Invalid sprite definition');
       return;
     }
-    console.log({msg: 'sprite load', instanceData});
+    console.log({ msg: 'sprite load', instanceData });
     // Zone Information
     this.zone = instanceData.zone;
-    if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.id) this.id = instanceData.id;
+    if (instanceData.id) this.id = Math.random() * 100000 + '-' + instanceData.id;
     if (instanceData.pos) this.pos = instanceData.pos;
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
@@ -102,9 +101,18 @@ export default class Sprite extends Loadable {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
       this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     }
-    if(this.isLit){
-      console.log({msg:"Adding Light Loaded", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation ?? [0.01,0.01,0.01], this.direction, this.density, this.scatteringCoefficients, true);
+    if (this.isLit) {
+      console.log({ msg: 'Adding Light Loaded', id: this.id, pos: this.pos.toArray() });
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(
+        this.id,
+        this.pos.toArray(),
+        this.lightColor,
+        this.attenuation ?? [0.01, 0.01, 0.01],
+        this.direction,
+        this.density,
+        this.scatteringCoefficients,
+        true
+      );
     }
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -123,7 +131,7 @@ export default class Sprite extends Loadable {
       return;
     }
 
-    console.log({msg: 'sprite load from zip', instanceData});
+    console.log({ msg: 'sprite load from zip', instanceData });
 
     // Zone Information
     this.update(instanceData);
@@ -177,9 +185,18 @@ export default class Sprite extends Loadable {
     }
 
     // lighting
-    if(this.isLit){
-      console.log({msg:"Adding Light", id:this.id, pos:this.pos.toArray()});
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation ?? [0.01,0.01,0.01], this.direction, this.density, this.scatteringCoefficients, true);
+    if (this.isLit) {
+      console.log({ msg: 'Adding Light', id: this.id, pos: this.pos.toArray() });
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(
+        this.id,
+        this.pos.toArray(),
+        this.lightColor,
+        this.attenuation ?? [0.01, 0.01, 0.01],
+        this.direction,
+        this.density,
+        this.scatteringCoefficients,
+        true
+      );
     }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
@@ -306,11 +323,11 @@ export default class Sprite extends Loadable {
     if (!this.loaded) return;
 
     //update light position
-    if(this.isLit){
-     let pos =  this.pos.toArray()
+    if (this.isLit) {
+      let pos = this.pos.toArray();
       this.engine.renderManager.lightManager.updateLight(this.lightIndex, pos);
     }
-    
+
     this.engine.renderManager.mvPushMatrix();
     // position
     translate(
@@ -322,7 +339,10 @@ export default class Sprite extends Loadable {
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms(new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1));
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({
+        scale: new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1),
+        id: this.getPickingId(),
+      });
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
         0.5 * this.engine.renderManager.camera.cameraVector.x,
         0.5 * this.engine.renderManager.camera.cameraVector.y,
@@ -347,7 +367,7 @@ export default class Sprite extends Loadable {
     this.texture.attach();
 
     // Draw
-    this.engine.renderManager.shaderProgram.setMatrixUniforms();
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
@@ -378,13 +398,22 @@ export default class Sprite extends Loadable {
       this.speech.attach();
 
       // Draw Speech bubble
-      this.engine.renderManager.shaderProgram.setMatrixUniforms();
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({});
       this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
       this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.speechVerBuf.numItems);
       this.engine.gl.depthFunc(this.engine.gl.LESS);
 
       this.engine.renderManager.mvPopMatrix();
     }
+  }
+
+  /**
+   * Return id for picking
+   * @returns
+   */
+  getPickingId() {
+    const id = [((this.id >> 0) & 0xff) / 0xff, ((this.id >> 8) & 0xff) / 0xff, ((this.id >> 16) & 0xff) / 0xff, ((this.id >> 24) & 0xff) / 0xff];
+    return id;
   }
 
   /**

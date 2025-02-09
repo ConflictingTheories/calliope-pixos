@@ -139,12 +139,20 @@ export default class GLEngine {
     this.hud.clearHud();
     this.renderManager.clearScreen(); // todo - move into view
 
+    const timestamp = new Date().getTime();
+
+    // enable picker shader
+    this.renderManager.activatePickerShaderProgram();
+    this.spritz.render(this, timestamp);
+
+    const selectedObj = this.getSelectedObject();
+    
     // default shader program
     this.renderManager.activateShaderProgram();
 
     // core render loop
     this.gamepad.render();
-    this.spritz.render(this, new Date().getTime());
+    this.spritz.render(this, timestamp);
 
     // transitions - todo - not working
     if (this.isTransitioning) {
@@ -157,6 +165,43 @@ export default class GLEngine {
    */
   close() {
     cancelAnimationFrame(this.requestId);
+  }
+
+  /**
+   * Get Selected Object on screen
+   */
+  getSelectedObject() {
+    const gl = this.gl;
+    const data = new Uint8Array(4);
+    
+    gl.readPixels(
+        0,                 // x
+        0,                 // y
+        1,                 // width
+        1,                 // height
+        gl.RGBA,           // format
+        gl.UNSIGNED_BYTE,  // type
+        data);             // typed array to hold result
+    
+    const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+
+    // console.log('Selected Object ID:', data, id);
+
+    // restore the object's color
+    // if (oldPickNdx >= 0) {
+      // const object = objects[oldPickNdx];
+      // object.uniforms.u_colorMult = oldPickColor;
+      // oldPickNdx = -1;
+    // }
+
+    // highlight object under mouse
+    // if (id > 0) {
+      // const pickNdx = id - 1;
+      // oldPickNdx = pickNdx;
+      // const object = objects[pickNdx];
+      // oldPickColor = object.uniforms.u_colorMult;
+      // object.uniforms.u_colorMult = (frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    // }
   }
 
   /**

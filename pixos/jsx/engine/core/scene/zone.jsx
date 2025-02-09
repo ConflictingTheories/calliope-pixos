@@ -568,10 +568,18 @@ export default class Zone extends Loadable {
     this.engine.renderManager.bindBuffer(this.vertexPosBuf[row], this.engine.renderManager.shaderProgram.aVertexPosition);
     // texture positions
     this.engine.renderManager.bindBuffer(this.vertexTexBuf[row], this.engine.renderManager.shaderProgram.aTextureCoord);
+  
     // texturize
     this.tileset.texture.attach();
-    // set shader
-    this.engine.renderManager.shaderProgram.setMatrixUniforms();
+    
+    // set picking id shader
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({id: [
+      ((row >>  0) & 0xFF) / 0xFF,
+      ((row >>  8) & 0xFF) / 0xFF,
+      ((row >> 16) & 0xFF) / 0xFF,
+      ((row >> 24) & 0xFF) / 0xFF,
+    ]});
+
     // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }
