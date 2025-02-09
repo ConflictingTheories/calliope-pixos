@@ -19,6 +19,7 @@ import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 export default class World {
   constructor(engine, id) {
     this.id = id;
+    this.objId = Math.round(Math.random() * 1000000) + 11111;
     this.engine = engine;
     this.zoneDict = {};
     this.zoneList = [];

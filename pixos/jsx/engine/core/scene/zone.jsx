@@ -29,6 +29,7 @@ export default class Zone extends Loadable {
     super();
     this.spritzName = world.id;
     this.id = zoneId;
+    this.objId = Math.round(Math.random() * 1000000);
     this.world = world;
     this.data = {};
     this.spriteDict = {};
@@ -133,18 +134,18 @@ export default class Zone extends Loadable {
    */
   async loadTriggerFromZip(trigger, zip) {
     // lua scripting
-    try{
+    try {
       let luaScript = await zip.file(`triggers/${trigger}.lua`).async('string');
       console.log({ msg: 'lua script', luaScript });
 
-      return ((_this, subject)=>{
+      return (_this, subject) => {
         let interpreter = new PixosLuaInterpreter(_this.engine);
         interpreter.setScope({ _this, subject });
         interpreter.initLibrary();
         interpreter.run('print("hello world lua - zone trigger from zip")');
         return interpreter.run(luaScript);
-      })
-    }catch(e){
+      };
+    } catch (e) {
       console.error({ msg: 'error loading lua script', e });
     }
 
@@ -259,7 +260,18 @@ export default class Zone extends Loadable {
       // load lights
       try {
         this.lights = zoneJson.lights ?? [];
-        this.lights.forEach((light) => this.engine.renderManager.lightManager.addLight(light.id, light.pos, light.color, light.attenuation, light.direction, light.density, light.scatteringCoefficients, light.enabled));
+        this.lights.forEach((light) =>
+          this.engine.renderManager.lightManager.addLight(
+            light.id,
+            light.pos,
+            light.color,
+            light.attenuation,
+            light.direction,
+            light.density,
+            light.scatteringCoefficients,
+            light.enabled
+          )
+        );
         console.log({ msg: 'lights....', lm: this.engine.renderManager.lightManager });
       } catch (e) {
         console.error({ msg: 'error loading lights', e });
@@ -568,20 +580,29 @@ export default class Zone extends Loadable {
     this.engine.renderManager.bindBuffer(this.vertexPosBuf[row], this.engine.renderManager.shaderProgram.aVertexPosition);
     // texture positions
     this.engine.renderManager.bindBuffer(this.vertexTexBuf[row], this.engine.renderManager.shaderProgram.aTextureCoord);
-  
+
     // texturize
     this.tileset.texture.attach();
-    
-    // set picking id shader
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({id: [
-      ((row >>  0) & 0xFF) / 0xFF,
-      ((row >>  8) & 0xFF) / 0xFF,
-      ((row >> 16) & 0xFF) / 0xFF,
-      ((row >> 24) & 0xFF) / 0xFF,
-    ]});
 
+    // set picking id shader
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({});
     // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+  }
+
+  /**
+   * Return id for picking
+   * @returns
+   */
+  getPickingId() {
+    const id = [
+      ((this.objId >> 0) & 0xff) / 0xff,
+      ((this.objId >> 8) & 0xff) / 0xff,
+      ((this.objId >> 16) & 0xff) / 0xff,
+      ((this.objId >> 24) & 0xff) / 0xff,
+    ];
+    return id;
   }
 
   /**
@@ -792,7 +813,7 @@ export default class Zone extends Loadable {
    */
   async moveSprite(id, location, running = false) {
     return new Promise(async (resolve, reject) => {
-      console.log({msg:'moving sprite', id, location, running});
+      console.log({ msg: 'moving sprite', id, location, running });
       let sprite = this.getSpriteById(id);
       await sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
     });
@@ -807,7 +828,7 @@ export default class Zone extends Loadable {
    */
   async spriteDialogue(id, dialogue, options = { autoclose: true }) {
     return new Promise(async (resolve, reject) => {
-      console.log({msg:'sprite dialogue', id, dialogue, options});
+      console.log({ msg: 'sprite dialogue', id, dialogue, options });
       let sprite = this.getSpriteById(id);
       await sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
     });

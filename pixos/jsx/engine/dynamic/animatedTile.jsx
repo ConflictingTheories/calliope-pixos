@@ -66,17 +66,9 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     engine.renderManager.bindBuffer(this.vertexTexBuf, engine.renderManager.shaderProgram.aTextureCoord);
     this.texture.attach();
     // Draw
-    engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
+    engine.renderManager.shaderProgram.setMatrixUniforms({});
     engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     engine.renderManager.mvPopMatrix();
-  }
-
-  /**
-   * Return id for picking
-   * @returns
-   */
-  getPickingId() {
-    const id = [((this.id >> 0) & 0xff) / 0xff, ((this.id >> 8) & 0xff) / 0xff, ((this.id >> 16) & 0xff) / 0xff, ((this.id >> 24) & 0xff) / 0xff];
-    return id;
   }
 }

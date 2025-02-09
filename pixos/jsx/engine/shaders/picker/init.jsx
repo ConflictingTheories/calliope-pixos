@@ -19,11 +19,10 @@ export default function init(shaderProgram) {
     scale = null,
     id = [((1 >> 0) & 0xff) / 0xff, ((1 >> 8) & 0xff) / 0xff, ((1 >> 16) & 0xff) / 0xff, ((1 >> 24) & 0xff) / 0xff],
   }) => {
-    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, this.pMatrix);
-    gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, this.mMatrix);
-    gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, this.vMatrix);
-
-    gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, self.uProjMat);
+    gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, self.uModelMat);
+    gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, self.camera.uViewMat);
+    gl.uniform3fv(shaderProgram.scale, scale ? scale.toArray() : self.scale.toArray());
     gl.uniform4fv(shaderProgram.id, id);
   };
 

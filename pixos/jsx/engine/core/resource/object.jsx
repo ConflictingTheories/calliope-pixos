@@ -25,6 +25,7 @@ export default class ModelObject extends Loadable {
    */
   constructor(engine) {
     super();
+    this.objId = Math.floor(Math.random() * 1000000);
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
@@ -58,7 +59,7 @@ export default class ModelObject extends Loadable {
 
     // Zone Information
     this.zone = instanceData.zone;
-    if (instanceData.id) this.id = Math.random() * 100000 + '-' + instanceData.id;
+    if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) this.pos = instanceData.pos;
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
@@ -290,8 +291,8 @@ export default class ModelObject extends Loadable {
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
         
         // picking id
-
-        engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0, id: this.getPickingId() });
+        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
+        engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0 });
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
@@ -307,7 +308,9 @@ export default class ModelObject extends Loadable {
       engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
       // Specular Exponent
       engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
-      engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0, id: this.getPickingId()});
+      
+      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
+      engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0});
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
   }
@@ -318,10 +321,10 @@ export default class ModelObject extends Loadable {
    */
   getPickingId(){
     const id = [
-      ((this.id >>  0) & 0xFF) / 0xFF,
-      ((this.id >>  8) & 0xFF) / 0xFF,
-      ((this.id >> 16) & 0xFF) / 0xFF,
-      ((this.id >> 24) & 0xFF) / 0xFF,
+      ((this.objId >>  0) & 0xFF) / 0xFF,
+      ((this.objId >>  8) & 0xFF) / 0xFF,
+      ((this.objId >> 16) & 0xFF) / 0xFF,
+      ((this.objId >> 24) & 0xFF) / 0xFF,
     ];
     return id;
   }
@@ -335,7 +338,9 @@ export default class ModelObject extends Loadable {
     engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
     engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 1.0, id: this.getPickingId()});
+
+    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
+    engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 1.0});
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -446,7 +451,7 @@ export default class ModelObject extends Loadable {
    * Hook for sprite implementations
    */
   init() {
-    console.log('- object hook', this.id, this.pos);
+    console.log('- object hook', this.id, this.pos, this.objId);
   }
 
   /**

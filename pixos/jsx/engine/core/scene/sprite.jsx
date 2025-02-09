@@ -25,6 +25,7 @@ export default class Sprite extends Loadable {
    */
   constructor(engine) {
     super();
+    this.objId = Math.round(Math.random() * 10000) + 111;
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
@@ -63,10 +64,10 @@ export default class Sprite extends Loadable {
       console.error('Invalid sprite definition');
       return;
     }
-    console.log({ msg: 'sprite load', instanceData });
+    console.log({ msg: 'sprite load', instanceData, objId: this.objId });
     // Zone Information
     this.zone = instanceData.zone;
-    if (instanceData.id) this.id = Math.random() * 100000 + '-' + instanceData.id;
+    if (instanceData.id) this.id = instanceData.id;
     if (instanceData.pos) this.pos = instanceData.pos;
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
@@ -341,7 +342,6 @@ export default class Sprite extends Loadable {
     if (!this.fixed) {
       this.engine.renderManager.shaderProgram.setMatrixUniforms({
         scale: new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1),
-        id: this.getPickingId(),
       });
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
         0.5 * this.engine.renderManager.camera.cameraVector.x,
@@ -367,7 +367,8 @@ export default class Sprite extends Loadable {
     this.texture.attach();
 
     // Draw
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({id: this.getPickingId()});
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({});
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
@@ -412,7 +413,12 @@ export default class Sprite extends Loadable {
    * @returns
    */
   getPickingId() {
-    const id = [((this.id >> 0) & 0xff) / 0xff, ((this.id >> 8) & 0xff) / 0xff, ((this.id >> 16) & 0xff) / 0xff, ((this.id >> 24) & 0xff) / 0xff];
+    const id = [
+      ((this.objId >> 0) & 0xff) / 0xff,
+      ((this.objId >> 8) & 0xff) / 0xff,
+      ((this.objId >> 16) & 0xff) / 0xff,
+      ((this.objId >> 24) & 0xff) / 0xff,
+    ];
     return id;
   }
 

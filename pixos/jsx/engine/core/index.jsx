@@ -141,12 +141,16 @@ export default class GLEngine {
 
     const timestamp = new Date().getTime();
 
+    // todo --- not working
     // enable picker shader
-    this.renderManager.activatePickerShaderProgram();
-    this.spritz.render(this, timestamp);
+    // this.renderManager.activatePickerShaderProgram();
+    // this.spritz.render(this, timestamp);
 
-    const selectedObj = this.getSelectedObject();
-    
+    // todo ---- not working
+    // read picker 
+    // const selectedObj = this.getSelectedObject();
+    // console.log({selectedObj});
+
     // default shader program
     this.renderManager.activateShaderProgram();
 
@@ -173,34 +177,38 @@ export default class GLEngine {
   getSelectedObject() {
     const gl = this.gl;
     const data = new Uint8Array(4);
-    
+    const mouseX = this.gamepad.touches[0]?.x || 0;
+    const mouseY = this.gamepad.touches[0]?.y || 0;
+    const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
+    const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
     gl.readPixels(
-        0,                 // x
-        0,                 // y
-        1,                 // width
-        1,                 // height
-        gl.RGBA,           // format
-        gl.UNSIGNED_BYTE,  // type
-        data);             // typed array to hold result
-    
-    const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+      pixelX, // x
+      pixelY, // y
+      1, // width
+      1, // height
+      gl.RGBA, // format
+      gl.UNSIGNED_BYTE, // type
+      data
+    ); // typed array to hold result
 
-    // console.log('Selected Object ID:', data, id);
+    const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+    console.log({msg: 'Selected Object ID:', mouseX, mouseY, data, id});
+    return {data, id};
 
     // restore the object's color
     // if (oldPickNdx >= 0) {
-      // const object = objects[oldPickNdx];
-      // object.uniforms.u_colorMult = oldPickColor;
-      // oldPickNdx = -1;
+    // const object = objects[oldPickNdx];
+    // object.uniforms.u_colorMult = oldPickColor;
+    // oldPickNdx = -1;
     // }
 
     // highlight object under mouse
     // if (id > 0) {
-      // const pickNdx = id - 1;
-      // oldPickNdx = pickNdx;
-      // const object = objects[pickNdx];
-      // oldPickColor = object.uniforms.u_colorMult;
-      // object.uniforms.u_colorMult = (frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    // const pickNdx = id - 1;
+    // oldPickNdx = pickNdx;
+    // const object = objects[pickNdx];
+    // oldPickColor = object.uniforms.u_colorMult;
+    // object.uniforms.u_colorMult = (frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
     // }
   }
 

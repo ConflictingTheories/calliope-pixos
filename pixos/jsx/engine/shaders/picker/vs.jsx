@@ -12,16 +12,15 @@
 \*                                                 */
 /** referenced from https://webgl2fundamentals.org/webgl/lessons/webgl-picking.html */
 export default function vs() {
-    return `#version 300 es
-    
-    in vec3 aVertexPosition;
+    return `
+    attribute vec3 aVertexPosition;
     
     uniform mat4 uModelMatrix;
     uniform mat4 uViewMatrix;
     uniform mat4 uProjectionMatrix;
   
-    out vec4 vWorldVertex;
-    out vec4 vPosition;
+    varying vec4 vWorldVertex;
+    varying vec4 vPosition;
 
     uniform vec3 u_scale;
         

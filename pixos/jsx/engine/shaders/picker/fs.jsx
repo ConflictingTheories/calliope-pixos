@@ -12,16 +12,13 @@
 \*                                                 */
 /** referenced from https://webgl2fundamentals.org/webgl/lessons/webgl-picking.html */
 export default function fs() {
-    return `#version 300 es
-    
+    return `
     precision highp float;
     
     uniform vec4 u_id;
 
-    out vec4 outColor;
-    
     void main() {
-        outColor = u_id;
+        gl_FragColor = u_id;
     }
   `;
   }
