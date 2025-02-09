@@ -143,14 +143,13 @@ export default class GLEngine {
 
     // todo --- not working
     // enable picker shader
-    // this.renderManager.activatePickerShaderProgram();
-    // this.spritz.render(this, timestamp);
+    this.renderManager.activatePickerShaderProgram();
 
-    // todo ---- not working
-    // read picker 
-    // const selectedObj = this.getSelectedObject();
-    // console.log({selectedObj});
-
+    const selectedObj = this.getSelectedObject();
+    if(selectedObj?.sprites.length > 0){
+      console.log({ selectedObj });
+    }
+  
     // default shader program
     this.renderManager.activateShaderProgram();
 
@@ -175,12 +174,14 @@ export default class GLEngine {
    * Get Selected Object on screen
    */
   getSelectedObject() {
+    if(this.spritz.world.spriteList.length <= 0){return;}
     const gl = this.gl;
     const data = new Uint8Array(4);
-    const mouseX = this.gamepad.touches[0]?.x || 0;
-    const mouseY = this.gamepad.touches[0]?.y || 0;
+    const mouseX = this.gamepad.x || 0;
+    const mouseY = this.gamepad.y || 0;
     const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
     const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
+    
     gl.readPixels(
       pixelX, // x
       pixelY, // y
@@ -191,9 +192,16 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
-    const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
-    console.log({msg: 'Selected Object ID:', mouseX, mouseY, data, id});
-    return {data, id};
+    const id = data[0] / 0xff + (data[1] << 8 / 0xff) + (data[2] << 16 / 0xff) + (data[3] << 24 / 0xff);
+    
+    const sprites = this.spritz.world.spriteList.filter((sprite)=>{
+      return sprite.objId === id;
+    });
+    const objects = this.spritz.world.objectList.filter((object)=>{
+      return object.objId === id;
+    });
+    
+    return {sprites, objects};
 
     // restore the object's color
     // if (oldPickNdx >= 0) {

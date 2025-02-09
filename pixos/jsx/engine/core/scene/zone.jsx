@@ -409,8 +409,9 @@ export default class Zone extends Loadable {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
       let newObject = await this.objectLoader.load(data, (object) => object.onLoad(object));
-      this.objectDict[data.id] = newObject;
+      this.world.objectDict[data.id] = this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
+      this.world.objectList.push(newObject);
     }
   }
 
@@ -424,8 +425,9 @@ export default class Zone extends Loadable {
     data.zone = _this;
     if (!this.objectDict[data.id] && !_this.objectDict[data.id]) {
       let newObject = await this.objectLoader.loadFromZip(zip, data, async (object) => await object.onLoadFromZip(object, zip));
-      this.objectDict[data.id] = newObject;
+      this.world.objectDict[data.id] = this.objectDict[data.id] = newObject;
       this.objectList.push(newObject);
+      this.world.objectList.push(newObject);
     }
   }
 
@@ -438,8 +440,9 @@ export default class Zone extends Loadable {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
       let newSprite = await this.spriteLoader.load(data.type, this.spritzName, (sprite) => sprite.onLoad(data));
-      this.spriteDict[data.id] = newSprite;
+      this.world.spriteDict[data.id] = this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
+      this.world.spriteList.push(newSprite);
     }
   }
 
@@ -453,8 +456,9 @@ export default class Zone extends Loadable {
     data.zone = _this;
     if (!this.spriteDict[data.id] && !_this.spriteDict[data.id]) {
       let newSprite = await this.spriteLoader.loadFromZip(zip, data.type, this.spritzName, async (sprite) => await sprite.onLoadFromZip(data, zip));
-      this.spriteDict[data.id] = newSprite;
+      this.world.spriteDict[data.id] = this.spriteDict[data.id] = newSprite;
       this.spriteList.push(newSprite);
+      this.world.spriteList.push(newSprite);
     }
   }
 
@@ -464,8 +468,9 @@ export default class Zone extends Loadable {
    */
   addSprite(sprite) {
     sprite.zone = this;
-    this.spriteDict[sprite.id] = sprite;
+    this.world.spriteDict[sprite.id] = this.spriteDict[sprite.id] = sprite;
     this.spriteList.push(sprite);
+    this.world.spriteList.push(sprite);
   }
 
   /**
@@ -480,15 +485,24 @@ export default class Zone extends Loadable {
         sprite.removeAllActions();
       }
     });
+    this.world.spriteList = this.world.spriteList.filter((sprite) => {
+      if (sprite.id !== id) {
+        return true;
+      } else {
+        sprite.removeAllActions();
+      }
+    });
     delete this.spriteDict[id];
+    delete this.world.spriteDict[id];
   }
 
   /**
    * Remove all sprites from the zone
    */
   removeAllSprites() {
-    this.spriteList = [];
-    this.spriteDict = {};
+    foreach(this.spriteList, (sprite) => {
+      this.removeSprite(sprite.id);
+    });
   }
 
   /**

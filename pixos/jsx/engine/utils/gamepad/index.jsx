@@ -36,6 +36,8 @@ export class GamePad {
       this.lastKey = new Date().getTime();
       this.listeners = [];
       this.map = {};
+      this.x = 0;
+      this.y = 0;
 
       // Button Colours
       this.colours = {
@@ -216,6 +218,9 @@ export class GamePad {
           return l[type](e);
         }
       });
+      this.x = (e.touches[0]?.pageX - offset.x) || 0;
+      this.y = (e.touches[0]?.pageY - offset.y) || 0;
+
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
         if (!touches[id]) {
