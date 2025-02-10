@@ -34,7 +34,7 @@ export default class Avatar extends Sprite {
    * Initialization Hook
    */
   init() {
-    console.log({msg: '- avatar hook', id: this.id, pos: this.pos, avatar: this});
+    console.log({ msg: '- avatar hook', id: this.id, pos: this.pos, avatar: this });
   }
 
   /**
@@ -232,7 +232,7 @@ export default class Avatar extends Sprite {
       // Run
       case 'r':
         return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
-      case 't':        
+      case 't':
         this.engine.renderManager.startTransition({ duration: 2 });
         return;
     }

@@ -1,6 +1,6 @@
 {
   "name": "calliope-pixos",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Pixos is a mini interactive spritz avatar plugin for calliope static site generator for generating pixospritz'.",
   "main": "dist/bundle.js",
   "scripts": {

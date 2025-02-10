@@ -336,7 +336,7 @@ export default class World {
    * Get Zone by ID
    * @param {string} id
    * @returns
-   */ 
+   */
   getZoneById(id) {
     return this.zoneDict[id];
   }

@@ -610,12 +610,7 @@ export default class Zone extends Loadable {
    * @returns
    */
   getPickingId() {
-    const id = [
-      ((this.objId >> 0) & 0xff) / 0xff,
-      ((this.objId >> 8) & 0xff) / 0xff,
-      ((this.objId >> 16) & 0xff) / 0xff,
-      255
-    ];
+    const id = [((this.objId >> 0) & 0xff) / 0xff, ((this.objId >> 8) & 0xff) / 0xff, ((this.objId >> 16) & 0xff) / 0xff, 255];
     return id;
   }
 

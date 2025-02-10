@@ -153,7 +153,6 @@ export default class Spritz {
     // });
   };
 
-
   /**
    * Draw Spritz
    * @param {*} engine

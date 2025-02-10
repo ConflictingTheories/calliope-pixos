@@ -171,7 +171,7 @@ export default class GLEngine {
   /**
    * Get Selected Object on screen
    */
-  getSelectedObject(log = false) {
+  getSelectedObject() {
     if (this.spritz.world?.spriteList?.length <= 0) {
       return;
     }

@@ -17,9 +17,9 @@ import { textScrollBox } from '@Engine/core/hud.jsx';
 export default class Speech {
   /**
    * Speech Bubble and positioned text
-   * @param {*} canvas 
-   * @param {*} engine 
-   * @param {string} id 
+   * @param {*} canvas
+   * @param {*} engine
+   * @param {string} id
    */
   constructor(canvas, engine, id) {
     this.id = id;
