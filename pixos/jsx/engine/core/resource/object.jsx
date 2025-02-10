@@ -25,7 +25,7 @@ export default class ModelObject extends Loadable {
    */
   constructor(engine) {
     super();
-    this.objId = Math.floor(Math.random() * 1000000);
+    this.objId = Math.floor(Math.random() * 100);
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);

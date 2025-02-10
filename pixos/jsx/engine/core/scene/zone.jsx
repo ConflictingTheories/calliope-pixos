@@ -29,7 +29,7 @@ export default class Zone extends Loadable {
     super();
     this.spritzName = world.id;
     this.id = zoneId;
-    this.objId = Math.round(Math.random() * 1000000);
+    this.objId = Math.round(Math.random() * 100);
     this.world = world;
     this.data = {};
     this.spriteDict = {};

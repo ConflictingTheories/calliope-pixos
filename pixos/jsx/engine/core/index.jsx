@@ -105,6 +105,7 @@ export default class GLEngine {
     this.gl = gl;
     this.ctx = ctx;
     this.gp = gp;
+    this.fb = gl.createFramebuffer();
     this.frameCount = 0;
 
     this.spritz = spritz;
@@ -134,7 +135,6 @@ export default class GLEngine {
    * Render Frame
    */
   render() {
-    this.requestId = requestAnimationFrame(this.render);
     this.frameCount++;
 
     // clear canvases
@@ -145,13 +145,9 @@ export default class GLEngine {
 
     // todo --- not working
     // enable picker shader
-    // this.renderManager.activatePickerShaderProgram();
-
-    // const selectedObj = this.getSelectedObject();
-    // if(selectedObj?.sprites.length > 0){
-    //   console.log({ selectedObj });
-    // }
-  
+    this.renderManager.activatePickerShaderProgram();
+    this.spritz.renderSelector(this, timestamp);
+    
     // default shader program
     this.renderManager.activateShaderProgram();
 
@@ -163,6 +159,8 @@ export default class GLEngine {
     if (this.isTransitioning) {
       this.renderManager.transition();
     }
+
+    this.requestId = requestAnimationFrame(this.render);
   }
 
   /**
@@ -175,15 +173,17 @@ export default class GLEngine {
   /**
    * Get Selected Object on screen
    */
-  getSelectedObject() {
-    if(this.spritz.world.spriteList.length <= 0){return;}
+  getSelectedObject(log = false) {
+    if (this.spritz.world?.spriteList?.length <= 0) {
+      return;
+    }
     const gl = this.gl;
     const data = new Uint8Array(4);
     const mouseX = this.gamepad.x || 0;
     const mouseY = this.gamepad.y || 0;
-    const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
-    const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
-    
+    const pixelX = (mouseX * gl.canvas.width) / gl.canvas.clientWidth;
+    const pixelY = gl.canvas.height - (mouseY * gl.canvas.height) / gl.canvas.clientHeight - 1;
+
     gl.readPixels(
       pixelX, // x
       pixelY, // y
@@ -194,32 +194,9 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
-    const id = data[0] / 0xff + (data[1] << 8 / 0xff) + (data[2] << 16 / 0xff) + (data[3] << 24 / 0xff);
+    if(log) console.log({msg: 'Selected Object:', data, mouseX, mouseY, pixelX, pixelY});
     
-    const sprites = this.spritz.world.spriteList.filter((sprite)=>{
-      return sprite.objId === id;
-    });
-    const objects = this.spritz.world.objectList.filter((object)=>{
-      return object.objId === id;
-    });
-    
-    return {sprites, objects};
-
-    // restore the object's color
-    // if (oldPickNdx >= 0) {
-    // const object = objects[oldPickNdx];
-    // object.uniforms.u_colorMult = oldPickColor;
-    // oldPickNdx = -1;
-    // }
-
-    // highlight object under mouse
-    // if (id > 0) {
-    // const pickNdx = id - 1;
-    // oldPickNdx = pickNdx;
-    // const object = objects[pickNdx];
-    // oldPickColor = object.uniforms.u_colorMult;
-    // object.uniforms.u_colorMult = (frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
-    // }
+    return data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
   }
 
   /**

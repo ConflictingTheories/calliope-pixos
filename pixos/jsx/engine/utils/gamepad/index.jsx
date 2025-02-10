@@ -218,8 +218,6 @@ export class GamePad {
           return l[type](e);
         }
       });
-      this.x = (e.touches[0]?.pageX - offset.x) || 0;
-      this.y = (e.touches[0]?.pageY - offset.y) || 0;
 
       for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
         var id = e.touches[n].identifier;
@@ -257,9 +255,11 @@ export class GamePad {
             break;
           case 'mousemove':
             if (touches[id].leftClick) { // camera move - needs work - not aligned with camera
-              let rotateSpeed = 0.01;
-              let angleChange = [touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed + touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed - touches[id].y * rotateSpeed,];
-              this.engine.renderManager.camera.changeAngle(angleChange);
+              // let rotateSpeed = 0.01;
+              // let angleChange = [touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed + touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed - touches[id].y * rotateSpeed,];
+              // this.engine.renderManager.camera.changeAngle(angleChange);
+              this.x = touches[id].x;
+              this.y = touches[id].y;
             }
           case 'mousedown':
             if (e.touches && e.touches[0]?.which) {
@@ -281,6 +281,7 @@ export class GamePad {
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n, type);
             }
+            this.engine.getSelectedObject(true);
             touches[id].leftClick = 0;
             touches[id].rightClick = 0;
             break;

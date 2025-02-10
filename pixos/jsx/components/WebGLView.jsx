@@ -138,43 +138,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     setPreview(true);
   }
 
-  // Provide Draggable Preview to move window around
-  function dragElement(ref) {
-    try {
-      let pos1 = 0,
-        pos2 = 0,
-        pos3 = 0,
-        pos4 = 0;
-
-      ref.current.onmousedown = dragMouseDown;
-
-      function dragMouseDown(e) {
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        ref.current.onmouseup = closeDragElement;
-        ref.current.onmousemove = elementDrag;
-      }
-
-      function elementDrag(e) {
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        ref.current.style.top = ref.current.offsetTop - pos2 + 'px';
-        ref.current.style.left = ref.current.offsetLeft - pos1 + 'px';
-      }
-
-      function closeDragElement() {
-        ref.current.onmouseup = null;
-        ref.current.onmousemove = null;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   // Screen capture from spritz and hud
   function captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext) {
     // stream video output (single canvas element?)

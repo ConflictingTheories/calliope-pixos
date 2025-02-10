@@ -25,7 +25,7 @@ export default class Sprite extends Loadable {
    */
   constructor(engine) {
     super();
-    this.objId = Math.round(Math.random() * 10000) + 111;
+    this.objId = Math.round(Math.random() * 100) + 11;
     this.engine = engine;
     this.templateLoaded = false;
     this.drawOffset = new Vector(0, 0, 0);
@@ -342,6 +342,7 @@ export default class Sprite extends Loadable {
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
       this.engine.renderManager.shaderProgram.setMatrixUniforms({
+        id: this.getPickingId(),
         scale: new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1),
       });
       translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
@@ -369,19 +370,24 @@ export default class Sprite extends Loadable {
 
     // picking shader
     this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({id: this.getPickingId()});
+
     
     // if selected
     if (this.isSelected) {
-      console.log('selected');
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({ isSelected: true, colorMultiplier: (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1] });
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId(), isSelected: true, colorMultiplier: (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1] });
     } else {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({});
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({id: this.getPickingId()});
     }
 
     // Draw
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
+    
+    let selectedColorId = this.engine.getSelectedObject();
+    if(this.objId === selectedColorId){
+      this.isSelected = true;
+    }
 
     this.engine.renderManager.mvPopMatrix();
 

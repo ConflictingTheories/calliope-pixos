@@ -141,13 +141,12 @@ export default class RenderManager {
     let shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
+    gl.bindAttribLocation(shaderProgram, 0, 'aVertexPosition');
+    
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
       throw new Error(`WebGL unable to initialize the shader program: ${shaderProgram}`);
     }
-
-    // Configure Shader
-    gl.useProgram(shaderProgram);
 
     // Normals (needs work)
     shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
@@ -294,6 +293,7 @@ export default class RenderManager {
     let effectProgram = gl.createProgram();
     gl.attachShader(effectProgram, vertexShader);
     gl.attachShader(effectProgram, fragmentShader);
+    gl.bindAttribLocation(effectProgram, 0, 'aVertexPosition');
     gl.linkProgram(effectProgram);
     if (!gl.getProgramParameter(effectProgram, gl.LINK_STATUS)) {
       throw new Error(`WebGL unable to initialize the shader effect program: ${effectProgram}`);
