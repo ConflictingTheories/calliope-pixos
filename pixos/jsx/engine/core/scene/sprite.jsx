@@ -369,17 +369,24 @@ export default class Sprite extends Loadable {
     this.texture.attach();
 
     // picking shader
-    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({
+      sampler: 1.0,
+      id: this.getPickingId(),
+    });
 
     // if selected
     if (this.isSelected) {
       this.engine.renderManager.shaderProgram.setMatrixUniforms({
         id: this.getPickingId(),
         isSelected: true,
+        sampler: 1.0,
         colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
       });
     } else {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({
+        id: this.getPickingId(),
+        sampler: 1.0,
+      });
     }
 
     // Draw
@@ -432,12 +439,7 @@ export default class Sprite extends Loadable {
    * @returns
    */
   getPickingId() {
-    const id = [
-      ((this.objId >> 0) & 0xff) / 0xff,
-      ((this.objId >> 8) & 0xff) / 0xff,
-      ((this.objId >> 16) & 0xff) / 0xff,
-      ((this.objId >> 24) & 0xff) / 0xff,
-    ];
+    const id = [((this.objId >> 0) & 0xff) / 0xff, ((this.objId >> 8) & 0xff) / 0xff, ((this.objId >> 16) & 0xff) / 0xff, 255];
     return id;
   }
 

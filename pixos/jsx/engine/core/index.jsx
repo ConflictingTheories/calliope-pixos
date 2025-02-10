@@ -141,8 +141,7 @@ export default class GLEngine {
 
     const timestamp = new Date().getTime();
 
-    // enable picker shader
-    // todo --- not working
+    // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
     this.renderManager.clearScreen();
     this.renderManager.activatePickerShaderProgram();
     this.spritz.render(this, timestamp);

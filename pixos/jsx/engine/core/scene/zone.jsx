@@ -614,7 +614,7 @@ export default class Zone extends Loadable {
       ((this.objId >> 0) & 0xff) / 0xff,
       ((this.objId >> 8) & 0xff) / 0xff,
       ((this.objId >> 16) & 0xff) / 0xff,
-      ((this.objId >> 24) & 0xff) / 0xff,
+      255
     ];
     return id;
   }

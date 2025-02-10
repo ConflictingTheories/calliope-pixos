@@ -301,7 +301,7 @@ export default class ModelObject extends Loadable {
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
 
         // picking id
-        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
         engine.renderManager.shaderProgram.setMatrixUniforms({
           isSelected: this.isSelected,
           colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
@@ -324,7 +324,7 @@ export default class ModelObject extends Loadable {
       // Specular Exponent
       engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
 
-      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
       engine.renderManager.shaderProgram.setMatrixUniforms({
         isSelected: this.isSelected,
         colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
@@ -344,7 +344,7 @@ export default class ModelObject extends Loadable {
       ((this.objId >> 0) & 0xff) / 0xff,
       ((this.objId >> 8) & 0xff) / 0xff,
       ((this.objId >> 16) & 0xff) / 0xff,
-      ((this.objId >> 24) & 0xff) / 0xff,
+      255,
     ];
     return id;
   }
@@ -359,7 +359,7 @@ export default class ModelObject extends Loadable {
     engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
 
-    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 1.0 });
     engine.renderManager.shaderProgram.setMatrixUniforms({ scale: this.scale, sampler: 1.0 });
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }

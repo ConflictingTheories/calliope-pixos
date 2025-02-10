@@ -142,6 +142,7 @@ export default class RenderManager {
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.bindAttribLocation(shaderProgram, 0, 'aVertexPosition');
+    gl.bindAttribLocation(shaderProgram, 1, 'aTextureCoord');
 
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
@@ -296,6 +297,7 @@ export default class RenderManager {
     gl.attachShader(effectProgram, vertexShader);
     gl.attachShader(effectProgram, fragmentShader);
     gl.bindAttribLocation(effectProgram, 0, 'aVertexPosition');
+    gl.bindAttribLocation(effectProgram, 1, 'aTextureCoord');
     gl.linkProgram(effectProgram);
     if (!gl.getProgramParameter(effectProgram, gl.LINK_STATUS)) {
       throw new Error(`WebGL unable to initialize the shader effect program: ${effectProgram}`);
