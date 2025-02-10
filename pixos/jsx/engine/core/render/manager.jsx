@@ -14,8 +14,8 @@
 import createTransition from 'gl-transition';
 
 // Absolute imports
-import { create, create3, normalFromMat4, rotate, translate, perspective, set } from '../../utils/math/matrix4.jsx';
-import { Vector, negate, degToRad } from '../../utils/math/vector.jsx';
+import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.jsx';
+import { Vector, degToRad } from '../../utils/math/vector.jsx';
 import { OBJ } from '../../utils/obj/index.js';
 
 import CameraManager from './camera.jsx';
@@ -44,6 +44,7 @@ export default class RenderManager {
       // Effects
       this.effects = [];
       this.effectPrograms = {};
+      this.fb = null;
 
       // Transitions
       this.isTransitioning = false;
@@ -77,9 +78,8 @@ export default class RenderManager {
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
-    gl.enable(gl.DEPTH_TEST);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.enable(gl.BLEND);
+
+    this.fb = gl.createFramebuffer();
 
     // Initialize Shader Programs
     this.initShaderProgram(spritz.shaders);
@@ -259,7 +259,13 @@ export default class RenderManager {
    */
   activateShaderProgram = () => {
     const { gl } = this.engine;
+
     gl.useProgram(this.shaderProgram);
+
+    // no frame buffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    this.initProjection();
   };
 
   /**
@@ -269,6 +275,18 @@ export default class RenderManager {
   activatePickerShaderProgram = () => {
     const { gl } = this.engine;
     gl.useProgram(this.effectPrograms['picker']);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    
+    this.initProjection();
+    
+    // todo - improve performance - 1x1 pixel picker
+    
+    // bind frame buffer (todo - not working)
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+
+    // todo -- needs work - doesn't seem to work
+    // this.applyPixelFrustum();
   };
 
   /**
@@ -319,6 +337,12 @@ export default class RenderManager {
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
+    
+    gl.enable(gl.DEPTH_TEST);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
     this.camera.uViewMat = create();
     this.uProjMat[5] *= -1;
@@ -329,9 +353,40 @@ export default class RenderManager {
    */
   clearScreen() {
     const { gl } = this.engine;
-    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    perspective(degToRad(this.camera.fov), gl.canvas.clientWidth / gl.canvas.clientHeight, 0.1, 100.0, this.uProjMat);
+    this.camera.uViewMat = create();
+  }
+
+  /**
+   * Use a frustum to clip the scene to a 1x1 pixel area
+   */
+  applyPixelFrustum() {
+    const { gl } = this.engine;
+    const zNear = 0.1;
+    const zFar = 100.0;
+
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const top = Math.tan(degToRad(this.camera.fov) * 0.5) * zNear;
+    const bottom = -top;
+    const left = aspect * bottom;
+    const right = aspect * top;
+    const width = Math.abs(right - left);
+    const height = Math.abs(top - bottom);
+
+    // compute the portion of the near plane covers the 1 pixel
+    // under the mouse.
+    const mouseX = this.engine.gamepad.x || 0;
+    const mouseY = this.engine.gamepad.y || 0;
+    const pixelX = (mouseX * gl.canvas.width) / gl.canvas.clientWidth;
+    const pixelY = gl.canvas.height - (mouseY * gl.canvas.height) / gl.canvas.clientHeight - 1;
+
+    const subLeft = left + (pixelX * width) / gl.canvas.width;
+    const subBottom = bottom + (pixelY * height) / gl.canvas.height;
+    const subWidth = width / gl.canvas.width;
+    const subHeight = height / gl.canvas.height;
+
+    this.uProjMat = frustum(subLeft, subLeft + subWidth, subBottom, subBottom + subHeight, zNear, zFar);
+    console.log('applyPixelFrustum', this.uProjMat);
     this.camera.uViewMat = create();
   }
 

@@ -78,6 +78,32 @@ const perspective = (fovy, aspect, near, far) => {
   return matrix;
 };
 
+const frustum = (l, r, b, t, n, f) => {
+  let m = new Float32Array(16);
+
+  m[0] = (2 * n) / (r - l);
+  m[1] = 0;
+  m[2] = (r + l) / (r - l);
+  m[3] = 0;
+
+  m[4] = 0;
+  m[5] = (2 * n) / (t - b);
+  m[6] = (t + b) / (t - b);
+  m[7] = 0;
+
+  m[8] = 0;
+  m[9] = 0;
+  m[10] = -(f + n) / (f - n);
+  m[11] = (-2 * f * n) / (f - n);
+
+  m[12] = 0;
+  m[13] = 0;
+  m[14] = -1;
+  m[15] = 0;
+
+  return m;
+};
+
 const translate = (m1, m2, v) => {
   let matrix = m1;
   let [x, y, z] = v;
@@ -251,4 +277,4 @@ const normalize = (v) => {
   return [v[0] / len, v[1] / len, v[2] / len];
 };
 
-export { from, normalize, subtractVectors, normalFromMat4, create, create3, perspective, translate, rotate, isPowerOf2, set };
+export { from, normalize, subtractVectors, normalFromMat4, create, create3, perspective, frustum, translate, rotate, isPowerOf2, set };

@@ -138,16 +138,16 @@ export default class GLEngine {
 
     // clear canvases
     this.hud.clearHud();
+    this.renderManager.clearScreen(); // todo - move into view
 
     const timestamp = new Date().getTime();
 
     // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
-    this.renderManager.clearScreen();
     this.renderManager.activatePickerShaderProgram();
     this.spritz.render(this, timestamp);
     this.getSelectedObject(true);
 
-    // core render loop
+    // core render loop    
     this.renderManager.clearScreen(); // todo - move into view
     this.renderManager.activateShaderProgram();
     this.gamepad.render();
@@ -192,7 +192,6 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
-    // id selected
     const id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
 
     // set each sprite selected

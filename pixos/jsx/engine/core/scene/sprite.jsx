@@ -394,11 +394,6 @@ export default class Sprite extends Loadable {
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
 
-    let selectedColorId = this.engine.getSelectedObject();
-    if (this.objId === selectedColorId) {
-      this.isSelected = true;
-    }
-
     this.engine.renderManager.mvPopMatrix();
 
     // Draw Speech
