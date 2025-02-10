@@ -177,6 +177,8 @@ export default class RenderManager {
     shaderProgram.runTransition = gl.getUniformLocation(shaderProgram, 'runTransition');
     shaderProgram.useSampler = gl.getUniformLocation(shaderProgram, 'useSampler');
     shaderProgram.useDiffuse = gl.getUniformLocation(shaderProgram, 'useDiffuse');
+    shaderProgram.isSelected = gl.getUniformLocation(shaderProgram, 'isSelected');
+    shaderProgram.colorMultiplier = gl.getUniformLocation(shaderProgram, 'uColorMultiplier');
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
 
     // light uniforms
@@ -195,7 +197,7 @@ export default class RenderManager {
     }
 
     // Uniform apply
-    shaderProgram.setMatrixUniforms = function ({scale = null, sampler = 1.0}) {
+    shaderProgram.setMatrixUniforms = function ({scale = null, sampler = 1.0, isSelected =false, colorMultiplier = null}) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -207,6 +209,10 @@ export default class RenderManager {
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
+      
+      // selection
+      gl.uniform1f(this.isSelected, isSelected ? 1.0 : 0.0);
+      gl.uniform4fv(this.colorMultiplier, colorMultiplier ? colorMultiplier : [1.0, 1.0, 1.0, 1.0]);
 
       // use sampler or materials?
       gl.uniform1f(this.useSampler, sampler);

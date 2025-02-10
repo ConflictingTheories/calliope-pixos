@@ -500,7 +500,7 @@ export default class Zone extends Loadable {
    * Remove all sprites from the zone
    */
   removeAllSprites() {
-    foreach(this.spriteList, (sprite) => {
+    this.spriteList.forEach((sprite) => {
       this.removeSprite(sprite.id);
     });
   }

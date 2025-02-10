@@ -47,6 +47,8 @@ export default function fs() {
   uniform float runTransition;
   uniform float useSampler;
   uniform float useDiffuse;
+  uniform float isSelected;
+  uniform vec4 uColorMultiplier; 
   uniform sampler2D uSampler;
   uniform sampler2D uDiffuseMap;
 
@@ -186,8 +188,11 @@ export default function fs() {
   }
 
   void main(void) {
+    vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+
     if(runTransition == 1.0) {
-      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+      finalColor = vec4(0.0, 0.0, 0.0, 0.0);
+      gl_FragColor = finalColor;
       return;
     }
 
@@ -195,12 +200,19 @@ export default function fs() {
       vec4 texelColors = texture2D(uSampler, vTextureCoord);
       vec3 color = calculateSampler(texelColors);
       vec4 color4 = vec4(getReflectedLightColor(color), texelColors.a);
-      gl_FragColor = volumetricCalculation(vec4(color, texelColors.a)) * fogEffect(color4);
+      finalColor = volumetricCalculation(vec4(color, texelColors.a)) * fogEffect(color4);
     } else { // diffuse
       vec3 color = calculateDiffuse();
       vec4 color4 = vec4((getReflectedLightColor(color)), 1.0);
-      gl_FragColor = volumetricCalculation(vec4(color,1.0)) * fogEffect(color4);
+      finalColor = volumetricCalculation(vec4(color,1.0)) * fogEffect(color4);
     }
+
+    // flash on selection
+    if(isSelected == 1.0) {
+      finalColor = finalColor * uColorMultiplier;
+    }
+
+    gl_FragColor = finalColor;
   }
 `;
 }

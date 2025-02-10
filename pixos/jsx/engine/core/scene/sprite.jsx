@@ -51,6 +51,7 @@ export default class Sprite extends Loadable {
     this.lightColor = [0.1, 1.0, 0.1];
     this.density = 1;
     this.voice = new SpeechSynthesisUtterance();
+    this.isSelected = false;
   }
 
   /**
@@ -366,9 +367,18 @@ export default class Sprite extends Loadable {
     this.engine.renderManager.bindBuffer(this.vertexTexBuf, this.engine.renderManager.shaderProgram.aTextureCoord);
     this.texture.attach();
 
-    // Draw
+    // picking shader
     this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({id: this.getPickingId()});
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({});
+    
+    // if selected
+    if (this.isSelected) {
+      console.log('selected');
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({ isSelected: true, colorMultiplier: (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1] });
+    } else {
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({});
+    }
+
+    // Draw
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);

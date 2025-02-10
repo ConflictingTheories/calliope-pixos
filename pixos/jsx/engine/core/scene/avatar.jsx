@@ -27,6 +27,7 @@ export default class Avatar extends Sprite {
     super(engine);
     this.handleWalk = this.handleWalk.bind(this);
     this.isLit = true;
+    this.isSelected = true;
   }
 
   /**

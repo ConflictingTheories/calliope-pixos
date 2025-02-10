@@ -105,6 +105,7 @@ export default class GLEngine {
     this.gl = gl;
     this.ctx = ctx;
     this.gp = gp;
+    this.frameCount = 0;
 
     this.spritz = spritz;
     this.fullscreen = false;
@@ -134,6 +135,7 @@ export default class GLEngine {
    */
   render() {
     this.requestId = requestAnimationFrame(this.render);
+    this.frameCount++;
 
     // clear canvases
     this.hud.clearHud();
@@ -143,12 +145,12 @@ export default class GLEngine {
 
     // todo --- not working
     // enable picker shader
-    this.renderManager.activatePickerShaderProgram();
+    // this.renderManager.activatePickerShaderProgram();
 
-    const selectedObj = this.getSelectedObject();
-    if(selectedObj?.sprites.length > 0){
-      console.log({ selectedObj });
-    }
+    // const selectedObj = this.getSelectedObject();
+    // if(selectedObj?.sprites.length > 0){
+    //   console.log({ selectedObj });
+    // }
   
     // default shader program
     this.renderManager.activateShaderProgram();
