@@ -600,7 +600,7 @@ export default class Zone extends Loadable {
 
     // set picking id shader
     this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({});
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
     // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
   }

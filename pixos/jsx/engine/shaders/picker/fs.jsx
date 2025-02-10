@@ -18,7 +18,7 @@ export default function fs() {
     uniform vec4 u_id;
 
     void main() {
-        gl_FragColor = u_id;
+        gl_FragColor = vec4(vec3(u_id),1.0);
     }
   `;
   }

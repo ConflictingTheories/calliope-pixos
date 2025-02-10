@@ -140,15 +140,9 @@ export default class Spritz {
    * @param {number} now
    */
   render = (engine, now) => {
-    let {gl} = engine;
     // Build
     Spritz._instance.world.tickOuter(now);
-    // use core shader
-    // Spritz._instance.engine.renderManager.activateShaderProgram();
-    
-    // set up framebuffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    
+
     // Draw Frame
     this.draw(engine);
 
@@ -159,39 +153,6 @@ export default class Spritz {
     // });
   };
 
-
-  /**
-   * Render Loop
-   * @param {*} engine
-   * @param {number} now
-   */
-  renderSelector = (engine, now) => {
-    // Build
-    let {gl, fb} = engine;
-
-    Spritz._instance.world.tickOuter(now);
-    
-    // use core shader
-    // Spritz._instance.engine.renderManager.activateShaderProgram();
-
-    // create a framebuffer and write to it
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-   
-    gl.enable(gl.CULL_FACE);
-    gl.enable(gl.DEPTH_TEST);
-   
-    // Clear the canvas AND the depth buffer.
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
-    // Draw Frame
-    this.draw(engine);
-
-    // effect rendering - ex) blur depth of field -- todo - revisit
-    // Object.keys(this.effects).map((id) => {
-    //   Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
-    //   this.effectPrograms[id]?.draw();
-    // });
-  };
 
   /**
    * Draw Spritz

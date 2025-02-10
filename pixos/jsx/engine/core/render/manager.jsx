@@ -85,7 +85,7 @@ export default class RenderManager {
     this.initShaderProgram(spritz.shaders);
 
     // intiialize picker shader (special shader which allows for picking objects on screen)
-   this.initShaderEffects({
+    this.initShaderEffects({
       id: 'picker',
       vs: require('../../shaders/picker/vs.jsx').default(),
       fs: require('../../shaders/picker/fs.jsx').default(),
@@ -142,7 +142,7 @@ export default class RenderManager {
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.bindAttribLocation(shaderProgram, 0, 'aVertexPosition');
-    
+
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
       throw new Error(`WebGL unable to initialize the shader program: ${shaderProgram}`);
@@ -179,6 +179,7 @@ export default class RenderManager {
     shaderProgram.isSelected = gl.getUniformLocation(shaderProgram, 'isSelected');
     shaderProgram.colorMultiplier = gl.getUniformLocation(shaderProgram, 'uColorMultiplier');
     shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
+    shaderProgram.id = gl.getUniformLocation(shaderProgram, 'u_id');
 
     // light uniforms
     shaderProgram.maxLights = 32;
@@ -196,7 +197,7 @@ export default class RenderManager {
     }
 
     // Uniform apply
-    shaderProgram.setMatrixUniforms = function ({scale = null, sampler = 1.0, isSelected =false, colorMultiplier = null}) {
+    shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -208,8 +209,9 @@ export default class RenderManager {
 
       // scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
-      
+
       // selection
+      gl.uniform4fv(this.id, id ? id : [1.0, 0.0, 0.0, 0.0]);
       gl.uniform1f(this.isSelected, isSelected ? 1.0 : 0.0);
       gl.uniform4fv(this.colorMultiplier, colorMultiplier ? colorMultiplier : [1.0, 1.0, 1.0, 1.0]);
 

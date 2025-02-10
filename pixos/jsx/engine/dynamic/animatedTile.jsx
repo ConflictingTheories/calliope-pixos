@@ -67,7 +67,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     this.texture.attach();
     // Draw
     engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
-    engine.renderManager.shaderProgram.setMatrixUniforms({});
+    engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
     engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     engine.renderManager.mvPopMatrix();
   }

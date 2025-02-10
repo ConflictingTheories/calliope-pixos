@@ -43,6 +43,7 @@ export default function fs() {
 
   uniform PointLight uLights[32];
   uniform sampler2D uDepthMap;
+  uniform vec4 u_id;
 
   uniform float runTransition;
   uniform float useSampler;
@@ -211,6 +212,8 @@ export default function fs() {
     if(isSelected == 1.0) {
       finalColor = finalColor * uColorMultiplier;
     }
+
+    // gl_FragColor = vec4(vec3(u_id),1.0);
 
     gl_FragColor = finalColor;
   }

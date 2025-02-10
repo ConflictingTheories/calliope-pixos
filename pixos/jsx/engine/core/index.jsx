@@ -105,7 +105,6 @@ export default class GLEngine {
     this.gl = gl;
     this.ctx = ctx;
     this.gp = gp;
-    this.fb = gl.createFramebuffer();
     this.frameCount = 0;
 
     this.spritz = spritz;
@@ -139,19 +138,19 @@ export default class GLEngine {
 
     // clear canvases
     this.hud.clearHud();
-    this.renderManager.clearScreen(); // todo - move into view
 
     const timestamp = new Date().getTime();
 
-    // todo --- not working
     // enable picker shader
+    // todo --- not working
+    this.renderManager.clearScreen(); 
     this.renderManager.activatePickerShaderProgram();
-    this.spritz.renderSelector(this, timestamp);
+    this.spritz.render(this, timestamp);
+    this.getSelectedObject(true);
     
-    // default shader program
-    this.renderManager.activateShaderProgram();
-
     // core render loop
+    this.renderManager.clearScreen(); // todo - move into view
+    this.renderManager.activateShaderProgram();
     this.gamepad.render();
     this.spritz.render(this, timestamp);
 
@@ -194,9 +193,18 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
-    if(log) console.log({msg: 'Selected Object:', data, mouseX, mouseY, pixelX, pixelY});
-    
-    return data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+    const id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
+
+    // set each sprite selected
+    this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
+      if (sprite.objId === id) {
+        sprite.isSelected = true;
+        this.spritz.world.spriteDict[sprite.id].isSelected = true;
+      }
+      return sprite;
+    });
+
+    return id;
   }
 
   /**

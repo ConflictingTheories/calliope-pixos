@@ -258,9 +258,10 @@ export class GamePad {
               // let rotateSpeed = 0.01;
               // let angleChange = [touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed + touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed - touches[id].y * rotateSpeed,];
               // this.engine.renderManager.camera.changeAngle(angleChange);
-              this.x = touches[id].x;
-              this.y = touches[id].y;
             }
+            this.x = touches[id].x;
+            this.y = touches[id].y;
+            break;
           case 'mousedown':
             if (e.touches && e.touches[0]?.which) {
               // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
@@ -281,7 +282,6 @@ export class GamePad {
             for (var n = 0; n < buttons_layout.length; n++) {
               controller.buttons.state(id, n, type);
             }
-            this.engine.getSelectedObject(true);
             touches[id].leftClick = 0;
             touches[id].rightClick = 0;
             break;

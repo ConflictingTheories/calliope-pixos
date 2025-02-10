@@ -369,23 +369,26 @@ export default class Sprite extends Loadable {
     this.texture.attach();
 
     // picking shader
-    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({id: this.getPickingId()});
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
 
-    
     // if selected
     if (this.isSelected) {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId(), isSelected: true, colorMultiplier: (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1] });
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({
+        id: this.getPickingId(),
+        isSelected: true,
+        colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+      });
     } else {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({id: this.getPickingId()});
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
     }
 
     // Draw
     this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
-    
+
     let selectedColorId = this.engine.getSelectedObject();
-    if(this.objId === selectedColorId){
+    if (this.objId === selectedColorId) {
       this.isSelected = true;
     }
 
@@ -415,7 +418,7 @@ export default class Sprite extends Loadable {
       this.speech.attach();
 
       // Draw Speech bubble
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({});
+      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
       this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
       this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.speechVerBuf.numItems);
       this.engine.gl.depthFunc(this.engine.gl.LESS);
