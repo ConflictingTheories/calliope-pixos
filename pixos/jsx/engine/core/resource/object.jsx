@@ -47,6 +47,7 @@ export default class ModelObject extends Loadable {
     this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
+    this.isSelected = false;
   }
 
   /**
@@ -114,7 +115,7 @@ export default class ModelObject extends Loadable {
 
     // lighting?
     if (this.isLit) {
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01,0.01,0.01]);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01, 0.01, 0.01]);
     }
 
     //
@@ -189,7 +190,16 @@ export default class ModelObject extends Loadable {
 
     // lighting?
     if (this.isLit) {
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, this.attenuation, this.direction, this.density, this.scatteringCoefficients, true);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(
+        this.id,
+        this.pos.toArray(),
+        this.lightColor,
+        this.attenuation,
+        this.direction,
+        this.density,
+        this.scatteringCoefficients,
+        true
+      );
     }
 
     //
@@ -289,10 +299,15 @@ export default class ModelObject extends Loadable {
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-        
+
         // picking id
-        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
-        engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0 });
+        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+        engine.renderManager.shaderProgram.setMatrixUniforms({
+          isSelected: this.isSelected,
+          colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+          scale: this.scale,
+          sampler: 0.0,
+        });
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
@@ -308,23 +323,28 @@ export default class ModelObject extends Loadable {
       engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
       // Specular Exponent
       engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
-      
-      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
-      engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 0.0});
+
+      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+      engine.renderManager.shaderProgram.setMatrixUniforms({
+        isSelected: this.isSelected,
+        colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+        scale: this.scale,
+        sampler: 0.0,
+      });
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
   }
 
   /**
    * Return id for picking
-   * @returns 
+   * @returns
    */
-  getPickingId(){
+  getPickingId() {
     const id = [
-      ((this.objId >>  0) & 0xFF) / 0xFF,
-      ((this.objId >>  8) & 0xFF) / 0xFF,
-      ((this.objId >> 16) & 0xFF) / 0xFF,
-      ((this.objId >> 24) & 0xFF) / 0xFF,
+      ((this.objId >> 0) & 0xff) / 0xff,
+      ((this.objId >> 8) & 0xff) / 0xff,
+      ((this.objId >> 16) & 0xff) / 0xff,
+      ((this.objId >> 24) & 0xff) / 0xff,
     ];
     return id;
   }
@@ -339,8 +359,8 @@ export default class ModelObject extends Loadable {
     engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
 
-    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({scale: this.scale, id: this.getPickingId()});
-    engine.renderManager.shaderProgram.setMatrixUniforms({scale: this.scale, sampler: 1.0});
+    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId() });
+    engine.renderManager.shaderProgram.setMatrixUniforms({ scale: this.scale, sampler: 1.0 });
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 

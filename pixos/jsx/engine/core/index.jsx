@@ -143,11 +143,11 @@ export default class GLEngine {
 
     // enable picker shader
     // todo --- not working
-    this.renderManager.clearScreen(); 
+    this.renderManager.clearScreen();
     this.renderManager.activatePickerShaderProgram();
     this.spritz.render(this, timestamp);
     this.getSelectedObject(true);
-    
+
     // core render loop
     this.renderManager.clearScreen(); // todo - move into view
     this.renderManager.activateShaderProgram();
@@ -193,6 +193,7 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
+    // id selected
     const id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
 
     // set each sprite selected
@@ -202,6 +203,15 @@ export default class GLEngine {
         this.spritz.world.spriteDict[sprite.id].isSelected = true;
       }
       return sprite;
+    });
+
+    // set each object selected
+    this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
+      if (obj.objId === id) {
+        obj.isSelected = true;
+        this.spritz.world.objectDict[obj.id].isSelected = true;
+      }
+      return obj;
     });
 
     return id;
