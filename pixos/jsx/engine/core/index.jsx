@@ -198,31 +198,39 @@ export default class GLEngine {
     type.split('|').forEach((t) => {
       switch (t) {
         case 'sprite':
-          // todo - add a new trigger method onSelect()
-          // set each sprite selected
-          this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
-            if (sprite.objId === id) {
-              sprite.isSelected = true;
-              this.spritz.world.spriteDict[sprite.id].isSelected = true;
-            }
-            return sprite;
-          });
+          console.log(this.gamepad.touches);
+          if (this.gamepad.touches['desktop'].leftClick) {
+            // todo - add a new trigger method onSelect()
+            // set each sprite selected
+            this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
+              if (sprite.objId === id) {
+                sprite.isSelected = true;
+                this.spritz.world.spriteDict[sprite.id].isSelected = true;
+                this.spritz.world.spriteDict[sprite.id].interact(this.spritz.world.spriteDict['avatar'], () => console.log('selection'));
+              }
+              return sprite;
+            });
+          }
           break;
         case 'object':
-          // todo - add a new trigger method onSelect()
-          // set each object selected
-          this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
-            if (obj.objId === id) {
-              obj.isSelected = true;
-              this.spritz.world.objectDict[obj.id].isSelected = true;
-            }
-            return obj;
-          });
+          if (this.gamepad.touches[0]?.type === 'mouseup') {
+            // todo - add a new trigger method onSelect()
+            // set each object selected
+            this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
+              if (obj.objId === id) {
+                obj.isSelected = true;
+                this.spritz.world.objectDict[obj.id].isSelected = true;
+              }
+              return obj;
+            });
+          }
           break;
         case 'tile':
-          // todo - add a new trigger method onSelect()
-          // todo -- need to implement
-          console.log('TILE SELECTED');
+          if (this.gamepad.touches[0]?.type === 'mouseup') {
+            // todo - add a new trigger method onSelect()
+            // todo -- need to implement
+            console.log('TODO - TILE SELECTION');
+          }
           break;
       }
     });
