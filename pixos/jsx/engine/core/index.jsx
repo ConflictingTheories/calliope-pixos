@@ -145,9 +145,9 @@ export default class GLEngine {
     // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
     this.renderManager.activatePickerShaderProgram();
     this.spritz.render(this, timestamp);
-    this.getSelectedObject(true);
+    this.getSelectedObject('sprite');
 
-    // core render loop    
+    // core render loop
     this.renderManager.clearScreen(); // todo - move into view
     this.renderManager.activateShaderProgram();
     this.gamepad.render();
@@ -171,7 +171,7 @@ export default class GLEngine {
   /**
    * Get Selected Object on screen
    */
-  getSelectedObject() {
+  getSelectedObject(type = 'sprite|object|tile') {
     if (this.spritz.world?.spriteList?.length <= 0) {
       return;
     }
@@ -194,22 +194,37 @@ export default class GLEngine {
 
     const id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
 
-    // set each sprite selected
-    this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
-      if (sprite.objId === id) {
-        sprite.isSelected = true;
-        this.spritz.world.spriteDict[sprite.id].isSelected = true;
+    // select type(s) based on request
+    type.split('|').forEach((t) => {
+      switch (t) {
+        case 'sprite':
+          // todo - add a new trigger method onSelect()
+          // set each sprite selected
+          this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
+            if (sprite.objId === id) {
+              sprite.isSelected = true;
+              this.spritz.world.spriteDict[sprite.id].isSelected = true;
+            }
+            return sprite;
+          });
+          break;
+        case 'object':
+          // todo - add a new trigger method onSelect()
+          // set each object selected
+          this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
+            if (obj.objId === id) {
+              obj.isSelected = true;
+              this.spritz.world.objectDict[obj.id].isSelected = true;
+            }
+            return obj;
+          });
+          break;
+        case 'tile':
+          // todo - add a new trigger method onSelect()
+          // todo -- need to implement
+          console.log('TILE SELECTED');
+          break;
       }
-      return sprite;
-    });
-
-    // set each object selected
-    this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
-      if (obj.objId === id) {
-        obj.isSelected = true;
-        this.spritz.world.objectDict[obj.id].isSelected = true;
-      }
-      return obj;
     });
 
     return id;

@@ -341,30 +341,36 @@ export default class Zone extends Loadable {
    * When tileset loads
    */
   onTilesetDefinitionLoaded() {
-    this.vertexPosBuf = [];
-    this.vertexTexBuf = [];
+    this.cellVertexPosBuf = Array.from(Array(this.size[1]), () => new Array(this.size[0]));
+    this.cellVertexTexBuf = Array.from(Array(this.size[1]), () => new Array(this.size[0]));
     this.walkability = [];
     // Determine Walkability and Load Vertices
     for (let j = 0, k = 0; j < this.size[1]; j++) {
-      let vertices = [];
-      let vertexTexCoords = [];
       // Loop over Tiles
       for (let i = 0; i < this.size[0]; i++, k++) {
+        let cellVertices = [];
+        let cellVertexTexCoords = [];
+
         let cell = this.cells[k];
-        this.walkability[k] = Direction.All;
-        let n = Math.floor(cell.length / 3);
+
         // Calc Walk, Vertex positions and Textures for each cell
+        let n = Math.floor(cell.length / 3);
+        this.walkability[k] = Direction.All;
         for (let l = 0; l < n; l++) {
           let tilePos = [this.bounds[0] + i, this.bounds[1] + j, cell[3 * l + 2]];
           this.walkability[k] &= this.tileset.getWalkability(cell[3 * l]);
-          vertices = vertices.concat(this.tileset.getTileVertices(cell[3 * l], tilePos));
-          vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(cell[3 * l], cell[3 * l + 1]));
+
+          // add to cell
+          cellVertices = cellVertices.concat(this.tileset.getTileVertices(cell[3 * l], tilePos));
+          cellVertexTexCoords = cellVertexTexCoords.concat(this.tileset.getTileTexCoords(cell[3 * l], cell[3 * l + 1]));
         }
+
+        this.cellVertexPosBuf[j][i] = this.engine.renderManager.createBuffer(cellVertices, this.engine.gl.STATIC_DRAW, 3);
+        this.cellVertexTexBuf[j][i] = this.engine.renderManager.createBuffer(cellVertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
+
         // Custom walkability
         if (cell.length == 3 * n + 1) this.walkability[k] = cell[3 * n];
       }
-      this.vertexPosBuf[j] = this.engine.renderManager.createBuffer(vertices, this.engine.gl.STATIC_DRAW, 3);
-      this.vertexTexBuf[j] = this.engine.renderManager.createBuffer(vertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
     }
   }
 
@@ -590,19 +596,29 @@ export default class Zone extends Loadable {
    * @param {*} row
    */
   drawRow(row) {
-    // vertice positions
-    this.engine.renderManager.bindBuffer(this.vertexPosBuf[row], this.engine.renderManager.shaderProgram.aVertexPosition);
-    // texture positions
-    this.engine.renderManager.bindBuffer(this.vertexTexBuf[row], this.engine.renderManager.shaderProgram.aTextureCoord);
-
-    // texturize
+    // attach tileset texture
     this.tileset.texture.attach();
 
+    for (let l = 0; l < this.size[0]; l++) {
+      this.drawCell(row, l);
+    }
+  }
+
+  /**
+   * Draw Row of Zone
+   * @param {*} row
+   */
+  drawCell(row, cell) {
+    // vertices and texture coords
+    this.engine.renderManager.bindBuffer(this.cellVertexPosBuf[row][cell], this.engine.renderManager.shaderProgram.aVertexPosition);
+    this.engine.renderManager.bindBuffer(this.cellVertexTexBuf[row][cell], this.engine.renderManager.shaderProgram.aTextureCoord);
+
     // set picking id shader
-    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: 0xfff000 & (row * 0x1f) & cell });
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: 0xfff000 & (row * 0x1f) & cell });
+
     // draw triangles
-    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+    this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.cellVertexPosBuf[row][cell].numItems);
   }
 
   /**
@@ -635,6 +651,9 @@ export default class Zone extends Loadable {
       case 'E':
         for (let j = 0; j < this.size[1]; j++) {
           this.drawRow(j);
+
+          // todo - look into improving this now that we are using cell-based drawing.
+          // draw each sprite in front of floor tiles if positioned in front
           while (z < this.objectList.length && this.objectList[z].pos.y - this.bounds[1] <= j) {
             this.objectList[z++].draw();
           }
@@ -651,6 +670,9 @@ export default class Zone extends Loadable {
       case 'SE':
         for (let j = this.size[1] - 1; j >= 0; j--) {
           this.drawRow(j);
+
+          // todo - look into improving this now that we are using cell-based drawing.
+          // draw each sprite in front of floor tiles if positioned in front
           while (z < this.objectList.length && this.bounds[1] - this.objectList[z].pos.y <= j) {
             this.objectList[z++].draw();
           }
