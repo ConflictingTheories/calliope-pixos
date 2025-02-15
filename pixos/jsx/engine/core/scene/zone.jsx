@@ -36,6 +36,7 @@ export default class Zone extends Loadable {
     this.spriteList = [];
     this.objectDict = {};
     this.objectList = [];
+    this.selectedTiles = [];
     this.lights = [];
     this.spritz = [];
     this.lastKey = Date.now();
@@ -614,19 +615,39 @@ export default class Zone extends Loadable {
     this.engine.renderManager.bindBuffer(this.cellVertexTexBuf[row][cell], this.engine.renderManager.shaderProgram.aTextureCoord);
 
     // set picking id shader
-    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: 0xfff000 & (row * 0x1f) & cell });
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: 0xfff000 & (row * 0x1f) & cell });
+    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId(row, cell) });
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({ 
+      id: this.getPickingId(row, cell),
+      isSelected: this.isCellSelected(row, cell),
+      sampler: 1.0,
+      colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+    });
 
     // draw triangles
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.cellVertexPosBuf[row][cell].numItems);
   }
 
   /**
+   * Check if cell is selected tile: [row,cell]
+   * @param {number} row
+   * @param {number} cell
+   * @returns
+   */
+  isCellSelected(row, cell) {
+    return this.selectedTiles.some((tile) => tile[1] === cell && tile[0] === row);
+  }
+
+  /**
    * Return id for picking
    * @returns
    */
-  getPickingId() {
-    const id = [((this.objId >> 0) & 0xff) / 0xff, ((this.objId >> 8) & 0xff) / 0xff, ((this.objId >> 16) & 0xff) / 0xff, 255];
+  getPickingId(row, cell) {
+    const id = [
+      (((this.objId) >> 0) & 0xff) / 0xff,
+      ((row >> 0) & 0xff) / 0xff,
+      ((cell  >> 0) & 0xff) / 0xff,
+      255,
+    ];
     return id;
   }
 

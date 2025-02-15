@@ -145,7 +145,7 @@ export default class GLEngine {
     // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
     this.renderManager.activatePickerShaderProgram();
     this.spritz.render(this, timestamp);
-    this.getSelectedObject('sprite');
+    this.getSelectedObject('tile');
 
     // core render loop
     this.renderManager.clearScreen(); // todo - move into view
@@ -192,13 +192,12 @@ export default class GLEngine {
       data
     ); // typed array to hold result
 
-    const id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
+    let id = data[0] + (data[1] << 8) + (data[2] << 16); //+ (data[3] << 24);
 
     // select type(s) based on request
     type.split('|').forEach((t) => {
       switch (t) {
         case 'sprite':
-          console.log(this.gamepad.touches);
           if (this.gamepad.touches['desktop'].leftClick) {
             // todo - add a new trigger method onSelect()
             // set each sprite selected
@@ -213,7 +212,7 @@ export default class GLEngine {
           }
           break;
         case 'object':
-          if (this.gamepad.touches[0]?.type === 'mouseup') {
+          if (this.gamepad.touches['desktop'].leftClick) {
             // todo - add a new trigger method onSelect()
             // set each object selected
             this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
@@ -226,10 +225,37 @@ export default class GLEngine {
           }
           break;
         case 'tile':
-          if (this.gamepad.touches[0]?.type === 'mouseup') {
+          if (this.gamepad.touches['desktop'].leftClick) {
+            // read in zone, tile, and cell data from pixel
+            let zoneObjId = data[0];
+            let row = data[1];
+            let cell = data[2];
+
+            // search zones and file selected tile
+            this.spritz.world.zoneList.forEach((zone) => {
+              if (zone.objId === zoneObjId) {
+                let found = false;
+
+                // allow for 'de-selection' - deselect if already selected
+                zone.selectedTiles = zone.selectedTiles.filter((tile) => {
+                  if (tile[0] === row && tile[1] === cell) {
+                    found = true;
+                    return false;
+                  }
+                  return true;
+                });
+
+                if (!found) {
+                  // if not selected add to selected cells
+                  zone.selectedTiles.push([row, cell]);
+                }
+              }
+            });
+            
             // todo - add a new trigger method onSelect()
-            // todo -- need to implement
+
             console.log('TODO - TILE SELECTION');
+            console.log({ zoneObjId, row, cell, zones: this.spritz.world.zoneList });
           }
           break;
       }
