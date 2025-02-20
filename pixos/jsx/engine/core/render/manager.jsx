@@ -272,21 +272,22 @@ export default class RenderManager {
    * Initialize Shader Picker for selection of objects
    * @returns
    */
-  activatePickerShaderProgram = () => {
+  activatePickerShaderProgram = (useFrustum) => {
     const { gl } = this.engine;
     gl.useProgram(this.effectPrograms['picker']);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    
-    this.initProjection();
-    
     // todo - improve performance - 1x1 pixel picker
-    
-    // bind frame buffer (todo - not working)
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+    if (useFrustum) {
+      // bind frame buffer (todo - not working)
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+      // todo -- needs work - doesn't seem to work
+      this.initProjection();
+      // this.applyPixelFrustum();
+    }else{
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // todo -- needs work - doesn't seem to work
-    // this.applyPixelFrustum();
+      this.initProjection();
+    }
   };
 
   /**
@@ -337,7 +338,7 @@ export default class RenderManager {
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
-    
+
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
@@ -385,8 +386,13 @@ export default class RenderManager {
     const subWidth = width / gl.canvas.width;
     const subHeight = height / gl.canvas.height;
 
+    gl.enable(gl.DEPTH_TEST);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    gl.viewport(0, 0, 1, 1);
+
     this.uProjMat = frustum(subLeft, subLeft + subWidth, subBottom, subBottom + subHeight, zNear, zFar);
-    console.log('applyPixelFrustum', this.uProjMat);
+    this.uProjMat[5] *= -1;
     this.camera.uViewMat = create();
   }
 

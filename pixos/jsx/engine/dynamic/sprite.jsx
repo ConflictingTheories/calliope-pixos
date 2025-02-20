@@ -68,7 +68,7 @@ export default class DynamicSprite extends Sprite {
   }
 
   // Interaction
-  async interact(sprite, finish) {
+  async interact(sprite, finish = () => {}) {
     let ret = null;
     let states = this.json.states ?? [];
     
@@ -118,7 +118,7 @@ export default class DynamicSprite extends Sprite {
         let callback = () => {
           console.log('calling callback');
           let interpreter = new PixosLuaInterpreter(this.engine);
-          interpreter.setScope({ _this: this, subject: sprite, finish: finish });
+          interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite, finish: finish });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - sprite callback")');
           return interpreter.run(luaCallback);
@@ -157,7 +157,39 @@ export default class DynamicSprite extends Sprite {
     );
   }
 
-  // todo -- add step handler dynamically (onStep)
+  // todo -- add select handler dynamically (onSelect)
+  // Interaction
+  async onSelect(_this, sprite) {
+    if (!this.selectTrigger) {
+      return;
+    }
+
+    // pass-through interaction
+    if(this.selectTrigger === 'interact'){
+      return await this.interact(sprite, ()=>{});
+    }
+
+    // lua scripting
+    try {
+      console.log({ trigger: this.selectTrigger });
+      let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) throw new Error('No Lua Script Found');
+
+      let luaScript = await file.async('string');
+      console.log({ msg: 'trigger lua statement', luaScript });
+
+      let interpreter = new PixosLuaInterpreter(this.engine);
+      interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
+      interpreter.initLibrary();
+      interpreter.run('print("hello world lua")');
+
+      return await interpreter.run(luaScript);
+    } catch (e) {
+      console.log({ msg: 'no lua script found', e });
+    }
+  }
+
+   // todo -- add step handler dynamically (onStep)
   // Interaction
   async onStep(_this, sprite) {
     if (!this.stepTrigger) {
@@ -174,7 +206,7 @@ export default class DynamicSprite extends Sprite {
       console.log({ msg: 'trigger lua statement', luaScript });
 
       let interpreter = new PixosLuaInterpreter(this.engine);
-      interpreter.setScope({ _this: this, subject: sprite });
+      interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');
 

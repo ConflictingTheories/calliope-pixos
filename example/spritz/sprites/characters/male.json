@@ -68,5 +68,6 @@
   },
   "hotspotOffset": [0.5, 0.5, 0],
   "bindCamera": true,
-  "enableSpeech": true
+  "enableSpeech": true,
+  "selectTrigger": "sprite/test_select"
 }

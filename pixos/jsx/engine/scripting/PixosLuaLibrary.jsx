@@ -48,10 +48,10 @@ export default class PixosLuaLibrary {
         // todo - not working
         return () =>
           new Promise((resolve) => {
-            console.log({ msg: 'playing cutscene via lua', zone: envScope._this, cutscene });
-            if (envScope._this.playCutscene) {
+            console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
+            if (envScope.zone.playCutscene) {
               console.log({ msg: 'cutscene function found' });
-              return envScope._this.playCutscene(cutscene).then(() => {
+              return envScope.zone.playCutscene(cutscene).then(() => {
                 resolve();
               });
             } else {
@@ -62,26 +62,26 @@ export default class PixosLuaLibrary {
       sprite_dialogue: (spriteId, dialogue, options = {}) => {
         return () =>
           new Promise((resolve) => {
-            console.log({ msg: 'playing dialogue via lua', zone: envScope._this, spriteId, dialogue });
+            console.log({ msg: 'playing dialogue via lua', zone: envScope.zone, spriteId, dialogue });
             options.onClose = () => resolve();
-            return envScope._this.spriteDialogue(spriteId, dialogue, options).then(() => {
-              console.log({ msg: 'played dialogue via lua', zone: envScope._this, spriteId, dialogue });
+            return envScope.zone.spriteDialogue(spriteId, dialogue, options).then(() => {
+              console.log({ msg: 'played dialogue via lua', zone: envScope.zone, spriteId, dialogue });
             });
           });
       },
       move_sprite: (spriteId, location, running) => {
         return () =>
           new Promise((resolve) => {
-            console.log({ msg: 'moving sprite via lua', zone: envScope._this, spriteId, location, running });
-            return envScope._this.moveSprite(spriteId, this.lua.utils.ensureArray(location.toObject()), running).then(() => {
-              console.log({ msg: 'moved sprite via lua', zone: envScope._this, spriteId, location, running });
+            console.log({ msg: 'moving sprite via lua', zone: envScope.zone, spriteId, location, running });
+            return envScope.zone.moveSprite(spriteId, this.lua.utils.ensureArray(location.toObject()), running).then(() => {
+              console.log({ msg: 'moved sprite via lua', zone: envScope.zone, spriteId, location, running });
               resolve();
             });
           });
       },
       load_scripts: (scripts) => {
         console.log({ msg: 'loading scripts via lua', scripts, envScope });
-        return envScope._this.loadScripts(scripts);
+        return envScope.zone.loadScripts(scripts);
       },
 
       // camera functions

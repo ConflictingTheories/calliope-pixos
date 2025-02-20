@@ -143,9 +143,9 @@ export default class GLEngine {
     const timestamp = new Date().getTime();
 
     // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
-    this.renderManager.activatePickerShaderProgram();
+    this.renderManager.activatePickerShaderProgram(false);
     this.spritz.render(this, timestamp);
-    this.getSelectedObject('tile');
+    this.getSelectedObject();
 
     // core render loop
     this.renderManager.clearScreen(); // todo - move into view
@@ -171,7 +171,7 @@ export default class GLEngine {
   /**
    * Get Selected Object on screen
    */
-  getSelectedObject(type = 'sprite|object|tile') {
+  getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {
     if (this.spritz.world?.spriteList?.length <= 0) {
       return;
     }
@@ -179,8 +179,8 @@ export default class GLEngine {
     const data = new Uint8Array(4);
     const mouseX = this.gamepad.x || 0;
     const mouseY = this.gamepad.y || 0;
-    const pixelX = (mouseX * gl.canvas.width) / gl.canvas.clientWidth;
-    const pixelY = gl.canvas.height - (mouseY * gl.canvas.height) / gl.canvas.clientHeight - 1;
+    const pixelX = useFrustum ? 0 : (mouseX * gl.canvas.width) / gl.canvas.clientWidth;
+    const pixelY = useFrustum ? 0 : gl.canvas.height - (mouseY * gl.canvas.height) / gl.canvas.clientHeight - 1;
 
     gl.readPixels(
       pixelX, // x
@@ -205,7 +205,8 @@ export default class GLEngine {
               if (sprite.objId === id) {
                 sprite.isSelected = true;
                 this.spritz.world.spriteDict[sprite.id].isSelected = true;
-                this.spritz.world.spriteDict[sprite.id].interact(this.spritz.world.spriteDict['avatar'], () => console.log('selection'));
+                this.spritz.world.spriteDict[sprite.id].onSelect(sprite.zone, sprite);
+                // this.spritz.world.spriteDict[sprite.id].interact(this.spritz.world.spriteDict['avatar'], () => console.log('selection'));
               }
               return sprite;
             });
@@ -219,6 +220,7 @@ export default class GLEngine {
               if (obj.objId === id) {
                 obj.isSelected = true;
                 this.spritz.world.objectDict[obj.id].isSelected = true;
+                // this.spritz.world.objectDict[sprite.id].interact(this.spritz.world.spriteDict['avatar'], () => console.log('selection'));
               }
               return obj;
             });
@@ -248,11 +250,11 @@ export default class GLEngine {
                 if (!found) {
                   // if not selected add to selected cells
                   zone.selectedTiles.push([row, cell]);
+                  // todo - implement onSelect() method
+                  // zone.onSelect(row,cell);
                 }
               }
             });
-            
-            // todo - add a new trigger method onSelect()
 
             console.log('TODO - TILE SELECTION');
             console.log({ zoneObjId, row, cell, zones: this.spritz.world.zoneList });

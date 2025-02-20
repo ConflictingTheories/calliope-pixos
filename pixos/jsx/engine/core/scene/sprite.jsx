@@ -79,12 +79,22 @@ export default class Sprite extends Loadable {
     if (instanceData.rotation) this.rotation = instanceData.rotation;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
+    // Step Handler
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
       let stepParent = this.onStep.bind(this);
       this.onStep = async () => {
         await instanceData.onStep(this, this);
         console.log('made it to here');
         await stepParent(this, this);
+      };
+    }
+    // select handler
+    if (instanceData.onSelect && typeof instanceData.onSelect == 'function') {
+      let selectParent = this.onSelect.bind(this);
+      this.onSelect = async () => {
+        await instanceData.onSelect(this, this);
+        console.log('made it to here');
+        await selectParent(this, this);
       };
     }
     // Texture Buffer

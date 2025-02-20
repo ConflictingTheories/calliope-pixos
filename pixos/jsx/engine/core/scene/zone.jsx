@@ -141,7 +141,7 @@ export default class Zone extends Loadable {
 
       return (_this, subject) => {
         let interpreter = new PixosLuaInterpreter(_this.engine);
-        interpreter.setScope({ _this, subject });
+        interpreter.setScope({ _this, zone: this, subject });
         interpreter.initLibrary();
         interpreter.run('print("hello world lua - zone trigger from zip")');
         return interpreter.run(luaScript);

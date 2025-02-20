@@ -13,6 +13,7 @@
 
 import { Vector } from '@Engine/utils/math/vector.jsx';
 import Avatar from '@Engine/core/scene/avatar.jsx';
+import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
 
 export default class DynamicAvatar extends Avatar {
   constructor(engine, json, zip) {
@@ -53,5 +54,37 @@ export default class DynamicAvatar extends Avatar {
     // Should the camera follow the avatar?
     this.bindCamera = this.json.bindCamera;
     this.enableSpeech = this.json.enableSpeech; // speech bubble
+  }
+
+    // todo -- add select handler dynamically (onSelect)
+  // Interaction
+  async onSelect(_this, sprite) {
+    if (!this.selectTrigger) {
+      return;
+    }
+
+    // pass-through interaction 
+    if(this.selectTrigger === 'interact'){
+      return await this.interact(this);
+    }
+
+    // lua scripting
+    try {
+      console.log({ trigger: this.selectTrigger });
+      let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) throw new Error('No Lua Script Found');
+
+      let luaScript = await file.async('string');
+      console.log({ msg: 'trigger lua statement', luaScript });
+
+      let interpreter = new PixosLuaInterpreter(this.engine);
+      interpreter.setScope({ _this: _this, zone: sprite.zone, subject: sprite });
+      interpreter.initLibrary();
+      interpreter.run('print("hello world lua")');
+
+      return await interpreter.run(luaScript);
+    } catch (e) {
+      console.log({ msg: 'no lua script found', e });
+    }
   }
 }

@@ -68,7 +68,7 @@ export async function loadMap(json, cells, zip) {
         // defer execution of lua until trigger is called
         let result = ((_this) => {
           let interpreter = new PixosLuaInterpreter(_this.engine);
-          interpreter.setScope({ _this });
+          interpreter.setScope({ _this, zone: this, subject: _this });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - zone")');
           return {
