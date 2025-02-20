@@ -8,6 +8,7 @@
       "trigger": "zone/room_clear_path"
     }
   ],
+  "selectTrigger": "tile/select_test",
   "lights": [
     {
       "id": "spot-light",

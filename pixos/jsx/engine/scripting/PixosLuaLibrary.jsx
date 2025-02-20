@@ -29,6 +29,9 @@ export default class PixosLuaLibrary {
       get_map: () => {
         return envScope.map || envScope.zone;
       },
+      get_zone: () => {
+        return envScope.map || envScope.zone;
+      },
       get_world: () => {
         return engine.spritz.world;
       },

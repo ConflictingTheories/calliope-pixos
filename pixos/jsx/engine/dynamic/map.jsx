@@ -129,6 +129,8 @@ export async function loadMap(json, cells, zip) {
     objects: $objects,
     // lights
     lights: json.lights,
+    // select Trigger
+    selectTrigger: json.selectTrigger,
   };
 }
 

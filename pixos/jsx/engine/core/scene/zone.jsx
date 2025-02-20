@@ -56,6 +56,7 @@ export default class Zone extends Loadable {
     this.playCutScene = this.playCutScene.bind(this, this);
     this.loadObject = this.loadObject.bind(this, this);
     this.checkInput = this.checkInput.bind(this);
+    this.onSelect = this.onSelect.bind(this);
   }
 
   /**
@@ -616,7 +617,7 @@ export default class Zone extends Loadable {
 
     // set picking id shader
     this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId(row, cell) });
-    this.engine.renderManager.shaderProgram.setMatrixUniforms({ 
+    this.engine.renderManager.shaderProgram.setMatrixUniforms({
       id: this.getPickingId(row, cell),
       isSelected: this.isCellSelected(row, cell),
       sampler: 1.0,
@@ -642,12 +643,7 @@ export default class Zone extends Loadable {
    * @returns
    */
   getPickingId(row, cell) {
-    const id = [
-      (((this.objId) >> 0) & 0xff) / 0xff,
-      ((row >> 0) & 0xff) / 0xff,
-      ((cell  >> 0) & 0xff) / 0xff,
-      255,
-    ];
+    const id = [((this.objId >> 0) & 0xff) / 0xff, ((row >> 0) & 0xff) / 0xff, ((cell >> 0) & 0xff) / 0xff, 255];
     return id;
   }
 
@@ -756,6 +752,56 @@ export default class Zone extends Loadable {
    */
   isInZone(x, y) {
     return x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3];
+  }
+
+  /**
+   *
+   * @param {number} row
+   * @param {number} cell
+   * @returns
+   */
+  async onSelect(row, cell) {
+    // allow for 'de-selection' - deselect if already selected
+    let found = false;
+    this.selectedTiles = this.selectedTiles.filter((tile) => {
+      if (tile[0] === row && tile[1] === cell) {
+        found = true;
+        return false;
+      }
+      return true;
+    });
+
+    if (!found) {
+      // if not selected add to selected cells
+      this.selectedTiles.push([row, cell]);
+
+      if (!this.selectTrigger) {
+        return;
+      }
+
+      if (this.selectTrigger === 'interact') {
+        // todo - look into this - not sure if this applies to the current context
+      }
+
+      // lua scripting
+      try {
+        console.log({ trigger: this.selectTrigger, _this: this });
+        let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+        if (!file) throw new Error('No Lua Script Found');
+
+        let luaScript = await file.async('string');
+        console.log({ msg: 'trigger lua statement', luaScript });
+
+        let interpreter = new PixosLuaInterpreter(this.engine);
+        interpreter.setScope({ _this: this, zone: this, subject: new interpreter.lua.Table([row, cell]) });
+        interpreter.initLibrary();
+        interpreter.run('print("hello world lua")');
+
+        return await interpreter.run(luaScript);
+      } catch (e) {
+        console.log({ msg: 'no lua script found', e });
+      }
+    }
   }
 
   /**

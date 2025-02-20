@@ -236,23 +236,7 @@ export default class GLEngine {
             // search zones and file selected tile
             this.spritz.world.zoneList.forEach((zone) => {
               if (zone.objId === zoneObjId) {
-                let found = false;
-
-                // allow for 'de-selection' - deselect if already selected
-                zone.selectedTiles = zone.selectedTiles.filter((tile) => {
-                  if (tile[0] === row && tile[1] === cell) {
-                    found = true;
-                    return false;
-                  }
-                  return true;
-                });
-
-                if (!found) {
-                  // if not selected add to selected cells
-                  zone.selectedTiles.push([row, cell]);
-                  // todo - implement onSelect() method
-                  // zone.onSelect(row,cell);
-                }
+                zone.onSelect(row, cell);
               }
             });
 

@@ -31,6 +31,7 @@ export default class ExampleDynamicSpritz extends Spritz {
         // read zip from uploaded file
         let file = engine.fileUpload.files[0];
         let zip = await JSZip.loadAsync(file);
+        Spritz._instance.zip = zip;
 
         // find manifest and read
         let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
