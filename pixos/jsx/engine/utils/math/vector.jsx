@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -79,6 +79,14 @@ export class Vector {
 
   mul(n) {
     return new Vector(this.x * n, this.y * n, this.z * n);
+  }
+
+  mul3(n) {
+    return new Vector(this.x * n.x, this.y * n.y, this.z * n.z);
+  }
+
+  cross(n) {
+    return new Vector(this.x * n.x - this.y * n.y, this.y * n.y + this.x * n.x, this.z * n.z);
   }
 
   length() {
@@ -160,6 +168,7 @@ export class Vector4 {
   negate() {
     return new Vector(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
   }
+  
 }
 
 // lineRectCollide( line, rect )
@@ -169,12 +178,7 @@ export class Vector4 {
 // rect = { x, y, size }
 
 export function lineRectCollide(line, rect) {
-  return (
-    rect.y > line.y - rect.size / 2 &&
-    rect.y < line.y + rect.size / 2 &&
-    rect.x > line.x1 - rect.size / 2 &&
-    rect.x < line.x2 + rect.size / 2
-  );
+  return rect.y > line.y - rect.size / 2 && rect.y < line.y + rect.size / 2 && rect.x > line.x1 - rect.size / 2 && rect.x < line.x2 + rect.size / 2;
 }
 
 // rectRectCollide( r1, r2 )
@@ -208,9 +212,9 @@ export function set(w, v) {
 }
 
 export function negate(vec, dest) {
-  if(!dest) dest = new Vector(-vec.x,-vec.y,-vec.z);
-  dest.x = -vec.x
-  dest.y = -vec.y
+  if (!dest) dest = new Vector(-vec.x, -vec.y, -vec.z);
+  dest.x = -vec.x;
+  dest.y = -vec.y;
   dest.z = -vec.z;
   return dest;
 }
@@ -226,3 +230,12 @@ export function lerp(vec, vec2, lerp, dest) {
 
   return dest;
 }
+
+  /**
+   * Degrees to Radians
+   * @param {number} degrees
+   * @returns
+   */
+  export function degToRad(degrees) {
+    return (degrees * Math.PI) / 180;
+  }

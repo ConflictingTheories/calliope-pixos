@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -43,7 +43,6 @@ const create = () => {
   return matrix;
 };
 
-
 const create3 = () => {
   let matrix = new Float32Array(9);
   matrix[0] = 1;
@@ -79,6 +78,32 @@ const perspective = (fovy, aspect, near, far) => {
   return matrix;
 };
 
+const frustum = (l, r, b, t, n, f) => {
+  let m = new Float32Array(16);
+
+  m[0] = (2 * n) / (r - l);
+  m[1] = 0;
+  m[2] = (r + l) / (r - l);
+  m[3] = 0;
+
+  m[4] = 0;
+  m[5] = (2 * n) / (t - b);
+  m[6] = (t + b) / (t - b);
+  m[7] = 0;
+
+  m[8] = 0;
+  m[9] = 0;
+  m[10] = -(f + n) / (f - n);
+  m[11] = (-2 * f * n) / (f - n);
+
+  m[12] = 0;
+  m[13] = 0;
+  m[14] = -1;
+  m[15] = 0;
+
+  return m;
+};
+
 const translate = (m1, m2, v) => {
   let matrix = m1;
   let [x, y, z] = v;
@@ -103,6 +128,10 @@ const translate = (m1, m2, v) => {
   matrix[14] = a02 * x + a12 * y + a22 * z + m2[14];
   matrix[15] = a03 * x + a13 * y + a23 * z + m2[15];
   return matrix;
+};
+
+const subtractVectors = (a, b) => {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 };
 
 const rotate = (m1, m2, rad, axis) => {
@@ -179,33 +208,33 @@ function set(mat, dest) {
   dest[14] = mat[14];
   dest[15] = mat[15];
   return dest;
-};
+}
 
 /**
-* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {mat4} a Mat4 to derive the normal matrix from
-*
-* @returns {mat3} out
-*/
+ * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
+ *
+ * @param {mat3} out mat3 receiving operation result
+ * @param {mat4} a Mat4 to derive the normal matrix from
+ *
+ * @returns {mat3} out
+ */
 function normalFromMat4(out, a) {
   var a00 = a[0],
-      a01 = a[1],
-      a02 = a[2],
-      a03 = a[3];
+    a01 = a[1],
+    a02 = a[2],
+    a03 = a[3];
   var a10 = a[4],
-      a11 = a[5],
-      a12 = a[6],
-      a13 = a[7];
+    a11 = a[5],
+    a12 = a[6],
+    a13 = a[7];
   var a20 = a[8],
-      a21 = a[9],
-      a22 = a[10],
-      a23 = a[11];
+    a21 = a[9],
+    a22 = a[10],
+    a23 = a[11];
   var a30 = a[12],
-      a31 = a[13],
-      a32 = a[14],
-      a33 = a[15];
+    a31 = a[13],
+    a32 = a[14],
+    a33 = a[15];
 
   var b00 = a00 * a11 - a01 * a10;
   var b01 = a00 * a12 - a02 * a10;
@@ -243,4 +272,9 @@ function normalFromMat4(out, a) {
   return out;
 }
 
-export { from, normalFromMat4, create, create3, perspective, translate, rotate, isPowerOf2, set };
+const normalize = (v) => {
+  let len = Math.hypot(...v);
+  return [v[0] / len, v[1] / len, v[2] / len];
+};
+
+export { from, normalize, subtractVectors, normalFromMat4, create, create3, perspective, frustum, translate, rotate, isPowerOf2, set };

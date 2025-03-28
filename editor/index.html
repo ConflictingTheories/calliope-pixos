@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" app-loading>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="preload" href="/assets/fonts/Exo-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icons/icon-512x512.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="white">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black">
+  <meta name="description" content="PixoSpritz Editor: Read, edit and write pixos Packages">
+  <link rel="canonical" href="https://conflictingTheories.github.io/calliope-pixos">
+  <title>PixoSpritz Editor</title>
+  <style>
+    @media (prefers-color-scheme: light) {
+      html[app-loading] body {
+        background-color: white;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html[app-loading] body {
+        background-color: black;
+      }
+    }
+
+    html[app-loading] body>* {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    PizoSpritz Editor: Read, edit and write pixospritz packages
+    <br>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <script type="module" src="./src/index.jsx"></script>
+</body>
+
+</html>

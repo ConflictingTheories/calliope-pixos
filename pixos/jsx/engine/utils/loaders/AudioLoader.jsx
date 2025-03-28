@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -19,6 +19,7 @@ export class AudioLoader {
     this.definitions = [];
     this.instances = {};
   }
+
   // Load Audio Track
   load(src, loop = false) {
     if (this.instances[src]) {
@@ -32,7 +33,43 @@ export class AudioLoader {
       Object.keys(loader.instances)
         .filter((instance) => src !== instance)
         .forEach(function (instance) {
-          loader.instances[instance].pauseAudio();
+          if (loader.instances[instance]) {
+            loader.instances[instance].pauseAudio();
+          }
+        });
+    }
+    // once loaded
+    instance.loaded = true;
+    return instance;
+  }
+
+  // Load Audio Track
+  async loadFromZip(zip, src, loop = false) {
+    if (this.instances[src]) {
+      return this.instances[src];
+    }
+    console.log({ msg: 'let the beat roll in!' });
+    let blob = await zip
+      .file(`audio/${src}`)
+      .async('arrayBuffer')
+      .then((audioData) => {
+        let buffer = new Uint8Array(audioData);
+        return new Blob([buffer.buffer]);
+      });
+    let url = URL.createObjectURL(blob);
+    console.log({ msg: 'loading audio track...', url });
+
+    let instance = new AudioTrack(url, loop);
+    this.instances[src] = instance;
+    // Stop other loops
+    let loader = this;
+    if (loop) {
+      Object.keys(loader.instances)
+        .filter((instance) => src !== instance)
+        .forEach(function (instance) {
+          if (loader.instances[instance]) {
+            loader.instances[instance].pauseAudio();
+          }
         });
     }
     // once loaded
@@ -64,7 +101,6 @@ export class AudioTrack {
       },
       pushTime: 2000,
       pushCallback: (err, bpm) => {
-        console.log('bpm', err, bpm);
         this.bpm = bpm;
       },
     });
@@ -75,7 +111,7 @@ export class AudioTrack {
     // loop if set
     if (loop) {
       this.audio.addEventListener(
-        "ended",
+        'ended',
         function () {
           this.currentTime = 0;
           this.play();

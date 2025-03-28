@@ -1,0 +1,82 @@
+{
+  "type": "sprite",
+  "src": "air-knight.gif",
+  "portraitSrc": "air_portrait.gif",
+  "sheetSize": [128, 256],
+  "tileSize": [24, 32],
+  "hotspotOffset": [0.5, 0.5, 0],
+  "drawOffset": {
+    "N": [-0.25, 1, 0.125],
+    "E": [-0.25, 1, 0.125],
+    "S": [-0.25, 1, 0.125],
+    "W": [-0.25, 1, 0.125],
+    "NW": [-0.25, 1, 0.125],
+    "NE": [-0.25, 1, 0.125],
+    "SW": [-0.25, 1, 0.125],
+    "SE": [-0.25, 1, 0.125]
+  },
+  "frames": {
+    "N": [
+      [0, 0],
+      [24, 0],
+      [48, 0],
+      [24, 0]
+    ],
+    "E": [
+      [0, 32],
+      [24, 32],
+      [48, 32],
+      [24, 32]
+    ],
+    "S": [
+      [0, 64],
+      [24, 64],
+      [48, 64],
+      [24, 64]
+    ],
+    "W": [
+      [0, 96],
+      [24, 96],
+      [48, 96],
+      [24, 96]
+    ]
+  },
+  "bindCamera": false,
+  "enableSpeech": true,
+  "state": "intro",
+  "states": [
+    {
+      "name": "intro",
+      "next": "loop",
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "Buying eh??",
+          "callback": ""
+        }
+      ]
+    },
+    {
+      "name": "loop",
+      "next": "loop2",
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "I heard about a strange legend once.",
+          "callback": ""
+        }
+      ]
+    },
+    {
+      "name": "loop2",
+      "next": "loop",
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "Sorry, I don't remember the story at the moment",
+          "callback": ""
+        }
+      ]
+    }
+  ]
+}

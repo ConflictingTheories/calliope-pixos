@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -21,8 +21,8 @@ export default {
     this.line = 0;
     this.options = options;
     this.completed = false;
+    this.onOpen = menu.start.onOpen;
     this.lastKey = new Date().getTime();
-    this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
     this.touches = [];
     this.menuDict = menu ?? {};
     this.activeMenus = activeMenus ?? [];
@@ -31,10 +31,10 @@ export default {
     this.isTouched = false;
     this.speechOutput = false;
     this.quittable = true;
+    this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
+    this.speechOutput = true;
     // load voices and then play
-    window.speechSynthesis.onvoiceschanged = () => {
-      this.speechOutput = true;
-    };
+    window.speechSynthesis.onvoiceschanged = () => {};
   },
   // Update & Scroll
   tick: function (time) {
@@ -58,12 +58,12 @@ export default {
         if (section.active) {
           colors['background'] = '#555';
         }
-        this.engine.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        this.engine.hud.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
         if (section.prompt) {
           if (this.speechOutput) {
             this.engine.speechSynthesis(section.prompt);
           }
-          this.textbox = this.engine.scrollText(section.prompt, this.scrolling, this.options);
+          this.textbox = this.engine.hud.scrollText(section.prompt, this.scrolling, this.options);
         }
       });
     // don't keep repeating speech

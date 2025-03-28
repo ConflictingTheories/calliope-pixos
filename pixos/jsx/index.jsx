@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,21 +11,22 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { Component } from "react";
-import { collect } from "react-recollect";
+import React, { Component } from 'react';
+import { collect } from 'react-recollect';
 // WebGL Component
-import WebGLView from "@Components/WebGLView.jsx";
-// Pixos Scene Provider
-import SceneProvider from "@Scenes/peacefulGarden/index.jsx";
+import WebGLView from '@Components/WebGLView.jsx';
+// Pixos Spritz Provider
+import SpritzProvider from '@Spritz/player.jsx';
 // Style Plugin
-import "../less/pixos.css";
+import '../css/pixos.css';
 
 class Pixos extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      scene: new SceneProvider(),
+      spritz: new SpritzProvider(),
       updated: Date.now(),
+      zipData: props.zipData,
     };
   }
 
@@ -41,10 +42,10 @@ class Pixos extends Component {
 
   // Render World as Passed in String or FlatLand (Default)
   render() {
-    const { updated, scene } = this.state;
+    const { updated, spritz, zipData } = this.state;
     return (
-      <div style={{ margin: 0, minHeight: "480px", maxHeight: "1080px" }}>
-        <WebGLView class="pixos" key={`pixos-${updated}`} width={"480px"} height={"640px"} SceneProvider={scene} />
+      <div style={{ margin: 0, minHeight: '480px', maxHeight: '1080px' }}>
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={'480px'} height={'640px'} SpritzProvider={spritz} zipData={zipData ?? ''} />
       </div>
     );
   }

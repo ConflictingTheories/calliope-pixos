@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -47,7 +47,6 @@ export default {
       this.sprite.zone.world.runAfterTick(
         function () {
           this.toZone.addSprite(this.sprite);
-          console.log("sprite '" + this.sprite.id + "' changed zone from '" + this.fromZone.id + "' to '" + this.toZone.id + "'");
         }.bind(this)
       );
     }

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -30,7 +30,7 @@ export default {
     if (!this.loaded) return;
     // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
+      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + (this.options.duration * 1000 ?? 10000); // 10 seconds default if autoclose
       if (time > this.endTime) {
         this.completed = true;
       }
@@ -60,6 +60,7 @@ export default {
           break;
         case 'Enter':
           if (typeof this.text === 'string' || this.text.length === 0) {
+            this.sprite.speak(false);
             this.completed = true;
           } else {
             this.completed = false;
@@ -73,6 +74,7 @@ export default {
       // gamepad
       if (this.engine.gamepad.keyPressed('a')) {
         if (typeof this.text === 'string' || this.text.length === 0) {
+          this.sprite.speak(false);
           this.completed = true;
         } else {
           this.completed = false;
@@ -81,11 +83,6 @@ export default {
           this.speechOutput = true;
           this.sprite.speak(this.displayText, false, this);
         }
-        return;
-      }
-      if (this.engine.gamepad.keyPressed('a')) {
-        this.sprite.speak(false);
-        this.completed = true; // toggle
         return;
       }
     }

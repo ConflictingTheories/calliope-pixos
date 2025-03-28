@@ -1,8 +1,155 @@
+import GLEngine from './index.jsx';
+
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
-// Scrolling Text Box UI (For Dialogue)
+export default class Hud {
+  /**
+   *
+   * @param {GLEngine} engine
+   * @returns
+   */
+  constructor(engine) {
+    if (!Hud._instance) {
+      this.engine = engine;
+      Hud._instance = this;
+    }
+    return Hud._instance;
+  }
+
+  init() {
+    // setup anything needed at the start (run once)
+    this.ctx = this.engine.ctx;
+  }
+
+  /**
+   * Draws a button
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {number} w
+   * @param {number} h
+   * @param {*} colours
+   */
+  drawButton(text, x, y, w, h, colours) {
+    const { ctx } = this;
+
+    let halfHeight = h / 2;
+
+    this.engine.ctx.save();
+
+    // draw the button
+    this.engine.ctx.fillStyle = colours.background;
+
+    this.engine.ctx.beginPath();
+    this.engine.ctx.rect(x, y, w, h);
+    this.engine.ctx.rect(x, y, w, h);
+    this.engine.ctx.fill();
+    this.engine.ctx.clip();
+
+    // light gradient
+    var grad = this.engine.ctx.createLinearGradient(x, y, x, y + halfHeight);
+    grad.addColorStop(0, 'rgb(221,181,155)');
+    grad.addColorStop(1, 'rgb(22,13,8)');
+    this.engine.ctx.fillStyle = grad;
+    this.engine.ctx.globalAlpha = 0.5;
+    this.engine.ctx.fillRect(x, y, w, h);
+
+    // draw the top half of the button
+    this.engine.ctx.fillStyle = colours.top;
+
+    // draw the top and bottom particles
+    for (var i = 0; i < h; i += halfHeight) {
+      this.engine.ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
+
+      for (var j = 0; j < 50; j++) {
+        // get random values for particle
+        var partX = x + Math.random() * w;
+        var partY = y + i + Math.random() * halfHeight;
+        var width = Math.random() * 10;
+        var height = Math.random() * 10;
+        var rotation = Math.random() * 360;
+        var alpha = Math.random();
+
+        this.engine.ctx.save();
+
+        // rotate the canvas by 'rotation'
+        this.engine.ctx.translate(partX, partY);
+        this.engine.ctx.rotate((rotation * Math.PI) / 180);
+        this.engine.ctx.translate(-partX, -partY);
+
+        // set alpha transparency to 'alpha'
+        this.engine.ctx.globalAlpha = alpha;
+
+        this.engine.ctx.fillRect(partX, partY, width, height);
+
+        this.engine.ctx.restore();
+      }
+    }
+
+    this.engine.ctx.font = '20px invasion2000';
+    this.engine.ctx.textAlign = 'center';
+    this.engine.ctx.textBaseline = 'middle';
+    this.engine.ctx.fillStyle = 'white';
+    this.engine.ctx.fillText(text, x + w / 2, y + h / 2, w);
+
+    this.engine.ctx.restore();
+  }
+
+  /**
+   * clear HUD overlay
+   */
+  clearHud() {
+    this.engine.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
+  }
+
+  /**
+   * Write Text to HUD
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {string} src
+   */
+  writeText(text, x, y, src = null) {
+    this.engine.ctx.save();
+    this.engine.ctx.font = '20px invasion2000';
+    this.engine.ctx.textAlign = 'center';
+    this.engine.ctx.textBaseline = 'middle';
+    this.engine.ctx.fillStyle = 'white';
+    if (src) {
+      // draw portrait if set
+      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2 + 76, y ?? this.engine.ctx.canvas.clientHeight / 2);
+      this.engine.ctx.drawImage(src, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2, 76, 76);
+    } else {
+      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2);
+    }
+    this.engine.ctx.restore();
+  }
+
+  /**
+   * Scrolling Textbox
+   * @param {string} text
+   * @param {booleanq} scrolling
+   * @param {*} options
+   * @returns
+   */
+  scrollText(text, scrolling = false, options = {}) {
+    let txt = new textScrollBox(this.engine.ctx);
+    txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
+    txt.setOptions(options);
+    if (scrolling) {
+      txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
+    }
+    txt.render();
+    return txt;
+  }
+}
+
 export class textScrollBox {
-  // courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+  /**
+   * Scrolling Text Box UI (For Dialogue)
+   * --> courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+   * @param {*} ctx
+   */
   constructor(ctx) {
     this.ctx = ctx;
     this.dirty = true; // indicates that variouse setting need update
@@ -23,8 +170,19 @@ export class textScrollBox {
     };
     this.fontStyle = 'white';
     this.lines = [];
+    this.x = 0;
+    this.y = 0;
   }
-  // initialize widget
+
+  /**
+   * initialize textbox
+   * @param {string} text
+   * @param {number} x
+   * @param {number} y
+   * @param {number} width
+   * @param {number} height
+   * @param {*} options
+   */
   init(text, x, y, width, height, options = {}) {
     this.text = text;
     this.x = x;
@@ -35,7 +193,11 @@ export class textScrollBox {
     this.setOptions(options);
     this.cleanit();
   }
-  // Clean & format text
+
+  /**
+   * Clean & format text
+   * @param {boolean} dontFitText
+   */
   cleanit(dontFitText) {
     if (this.dirty) {
       this.setFont();
@@ -46,7 +208,11 @@ export class textScrollBox {
       }
     }
   }
-  // Apply options
+
+  /**
+   * Apply options
+   * @param {*} options
+   */
   setOptions(options) {
     Object.keys(this).forEach((key) => {
       if (options[key] !== undefined) {
@@ -55,12 +221,18 @@ export class textScrollBox {
       }
     });
   }
-  // Apply font
+
+  /**
+   * Apply font
+   */
   setFont() {
     this.fontStr = this.fontSize + 'px ' + this.font;
     this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.05);
   }
-  // Get Text Position
+
+  /**
+   * Get Text Position
+   */
   getTextPos() {
     if (this.align === 'left') {
       this.textPos = 2;
@@ -70,7 +242,10 @@ export class textScrollBox {
       this.textPos = Math.floor((this.width - -this.scrollBox.width) / 2);
     }
   }
-  // Fit to Text box
+
+  /**
+   * Fit to Text box
+   */
   fitText() {
     let { ctx } = this;
     this.cleanit(true); // MUST PASS TRUE or will recurse to call stack overflow
@@ -104,7 +279,11 @@ export class textScrollBox {
     }
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;
   }
-  // Draw Textbox border
+
+  /**
+   * Draw Textbox border
+   * @param {boolean} portrait
+   */
   drawBorder(portrait = false) {
     let { ctx } = this;
     let bw = this.border.lineWidth / 2;
@@ -117,7 +296,10 @@ export class textScrollBox {
       ctx.strokeRect(this.x - bw, this.y - bw, this.width + 2 * bw, this.height + 2 * bw);
     }
   }
-  // Draw Scrollbar on the side
+
+  /**
+   * Draw Scrollbar on the side
+   */
   drawScrollBox() {
     let { ctx } = this;
     let scale = this.height / (this.lines.length * this.textHeight);
@@ -130,12 +312,19 @@ export class textScrollBox {
     }
     ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y - this.scrollY * scale, this.scrollBox.width, barsize);
   }
-  // Draw Scrollbar on the side
+
+  /**
+   * Draw Scrollbar on the side
+   */
   drawPortrait() {
     let { ctx } = this;
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
   }
-  // Scroll to position
+
+  /**
+   * Scroll to position
+   * @param {number} pos
+   */
   scroll(pos) {
     this.cleanit();
     this.scrollY = -pos;
@@ -145,7 +334,11 @@ export class textScrollBox {
       this.scrollY = -this.maxScroll;
     }
   }
-  // Scroll to position
+
+  /**
+   * Scroll to position
+   * @param {number} x
+   */
   scrollLines(x) {
     this.cleanit();
     this.scrollY = -this.textHeight * x;
@@ -155,7 +348,10 @@ export class textScrollBox {
       this.scrollY = -this.maxScroll;
     }
   }
-  // Draw
+
+  /**
+   * Draw
+   */
   render() {
     let { ctx } = this;
     this.cleanit();

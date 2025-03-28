@@ -1,0 +1,70 @@
+.navigation-bar,
+.history-buttons,
+.breadcrumb {
+  display: flex;
+}
+
+.navigation-bar {
+  column-gap: var(--gap-inline-size);
+}
+
+.history-buttons,
+.breadcrumb li {
+  column-gap: var(--small-gap-inline-size);
+}
+
+.history-buttons button {
+  font-family: monospace;
+  align-self: start;
+  padding-block: var(--small-button-padding-block-size);
+  padding-inline: var(--small-button-padding-inline-size);
+}
+
+.history-buttons button:not([disabled]),
+.breadcrumb .breadcrumb-item-active {
+  cursor: pointer;
+}
+
+.breadcrumb,
+.breadcrumb ol,
+.breadcrumb li,
+.breadcrumb .breadcrumb-item {
+  overflow-x: hidden;
+  overflow-inline: hidden;
+}
+
+.navigation-bar,
+.breadcrumb ol {
+  flex-wrap: wrap;
+  column-gap: calc(var(--small-gap-inline-size) - var(--outline-width));
+  row-gap: var(--small-gap-block-size);
+}
+
+.breadcrumb li::after {
+  content: var(--folder-separator);
+}
+
+.breadcrumb .breadcrumb-item {
+  text-decoration: underline dotted transparent var(--large-border-width);
+  text-underline-offset: 0.25em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
+  margin: var(--outline-width);
+}
+
+.breadcrumb .breadcrumb-item:focus-visible {
+  text-decoration: none;
+}
+
+.breadcrumb li:last-of-type .breadcrumb-item {
+  font-weight: var(--font-weight-bolder);
+}
+
+.breadcrumb .breadcrumb-item-active {
+  text-decoration-color: var(--accent-color);
+}
+
+.breadcrumb .breadcrumb-item-active:hover {
+  filter: brightness(var(--brightness-hover));
+}

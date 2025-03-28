@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,12 +11,10 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Resources from "@Engine/utils/resources.jsx";
-import Sprite from "@Engine/core/sprite.jsx";
-import ModelObject from "@Engine/core/object.jsx";
-import Tileset from "@Engine/core/tileset.jsx";
-import Action from "@Engine/core/action.jsx";
-import Event from "@Engine/core/event.jsx";
+import DynamicAvatar from '@Engine/dynamic/avatar.jsx';
+import DynamicSprite from '@Engine/dynamic/sprite.jsx';
+import DynamicAnimatedSprite from '@Engine/dynamic/animatedSprite.jsx';
+import DynamicAnimatedTile from '@Engine/dynamic/animatedTile.jsx';
 
 // Helps Loads New Sprite Instance
 export class SpriteLoader {
@@ -25,29 +23,51 @@ export class SpriteLoader {
     this.definitions = [];
     this.instances = {};
   }
+
   // Load Sprite
-  async load(type, sceneName) {
-    let afterLoad = arguments[2];
-    let runConfigure = arguments[3];
+  async loadFromZip(zip, type, spritzName) {
+    console.log('loading sprite from zip: ' + type + ' for ' + spritzName);
+    let afterLoad = arguments[3];
+    let runConfigure = arguments[4];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
     // New Instance
-    console.log('loading sprite - ', type, sceneName, "../../" + sceneName + "/sprites/" + type + ".jsx")
-
-    let Type = require("@Scenes/" + sceneName + "/sprites/" + type + ".jsx")["default"];
-
-    let instance = new Type(this.engine);
+    let json = '';
+    try {
+      json = JSON.parse(await zip.file(`sprites/${type}.json`).async('string'));
+    } catch (e) {
+      console.error(e);
+    }
+    let instance = {};
+    switch (json.type) {
+      case 'animated-sprite':
+        instance = new DynamicAnimatedSprite(this.engine, json, zip);
+        await instance.loadJson();
+        break;
+      case 'animated-tile':
+        instance = new DynamicAnimatedTile(this.engine, json, zip);
+        await instance.loadJson();
+        break;
+      case 'avatar':
+        instance = new DynamicAvatar(this.engine, json, zip);
+        await instance.loadJson();
+        break;
+      default:
+        instance = new DynamicSprite(this.engine, json, zip);
+        await instance.loadJson();
+        break;
+    }
     instance.templateLoaded = true;
     // Update Existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
+    this.instances[type].forEach(async function (instance) {
+      if (instance.afterLoad) await instance.afterLoad(instance.instance);
     });
     // Configure if needed
-    if (runConfigure) runConfigure(instance);
+    if (runConfigure) await runConfigure(instance);
     // once loaded
     if (afterLoad) {
-      if (instance.templateLoaded) afterLoad(instance);
+      if (instance.templateLoaded) await afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
 

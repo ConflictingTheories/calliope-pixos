@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -16,14 +16,14 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { ActionLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default {
-  init: function (from, to, moveLength, zone) {
+  init: async function (from, to, moveLength, zone) {
     this.zone = zone;
     this.from = new Vector(...from);
     this.to = new Vector(...to);
     this.lastKey = new Date().getTime();
     this.completed = false;
     this.direction = 1;
-    this.audio = this.zone.engine.audioLoader.load('/pixos/audio/sewer-beat.mp3');
+    this.audio = await this.zone.engine.resourceManager.audioLoader.loadFromZip(this.sprite.zip, this.sprite.patrolSound ?? 'sewer-beat.mp3', true);
     // Determine Path to Walk
     [this.hasMoves, this.moveList] = this.sprite.zone.world.pathFind(from, to);
     if (!this.hasMoves) {
@@ -31,8 +31,9 @@ export default {
     }
     this.moveIndex = 1; // holds index position
     this.moveLength = moveLength; // length of time per move
+
     if (this.zone.audio) this.zone.audio.pauseAudio();
-    this.audio.playAudio();
+    if (this.audio) this.audio.playAudio();
   },
   tick: function (time) {
     if (!this.loaded) return;
@@ -67,10 +68,15 @@ export default {
           // Load Next move
           this.currentAction = new ActionLoader(this.sprite.engine, 'move', [last, move, this.moveLength, this.zone], this.sprite);
         }
-        // set facing
+
+        if (this.sprite.facing !== facing) {
+          this.currentAction = this.sprite.faceDir(facing);
+          // return this.completed;
+        }
+
         if (this.currentAction) {
           this.currentAction.facing = facing;
-          this.sprite.addAction(this.currentAction);
+          this.sprite.addAction(Promise.resolve(this.currentAction)).then(() => {});
         }
       }
       // stop when done
@@ -78,7 +84,7 @@ export default {
         this.direction *= -1;
         this.completed = true;
         if (this.zone.audio) this.zone.audio.playAudio();
-        this.audio.pauseAudio();
+        if (this.audio) this.audio.pauseAudio();
       }
       this.moveIndex += this.direction;
       this.startTime = time;
@@ -89,9 +95,10 @@ export default {
   checkInput: function (time) {
     if (time > this.lastKey + this.moveLength) {
       switch (this.sprite.engine.keyboard.lastPressed('q')) {
-        // close dialogue on q key press
+        // quit on q key press
         case 'q':
-          this.audio.pauseAudio();
+          if (this.zone.audio) this.zone.audio.playAudio();
+          if (this.audio) this.audio.pauseAudio();
           this.completed = true; // toggle
         default:
           this.lastKey = new Date().getTime();

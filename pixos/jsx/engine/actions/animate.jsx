@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -13,6 +13,7 @@
 // Animate a sprite without moving them
 export default {
   init: function (length, untilFrame, finish) {
+    console.log({msg: 'initializing animation', length, untilFrame, finish});
     this.length = length;
     this.untilFrame = untilFrame;
     this.finish = finish;

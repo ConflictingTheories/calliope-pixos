@@ -1,0 +1,30 @@
+{
+  "extends": ["dungeon-top", "dungeon-bottom"],
+  "tileset": "sewer",
+  "bounds": [0, 0, 17, 19],
+  "scripts":[
+    {
+      "id": "load-spritz",
+      "trigger": "zone/room_clear_path"
+    }
+  ],
+  "selectTrigger": "tile/select_test",
+  "lights": [
+    {
+      "id": "spot-light",
+      "pos": [2, 17, 0],
+      "color": [1, 0, 0],
+      "direction": [0.4, 0.8, 1],
+      "attenuation": [0.9,0.9,0.9],
+      "enabled": true
+    },
+    {
+      "id": "spot-light-2",
+      "pos": [17, 2, 1],
+      "color": [0, 0, 1],
+      "direction": [0.1, 0.6, 0.8],
+      "attenuation": [0.9,0.9,0.9],
+      "enabled": true
+    }
+  ]
+}

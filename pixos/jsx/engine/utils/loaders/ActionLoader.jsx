@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Action from "@Engine/core/action.jsx";
+import Action from '@Engine/core/queue/action.jsx';
 
 // Helps Loads New Action Instance
 export class ActionLoader {
@@ -26,11 +26,11 @@ export class ActionLoader {
     this.assets = {};
 
     let time = new Date().getTime();
-    let id = sprite.id + "-" + type + "-" + time;
+    let id = sprite.id + '-' + type + '-' + time;
     return this.load(
       type,
-      function (action) {
-        action.onLoad(args);
+      async function (action) {
+        await action.onLoad(args);
       },
       function (action) {
         action.configure(type, sprite, id, time, args);
@@ -38,20 +38,28 @@ export class ActionLoader {
     );
   }
   // Load Internal Action
-  load(type) {
+  async load(type) {
+    console.log('Loading Action: ' + type);
+
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
+    console.log({afterLoad, runConfigure})
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
-    Object.assign(instance, require("@Engine/actions/" + type + ".jsx")["default"]);
+    Object.assign(instance, require('@Engine/actions/' + type + '.jsx')['default']);
     instance.templateLoaded = true;
+    console.log('Notifying in Action: ' + type);
+
     // Notify existing
-    this.instances[type].forEach(function (instance) {
-      if (instance.afterLoad) instance.afterLoad(instance.instance);
-    });
+    await Promise.all(
+      this.instances[type].map(async function (instance) {
+        console.log({instance});
+        if (instance.afterLoad) await instance.afterLoad(instance.instance);
+      })
+    );
     // construct
     if (runConfigure) runConfigure(instance);
     // load
@@ -59,6 +67,8 @@ export class ActionLoader {
       if (instance.templateLoaded) afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
+
+    console.log('Ending load Action: ' + type);
 
     return instance;
   }

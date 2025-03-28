@@ -1,6 +1,6 @@
 # Calliope Pixos Plugin
 
-This plugin is for [Calliope](https://calliope.site) and is designed to provide Pixos player functionality.
+This plugin is for [Calliope](https://calliope.site) and is designed to provide Pixospritz player functionality.
 
 ### Installation
 
@@ -25,7 +25,7 @@ Inside of your `_calliope/app/config/plugins/index.jsx` file, add the following:
 
 ### Assets
 
-All paths are relative to the a /pixos folder from the public directory when loading asssets. Place any of your assets used such as tilesets, sprites, and fonts and place them within the pixos directory for proper fetching.
+All paths are relative to the a core package folder (see /example/spritz) from the public directory when loading asssets. Place any of your assets used such as tilesets, sprites, and fonts and place them within the package folder directories for proper fetching. Please see example for how to load and extend assets.
 
 ### LICENSE
 

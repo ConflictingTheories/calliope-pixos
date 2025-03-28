@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -48,22 +48,22 @@ export class ControllerButtons {
       var y = layout.y - button.y;
       if (button.r) {
         var r = button.r;
-        buttons_layout[n]["hit"] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
+        buttons_layout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
       } else {
         button.x = width / 3 - button.w;
         if (this.start && this.select) {
           switch (button.name) {
-            case "select":
+            case 'select':
               button.x = width / 2 - button.w - button.h * 2;
               break;
-            case "start":
+            case 'start':
               button.x = width / 2;
               break;
           }
         }
         var x = button.x;
         var y = layout.y - button.y;
-        buttons_layout[n]["hit"] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
+        buttons_layout[n]['hit'] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
       }
       this.gamepad.map[button.name] = 0;
     }
@@ -101,10 +101,10 @@ export class ControllerButtons {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "rgba(255,255,255,1)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
         ctx.fillText(button.name, x, y);
       } else {
         var w = button.w;
@@ -122,19 +122,19 @@ export class ControllerButtons {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
         ctx.fillText(button.name, x + w / 2, y + h * 2);
       }
 
       if (button.key) {
-        ctx.fillStyle = "rgba(0,0,0,0.25)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "minecraftia 12px";
-        if (button.name == "start" || button.name == "select") {
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'minecraftia 12px';
+        if (button.name == 'start' || button.name == 'select') {
           x += w / 2;
         }
         ctx.fillText(button.key, x, y - r * 1.5);
@@ -145,7 +145,7 @@ export class ControllerButtons {
   state(id, n, type) {
     let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
-    if (touches[id].id != "stick") {
+    if (touches[id].id != 'stick') {
       var touch = {
         x: touches[id].x,
         y: touches[id].y,
@@ -163,15 +163,15 @@ export class ControllerButtons {
           dist = 0;
         }
       }
-      if (dist < this.radius && touches[id].id != "stick") {
+      if (dist < this.radius && touches[id].id != 'stick') {
         if (!type) {
           touches[id].id = name;
         } else {
           switch (type) {
-            case "mousedown":
+            case 'mousedown':
               touches[id].id = name;
               break;
-            case "mouseup":
+            case 'mouseup':
               delete touches[id].id;
               this.reset(n);
               break;
@@ -186,7 +186,7 @@ export class ControllerButtons {
           this.gamepad.map[name] = 0;
           delete touches[id].id;
         }
-        if (typeof checkInput === "function") {
+        if (typeof checkInput === 'function') {
           this.gamepad.checkInput();
         }
       }

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -15,7 +15,7 @@ import { Vector } from '@Engine/utils/math/vector.jsx';
 import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
-  init: function (from, facing, world) {
+  init: async function (from, facing, world) {
     this.world = world;
     this.from = new Vector(...from);
     this.facing = facing;
@@ -35,24 +35,24 @@ export default {
     this.interact();
   },
   // Trigger interactions in sprites
-  interact: function () {
+  interact: async function () {
     if (this.spriteList.length === 0 && this.objectList.length === 0) this.completed = true;
     // objects
-    this.objectList.forEach((object) => {
+    await Promise.all(this.objectList.map(async (object) => {
       let faceChange = object.faceDir(Direction.reverse(this.facing));
       if (faceChange) {
         object.addAction(faceChange); // face towards avatar
       }
-      return object.interact ? this.zone.objectDict[object.id].interact(this.sprite, this.finish) : null;
-    });
+      return object.interact ? await this.zone.objectDict[object.id].interact(this.sprite, this.finish) : null;
+    }));
     // sprite
-    this.spriteList.forEach((sprite) => {
+    await Promise.all(this.spriteList.map(async (sprite) => {
       let faceChange = sprite.faceDir(Direction.reverse(this.facing));
       if (faceChange) {
         sprite.addAction(faceChange); // face towards avatar
       }
-      return sprite.interact ? this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish) : null;
-    });
+      return sprite.interact ? await this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish) : null;
+    }));
   },
   // Callback to clear interaction
   finish: function (result) {

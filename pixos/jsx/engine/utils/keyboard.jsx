@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -10,17 +10,28 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+import GLEngine from '@Engine/core/index.jsx';
 
 export default class Keyboard {
-  constructor() {
+  /**
+   *
+   * @param {GLEngine} engine
+   * @returns
+   */
+  constructor(engine) {
     // Instance
     if (!Keyboard._instance) {
       this.activeKeys = [];
       this.activeCodes = [];
       this.shift = false;
+      this.engine = engine;
       Keyboard._instance = this;
     }
     return Keyboard._instance;
+  }
+
+  init() {
+    // setup initial event listeners
   }
 
   onKeyDown(e) {
@@ -55,20 +66,20 @@ export default class Keyboard {
   }
 
   // Return the last pressed key in keys
-  lastPressedCode(ignore = "") {
+  lastPressedCode(ignore = '') {
     let last = Keyboard._instance.activeCodes.pop();
     let lower = ignore.toLowerCase();
     for (let i = 0; i < lower.length; i++) {
-        let index = Keyboard._instance.activeKeys.indexOf(last);
-        if(index < 0){
-          last = Keyboard._instance.activeCodes.pop();
-        }
+      let index = Keyboard._instance.activeKeys.indexOf(last);
+      if (index < 0) {
+        last = Keyboard._instance.activeCodes.pop();
+      }
     }
-    return last ;
+    return last;
   }
 
   // Return the last pressed key in keys
   lastPressedKey() {
-    return Keyboard._instance.activeKeys[Keyboard._instance.activeKeys.length-1];
+    return Keyboard._instance.activeKeys[Keyboard._instance.activeKeys.length - 1];
   }
 }

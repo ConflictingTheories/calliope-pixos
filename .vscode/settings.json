@@ -1,9 +1,15 @@
 {
-    "files.exclude": {
-        ".contributions": true,
-        ".vscode": true,
-        "example/node_modules": true,
-        "node_modules": true
-    },
-    "workspace.isHidden": true
+  "files.exclude": {
+    ".contributions": false,
+    ".vscode": false,
+    "example/node_modules": false,
+    "node_modules": false,
+    "example/build": false,
+    "build": false,
+    "editor/node_modules": false,
+    "editor/app/node_modules": false,
+    "editor/app/editor/node_modules": false,
+    "extension/node_modules": false
+  },
+  "workspace.isHidden": true
 }

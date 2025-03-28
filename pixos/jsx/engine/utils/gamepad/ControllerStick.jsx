@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2022 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -25,10 +25,10 @@ export class ControllerStick {
     this.y = 0;
     this.dx = 0;
     this.dy = 0;
-    this.gamepad.map["x-dir"] = 0;
-    this.gamepad.map["y-dir"] = 0;
-    this.gamepad.map["x-axis"] = 0;
-    this.gamepad.map["y-axis"] = 0;
+    this.gamepad.map['x-dir'] = 0;
+    this.gamepad.map['y-dir'] = 0;
+    this.gamepad.map['x-axis'] = 0;
+    this.gamepad.map['y-axis'] = 0;
     this.colours = colours;
     this.init = this.init.bind(this);
     this.draw = this.draw.bind(this);
@@ -40,10 +40,10 @@ export class ControllerStick {
     this.y = layout.y + (3 * this.radius) / 8;
     this.dx = this.x;
     this.dy = this.y;
-    this.gamepad.map["x-dir"] = 0;
-    this.gamepad.map["y-dir"] = 0;
-    this.gamepad.map["x-axis"] = 0;
-    this.gamepad.map["y-axis"] = 0;
+    this.gamepad.map['x-dir'] = 0;
+    this.gamepad.map['y-dir'] = 0;
+    this.gamepad.map['x-axis'] = 0;
+    this.gamepad.map['y-axis'] = 0;
   }
   // draw joystick
   draw() {
@@ -86,11 +86,11 @@ export class ControllerStick {
     // Start
     if (dist < this.radius * 1.2) {
       if (!type) {
-        touches[id].id = "stick";
+        touches[id].id = 'stick';
       } else {
         switch (type) {
-          case "mousedown":
-            touches[id].id = "stick";
+          case 'mousedown':
+            touches[id].id = 'stick';
             break;
         }
       }
@@ -98,11 +98,11 @@ export class ControllerStick {
     // Stop
     if (dist < this.radius * 2.5) {
       if (!type) {
-        touches[id].id = "stick";
+        touches[id].id = 'stick';
       } else {
-        if (touches[id].id == "stick")
+        if (touches[id].id == 'stick')
           switch (type) {
-            case "mouseup":
+            case 'mouseup':
               delete touches[id].id;
               this.reset();
               break;
@@ -110,23 +110,23 @@ export class ControllerStick {
       }
     }
     // Move
-    if (touches[id].id == "stick") {
+    if (touches[id].id == 'stick') {
       if (Math.abs(parseInt(dx)) < this.radius / 2) {
         this.dx = this.x + dx;
       }
       if (Math.abs(parseInt(dy)) < this.radius / 2) {
         this.dy = this.y + dy;
       }
-      map["x-axis"] = (this.dx - this.x) / (this.radius / 2);
-      map["y-axis"] = (this.dy - this.y) / (this.radius / 2);
-      map["x-dir"] = Math.round(map["x-axis"]);
-      map["y-dir"] = Math.round(map["y-axis"]);
+      map['x-axis'] = (this.dx - this.x) / (this.radius / 2);
+      map['y-axis'] = (this.dy - this.y) / (this.radius / 2);
+      map['x-dir'] = Math.round(map['x-axis']);
+      map['y-dir'] = Math.round(map['y-axis']);
 
       if (dist > this.radius * 2.5) {
         this.reset();
         delete touches[id].id;
       }
-      if (typeof checkInput === "function") {
+      if (typeof checkInput === 'function') {
         this.gamepad.checkInput();
       }
     }
@@ -136,9 +136,9 @@ export class ControllerStick {
     let { map } = this.gamepad;
     this.dx = this.x;
     this.dy = this.y;
-    map["x-dir"] = 0;
-    map["y-dir"] = 0;
-    map["x-axis"] = 0;
-    map["y-axis"] = 0;
+    map['x-dir'] = 0;
+    map['y-dir'] = 0;
+    map['x-axis'] = 0;
+    map['y-axis'] = 0;
   }
 }
