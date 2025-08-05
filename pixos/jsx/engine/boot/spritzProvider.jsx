@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -12,12 +12,12 @@
 \*                                                 */
 
 // Shaders
-import Spritz from '@Engine/core/scene/spritz.jsx';
+import Spritz from '@Engine/core/spritz/index.jsx';
 import World from '@Engine/core/scene/world.jsx';
 import JSZip from 'jszip';
 
 // Spritz Object
-export default class ExampleDynamicSpritz extends Spritz {
+export default class SpritzProvider extends Spritz {
   // Init Spritz
   init = async (engine) => {
     // game Engine & Timing
@@ -65,7 +65,7 @@ export default class ExampleDynamicSpritz extends Spritz {
       }
     }
 
-    // show start menu
+    // show start menu to prompt for Zip if none by default
     world.startMenu({
       start: {
         pausable: false,

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -12,7 +12,7 @@
 \*                                                 */
 
 // Shaders
-import DynamicSpritz from '@Engine/dynamic/spritz.jsx';
+import SpritzProvider from '@Engine/boot/spritzProvider.jsx';
 
 // Spritz Object
-export default class ExampleDynamicSpritz extends DynamicSpritz {}
+export default class ExampleDynamicSpritz extends SpritzProvider {}
