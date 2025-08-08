@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -22,10 +22,9 @@ export default {
     const engine = this.sprite.zone?.world?.engine;
     if (engine?.renderManager) {
       // fade out
-      console.log('fading out.....');
+      console.log('fading out...')
       await engine.renderManager.startTransition({ effect: 'fade', direction: 'out', duration: 500 });
     }
-    console.log('changing.....');
 
     this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId);
     this.toZone = await this.sprite.zone.world.loadZone(toZoneId);
@@ -34,9 +33,10 @@ export default {
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
     this.length = length;
 
+    console.log({renderManager: engine?.renderManager, fromZoneId, toZoneId, from, to, length});
     if (engine?.renderManager) {
+      console.log('fading in...')
       // fade in once the new zones are ready
-      console.log('fading in.....');
       await engine.renderManager.startTransition({ effect: 'fade', direction: 'in', duration: 500 });
     }
   },

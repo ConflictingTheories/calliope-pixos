@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import createTransition from 'gl-transition';
+// Removed unused gl-transition import. Our custom transition effects are implemented below.
 
 // Absolute imports
 import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.jsx';
@@ -64,6 +64,13 @@ export default class RenderManager {
       this.transitionDirection = 'out';
       this.transitionStartTime = 0;
       this.transitionCallback = null;
+
+      // GPU-based transition programs. Each effect (fade, cross, swirl) will
+      // compile its own simple shader program the first time it is used. These
+      // programs draw a full-screen quad with a WebGL fragment shader that
+      // computes the overlay color based on progress and direction. Entries
+      // are lazily created in `initTransitionProgram()` and cached here.
+      this.transitionGL = {};
 
       // Camera
       this.camera = CameraManager.getInstance().createCamera(this);
@@ -596,8 +603,10 @@ export default class RenderManager {
     if (progress >= 1.0) {
       progress = 1.0;
     }
-    // Draw the overlay based on current progress.
-    this.drawTransitionEffect(progress);
+    // Draw the overlay using a GPU full-screen quad. Each effect has its own
+    // compiled shader. We lazily compile the program on first use via
+    // `initTransitionProgram()` and then draw a quad using the effect.
+    this.renderTransition(progress);
     if (progress >= 1.0) {
       // finalize
       this.isTransitioning = false;
@@ -605,6 +614,172 @@ export default class RenderManager {
       this.transitionCallback = null;
       cb && cb();
     }
+  }
+
+  /**
+   * Compile and cache a WebGL shader program for the requested transition
+   * effect. The program draws a full-screen quad with a fragment shader
+   * specific to the effect (fade, cross or swirl). This function is called
+   * automatically by `renderTransition()` the first time an effect is used.
+   *
+   * @param {string} effect Name of the transition effect.
+   */
+  initTransitionProgram(effect) {
+    const { gl } = this.engine;
+    // If already initialized, do nothing.
+    if (this.transitionGL[effect]) return;
+    // Vertex shader for a full-screen quad. It outputs clip-space
+    // coordinates and computes UV coordinates from the position.
+    const vsSource = `
+      attribute vec2 aPosition;
+      varying vec2 vUV;
+      void main() {
+        vUV = (aPosition + 1.0) * 0.5;
+        gl_Position = vec4(aPosition, 0.0, 1.0);
+      }
+    `;
+    // Fragment shaders for each effect. Each shader reads a progress
+    // uniform (0-1) and a direction uniform (0 for "out", 1 for "in").
+    let fsSource;
+    if (effect === 'cross') {
+      fsSource = `
+        precision mediump float;
+        varying vec2 vUV;
+        uniform float uProgress;
+        uniform float uDirection;
+        void main() {
+          // Determine whether this pixel is within the black region.
+          float mask;
+          if (uDirection > 0.5) {
+            // "in" transition: black shrinks from right to left.
+            mask = step(1.0 - uProgress, vUV.x);
+          } else {
+            // "out" transition: black grows from left to right.
+            mask = step(vUV.x, uProgress);
+          }
+          gl_FragColor = vec4(0.0, 0.0, 0.0, mask);
+        }
+      `;
+    } else if (effect === 'swirl') {
+      fsSource = `
+        precision mediump float;
+        varying vec2 vUV;
+        uniform float uProgress;
+        uniform float uDirection;
+        void main() {
+          // Compute distance from the center. This implements a radial mask
+          // where the black disc grows or shrinks. While not a true swirl,
+          // it creates a circular wipe which is more visually interesting
+          // than a simple fade.
+          vec2 center = vec2(0.5, 0.5);
+          float dist = length(vUV - center);
+          float mask;
+          if (uDirection > 0.5) {
+            // "in": shrink the black disc
+            mask = step(uProgress, dist);
+          } else {
+            // "out": grow the black disc
+            mask = step(dist, uProgress);
+          }
+          gl_FragColor = vec4(0.0, 0.0, 0.0, mask);
+        }
+      `;
+    } else {
+      // Default: fade. The alpha increases or decreases uniformly across
+      // the entire screen.
+      fsSource = `
+        precision mediump float;
+        varying vec2 vUV;
+        uniform float uProgress;
+        uniform float uDirection;
+        void main() {
+          float alpha = uDirection > 0.5 ? (1.0 - uProgress) : uProgress;
+          gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+        }
+      `;
+    }
+    // Compile and link the program.
+    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.bindAttribLocation(program, 0, 'aPosition');
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error('Could not link transition shader program');
+    }
+    // Create a buffer for the quad vertices (-1 to 1). We'll use a
+    // triangle strip with four vertices.
+    const quadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    // Four corners: bottom-left, top-left, bottom-right, top-right.
+    const vertices = new Float32Array([
+      -1.0, -1.0,
+      -1.0,  1.0,
+       1.0, -1.0,
+       1.0,  1.0,
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    // Get uniform locations.
+    const uProgress = gl.getUniformLocation(program, 'uProgress');
+    const uDirection = gl.getUniformLocation(program, 'uDirection');
+    // Store compiled resources.
+    this.transitionGL[effect] = {
+      program: program,
+      buffer: quadBuffer,
+      uProgress: uProgress,
+      uDirection: uDirection,
+    };
+    // No need to keep shaders after linking.
+    gl.deleteShader(vertexShader);
+    gl.deleteShader(fragmentShader);
+  }
+
+  /**
+   * Render the transition overlay. This draws a full-screen quad with the
+   * precompiled shader corresponding to the current transition effect.
+   *
+   * @param {number} progress A value between 0 and 1 indicating the
+   * progress of the transition.
+   */
+  renderTransition(progress) {
+    const { gl } = this.engine;
+    const effect = this.transitionEffect || 'fade';
+    // Ensure the program is compiled.
+    this.initTransitionProgram(effect);
+    const trans = this.transitionGL[effect];
+    if (!trans) return;
+    // Save WebGL state that we'll modify. We need to disable the depth test and
+    // set blending appropriately so the overlay blends over the 3D scene.
+    const depthEnabled = gl.isEnabled(gl.DEPTH_TEST);
+    const blendEnabled = gl.isEnabled(gl.BLEND);
+    // Draw the quad.
+    gl.useProgram(trans.program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, trans.buffer);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    // Set uniforms: progress and direction (0 for out, 1 for in).
+    gl.uniform1f(trans.uProgress, progress);
+    const directionVal = this.transitionDirection === 'in' ? 1.0 : 0.0;
+    gl.uniform1f(trans.uDirection, directionVal);
+    // Configure blending and disable depth to ensure the overlay draws on top.
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // Draw the quad as a triangle strip (4 vertices -> 2 triangles).
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    // Restore previous state.
+    if (depthEnabled) {
+      gl.enable(gl.DEPTH_TEST);
+    } else {
+      gl.disable(gl.DEPTH_TEST);
+    }
+    if (!blendEnabled) {
+      gl.disable(gl.BLEND);
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
   }
 
   /**

@@ -15,8 +15,8 @@ import React, { Component } from 'react';
 import { collect } from 'react-recollect';
 // WebGL Component
 import WebGLView from '@Components/WebGLView.jsx';
-// Pixos Spritz Provider (Source of Game Package)
-import SpritzProvider from '@Spritz/provider.jsx';
+// Pixos Spritz Provider
+import SpritzProvider from '@Spritz/player.jsx';
 // Style Plugin
 import '../css/pixos.css';
 

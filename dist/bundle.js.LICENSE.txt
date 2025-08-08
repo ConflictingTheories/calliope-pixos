@@ -17,20 +17,6 @@ https://github.com/nodeca/pako/blob/master/LICENSE
  * @license  MIT
  */
 
-/*!
- * pad-left <https://github.com/jonschlinkert/pad-left>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT license.
- */
-
-/*!
- * repeat-string <https://github.com/jonschlinkert/repeat-string>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */

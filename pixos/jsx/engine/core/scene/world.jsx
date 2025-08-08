@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -70,9 +70,19 @@ export default class World {
    * @param {*} skipCache
    * @returns
    */
-  async loadZoneFromZip(zoneId, zip, skipCache = false) {
+  async loadZoneFromZip(zoneId, zip, skipCache = false, transitionParams = { effect: 'fade', duration: 500 }) {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
+    // Perform a transition when loading zones from a zip. Unless
+    // transitionParams is explicitly set to null, we fade out before
+    // loading and fade back in after the new zone is ready. The caller can
+    // override the effect or duration via transitionParams.
+    const engine = this.engine;
+    const useTransition = transitionParams && engine?.renderManager;
+    if (useTransition) {
+      const { effect = 'fade', duration = 500 } = transitionParams;
+      await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
+    }
 
     console.log('Loading Zone from Zip:', zoneId);
 
@@ -99,6 +109,11 @@ export default class World {
 
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
+    // fade back in once the new zone has finished loading
+    if (useTransition) {
+      const { effect = 'fade', duration = 500 } = transitionParams;
+      await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
+    }
     return z;
   }
 
@@ -109,8 +124,22 @@ export default class World {
    * @param {boolean} skipCache
    * @returns
    */
-  async loadZone(zoneId, remotely = false, skipCache = false) {
+  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = null) {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
+    // Optionally perform a transition before loading a standard zone. If a
+    // transition configuration is provided, we fade out before loading and
+    // fade back in after the new zone is ready. The transitionParams object
+    // can specify an effect ("fade", "cross", "swirl") and duration in
+    // milliseconds. The direction is automatically set to "out" and then
+    // "in" for the two phases. Note: changezone actions manage their own
+    // transitions and therefore should pass `null` for this parameter.
+    const engine = this.engine;
+    const useTransition = transitionParams && engine?.renderManager;
+    if (useTransition) {
+      const { effect = 'fade', duration = 500 } = transitionParams;
+      // fade out of the current scene
+      await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
+    }
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
     if (remotely) await z.loadRemote();
@@ -130,6 +159,11 @@ export default class World {
     this.zoneList.push(z);
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
+    // fade back in once the new zone has finished loading
+    if (useTransition) {
+      const { effect = 'fade', duration = 500 } = transitionParams;
+      await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
+    }
     return z;
   }
 

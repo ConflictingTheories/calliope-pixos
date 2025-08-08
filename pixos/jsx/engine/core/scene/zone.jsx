@@ -658,6 +658,8 @@ export default class Zone extends Loadable {
     this.objectList?.sort((a, b) => a.pos.y - b.pos.y);
     this.engine.renderManager.mvPushMatrix();
     this.engine.renderManager.camera.setCamera();
+    // this.engine.renderManager.disableBlending();
+    // this.engine.renderManager.enableCulling();
     // Draw tile terrain row by row (back to front) (Needs work -- NOT WORKING RIGHT YET)
     let k = 0;
     let z = 0;
@@ -701,6 +703,9 @@ export default class Zone extends Loadable {
         }
         break;
     }
+    
+    // this.engine.renderManager.disableCulling();
+    // this.engine.renderManager.enableBlending();
 
     while (z < this.objectList.length) {
       this.objectList[z++].draw();

@@ -37,10 +37,13 @@ export default class ExampleDynamicSpritz extends Spritz {
         let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
         console.log(manifest);
 
-        // load initial zone from zip file
-        manifest.initialZones.forEach((zone) => {
-          world.loadZoneFromZip(zone, zip, true);
-        });
+        // load initial zone(s) from zip file. We await each load sequentially so that
+        // screen transitions complete cleanly between zones. Each call will fade
+        // out the current view, load the zone and then fade back in. Note: if
+        // multiple zones are specified, they will be loaded one after the other.
+        for (const zone of manifest.initialZones) {
+          await world.loadZoneFromZip(zone, zip, true);
+        }
 
         // start
         menu.world.isPaused = false;
