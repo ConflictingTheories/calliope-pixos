@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -628,75 +628,25 @@ export default class RenderManager {
     const { gl } = this.engine;
     // If already initialized, do nothing.
     if (this.transitionGL[effect]) return;
-    // Vertex shader for a full-screen quad. It outputs clip-space
-    // coordinates and computes UV coordinates from the position.
-    const vsSource = `
-      attribute vec2 aPosition;
-      varying vec2 vUV;
-      void main() {
-        vUV = (aPosition + 1.0) * 0.5;
-        gl_Position = vec4(aPosition, 0.0, 1.0);
-      }
-    `;
-    // Fragment shaders for each effect. Each shader reads a progress
-    // uniform (0-1) and a direction uniform (0 for "out", 1 for "in").
+    // Load shader sources from the transition shader files. We normalize
+    // effect names that start with "fade" to the base "fade" directory.
+    let effectName = effect;
+    if (effectName.startsWith('fade')) {
+      effectName = 'fade';
+    }
+    // Require the vertex and fragment shaders for the selected effect.
+    let vsSource;
     let fsSource;
-    if (effect === 'cross') {
-      fsSource = `
-        precision mediump float;
-        varying vec2 vUV;
-        uniform float uProgress;
-        uniform float uDirection;
-        void main() {
-          // Determine whether this pixel is within the black region.
-          float mask;
-          if (uDirection > 0.5) {
-            // "in" transition: black shrinks from right to left.
-            mask = step(1.0 - uProgress, vUV.x);
-          } else {
-            // "out" transition: black grows from left to right.
-            mask = step(vUV.x, uProgress);
-          }
-          gl_FragColor = vec4(0.0, 0.0, 0.0, mask);
-        }
-      `;
-    } else if (effect === 'swirl') {
-      fsSource = `
-        precision mediump float;
-        varying vec2 vUV;
-        uniform float uProgress;
-        uniform float uDirection;
-        void main() {
-          // Compute distance from the center. This implements a radial mask
-          // where the black disc grows or shrinks. While not a true swirl,
-          // it creates a circular wipe which is more visually interesting
-          // than a simple fade.
-          vec2 center = vec2(0.5, 0.5);
-          float dist = length(vUV - center);
-          float mask;
-          if (uDirection > 0.5) {
-            // "in": shrink the black disc
-            mask = step(uProgress, dist);
-          } else {
-            // "out": grow the black disc
-            mask = step(dist, uProgress);
-          }
-          gl_FragColor = vec4(0.0, 0.0, 0.0, mask);
-        }
-      `;
+    if (effectName === 'cross') {
+      vsSource = require('../../shaders/transition/cross/vs.jsx').default();
+      fsSource = require('../../shaders/transition/cross/fs.jsx').default();
+    } else if (effectName === 'swirl') {
+      vsSource = require('../../shaders/transition/swirl/vs.jsx').default();
+      fsSource = require('../../shaders/transition/swirl/fs.jsx').default();
     } else {
-      // Default: fade. The alpha increases or decreases uniformly across
-      // the entire screen.
-      fsSource = `
-        precision mediump float;
-        varying vec2 vUV;
-        uniform float uProgress;
-        uniform float uDirection;
-        void main() {
-          float alpha = uDirection > 0.5 ? (1.0 - uProgress) : uProgress;
-          gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
-        }
-      `;
+      // Default to fade transition. This also handles 'fadeOut' and 'fadeIn'.
+      vsSource = require('../../shaders/transition/fade/vs.jsx').default();
+      fsSource = require('../../shaders/transition/fade/fs.jsx').default();
     }
     // Compile and link the program.
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
@@ -782,92 +732,7 @@ export default class RenderManager {
     gl.useProgram(null);
   }
 
-  /**
-   * Dispatch drawing to the appropriate transition effect.
-   * @param {number} progress Fraction between 0 and 1.
-   */
-  drawTransitionEffect(progress) {
-    switch (this.transitionEffect) {
-      case 'cross':
-        this.drawCross(progress, this.transitionDirection);
-        break;
-      case 'swirl':
-        this.drawSwirl(progress, this.transitionDirection);
-        break;
-      case 'fade':
-      case 'fadeOut':
-      case 'fadeIn':
-      default:
-        this.drawFade(progress, this.transitionDirection);
-        break;
-    }
-  }
-
-  /**
-   * Draw a simple fade transition. The overlay alpha ranges from 0 to 1.
-   * @param {number} progress Fraction between 0 and 1
-   * @param {string} direction "out" or "in"
-   */
-  drawFade(progress, direction) {
-    const ctx = this.engine.ctx;
-    if (!ctx) return;
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    const alpha = direction === 'in' ? 1.0 - progress : progress;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
-    ctx.restore();
-  }
-
-  /**
-   * Draw a cross (wipe) transition. A black rectangle slides across the screen.
-   * @param {number} progress Fraction between 0 and 1
-   * @param {string} direction "out" or "in"
-   */
-  drawCross(progress, direction) {
-    const ctx = this.engine.ctx;
-    if (!ctx) return;
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    // Determine the sliding direction. For an "out" transition the bar grows,
-    // for an "in" transition it shrinks.
-    const w = width * progress;
-    ctx.save();
-    ctx.fillStyle = 'black';
-    if (direction === 'in') {
-      // slide from right to left
-      ctx.fillRect(width - w, 0, w, height);
-    } else {
-      // slide from left to right
-      ctx.fillRect(0, 0, w, height);
-    }
-    ctx.restore();
-  }
-
-  /**
-   * Draw a swirl transition. Combines rotation and fading to create a spiralling effect.
-   * @param {number} progress Fraction between 0 and 1
-   * @param {string} direction "out" or "in"
-   */
-  drawSwirl(progress, direction) {
-    const ctx = this.engine.ctx;
-    if (!ctx) return;
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    const cx = width / 2;
-    const cy = height / 2;
-    // compute alpha and rotation based on direction
-    const alpha = direction === 'in' ? 1.0 - progress : progress;
-    const angle = (direction === 'in' ? 1.0 - progress : progress) * Math.PI * 2.0;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.translate(cx, cy);
-    ctx.rotate(angle);
-    ctx.translate(-cx, -cy);
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
-    ctx.restore();
-  }
+  // Note: Legacy 2D canvas-based transition functions (drawFade, drawCross, drawSwirl)
+  // have been removed in favour of GPU-based shaders. All transitions are now
+  // rendered via WebGL by `renderTransition()`.
 }
