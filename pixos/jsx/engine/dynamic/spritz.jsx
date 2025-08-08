@@ -42,7 +42,11 @@ export default class ExampleDynamicSpritz extends Spritz {
         // out the current view, load the zone and then fade back in. Note: if
         // multiple zones are specified, they will be loaded one after the other.
         for (const zone of manifest.initialZones) {
-          await world.loadZoneFromZip(zone, zip, true);
+          // Explicitly provide transition parameters when loading zones from
+          // the manifest. Without this, `loadZoneFromZip` defaults to no
+          // transition so that scripted loads via Lua don't inadvertently
+          // trigger extra fades. Each zone will fade out and then fade in.
+          await world.loadZoneFromZip(zone, zip, true, { effect: 'fade', duration: 500 });
         }
 
         // start

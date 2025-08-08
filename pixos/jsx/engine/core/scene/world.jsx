@@ -79,7 +79,13 @@ export default class World {
     // override the effect or duration via transitionParams.
     const engine = this.engine;
     const useTransition = transitionParams && engine?.renderManager;
-    if (useTransition) {
+    // If a transition is requested and no other transition is currently in
+    // progress, perform a fade‑out before loading. This prevents nested
+    // transitions from stacking up when multiple zone loads occur in quick
+    // succession (for example, when initiated from a Lua script).
+    console.log('useTransition', useTransition, engine?.renderManager);
+    if (useTransition && !engine.renderManager.isTransitioning) {
+      console.log('Fading In....')
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
@@ -110,7 +116,7 @@ export default class World {
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
-    if (useTransition) {
+    if (useTransition && !engine.renderManager.isTransitioning) {
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
@@ -135,7 +141,12 @@ export default class World {
     // transitions and therefore should pass `null` for this parameter.
     const engine = this.engine;
     const useTransition = transitionParams && engine?.renderManager;
-    if (useTransition) {
+    // Only perform a transition if one is requested and no other transition
+    // is currently running. This prevents multiple fade‑out/fade‑in cycles
+    // when loadZone is invoked during another transition (e.g. changezone).
+    console.log('useTransition', useTransition, engine?.renderManager);
+    if (useTransition && !engine.renderManager.isTransitioning) {
+      console.log('Fading In....')
       const { effect = 'fade', duration = 500 } = transitionParams;
       // fade out of the current scene
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
@@ -160,7 +171,7 @@ export default class World {
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
-    if (useTransition) {
+    if (useTransition && !engine.renderManager.isTransitioning) {
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }

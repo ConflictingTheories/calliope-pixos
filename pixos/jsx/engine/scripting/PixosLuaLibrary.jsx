@@ -43,6 +43,10 @@ export default class PixosLuaLibrary {
       },
       load_zone_from_zip: (z, zip) => {
         console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
+        // When loading zones via Lua, disable screen transitions by passing
+        // `null` as the transition parameters. This prevents the zone from
+        // fading out/in again if it has already been loaded by another
+        // mechanism (e.g. the dynamic spritz loader).
         return engine.spritz.world.loadZoneFromZip(z, zip);
       },
 
