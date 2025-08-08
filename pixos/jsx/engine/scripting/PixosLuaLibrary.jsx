@@ -54,6 +54,108 @@ export default class PixosLuaLibrary {
         return engine.spritz.world.loadZoneFromZip(z, zip, false);
       },
 
+      /**
+       * Register a cutscene definition from Lua. The `steps` parameter
+       * should be a Lua table (array-like) whose entries are tables with
+       * step definitions (type, effect, direction, duration, zone, etc.).
+       * These tables are converted to plain JS objects and stored under
+       * the provided name. Once registered, call pixos.start_cutscene(name)
+       * to play it. If a cutscene with the same name already exists it
+       * will be replaced.
+       *
+       * Example Lua:
+       *   pixos.register_cutscene("intro", {
+       *     { type = 'transition', effect = 'fade', direction = 'out', duration = 500 },
+       *     { type = 'load_zone', zone = 'village', effect = 'fade', duration = 500 },
+       *     { type = 'transition', effect = 'fade', direction = 'in', duration = 500 },
+       *   })
+       * @param {string} name
+       * @param {table} steps
+       */
+      register_cutscene: (name, steps) => {
+        try {
+          // Convert Lua table to JS array of step objects
+          const arr = this.lua.utils.ensureArray(steps.toObject());
+          const jsSteps = arr.map((item) => {
+            // `item` may be a Lua Table; convert to JS object
+            return item && typeof item.toObject === 'function' ? item.toObject() : item;
+          });
+          engine.cutscene.register(name, jsSteps);
+        } catch (e) {
+          console.warn('Failed to register cutscene from Lua', e);
+        }
+      },
+
+      /**
+       * Start a pre-registered cutscene by name. Returns immediately. The
+       * cutscene will run asynchronously. Use pixos.skip_cutscene() to
+       * cancel the currently playing cutscene.
+       * @param {string} name
+       */
+      start_cutscene: (name) => {
+        try {
+          engine.cutscene.start(name);
+        } catch (e) {
+          console.warn('Failed to start cutscene', name, e);
+        }
+      },
+
+      /**
+       * Skip the currently active cutscene, if any. Clears the cutscene
+       * queue immediately. Safe to call even if no cutscene is running.
+       */
+      skip_cutscene: () => {
+        try {
+          engine.cutscene.skip();
+        } catch (e) {
+          console.warn('Failed to skip cutscene', e);
+        }
+      },
+
+      /**
+       * Run an ad-hoc cutscene defined by a Lua table of steps. Returns a
+       * function that can be yielded in a Lua script and executed via
+       * pixos.sync. The returned function resolves when the cutscene
+       * completes. Steps are converted to plain JS objects. A unique
+       * temporary name is generated for each call to avoid collisions.
+       *
+       * Example Lua:
+       *   local steps = {
+       *     { type = 'transition', effect = 'cross', direction = 'out', duration = 500 },
+       *     { type = 'load_zone', zone = 'cave', effect = 'cross', duration = 500 },
+       *     { type = 'transition', effect = 'cross', direction = 'in', duration = 500 },
+       *   }
+       *   pixos.sync({ pixos.run_cutscene(steps) })
+       */
+      run_cutscene: (steps) => {
+        // Return an async function that the Lua runtime will call
+        return () =>
+          new Promise((resolve) => {
+            try {
+              const arr = this.lua.utils.ensureArray(steps.toObject());
+              const jsSteps = arr.map((item) => {
+                return item && typeof item.toObject === 'function' ? item.toObject() : item;
+              });
+              // Generate a unique name for this temporary cutscene
+              const name = '__lua_cutscene_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+              engine.cutscene.register(name, jsSteps);
+              engine.cutscene.start(name);
+              // Poll until cutscene finishes
+              const poll = () => {
+                if (!engine.cutscene.isRunning()) {
+                  resolve();
+                } else {
+                  setTimeout(poll, 30);
+                }
+              };
+              poll();
+            } catch (e) {
+              console.warn('Failed to run cutscene', e);
+              resolve();
+            }
+          });
+      },
+
       // zone functions
       play_cutscene: (cutscene) => {
         // todo - not working

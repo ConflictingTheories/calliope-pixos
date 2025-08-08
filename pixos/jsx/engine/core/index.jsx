@@ -72,6 +72,10 @@ export default class GLEngine {
     // MEMORY STORE
     this.store = new Store();
 
+    // CUTSCENE MANAGER
+    // Manages scripted cutscene sequences (transitions, waits, zone loads).
+    this.cutscene = new (require('../cutscene/manager.jsx').default)(this);
+
     // bind
     this.screenSize = this.screenSize.bind(this);
     this.render = this.render.bind(this);
@@ -190,6 +194,13 @@ export default class GLEngine {
     // top of the current frame when a transition is in progress. Note that
     // the RenderManager manages its own `isTransitioning` flag.
     this.renderManager.updateTransition();
+
+    // Update cutscene manager. While a cutscene is active this will process
+    // queued steps such as waits, transitions and zone loads. It runs
+    // independently of the game loop and does not block rendering.
+    if (this.cutscene) {
+      this.cutscene.update();
+    }
 
     // Update debug overlay if enabled. Calculate frames per second based on
     // the elapsed time since the last frame and display the number of tiles
