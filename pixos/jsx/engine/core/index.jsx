@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -152,11 +152,10 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
     this.gamepad.render();
     this.spritz.render(this, timestamp);
-
-    // transitions - todo - not working
-    if (this.isTransitioning) {
-      this.renderManager.transition();
-    }
+    // Update any active screen transition effect. This will draw an overlay on
+    // top of the current frame when a transition is in progress. Note that
+    // the RenderManager manages its own `isTransitioning` flag.
+    this.renderManager.updateTransition();
 
     this.requestId = requestAnimationFrame(this.render);
   }

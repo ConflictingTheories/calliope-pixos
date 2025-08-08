@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -16,12 +16,29 @@ import { Direction } from '@Engine/utils/enums.jsx';
 
 export default {
   init: async function (fromZoneId, from, toZoneId, to, length) {
+    // When changing zones we fade out of the current zone, load the new zone(s)
+    // and then fade back in. This makes the transition smoother and hides
+    // asset loading. The duration can be tweaked if needed.
+    const engine = this.sprite.zone?.world?.engine;
+    if (engine?.renderManager) {
+      // fade out
+      console.log('fading out.....');
+      await engine.renderManager.startTransition({ effect: 'fade', direction: 'out', duration: 500 });
+    }
+    console.log('changing.....');
+
     this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId);
     this.toZone = await this.sprite.zone.world.loadZone(toZoneId);
     this.from = new Vector(...from);
     this.to = new Vector(...to);
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
     this.length = length;
+
+    if (engine?.renderManager) {
+      // fade in once the new zones are ready
+      console.log('fading in.....');
+      await engine.renderManager.startTransition({ effect: 'fade', direction: 'in', duration: 500 });
+    }
   },
   tick: function (time) {
     if (!this.toZone.loaded || !this.fromZone.loaded) return;

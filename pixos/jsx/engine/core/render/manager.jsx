@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -48,11 +48,22 @@ export default class RenderManager {
 
       // Transitions
       this.isTransitioning = false;
+      // The following properties are used to drive custom transition effects. A
+      // transition is considered active when `isTransitioning` is true. The
+      // `transitionEffect` identifies which visual effect to draw (fade,
+      // cross, swirl). `transitionDirection` is either "out" (overlay is
+      // applied over the scene) or "in" (overlay is removed). `transitionStartTime`
+      // and `transitionDuration` control the timing, while
+      // `transitionCallback` is invoked once the transition completes.
       this.transition = null;
       this.transitionParams = {};
       this.transitionTexture = null;
       this.transitionDuration = 0;
-      this.transitionTime = new Date().getMilliseconds();
+      this.transitionTime = 0;
+      this.transitionEffect = null;
+      this.transitionDirection = 'out';
+      this.transitionStartTime = 0;
+      this.transitionCallback = null;
 
       // Camera
       this.camera = CameraManager.getInstance().createCamera(this);
@@ -283,7 +294,7 @@ export default class RenderManager {
       // todo -- needs work - doesn't seem to work
       this.initProjection();
       // this.applyPixelFrustum();
-    }else{
+    } else {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
       this.initProjection();
@@ -347,6 +358,43 @@ export default class RenderManager {
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
     this.camera.uViewMat = create();
     this.uProjMat[5] *= -1;
+  }
+
+  /**
+   * Enable Culling
+   * @returns
+   */
+  enableCulling() {
+    const { gl } = this.engine;
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+  }
+
+  /**
+   * Disable Culling
+   * @returns
+   */
+  disableCulling() {
+    const { gl } = this.engine;
+    gl.disable(gl.CULL_FACE);
+  }
+
+  /**
+   * Enable Blending
+   * @returns
+   */
+  enableBlending() {
+    const { gl } = this.engine;
+    gl.enable(gl.BLEND);
+  }
+
+  /**
+   * Disable Blending
+   * @returns
+   */
+  disableBlending() {
+    const { gl } = this.engine;
+    gl.disable(gl.BLEND);
   }
 
   /**
@@ -498,13 +546,153 @@ export default class RenderManager {
   }
 
   // transition (fade, swipe, etc)
-  startTransition(params) {
-    let duration = params.duration || 1000;
-    let time = new Date().getMilliseconds();
-    this.isTransitioning = true;
-    while (time + duration > new Date().getMilliseconds()) {
-      // do nothig
+  /**
+   * Begin a custom screen transition. This will overlay an effect (fade, cross or swirl)
+   * on top of the current scene for the specified duration. When the effect
+   * completes the returned Promise resolves. If another transition is already
+   * running this will queue a new one once the current one finishes.
+   *
+   * @param {{effect?: string, direction?: string, duration?: number}} params
+   * @returns {Promise<void>} Resolves when the transition has completed.
+   */
+  startTransition(params = {}) {
+    const { effect = 'fade', direction = 'out', duration = 1000 } = params;
+    // If another transition is currently active we create a chained Promise that
+    // will run after the existing one. This avoids overlapping transitions.
+    const schedule = () => {
+      this.isTransitioning = true;
+      this.transitionEffect = effect;
+      this.transitionDirection = direction;
+      this.transitionDuration = duration;
+      this.transitionStartTime = performance.now();
+      return new Promise((resolve) => {
+        this.transitionCallback = resolve;
+      });
+    };
+    if (this.isTransitioning) {
+      // chain onto the existing callback
+      const prevCallback = this.transitionCallback;
+      return new Promise((resolve) => {
+        this.transitionCallback = () => {
+          prevCallback?.();
+          schedule().then(resolve);
+        };
+      });
     }
-    this.isTransitioning = false;
+    return schedule();
+  }
+
+  /**
+   * Update an in-progress transition. Should be called once per frame from
+   * the engine render loop. When the transition ends it cleans up and calls
+   * the stored callback.
+   */
+  updateTransition() {
+    if (!this.isTransitioning) {
+      return;
+    }
+    const now = performance.now();
+    let progress = (now - this.transitionStartTime) / this.transitionDuration;
+    if (progress >= 1.0) {
+      progress = 1.0;
+    }
+    // Draw the overlay based on current progress.
+    this.drawTransitionEffect(progress);
+    if (progress >= 1.0) {
+      // finalize
+      this.isTransitioning = false;
+      const cb = this.transitionCallback;
+      this.transitionCallback = null;
+      cb && cb();
+    }
+  }
+
+  /**
+   * Dispatch drawing to the appropriate transition effect.
+   * @param {number} progress Fraction between 0 and 1.
+   */
+  drawTransitionEffect(progress) {
+    switch (this.transitionEffect) {
+      case 'cross':
+        this.drawCross(progress, this.transitionDirection);
+        break;
+      case 'swirl':
+        this.drawSwirl(progress, this.transitionDirection);
+        break;
+      case 'fade':
+      case 'fadeOut':
+      case 'fadeIn':
+      default:
+        this.drawFade(progress, this.transitionDirection);
+        break;
+    }
+  }
+
+  /**
+   * Draw a simple fade transition. The overlay alpha ranges from 0 to 1.
+   * @param {number} progress Fraction between 0 and 1
+   * @param {string} direction "out" or "in"
+   */
+  drawFade(progress, direction) {
+    const ctx = this.engine.ctx;
+    if (!ctx) return;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const alpha = direction === 'in' ? 1.0 - progress : progress;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  /**
+   * Draw a cross (wipe) transition. A black rectangle slides across the screen.
+   * @param {number} progress Fraction between 0 and 1
+   * @param {string} direction "out" or "in"
+   */
+  drawCross(progress, direction) {
+    const ctx = this.engine.ctx;
+    if (!ctx) return;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    // Determine the sliding direction. For an "out" transition the bar grows,
+    // for an "in" transition it shrinks.
+    const w = width * progress;
+    ctx.save();
+    ctx.fillStyle = 'black';
+    if (direction === 'in') {
+      // slide from right to left
+      ctx.fillRect(width - w, 0, w, height);
+    } else {
+      // slide from left to right
+      ctx.fillRect(0, 0, w, height);
+    }
+    ctx.restore();
+  }
+
+  /**
+   * Draw a swirl transition. Combines rotation and fading to create a spiralling effect.
+   * @param {number} progress Fraction between 0 and 1
+   * @param {string} direction "out" or "in"
+   */
+  drawSwirl(progress, direction) {
+    const ctx = this.engine.ctx;
+    if (!ctx) return;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const cx = width / 2;
+    const cy = height / 2;
+    // compute alpha and rotation based on direction
+    const alpha = direction === 'in' ? 1.0 - progress : progress;
+    const angle = (direction === 'in' ? 1.0 - progress : progress) * Math.PI * 2.0;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.translate(-cx, -cy);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
   }
 }

@@ -3078,7 +3078,7 @@ caller-path@^2.0.0:
     caller-callsite "^2.0.0"
 
 "calliope-pixos@file:..":
-  version "0.7.12"
+  version "0.8.3"
   resolved "file:.."
   dependencies:
     babel-loader "^8.2.5"
@@ -3086,7 +3086,6 @@ caller-path@^2.0.0:
     dexie "^3.2.0"
     file-saver "^2.0.5"
     gl-transition "^1.13.0"
-    gl-transitions "^1.43.0"
     jszip "^3.7.1"
     lua-in-js "^2.2.5"
     prop-types "^15.7.2"
@@ -10933,11 +10932,6 @@ type-detect@4.0.8:
   version "4.0.8"
   resolved "https://registry.npmjs.org/type-detect/-/type-detect-4.0.8.tgz"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
-
-type-fest@^0.13.1:
-  version "0.13.1"
-  resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.13.1.tgz"
-  integrity sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg==
 
 type-fest@^0.20.2:
   version "0.20.2"
