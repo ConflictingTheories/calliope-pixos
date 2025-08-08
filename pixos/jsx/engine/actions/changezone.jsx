@@ -23,7 +23,7 @@ export default {
     if (engine?.renderManager) {
       // fade out
       console.log('fading out...')
-      await engine.renderManager.startTransition({ effect: 'fade', direction: 'out', duration: 500 });
+      await engine.renderManager.startTransition({ effect: 'cross', direction: 'out', duration: 500 });
     }
 
     // When changing zones we load both zones without triggering the default
@@ -41,7 +41,7 @@ export default {
     if (engine?.renderManager) {
       console.log('fading in...')
       // fade in once the new zones are ready
-      await engine.renderManager.startTransition({ effect: 'fade', direction: 'in', duration: 500 });
+      await engine.renderManager.startTransition({ effect: 'cross', direction: 'in', duration: 500 });
     }
   },
   tick: function (time) {

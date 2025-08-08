@@ -574,7 +574,7 @@ export default class RenderManager {
    * @returns {Promise<void>} Resolves when the transition has completed.
    */
   startTransition(params = {}) {
-    const { effect = 'fade', direction = 'out', duration = 1000 } = params;
+    const { effect = 'cross', direction = 'out', duration = 1000 } = params;
     // If another transition is currently active we create a chained Promise that
     // will run after the existing one. This avoids overlapping transitions.
     const schedule = () => {
@@ -642,8 +642,8 @@ export default class RenderManager {
     // Load shader sources from the transition shader files. We normalize
     // effect names that start with "fade" to the base "fade" directory.
     let effectName = effect;
-    if (effectName.startsWith('fade')) {
-      effectName = 'fade';
+    if (effectName.startsWith('cross')) {
+      effectName = 'cross';
     }
     // Require the vertex and fragment shaders for the selected effect.
     let vsSource;
@@ -651,7 +651,7 @@ export default class RenderManager {
     if (effectName === 'cross') {
       vsSource = require('../../shaders/transition/cross/vs.jsx').default();
       fsSource = require('../../shaders/transition/cross/fs.jsx').default();
-    } else if (effectName === 'swirl') {
+    } else if (effectName === 'cross') {
       vsSource = require('../../shaders/transition/swirl/vs.jsx').default();
       fsSource = require('../../shaders/transition/swirl/fs.jsx').default();
     } else {
@@ -706,7 +706,7 @@ export default class RenderManager {
    */
   renderTransition(progress) {
     const { gl } = this.engine;
-    const effect = this.transitionEffect || 'fade';
+    const effect = this.transitionEffect || 'cross';
     // Ensure the program is compiled.
     this.initTransitionProgram(effect);
     const trans = this.transitionGL[effect];

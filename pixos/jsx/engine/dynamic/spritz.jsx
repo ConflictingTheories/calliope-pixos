@@ -46,7 +46,7 @@ export default class ExampleDynamicSpritz extends Spritz {
           // the manifest. Without this, `loadZoneFromZip` defaults to no
           // transition so that scripted loads via Lua don't inadvertently
           // trigger extra fades. Each zone will fade out and then fade in.
-          await world.loadZoneFromZip(zone, zip, true, { effect: 'fade', duration: 500 });
+          await world.loadZoneFromZip(zone, zip, true, { effect: 'cross', duration: 500 });
         }
 
         // start

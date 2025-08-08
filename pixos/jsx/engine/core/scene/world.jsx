@@ -76,7 +76,7 @@ export default class World {
    * @param {*} skipCache
    * @returns
    */
-  async loadZoneFromZip(zoneId, zip, skipCache = false, transitionParams = { effect: 'fade', duration: 500 }) {
+  async loadZoneFromZip(zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Perform a transition when loading zones from a zip. Unless
@@ -103,7 +103,7 @@ export default class World {
       }
     }
     if (useTransition) {
-      const { effect = 'fade', duration = 500 } = transitionParams;
+      const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
 
@@ -134,7 +134,7 @@ export default class World {
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
     if (useTransition) {
-      const { effect = 'fade', duration = 500 } = transitionParams;
+      const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
     return z;
@@ -147,7 +147,7 @@ export default class World {
    * @param {boolean} skipCache
    * @returns
    */
-  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'fade', duration: 500 }) {
+  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Optionally perform a transition before loading a standard zone. If a
     // transition configuration is provided, we fade out before loading and
@@ -171,7 +171,7 @@ export default class World {
       }
     }
     if (useTransition) {
-      const { effect = 'fade', duration = 500 } = transitionParams;
+      const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
@@ -195,7 +195,7 @@ export default class World {
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
     if (useTransition) {
-      const { effect = 'fade', duration = 500 } = transitionParams;
+      const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
     return z;
