@@ -32,6 +32,12 @@ export default class World {
     this.eventList = [];
     this.eventDict = {};
     this.lastKey = new Date().getTime();
+    // Track the last time a zone transition ran. This timestamp is used to
+    // avoid back-to-back transitions when multiple zone loads are invoked
+    // within a short period (for example, when a Lua script immediately
+    // loads a zone after another zone has just been loaded). See
+    // loadZone() and loadZoneFromZip() for usage.
+    this.lastZoneTransitionTime = 0;
     this.isPaused = true;
     this.afterTickActions = new ActionQueue();
     this.sortZones = this.sortZones.bind(this);
@@ -78,14 +84,25 @@ export default class World {
     // loading and fade back in after the new zone is ready. The caller can
     // override the effect or duration via transitionParams.
     const engine = this.engine;
-    const useTransition = transitionParams && engine?.renderManager;
-    // If a transition is requested and no other transition is currently in
-    // progress, perform a fade‑out before loading. This prevents nested
-    // transitions from stacking up when multiple zone loads occur in quick
-    // succession (for example, when initiated from a Lua script).
-    console.log('useTransition', useTransition, engine?.renderManager);
-    if (useTransition && !engine.renderManager.isTransitioning) {
-      console.log('Fading In....')
+    // Determine whether to perform a transition. We check that transitions
+    // have been requested, that a render manager exists and that the last
+    // transition finished sufficiently long ago. Without this guard, two
+    // zone loads invoked in rapid succession (e.g. from a Lua script and
+    // a changezone action) would trigger two separate fade sequences.
+    let useTransition = false;
+    if (transitionParams && engine?.renderManager) {
+      const rm = engine.renderManager;
+      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      // Compute time since the last transition started. We allow a small
+      // grace period after a transition completes before a new one is
+      // permitted. If a transition is still running (isTransitioning),
+      // startTransition() will queue the next transition automatically.
+      const timeSinceLast = now - (rm.transitionStartTime + rm.transitionDuration);
+      if (!rm.isTransitioning && timeSinceLast > 100) {
+        useTransition = true;
+      }
+    }
+    if (useTransition) {
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
@@ -116,7 +133,7 @@ export default class World {
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
-    if (useTransition && !engine.renderManager.isTransitioning) {
+    if (useTransition) {
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
@@ -130,7 +147,7 @@ export default class World {
    * @param {boolean} skipCache
    * @returns
    */
-  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = null) {
+  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'fade', duration: 500 }) {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Optionally perform a transition before loading a standard zone. If a
     // transition configuration is provided, we fade out before loading and
@@ -140,15 +157,21 @@ export default class World {
     // "in" for the two phases. Note: changezone actions manage their own
     // transitions and therefore should pass `null` for this parameter.
     const engine = this.engine;
-    const useTransition = transitionParams && engine?.renderManager;
-    // Only perform a transition if one is requested and no other transition
-    // is currently running. This prevents multiple fade‑out/fade‑in cycles
-    // when loadZone is invoked during another transition (e.g. changezone).
-    console.log('useTransition', useTransition, engine?.renderManager);
-    if (useTransition && !engine.renderManager.isTransitioning) {
-      console.log('Fading In....')
+    // Decide whether to perform a transition. We only start a new
+    // transition if the previous one has completed and a small delay has
+    // elapsed. Otherwise the new transition will be queued by
+    // startTransition() if one is in progress.
+    let useTransition = false;
+    if (transitionParams && engine?.renderManager) {
+      const rm = engine.renderManager;
+      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const timeSinceLast = now - (rm.transitionStartTime + rm.transitionDuration);
+      if (!rm.isTransitioning && timeSinceLast > 100) {
+        useTransition = true;
+      }
+    }
+    if (useTransition) {
       const { effect = 'fade', duration = 500 } = transitionParams;
-      // fade out of the current scene
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
@@ -171,7 +194,7 @@ export default class World {
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
     // fade back in once the new zone has finished loading
-    if (useTransition && !engine.renderManager.isTransitioning) {
+    if (useTransition) {
       const { effect = 'fade', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }

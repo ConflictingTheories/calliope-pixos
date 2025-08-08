@@ -370,6 +370,12 @@ export default class ModelObject extends Loadable {
    */
   draw() {
     if (!this.loaded) return;
+    // Increment object draw counter for debug metrics. Only increment if the
+    // render manager's debug object is available. This helps track how
+    // many 3D objects are drawn each frame in the debug overlay.
+    if (this.engine && this.engine.renderManager && this.engine.renderManager.debug) {
+      this.engine.renderManager.debug.objectsDrawn++;
+    }
     let { engine, mesh } = this;
     // setup obj attributes
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);

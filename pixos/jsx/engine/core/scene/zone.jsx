@@ -345,6 +345,10 @@ export default class Zone extends Loadable {
   onTilesetDefinitionLoaded() {
     this.cellVertexPosBuf = Array.from(Array(this.size[1]), () => new Array(this.size[0]));
     this.cellVertexTexBuf = Array.from(Array(this.size[1]), () => new Array(this.size[0]));
+    // Precompute picking IDs for each cell. Storing these values avoids
+    // recomputing the ID on every draw call. Each ID encodes the zone
+    // OBJ id, the row and column indices into RGBA channels.
+    this.cellPickingId = Array.from(Array(this.size[1]), () => new Array(this.size[0]));
     this.walkability = [];
     // Determine Walkability and Load Vertices
     for (let j = 0, k = 0; j < this.size[1]; j++) {
@@ -369,6 +373,13 @@ export default class Zone extends Loadable {
 
         this.cellVertexPosBuf[j][i] = this.engine.renderManager.createBuffer(cellVertices, this.engine.gl.STATIC_DRAW, 3);
         this.cellVertexTexBuf[j][i] = this.engine.renderManager.createBuffer(cellVertexTexCoords, this.engine.gl.STATIC_DRAW, 2);
+        // Cache picking ID for this cell
+        this.cellPickingId[j][i] = [
+          ((this.objId >> 0) & 0xff) / 0xff,
+          ((j >> 0) & 0xff) / 0xff,
+          ((i >> 0) & 0xff) / 0xff,
+          255,
+        ];
 
         // Custom walkability
         if (cell.length == 3 * n + 1) this.walkability[k] = cell[3 * n];
@@ -598,11 +609,48 @@ export default class Zone extends Loadable {
    * @param {*} row
    */
   drawRow(row) {
-    // attach tileset texture
-    this.tileset.texture.attach();
-
-    for (let l = 0; l < this.size[0]; l++) {
-      this.drawCell(row, l);
+    // Attach the tileset texture once per row. Caching frequently used
+    // objects locally avoids repeated property lookups inside the inner loop
+    // and improves performance for large maps.
+    const tilesetTexture = this.tileset.texture;
+    tilesetTexture.attach();
+    const rm = this.engine.renderManager;
+    const shaderProgram = rm.shaderProgram;
+    const pickerProgram = rm.effectPrograms['picker'];
+    const gl = this.engine.gl;
+    const cellVertexPosBufRow = this.cellVertexPosBuf[row];
+    const cellVertexTexBufRow = this.cellVertexTexBuf[row];
+    const cellCountX = this.size[0];
+    // Build a set of selected tile keys for constant‑time lookups. Keys are
+    // formatted as "row,col". If no tiles are selected, the set remains
+    // empty and lookups are skipped.
+    const selectedSet = new Set();
+    if (this.selectedTiles && this.selectedTiles.length > 0) {
+      for (let idx = 0; idx < this.selectedTiles.length; idx++) {
+        const tile = this.selectedTiles[idx];
+        selectedSet.add(tile[0] + ',' + tile[1]);
+      }
+    }
+    // Precompute the highlight colour based on the frame count.
+    const highlight = (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    for (let cell = 0; cell < cellCountX; cell++) {
+      const vPos = cellVertexPosBufRow[cell];
+      const vTex = cellVertexTexBufRow[cell];
+      rm.bindBuffer(vPos, shaderProgram.aVertexPosition);
+      rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
+      // Use the cached picking ID if available; otherwise compute on the fly.
+      const id = (this.cellPickingId && this.cellPickingId[row]) ? this.cellPickingId[row][cell] : this.getPickingId(row, cell);
+      pickerProgram.setMatrixUniforms({ id: id });
+      const isSelected = (selectedSet.size > 0) ? selectedSet.has(row + ',' + cell) : false;
+      shaderProgram.setMatrixUniforms({
+        id: id,
+        isSelected: isSelected,
+        sampler: 1.0,
+        colorMultiplier: highlight,
+      });
+      gl.drawArrays(gl.TRIANGLES, 0, vPos.numItems);
+      // Increment tile draw counter for debug metrics
+      if (rm.debug) rm.debug.tilesDrawn++;
     }
   }
 
@@ -643,7 +691,19 @@ export default class Zone extends Loadable {
    * @returns
    */
   getPickingId(row, cell) {
-    const id = [((this.objId >> 0) & 0xff) / 0xff, ((row >> 0) & 0xff) / 0xff, ((cell >> 0) & 0xff) / 0xff, 255];
+    // Use precomputed picking IDs if available. Falling back to computing
+    // the ID on the fly ensures compatibility with older data. IDs encode
+    // the zone OBJ id, row and column into RGBA channels. The alpha channel
+    // is fixed at 255.
+    if (this.cellPickingId && this.cellPickingId[row] && this.cellPickingId[row][cell]) {
+      return this.cellPickingId[row][cell];
+    }
+    const id = [
+      ((this.objId >> 0) & 0xff) / 0xff,
+      ((row >> 0) & 0xff) / 0xff,
+      ((cell >> 0) & 0xff) / 0xff,
+      255,
+    ];
     return id;
   }
 

@@ -333,6 +333,11 @@ export default class Sprite extends Loadable {
    */
   draw() {
     if (!this.loaded) return;
+    // Increment sprite draw counter for debug metrics. Counting draws at
+    // the start ensures that only successfully rendered sprites are tallied.
+    if (this.engine && this.engine.renderManager && this.engine.renderManager.debug) {
+      this.engine.renderManager.debug.spritesDrawn++;
+    }
 
     //update light position
     if (this.isLit) {

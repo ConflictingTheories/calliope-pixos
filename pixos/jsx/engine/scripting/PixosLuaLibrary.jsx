@@ -43,11 +43,15 @@ export default class PixosLuaLibrary {
       },
       load_zone_from_zip: (z, zip) => {
         console.log({ msg: 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
-        // When loading zones via Lua, disable screen transitions by passing
-        // `null` as the transition parameters. This prevents the zone from
-        // fading out/in again if it has already been loaded by another
-        // mechanism (e.g. the dynamic spritz loader).
-        return engine.spritz.world.loadZoneFromZip(z, zip);
+        // When loading zones via Lua we allow the world to manage screen
+        // transitions. Passing `undefined` (or omitting the parameter) causes
+        // World.loadZoneFromZip() to use its default transition settings
+        // (typically a fade in/out). This keeps portal transitions consistent
+        // with other zone loads while still avoiding duplicate fades when the
+        // engine is already transitioning. The world implementation guards
+        // against overlapping transitions via the renderManager.isTransitioning
+        // flag and skips transitions if the zone is already cached.
+        return engine.spritz.world.loadZoneFromZip(z, zip, false);
       },
 
       // zone functions

@@ -26,8 +26,12 @@ export default {
       await engine.renderManager.startTransition({ effect: 'fade', direction: 'out', duration: 500 });
     }
 
-    this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId);
-    this.toZone = await this.sprite.zone.world.loadZone(toZoneId);
+    // When changing zones we load both zones without triggering the default
+    // transition defined in World.loadZone. We handle the fade out/in around
+    // these calls ourselves in this action. Passing `null` as the transition
+    // parameter disables the automatic transition in loadZone.
+    this.fromZone = await this.sprite.zone.world.loadZone(fromZoneId, false, false, null);
+    this.toZone = await this.sprite.zone.world.loadZone(toZoneId, false, false, null);
     this.from = new Vector(...from);
     this.to = new Vector(...to);
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);

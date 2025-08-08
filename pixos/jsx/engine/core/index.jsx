@@ -107,6 +107,7 @@ export default class GLEngine {
     this.gp = gp;
     this.frameCount = 0;
 
+
     this.spritz = spritz;
     this.fullscreen = false;
 
@@ -128,6 +129,34 @@ export default class GLEngine {
 
     // Initialize Spritz
     await spritz.init(this);
+
+    // Create and configure a debug overlay. This overlay displays
+    // performance information such as FPS and draw counts and is toggled
+    // using the F3 key. It is appended to the document body once the
+    // engine has been initialized and the DOM is available. The overlay
+    // remains hidden until toggled.
+    (() => {
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.top = '0';
+      div.style.left = '0';
+      div.style.background = 'rgba(0, 0, 0, 0.6)';
+      div.style.color = '#0f0';
+      div.style.padding = '4px';
+      div.style.fontFamily = 'monospace';
+      div.style.fontSize = '12px';
+      div.style.zIndex = '10000';
+      div.style.pointerEvents = 'none';
+      div.style.display = 'none';
+      this.debugDiv = div;
+      document.body.appendChild(div);
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'F3') {
+          this.showDebug = !this.showDebug;
+          this.debugDiv.style.display = this.showDebug ? 'block' : 'none';
+        }
+      });
+    })();
   }
 
   /**
@@ -135,6 +164,11 @@ export default class GLEngine {
    */
   render() {
     this.frameCount++;
+    // Reset debug counters at the start of each frame so that metrics
+    // reflect only the current frame's draw calls.
+    if (this.renderManager && this.renderManager.resetDebugCounters) {
+      this.renderManager.resetDebugCounters();
+    }
 
     // clear canvases
     this.hud.clearHud();
@@ -156,6 +190,39 @@ export default class GLEngine {
     // top of the current frame when a transition is in progress. Note that
     // the RenderManager manages its own `isTransitioning` flag.
     this.renderManager.updateTransition();
+
+    // Update debug overlay if enabled. Calculate frames per second based on
+    // the elapsed time since the last frame and display the number of tiles
+    // and sprites drawn as well as WebGL renderer information. The overlay
+    // is toggled by pressing F3.
+    if (this.showDebug && this.debugDiv) {
+      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const delta = now - this.lastDebugTime;
+      const fps = delta > 0 ? (1000.0 / delta).toFixed(1) : '0';
+      this.lastDebugTime = now;
+      const gl = this.gl;
+      let renderer = '';
+      let vendor = '';
+      let version = '';
+      if (gl) {
+        try {
+          renderer = gl.getParameter(gl.RENDERER);
+          vendor = gl.getParameter(gl.VENDOR);
+          version = gl.getParameter(gl.VERSION);
+        } catch (e) {
+          // WebGL context may be lost or parameters unavailable
+        }
+      }
+      const debug = this.renderManager.debug || {};
+      this.debugDiv.innerHTML =
+        'FPS: ' + fps + '<br>' +
+        'Tiles Drawn: ' + (debug.tilesDrawn || 0) + '<br>' +
+        'Sprites Drawn: ' + (debug.spritesDrawn || 0) + '<br>' +
+        'Objects Drawn: ' + (debug.objectsDrawn || 0) + '<br>' +
+        'Renderer: ' + renderer + '<br>' +
+        'Vendor: ' + vendor + '<br>' +
+        'GL Version: ' + version;
+    }
 
     this.requestId = requestAnimationFrame(this.render);
   }

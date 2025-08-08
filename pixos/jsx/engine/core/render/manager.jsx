@@ -72,6 +72,17 @@ export default class RenderManager {
       // are lazily created in `initTransitionProgram()` and cached here.
       this.transitionGL = {};
 
+      // Debug counters for performance metrics. The engine's debug overlay
+      // reads these values each frame to display the number of tiles and
+      // sprites drawn. The counters are reset at the beginning of each
+      // frame via the resetDebugCounters() method. Additional counters can
+      // be added here as needed.
+      this.debug = {
+        tilesDrawn: 0,
+        spritesDrawn: 0,
+        objectsDrawn: 0,
+      };
+
       // Camera
       this.camera = CameraManager.getInstance().createCamera(this);
 
@@ -730,6 +741,18 @@ export default class RenderManager {
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);
+  }
+
+  /**
+   * Reset debug counters at the start of a new frame. This should be
+   * invoked by the engine's render loop before any drawing takes place.
+   */
+  resetDebugCounters() {
+    if (this.debug) {
+      this.debug.tilesDrawn = 0;
+      this.debug.spritesDrawn = 0;
+      this.debug.objectsDrawn = 0;
+    }
   }
 
   // Note: Legacy 2D canvas-based transition functions (drawFade, drawCross, drawSwirl)
