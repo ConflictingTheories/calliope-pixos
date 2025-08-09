@@ -13,17 +13,28 @@ pixos.remove_all_zones();
 local zones = pixos.from(portal, 'zones');
 local zip = pixos.from(portal, 'zip');
 
--- Load the zones from the portal.
+-- Define a cutscene sequence for loading zone(s) via portal. The sequence
+-- will fade out, load each zone from the specified zip file, then fade in.
+local steps = {}
+-- Fade out using cross effect for a smooth wipe. Adjust duration as desired.
+table.insert(steps, { type = 'transition', effect = 'fade', direction = 'out', duration = 500 })
+
 if (type(zones) == 'string') then
-    pixos.log(pixos.as_obj({ msg = 'loading zone', zone = zones, zip = zip }));
-    pixos.load_zone_from_zip(zones, zip);
+    pixos.log(pixos.as_obj({ msg = 'loading zone via cutscene', zone = zones, zip = zip }));
+    table.insert(steps, { type = 'load_zone', zone = zones, zip = zip, effect = 'cross', duration = 500 })
 else
-    pixos.log(pixos.as_obj({ msg = 'loading zones', zones = zones, zip = zip }));
+    pixos.log(pixos.as_obj({ msg = 'loading zones via cutscene', zones = zones, zip = zip }));
     for i = 1, #zones do
         local zone = zones[i];
-        pixos.load_zone_from_zip(zones[i], zip);
+        table.insert(steps, { type = 'load_zone', zone = zone, zip = zip, effect = 'cross', duration = 500 })
     end
 end
+
+-- Fade back in
+table.insert(steps, { type = 'transition', effect = 'fade', direction = 'in', duration = 500 })
+
+-- Run the cutscene. Using pixos.sync ensures the script waits for completion.
+pixos.sync({ pixos.run_cutscene(steps) })
 
 pixos.log(pixos.as_obj({ msg = 'exiting portal' }));
 
