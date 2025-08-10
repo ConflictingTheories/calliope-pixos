@@ -83,6 +83,10 @@ export default class CutsceneManager {
     // execute step and on completion call update again to process next
     let promise;
     switch (step.type) {
+      // todo -- add addiitonal step support:
+      // -- Thinking along the lines of run script, dialogue, picker, music, sprite and object actions, etc.
+      // -- in theory should be able to script a scene, set flags too, and have it proceed to the next scene if
+      // -- if another one follows. -- I should be able to script a basic 'movie' using this
       case 'wait':
         promise = this._doWait(step.ms || 0);
         break;

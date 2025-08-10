@@ -16,7 +16,7 @@ local zip = pixos.from(portal, 'zip');
 -- Define a cutscene sequence for loading zone(s) via portal. The sequence
 -- will fade out, load each zone from the specified zip file, then fade in.
 local steps = {}
--- Fade out using cross effect for a smooth wipe. Adjust duration as desired.
+-- Fade out 
 table.insert(steps, { type = 'transition', effect = 'fade', direction = 'out', duration = 500 })
 
 if (type(zones) == 'string') then
@@ -24,6 +24,9 @@ if (type(zones) == 'string') then
     table.insert(steps, { type = 'load_zone', zone = zones, zip = zip, effect = 'cross', duration = 500 })
 else
     pixos.log(pixos.as_obj({ msg = 'loading zones via cutscene', zones = zones, zip = zip }));
+    -- needs work -- In theory this will run multiple back-to-back transitions if it loads multiple zones.
+    -- will need to instead have it play on possibly the last one? Or - so some kind of general cross fade
+    -- once all are loaded to achieve the effect? Will revisit - todo.
     for i = 1, #zones do
         local zone = zones[i];
         table.insert(steps, { type = 'load_zone', zone = zone, zip = zip, effect = 'cross', duration = 500 })

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -10,8 +10,6 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-
-// Removed unused gl-transition import. Our custom transition effects are implemented below.
 
 // Absolute imports
 import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.jsx';
@@ -21,6 +19,7 @@ import { OBJ } from '../../utils/obj/index.js';
 import CameraManager from './camera.jsx';
 import LightManager from './light.jsx';
 import GLEngine from '../index.jsx';
+import { fetchTransitionShaderFiles } from './shaders.jsx'
 
 export default class RenderManager {
   /** Rendering Manager for Engine
@@ -64,19 +63,8 @@ export default class RenderManager {
       this.transitionDirection = 'out';
       this.transitionStartTime = 0;
       this.transitionCallback = null;
-
-      // GPU-based transition programs. Each effect (fade, cross, swirl) will
-      // compile its own simple shader program the first time it is used. These
-      // programs draw a full-screen quad with a WebGL fragment shader that
-      // computes the overlay color based on progress and direction. Entries
-      // are lazily created in `initTransitionProgram()` and cached here.
       this.transitionGL = {};
 
-      // Debug counters for performance metrics. The engine's debug overlay
-      // reads these values each frame to display the number of tiles and
-      // sprites drawn. The counters are reset at the beginning of each
-      // frame via the resetDebugCounters() method. Additional counters can
-      // be added here as needed.
       this.debug = {
         tilesDrawn: 0,
         spritesDrawn: 0,
@@ -574,7 +562,7 @@ export default class RenderManager {
    * @returns {Promise<void>} Resolves when the transition has completed.
    */
   startTransition(params = {}) {
-    const { effect = 'cross', direction = 'out', duration = 1000 } = params;
+    const { effect = 'fade', direction = 'out', duration = 1000 } = params;
     // If another transition is currently active we create a chained Promise that
     // will run after the existing one. This avoids overlapping transitions.
     const schedule = () => {
@@ -642,23 +630,13 @@ export default class RenderManager {
     // Load shader sources from the transition shader files. We normalize
     // effect names that start with "fade" to the base "fade" directory.
     let effectName = effect;
-    if (effectName.startsWith('cross')) {
-      effectName = 'cross';
+    if (effectName.startsWith('fade')) {
+      effectName = 'fade';
     }
+
     // Require the vertex and fragment shaders for the selected effect.
-    let vsSource;
-    let fsSource;
-    if (effectName === 'cross') {
-      vsSource = require('../../shaders/transition/cross/vs.jsx').default();
-      fsSource = require('../../shaders/transition/cross/fs.jsx').default();
-    } else if (effectName === 'cross') {
-      vsSource = require('../../shaders/transition/swirl/vs.jsx').default();
-      fsSource = require('../../shaders/transition/swirl/fs.jsx').default();
-    } else {
-      // Default to fade transition. This also handles 'fadeOut' and 'fadeIn'.
-      vsSource = require('../../shaders/transition/fade/vs.jsx').default();
-      fsSource = require('../../shaders/transition/fade/fs.jsx').default();
-    }
+    let [vsSource, fsSource] = fetchTransitionShaderFiles(effectName);
+
     // Compile and link the program.
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
@@ -677,9 +655,9 @@ export default class RenderManager {
     // Four corners: bottom-left, top-left, bottom-right, top-right.
     const vertices = new Float32Array([
       -1.0, -1.0,
-      -1.0,  1.0,
-       1.0, -1.0,
-       1.0,  1.0,
+      -1.0, 1.0,
+      1.0, -1.0,
+      1.0, 1.0,
     ]);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
     // Get uniform locations.
@@ -706,7 +684,7 @@ export default class RenderManager {
    */
   renderTransition(progress) {
     const { gl } = this.engine;
-    const effect = this.transitionEffect || 'cross';
+    const effect = this.transitionEffect || 'fade';
     // Ensure the program is compiled.
     this.initTransitionProgram(effect);
     const trans = this.transitionGL[effect];
