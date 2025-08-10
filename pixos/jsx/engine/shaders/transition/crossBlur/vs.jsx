@@ -1,6 +1,6 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine   	       **
+**          Calliope - Pixos Game Engine           **
 ** ----------------------------------------------- **
 **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
@@ -9,31 +9,17 @@
 **                                                 **
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
-\*                                                 */
+*                                                 */
 
-export default class ActionQueue {
-  /**
-   * Action/Event Queue
-   */
-  constructor() {
-    this.actions = [];
-  }
+// Vertex shader for full‑screen transitions (used by fade/blur/cross/crossBlur).
 
-  /**
-   * Add to Queue
-   * @param {*} action 
-   */
-  add(action) {
-    this.actions.push(action);
+export default function vs() {
+  return `
+  attribute vec2 aPosition;
+  varying vec2 vUV;
+  void main() {
+      vUV = (aPosition + 1.0) * 0.5;
+      gl_Position = vec4(aPosition, 0.0, 1.0);
   }
-
-  /**
-   * Run Action
-   */
-  run() {
-    let args = arguments;
-    this.actions = this.actions.filter((action) => {
-      return action(args);
-    });
-  }
+  `;
 }

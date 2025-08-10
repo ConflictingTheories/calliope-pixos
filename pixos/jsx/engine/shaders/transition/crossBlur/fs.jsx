@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 *                                                 */
 
-// Fragment shader for a radial blur‑mask transition. The edge is softened
-// with smoothstep. uDirection > 0.5 = IN (mask shrinks), else OUT (mask grows).
+// Fragment shader for a horizontal cross‑blur wipe. Progress moves the edge
+// across X; we soften with smoothstep. uDirection > 0.5 = IN (wipe recedes).
 
 export default function fs() {
   return `
@@ -22,18 +22,17 @@ export default function fs() {
   uniform float uDirection;
 
   void main() {
-      vec2 center = vec2(0.5, 0.5);
-      float dist = distance(vUV, center);
+      // Determine wipe center position depending on direction
+      float pos = (uDirection > 0.5) ? (1.0 - uProgress) : uProgress;
 
-      // Radius grows [0..1] for OUT, shrinks for IN
-      float radius = (uDirection > 0.5) ? (1.0 - uProgress) : uProgress;
+      // Feather width in UV space
+      float feather = 0.12;
 
-      // Blur width relative to screen; tweak for softer/harder edge
-      float feather = 0.20; // 20% of radius as feather
-      float edge0 = radius - feather * 0.5;
-      float edge1 = radius + feather * 0.5;
+      // Distance from the moving edge (vertical line at x=pos)
+      float d = vUV.x - pos;
 
-      float mask = smoothstep(edge0, edge1, dist);
+      // Soft mask around the edge using smoothstep
+      float mask = smoothstep(-feather, feather, d);
 
       // Black overlay with soft edge
       gl_FragColor = vec4(0.0, 0.0, 0.0, mask);

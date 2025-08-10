@@ -17,11 +17,11 @@ local zip = pixos.from(portal, 'zip');
 -- will fade out, load each zone from the specified zip file, then fade in.
 local steps = {}
 -- Fade out 
-table.insert(steps, { type = 'transition', effect = 'fade', direction = 'out', duration = 500 })
+table.insert(steps, { type = 'transition', effect = 'blur', direction = 'out', duration = 500 })
 
 if (type(zones) == 'string') then
     pixos.log(pixos.as_obj({ msg = 'loading zone via cutscene', zone = zones, zip = zip }));
-    table.insert(steps, { type = 'load_zone', zone = zones, zip = zip, effect = 'cross', duration = 500 })
+    table.insert(steps, { type = 'load_zone', zone = zones, zip = zip, effect = 'blur', duration = 500 })
 else
     pixos.log(pixos.as_obj({ msg = 'loading zones via cutscene', zones = zones, zip = zip }));
     -- needs work -- In theory this will run multiple back-to-back transitions if it loads multiple zones.
@@ -29,12 +29,12 @@ else
     -- once all are loaded to achieve the effect? Will revisit - todo.
     for i = 1, #zones do
         local zone = zones[i];
-        table.insert(steps, { type = 'load_zone', zone = zone, zip = zip, effect = 'cross', duration = 500 })
+        table.insert(steps, { type = 'load_zone', zone = zone, zip = zip, effect = 'blur', duration = 500 })
     end
 end
 
 -- Fade back in
-table.insert(steps, { type = 'transition', effect = 'fade', direction = 'in', duration = 500 })
+table.insert(steps, { type = 'transition', effect = 'blur', direction = 'in', duration = 500 })
 
 -- Run the cutscene. Using pixos.sync ensures the script waits for completion.
 pixos.sync({ pixos.run_cutscene(steps) })
