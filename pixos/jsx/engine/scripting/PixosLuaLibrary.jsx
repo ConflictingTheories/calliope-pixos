@@ -35,7 +35,41 @@ export default class PixosLuaLibrary {
       get_world: () => {
         return engine.spritz.world;
       },
-
+      // flag functions
+      all_flags: (action = false) => {
+        const flags = engine.store.all();
+        if (action)
+          return ()=>Promise.resolve(flags);
+        return flags;
+      },
+      has_flag: (key, action = false) => {
+        console.log('checking flag via lua', key, action);
+        const hasFlag = engine.store.keys().includes(key);
+        if (action)
+          return ()=>Promise.resolve(hasFlag);
+        return hasFlag;
+      },
+      set_flag: (key, value, action = false) => {
+        console.log('setting flag via lua', key, action);
+        const flag = engine.store.set(key, value.toObject());
+        if (action)
+          return ()=>Promise.resolve(flag);
+        return flag;
+      },
+      add_flag: (key, value, action = false) => {
+        console.log('adding flag via lua', key, action);
+        engine.store.add(key, value.toObject());
+        if (action)
+          return ()=>Promise.resolve(true);
+        return true;
+      },
+      get_flag: (key, action = false) => {
+        console.log('getting flag via lua', key, action);
+        const flag = engine.store.get(key);
+        if (action)
+          return ()=>Promise.resolve(flag);
+        return flag;
+      },
       // world functions
       remove_all_zones: () => {
         console.log({ msg: 'removing all zones via lua' });
@@ -155,22 +189,14 @@ export default class PixosLuaLibrary {
             }
           });
       },
-
-      // zone functions
-      play_cutscene: (cutscene) => {
-        // todo - not working
-        return () =>
+      run_transition: (effect = 'fade', direction = 'out', duration = 500) => {
+        return () => {
           new Promise((resolve) => {
-            console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
-            if (envScope.zone.playCutscene) {
-              console.log({ msg: 'cutscene function found' });
-              return envScope.zone.playCutscene(cutscene).then(() => {
-                resolve();
-              });
-            } else {
-              resolve();
-            }
-          });
+            const rm = engine.renderManager;
+            if (!rm) resolve();
+            return rm.startTransition({ effect, direction, duration }).then(() => resolve());
+          })
+        }
       },
       sprite_dialogue: (spriteId, dialogue, options = {}) => {
         return () =>
@@ -235,7 +261,7 @@ export default class PixosLuaLibrary {
             );
           });
       },
-      
+
       _pan: (direction, radians = Math.PI / 4) => {
         if (direction === 'CCW') {
           engine.renderManager.camera.panCCW(this.luainjs.CoerceArgToFloat(radians));

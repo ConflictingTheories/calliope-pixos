@@ -14,9 +14,11 @@ export const updateDebugInformation = (self) => {
 export const updateWebglDebugInformation = (self) => {
     if (self.showWebglDebug && self.webglDebugDiv) {
         const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        self.lastDebugTime = now;
         const delta = now - self.lastDebugTime;
         const fps = delta > 0 ? (1000.0 / delta).toFixed(1) : '0';
-        self.lastDebugTime = now;
+
+        self.store.set('Debug::Webgl::UpdateTime', self.lastDebugTime);
 
         const gl = self.gl;
         let renderer = '';
@@ -50,7 +52,9 @@ export const updateWebglDebugInformation = (self) => {
  */
 export const updateFlagDebugInformation = (self) => {
     if (self.showFlagDebug && self.flagDebugDiv) {
-        const flags = self.flags;
+        self.store.set('Debug::Flag::UpdateTime', Date.now());
+        const flags = self.store.all();
+        console.log({self, keys: JSON.stringify(flags), store: self.store.keys()});
         const data = Object.keys(flags).map((key) => {
             return '' + key + ': ' + JSON.stringify(flags[key]) + '<br>'
         });
@@ -80,6 +84,7 @@ export const attachFlagDebugInfo = (self) => {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'F4') {
             self.showFlagDebug = !self.showFlagDebug;
+            self.store.set('Debug::Flag::showDebug', self.showFlagDebug);
             self.flagDebugDiv.style.display = self.showFlagDebug ? 'block' : 'none';
         }
     });
@@ -107,6 +112,7 @@ export const attachWebglDebugInfo = (self) => {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'F3') {
             self.showWebglDebug = !self.showWebglDebug;
+            self.store.set('Debug::Webgl::showDebug', self.showWebglDebug);
             self.webglDebugDiv.style.display = self.showWebglDebug ? 'block' : 'none';
         }
     });

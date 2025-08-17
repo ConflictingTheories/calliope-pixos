@@ -20,47 +20,91 @@ export default class Store {
     // Store setup - session based
     store.pixos = {};
     this.store = store.pixos;
-    this.fetchStore = this.fetchStore.bind(this);
-    this.addStore = this.addStore.bind(this);
-    this.delStore = this.delStore.bind(this);
-    this.updateStore = this.updateStore.bind(this);
+    this.get = this.get.bind(this);
+    this.all = this.all.bind(this);
+    this.size = this.size.bind(this);
+    this.keys = this.keys.bind(this);
+    this.values = this.values.bind(this);
+    this.add = this.add.bind(this);
+    this.delete = this.delete.bind(this);
+    this.set = this.set.bind(this);
   }
+
+  /**
+   * Returns a copy of the key-values in the store (note - only a copy is provided)
+   * @returns 
+   */
+  all() {
+    return this.store;
+    return Object.assign({}, this.store);
+  }
+
+  /**
+   * Get list of keys (no values)
+   * @returns 
+   */
+  keys() {
+    return Object.keys(this.store);
+  }
+
+  /**
+   * Gets list of values from store (no keys)
+   * @returns 
+   */
+  values(){
+    return Object.keys(this.store).map(key => this.store[key]);
+  }
+
+  /**
+   * Return size of keystore
+   * @returns 
+   */
+  size() {
+    return Object.keys(this.store).length;
+  }
+
 
   /**
    * fetch value from store
    * @param {*} key
    * @returns
    */
-  fetchStore(key) {
+  get(key) {
+    if (!this.store[key]) {
+      throw 'no key set'
+    }
     return this.store[key];
   }
 
   /**
-   * add key to store and returns id
+   * add key to store but only if not existing
    * @param {*} key
    * @param {*} value
    * @returns
+   * @throws 
    */
-  addStore(key, value) {
+  add(key, value) {
+    if (!!this.store[key]) {
+      throw 'key already exists';
+    }
     return (this.store[key] = { ...value });
   }
 
   /**
-   * update key in store returns number of rows
+   * set key in store (no checks for existing - just overwrites)
    * @param {*} key
    * @param {*} changes
    * @returns
    */
-  updateStore(key, changes) {
+  set(key, changes) {
     return (this.store[key] = { ...changes });
   }
 
   /**
-   * delete key from store returns number of rows
-   * @param {*} key
+   * delete key from store
    * @returns
    */
-  delStore(key) {
+  delete(key) {
     return (this.store[key] = null);
   }
 }

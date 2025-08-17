@@ -87,6 +87,9 @@ export default class CutsceneManager {
       // -- Thinking along the lines of run script, dialogue, picker, music, sprite and object actions, etc.
       // -- in theory should be able to script a scene, set flags too, and have it proceed to the next scene if
       // -- if another one follows. -- I should be able to script a basic 'movie' using this
+      case 'action':
+        promise = this._doAction(step);
+        break;
       case 'wait':
         promise = this._doWait(step.ms || 0);
         break;
@@ -118,6 +121,11 @@ export default class CutsceneManager {
     const direction = step.direction || 'out';
     const duration = step.duration || 500;
     return rm.startTransition({ effect, direction, duration });
+  }
+  _doAction(step) {
+    const action = step.action;
+    if (!action) return Promise.resolve();
+    return action();
   }
   _doLoadZone(step) {
     const { zone, remotely = false, zip } = step;

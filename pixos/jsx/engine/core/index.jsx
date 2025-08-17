@@ -74,9 +74,6 @@ export default class GLEngine {
     // MEMORY STORE
     this.store = new Store();
 
-    // FLAGS
-    this.flags = {};
-
     // CUTSCENE MANAGER
     // Manages scripted cutscene sequences (transitions, waits, zone loads).
     this.cutscene = new CutsceneManager(this);
@@ -115,7 +112,7 @@ export default class GLEngine {
     this.ctx = ctx;
     this.gp = gp;
     this.frameCount = 0;
-
+    this.lastDebugTime = Date.now();
 
     this.spritz = spritz;
     this.fullscreen = false;
