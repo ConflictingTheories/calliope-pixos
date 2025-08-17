@@ -19,6 +19,8 @@ import Store from './store.jsx';
 import Hud from './hud.jsx';
 import RenderManager from './render/manager.jsx';
 import ResourceManager from './resource/manager.jsx';
+import CutsceneManager from './cutscene/manager.jsx'
+import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.jsx';
 
 export default class GLEngine {
   /**
@@ -72,9 +74,12 @@ export default class GLEngine {
     // MEMORY STORE
     this.store = new Store();
 
+    // FLAGS
+    this.flags = {};
+
     // CUTSCENE MANAGER
     // Manages scripted cutscene sequences (transitions, waits, zone loads).
-    this.cutscene = new (require('../cutscene/manager.jsx').default)(this);
+    this.cutscene = new CutsceneManager(this);
 
     // bind
     this.screenSize = this.screenSize.bind(this);
@@ -136,31 +141,11 @@ export default class GLEngine {
 
     // Create and configure a debug overlay. This overlay displays
     // performance information such as FPS and draw counts and is toggled
-    // using the F3 key. It is appended to the document body once the
+    // using the F3 key and flag information on the F4 key. It is appended to the document body once the
     // engine has been initialized and the DOM is available. The overlay
     // remains hidden until toggled.
-    (() => {
-      const div = document.createElement('div');
-      div.style.position = 'absolute';
-      div.style.top = '0';
-      div.style.left = '0';
-      div.style.background = 'rgba(0, 0, 0, 0.6)';
-      div.style.color = '#0f0';
-      div.style.padding = '4px';
-      div.style.fontFamily = 'monospace';
-      div.style.fontSize = '12px';
-      div.style.zIndex = '10000';
-      div.style.pointerEvents = 'none';
-      div.style.display = 'none';
-      this.debugDiv = div;
-      document.body.appendChild(div);
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'F3') {
-          this.showDebug = !this.showDebug;
-          this.debugDiv.style.display = this.showDebug ? 'block' : 'none';
-        }
-      });
-    })();
+    attachWebglDebugInfo(this);
+    attachFlagDebugInfo(this);
   }
 
   /**
@@ -190,9 +175,8 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
     this.gamepad.render();
     this.spritz.render(this, timestamp);
-    // Update any active screen transition effect. This will draw an overlay on
-    // top of the current frame when a transition is in progress. Note that
-    // the RenderManager manages its own `isTransitioning` flag.
+
+    // Update any active screen transition effect. (Needs some work))
     this.renderManager.updateTransition();
 
     // Update cutscene manager. While a cutscene is active this will process
@@ -202,38 +186,8 @@ export default class GLEngine {
       this.cutscene.update();
     }
 
-    // Update debug overlay if enabled. Calculate frames per second based on
-    // the elapsed time since the last frame and display the number of tiles
-    // and sprites drawn as well as WebGL renderer information. The overlay
-    // is toggled by pressing F3.
-    if (this.showDebug && this.debugDiv) {
-      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-      const delta = now - this.lastDebugTime;
-      const fps = delta > 0 ? (1000.0 / delta).toFixed(1) : '0';
-      this.lastDebugTime = now;
-      const gl = this.gl;
-      let renderer = '';
-      let vendor = '';
-      let version = '';
-      if (gl) {
-        try {
-          renderer = gl.getParameter(gl.RENDERER);
-          vendor = gl.getParameter(gl.VENDOR);
-          version = gl.getParameter(gl.VERSION);
-        } catch (e) {
-          // WebGL context may be lost or parameters unavailable
-        }
-      }
-      const debug = this.renderManager.debug || {};
-      this.debugDiv.innerHTML =
-        'FPS: ' + fps + '<br>' +
-        'Tiles Drawn: ' + (debug.tilesDrawn || 0) + '<br>' +
-        'Sprites Drawn: ' + (debug.spritesDrawn || 0) + '<br>' +
-        'Objects Drawn: ' + (debug.objectsDrawn || 0) + '<br>' +
-        'Renderer: ' + renderer + '<br>' +
-        'Vendor: ' + vendor + '<br>' +
-        'GL Version: ' + version;
-    }
+    // Update debug overlay if enabled
+    updateDebugInformation(this);
 
     this.requestId = requestAnimationFrame(this.render);
   }
