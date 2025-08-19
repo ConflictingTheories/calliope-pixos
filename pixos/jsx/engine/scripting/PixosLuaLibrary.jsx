@@ -146,6 +146,23 @@ export default class PixosLuaLibrary {
         }
       },
 
+      // zone functions
+      play_cutscene: (cutscene) => {
+        // todo - not working
+        return () =>
+          new Promise((resolve) => {
+            console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
+            if (envScope.zone.playCutscene) {pol
+              console.log({ msg: 'cutscene function found' });
+              return envScope.zone.playCutscene(cutscene).then(() => {
+                resolve();
+              });
+            } else {
+              resolve();
+            }
+          });
+      },
+
       /**
        * Run an ad-hoc cutscene defined by a Lua table of steps. Returns a
        * function that can be yielded in a Lua script and executed via
