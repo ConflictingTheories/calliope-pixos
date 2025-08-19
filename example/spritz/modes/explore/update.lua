@@ -1,0 +1,10 @@
+-- TODO - this file will represent the game loop logic for the 'explore mode'
+-- Effectively, it handle overrides, key-commands, etc.
+-- This would be the kind of default game mode - where you explore the dungeons and world, can interact,
+-- and based on the style of game, it may be click to move, or may be keyboard commands, etc.
+-- 
+-- By being able to script the loop logic for the game mode, it will allow for flexibility in the way that
+-- AI or NPCs act, or gameplay in general is conducted.
+--
+-- The real key is that I need to make sure that the current "action queue" works well with these modes, and
+-- and that I can handle things like platformers, racing, etc in theory.

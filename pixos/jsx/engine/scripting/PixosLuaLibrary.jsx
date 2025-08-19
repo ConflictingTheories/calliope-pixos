@@ -114,7 +114,7 @@ export default class PixosLuaLibrary {
             // `item` may be a Lua Table; convert to JS object
             return item && typeof item.toObject === 'function' ? item.toObject() : item;
           });
-          engine.cutscene.register(name, jsSteps);
+          engine.cutsceneManager.register(name, jsSteps);
         } catch (e) {
           console.warn('Failed to register cutscene from Lua', e);
         }
@@ -128,7 +128,7 @@ export default class PixosLuaLibrary {
        */
       start_cutscene: (name) => {
         try {
-          engine.cutscene.start(name);
+          engine.cutsceneManager.start(name);
         } catch (e) {
           console.warn('Failed to start cutscene', name, e);
         }
@@ -140,7 +140,7 @@ export default class PixosLuaLibrary {
        */
       skip_cutscene: () => {
         try {
-          engine.cutscene.skip();
+          engine.cutsceneManager.skip();
         } catch (e) {
           console.warn('Failed to skip cutscene', e);
         }
@@ -172,11 +172,11 @@ export default class PixosLuaLibrary {
               });
               // Generate a unique name for this temporary cutscene
               const name = '__lua_cutscene_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-              engine.cutscene.register(name, jsSteps);
-              engine.cutscene.start(name);
+              engine.cutsceneManager.register(name, jsSteps);
+              engine.cutsceneManager.start(name);
               // Poll until cutscene finishes
               const poll = () => {
-                if (!engine.cutscene.isRunning()) {
+                if (!engine.cutsceneManager.isRunning()) {
                   resolve();
                 } else {
                   setTimeout(poll, 30);

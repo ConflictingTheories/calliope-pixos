@@ -127,30 +127,28 @@ export default class Spritz {
   };
 
   /**
+   * Logic Update Loop (events)
+   * @param {number} now
+   */
+  update = (now) => {
+    // Build
+    Spritz._instance.world.tickOuter(now);
+  };
+
+  /**
    * Render Loop
    * @param {*} engine
    * @param {number} now
    */
   render = (engine, now) => {
-    // Build
-    Spritz._instance.world.tickOuter(now);
-
     // Draw Frame
-    this.draw(engine);
+    Spritz._instance.world.draw(engine);
 
     // effect rendering - ex) blur depth of field -- todo - revisit
     // Object.keys(this.effects).map((id) => {
     //   Spritz._instance.engine.renderManager.activateShaderEffectProgram(id);
     //   this.effectPrograms[id]?.draw();
     // });
-  };
-
-  /**
-   * Draw Spritz
-   * @param {*} engine
-   */
-  draw = (engine) => {
-    Spritz._instance.world.draw(engine);
   };
 
   /**

@@ -76,7 +76,7 @@ export default class GLEngine {
 
     // CUTSCENE MANAGER
     // Manages scripted cutscene sequences (transitions, waits, zone loads).
-    this.cutscene = new CutsceneManager(this);
+    this.cutsceneManager = new CutsceneManager(this);
 
     // bind
     this.screenSize = this.screenSize.bind(this);
@@ -148,12 +148,17 @@ export default class GLEngine {
    * Render Frame -- TODO -- Add support for multiple game 'modes' - these will be customizable and
    * will allow for overriding the default behaviour.
    * - Such as battle mode, explore mode, FPS, Debug, etc.
-   * - Games will be able to handle the core render loop via lua allowing for greater flexibilitycx p
+   * - Games will be able to handle the core render loop via lua allowing for greater flexibility
+   * - Additionally, there will be an overhaul made to the way that keybindings and click-handlers are 
+   * - managed which should allow for greater control schemes to be developed via the packages.
+   * - One thing to note - will need to have good event-flow control. Need to support passing back and forth
+   * - between modes - such as getting into a battle in 'explore' and then shifting into 'fight' mode
+   * - which could load up a battle arena, random encounters, and when done, return to the 'explore' mode
    */
   render() {
     this.frameCount++;
     // Reset debug counters at the start of each frame so that metrics
-    // reflect only the current frame's draw calls.
+    // reflect only the current frame's draw calls. (stuff like this can be moved to a 'debug mode')
     if (this.renderManager && this.renderManager.resetDebugCounters) {
       this.renderManager.resetDebugCounters();
     }
@@ -164,23 +169,22 @@ export default class GLEngine {
 
     const timestamp = new Date().getTime();
 
+    // TODO - this will be "mode" dependent - and some modes will have the picker, but it too will need some
+    // updates - it will need to support more than just specific types, and may require additionally support
+    // for further specification (such as in a battle - only allowing selection of enemies to attack)
     // enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen)
     this.renderManager.activatePickerShaderProgram(false);
     this.spritz.render(this, timestamp);
     this.getSelectedObject();
 
-    // core render loop
+    // core render loop (actually render scene to screen)
     this.renderManager.clearScreen();
     this.renderManager.activateShaderProgram();
-    this.gamepad.render();
-    this.spritz.render(this, timestamp);
-
-    // Update any active screen transition effect. (Needs some work))
-    this.renderManager.updateTransition();
-
-    if (this.cutscene) {
-      this.cutscene.update();
-    }
+    this.spritz.update(timestamp); // update scene
+    this.spritz.render(this); // render scene
+    this.cutsceneManager.update(); // update cutscene (if appl.)
+    this.renderManager.updateTransition(); // update transitions
+    this.gamepad.render(); // may be optimizable?
 
     // Update debug overlay if enabled
     updateDebugInformation(this);
