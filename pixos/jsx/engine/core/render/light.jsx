@@ -19,38 +19,22 @@ export default class LightManager {
    *
    * @param {GLEngine} engine
    */
-  constructor() {
-    this.lights = {};
-    // methods
-    this.addLight = this.addLight.bind(this);
-    this.removeLight = this.removeLight.bind(this);
-    this.tick = this.tick.bind(this);
-    this.render = this.render.bind(this);
-    this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
-  }
-
-  /**
-   * Get the instance of the Camera Manager
-   * @returns {CameraManager} The Camera Manager instance
-   */
-  static getInstance() {
+  constructor(renderManager) {
     if (!LightManager.instance) {
-      LightManager.instance = new LightManager();
-    }
-    return LightManager.instance;
-  }
-
-  /**
-   * Create a new camera instance
-   * @param {RenderManager} renderManager The rendering manager
-   * @returns {LightManager} The camera instance
-   */
-  createLightManager(renderManager) {
-    if (!this.renderManager) {
+      this.lights = {};
       this.renderManager = renderManager;
       this.engine = renderManager.engine;
+      // methods
+      this.addLight = this.addLight.bind(this);
+      this.removeLight = this.removeLight.bind(this);
+      this.tick = this.tick.bind(this);
+      this.render = this.render.bind(this);
+      this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
+      LightManager.instance = this;
     }
+
     return LightManager.instance;
+
   }
 
   /**

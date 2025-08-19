@@ -17,9 +17,7 @@ import * as JSZip from 'jszip';
 // Shaders
 import fs from '@Engine/shaders/fs.jsx';
 import vs from '@Engine/shaders/vs.jsx';
-import blurFs from '@Engine/shaders/blur/fs.jsx';
-import blurVs from '@Engine/shaders/blur/vs.jsx';
-import blurInit from '@Engine/shaders/blur/init.jsx';
+// effect shaders -- needs work - not working
 import World from '@Engine/core/scene/world.jsx';
 
 // Spritz Object
@@ -35,12 +33,6 @@ export default class Spritz {
     };
     this.effects = {
       // todo - make more dynamic and support for custom effects
-      blur: {
-        id: 'blur',
-        fs: blurFs(),
-        vs: blurVs(),
-        init: blurInit,
-      },
     };
     this.effectPrograms = {};
 

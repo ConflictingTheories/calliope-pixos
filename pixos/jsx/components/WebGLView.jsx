@@ -15,7 +15,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import glEngine from '@Engine/core/index.jsx';
-import { minecraftia } from '@Engine/core/hud.jsx';
+import { minecraftia } from '@Engine/core/hud/index.jsx';
 //
 const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) => {
   // Canvas

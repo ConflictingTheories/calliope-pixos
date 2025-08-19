@@ -1,4 +1,4 @@
-import GLEngine from './index.jsx';
+import GLEngine from '../index.jsx';
 
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 

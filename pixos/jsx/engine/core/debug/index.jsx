@@ -14,11 +14,9 @@ export const updateDebugInformation = (self) => {
 export const updateWebglDebugInformation = (self) => {
     if (self.showWebglDebug && self.webglDebugDiv) {
         const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        self.lastDebugTime = now;
         const delta = now - self.lastDebugTime;
         const fps = delta > 0 ? (1000.0 / delta).toFixed(1) : '0';
-
-        self.store.set('Debug::Webgl::UpdateTime', self.lastDebugTime);
+        self.lastDebugTime = now;
 
         const gl = self.gl;
         let renderer = '';

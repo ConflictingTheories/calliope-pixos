@@ -149,13 +149,6 @@ export default class World {
    */
   async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
-    // Optionally perform a transition before loading a standard zone. If a
-    // transition configuration is provided, we fade out before loading and
-    // fade back in after the new zone is ready. The transitionParams object
-    // can specify an effect ("fade", "cross", "swirl") and duration in
-    // milliseconds. The direction is automatically set to "out" and then
-    // "in" for the two phases. Note: changezone actions manage their own
-    // transitions and therefore should pass `null` for this parameter.
     const engine = this.engine;
     // Decide whether to perform a transition. We only start a new
     // transition if the previous one has completed and a small delay has

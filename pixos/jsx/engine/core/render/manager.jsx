@@ -72,16 +72,19 @@ export default class RenderManager {
       };
 
       // Camera
-      this.camera = CameraManager.getInstance().createCamera(this);
+      this.cameraManager = new CameraManager(this);
+      this.camera = this.cameraManager.camera;
 
       // Lights
-      this.lightManager = LightManager.getInstance().createLightManager(this);
+      this.lightManager = new LightManager(this);
 
       // Methods
       this.initShaderProgram = this.initShaderProgram.bind(this);
       this.initShaderEffects = this.initShaderEffects.bind(this);
       this.activateShaderProgram = this.activateShaderProgram.bind(this);
       this.activateShaderEffectProgram = this.activateShaderEffectProgram.bind(this);
+
+      RenderManager._instance = this;
     }
     return RenderManager._instance;
   }

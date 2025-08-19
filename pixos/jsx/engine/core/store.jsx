@@ -10,24 +10,27 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-import { store } from 'react-recollect';
 
 export default class Store {
   /**
    * Store
    */
   constructor() {
+     if (!Store._instance) {
+        this.store = {};
+        this.get = this.get.bind(this);
+        this.all = this.all.bind(this);
+        this.size = this.size.bind(this);
+        this.keys = this.keys.bind(this);
+        this.values = this.values.bind(this);
+        this.add = this.add.bind(this);
+        this.delete = this.delete.bind(this);
+        this.set = this.set.bind(this);
+        Store._instance = this;
+        }
+        return Store._instance;
     // Store setup - session based
-    store.pixos = {};
-    this.store = store.pixos;
-    this.get = this.get.bind(this);
-    this.all = this.all.bind(this);
-    this.size = this.size.bind(this);
-    this.keys = this.keys.bind(this);
-    this.values = this.values.bind(this);
-    this.add = this.add.bind(this);
-    this.delete = this.delete.bind(this);
-    this.set = this.set.bind(this);
+   
   }
 
   /**
@@ -35,7 +38,6 @@ export default class Store {
    * @returns 
    */
   all() {
-    return this.store;
     return Object.assign({}, this.store);
   }
 

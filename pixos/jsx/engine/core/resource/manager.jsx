@@ -49,6 +49,7 @@ export default class ResourceManager {
       this.loadSpeech = this.loadSpeech.bind(this);
       this.loadTexture = this.loadTexture.bind(this);
       this.loadTextureFromZip = this.loadTextureFromZip.bind(this);
+      ResourceManager._instance = this;
     }
     return ResourceManager._instance;
   }

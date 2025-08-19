@@ -12,7 +12,7 @@
 \*                                                 */
 
 import ActionQueue from '@Engine/core/queue/index.jsx';
-import { textScrollBox } from '@Engine/core/hud.jsx';
+import { textScrollBox } from '@Engine/core/hud/index.jsx';
 
 export default class Speech {
   /**

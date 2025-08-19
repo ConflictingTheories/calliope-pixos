@@ -153,30 +153,11 @@ export class Camera {
 
 // Singleton Factory for Camera Manager
 export default class CameraManager {
-  constructor() {
-    this.camera = null;
-  }
-
-  /**
-   * Get the instance of the Camera Manager
-   * @returns {CameraManager} The Camera Manager instance
-   */
-  static getInstance() {
+  constructor(renderingManager) {
     if (!CameraManager.instance) {
-      CameraManager.instance = new CameraManager();
+      this.camera = new Camera(renderingManager);
+      CameraManager.instance = this;
     }
     return CameraManager.instance;
-  }
-
-  /**
-   * Create a new camera instance
-   * @param {RenderManager} renderingManager The rendering manager
-   * @returns {Camera} The camera instance
-   */
-  createCamera(renderingManager) {
-    if (!this.camera) {
-      this.camera = new Camera(renderingManager);
-    }
-    return this.camera;
   }
 }

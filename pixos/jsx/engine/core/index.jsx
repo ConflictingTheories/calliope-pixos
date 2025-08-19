@@ -16,7 +16,7 @@ import { GamePad } from '../utils/gamepad/index.jsx';
 import Keyboard from '../utils/keyboard.jsx';
 import Database from './database.jsx';
 import Store from './store.jsx';
-import Hud from './hud.jsx';
+import Hud from './hud/index.jsx';
 import RenderManager from './render/manager.jsx';
 import ResourceManager from './resource/manager.jsx';
 import CutsceneManager from './cutscene/manager.jsx'
@@ -112,7 +112,6 @@ export default class GLEngine {
     this.ctx = ctx;
     this.gp = gp;
     this.frameCount = 0;
-    this.lastDebugTime = Date.now();
 
     this.spritz = spritz;
     this.fullscreen = false;
@@ -146,7 +145,10 @@ export default class GLEngine {
   }
 
   /**
-   * Render Frame
+   * Render Frame -- TODO -- Add support for multiple game 'modes' - these will be customizable and
+   * will allow for overriding the default behaviour.
+   * - Such as battle mode, explore mode, FPS, Debug, etc.
+   * - Games will be able to handle the core render loop via lua allowing for greater flexibilitycx p
    */
   render() {
     this.frameCount++;
@@ -158,7 +160,7 @@ export default class GLEngine {
 
     // clear canvases
     this.hud.clearHud();
-    this.renderManager.clearScreen(); // todo - move into view
+    this.renderManager.clearScreen();
 
     const timestamp = new Date().getTime();
 
@@ -168,7 +170,7 @@ export default class GLEngine {
     this.getSelectedObject();
 
     // core render loop
-    this.renderManager.clearScreen(); // todo - move into view
+    this.renderManager.clearScreen();
     this.renderManager.activateShaderProgram();
     this.gamepad.render();
     this.spritz.render(this, timestamp);
@@ -176,9 +178,6 @@ export default class GLEngine {
     // Update any active screen transition effect. (Needs some work))
     this.renderManager.updateTransition();
 
-    // Update cutscene manager. While a cutscene is active this will process
-    // queued steps such as waits, transitions and zone loads. It runs
-    // independently of the game loop and does not block rendering.
     if (this.cutscene) {
       this.cutscene.update();
     }
@@ -186,6 +185,8 @@ export default class GLEngine {
     // Update debug overlay if enabled
     updateDebugInformation(this);
 
+    // TODO -- when there is a game mode override - this will instead call the provided
+    // game mode.
     this.requestId = requestAnimationFrame(this.render);
   }
 
@@ -198,6 +199,7 @@ export default class GLEngine {
 
   /**
    * Get Selected Object on screen
+   * todo - need to move into own class
    */
   getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {
     if (this.spritz.world?.spriteList?.length <= 0) {
@@ -280,6 +282,7 @@ export default class GLEngine {
 
   /**
    * Greeting Text
+   * todo -- need to move somewhere (sprite??)
    * @param {string} text
    */
   setGreeting(text) {
@@ -312,6 +315,7 @@ export default class GLEngine {
 
   /**
    * convert a stream to a video
+   * @deprecated - Need to rework / Revisit / Remove
    * @param {*} stream
    * @param {*} ref
    * @returns
@@ -330,6 +334,7 @@ export default class GLEngine {
 
   /**
    * convert a stream to an image
+   * @deprecated - Need to rework / Revisit / Remove
    * @param {*} stream
    * @param {*} ref
    * @returns
@@ -348,6 +353,7 @@ export default class GLEngine {
 
   /**
    * convert a stream to a texture
+   * @deprecated - Need to rework / Revisit / Remove
    * @param {*} stream
    * @param {*} ref
    * @returns

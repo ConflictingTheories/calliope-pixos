@@ -10,13 +10,17 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
-
-export default function vs() {
+export default function fs() {
   return `
-  attribute vec4 aVertexPosition;
+  precision mediump float;
+ 
+  uniform samplerCube uSkybox;
+  uniform mat4 uViewDirectionProjectionInverse;
   
+  varying vec4 vPosition;
   void main() {
-      gl_Position = aVertexPosition;
-  }  
+    vec4 t = uViewDirectionProjectionInverse * vPosition;
+    gl_FragColor = textureCube(uSkybox, normalize(t.xyz / t.w));
+  }
 `;
 }
