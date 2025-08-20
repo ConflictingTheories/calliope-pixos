@@ -1,72 +1,46 @@
-/*                                                 *\
-** ----------------------------------------------- **
-**             Pixospritz - Editor   	             **
-** ----------------------------------------------- **
-**  Copyright (c) 2022-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-\*                                                 */
+/*
+ * ---------------------------------------------------------------
+ *                 Pixospritz – Editor – Image Preview
+ * ---------------------------------------------------------------
+ * Copyright (c) 2022‑2025  Kyle Derby MacInnis
+ *
+ * This component simply renders an image using a provided data
+ * URI.  It receives the encoded image via the `content` prop
+ * and updates whenever that prop changes.  If no content is
+ * provided the component renders nothing.  Wrapping markup is
+ * styled with horizontal rules and padding to match the other
+ * preview components.
+ */
 
 import React, { Component } from 'react';
-import { collect, store } from 'react-recollect';
+import { collect } from 'react-recollect';
 
 class ImagePreview extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      src: props?.src || '',
       content: props?.content || null,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props != nextProps) {
-      this.setState({
-        content: nextProps.content,
-        src: nextProps.src,
-      });
+    if (this.props.content !== nextProps.content) {
+      this.setState({ content: nextProps.content });
     }
   }
-
-  async componentDidMount() {
-    // TODO -- Fetch image based on src from zip
-    //
-    // ie) if external image src is provided.
-
-    //Fetch Source and Render Content
-    if (this.state.src && this.state.src !== '') {
-      const response = await fetch('/content/' + this.state.src);
-      // 2) filter on 200 OK
-      if (response.status === 200 || response.status === 0) {
-        let content = (await response.blob()).readAsDataURL(b);
-        this.setState({ content });
-      } else {
-        return Promise.reject(new Error(response.statusText));
-      }
-    }
-  }
-
-  componentWillUnmount() {}
 
   render() {
     const { content } = this.state;
-    let res = null;
-    try {
-      res = (
-        <React.Fragment>
-          <hr />
-            <img src={content} />
-          <hr />
-        </React.Fragment>
-      );
-    } catch (e) {
-      console.error(e);
+    if (!content) {
+      return null;
     }
-    return res;
+    return (
+      <div style={{ padding: '1rem' }}>
+        <hr />
+        <img src={content} style={{ maxWidth: '100%' }} />
+        <hr />
+      </div>
+    );
   }
 }
 

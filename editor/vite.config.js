@@ -1,168 +1,56 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { VitePWA } from "vite-plugin-pwa";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
+// This configuration mirrors the upstream editor setup.  It
+// specifies a relative base path for correct asset resolution and
+// registers the service worker for offline support using the
+// injectManifest strategy.  Additional file handlers have been
+// removed for brevity but can be reintroduced as needed.
 export default defineConfig(() => {
   return {
-    base: "./",
+    base: './',
     build: {
-      outDir: "build"
+      outDir: 'build',
     },
     plugins: [
       react(),
       VitePWA({
-        registerType: "autoUpdate",
-        strategies: "injectManifest",
-        srcDir: "src",
-        filename: "sw.js",
+        registerType: 'autoUpdate',
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.js',
         injectManifest: {
-          rollupFormat: "iife",
-          globPatterns: [
-            "./**/*.{js,css,png,ttf,wasm,zip}",
-            "./*.{html,ico,png,js,json}"
-          ]
+          rollupFormat: 'iife',
+          globPatterns: ['./**/*.{js,css,png,ttf,wasm,zip}', './*.{html,ico,png,js,json}'],
         },
         includeManifestIcons: false,
         manifest: {
-          "short_name": "Pixos Editor",
-          "name": "PixoSpritz Editor",
-          "description": "Read, edit and write pixos package files.",
-          "start_url": "./index.html",
-          "display": "fullscreen",
-          "theme_color": "#000000",
-          "background_color": "#ffffff",
-          "orientation": "any",
-          "categories": [
-            "utilities"
+          short_name: 'Pixos Editor',
+          name: 'PixoSpritz Editor',
+          description: 'Read, edit and write pixos package files.',
+          start_url: './index.html',
+          display: 'fullscreen',
+          theme_color: '#000000',
+          background_color: '#ffffff',
+          orientation: 'any',
+          categories: ['utilities'],
+          icons: [
+            {
+              src: '/assets/icons/icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/assets/icons/icon-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any',
+            },
           ],
-          "icons": [
-            {
-              "src": "/assets/icons/icon-512x512.png",
-              "sizes": "512x512",
-              "type": "image/png",
-              "purpose": "any"
-            },
-            {
-              "src": "/assets/icons/icon-192x192.png",
-              "sizes": "192x192",
-              "type": "image/png",
-              "purpose": "any"
-            },
-            {
-              "src": "/assets/icons/icon-512x512.png",
-              "sizes": "512x512",
-              "type": "image/png",
-              "purpose": "maskable"
-            },
-            {
-              "src": "/assets/icons/icon-192x192.png",
-              "sizes": "192x192",
-              "type": "image/png",
-              "purpose": "maskable"
-            },
-            {
-              "src": "/assets/icons/icon-512x512-mono.png",
-              "sizes": "512x512",
-              "type": "image/png",
-              "purpose": "monochrome"
-            },
-            {
-              "src": "./assets/icons/icon-192x192-mono.png",
-              "sizes": "192x192",
-              "type": "image/png",
-              "purpose": "monochrome"
-            }
-          ],
-          "file_handlers": [
-            {
-              "action": "./index.html",
-              "accept": {
-                "application/zip": [
-                  ".zip"
-                ],
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
-                  ".docx"
-                ],
-                "application/epub+zip": [
-                  ".epub"
-                ],
-                "application/java-archive": [
-                  ".jar"
-                ],
-                "application/vnd.oasis.opendocument.presentation": [
-                  ".odp"
-                ],
-                "application/vnd.oasis.opendocument.spreadsheet": [
-                  ".ods"
-                ],
-                "application/vnd.oasis.opendocument.text": [
-                  ".odt"
-                ],
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation": [
-                  ".pptx"
-                ],
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-                  ".xlsx"
-                ],
-                "application/vnd.apple.keynote": [
-                  ".key"
-                ],
-                "application/vnd.apple.pages": [
-                  ".pages"
-                ],
-                "application/vnd.apple.numbers": [
-                  ".numbers"
-                ],
-                "application/vnd.android.package-archive": [
-                  ".apk"
-                ],
-                "application/x-ios-app": [
-                  ".ipa"
-                ]
-              },
-              "launch_type": "single-client"
-            }
-          ],
-          "share_target": {
-            "action": "./shared-files",
-            "enctype": "multipart/form-data",
-            "method": "POST",
-            "params": {
-              "files": [
-                {
-                  "name": "shared-files",
-                  "accept": [
-                    "*/*"
-                  ]
-                }
-              ]
-            }
-          },
-          "screenshots": [
-            {
-              "src": "./screenshots/screenshot-395x640.png",
-              "sizes": "395x640",
-              "type": "image/png",
-              "form_factor": "narrow",
-              "label": "Main screen on mobile"
-            },
-            {
-              "src": "./screenshots/screenshot-app-1135x809.png",
-              "sizes": "1135x809",
-              "type": "image/png",
-              "form_factor": "wide",
-              "label": "Main screen on desktop"
-            },
-            {
-              "src": "./screenshots/screenshot-custom-395x640.png",
-              "sizes": "395x640",
-              "type": "image/png",
-              "form_factor": "narrow",
-              "label": "Custom user interface on mobile"
-            }
-          ]
-        }
-      })
-    ]
+        },
+      }),
+    ],
   };
 });

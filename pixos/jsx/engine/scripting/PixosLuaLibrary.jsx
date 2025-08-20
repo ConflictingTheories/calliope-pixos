@@ -164,6 +164,10 @@ export default class PixosLuaLibrary {
       },
 
       /**
+       * TODO - This is working well - but I need to fix up older cutscene methods,
+       * and consolidate everything together. Zones, etc, should all work using the 
+       * same system.
+       * 
        * Run an ad-hoc cutscene defined by a Lua table of steps. Returns a
        * function that can be yielded in a Lua script and executed via
        * pixos.sync. The returned function resolves when the cutscene

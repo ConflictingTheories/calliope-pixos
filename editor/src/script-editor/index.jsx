@@ -1,28 +1,28 @@
-/*                                                 *\
-** ----------------------------------------------- **
-**             Pixospritz - Editor   	             **
-** ----------------------------------------------- **
-**  Copyright (c) 2022-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-\*                                                 */
+/*
+ * ---------------------------------------------------------------
+ *                 Pixospritz – Editor – Script Editor
+ * ---------------------------------------------------------------
+ * Copyright (c) 2022‑2025  Kyle Derby MacInnis
+ *
+ * This component provides a text editor for viewing and editing
+ * scripts and text files contained within a Pixospritz package.
+ * It leverages the Monaco Editor via the @monaco-editor/react
+ * wrapper.  The editor supports multiple languages (Lua, JSON,
+ * plain text, etc.) and exposes a simple save button to write
+ * changes back to the underlying entry.  Saving is currently
+ * stubbed out – integration with the zip manager is left as
+ * future work.  The component updates its internal state when
+ * new props are received and re-renders accordingly.
+ */
 
 import React, { Component } from 'react';
-import { collect, store } from 'react-recollect';
-
+import { collect } from 'react-recollect';
 import Editor from '@monaco-editor/react';
-
-// RSuite UI Library
 import { Panel, Row, Col, Container } from 'rsuite';
 
 class ScriptEditor extends Component {
   constructor(props) {
     super(props);
-    console.log('ScriptEditor', props);
     this.state = {
       content: props.content || 'please start your edits :)',
       lang: props.lang || 'lua',
@@ -32,7 +32,7 @@ class ScriptEditor extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props != nextProps) {
+    if (this.props !== nextProps) {
       this.setState({
         content: nextProps.content,
         lang: nextProps.lang,
@@ -40,17 +40,21 @@ class ScriptEditor extends Component {
     }
   }
 
-  // Write Content Back out to File
+  // TODO: Persist changes back into the zip
   async saveChanges() {
-    // todo -->
-    console.log('todo - Save Changes');
+    // When onSave prop is provided, invoke it with the current content
+    if (this.props.onSave) {
+      this.props.onSave(this.state.content);
+    } else {
+      console.log('TODO: Save changes back into the package');
+    }
   }
 
   render() {
-    const { content } = this.state;
-    let res = null;
-    let size = this.state.type === 'script-only' ? 24 : 12;
-
+    const { content, lang, type } = this.state;
+    // Determine layout based on the type – when editing scripts only
+    // we use the full width; otherwise we show two panes.
+    const size = type === 'script-only' ? 24 : 12;
     return (
       <Container>
         <Row>
@@ -66,11 +70,18 @@ class ScriptEditor extends Component {
               }}
             >
               <Container style={{ minHeight: '80vh' }}>
-                <Editor theme="vs-dark" height="86vh" value={this.state.content} language={this.state.lang} defaultValue={this.props.content} />
+                <Editor
+                  theme='vs-dark'
+                  height='86vh'
+                  value={content}
+                  language={lang}
+                  defaultValue={content}
+                  onChange={(value) => this.setState({ content: value })}
+                />
               </Container>
             </Panel>
           </Col>
-          {this.state.type === 'script-only' ? null : (
+          {type === 'script-only' ? null : (
             <Col sm={12} md={12} lg={12}>
               <Panel
                 bordered
