@@ -39,6 +39,9 @@ const App = () => {
   // Keep a list of image assets (name and data URI) for use in the tileset editor
   const [assets, setAssets] = useState([]);
 
+  // Validation report state.  When set, contains an object with `errors` and `warnings`
+  const [validationReport, setValidationReport] = useState(null);
+
   /**
    * Read a file entry from the zip filesystem and return its text
    * representation.  For binary assets this will still return a
@@ -116,6 +119,120 @@ const App = () => {
       setAssets([]);
     }
   }, [zip]);
+
+  /**
+   * Validate the currently loaded package.  Scans JSON files in the zip
+   * and checks for cross‑asset references (missing textures, invalid
+   * geometry indices, undefined tile IDs, missing portraits, etc.).
+   * Errors and warnings are collected into a report object and stored
+   * in state.  If no zip is loaded the report is cleared.
+   */
+  async function validatePackage() {
+    if (!zip) {
+      setValidationReport(null);
+      return;
+    }
+    const errors = [];
+    const warnings = [];
+    // Gather asset names for quick lookup
+    const assetNames = assets.map((a) => a.name);
+    const tilesets = [];
+    const mapsList = [];
+    const cutscenes = [];
+    const geometries = [];
+    // Build list of all JSON entries
+    const entries = Object.values(zip.files).filter((e) => !e.dir && e.name.toLowerCase().endsWith('.json'));
+    await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          const data = await entry.async('string');
+          const obj = JSON.parse(data);
+          const name = entry.name;
+          const lower = name.toLowerCase();
+          if (lower.includes('tileset') || lower.includes('tiles')) {
+            const tiles = Array.isArray(obj.tiles) ? obj.tiles : [];
+            const geom = Array.isArray(obj.geometry) ? obj.geometry : [];
+            tilesets.push({ name, tiles, geometry: geom });
+          } else if (lower.includes('map')) {
+            const layers = Array.isArray(obj.layers)
+              ? obj.layers
+              : obj.cells
+              ? [obj.cells]
+              : [];
+            const attributes = Array.isArray(obj.attributes)
+              ? obj.attributes
+              : [];
+            mapsList.push({ name, layers, attributes });
+          } else if (lower.includes('cutscene')) {
+            const events = Array.isArray(obj) ? obj : [];
+            cutscenes.push({ name, events });
+          } else if (lower.includes('geometry')) {
+            const geom = Array.isArray(obj) ? obj : [];
+            geometries.push({ name, geometry: geom });
+          }
+        } catch (err) {
+          errors.push(`File ${entry.name} contains invalid JSON`);
+        }
+      }),
+    );
+    // Build a set of all tile IDs defined across all tilesets
+    const tileIdSet = new Set();
+    tilesets.forEach((ts) => {
+      ts.tiles.forEach((tile) => {
+        if (typeof tile.id === 'number') tileIdSet.add(tile.id);
+      });
+    });
+    // Validate tilesets
+    tilesets.forEach((ts) => {
+      ts.tiles.forEach((tile, idx) => {
+        // geometry index check
+        if (tile.geometry !== undefined && tile.geometry !== null) {
+          const geomIndex = tile.geometry;
+          const length = ts.geometry.length;
+          if (geomIndex < 0 || geomIndex >= length) {
+            errors.push(
+              `Tileset ${ts.name}: tile ${idx} has invalid geometry index ${geomIndex}`,
+            );
+          }
+        }
+        // texture existence
+        if (tile.texture) {
+          if (!assetNames.includes(tile.texture)) {
+            errors.push(
+              `Tileset ${ts.name}: tile ${idx} references missing texture ${tile.texture}`,
+            );
+          }
+        }
+      });
+    });
+    // Validate maps
+    mapsList.forEach((m) => {
+      m.layers.forEach((layer) => {
+        layer.forEach((row) => {
+          row.forEach((cell) => {
+            if (cell !== 0 && !tileIdSet.has(cell)) {
+              errors.push(
+                `Map ${m.name}: cell value ${cell} is not defined in any tileset`,
+              );
+            }
+          });
+        });
+      });
+    });
+    // Validate cutscenes
+    cutscenes.forEach((cs) => {
+      cs.events.forEach((ev, idx) => {
+        if (ev.type === 'dialogue' && ev.portrait) {
+          if (!assetNames.includes(ev.portrait)) {
+            errors.push(
+              `Cutscene ${cs.name}: event ${idx + 1} references missing portrait ${ev.portrait}`,
+            );
+          }
+        }
+      });
+    });
+    setValidationReport({ errors, warnings });
+  }
 
   /** Render a script (text) editor for Lua, JSON, text files etc. */
   async function renderScriptEditor(entry, lang) {
@@ -309,6 +426,8 @@ const App = () => {
         <ZipManager
           openFile={openFile}
           onZipLoaded={(zipObj) => setZip(zipObj)}
+          onValidatePackage={validatePackage}
+          validationReport={validationReport}
         />
       </Sidebar>
       {/* Main content area displays whichever viewer/editor is active */}

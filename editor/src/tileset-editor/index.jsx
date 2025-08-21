@@ -26,10 +26,45 @@ import {
   ButtonGroup,
   SelectPicker,
   Checkbox,
+  Message,
 } from 'rsuite';
 
 function TilesetEditor({ content, onSave, assets = [] }) {
   const [tileset, setTileset] = useState({ tiles: [], geometry: [] });
+  const [error, setError] = useState(null);
+
+  // History management for undo/redo
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Push a snapshot of the current tileset into history
+  function pushHistorySnapshot(nextTileset) {
+    const snapshot = JSON.parse(JSON.stringify(nextTileset));
+    setHistory((prev) => {
+      const trimmed = prev.slice(0, historyIndex + 1);
+      const updated = [...trimmed, snapshot];
+      setHistoryIndex(updated.length - 1);
+      return updated;
+    });
+  }
+
+  // Undo last change
+  function undo() {
+    if (historyIndex > 0) {
+      const prevState = history[historyIndex - 1];
+      setTileset(prevState);
+      setHistoryIndex(historyIndex - 1);
+    }
+  }
+
+  // Redo next change
+  function redo() {
+    if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      setTileset(nextState);
+      setHistoryIndex(historyIndex + 1);
+    }
+  }
 
   // Parse incoming JSON into state
   useEffect(() => {
@@ -38,20 +73,26 @@ function TilesetEditor({ content, onSave, assets = [] }) {
         const obj = JSON.parse(content);
         const { tiles = [], geometry = [] } = obj;
         setTileset({ tiles: [...tiles], geometry: [...geometry] });
+        setError(null);
+        // Initialize history with parsed tileset
+        const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
+        setHistory([initialSnapshot]);
+        setHistoryIndex(0);
       } catch (err) {
         console.warn('Failed to parse tileset JSON', err);
+        setError('Invalid tileset JSON');
       }
     }
   }, [content]);
 
   // Update a tile property
   function updateTile(index, prop, value) {
-    setTileset((prev) => {
-      const nextTiles = prev.tiles.map((t, i) =>
-        i === index ? { ...t, [prop]: value } : t,
-      );
-      return { ...prev, tiles: nextTiles };
-    });
+    const nextTiles = tileset.tiles.map((t, i) =>
+      i === index ? { ...t, [prop]: value } : t,
+    );
+    const nextTileset = { ...tileset, tiles: nextTiles };
+    setTileset(nextTileset);
+    pushHistorySnapshot(nextTileset);
   }
 
   function handleSave() {
@@ -73,6 +114,13 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   return (
     <Container style={{ padding: '1rem' }}>
+      {error && (
+        <Row style={{ marginBottom: '0.5rem' }}>
+          <Col sm={24} md={24} lg={24}>
+            <Message type='error' description={error} />
+          </Col>
+        </Row>
+      )}
       <Row>
         <Col sm={24} md={24} lg={24}>
           <Panel bordered header={<strong>Tileset Editor</strong>}> 
@@ -149,6 +197,13 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       <Row style={{ paddingTop: '1rem' }}>
         <Button appearance='primary' onClick={handleSave}>
           Save Changes
+        </Button>
+        {/* Undo / Redo buttons */}
+        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={undo} disabled={historyIndex <= 0}>
+          Undo
+        </Button>
+        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={redo} disabled={historyIndex >= history.length - 1}>
+          Redo
         </Button>
       </Row>
       {tileset.geometry.length > 0 && (

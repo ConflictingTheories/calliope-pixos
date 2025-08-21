@@ -23,11 +23,12 @@ import {
   Panel,
   InputNumber,
   Button,
-  Table,
+  Message,
 } from 'rsuite';
 
 function GeometryEditor({ content, onSave }) {
   const [geometry, setGeometry] = useState([]);
+  const [error, setError] = useState(null);
 
   // Parse incoming JSON into an array of geometry objects
   useEffect(() => {
@@ -39,8 +40,10 @@ function GeometryEditor({ content, onSave }) {
         } else if (obj && Array.isArray(obj.geometry)) {
           setGeometry(obj.geometry);
         }
+        setError(null);
       } catch (err) {
         console.warn('Failed to parse geometry JSON', err);
+        setError('Invalid geometry JSON');
       }
     }
   }, [content]);
@@ -77,6 +80,13 @@ function GeometryEditor({ content, onSave }) {
 
   return (
     <Container style={{ padding: '1rem' }}>
+      {error && (
+        <Row style={{ marginBottom: '0.5rem' }}>
+          <Col sm={24} md={24} lg={24}>
+            <Message type='error' description={error} />
+          </Col>
+        </Row>
+      )}
       <Row>
         <Col sm={24} md={24} lg={24}>
           <Panel bordered header={<strong>Geometry Editor</strong>}>
