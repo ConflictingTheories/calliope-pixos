@@ -17,6 +17,7 @@ import { Container, Header, Sidebar, Content } from 'rsuite';
 
 // Existing modules
 import ZipManager from './zip-manager/index.jsx';
+// import ZipManager from './zip-manager/alt.jsx';
 import ScriptEditor from './script-editor/index.jsx';
 import ImagePreview from './image-preview/index.jsx';
 
@@ -425,7 +426,7 @@ const App = () => {
       <Sidebar style={{ display: 'flex', flexDirection: 'column', marginBottom: '30px' }} width={420} collapsible>
         <ZipManager
           openFile={openFile}
-          onZipLoaded={(zipObj) => setZip(zipObj)}
+          onZipLoaded={(zipObj) => { console.log({'mad':zipObj}); setZip(zipObj);}}
           onValidatePackage={validatePackage}
           validationReport={validationReport}
         />

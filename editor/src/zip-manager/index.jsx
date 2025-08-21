@@ -45,7 +45,7 @@ const apiFilesystem = zipService.createZipFileSystem();
 const { root } = apiFilesystem;
 const rootZipFilename = messages.ROOT_ZIP_FILENAME;
 
-function ZipManager({openFile}) {
+function ZipManager({ openFile, onZipLoaded }) {
   const [zipFilesystem, setZipFilesystem] = useState(apiFilesystem);
   const [selectedFolder, setSelectedFolder] = useState(root);
   const [entries, setEntries] = useState([]);
@@ -342,7 +342,7 @@ function ZipManager({openFile}) {
           clickedButtonName={clickedButtonName}
           onCreateFolder={openPromptCreateFolder}
           onAddFiles={addFiles}
-          onImportZipFile={importZipFile}
+          onImportZipFile={(a, options) => { console.log('clock');onZipLoaded(a); importZipFile(a, options); }}
           onExportZip={openPromptExportZip}
           onReset={openConfirmReset}
           onOpenOptions={openOptions}
@@ -448,7 +448,7 @@ function ZipManager({openFile}) {
       <OptionsDialog data={dialogs.options} onSetOptions={setOptions} onResetOptions={resetOptions} onClose={closeOptions} messages={messages} />
       <ChooseActionDialog
         data={dialogs.chooseAction}
-        onImportZipFile={importZipFile}
+        onImportZipFile={(a) => { onZipLoaded(a); return importZipFile(a); }}
         onAddFiles={addFiles}
         onClose={closeChooseAction}
         messages={messages}

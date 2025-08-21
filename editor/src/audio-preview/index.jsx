@@ -26,6 +26,8 @@ import { collect } from 'react-recollect';
 class AudioPreview extends Component {
   constructor(props) {
     super(props);
+          console.log({props})
+
     this.state = {
       content: props?.content || null,
     };
@@ -33,6 +35,7 @@ class AudioPreview extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props !== nextProps) {
+      console.log({nextProps})
       this.setState({ content: nextProps.content });
     }
   }
