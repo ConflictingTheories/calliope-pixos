@@ -78,12 +78,6 @@ export default class RenderManager {
       // Lights
       this.lightManager = new LightManager(this);
 
-      // Methods
-      this.initShaderProgram = this.initShaderProgram.bind(this);
-      this.initShaderEffects = this.initShaderEffects.bind(this);
-      this.activateShaderProgram = this.activateShaderProgram.bind(this);
-      this.activateShaderEffectProgram = this.activateShaderEffectProgram.bind(this);
-
       RenderManager._instance = this;
     }
     return RenderManager._instance;
@@ -302,7 +296,7 @@ export default class RenderManager {
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
       // todo -- needs work - doesn't seem to work
       this.initProjection();
-      // this.applyPixelFrustum();
+      this.applyPixelFrustum();
     } else {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -554,7 +548,6 @@ export default class RenderManager {
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
   }
 
-  // transition (fade, swipe, etc)
   /**
    * Begin a custom screen transition. This will overlay an effect (fade, cross or swirl)
    * on top of the current scene for the specified duration. When the effect
@@ -735,8 +728,4 @@ export default class RenderManager {
       this.debug.objectsDrawn = 0;
     }
   }
-
-  // Note: Legacy 2D canvas-based transition functions (drawFade, drawCross, drawSwirl)
-  // have been removed in favour of GPU-based shaders. All transitions are now
-  // rendered via WebGL by `renderTransition()`.
 }

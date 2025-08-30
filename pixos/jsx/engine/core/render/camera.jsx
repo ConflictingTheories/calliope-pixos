@@ -17,11 +17,10 @@ import { subtractVectors } from '../../utils/math/matrix4.jsx';
 
 export class Camera {
   /**
-   *
    * @param {RenderManager} renderingManager
    */
   constructor(renderingManager) {
-    // add support -- todo - move into utils
+    // Add clamp method to Number prototype for easy use
     Number.prototype.clamp = function (min, max) {
       return this < min ? min : this > max ? max : this;
     };
@@ -35,6 +34,8 @@ export class Camera {
     this.cameraDir = 'N';
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
+
+    // Bind methods for better performance and clarity in usage
     this.setCamera = this.setCamera.bind(this);
     this.lookAt = this.lookAt.bind(this);
     this.panCCW = this.panCCW.bind(this);
@@ -46,9 +47,7 @@ export class Camera {
     this.changeAngle = this.changeAngle.bind(this);
   }
 
-  /**
-   * Set Camera Pos & Angle to default
-   */
+  /** Set Camera Pos & Angle to default */
   setCamera() {
     translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
     rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
@@ -58,94 +57,97 @@ export class Camera {
     translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
   }
 
-  /** Change Camera Angle
-   *
-   * @param {*} dTheta
-   */
+  /** Change Camera Angle */
   changeAngle(dTheta) {
     this.lookAt(this.cameraPosition.toArray(), this.cameraOffset.toArray(), dTheta);
   }
 
-  /** Manually Position Camera and look at target
-   *
-   * @param {vec3} pos
-   * @param {vec3} target
-   * @param {vec3} up
-   */
+  /** Manually Position Camera and look at target */
   lookAt(pos, target, up) {
-    const { uViewMat } = this;
-    // set camera properties
-    this.cameraPosition = new Vector(...pos);
-    this.cameraOffset = new Vector(...target);
-    this.cameraVector = new Vector(...up);
-
-    // calculate new view matrix
     const zAxis = new Vector(...normalize(subtractVectors(pos, target)));
-    const xAxis = new Vector(...up).cross(zAxis);
+    const xAxis = up.cross(zAxis);
     const yAxis = zAxis.cross(xAxis);
-    const newViewMat = [
+    const viewMatrix = [
       ...[xAxis.x, xAxis.y, xAxis.z, 0],
       ...[yAxis.x, yAxis.y, yAxis.z, 0],
       ...[zAxis.x, zAxis.y, zAxis.z, 0],
       ...[pos.x, pos.y, pos.z, 1],
     ];
 
-    this.uViewMat = set(newViewMat, uViewMat);
+    this.uViewMat = set(viewMatrix, this.uViewMat);
   }
 
-  /** Pan Camera Clockwise
-   *
-   * @param {float} radians
+  /**
+   * Translate camera
+   * @param {*} direction - UP, LEFT, RIGHT, DOWN
    */
+  translateCam(direction) {
+    const speed = 0.1; // Adjust sensitivity as needed
+    switch (direction) {
+      case 'UP':
+        translate(this.uViewMat, this.uViewMat, [speed * Math.sin(degToRad(this.cameraAngle)), 0, -speed * Math.cos(degToRad(this.cameraAngle))]);
+        break;
+      case 'LEFT':
+        translate(this.uViewMat, this.uViewMat, [-speed * Math.sin(degToRad(this.cameraAngle)), 0, speed * Math.cos(degToRad(this.cameraAngle))]);
+        break;
+      case 'DOWN':
+        translate(this.uViewMat, this.uViewMat, [-speed * Math.sin(degToRad(this.cameraAngle)), 0, -speed * Math.cos(degToRad(this.cameraAngle))]);
+        break;
+      case 'RIGHT':
+        translate(this.uViewMat, this.uViewMat, [speed * Math.sin(degToRad(this.cameraAngle)), 0, -speed * Math.cos(degToRad(this.cameraAngle))]);
+        break;
+      // Arrow key controls for rotation (assuming you implement these methods as well)
+    }
+  }
+
+  /**
+   * Rotate Camera
+   * @param {*} direction 
+   */
+  rotateCam(direction) {
+    const speed = 0.1; // Adjust sensitivity as needed
+    switch (direction) {
+      case 'LEFT':
+        this.tiltCCW(rotationSpeed);
+        break;
+      case 'RIGHT':
+        this.tiltCW(rotationSpeed);
+        break;
+      case 'UP':
+        this.pitchCW(rotationSpeed);
+        break;
+      case 'DOWN':
+        this.pitchCCW(rotationSpeed);
+        break;
+    }
+  }
+
+  /** Pan Camera Clockwise */
   panCW(radians = Math.PI / 4) {
     this.cameraVector.z -= Math.cos(radians);
   }
 
-  /** Pan Camera Counter Clockwise
-   *
-   * @param {float} radians
-   */
+  /** Pan Camera Counter Clockwise */
   panCCW(radians = Math.PI / 4) {
-    // different angles for facings
-    // [1. 0, 4] - S (Reversed) (up/down)
-    // [1. 0, 3] - SW (Iso)
-    // [1. 0, 2] - W (left/right)
-    // [1, 0, 1] - NW (Iso)
-    // [1, 0, 0] - N (Normal) (up/down)
-    // [1. 0, -1] - NE (Iso)
-    // [1. 0, -2] - E (left/right)
-    // [1. 0, -3] - SE (Iso)
     this.cameraVector.z += Math.cos(radians);
   }
 
-  /** Pitch Camera Counter Clockwise
-   *
-   * @param {float} radians
-   */
+  /** Pitch Camera Counter Clockwise */
   pitchCW(radians = Math.PI / 4) {
     this.cameraVector.x -= Math.cos(radians);
   }
 
-  /** Pitch Camera Counter Clockwise
-   *
-   * @param {float} radians
-   */
+  /** Pitch Camera Counter Clockwise */
   pitchCCW(radians = Math.PI / 4) {
     this.cameraVector.x += Math.sin(radians);
   }
 
-  /** Tilt Camera Counter Clockwise
-   *
-   * @param {float} radians
-   */
+  /** Tilt Camera Counter Clockwise */
   tiltCW(radians = Math.PI / 4) {
     this.cameraVector.y -= Math.cos(radians);
   }
 
-  /** Tilt Camera Counter Clockwise
-   *
-   * @param {float} radians
-   */
+  /** Tilt Camera Counter Clockwise */
   tiltCCW(radians = Math.PI / 4) {
     this.cameraVector.z += Math.sin(radians);
   }
