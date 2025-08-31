@@ -612,22 +612,23 @@ export default class RenderManager {
   }
 
   /**
-   * Compile and cache a WebGL shader program for the requested transition
-   * effect. The program draws a full-screen quad with a fragment shader
-   * specific to the effect (fade, cross or swirl). This function is called
-   * automatically by `renderTransition()` the first time an effect is used.
-   *
-   * @param {string} effect Name of the transition effect.
-   */
-  initTransitionProgram(effect) {
+ * Compile and cache a WebGL shader program for the requested transition
+ * effect. The program draws a full-screen quad with a fragment shader
+ * specific to the effect (fade, cross or swirl). This function is called
+ * automatically by `renderTransition()` the first time an effect is used.
+ *
+ * @param {string} effect Name of the transition effect.
+ */
+initTransitionProgram(effect) {
     const { gl } = this.engine;
     // If already initialized, do nothing.
     if (this.transitionGL[effect]) return;
+
     // Load shader sources from the transition shader files. We normalize
     // effect names that start with "fade" to the base "fade" directory.
     let effectName = effect;
     if (effectName.startsWith('fade')) {
-      effectName = 'fade';
+        effectName = 'fade';
     }
 
     // Require the vertex and fragment shaders for the selected effect.
@@ -639,83 +640,95 @@ export default class RenderManager {
     const program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
+
+    // Vertex shader:
     gl.bindAttribLocation(program, 0, 'aPosition');
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error('Could not link transition shader program');
-    }
+    gl.uniform1i(this.uSampler, 0); // Uniform for transition texture
+
+    // Fragment shader:
+    gl.uniform1i(this.uSampler, 0); // Uniform for transition texture
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
     // Create a buffer for the quad vertices (-1 to 1). We'll use a
     // triangle strip with four vertices.
     const quadBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
     // Four corners: bottom-left, top-left, bottom-right, top-right.
     const vertices = new Float32Array([
-      -1.0, -1.0,
-      -1.0, 1.0,
-      1.0, -1.0,
-      1.0, 1.0,
+        -1.0, -1.0,
+        -1.0, 1.0,
+        1.0, -1.0,
+        1.0, 1.0,
     ]);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    // Get uniform locations.
-    const uProgress = gl.getUniformLocation(program, 'uProgress');
-    const uDirection = gl.getUniformLocation(program, 'uDirection');
+
     // Store compiled resources.
     this.transitionGL[effect] = {
       program: program,
       buffer: quadBuffer,
-      uProgress: uProgress,
-      uDirection: uDirection,
+      uSampler: gl.getUniformLocation(program, 'uSampler'),
     };
+
     // No need to keep shaders after linking.
     gl.deleteShader(vertexShader);
     gl.deleteShader(fragmentShader);
-  }
+
+    return this.transitionGL[effect];
+}
 
   /**
-   * Render the transition overlay. This draws a full-screen quad with the
-   * precompiled shader corresponding to the current transition effect.
-   *
-   * @param {number} progress A value between 0 and 1 indicating the
-   * progress of the transition.
-   */
-  renderTransition(progress) {
+ * Render the transition overlay. This draws a full-screen quad with the
+ * precompiled shader corresponding to the current transition effect.
+ *
+ * @param {number} progress A value between 0 and 1 indicating the
+ * progress of the transition.
+ */
+renderTransition(progress) {
     const { gl } = this.engine;
     const effect = this.transitionEffect || 'fade';
     // Ensure the program is compiled.
     this.initTransitionProgram(effect);
     const trans = this.transitionGL[effect];
     if (!trans) return;
+
     // Save WebGL state that we'll modify. We need to disable the depth test and
     // set blending appropriately so the overlay blends over the 3D scene.
-    const depthEnabled = gl.isEnabled(gl.DEPTH_TEST);
-    const blendEnabled = gl.isEnabled(gl.BLEND);
-    // Draw the quad.
     gl.useProgram(trans.program);
     gl.bindBuffer(gl.ARRAY_BUFFER, trans.buffer);
+
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
     // Set uniforms: progress and direction (0 for out, 1 for in).
-    gl.uniform1f(trans.uProgress, progress);
-    const directionVal = this.transitionDirection === 'in' ? 1.0 : 0.0;
-    gl.uniform1f(trans.uDirection, directionVal);
-    // Configure blending and disable depth to ensure the overlay draws on top.
-    gl.disable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.uniform1f(trans.uSampler, 0); // Bind texture sampler
+    gl.uniform1i(this.uSampler, 0); // Uniform for transition texture
+
+    const depthEnabled = gl.isEnabled(gl.DEPTH_TEST);
+    const blendEnabled = gl.isEnabled(gl.BLEND);
+    if (blendEnabled) {
+        gl.enable(gl.BLEND);
+    }
+    if (!depthEnabled) {
+        gl.disable(gl.DEPTH_TEST);
+    }
+
     // Draw the quad as a triangle strip (4 vertices -> 2 triangles).
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
     // Restore previous state.
-    if (depthEnabled) {
-      gl.enable(gl.DEPTH_TEST);
+    if (blendEnabled) {
+        gl.disable(gl.BLEND);
     } else {
-      gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
     }
-    if (!blendEnabled) {
-      gl.disable(gl.BLEND);
+    if (!depthEnabled) {
+        gl.enable(gl.DEPTH_TEST);
     }
+
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.useProgram(null);
-  }
+}
+
 
   /**
    * Reset debug counters at the start of a new frame. This should be

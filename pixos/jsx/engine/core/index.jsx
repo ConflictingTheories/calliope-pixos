@@ -182,8 +182,8 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
     this.spritz.update(timestamp); // update scene
     this.spritz.render(this); // render scene
-    this.cutsceneManager.update(); // update cutscene (if appl.)
     this.renderManager.updateTransition(); // update transitions
+    this.cutsceneManager.update(); // update cutscene (if appl.)
     this.gamepad.render(); // may be optimizable?
 
     // Update debug overlay if enabled

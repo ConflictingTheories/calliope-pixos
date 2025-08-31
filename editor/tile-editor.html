@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Pixospritz Tileset Editor — UV-fixed + atlas preview + thumbnail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Inter, Arial
+        }
+
+        #app {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas: "toolbar toolbar" "view side" "status status";
+        }
+
+        #view,
+        #side {
+            min-height: 0;
+            min-width: 0;
+        }
+
+        #toolbar {
+            grid-area: toolbar;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            align-items: center;
+            padding: .5rem;
+            border-bottom: 1px solid #ddd;
+            background: #fafafa
+        }
+
+        #view {
+            grid-area: view;
+            position: relative;
+            background: #0b0f14
+        }
+
+        #gl {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+
+        #hud {
+            position: absolute;
+            top: .5rem;
+            right: .5rem;
+            padding: .25rem .5rem;
+            background: rgba(0, 0, 0, .55);
+            color: #cbd5e1;
+            font: 12px ui-monospace, Menlo, Consolas, monospace;
+            border-radius: 6px
+        }
+
+        #side {
+            grid-area: side;
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column
+        }
+
+        #pane {
+            padding: .75rem;
+            overflow: auto
+        }
+
+        h3 {
+            margin: .75rem 0 .25rem
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin: .25rem 0;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            padding: .4rem .6rem;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer
+        }
+
+        .pill {
+            padding: .25rem .5rem;
+            border-radius: 999px;
+            border: 1px solid #ddd;
+            background: #fff
+        }
+
+        input[type="number"] {
+            width: 6rem
+        }
+
+        select {
+            max-width: 100%
+        }
+
+        #uvwrap {
+            border-top: 1px solid #eee;
+            padding: .75rem;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: .5rem;
+            min-height: 260px
+        }
+
+        #uv {
+            width: 100%;
+            height: 240px;
+            border: 1px solid #ddd;
+            background: #fff
+        }
+
+        #status {
+            grid-area: status;
+            border-top: 1px solid #ddd;
+            background: #fafafa;
+            padding: .4rem .75rem;
+            font-size: .9rem;
+            color: #333;
+            display: flex;
+            justify-content: space-between
+        }
+
+        .mono {
+            font-family: ui-monospace, Menlo, Consolas, monospace
+        }
+
+        .note {
+            color: #666;
+            font-size: .85rem
+        }
+
+        canvas.thumb {
+            width: 100%;
+            height: 140px;
+            border: 1px solid #ddd;
+            background: #111
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="toolbar">
+            <label class="btn">Load tileset.json <input id="fTileset" type="file" accept="application/json"
+                    hidden></label>
+            <label class="btn">Load geometry.json <input id="fGeom" type="file" accept="application/json"
+                    hidden></label>
+            <label class="btn">Load tiles.json <input id="fTiles" type="file" accept="application/json" hidden></label>
+
+            <select id="tilePick" class="pill" style="min-width:220px;">
+                <option value="">— select tile —</option>
+            </select>
+
+            <select id="layerPick" class="pill" style="min-width:220px;">
+                <option value="">— select layer —</option>
+            </select>
+
+            <label class="btn">Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden></label>
+            <select id="texPick" class="pill" style="min-width:180px;">
+                <option value="">— texture key —</option>
+            </select>
+            <button id="btnUseTex" class="btn" title="Set selected layer’s texture key to the chosen one">Use chosen
+                texture</button>
+        </div>
+
+        <div id="view">
+            <canvas id="gl"></canvas>
+            <div id="hud">—</div>
+        </div>
+
+        <aside id="side">
+            <div id="pane">
+                <h3>Tile / Layers</h3>
+                <div class="row">
+                    <div id="tileMeta" class="mono note">—</div>
+                </div>
+                <div class="row note">All layers render together; the Layer picker chooses which one you edit.</div>
+
+                <h3>View</h3>
+                <div class="row">
+                    <label><input type="checkbox" id="chkWire"> Wireframe</label>
+                    <label><input type="checkbox" id="chkFlipV" checked> Flip V (top-left UVs)</label>
+                    <button id="btnResetView" class="btn">Reset</button>
+                </div>
+                <div class="row">
+                    <label>Ambient</label><input id="amb" type="range" min="0" max="1" step="0.01" value="0.35">
+                </div>
+                <div class="row">
+                    <label>Light</label>
+                    <input id="lx" type="range" min="-1" max="1" step="0.01" value="0.6">
+                    <input id="ly" type="range" min="-1" max="1" step="0.01" value="0.7">
+                    <input id="lz" type="range" min="-1" max="1" step="0.01" value="0.4">
+                </div>
+
+                <h3>Selection</h3>
+                <div class="row"><span id="selInfo" class="pill">No selection</span></div>
+                <div class="row">
+                    <button id="btnGrow" class="btn">Grow</button>
+                    <button id="btnClear" class="btn">Clear</button>
+                </div>
+                <div class="row">
+                    <button id="btnExtrude" class="btn">Extrude +</button>
+                    <label>Δ <input id="extrudeAmt" type="number" step="0.01" value="0.05"></label>
+                </div>
+                <div class="row">
+                    <button id="btnFlatten" class="btn">Flatten</button>
+                    <select id="flattenAxis">
+                        <option value="x">X</option>
+                        <option value="y" selected>Y</option>
+                        <option value="z">Z</option>
+                    </select>
+                </div>
+
+                <h3>UV (Atlas-aware)</h3>
+                <div class="row note">Shows atlas, highlights the chosen texture cell, and overlays the baked UVs. Drag
+                    points to edit (in cell space).</div>
+                <div id="uvwrap"><canvas id="uv"></canvas></div>
+
+                <h3>Thumb</h3>
+                <div class="row">
+                    <button id="btnSnap" class="btn">Snap</button>
+                    <span class="note">Auto refresh ~2FPS</span>
+                </div>
+                <canvas id="thumb" class="thumb" width="512" height="280"></canvas>
+
+                <h3>Export</h3>
+                <div class="row">
+                    <button id="btnExportGeom" class="btn">Export geometry.json</button>
+                    <button id="btnExportTiles" class="btn">Export tiles.json</button>
+                </div>
+                <div class="note mono">Shift+Click pick · arrows nudge · U planar · B box · W wire</div>
+            </div>
+        </aside>
+
+        <div id="status"><span id="statL">idle</span><span id="statR" class="mono">—</span></div>
+    </div>
+
+    <script>
+        /* ======== Column-major 4×4 (WebGL) ======== */
+        const M4 = {
+            ident: () => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            mul: (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c++) { const b0 = b[c * 4 + 0], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3]; o[c * 4 + 0] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3; o[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3; o[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3; o[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3; } return o; },
+            lookAt: (eye, center, up) => { const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2]; let zl = Math.hypot(zx, zy, zz); const z0 = zx / zl, z1 = zy / zl, z2 = zz / zl; let xx = up[1] * z2 - up[2] * z1, xy = up[2] * z0 - up[0] * z2, xz = up[0] * z1 - up[1] * z0; let xl = Math.hypot(xx, xy, xz); xx /= xl; xy /= xl; xz /= xl; const y0 = z1 * xz - z2 * xy, y1 = z2 * xx - z0 * xz, y2 = z0 * xy - z1 * xx; return [xx, y0, z0, 0, xy, y1, z1, 0, xz, y2, z2, 0, -(xx * eye[0] + xy * eye[1] + xz * eye[2]), -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]), -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]), 1]; },
+            persp: (fovyRad, aspect, near, far) => { const f = 1 / Math.tan(fovyRad / 2), nf = 1 / (near - far); return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, (2 * far * near) * nf, 0]; },
+            invert: (m) => { const out = new Array(16); const b00 = m[0] * m[5] - m[1] * m[4], b01 = m[0] * m[6] - m[2] * m[4], b02 = m[0] * m[7] - m[3] * m[4], b03 = m[1] * m[6] - m[2] * m[5], b04 = m[1] * m[7] - m[3] * m[5], b05 = m[2] * m[7] - m[3] * m[6], b06 = m[8] * m[13] - m[9] * m[12], b07 = m[8] * m[14] - m[10] * m[12], b08 = m[8] * m[15] - m[11] * m[12], b09 = m[9] * m[14] - m[10] * m[13], b10 = m[9] * m[15] - m[11] * m[13], b11 = m[10] * m[15] - m[11] * m[14], det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06; if (!det) return M4.ident(); const id = 1 / det; out[0] = (m[5] * b11 - m[6] * b10 + m[7] * b09) * id; out[1] = (-m[1] * b11 + m[2] * b10 - m[3] * b09) * id; out[2] = (m[13] * b05 - m[14] * b04 + m[15] * b03) * id; out[3] = (-m[9] * b05 + m[10] * b04 - m[11] * b03) * id; out[4] = (-m[4] * b11 + m[6] * b08 - m[7] * b07) * id; out[5] = (m[0] * b11 - m[2] * b08 + m[3] * b07) * id; out[6] = (-m[12] * b05 + m[14] * b02 - m[15] * b01) * id; out[7] = (m[8] * b05 - m[10] * b02 + m[11] * b01) * id; out[8] = (m[4] * b10 - m[5] * b08 + m[7] * b06) * id; out[9] = (-m[0] * b10 + m[1] * b08 - m[3] * b06) * id; out[10] = (m[12] * b04 - m[13] * b02 + m[15] * b00) * id; out[11] = (-m[8] * b04 + m[9] * b02 - m[11] * b00) * id; out[12] = (-m[4] * b09 + m[5] * b07 - m[6] * b06) * id; out[13] = (m[0] * b09 - m[1] * b07 + m[2] * b06) * id; out[14] = (-m[12] * b03 + m[13] * b01 - m[14] * b00) * id; out[15] = (m[8] * b03 - m[9] * b01 + m[10] * b00) * id; return out; }
+        };
+        const V3 = { add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s], dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], len: (a) => Math.hypot(a[0], a[1], a[2]), norm: (a) => { const L = V3.len(a) || 1; return [a[0] / L, a[1] / L, a[2] / L] } };
+
+        /* ===== GL & canvas ===== */
+        const glc = gl = document.getElementById('gl'); const hud = document.getElementById('hud'); const dpr = Math.min(devicePixelRatio || 1, 2);
+        const ctx = glc.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: true }); if (!ctx) { alert('WebGL not available') }
+        let W = 1, H = 1, aspect = 1;
+        function resize() { const r = glc.getBoundingClientRect(); W = Math.max(1, Math.floor(r.width * dpr)); H = Math.max(1, Math.floor(r.height * dpr)); aspect = W / H; if (glc.width !== W || glc.height !== H) { glc.width = W; glc.height = H; } ctx.viewport(0, 0, W, H); }
+        new ResizeObserver(resize).observe(glc);
+
+        /* index type */
+        const OES_uint = ctx.getExtension('OES_element_index_uint');
+        const makeIndexBuffer = (arr, usage = ctx.STATIC_DRAW) => { const b = ctx.createBuffer(); ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, b); if (OES_uint) { ctx.bufferData(ctx.ELEMENT_ARRAY_BUFFER, new Uint32Array(arr), usage); return { buf: b, type: ctx.UNSIGNED_INT }; } ctx.bufferData(ctx.ELEMENT_ARRAY_BUFFER, new Uint16Array(arr), usage); return { buf: b, type: ctx.UNSIGNED_SHORT }; };
+        const makeTyped = (arr) => OES_uint ? new Uint32Array(arr) : new Uint16Array(arr);
+
+        /* shaders */
+        const VS = `attribute vec3 a_pos;attribute vec3 a_nrm;attribute vec2 a_uv;
+uniform mat4 u_mvp,u_m,u_n;varying vec3 v_n;varying vec2 v_uv;
+void main(){ v_n = mat3(u_n) * a_nrm; v_uv = a_uv; gl_Position = u_mvp * vec4(a_pos,1.0); }`;
+        const FS = `precision mediump float;varying vec3 v_n;varying vec2 v_uv;
+uniform sampler2D u_tex;uniform vec3 u_light;uniform float u_amb;uniform bool u_hasTex;uniform float u_tint;
+void main(){ vec3 n = normalize(v_n); float nd = max(dot(n, normalize(u_light)), 0.0);
+ vec3 base = u_hasTex ? texture2D(u_tex, v_uv).rgb : vec3(0.82,0.84,0.88);
+ base = mix(base, vec3(1.0,0.95,0.7), u_tint);
+ gl_FragColor = vec4(base * (u_amb + 0.9*nd), 1.0); }`;
+        function shader(t, s) { const o = ctx.createShader(t); ctx.shaderSource(o, s); ctx.compileShader(o); if (!ctx.getShaderParameter(o, ctx.COMPILE_STATUS)) throw ctx.getShaderInfoLog(o); return o }
+        function program(vs, fs) { const p = ctx.createProgram(); ctx.attachShader(p, shader(ctx.VERTEX_SHADER, vs)); ctx.attachShader(p, shader(ctx.FRAGMENT_SHADER, fs)); ctx.linkProgram(p); if (!ctx.getProgramParameter(p, ctx.LINK_STATUS)) throw ctx.getProgramInfoLog(p); return p }
+        const prog = program(VS, FS); ctx.useProgram(prog);
+        const loc = {
+            a_pos: ctx.getAttribLocation(prog, 'a_pos'), a_nrm: ctx.getAttribLocation(prog, 'a_nrm'), a_uv: ctx.getAttribLocation(prog, 'a_uv'),
+            u_mvp: ctx.getUniformLocation(prog, 'u_mvp'), u_m: ctx.getUniformLocation(prog, 'u_m'), u_n: ctx.getUniformLocation(prog, 'u_n'),
+            u_tex: ctx.getUniformLocation(prog, 'u_tex'), u_light: ctx.getUniformLocation(prog, 'u_light'), u_amb: ctx.getUniformLocation(prog, 'u_amb'),
+            u_hasTex: ctx.getUniformLocation(prog, 'u_hasTex'), u_tint: ctx.getUniformLocation(prog, 'u_tint')
+        };
+
+        /* grid */
+        function grid(n = 12, step = .5) { const v = []; for (let i = -n; i <= n; i++) { v.push(-n * step, 0, i * step, n * step, 0, i * step); v.push(i * step, 0, -n * step, i * step, 0, n * step); } return new Float32Array(v) }
+        const gridVBO = ctx.createBuffer(); ctx.bindBuffer(ctx.ARRAY_BUFFER, gridVBO); ctx.bufferData(ctx.ARRAY_BUFFER, grid(), ctx.STATIC_DRAW);
+
+        /* state */
+        const S = {
+            tileset: null, tiles: null, geom: null,
+            atlasImg: null, atlasTex: null, sheetSize: [512, 512], tileSize: 16, sheetOff: [0, 0],
+            textures: new Map(), tileKeys: [], currentTileKey: null,
+            layers: [], editLayerIndex: -1, selection: new Set(),
+            flipV: true
+        };
+
+        /* helpers */
+        const setStatusL = s => document.getElementById('statL').textContent = s;
+        const setStatusR = s => document.getElementById('statR').textContent = s;
+        function fillSelect(sel, pairs) { sel.innerHTML = ''; for (const [v, t] of pairs) { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); } }
+        function downloadJSON(obj, name) { const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click() }
+
+        /* file i/o */
+        function readJSON(input, cb) { const f = input.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { cb(JSON.parse(r.result), f.name) } catch (e) { alert('Invalid JSON: ' + e.message) } }; r.readAsText(f) }
+        fTileset.onchange = e => readJSON(e.target, (j) => { S.tileset = j; ingestTileset(); });
+        fTiles.onchange = e => readJSON(e.target, (j) => { S.tiles = j; rebuildTilePicker(); });
+        fGeom.onchange = e => readJSON(e.target, (j) => { S.geom = j; setStatusL('geometry.json loaded'); });
+        fAtlas.onchange = e => { const f = e.target.files[0]; if (!f) return; const img = new Image(); img.onload = () => { S.atlasImg = img; S.atlasTex = setGLTexture(img); drawUV(); }; img.src = URL.createObjectURL(f); };
+
+        function ingestTileset() {
+            const t = S.tileset; if (!t) return;
+            S.sheetSize = t.sheetSize || [512, 512];
+            S.tileSize = t.tileSize || 16;
+            S.sheetOff = [t.sheetOffsetX || 0, t.sheetOffsetY || 0];
+            S.textures.clear(); if (t.textures) for (const k in t.textures) S.textures.set(k, t.textures[k]);
+            const arr = [['', '— texture key —'], ...[...S.textures.keys()].sort().map(k => [k, k])];
+            fillSelect(texPick, arr); setStatusL('tileset.json loaded');
+        }
+        function rebuildTilePicker() {
+            if (!S.tiles) return;
+            S.tileKeys = Object.keys(S.tiles).sort();
+            fillSelect(tilePick, [['', '— select tile —'], ...S.tileKeys.map(k => [k, k])]);
+            setStatusL('tiles.json loaded');
+        }
+
+        /* texture */
+        function setGLTexture(img) {
+            const t = ctx.createTexture();
+            ctx.bindTexture(ctx.TEXTURE_2D, t);
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.LINEAR_MIPMAP_LINEAR);
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.LINEAR);
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE);
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE);
+            ctx.pixelStorei(ctx.UNPACK_FLIP_Y_WEBGL, 0);
+            ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, img);
+            ctx.generateMipmap(ctx.TEXTURE_2D);
+            setStatusL('atlas loaded');
+            return t;
+        }
+
+        /* camera */
+        let camDist = 2.8, camYaw = 0.7, camPitch = 0.5, camTarget = [0.5, 0.5, 0.5]; // center of unit cube
+        const eye = () => [camTarget[0] + camDist * Math.cos(camPitch) * Math.sin(camYaw), camTarget[1] + camDist * Math.sin(camPitch), camTarget[2] + camDist * Math.cos(camPitch) * Math.cos(camYaw)];
+        const view = () => M4.lookAt(eye(), camTarget, [0, 1, 0]);
+        const proj = () => M4.persp(50 * Math.PI / 180, aspect, 0.01, 100);
+        btnResetView.onclick = () => { camDist = 2.8; camYaw = 0.7; camPitch = 0.5; camTarget = [0.5, 0.5, 0.5]; };
+
+        /* atlas UV bake; honors Flip V */
+        function atlasBake(raw, tKey) {
+            const out = new Float32Array(raw.length);
+            const cell = S.textures.get(tKey);
+            const [sheetW, sheetH] = S.sheetSize, tile = S.tileSize;
+            let offX = 0, offY = 0, sclX = 1, sclY = 1;
+            if (cell) { const [col, row] = cell; offX = (S.sheetOff[0] + col * tile) / sheetW; offY = (S.sheetOff[1] + row * tile) / sheetH; sclX = tile / sheetW; sclY = tile / sheetH; }
+            for (let i = 0; i < raw.length; i += 2) {
+                const u = raw[i], v = raw[i + 1];
+                const vf = S.flipV ? (1 - v) : v;  // <— critical fix
+                out[i] = offX + u * sclX;
+                out[i + 1] = offY + vf * sclY;
+            }
+            return out;
+        }
+
+        /* build layer */
+        function buildLayer(gkey, tkey, z) {
+            const g = S.geom?.[gkey]; if (!g) { alert(`Missing geometry: ${gkey}`); return null; }
+            const triPos = g.vertices, triUV = g.surfaces;
+            const pos = [], uvRaw = [], nrm = [], idx = []; let v = 0;
+            for (let t = 0; t < triPos.length; t++) {
+                const a = triPos[t][0], b = triPos[t][1], c = triPos[t][2];
+                const n = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+                [a, b, c].forEach(p => { pos.push(p[0], p[1] + z, p[2]); nrm.push(n[0], n[1], n[2]); });
+                const uvs = (triUV && triUV[t]) ? triUV[t] : [[0, 0], [1, 0], [1, 1]];
+                uvs.forEach(q => uvRaw.push(Math.max(0, Math.min(1, q[0])), Math.max(0, Math.min(1, q[1]))));
+                idx.push(v, v + 1, v + 2); v += 3;
+            }
+            const vboPos = ctx.createBuffer(); ctx.bindBuffer(ctx.ARRAY_BUFFER, vboPos); ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(pos), ctx.DYNAMIC_DRAW);
+            const vboNrm = ctx.createBuffer(); ctx.bindBuffer(ctx.ARRAY_BUFFER, vboNrm); ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(nrm), ctx.DYNAMIC_DRAW);
+            const vboUV = ctx.createBuffer(); ctx.bindBuffer(ctx.ARRAY_BUFFER, vboUV); ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(uvRaw), ctx.DYNAMIC_DRAW);
+            const ib = makeIndexBuffer(idx);
+
+            const uvBaked = atlasBake(uvRaw, tkey);
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, vboUV); ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, uvBaked);
+
+            return {
+                gkey, tkey, z,
+                vboPos, vboNrm, vboUV, ibo: ib.buf, indexType: ib.type, idxCount: idx.length,
+                mesh: { pos: new Float32Array(pos), nrm: new Float32Array(nrm), uv: new Float32Array(uvRaw), triCount: triPos.length }
+            };
+        }
+        function updateLayerBakedUV(L) {
+            const baked = atlasBake(L.mesh.uv, L.tkey);
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboUV);
+            ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, baked);
+        }
+
+        /* build tile layers (all render) */
+        function rebuildLayersForTile(tileKey) {
+            S.layers.length = 0;
+            const arr = S.tiles[tileKey] || [];
+            for (let i = 0; i + 2 < arr.length; i += 3) {
+                const g = arr[i], t = arr[i + 1], z = arr[i + 2];
+                if (typeof g === 'string' && typeof t === 'string' && typeof z === 'number') {
+                    const L = buildLayer(g, t, z); if (L) S.layers.push(L);
+                } else break;
+            }
+            S.editLayerIndex = S.layers.length ? S.layers.length - 1 : -1;
+            fillSelect(layerPick, [['', '— select layer —'], ...S.layers.map((L, i) => [String(i), `${i}: ${L.gkey} @ ${L.tkey} z=${L.z}`])]);
+            S.selection.clear(); updateSelInfo(); drawUV();
+            document.getElementById('tileMeta').textContent = `tile=${tileKey} · layers=${S.layers.length}`;
+        }
+
+        /* selection/edit */
+        function updateSelInfo() { selInfo.textContent = S.selection.size ? `${S.selection.size} face(s)` : 'No selection'; }
+        function pushPositions(L) { ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboPos); ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, L.mesh.pos); }
+        function pushNormals(L) { ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboNrm); ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, L.mesh.nrm); }
+        function pushRawUV(L) { ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboUV); ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, L.mesh.uv); updateLayerBakedUV(L); drawUV(); }
+        function recalcNormals(L, fset) {
+            const p = L.mesh.pos, n = L.mesh.nrm;
+            for (const f of fset) {
+                const i = f * 9;
+                const a = [p[i], p[i + 1], p[i + 2]], b = [p[i + 3], p[i + 4], p[i + 5]], c = [p[i + 6], p[i + 7], p[i + 8]];
+                const nn = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+                n.set([nn[0], nn[1], nn[2], nn[0], nn[1], nn[2], nn[0], nn[1], nn[2]], i);
+            }
+            pushNormals(L);
+        }
+        function extrudeSelected(amount) {
+            const i = S.editLayerIndex; if (i < 0 || !S.selection.size) return; const L = S.layers[i];
+            for (const f of S.selection) {
+                const k = f * 9;
+                const a = [L.mesh.pos[k], L.mesh.pos[k + 1], L.mesh.pos[k + 2]];
+                const b = [L.mesh.pos[k + 3], L.mesh.pos[k + 4], L.mesh.pos[k + 5]];
+                const c = [L.mesh.pos[k + 6], L.mesh.pos[k + 7], L.mesh.pos[k + 8]];
+                const n = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+                for (let t = 0; t < 9; t += 3) { L.mesh.pos[k + t] += n[0] * amount; L.mesh.pos[k + t + 1] += n[1] * amount; L.mesh.pos[k + t + 2] += n[2] * amount; }
+            }
+            recalcNormals(L, S.selection); pushPositions(L);
+        }
+        function flattenSelection(axis = 'y') {
+            const i = S.editLayerIndex; if (i < 0 || !S.selection.size) return; const L = S.layers[i];
+            const comp = axis === 'x' ? 0 : axis === 'z' ? 2 : 1; let sum = 0, c = 0;
+            for (const f of S.selection) { const k = f * 9; for (let t = 0; t < 9; t += 3) { sum += L.mesh.pos[k + t + comp]; c++; } }
+            const avg = sum / (c || 1);
+            for (const f of S.selection) { const k = f * 9; for (let t = 0; t < 9; t += 3) { L.mesh.pos[k + t + comp] = avg; } }
+            recalcNormals(L, S.selection); pushPositions(L);
+        }
+
+        /* UV panel (now draws atlas + cell + baked UVs) */
+        const uvC = document.getElementById('uv'), uvx = uvC.getContext('2d'); let uvW = 1, uvH = 1, uvDrag = null;
+        function resizeUV() { const r = uvC.getBoundingClientRect(); uvW = Math.max(1, Math.floor(r.width * dpr)); uvH = Math.max(1, Math.floor(r.height * dpr)); uvC.width = uvW; uvC.height = uvH; drawUV(); }
+        new ResizeObserver(resizeUV).observe(uvC);
+        function drawUV() {
+            uvx.setTransform(1, 0, 0, 1, 0, 0); uvx.clearRect(0, 0, uvW, uvH);
+
+            // background checker
+            for (let y = 0; y < 10; y++)for (let x = 0; x < 10; x++) { uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff'; uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10); }
+            // atlas image (fit)
+            if (S.atlasImg) {
+                const iw = S.atlasImg.width, ih = S.atlasImg.height;
+                const s = Math.min(uvW / iw, uvH / ih);
+                const dw = iw * s, dh = ih * s;
+                const ox = (uvW - dw) / 2, oy = (uvH - dh) / 2;
+                uvx.drawImage(S.atlasImg, ox, oy, dw, dh);
+
+                // cell highlight for current layer
+                const i = S.editLayerIndex; if (i >= 0) {
+                    const L = S.layers[i]; const cell = S.textures.get(L.tkey);
+                    if (cell) {
+                        const [col, row] = cell; const [sheetW, sheetH] = S.sheetSize, tile = S.tileSize;
+                        const x = (S.sheetOff[0] + col * tile) / sheetW, y = (S.sheetOff[1] + row * tile) / sheetH;
+                        const w = tile / sheetW, h = tile / sheetH;
+                        uvx.strokeStyle = '#ff0077'; uvx.lineWidth = 2;
+                        uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
+                    }
+                }
+            }
+
+            // baked UV overlay (atlas space)
+            const i = S.editLayerIndex; if (i < 0) return; const L = S.layers[i];
+            const baked = atlasBake(L.mesh.uv, L.tkey); // uses Flip V
+            uvx.strokeStyle = '#1976d2'; uvx.lineWidth = 1.5;
+            uvx.fillStyle = 'rgba(25,118,210,0.08)';
+            for (const f of S.selection.size ? S.selection : new Set([...Array(L.mesh.triCount).keys()])) {
+                const ui = f * 6;
+                const pts = [];
+                for (let v = 0; v < 3; v++) { pts.push([baked[ui + v * 2], baked[ui + v * 2 + 1]]); }
+                // map 0..1 atlas coords to canvas (centered image if present)
+                const iw = S.atlasImg?.width || 1, ih = S.atlasImg?.height || 1;
+                const s = Math.min(uvW / iw, uvH / ih), dw = iw * s, dh = ih * s, ox = (uvW - dw) / 2, oy = (uvH - dh) / 2;
+                uvx.beginPath();
+                pts.forEach((p, ix) => { const x = ox + p[0] * dw, y = oy + p[1] * dh; ix ? uvx.lineTo(x, y) : uvx.moveTo(x, y); });
+                uvx.closePath(); uvx.fill(); uvx.stroke();
+            }
+        }
+        uvC.addEventListener('mousedown', e => {
+            const i = S.editLayerIndex; if (i < 0) return; const L = S.layers[i];
+            const r = uvC.getBoundingClientRect(); const mx = (e.clientX - r.left) * dpr, my = (e.clientY - r.top) * dpr;
+            // Work in baked space for hit test, but we’ll modify raw (cell) UVs
+            const baked = atlasBake(L.mesh.uv, L.tkey);
+            const iw = S.atlasImg?.width || 1, ih = S.atlasImg?.height || 1; const s = Math.min(uvW / iw, uvH / ih), dw = iw * s, dh = ih * s, ox = (uvW - dw) / 2, oy = (uvH - dh) / 2;
+            let best = null, bd = 12;
+            for (const f of S.selection.size ? S.selection : new Set([...Array(L.mesh.triCount).keys()])) {
+                const ui = f * 6;
+                for (let v = 0; v < 3; v++) {
+                    const x = ox + baked[ui + v * 2] * dw, y = oy + baked[ui + v * 2 + 1] * dh;
+                    const d = Math.hypot(x - mx, y - my);
+                    if (d < bd) { bd = d; best = { f, vert: v }; }
+                }
+            }
+            if (best) uvDrag = best;
+        });
+        window.addEventListener('mouseup', () => uvDrag = null);
+        uvC.addEventListener('mousemove', e => {
+            if (!uvDrag) return; const i = S.editLayerIndex; const L = S.layers[i];
+            const r = uvC.getBoundingClientRect(); const mx = (e.clientX - r.left) * dpr, my = (e.clientY - r.top) * dpr;
+            const iw = S.atlasImg?.width || 1, ih = S.atlasImg?.height || 1; const s = Math.min(uvW / iw, uvH / ih), dw = iw * s, dh = ih * s, ox = (uvW - dw) / 2, oy = (uvH - dh) / 2;
+            // Convert mouse→atlas coords (0..1), then back to raw cell coords by inverse of atlasBake
+            let u = (mx - ox) / dw, v = (my - oy) / dh; u = Math.max(0, Math.min(1, u)); v = Math.max(0, Math.min(1, v));
+            // Invert atlas cell mapping
+            const cell = S.textures.get(L.tkey); const [sheetW, sheetH] = S.sheetSize; const tile = S.tileSize;
+            let offX = 0, offY = 0, sclX = 1, sclY = 1;
+            if (cell) { const [col, row] = cell; offX = (S.sheetOff[0] + col * tile) / sheetW; offY = (S.sheetOff[1] + row * tile) / sheetH; sclX = tile / sheetW; sclY = tile / sheetH; }
+            u = (u - offX) / sclX; let vv = (v - offY) / sclY;
+            // Undo flip to get raw cell v
+            const rawV = S.flipV ? (1 - vv) : vv;
+            const ui = uvDrag.f * 6; L.mesh.uv[ui + uvDrag.vert * 2] = Math.max(0, Math.min(1, u)); L.mesh.uv[ui + uvDrag.vert * 2 + 1] = Math.max(0, Math.min(1, rawV));
+            pushRawUV(L);
+        });
+
+        /* UI bindings */
+        tilePick.onchange = e => { const k = e.target.value || null; S.currentTileKey = k; S.selection.clear(); updateSelInfo(); if (!k) return; rebuildLayersForTile(k); setStatusL('tile selected'); };
+        layerPick.onchange = e => { const i = +e.target.value; if (Number.isNaN(i)) return; S.editLayerIndex = i; S.selection.clear(); updateSelInfo(); drawUV(); };
+        btnUseTex.onclick = () => { const key = texPick.value; const i = S.editLayerIndex; if (!key || i < 0) return; const L = S.layers[i]; L.tkey = key; const rec = S.tiles[S.currentTileKey]; if (rec) { const base = i * 3; if (base + 1 < rec.length) rec[base + 1] = key; } updateLayerBakedUV(L); drawUV(); setStatusL(`layer ${i} texture → ${key}`); };
+        btnClear.onclick = () => { S.selection.clear(); updateSelInfo(); drawUV(); };
+        btnGrow.onclick = () => growSelection();
+        btnExtrude.onclick = () => extrudeSelected(parseFloat(extrudeAmt.value) || 0.05);
+        btnFlatten.onclick = () => flattenSelection(flattenAxis.value);
+        btnExportGeom.onclick = () => exportCurrentLayerGeometry();
+        btnExportTiles.onclick = () => { if (!S.tiles) { alert('Nothing to export'); return; } downloadJSON(S.tiles, 'tiles.json'); };
+        chkFlipV.onchange = () => {
+            S.flipV = chkFlipV.checked; // re-bake all layers
+            for (const L of S.layers) updateLayerBakedUV(L);
+            drawUV();
+        };
+
+        /* grow selection */
+        function growSelection() {
+            const i = S.editLayerIndex; if (i < 0) return; const L = S.layers[i]; const out = new Set(S.selection.size ? S.selection : [0]);
+            for (const f of S.selection) {
+                const k = f * 9;
+                const a = [L.mesh.pos[k], L.mesh.pos[k + 1], L.mesh.pos[k + 2]];
+                const b = [L.mesh.pos[k + 3], L.mesh.pos[k + 4], L.mesh.pos[k + 5]];
+                const c = [L.mesh.pos[k + 6], L.mesh.pos[k + 7], L.mesh.pos[k + 8]];
+                const n = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+                const V = x => x.toFixed(5);
+                const keys1 = new Set([a, b, c].map(p => V(p[0]) + ',' + V(p[1]) + ',' + V(p[2])));
+                for (let g = 0, j = 0; j < L.mesh.pos.length; g++, j += 9) {
+                    if (out.has(g)) continue;
+                    const a2 = [L.mesh.pos[j], L.mesh.pos[j + 1], L.mesh.pos[j + 2]];
+                    const b2 = [L.mesh.pos[j + 3], L.mesh.pos[j + 4], L.mesh.pos[j + 5]];
+                    const c2 = [L.mesh.pos[j + 6], L.mesh.pos[j + 7], L.mesh.pos[j + 8]];
+                    const n2 = V3.norm(V3.cross(V3.sub(b2, a2), V3.sub(c2, a2)));
+                    if (V3.dot(n, n2) > 0.95) {
+                        const keys2 = [a2, b2, c2].map(p => V(p[0]) + ',' + V(p[1]) + ',' + V(p[2]));
+                        if (keys2.some(s => keys1.has(s))) out.add(g);
+                    }
+                }
+            }
+            S.selection = out; updateSelInfo(); drawUV();
+        }
+
+        /* export current layer geometry */
+        function exportCurrentLayerGeometry() {
+            const i = S.editLayerIndex; if (i < 0) { alert('Pick a layer'); return; }
+            const L = S.layers[i]; const tri = L.mesh.triCount; const vertices = [], surfaces = [];
+            for (let f = 0; f < tri; f++) {
+                const pi = f * 9, ui = f * 6;
+                vertices.push([[L.mesh.pos[pi], L.mesh.pos[pi + 1] - L.z, L.mesh.pos[pi + 2]],
+                [L.mesh.pos[pi + 3], L.mesh.pos[pi + 4] - L.z, L.mesh.pos[pi + 5]],
+                [L.mesh.pos[pi + 6], L.mesh.pos[pi + 7] - L.z, L.mesh.pos[pi + 8]]]);
+                surfaces.push([[L.mesh.uv[ui], L.mesh.uv[ui + 1]], [L.mesh.uv[ui + 2], L.mesh.uv[ui + 3]], [L.mesh.uv[ui + 4], L.mesh.uv[ui + 5]]]);
+            }
+            const keepType = S.geom[L.gkey]?.type;
+            S.geom[L.gkey] = { vertices, surfaces, ...(keepType !== undefined ? { type: keepType } : {}) };
+            downloadJSON(S.geom, 'geometry.json');
+        }
+
+        /* picking */
+        function screenRay(px, py) {
+            const nx = (2 * px / W) - 1, ny = 1 - (2 * py / H);
+            const PV = M4.mul(proj(), view());
+            const inv = M4.invert(PV);
+            const p0 = [nx, ny, -1], p1 = [nx, ny, 1];
+            const w0 = inv[3] * p0[0] + inv[7] * p0[1] + inv[11] * p0[2] + inv[15];
+            const w1 = inv[3] * p1[0] + inv[7] * p1[1] + inv[11] * p1[2] + inv[15];
+            const x0 = (inv[0] * p0[0] + inv[4] * p0[1] + inv[8] * p0[2] + inv[12]) / (w0 || 1);
+            const y0 = (inv[1] * p0[0] + inv[5] * p0[1] + inv[9] * p0[2] + inv[13]) / (w0 || 1);
+            const z0 = (inv[2] * p0[0] + inv[6] * p0[1] + inv[10] * p0[2] + inv[14]) / (w0 || 1);
+            const x1 = (inv[0] * p1[0] + inv[4] * p1[1] + inv[8] * p1[2] + inv[12]) / (w1 || 1);
+            const y1 = (inv[1] * p1[0] + inv[5] * p1[1] + inv[9] * p1[2] + inv[13]) / (w1 || 1);
+            const z1 = (inv[2] * p1[0] + inv[6] * p1[1] + inv[10] * p1[2] + inv[14]) / (w1 || 1);
+            const o = [x0, y0, z0], d = V3.norm([x1 - x0, y1 - y0, z1 - z0]); return { o, d };
+        }
+        function rayTri(o, d, a, b, c) { const eps = 1e-6, ab = V3.sub(b, a), ac = V3.sub(c, a), p = V3.cross(d, ac), det = V3.dot(ab, p); if (Math.abs(det) < eps) return null; const inv = 1 / det, t = V3.sub(o, a), u = V3.dot(t, p) * inv; if (u < 0 || u > 1) return null; const q = V3.cross(t, ab), v = V3.dot(d, q) * inv; if (v < 0 || u + v > 1) return null; const dist = V3.dot(ac, q) * inv; return dist < 0 ? null : dist }
+        function pickFace(L, mx, my) {
+            const pos = L.mesh.pos; let best = -1, bestD = 1e9; const r = screenRay(mx, my);
+            for (let f = 0, i = 0; i < pos.length; f++, i += 9) {
+                const a = [pos[i], pos[i + 1], pos[i + 2]], b = [pos[i + 3], pos[i + 4], pos[i + 5]], c = [pos[i + 6], pos[i + 7], pos[i + 8]];
+                const h = rayTri(r.o, r.d, a, b, c); if (h !== null && h < bestD) { bestD = h; best = f; }
+            } return best;
+        }
+
+        /* interaction */
+        let isDown = false, last = [0, 0], panning = false;
+        glc.addEventListener('contextmenu', e => e.preventDefault());
+        glc.addEventListener('mousedown', e => {
+            isDown = true; last = [e.clientX, e.clientY]; panning = e.altKey || e.button === 1;
+            if (e.shiftKey && e.button === 0 && S.editLayerIndex >= 0) {
+                const r = glc.getBoundingClientRect();
+                const f = pickFace(S.layers[S.editLayerIndex], e.clientX - r.left, e.clientY - r.top);
+                if (f >= 0) { if (e.ctrlKey || e.metaKey) { if (S.selection.has(f)) S.selection.delete(f); else S.selection.add(f); } else { S.selection.clear(); S.selection.add(f); } updateSelInfo(); drawUV(); }
+            }
+        });
+        window.addEventListener('mouseup', () => isDown = false);
+        window.addEventListener('mousemove', e => {
+            if (!isDown) return;
+            const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY];
+            if (!panning && e.buttons === 1) { camYaw -= dx * 0.005; camPitch = Math.max(-1.45, Math.min(1.45, camPitch - dy * 0.005)); }
+            else {
+                const s = camDist * 0.0015;
+                const dir = [Math.sin(camYaw), 0, Math.cos(camYaw)];
+                const right = [dir[2], 0, -dir[0]];
+                camTarget = V3.add(camTarget, V3.add(V3.mul(right, -dx * s), V3.mul([0, 1, 0], dy * s)));
+            }
+        });
+        glc.addEventListener('wheel', e => { camDist = Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)); });
+
+        /* render */
+        ctx.enable(ctx.DEPTH_TEST);
+        ctx.disable(ctx.CULL_FACE);
+        function drawGrid(v, p) {
+            const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+            ctx.useProgram(prog);
+            ctx.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
+            ctx.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
+            ctx.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
+            ctx.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
+            ctx.uniform1f(loc.u_amb, parseFloat(amb.value));
+            ctx.uniform1i(loc.u_hasTex, 0); ctx.uniform1f(loc.u_tint, 0.0);
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, gridVBO);
+            ctx.enableVertexAttribArray(loc.a_pos); ctx.vertexAttribPointer(loc.a_pos, 3, ctx.FLOAT, false, 0, 0);
+            ctx.disableVertexAttribArray(loc.a_nrm); ctx.disableVertexAttribArray(loc.a_uv);
+            ctx.drawArrays(ctx.LINES, 0, (12 * 2 * 2 + 2 * 2));
+        }
+        function drawLayer(L, v, p, isEdit) {
+            const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+            ctx.useProgram(prog);
+            ctx.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
+            ctx.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
+            ctx.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
+            ctx.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
+            ctx.uniform1f(loc.u_amb, parseFloat(amb.value));
+            ctx.uniform1i(loc.u_hasTex, S.atlasTex ? 1 : 0);
+            ctx.uniform1f(loc.u_tint, isEdit ? 0.18 : 0.0);
+            if (S.atlasTex) { ctx.activeTexture(ctx.TEXTURE0); ctx.bindTexture(ctx.TEXTURE_2D, S.atlasTex); ctx.uniform1i(loc.u_tex, 0); }
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboPos); ctx.enableVertexAttribArray(loc.a_pos); ctx.vertexAttribPointer(loc.a_pos, 3, ctx.FLOAT, false, 0, 0);
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboNrm); ctx.enableVertexAttribArray(loc.a_nrm); ctx.vertexAttribPointer(loc.a_nrm, 3, ctx.FLOAT, false, 0, 0);
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, L.vboUV); ctx.enableVertexAttribArray(loc.a_uv); ctx.vertexAttribPointer(loc.a_uv, 2, ctx.FLOAT, false, 0, 0);
+            ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, L.ibo);
+
+            if (!chkWire.checked) { ctx.drawElements(ctx.TRIANGLES, L.idxCount, L.indexType, 0); }
+            else {
+                const edges = []; for (let i = 0; i < L.idxCount; i += 3) { edges.push(i, i + 1, i + 1, i + 2, i + 2, i); }
+                const eb = ctx.createBuffer(); ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, eb);
+                ctx.bufferData(ctx.ELEMENT_ARRAY_BUFFER, makeTyped(edges), ctx.DYNAMIC_DRAW);
+                ctx.drawElements(ctx.LINES, edges.length, L.indexType, 0);
+                ctx.deleteBuffer(eb);
+            }
+
+            if (isEdit && S.selection.size) {
+                ctx.enable(ctx.BLEND); ctx.blendFunc(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA);
+                const sel = []; for (const f of S.selection) { sel.push(f * 3, f * 3 + 1, f * 3 + 2); }
+                const sb = ctx.createBuffer(); ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, sb);
+                ctx.bufferData(ctx.ELEMENT_ARRAY_BUFFER, makeTyped(sel), ctx.DYNAMIC_DRAW);
+                ctx.uniform1f(loc.u_tint, 0.35); ctx.drawElements(ctx.TRIANGLES, sel.length, L.indexType, 0);
+                ctx.deleteBuffer(sb); ctx.disable(ctx.BLEND);
+            }
+        }
+        function frame() {
+            resize();
+            ctx.clearColor(0.07, 0.08, 0.1, 1); ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
+            const v = view(), p = proj();
+            drawGrid(v, p);
+            for (let i = 0; i < S.layers.length; i++) drawLayer(S.layers[i], v, p, i === S.editLayerIndex);
+            hud.textContent = `W×H ${glc.width}×${glc.height} · layers ${S.layers.length} · err ${ctx.getError()}`;
+            requestAnimationFrame(frame);
+        }
+        frame();
+
+        /* keyboard */
+        window.addEventListener('keydown', e => {
+            if (e.key.toLowerCase() === 'w') { chkWire.checked = !chkWire.checked; }
+            if (S.editLayerIndex < 0 || !S.selection.size) return;
+            const L = S.layers[S.editLayerIndex];
+            const step = (e.shiftKey ? 0.05 : 0.01);
+            let axis = [0, 0, 0];
+            if (e.key === 'ArrowLeft') axis = [-1, 0, 0];
+            else if (e.key === 'ArrowRight') axis = [1, 0, 0];
+            else if (e.key === 'ArrowUp') axis = [0, 1, 0];
+            else if (e.key === 'ArrowDown') axis = [0, -1, 0];
+            if (axis[0] || axis[1] || axis[2]) {
+                for (const f of S.selection) { const k = f * 9; for (let t = 0; t < 9; t += 3) { L.mesh.pos[k + t] += axis[0] * step; L.mesh.pos[k + t + 1] += axis[1] * step; L.mesh.pos[k + t + 2] += axis[2] * step; } }
+                recalcNormals(L, S.selection); pushPositions(L);
+            }
+        });
+
+        /* thumbnail (live ~2 FPS + manual snap) */
+        const thumb = document.getElementById('thumb'), thx = thumb.getContext('2d');
+        function drawThumb() { try { thx.clearRect(0, 0, thumb.width, thumb.height); thx.drawImage(glc, 0, 0, thumb.width, thumb.height); } catch (e) { /* ignore if browser blocks one frame */ } }
+        btnSnap.onclick = drawThumb;
+        setInterval(drawThumb, 500);
+
+        /* init */
+        resize();
+        (function () { const r = uvC.getBoundingClientRect(); if (r.width === 0 || r.height === 0) { uvC.style.height = '240px'; } })();
+        drawUV();
+        setStatusL('ready');
+    </script>
+</body>
+
+</html>

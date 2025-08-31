@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Editor</title>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+    <script>
+       // Define the tileset data
+const tileset = {
+  name: "default",
+  src: "tileset.png",
+  sheetSize: [512, 512],
+  sheetOffsetX: 0,
+  sheetOffsetY: 0,
+  tileSize: 16,
+  bgColor: [32, 62, 88],
+  textures: {
+    FLOOR: [1, 1],
+    FLOOR_BR: [2, 2],
+    FLOOR_R: [2, 1],
+    FLOOR_TR: [2, 0],
+    FLOOR_T: [1, 0],
+    FLOOR_TL: [0, 0],
+    FLOOR_L: [0, 1],
+    FLOOR_BL: [0, 2],
+    FLOOR_B: [1, 2],
+    FLOOR_CBR: [1, 1],
+    FLOOR_CTR: [1, 1],
+    FLOOR_CTL: [1, 1],
+    FLOOR_CBL: [1, 1],
+    FLOOR_V: [0, 3],
+    FLOOR_H: [1, 3],
+    FLOOR_C: [0, 4],
+    STAIR: [2, 3],
+    WALL: [1, 5],
+    WATER: [0, 26],
+    WALL_WATER: [1, 11],
+    WATER_WALL: [1, 12],
+    EMPTY: [2, 5],
+    EMPTY_BR: [2, 2],
+    EMPTY_R: [2, 1],
+    EMPTY_TR: [2, 0],
+    EMPTY_T: [1, 0],
+    EMPTY_TL: [0, 0],
+    EMPTY_L: [0, 1],
+    EMPTY_BL: [0, 2],
+    EMPTY_B: [1, 2],
+    EMPTY_CBR: [1, 1],
+    EMPTY_CTR: [1, 1],
+    EMPTY_CTL: [1, 1],
+    EMPTY_CBL: [1, 1]
+  },
+  geometry: {
+    FLAT_ALL: "FLAT_ALL",
+    FLAT_NONE: "FLAT_NONE",
+    STAIR_R: "STAIR_R",
+    STAIR_T: "STAIR_T",
+    STAIR_L: "STAIR_L",
+    STAIR_B: "STAIR_B",
+    WALL_R: "WALL_R",
+    WALL_T: "WALL_T",
+    WALL_L: "WALL_L",
+    WALL_B: "WALL_B"
+  }
+};
+
+// Define the geometry data
+const geometry = {
+  FLAT_ALL: {
+    vertices: [
+      [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
+      [[0, 1, 0], [1, 0, 0], [0, 0, 0]]
+    ],
+    surfaces: [
+      [[0, 1], [1, 1], [1, 0]],
+      [[0, 1], [1, 0], [0, 0]]
+    ],
+    type: 15
+  },
+  STAIR_T: {
+    vertices: [
+      [[0, 0.75, 0.25], [1, 0.75, 0.25], [1, 0.5, 0.25]],
+      [[0, 0.75, 0.25], [1, 0.5, 0.25], [0, 0.5, 0.25]],
+      [[0, 0.5, 0.5], [1, 0.5, 0.5], [1, 0.25, 0.5]],
+      [[0, 0.5, 0.5], [1, 0.25, 0.5], [0, 0.25, 0.5]],
+      [[0, 0.25, 0.75], [1, 0.25, 0.75], [1, 0, 0.75]],
+      [[0, 0.25, 0.75], [1, 0, 0.75], [0, 0, 0.75]],
+      [[0, 0.75, 0], [1, 0.75, 0], [1, 0.75, 0.25]],
+      [[0, 0.75, 0], [1, 0.75, 0.25], [0, 0.75, 0.25]]
+    ],
+    surfaces: [
+      [[0, 0.75], [1, 0.75], [1, 0.5]],
+      [[0, 0.75], [1, 0.5], [0, 0.5]],
+      [[0, 0.5], [1, 0.5], [1, 0.25]],
+      [[0, 0.5], [1, 0.25], [0, 0.25]],
+      [[0, 0.25], [1, 0.25], [1, 0]],
+      [[0, 0.25], [1, 0], [0, 0]],
+      [[0, 2], [1, 2], [1, 1.75]],
+      [[0, 2], [1, 1.75], [0, 1.75]]
+    ],
+    walkPoly: [
+      [[0, 1, 0], [1, 1, 0], [1, 0, 1]],
+      [[0, 1, 0], [1, 0, 1], [0, 0, 1]]
+    ],
+    type: 10
+  }
+};
+
+// WebGL setup
+const canvas = document.getElementById('webgl-canvas');
+const gl = canvas.getContext('webgl');
+if (!gl) {
+  console.error('WebGL not supported, falling back on experimental-webgl');
+  gl = canvas.getContext('experimental-webgl');
+}
+
+function createMat4() {
+  const m = new Float32Array(16);
+  return {
+    elements: m,
+    setIdentity: () => {
+      m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
+      m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
+      m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+      m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+    },
+    setOrtho: (left, right, bottom, top, near, far) => {
+      const rl = right - left;
+      const tb = top - bottom;
+      const fn = far - near;
+      m[0] = 2 / rl; m[1] = 0; m[2] = 0; m[3] = -(right + left) / rl;
+      m[4] = 0; m[5] = 2 / tb; m[6] = 0; m[7] = -(top + bottom) / tb;
+      m[8] = 0; m[9] = 0; m[10] = -2 / fn; m[11] = -(far + near) / fn;
+      m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+    },
+    set(matrix) {
+      for (let i = 0; i < 16; i++) {
+        this.elements[i] = matrix[i];
+      }
+    },
+    multiply: (m2) => {
+      const result = createMat4();
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          let sum = 0;
+          for (let k = 0; k < 4; k++) {
+            sum += this.elements[i * 4 + k] * m2[k * 4 + j];
+          }
+          result.elements[i * 4 + j] = sum;
+        }
+      }
+      return result;
+    },
+  };
+}
+
+// Shader setup (simplified for brevity)
+const vertexShaderSource = `
+  attribute vec3 aVertexPosition;
+  attribute vec2 aTextureCoord;
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  varying lowp vec2 vTextureCoord;
+  void main(void) {
+    gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition, 1.0);
+    vTextureCoord = aTextureCoord;
+  }
+`;
+
+const fragmentShaderSource = `
+  varying lowp vec2 vTextureCoord;
+  uniform sampler2D uSampler;
+  void main(void) {
+    gl_FragColor = texture2D(uSampler, vTextureCoord);
+  }
+`;
+
+// Bind shader programs
+function bindShaders(gl, vertexShaderProgram, fragmentShaderProgram) {
+  gl.useProgram(vertexShaderProgram);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+  gl.useProgram(fragmentShaderProgram);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+}
+
+// Create shader programs
+function createShaderPrograms(gl) {
+  const vertexShader = compileShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
+  const fragmentShader = compileShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
+
+  const vertexShaderProgram = gl.createProgram();
+  gl.attachShader(vertexShaderProgram, vertexShader);
+  gl.attachShader(vertexShaderProgram, fragmentShader);
+  gl.linkProgram(vertexShaderProgram);
+
+  if (!gl.getProgramParameter(vertexShaderProgram, gl.LINK_STATUS)) {
+    console.error('Vertex shader program failed to link:', gl.getProgramInfoLog(vertexShaderProgram));
+  }
+
+  const fragmentShaderProgram = gl.createProgram();
+  gl.attachShader(fragmentShaderProgram, fragmentShader);
+  gl.attachShader(fragmentShaderProgram, vertexShader);
+  gl.linkProgram(fragmentShaderProgram);
+
+  if (!gl.getProgramParameter(fragmentShaderProgram, gl.LINK_STATUS)) {
+    console.error('Fragment shader program failed to link:', gl.getProgramInfoLog(fragmentShaderProgram));
+  }
+
+  return { vertexShaderProgram, fragmentShaderProgram };
+}
+
+// Compile shaders
+function compileShader(gl, source, type) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error('Shader failed to compile:', gl.getShaderInfoLog(shader));
+  }
+
+  return shader;
+}
+
+// Create buffers
+const vertexBuffer = gl.createBuffer();
+const textureCoordBuffer = gl.createBuffer();
+const texture = gl.createTexture();
+const vertices = geometry.STAIR_T.vertices.flat(3);
+const texCoords = geometry.STAIR_T.surfaces.flat(3);
+
+function createBuffers(gl) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+}
+
+// Create shader programs
+const { vertexShaderProgram, fragmentShaderProgram } = createShaderPrograms(gl);
+
+// Bind buffers and shaders
+bindShaders(gl, vertexShaderProgram, fragmentShaderProgram);
+
+// Create matrices
+function createMatrices() {
+  const modelViewMatrix = createMat4();
+  const projectionMatrix = createMat4();
+
+  return { modelViewMatrix, projectionMatrix };
+}
+
+// Set up texture coordinates
+function setupTextureCoordinates(gl) {
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  gl.uniform1i(gl.getUniformLocation(fragmentShaderProgram, 'uSampler'), 0);
+}
+
+// Draw the tile
+function drawTile(gl, modelViewMatrix, projectionMatrix) {
+  gl.useProgram(vertexShaderProgram);
+  gl.uniformMatrix4fv(gl.getUniformLocation(vertexShaderProgram, 'uModelViewMatrix'), false, modelViewMatrix.elements);
+  gl.uniformMatrix4fv(gl.getUniformLocation(vertexShaderProgram, 'uProjectionMatrix'), false, projectionMatrix.elements);
+
+  gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+}
+
+// Set up event listeners
+function setupEventListeners() {
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // TO DO: implement tile selection logic here
+  });
+}
+
+// Main loop
+function mainLoop(gl, vertexShaderProgram, fragmentShaderProgram, texture, modelViewMatrix, projectionMatrix) {
+  setupTextureCoordinates(gl);
+  drawTile(gl, modelViewMatrix, projectionMatrix);
+
+  requestAnimationFrame(mainLoop.bind(this, gl, vertexShaderProgram, fragmentShaderProgram, texture, modelViewMatrix, projectionMatrix));
+}
+
+// Run the main loop
+mainLoop(gl, vertexShaderProgram, fragmentShaderProgram, texture, createMat4(), createMat4());
+
+    </script>
+</body>
+</html>
