@@ -51,9 +51,10 @@ const App = () => {
     // zip.js: getData({ type: 'text' | 'binarystring' })
     // The getData method returns a Promise for the data directly, no streams needed.
     if (asText) {
-      return await entry.getData(new zip.TextWriter());
+      console.log(entry);
+      return await entry.getData();
     }
-    return await entry.getData(new zip.Data64URIWriter());
+    return await entry.getData();
   }, []);
 
   /**

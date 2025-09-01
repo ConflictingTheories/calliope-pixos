@@ -1,0 +1,210 @@
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Inter, Arial;
+    }
+
+    #app {
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas: "toolbar toolbar" "view side" "status status";
+    }
+
+    #view,
+    #side {
+        min-height: 0;
+        min-width: 0;
+    }
+
+    #toolbar {
+        grid-area: toolbar;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        align-items: center;
+        padding: .5rem;
+        border-bottom: 1px solid #ddd;
+        background: #fafafa;
+    }
+
+    #view {
+        grid-area: view;
+        position: relative;
+        background: #0b0f14;
+    }
+
+    #gl {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    #hud {
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+        padding: .25rem .5rem;
+        background: rgba(0, 0, 0, .55);
+        color: #cbd5e1;
+        font: 12px ui-monospace, Menlo, Consolas, monospace;
+        border-radius: 6px;
+    }
+
+    #side {
+        grid-area: side;
+        border-left: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #pane {
+        padding: .75rem;
+        overflow: auto;
+    }
+
+    h3 {
+        margin: .75rem 0 .35rem;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin: .3rem 0;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: .4rem .6rem;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .pill {
+        padding: .25rem .5rem;
+        border-radius: 999px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+
+    .mono {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    .note {
+        color: #666;
+        font-size: .85rem;
+    }
+
+    input[type="number"] {
+        width: 7rem;
+    }
+
+    input[type="text"] {
+        width: 100%;
+    }
+
+    select {
+        max-width: 100%;
+    }
+
+    fieldset {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: .5rem .6rem;
+        margin: .5rem 0;
+    }
+
+    fieldset>legend {
+        font-size: .9rem;
+        color: #555;
+        padding: 0 .35rem;
+    }
+
+    #uvwrap {
+        border-top: 1px solid #eee;
+        padding: .75rem;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: .5rem;
+        min-height: 240px;
+    }
+
+    #uv {
+        width: 100%;
+        height: 220px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+
+    canvas.thumb {
+        width: 100%;
+        height: 120px;
+        border: 1px solid #ddd;
+        background: #111;
+    }
+
+    #status {
+        grid-area: status;
+        border-top: 1px solid #ddd;
+        background: #fafafa;
+        padding: .4rem .75rem;
+        font-size: .9rem;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .stack2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem;
+    }
+
+    .stack3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: .5rem;
+    }
+
+    .grow {
+        flex: 1;
+    }
+
+    .w120 {
+        width: 120px;
+    }
+
+    .seg {
+        display: inline-flex;
+        border: 1px solid #ccc;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .seg label {
+        padding: .25rem .6rem;
+        border-right: 1px solid #ccc;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .seg label:last-child {
+        border-right: 0;
+    }
+
+    .seg input {
+        display: none;
+    }
+
+    .seg input:checked+span {
+        background: #0b5cff;
+        color: #fff;
+    }

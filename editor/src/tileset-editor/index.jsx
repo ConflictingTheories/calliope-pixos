@@ -13,7 +13,7 @@
  * object will be emitted via the optional onSave callback.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { collect } from 'react-recollect';
 import {
   Panel,
@@ -29,13 +29,268 @@ import {
   Message,
 } from 'rsuite';
 
+// style
+import './style.css';
+
+/* ===== math (column-major OpenGL) -- TODO - Should be using same math library as regular Pixospritz (replace at some point) ===== */
+const M4 = {
+  ident: () => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+  mul: (a, b) => {
+    const o = new Array(16);
+    for (let c = 0; c < 4; c++) {
+      const b0 = b[c * 4 + 0], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
+      o[c * 4 + 0] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+      o[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+      o[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+      o[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+    }
+    return o;
+  },
+  lookAt: (eye, center, up) => {
+    const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2];
+    let zl = Math.hypot(zx, zy, zz);
+    const z0 = zx / zl, z1 = zy / zl, z2 = zz / zl;
+    let xx = up[1] * z2 - up[2] * z1, xy = up[2] * z0 - up[0] * z2, xz = up[0] * z1 - up[1] * z0;
+    let xl = Math.hypot(xx, xy, xz);
+    xx /= xl; xy /= xl; xz /= xl;
+    const y0 = z1 * xz - z2 * xy, y1 = z2 * xx - z0 * xz, y2 = z0 * xy - z1 * xx;
+    return [xx, y0, z0, 0, xy, y1, z1, 0, xz, y2, z2, 0, -(xx * eye[0] + xy * eye[1] + xz * eye[2]), -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]), -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]), 1];
+  },
+  persp: (fovyRad, aspect, near, far) => {
+    const f = 1 / Math.tan(fovyRad / 2), nf = 1 / (near - far);
+    return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, (2 * far * near) * nf, 0];
+  },
+  invert: (m) => {
+    const out = new Array(16);
+    const b00 = m[0] * m[5] - m[1] * m[4], b01 = m[0] * m[6] - m[2] * m[4], b02 = m[0] * m[7] - m[3] * m[4],
+      b03 = m[1] * m[6] - m[2] * m[5], b04 = m[1] * m[7] - m[3] * m[5], b05 = m[2] * m[7] - m[3] * m[6],
+      b06 = m[8] * m[13] - m[9] * m[12], b07 = m[8] * m[14] - m[10] * m[12], b08 = m[8] * m[15] - m[11] * m[12],
+      b09 = m[9] * m[14] - m[10] * m[13], b10 = m[9] * m[15] - m[11] * m[13], b11 = m[10] * m[15] - m[11] * m[14],
+      det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+    if (!det) return M4.ident();
+    const id = 1 / det;
+    out[0] = (m[5] * b11 - m[6] * b10 + m[7] * b09) * id;
+    out[1] = (-m[1] * b11 + m[2] * b10 - m[3] * b09) * id;
+    out[2] = (m[13] * b05 - m[14] * b04 + m[15] * b03) * id;
+    out[3] = (-m[9] * b05 + m[10] * b04 - m[11] * b03) * id;
+    out[4] = (-m[4] * b11 + m[6] * b08 - m[7] * b07) * id;
+    out[5] = (m[0] * b11 - m[2] * b08 + m[3] * b07) * id;
+    out[6] = (-m[12] * b05 + m[14] * b02 - m[15] * b01) * id;
+    out[7] = (m[8] * b05 - m[10] * b02 + m[11] * b01) * id;
+    out[8] = (m[4] * b10 - m[5] * b08 + m[7] * b06) * id;
+    out[9] = (-m[0] * b10 + m[1] * b08 - m[3] * b06) * id;
+    out[10] = (m[12] * b04 - m[13] * b02 + m[15] * b00) * id;
+    out[11] = (-m[8] * b04 + m[9] * b02 - m[11] * b00) * id;
+    out[12] = (-m[4] * b09 + m[5] * b07 - m[6] * b06) * id;
+    out[13] = (m[0] * b09 - m[1] * b07 + m[2] * b06) * id;
+    out[14] = (-m[12] * b03 + m[13] * b01 - m[14] * b00) * id;
+    out[15] = (m[8] * b03 - m[9] * b01 + m[10] * b00) * id;
+    return out;
+  }
+};
+const V3 = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: (a) => Math.hypot(a[0], a[1], a[2]),
+  norm: (a) => {
+    const L = V3.len(a) || 1;
+    return [a[0] / L, a[1] / L, a[2] / L];
+  }
+};
+
+
 function TilesetEditor({ content, onSave, assets = [] }) {
   const [tileset, setTileset] = useState({ tiles: [], geometry: [] });
   const [error, setError] = useState(null);
 
+  // canvas references
+  const uvC = useRef(null);
+  const glC = useRef(null);
+  const thC = useRef(null);
+  const hud = useRef(null);
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  
+  const [W, setW] = useState(1), [H, setH] = useState(1), [aspect, setAspect] = useState(1);
+
   // History management for undo/redo
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const [tiles, setTiles] = useState(null);
+  const [geom, setGeom] = useState(null);
+  const [atlasImg, setAtlasImg] = useState(null);
+  const [atlasTex, setAtlasTex] = useState(null);
+  const [atlasSize, setAtlasSize] = useState([512, 512]);
+  const [sheetSize, setSheetSize] = useState([512, 512]);
+  const [tileSize, setTileSize] = useState(16);
+  const [sheetOff, setSheetOff] = useState([0, 0]);
+  const [bgColor, setBgColor] = useState([32, 62, 88]);
+  const [textures] = useState(new Map());
+  const [tileKeys, setTileKeys] = useState([]);
+  const [currentTileKey, setCurrentTileKey] = useState(null);
+  const [layers] = useState([]);
+  const [editLayerIndex, setEditLayerIndex] = useState(-1);
+  const [selectionFaces] = useState(new Set());
+  const [flipV, setFlipV] = useState(false);
+
+  const [lx, setLx] = useState(0.7);
+  const [ly, setLy] = useState(0.7);
+  const [lz, setLz] = useState(0.7);
+  const [amb, setAmb] = useState(0.7);
+
+  const [camDist, setCamDist] = useState(2.8);
+  const [camYaw, setCamYaw] = useState(0.7);
+  const [camPitch, setCamPitch] = useState(0.5);
+  const [camTarget, setCamTarget] = useState([0.5, 0.5, 0.5]);
+
+  /* ===== Camera ===== */
+  function btnResetViewOnClick() {
+    setCamDist(2.8);
+    setCamYaw(0.7);
+    setCamPitch(0.5);
+    setCamTarget([0.5, 0.5, 0.5]);
+  };
+
+  function eye() {
+    return [
+      camTarget[0] + camDist * Math.cos(camPitch) * Math.sin(camYaw),
+      camTarget[1] + camDist * Math.sin(camPitch),
+      camTarget[2] + camDist * Math.cos(camPitch) * Math.cos(camYaw)
+    ];
+  }
+
+  function view() {
+    return M4.lookAt(eye(), camTarget, [0, 1, 0]);
+  }
+
+  function proj() {
+    return M4.persp(50 * Math.PI / 180, aspect, 0.01, 100);
+  }
+
+  /* ===== Rendering ===== */
+
+  // Grid Render
+  function drawGrid(v, p) {
+    const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+    gl.useProgram(prog);
+    gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
+    gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
+    gl.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
+    gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
+    gl.uniform1f(loc.u_amb, parseFloat(amb.value));
+    gl.uniform1i(loc.u_hasTex, 0);
+    gl.uniform1f(loc.u_tint, 0.0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gridVBO);
+    gl.enableVertexAttribArray(loc.a_pos);
+    gl.vertexAttribPointer(loc.a_pos, 3, gl.FLOAT, false, 0, 0);
+    gl.disableVertexAttribArray(loc.a_nrm);
+    gl.disableVertexAttribArray(loc.a_uv);
+    // Use gridVerts length for draw count
+    gl.drawArrays(gl.LINES, 0, gridVerts.length / 3);
+  }
+
+  // Tile Render
+  function drawLayer(L, v, p, isEdit) {
+    const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+    gl.useProgram(prog);
+    gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
+    gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
+    gl.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
+    gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
+    gl.uniform1f(loc.u_amb, parseFloat(amb.value));
+    gl.uniform1i(loc.u_hasTex, atlasTex ? 1 : 0);
+    gl.uniform1f(loc.u_tint, isEdit ? 0.18 : 0.0);
+    if (atlasTex) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, atlasTex);
+      gl.uniform1i(loc.u_tex, 0);
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, L.vboPos);
+    gl.enableVertexAttribArray(loc.a_pos);
+    gl.vertexAttribPointer(loc.a_pos, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, L.vboNrm);
+    gl.enableVertexAttribArray(loc.a_nrm);
+    gl.vertexAttribPointer(loc.a_nrm, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, L.vboUV);
+    gl.enableVertexAttribArray(loc.a_uv);
+    gl.vertexAttribPointer(loc.a_uv, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, L.ibo);
+    if (!chkWire.checked) {
+      gl.drawElements(gl.TRIANGLES, L.idxCount, L.indexType, 0);
+    } else {
+      // generate edges using actual indices
+      const edges = [];
+      const inds = L.indices;
+      for (let i = 0; i < inds.length; i += 3) {
+        const i0 = inds[i], i1 = inds[i + 1], i2 = inds[i + 2];
+        edges.push(i0, i1, i1, i2, i2, i0);
+      }
+      const eb = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, eb);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, makeTyped(edges), gl.DYNAMIC_DRAW);
+      gl.drawElements(gl.LINES, edges.length, L.indexType, 0);
+      gl.deleteBuffer(eb);
+    }
+    // face overlay
+    if (isEdit && editMode === 'face' && selectionFaces.size) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      const sel = [];
+      for (const f of selectionFaces) { sel.push(f * 3, f * 3 + 1, f * 3 + 2); }
+      const sb = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sb);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, makeTyped(sel), gl.DYNAMIC_DRAW);
+      gl.uniform1f(loc.u_tint, 0.35);
+      gl.drawElements(gl.TRIANGLES, sel.length, L.indexType, 0);
+      gl.deleteBuffer(sb);
+      gl.disable(gl.BLEND);
+    }
+  }
+
+  // Thumbnail Render
+  function drawThumb() {
+    const ctx = thC.getContext('2d');
+    const srcW = glC.current.width, srcH = glC.current.height, dstW = thC.width, dstH = thC.height;
+    const s = Math.min(dstW / srcW, dstH / srcH);
+    const w = Math.floor(srcW * s), h = Math.floor(srcH * s);
+    const dx = Math.floor((dstW - w) / 2), dy = Math.floor((dstH - h) / 2);
+    const tmp = document.createElement('canvas');
+    tmp.width = srcW; tmp.height = srcH;
+    tmp.getContext('2d').drawImage(glC, 0, 0);
+    ctx.clearRect(0, 0, dstW, dstH);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, dstW, dstH);
+    ctx.drawImage(tmp, 0, 0, srcW, srcH, dx, dy, w, h);
+  }
+
+  function resize() {
+    const r = glC.current.getBoundingClientRect();
+    setW(Math.max(1, Math.floor(r.width * dpr)));
+    setH(Math.max(1, Math.floor(r.height * dpr)));
+    setAspect(W / H);
+    if (glC.current.width !== W || glC.current.height !== H) {
+      glC.current.width = W;
+      glC.current.height = H;
+    }
+    gl.viewport(0, 0, W, H);
+  }
+
+  // Render Loop
+  function animationFrame() {
+    resize();
+    const bg = bgColor.map(v => v / 255);
+    gl.clearColor(bg[0] * 0.25, bg[1] * 0.25, bg[2] * 0.25, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    const v = view(), p = proj();
+    drawGrid(v, p);
+    for (let i = 0; i < layers.length; i++) drawLayer(layers[i], v, p, i === editLayerIndex);
+    hud.textContent = `${glC.current.width}×${glC.current.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+    drawThumb();
+    requestAnimationFrame(frame);
+  }
 
   // Push a snapshot of the current tileset into history
   function pushHistorySnapshot(nextTileset) {
@@ -47,6 +302,267 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       return updated;
     });
   }
+
+  /* ===== UI bindings ===== */
+  function selectTile(e) {
+    const k = e.target.value || null;
+    setCurrentTileKey(k);
+    drawUV();
+    if (!k) return;
+    rebuildLayersForTile(k);
+    setStatusL('tile selected');
+  };
+
+  function selectLayer(e) {
+    const i = +e.target.value;
+    if (Number.isNaN(i)) return;
+    setEditLayerIndex(i);
+    setStatusL(`edit layer ${i}`);
+    drawUV();
+  };
+
+  function applyTexture() {
+    const key = texPick.value;
+    const i = editLayerIndex;
+    if (!key || i < 0) return;
+    const L = layers[i];
+    L.tkey = key;
+    const rec = tiles[currentTileKey];
+    if (rec) {
+      const base = i * 3;
+      if (base + 1 < rec.length) rec[base + 1] = key;
+    }
+    updateLayerBakedUV(L);
+    drawUV();
+    setStatusL(`layer ${i} texture → ${key}`);
+  };
+
+  /* ===== Helpers ===== */
+  const setStatusL = s => statL.textContent = s;
+  const setStatusR = s => statR.textContent = s;
+  function fillSelect(sel, pairs) {
+    sel.innerHTML = '';
+    for (const [v, t] of pairs) {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = t;
+      sel.appendChild(o);
+    }
+  }
+  function downloadJSON(obj, name) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+  }
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+
+  /* ===== I/O ===== */
+  function readJSON(input, cb) {
+    const f = input.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try { cb(JSON.parse(r.result), f.name); } catch (e) { alert('Invalid JSON: ' + e.message); }
+    };
+    r.readAsText(f);
+  }
+  function toHex(c) { return '#' + c.map(v => ('0' + v.toString(16)).slice(-2)).join('') }
+
+  function ingestTileset() {
+    const t = tileset;
+    if (!t) return;
+    setSheetSize(t.sheetSize || [512, 512]);
+    setTileSize(t.tileSize || 16);
+    setSheetOff([t.sheetOffsetX || 0, t.sheetOffsetY || 0]);
+    setBgColor(t.bgColor || [32, 62, 88]);
+    textures.clear();
+    if (t.textures) for (const k in t.textures) textures.set(k, t.textures[k]);
+    fillSelect(texPick, [['', '— texture key —'], ...[...textures.keys()].sort().map(k => [k, k])]);
+    setStatusL('tileset.json loaded');
+  }
+
+  function rebuildTilePicker() {
+    if (!tiles) return;
+    setTileKeys(Object.keys(tiles).sort());
+    fillSelect(tilePick, [['', '— select tile —'], ...tileKeys.map(k => [k, k])]);
+    setStatusL('tiles.json loaded');
+  }
+
+  /* ===== UV bake (atlas-aware, Flip-V aware) ===== */
+  function atlasBake(raw, tKey) {
+    const cell = tKey ? textures.get(tKey) : null;
+    const out = new Float32Array(raw.length);
+    const sheetW = (atlasSize?.[0]) || sheetSize[0], sheetH = (atlasSize?.[1]) || sheetSize[1];
+    let offX = 0, offY = 0, sclX = 1, sclY = 1;
+    if (cell) {
+      const [col, row] = cell, tileW = tileSize, tileH = tileSize;
+      offX = (sheetOff[0] + col * tileW) / sheetW;
+      offY = (sheetOff[1] + row * tileH) / sheetH;
+      sclX = tileW / sheetW; sclY = tileH / sheetH;
+    }
+    for (let i = 0; i < raw.length; i += 2) {
+      const u = raw[i], v = raw[i + 1];
+      const vf = flipV ? (1 - v) : v;
+      out[i] = offX + u * sclX;
+      out[i + 1] = offY + vf * sclY;
+    }
+    return out;
+  }
+  function updateLayerBakedUV(L) {
+    const baked = atlasBake(L.mesh.uv, L.tkey);
+    gl.bindBuffer(gl.ARRAY_BUFFER, L.vboUV);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, baked);
+  }
+
+  /* ===== Build layer ===== */
+  function buildLayer(gkey, tkey, z) {
+    const g = geom?.[gkey];
+    if (!g) { alert(`Missing geometry: ${gkey}`); return null; }
+    const triPos = g.vertices, triUV = g.surfaces;
+    const pos = [], uvRaw = [], nrm = [], idx = [];
+    let v = 0;
+    for (let t = 0; t < triPos.length; t++) {
+      const a = triPos[t][0], b = triPos[t][1], c = triPos[t][2];
+      const n = V3.norm(V3.cross(V3.sub(b, a), V3.sub(c, a)));
+      [a, b, c].forEach(p => {
+        pos.push(p[0], p[1] + z, p[2]);
+        nrm.push(n[0], n[1], n[2]);
+      });
+      const uvs = (triUV && triUV[t]) ? triUV[t] : [[0, 0], [1, 0], [1, 1]];
+      // do NOT clamp UVs — allow >1 to span multiple cells
+      uvs.forEach(q => uvRaw.push(q[0], q[1]));
+      idx.push(v, v + 1, v + 2);
+      v += 3;
+    }
+    const vboPos = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vboPos);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.DYNAMIC_DRAW);
+    const vboNrm = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vboNrm);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(nrm), gl.DYNAMIC_DRAW);
+    const vboUV = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vboUV);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvRaw), gl.DYNAMIC_DRAW);
+    const ib = makeIndexBuffer(idx);
+    // store typed indices for wireframe generation
+    const typedIdx = makeTyped(idx);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vboUV);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, atlasBake(uvRaw, tkey));
+    return {
+      gkey,
+      tkey,
+      z,
+      vboPos,
+      vboNrm,
+      vboUV,
+      ibo: ib.buf,
+      indexType: ib.type,
+      idxCount: idx.length,
+      indices: typedIdx,
+      mesh: {
+        pos: new Float32Array(pos),
+        nrm: new Float32Array(nrm),
+        uv: new Float32Array(uvRaw),
+        triCount: triPos.length
+      }
+    };
+  }
+
+  /* ===== Build layers for a tile (render all) ===== */
+  function rebuildLayersForTile(tileKey) {
+    layers.length = 0;
+    const arr = tiles[tileKey] || [];
+    for (let i = 0; i + 2 < arr.length; i += 3) {
+      const g = arr[i], t = arr[i + 1], z = arr[i + 2];
+      if (typeof g === 'string' && typeof t === 'string' && typeof z === 'number') {
+        const L = buildLayer(g, t, z);
+        if (L) layers.push(L);
+      } else break;
+    }
+    setEditLayerIndex(layers.length ? layers.length - 1 : -1);
+    fillSelect(layerPick, [['', '— select layer —'], ...layers.map((L, i) => [String(i), `${i}: ${L.gkey} @ ${L.tkey} z=${L.z}`])]);
+    drawUV();
+    tileMeta.textContent = `tile=${tileKey} · layers=${layers.length}`;
+  }
+
+  function applyTilesetEdits() {
+    const parseHex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+    setTileset(tileset || {});
+    tileset.name = tsName.value || 'default';
+    setTileSize(tileset.tileSize = parseInt(tsTileSize.value) || 16);
+    setSheetSize([parseInt(tsSheetW.value) || 512, parseInt(tsSheetH.value) || 512]);
+    tileset.sheetSize = [...sheetSize];
+    setSheetOff([parseInt(tsOffX.value) || 0, parseInt(tsOffY.value) || 0]);
+    tileset.sheetOffsetX = sheetOff[0];
+    tileset.sheetOffsetY = sheetOff[1];
+    setBgColor(tsBg.value || parseHex('#203e58'));
+    tileset.bgColor = [...bgColor];
+    for (const L of layers) updateLayerBakedUV(L);
+    drawUV();
+    setStatusL('tileset applied & UVs re-baked');
+  }
+
+  function loadAtlas(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      setAtlasImg(img);
+      setAtlasTex(setGLTexture(img));
+      setAtlasSize([img.naturalWidth || img.width, img.naturalHeight || img.height]);
+      if (!tileset?.sheetSize || tileset.sheetSize[0] !== atlasSize[0] || tileset.sheetSize[1] !== atlasSize[1])
+        setSheetSize([...atlasSize]);
+      for (const L of layers) updateLayerBakedUV(L);
+      drawUV();
+      setStatusL('atlas loaded');
+    };
+    img.src = URL.createObjectURL(f);
+  }
+
+  function loadTileset(e) {
+    readJSON(e.target, (j) => {
+      setTileset(j);
+      ingestTileset();
+    });
+  }
+
+  function loadTiles(e) {
+    readJSON(e.target, (j) => {
+      setTiles(j);
+      rebuildTilePicker();
+    });
+  }
+
+  function loadGeometry(e) {
+    readJSON(e.target, (j) => {
+      setGeom(j);
+      setStatusL('geometry.json loaded');
+    });
+  }
+
+  function exportCurrentLayerGeometry() {
+    const i = editLayerIndex;
+    if (i < 0) { alert('Pick a layer'); return; }
+    const L = layers[i];
+    const tri = L.mesh.triCount;
+    const vertices = [], surfaces = [];
+    for (let f = 0; f < tri; f++) {
+      const pi = f * 9, ui = f * 6;
+      vertices.push([[L.mesh.pos[pi], L.mesh.pos[pi + 1] - L.z, L.mesh.pos[pi + 2]],
+      [L.mesh.pos[pi + 3], L.mesh.pos[pi + 4] - L.z, L.mesh.pos[pi + 5]],
+      [L.mesh.pos[pi + 6], L.mesh.pos[pi + 7] - L.z, L.mesh.pos[pi + 8]]]);
+      surfaces.push([[L.mesh.uv[ui], L.mesh.uv[ui + 1]], [L.mesh.uv[ui + 2], L.mesh.uv[ui + 3]], [L.mesh.uv[ui + 4], L.mesh.uv[ui + 5]]]);
+    }
+    const keepType = geom[L.gkey]?.type;
+    let newGeom = geom;
+    newGeom[L.gkey] = { vertices, surfaces, ...(keepType !== undefined ? { type: keepType } : {}) }
+    setGeom(newGeom);
+    downloadJSON(newGeom, 'geometry.json');
+  }
+
 
   // Undo last change
   function undo() {
@@ -68,6 +584,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   // Parse incoming JSON into state
   useEffect(() => {
+    animationFrame();
     if (content) {
       try {
         const obj = JSON.parse(content);
@@ -103,6 +620,74 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }
 
+  // draw UV map over Atlas Preview
+  function drawUV() {
+    uvx.setTransform(1, 0, 0, 1, 0, 0);
+    uvx.clearRect(0, 0, uvW, uvH);
+    // background checker
+    for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
+      uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff';
+      uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10);
+    }
+    // draw atlas centered (fit)
+    let ox = 0, oy = 0, dw = uvW, dh = uvH;
+    if (atlasImg) {
+      const iw = atlasImg.width, ih = atlasImg.height;
+      const s = Math.min(uvW / iw, uvH / ih);
+      dw = iw * s;
+      dh = ih * s;
+      ox = (uvW - dw) / 2;
+      oy = (uvH - dh) / 2;
+      uvx.drawImage(atlasImg, ox, oy, dw, dh);
+    }
+    const i = editLayerIndex;
+    if (i < 0) return;
+    const L = layers[i];
+    // highlight current cell
+    const cell = L.tkey ? textures.get(L.tkey) : null;
+    if (cell && atlasImg) {
+      const [col, row] = cell;
+      const [sheetW, sheetH] = sheetSize;
+      const tile = tileSize;
+      const x = (sheetOff[0] + col * tile) / sheetW, y = (sheetOff[1] + row * tile) / sheetH;
+      const w = tile / sheetW, h = tile / sheetH;
+      uvx.strokeStyle = '#ff0077';
+      uvx.lineWidth = 2;
+      uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
+    }
+    // baked UV overlay (atlas space)
+    const baked = atlasBake(L.mesh.uv, L.tkey);
+    uvx.strokeStyle = '#1976d2';
+    uvx.lineWidth = 1.5;
+    uvx.fillStyle = 'rgba(25,118,210,0.08)';
+    const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
+    for (const f of faces) {
+      const ui = f * 6;
+      const P = [];
+      for (let v = 0; v < 3; v++) P.push([ox + baked[ui + v * 2] * dw, oy + baked[ui + v * 2 + 1] * dh]);
+      uvx.beginPath();
+      P.forEach((p, k) => k ? uvx.lineTo(p[0], p[1]) : uvx.moveTo(p[0], p[1]));
+      uvx.closePath();
+      uvx.fill();
+      uvx.stroke();
+      P.forEach(p => {
+        uvx.beginPath();
+        uvx.arc(p[0], p[1], 3, 0, 6.283);
+        uvx.fillStyle = '#1e3a8a';
+        uvx.fill();
+      });
+    }
+  }
+
+  function resizeUV() {
+    const r = uvC.getBoundingClientRect();
+    uvW = Math.max(1, Math.floor(r.width * dpr));
+    uvH = Math.max(1, Math.floor(r.height * dpr));
+    uvC.width = uvW;
+    uvC.height = uvH;
+    drawUV();
+  }
+
   // Build options for texture selection from assets list
   const textureOptions = [{ label: 'None', value: '' }, ...assets.map((a) => ({ label: a.name, value: a.name }))];
 
@@ -123,73 +708,135 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       )}
       <Row>
         <Col sm={24} md={24} lg={24}>
-          <Panel bordered header={<strong>Tileset Editor</strong>}> 
-            <div style={{ maxHeight: '50vh', overflow: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #333' }}>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Geometry</th>
-                    <th>Texture</th>
-                    <th>Preview</th>
-                    <th>Walkable</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tileset.tiles.map((tile, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <InputNumber
-                          value={tile.id || idx}
-                          onChange={(val) => updateTile(idx, 'id', val)}
-                          style={{ width: '4rem' }}
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          value={tile.name || ''}
-                          onChange={(val) => updateTile(idx, 'name', val)}
-                        />
-                      </td>
-                      <td>
-                        <InputNumber
-                          value={tile.geometry || 0}
-                          onChange={(val) => updateTile(idx, 'geometry', val)}
-                          style={{ width: '4rem' }}
-                        />
-                      </td>
-                      <td>
-                        <SelectPicker
-                          data={textureOptions}
-                          value={tile.texture || ''}
-                          onChange={(val) => updateTile(idx, 'texture', val)}
-                          style={{ width: '12rem' }}
-                          searchable={false}
-                          placeholder='Select texture'
-                        />
-                      </td>
-                      <td>
-                        {getTextureUri(tile.texture) ? (
-                          <img
-                            src={getTextureUri(tile.texture)}
-                            alt={tile.texture}
-                            style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-                          />
-                        ) : (
-                          <span style={{ color: '#666' }}>—</span>
-                        )}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={!!tile.walkable}
-                          onChange={(checked) => updateTile(idx, 'walkable', checked)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <Panel bordered header={<strong>Tileset Editor</strong>}>
+            <div id="app">
+              <div id="toolbar">
+                <label className={"btn"}>Load tileset.json <input id="fTileset" type="file" accept="application/json" hidden="" onChange={loadTileset} /></label>
+                <label className={"btn"}>Load geometry.json <input id="fGeom" type="file" accept="application/json" hidden="" onChange={loadGeometry} /></label>
+                <label className={"btn"}>Load tiles.json <input id="fTiles" type="file" accept="application/json" hidden="" onChange={loadTiles} /></label>
+
+                <select id="tilePick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
+                  <option value="">— select tile —</option>
+                </select>
+
+                <select id="layerPick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectLayer}>
+                  <option value="">— select layer —</option>
+                </select>
+
+                <label className={"btn"}>Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden="" onChange={loadAtlas} /></label>
+                <select id="texPick" className={"pill"} style={{ minWidth: '180px' }}>
+                  <option value="">— texture key —</option>
+                </select>
+                <button onClick={applyTexture} id="btnUseTex" className={"btn"} title="Set selected layer’s texture key to the chosen one">Use chosen
+                  texture</button>
+
+                <button id="btnExportGeom" className={"btn"} onClick={exportCurrentLayerGeometry}>Export geometry.json</button>
+                <button id="btnExportTiles" className={"btn"} onClick={() => {
+                  if (!tiles) { alert('Nothing to export'); return; }
+                  downloadJSON(tiles, 'tiles.json');
+                }}>Export tiles.json</button>
+                <button id="btnExportTileset" className={"btn"} onClick={() => {
+                  if (!tileset) { alert('Nothing to export'); return; }
+                  downloadJSON(tileset, 'tileset.json');
+                }}>Export tileset.json</button>
+              </div>
+
+              <div id="view">
+                <canvas id="gl" ref={glC} width="2028" height="1434"></canvas>
+                <div id="hud" ref={hud}>2028×1434 · 0 layer(s) · err 0</div>
+              </div>
+
+              <aside id="side">
+                <div id="pane">
+                  <h3>Tile / Layers</h3>
+                  <div className={"row"}>
+                    <div id="tileMeta" className={"mono note"}>—</div>
+                  </div>
+                  <div className={"row"}>
+                    <button id="btnCloneTile" className={"btn"}>Clone Tile…</button>
+                    <button id="btnAddLayer" className={"btn"}>Add Layer…</button>
+                    <button id="btnDelLayer" className={"btn"}>Delete Layer</button>
+                  </div>
+                  <div className={"row note"}>All layers render together; the Layer picker chooses which one you edit.</div>
+
+                  <fieldset>
+                    <legend>Tileset (live)</legend>
+                    <div className={"row"}><label className={"w120"}>Name</label><input id="tsName" type="text" placeholder="tileset name" value={tileset.name} onChange={(e) => {
+                      let newTileset = tileset;
+                      newTileset.name = e.currentTarget.value;
+                      setTileset(newTileset)
+                    }} />
+                    </div>
+                    <div className={"stack2"}>
+                      <div className={"row"}><label className={"w120"}>Tile size</label><input id="tsTileSize" type="number" min="1" step="1" value={tileSize} onChange={e => setTileSize(e.currentTarget.value)} />
+                      </div>
+                      <div className={"row"}><label className={"w120"}>BG color</label><input id="tsBg" type="color" value={bgColor} onChange={e => setBgColor(e.currentTarget.value)} /></div>
+                    </div>
+                    <div className={"stack2"}>
+                      <div className={"row"}><label className={"w120"}>Sheet W</label><input id="tsSheetW" type="number" min="1" step="1" value={sheetSize[0]} onChange={(e) => {
+                        let newSheetSize = sheetSize;
+                        newSheetSize[0] = e.currentTarget.value;
+                        setSheetSize(newSheetSize)
+                      }} />
+                      </div>
+                      <div className={"row"}><label className={"w120"}>Sheet H</label><input id="tsSheetH" type="number" min="1" step="1" value={sheetSize[1]} onChange={(e) => {
+                        let newSheetSize = sheetSize;
+                        newSheetSize[1] = e.currentTarget.value;
+                        setSheetSize(newSheetSize)
+                      }} />
+                      </div>
+                    </div>
+                    <div className={"stack2"}>
+                      <div className={"row"}><label className={"w120"}>Offset X</label><input id="tsOffX" type="number" step="1" value={sheetOff[0]} onChange={(e) => {
+                        let newSheetOff = sheetOff;
+                        newSheetOff[0] = e.currentTarget.value;
+                        setSheetOff(newSheetOff)
+                      }} />
+                      </div>
+                      <div className={"row"}><label className={"w120"}>Offset Y</label><input id="tsOffY" type="number" step="1" value={sheetOff[1]} onChange={(e) => {
+                        let newSheetOff = sheetOff;
+                        newSheetOff[1] = e.currentTarget.value;
+                        setSheetOff(newSheetOff)
+                      }} />
+                      </div>
+                    </div>
+                    <div className={"row note"}>Apply to re-bake UVs and refresh.</div>
+                    <div className={"row"}><button id="btnApplyTileset" onClick={applyTilesetEdits} className={"btn grow"}>Apply &amp; Re-bake</button></div>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend>View</legend>
+                    <div className={"row"}><label><input type="checkbox" id="chkWire" /> Wireframe</label>
+                      <label><input type="checkbox" id="chkFlipV" checked="" onChange={(e) => {
+                        setFlipV(e.currentTarget.checked);
+                        for (const L of layers)
+                          updateLayerBakedUV(L);
+                        drawUV();
+                      }} /> Flip V (top-left UVs)</label>
+                    </div>
+                    <div className={"row"}><label>Ambient</label><input id="amb" type="range" min="0" max="1" step="0.01" onChange={e => setAmb(e.currentTarget.value)} value={amb} />
+                    </div>
+                    <div className={"row"}><label>Light</label>
+                      <input id="lx" type="range" min="-1" max="1" step="0.01" onChange={e => setLx(e.currentTarget.value)} value={lx} />
+                      <input id="ly" type="range" min="-1" max="1" step="0.01" onChange={e => setLy(e.currentTarget.value)} value={ly} />
+                      <input id="lz" type="range" min="-1" max="1" step="0.01" onChange={e => setLz(e.currentTarget.value)} value={lz} />
+                      <button id="btnResetView" className={"btn"} onClick={btnResetViewOnClick}>Reset</button>
+                    </div>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend>UV (Atlas-aware)</legend>
+                    <div className={"row note"}>Shows atlas, highlights the chosen texture cell, and overlays the baked UVs.
+                      Drag points to edit.</div>
+                    <div id="uvwrap"><canvas id="uv" ref={uvC} width="663" height="444"></canvas></div>
+                  </fieldset>
+
+                  <h3>Thumbnail</h3>
+                  <canvas id="thumb" className={"thumb"} ref={thC} width="256" height="120"></canvas>
+                </div>
+              </aside>
+
+              <div id="status"><span id="statL">ready</span><span id="statR" className={"mono"}>—</span></div>
             </div>
           </Panel>
         </Col>
