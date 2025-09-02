@@ -16,6 +16,7 @@
 // TODO - FIX NEEDED - NOT RENDERING CORRECTLY INTO THE CANVASES
 
 import React, { useState, useEffect, useRef } from 'react';
+import TilesetAtlasEditor from './tileset-atlas.jsx';
 import { collect } from 'react-recollect';
 import {
   Panel,
@@ -45,7 +46,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     sheetOffsetX: 0,
     sheetOffsetY: 0,
     tileSize: 0,
-    bgColor: [0, 0, 0],
+    bgColor: [100, 100, 100],
     textures: {}, tiles: [], geometry: []
   });
   const [error, setError] = useState(null);
@@ -75,7 +76,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [sheetSize, setSheetSize] = useState([512, 512]);
   const [tileSize, setTileSize] = useState(16);
   const [sheetOff, setSheetOff] = useState([0, 0]);
-  const [bgColor, setBgColor] = useState([32, 62, 88]);
+  const [bgColor, setBgColor] = useState([100, 100, 100]);
   const [textures] = useState(new Map());
   const [tileKeys, setTileKeys] = useState([]);
   const [currentTileKey, setCurrentTileKey] = useState(null);
@@ -409,7 +410,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     setSheetSize(t.sheetSize || [512, 512]);
     setTileSize(t.tileSize || 16);
     setSheetOff([t.sheetOffsetX || 0, t.sheetOffsetY || 0]);
-    setBgColor(t.bgColor || [32, 62, 88]);
+    setBgColor(t.bgColor || [100, 100, 100]);
     textures.clear();
     if (t.textures) for (const k in t.textures) textures.set(k, t.textures[k]);
     fillSelect(texPick.current, [['', '— texture key —'], ...[...textures.keys()].sort().map(k => [k, k])]);
@@ -840,6 +841,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                     </div>
                   </fieldset>
 
+                  <fieldset>
+                    <legend>Texture Atlas</legend>
+                    {atlasImg ? <TilesetAtlasEditor atlasImage={atlasImg} atlasURL={atlasImg.src} tileSize={tileSize} sheetSize={sheetSize} /> : null}
+                  </fieldset>
                   <fieldset>
                     <legend>UV (Atlas-aware)</legend>
                     <div className={"row note"}>Shows atlas, highlights the chosen texture cell, and overlays the baked UVs.
