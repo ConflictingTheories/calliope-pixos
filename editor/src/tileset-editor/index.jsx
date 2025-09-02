@@ -56,6 +56,9 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const glC = useRef();
   const thC = useRef();
   const hud = useRef();
+  const tilePick = useRef();
+  const layerPick = useRef();
+  const texPick = useRef();
   const dpr = Math.min(devicePixelRatio || 1, 2);
 
   const [W, setW] = useState(1), [H, setH] = useState(1), [aspect, setAspect] = useState(1);
@@ -351,7 +354,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   };
 
   function applyTexture() {
-    const key = texPick.value;
+    const key = texPick.current.value;
     const i = editLayerIndex;
     if (!key || i < 0) return;
     const L = layers[i];
@@ -363,7 +366,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
     updateLayerBakedUV(L);
     drawUV();
-    setStatusL(`layer ${i} texture → ${key}`);
+    setStatusR(`layer ${i} texture → ${key}`);
   };
 
   /* ===== Helpers ===== */
@@ -385,19 +388,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     a.download = name;
     a.click();
   }
-  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
-
 
   /* ===== I/O ===== */
-  function readJSON(input, cb) {
-    const f = input.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      try { cb(JSON.parse(r.result), f.name); } catch (e) { alert('Invalid JSON: ' + e.message); }
-    };
-    r.readAsText(f);
-  }
   function toHex(c) { return '#' + c.map(v => ('0' + v.toString(16)).slice(-2)).join('') }
 
   function ingestTileset() {
@@ -409,15 +401,15 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     setBgColor(t.bgColor || [32, 62, 88]);
     textures.clear();
     if (t.textures) for (const k in t.textures) textures.set(k, t.textures[k]);
-    fillSelect(texPick, [['', '— texture key —'], ...[...textures.keys()].sort().map(k => [k, k])]);
+    fillSelect(texPick.current, [['', '— texture key —'], ...[...textures.keys()].sort().map(k => [k, k])]);
     setStatusL('tileset.json loaded');
   }
 
   function rebuildTilePicker() {
     if (!tiles) return;
     setTileKeys(Object.keys(tiles).sort());
-    fillSelect(tilePick, [['', '— select tile —'], ...tileKeys.map(k => [k, k])]);
-    setStatusL('tiles.json loaded');
+    fillSelect(tilePick.current, [['', '— select tile —'], ...tileKeys.map(k => [k, k])]);
+    setStatusR('tiles refreshed');
   }
 
   /* ===== UV bake (atlas-aware, Flip-V aware) ===== */
@@ -500,6 +492,22 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     };
   }
 
+  const [OES_uint, setOES] = useState(null);
+  
+  const makeIndexBuffer = (arr, usage = gl.STATIC_DRAW) => {
+    const b = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b);
+    if (OES_uint) {
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(arr), usage);
+      return { buf: b, type: gl.UNSIGNED_INT };
+    }
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(arr), usage);
+    return { buf: b, type: gl.UNSIGNED_SHORT };
+  };
+
+  function makeTyped(arr) { OES_uint ? new Uint32Array(arr) : new Uint16Array(arr); }
+
+
   /* ===== Build layers for a tile (render all) ===== */
   function rebuildLayersForTile(tileKey) {
     layers.length = 0;
@@ -512,7 +520,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       } else break;
     }
     setEditLayerIndex(layers.length ? layers.length - 1 : -1);
-    fillSelect(layerPick, [['', '— select layer —'], ...layers.map((L, i) => [String(i), `${i}: ${L.gkey} @ ${L.tkey} z=${L.z}`])]);
+    fillSelect(layerPick.current, [['', '— select layer —'], ...layers.map((L, i) => [String(i), `${i}: ${L.gkey} @ ${L.tkey} z=${L.z}`])]);
     drawUV();
     tileMeta.textContent = `tile=${tileKey} · layers=${layers.length}`;
   }
@@ -553,49 +561,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     img.src = URL.createObjectURL(f);
   }
 
-  function loadTileset(e) {
-    readJSON(e.target, (j) => {
-      setTileset(j);
-      setGeom(j.geometry);
-      setTiles(j.tiles);
-      ingestTileset();
-    });
-  }
-
-  function loadTiles(e) {
-    readJSON(e.target, (j) => {
-      setTiles(j);
-      rebuildTilePicker();
-    });
-  }
-
-  function loadGeometry(e) {
-    readJSON(e.target, (j) => {
-      setGeom(j);
-      setStatusL('geometry.json loaded');
-    });
-  }
-
-  function exportCurrentLayerGeometry() {
-    const i = editLayerIndex;
-    if (i < 0) { alert('Pick a layer'); return; }
-    const L = layers[i];
-    const tri = L.mesh.triCount;
-    const vertices = [], surfaces = [];
-    for (let f = 0; f < tri; f++) {
-      const pi = f * 9, ui = f * 6;
-      vertices.push([[L.mesh.pos[pi], L.mesh.pos[pi + 1] - L.z, L.mesh.pos[pi + 2]],
-      [L.mesh.pos[pi + 3], L.mesh.pos[pi + 4] - L.z, L.mesh.pos[pi + 5]],
-      [L.mesh.pos[pi + 6], L.mesh.pos[pi + 7] - L.z, L.mesh.pos[pi + 8]]]);
-      surfaces.push([[L.mesh.uv[ui], L.mesh.uv[ui + 1]], [L.mesh.uv[ui + 2], L.mesh.uv[ui + 3]], [L.mesh.uv[ui + 4], L.mesh.uv[ui + 5]]]);
-    }
-    const keepType = geom[L.gkey]?.type;
-    let newGeom = geom;
-    newGeom[L.gkey] = { vertices, surfaces, ...(keepType !== undefined ? { type: keepType } : {}) }
-    setGeom(newGeom);
-    downloadJSON(newGeom, 'geometry.json');
-  }
-
   function undo() {
     if (historyIndex > 0) {
       const prevState = history[historyIndex - 1];
@@ -634,6 +599,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     if (gl) {
       gl.enable(gl.DEPTH_TEST);
       gl.disable(gl.CULL_FACE);
+      setOES(gl.getExtension('OES_element_index_uint'));
+
       if (!prog) {
         let bufferObj = gl.createBuffer();
         setProg(program(VS, FS));
@@ -647,12 +614,16 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     // todo -- needs to load in 3 files (tileset, tiles, and geometry, and it should autoload atlas from tileset)
     if (content) {
       try {
-        console.log({ cont: content.getData() })
         const obj = JSON.parse(content);
-        // const { tiles = [], geometry = [] } = obj;
         setTileset(obj);
+        setTileset(obj);
+        setGeom(obj.geometry);
+        setTiles(obj.tiles);
+        ingestTileset();
+        rebuildTilePicker();
         setError(null);
-        // Initialize history with parsed tileset
+
+        // TODO -- FIX THIS - Initialize history with parsed tileset
         // const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
         // setHistory([initialSnapshot]);
         // setHistoryIndex(0);
@@ -773,18 +744,16 @@ function TilesetEditor({ content, onSave, assets = [] }) {
           <Panel bordered header={<strong>Tileset Editor</strong>}>
             <div id="app">
               <div id="toolbar">
-                <label className={"btn"}>Load tileset.json <input id="fTileset" type="file" accept="application/json" hidden="" onChange={loadTileset} /></label>
-
-                <select id="tilePick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
-                  <option value={currentTileKey}>— select tile —</option>
+                <select id="tilePick" ref={tilePick} className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
+                  <option value="">— select tile —</option>
                 </select>
 
-                <select id="layerPick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectLayer}>
+                <select id="layerPick" ref={layerPick} className={"pill"} style={{ minWidth: '220px' }} onChange={selectLayer}>
                   <option value={editLayerIndex}>— select layer —</option>
                 </select>
 
                 <label className={"btn"}>Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden="" onChange={loadAtlas} /></label>
-                <select id="texPick" className={"pill"} style={{ minWidth: '180px' }}>
+                <select id="texPick" ref={texPick} className={"pill"} style={{ minWidth: '180px' }}>
                   <option value="">— texture key —</option>
                 </select>
                 <button onClick={applyTexture} id="btnUseTex" className={"btn"} title="Set selected layer’s texture key to the chosen one">Use chosen
