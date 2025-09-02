@@ -29,77 +29,11 @@ import {
   Message,
 } from 'rsuite';
 
+import { lookAt, perspective, invert, mul, identity } from '../math/matrix4.jsx';
+import { V3 } from '../math/vector.jsx';
+
 // style
 import './style.css';
-
-/* ===== math (column-major OpenGL) -- TODO - Should be using same math library as regular Pixospritz (replace at some point) ===== */
-const M4 = {
-  ident: () => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-  mul: (a, b) => {
-    const o = new Array(16);
-    for (let c = 0; c < 4; c++) {
-      const b0 = b[c * 4 + 0], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
-      o[c * 4 + 0] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
-      o[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
-      o[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
-      o[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
-    }
-    return o;
-  },
-  lookAt: (eye, center, up) => {
-    const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2];
-    let zl = Math.hypot(zx, zy, zz);
-    const z0 = zx / zl, z1 = zy / zl, z2 = zz / zl;
-    let xx = up[1] * z2 - up[2] * z1, xy = up[2] * z0 - up[0] * z2, xz = up[0] * z1 - up[1] * z0;
-    let xl = Math.hypot(xx, xy, xz);
-    xx /= xl; xy /= xl; xz /= xl;
-    const y0 = z1 * xz - z2 * xy, y1 = z2 * xx - z0 * xz, y2 = z0 * xy - z1 * xx;
-    return [xx, y0, z0, 0, xy, y1, z1, 0, xz, y2, z2, 0, -(xx * eye[0] + xy * eye[1] + xz * eye[2]), -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]), -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]), 1];
-  },
-  persp: (fovyRad, aspect, near, far) => {
-    const f = 1 / Math.tan(fovyRad / 2), nf = 1 / (near - far);
-    return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, (2 * far * near) * nf, 0];
-  },
-  invert: (m) => {
-    const out = new Array(16);
-    const b00 = m[0] * m[5] - m[1] * m[4], b01 = m[0] * m[6] - m[2] * m[4], b02 = m[0] * m[7] - m[3] * m[4],
-      b03 = m[1] * m[6] - m[2] * m[5], b04 = m[1] * m[7] - m[3] * m[5], b05 = m[2] * m[7] - m[3] * m[6],
-      b06 = m[8] * m[13] - m[9] * m[12], b07 = m[8] * m[14] - m[10] * m[12], b08 = m[8] * m[15] - m[11] * m[12],
-      b09 = m[9] * m[14] - m[10] * m[13], b10 = m[9] * m[15] - m[11] * m[13], b11 = m[10] * m[15] - m[11] * m[14],
-      det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-    if (!det) return M4.ident();
-    const id = 1 / det;
-    out[0] = (m[5] * b11 - m[6] * b10 + m[7] * b09) * id;
-    out[1] = (-m[1] * b11 + m[2] * b10 - m[3] * b09) * id;
-    out[2] = (m[13] * b05 - m[14] * b04 + m[15] * b03) * id;
-    out[3] = (-m[9] * b05 + m[10] * b04 - m[11] * b03) * id;
-    out[4] = (-m[4] * b11 + m[6] * b08 - m[7] * b07) * id;
-    out[5] = (m[0] * b11 - m[2] * b08 + m[3] * b07) * id;
-    out[6] = (-m[12] * b05 + m[14] * b02 - m[15] * b01) * id;
-    out[7] = (m[8] * b05 - m[10] * b02 + m[11] * b01) * id;
-    out[8] = (m[4] * b10 - m[5] * b08 + m[7] * b06) * id;
-    out[9] = (-m[0] * b10 + m[1] * b08 - m[3] * b06) * id;
-    out[10] = (m[12] * b04 - m[13] * b02 + m[15] * b00) * id;
-    out[11] = (-m[8] * b04 + m[9] * b02 - m[11] * b00) * id;
-    out[12] = (-m[4] * b09 + m[5] * b07 - m[6] * b06) * id;
-    out[13] = (m[0] * b09 - m[1] * b07 + m[2] * b06) * id;
-    out[14] = (-m[12] * b03 + m[13] * b01 - m[14] * b00) * id;
-    out[15] = (m[8] * b03 - m[9] * b01 + m[10] * b00) * id;
-    return out;
-  }
-};
-const V3 = {
-  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
-  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
-  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
-  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
-  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
-  len: (a) => Math.hypot(a[0], a[1], a[2]),
-  norm: (a) => {
-    const L = V3.len(a) || 1;
-    return [a[0] / L, a[1] / L, a[2] / L];
-  }
-};
 
 
 function TilesetEditor({ content, onSave, assets = [] }) {
@@ -107,13 +41,14 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [error, setError] = useState(null);
 
   // canvas references
-  const uvC = useRef(null);
-  const glC = useRef(null);
-  const thC = useRef(null);
-  const hud = useRef(null);
+  const uvC = useRef();
+  const glC = useRef();
+  const thC = useRef();
+  const hud = useRef();
   const dpr = Math.min(devicePixelRatio || 1, 2);
-  
+
   const [W, setW] = useState(1), [H, setH] = useState(1), [aspect, setAspect] = useState(1);
+  const [uvW, setUvW] = useState(1), [uvH, setUvH] = useState(1), [uvDrag, setUvDrag] = useState(null);
 
   // History management for undo/redo
   const [history, setHistory] = useState([]);
@@ -135,6 +70,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [editLayerIndex, setEditLayerIndex] = useState(-1);
   const [selectionFaces] = useState(new Set());
   const [flipV, setFlipV] = useState(false);
+  const [loc, setLoc] = useState({});
+  const [gl, setGl] = useState(null);
+  const [uvx, setUvx] = useState(null);
+  const [ctx, setCtx] = useState(null);
 
   const [lx, setLx] = useState(0.7);
   const [ly, setLy] = useState(0.7);
@@ -145,6 +84,22 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [camYaw, setCamYaw] = useState(0.7);
   const [camPitch, setCamPitch] = useState(0.5);
   const [camTarget, setCamTarget] = useState([0.5, 0.5, 0.5]);
+
+  const VS = `attribute vec3 a_pos;attribute vec3 a_nrm;attribute vec2 a_uv;uniform mat4 u_mvp,u_m,u_n;varying vec3 v_n;varying vec2 v_uv;void main(){v_n=mat3(u_n)*a_nrm;v_uv=a_uv;gl_Position=u_mvp*vec4(a_pos,1.0);}`;
+  const FS = `precision mediump float;varying vec3 v_n;varying vec2 v_uv;uniform sampler2D u_tex;uniform vec3 u_light;uniform float u_amb;uniform bool u_hasTex;uniform float u_tint;void main(){vec3 n=normalize(v_n);float nd=max(dot(n,normalize(u_light)),0.0);vec3 base=u_hasTex?texture2D(u_tex,v_uv).rgb:vec3(0.82,0.84,0.88);base=mix(base,vec3(1.0,0.95,0.7),u_tint);gl_FragColor=vec4(base*(u_amb+0.9*nd),1.0);}`;
+  const [prog, setProg] = useState(null);
+
+  function grid(n = 12, step = .5) {
+    const v = [];
+    for (let i = -n; i <= n; i++) {
+      v.push(-n * step, 0, i * step, n * step, 0, i * step);
+      v.push(i * step, 0, -n * step, i * step, 0, n * step);
+    }
+    return new Float32Array(v);
+  }
+  // store grid vertices so we can compute draw count
+  const [gridVerts] = useState(grid());
+  const [gridVBO, setGridVBO] = useState(null);
 
   /* ===== Camera ===== */
   function btnResetViewOnClick() {
@@ -163,18 +118,53 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   function view() {
-    return M4.lookAt(eye(), camTarget, [0, 1, 0]);
+    return lookAt(eye(), camTarget, [0, 1, 0]);
   }
 
   function proj() {
-    return M4.persp(50 * Math.PI / 180, aspect, 0.01, 100);
+    return perspective(50 * Math.PI / 180, aspect, 0.01, 100);
   }
 
   /* ===== Rendering ===== */
 
+  // TODO -- SHOULD UPDATE TO USE SAME SHADERS AS IN ENGINE
+  // That way all effects, lighting, etc can eventually be explored
+
+  function shader(t, s) {
+    const o = gl.createShader(t);
+    gl.shaderSource(o, s);
+    gl.compileShader(o);
+    if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(o);
+    return o;
+  }
+
+  function program(vs, fs) {
+    const p = gl.createProgram();
+    gl.attachShader(p, shader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw gl.getProgramInfoLog(p);
+
+    setLoc({
+      a_pos: gl.getAttribLocation(p, 'a_pos'),
+      a_nrm: gl.getAttribLocation(p, 'a_nrm'),
+      a_uv: gl.getAttribLocation(p, 'a_uv'),
+      u_mvp: gl.getUniformLocation(p, 'u_mvp'),
+      u_m: gl.getUniformLocation(p, 'u_m'),
+      u_n: gl.getUniformLocation(p, 'u_n'),
+      u_tex: gl.getUniformLocation(p, 'u_tex'),
+      u_light: gl.getUniformLocation(p, 'u_light'),
+      u_amb: gl.getUniformLocation(p, 'u_amb'),
+      u_hasTex: gl.getUniformLocation(p, 'u_hasTex'),
+      u_tint: gl.getUniformLocation(p, 'u_tint')
+    });
+
+    return p;
+  }
+
   // Grid Render
   function drawGrid(v, p) {
-    const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+    const m = identity(), mvp = mul(p, mul(v, m)), nmat = invert(m);
     gl.useProgram(prog);
     gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
     gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
@@ -192,9 +182,22 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.drawArrays(gl.LINES, 0, gridVerts.length / 3);
   }
 
+  function setGLTexture(img) {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    return t;
+  }
+
   // Tile Render
   function drawLayer(L, v, p, isEdit) {
-    const m = M4.ident(), mvp = M4.mul(p, M4.mul(v, m)), nmat = M4.invert(m);
+    const m = identity(), mvp = mul(p, mul(v, m)), nmat = invert(m);
     gl.useProgram(prog);
     gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
     gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
@@ -252,30 +255,36 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   // Thumbnail Render
   function drawThumb() {
-    const ctx = thC.getContext('2d');
-    const srcW = glC.current.width, srcH = glC.current.height, dstW = thC.width, dstH = thC.height;
-    const s = Math.min(dstW / srcW, dstH / srcH);
-    const w = Math.floor(srcW * s), h = Math.floor(srcH * s);
-    const dx = Math.floor((dstW - w) / 2), dy = Math.floor((dstH - h) / 2);
-    const tmp = document.createElement('canvas');
-    tmp.width = srcW; tmp.height = srcH;
-    tmp.getContext('2d').drawImage(glC, 0, 0);
-    ctx.clearRect(0, 0, dstW, dstH);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, dstW, dstH);
-    ctx.drawImage(tmp, 0, 0, srcW, srcH, dx, dy, w, h);
+    let thX = thC.current?.getContext('2d')
+    setCtx(thX);
+    if (thX) {
+      const srcW = glC.current.width, srcH = glC.current.height, dstW = thC.current.width, dstH = thC.current.height;
+      const s = Math.min(dstW / srcW, dstH / srcH);
+      const w = Math.floor(srcW * s), h = Math.floor(srcH * s);
+      const dx = Math.floor((dstW - w) / 2), dy = Math.floor((dstH - h) / 2);
+      const tmp = document.createElement('canvas');
+      tmp.width = srcW; tmp.height = srcH;
+      tmp.getContext('2d').drawImage(glC.current, 0, 0);
+      thX.clearRect(0, 0, dstW, dstH);
+      thX.fillStyle = '#000';
+      thX.fillRect(0, 0, dstW, dstH);
+      thX.drawImage(tmp, 0, 0, srcW, srcH, dx, dy, w, h);
+    }
   }
 
   function resize() {
-    const r = glC.current.getBoundingClientRect();
-    setW(Math.max(1, Math.floor(r.width * dpr)));
-    setH(Math.max(1, Math.floor(r.height * dpr)));
-    setAspect(W / H);
-    if (glC.current.width !== W || glC.current.height !== H) {
-      glC.current.width = W;
-      glC.current.height = H;
-    }
-    gl.viewport(0, 0, W, H);
+    const r = glC.current?.getBoundingClientRect()
+    if (r) {
+      setW(Math.max(1, Math.floor(r.width * dpr)));
+      setH(Math.max(1, Math.floor(r.height * dpr)));
+      setAspect(W / H);
+      if (glC.current.width !== W || glC.current.height !== H) {
+        glC.current.width = W;
+        glC.current.height = H;
+      }
+      gl.viewport(0, 0, W, H);
+    };
+
   }
 
   // Render Loop
@@ -287,9 +296,9 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     const v = view(), p = proj();
     drawGrid(v, p);
     for (let i = 0; i < layers.length; i++) drawLayer(layers[i], v, p, i === editLayerIndex);
-    hud.textContent = `${glC.current.width}×${glC.current.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+    hud.textContent = `${glC.current?.width}×${glC.current?.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
     drawThumb();
-    requestAnimationFrame(frame);
+    requestAnimationFrame(animationFrame);
   }
 
   // Push a snapshot of the current tileset into history
@@ -584,23 +593,52 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   // Parse incoming JSON into state
   useEffect(() => {
-    animationFrame();
-    if (content) {
-      try {
-        const obj = JSON.parse(content);
-        const { tiles = [], geometry = [] } = obj;
-        setTileset({ tiles: [...tiles], geometry: [...geometry] });
-        setError(null);
-        // Initialize history with parsed tileset
-        const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
-        setHistory([initialSnapshot]);
-        setHistoryIndex(0);
-      } catch (err) {
-        console.warn('Failed to parse tileset JSON', err);
-        setError('Invalid tileset JSON');
+    if (!gl) {
+      const glContext = glC.current.getContext('webgl2');
+      const uvContext = uvC.current.getContext('2d');
+
+      if (!glContext) {
+        throw new Error('WebGL : unable to initialize Preview');
+      }
+      if (!uvContext) {
+        throw new Error('Canvas : unable to initialize UV');
+      }
+
+      setGl(glContext);
+      setUvx(uvContext);
+
+      console.log({ glContext, uvContext });
+    }
+
+    if (gl) {
+      if (!prog) {
+        let bufferObj = gl.createBuffer();
+        setProg(program(VS, FS));
+        setGridVBO(bufferObj);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferObj);
+        gl.bufferData(gl.ARRAY_BUFFER, gridVerts, gl.STATIC_DRAW);
+      } else {
+        animationFrame();
       }
     }
-  }, [content]);
+    // todo -- needs to load in 3 files (tileset, tiles, and geometry, and it should autoload atlas from tileset)
+    // if (content) {
+    //   try {
+    //     console.log({cont:content.getData()})
+    //     const obj = JSON.parse(content);
+    //     const { tiles = [], geometry = [] } = obj;
+    //     setTileset({ tiles: [...tiles], geometry: [...geometry] });
+    //     setError(null);
+    //     // Initialize history with parsed tileset
+    //     const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
+    //     setHistory([initialSnapshot]);
+    //     setHistoryIndex(0);
+    //   } catch (err) {
+    //     console.warn('Failed to parse tileset JSON', err);
+    //     setError('Invalid tileset JSON');
+    //   }
+    // }
+  }, [content, glC, uvC, thC, gl, uvx, ctx, prog]);
 
   // Update a tile property
   function updateTile(index, prop, value) {
@@ -680,9 +718,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   function resizeUV() {
-    const r = uvC.getBoundingClientRect();
-    uvW = Math.max(1, Math.floor(r.width * dpr));
-    uvH = Math.max(1, Math.floor(r.height * dpr));
+    const r = uvC.current?.getBoundingClientRect();
+    console.log({ uvC, c: uvC.current, b: uvC.current.getBoundingClientRect() })
+    setUvW(Math.max(1, Math.floor(r.width * dpr)));
+    setUvH(Math.max(1, Math.floor(r.height * dpr)));
     uvC.width = uvW;
     uvC.height = uvH;
     drawUV();
