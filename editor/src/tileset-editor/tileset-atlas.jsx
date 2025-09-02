@@ -91,12 +91,35 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
 
   // selection
   const [sel, setSel] = useState({ gx: 0, gy: 0 }); // grid indices
+  const [hover, setHover] = useState(null);
 
   // canvases
   const atlasCanvas = useRef(null);
   const thumbCanvas = useRef(null);
+  const glCanvas = useRef(null);
 
+  // drawing contexts / GL program
+  const glRef = useRef(null);
+  const glResRef = useRef({
+    prog: null, vao: null, buf: null,
+    tex: null, uScale: null, uOffset: null, aPos: null, aUV: null,
+  });
   const initializedRef = useRef(false); // guard StrictMode double-mount
+
+  // --- file ingestion ---
+  useEffect(() => {
+    if (!atlasURL) return;
+    const img = new Image();
+    img.onload = () => {
+      setAtlasImage(img);
+      setSheetSize([img.naturalWidth, img.naturalHeight]);
+    };
+    img.onerror = () => {
+      console.error('Failed to load atlas image');
+    };
+    img.src = atlasURL;
+    return () => { /* no-op: URL revoked in a different effect */ };
+  }, [atlasURL]);
 
   // revoke object URL on unmount / change
   useEffect(() => {
@@ -115,9 +138,16 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
     setCanvasSize(thumbCanvas.current, s, s);
     drawThumb();
   }, []);
+  const resizeGL = React.useCallback((w, h) => {
+    const H = Math.max(180, Math.floor(h * 0.6));
+    const W = Math.max(250, w);
+    setCanvasSize(glCanvas.current, W, H);
+    drawGL(); // will reconfigure viewport
+  }, []);
 
   useResize(atlasCanvas, resizeAtlas);
   useResize(thumbCanvas, resizeThumb);
+  useResize(glCanvas, resizeGL);
 
   // --- draw: 2D ATLAS canvas ---
   const drawGrid = (ctx, w, h) => {
@@ -238,16 +268,122 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
     ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
   }, [atlasImage, sheetSize, tileSize, sel]);
 
+  // --- draw: WebGL canvas ---
+  const ensureGL = React.useCallback(() => {
+    if (glRef.current) return glRef.current;
+    const canvas = glCanvas.current;
+    if (!canvas) return null;
+    const gl = canvas.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: true });
+    if (!gl) {
+      console.warn('WebGL not available; falling back to 2D clear.');
+      glRef.current = null;
+      return null;
+    }
+    // program
+    const prog = createProgram(gl, VS, FS);
+    gl.useProgram(prog);
+    const aPos = gl.getAttribLocation(prog, 'aPos');
+    const aUV = gl.getAttribLocation(prog, 'aUV');
+    const uScale = gl.getUniformLocation(prog, 'uScale');
+    const uOffset = gl.getUniformLocation(prog, 'uOffset');
+
+    // geometry: a fullscreen quad
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    // 2 floats pos, 2 floats uv
+    const verts = new Float32Array([
+      -1, -1, 0, 0,
+      +1, -1, 1, 0,
+      -1, +1, 0, 1,
+      +1, +1, 1, 1
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+    gl.enableVertexAttribArray(aUV);
+    gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
+
+    // texture
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.clearColor(0.10, 0.12, 0.16, 1.0);
+
+    glResRef.current = { prog, buf, tex, uScale, uOffset, aPos, aUV };
+    glRef.current = gl;
+    return gl;
+  }, []);
+
+  const uploadGLTexture = React.useCallback(() => {
+    const gl = ensureGL();
+    if (!gl || !atlasImage) return;
+    const { tex } = glResRef.current;
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    // upload image
+    try {
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+    } catch (e) { /* safari */ }
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasImage);
+  }, [ensureGL, atlasImage]);
+
+  const drawGL = React.useCallback(() => {
+    const gl = ensureGL();
+    const canvas = glCanvas.current;
+    if (!canvas) return;
+
+    if (!gl) {
+      // fallback: 2D clear so it's not blank
+      const ctx2 = canvas.getContext('2d');
+      if (ctx2) {
+        ctx2.fillStyle = '#111';
+        ctx2.fillRect(0, 0, canvas.width, canvas.height);
+        ctx2.fillStyle = '#ddd';
+        ctx2.font = `${14 * dpr}px sans-serif`;
+        ctx2.fillText('WebGL not available', 12 * dpr, 24 * dpr);
+      }
+      return;
+    }
+
+    const { width: W, height: H } = canvas;
+    gl.viewport(0, 0, W, H);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const res = glResRef.current;
+    gl.useProgram(res.prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, res.buf);
+    gl.enableVertexAttribArray(res.aPos);
+    gl.vertexAttribPointer(res.aPos, 2, gl.FLOAT, false, 16, 0);
+    gl.enableVertexAttribArray(res.aUV);
+    gl.vertexAttribPointer(res.aUV, 2, gl.FLOAT, false, 16, 8);
+    gl.bindTexture(gl.TEXTURE_2D, res.tex);
+
+    const [aw, ah] = sheetSize;
+    const uScale = [tileSize / aw, tileSize / ah];
+    const uOffset = [sel.gx * tileSize / aw, sel.gy * tileSize / ah];
+    gl.uniform2fv(res.uScale, new Float32Array(uScale));
+    gl.uniform2fv(res.uOffset, new Float32Array(uOffset));
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }, [ensureGL, sheetSize, tileSize, sel]);
+
   // update texture when atlasImage changes
   useEffect(() => {
     if (!atlasImage) return;
+    uploadGLTexture();
     drawAtlas();
     drawThumb();
-  }, [atlasImage, drawAtlas, drawThumb]);
+    drawGL();
+  }, [atlasImage, uploadGLTexture, drawAtlas, drawThumb, drawGL]);
 
   // redraw on state changes
   useEffect(() => { drawAtlas(); }, [tileSize, sel, drawAtlas]);
   useEffect(() => { drawThumb(); }, [tileSize, sel, drawThumb]);
+  useEffect(() => { drawGL(); }, [tileSize, sel, sheetSize, drawGL]);
 
   // --- mouse interaction on atlas to pick a tile ---
   function atlasPointer(evt) {
@@ -284,8 +420,10 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
     // default sizes if RO hasn't fired yet
     setCanvasSize(atlasCanvas.current, 320, 320);
     setCanvasSize(thumbCanvas.current, 160, 160);
+    setCanvasSize(glCanvas.current, 480, 240);
     drawAtlas();
     drawThumb();
+    drawGL();
   }, []); // eslint-disable-line
 
   return (
@@ -328,6 +466,17 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
         <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Thumbnail</div>
         <div style={{ width: '100%', display: 'grid', placeItems: 'center' }}>
           <canvas ref={thumbCanvas} style={{ display: 'block', borderRadius: 6 }} />
+        </div>
+      </div>
+
+      {/* GL PREVIEW */}
+      <div style={{ gridColumn: '1 / -1', background: '#10223a', borderRadius: 8, padding: 8 }}>
+        <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>GL Preview (selected tile)</div>
+        <div style={{ width: '100%', height: 260 }}>
+          <canvas ref={glCanvas} />
+        </div>
+        <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
+          UV: [{uv.u0.toFixed(3)}, {uv.v0.toFixed(3)}] → [{uv.u1.toFixed(3)}, {uv.v1.toFixed(3)}]
         </div>
       </div>
     </div>
