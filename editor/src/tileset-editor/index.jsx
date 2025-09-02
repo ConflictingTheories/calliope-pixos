@@ -13,6 +13,8 @@
  * object will be emitted via the optional onSave callback.
  */
 
+// TODO - FIX NEEDED - NOT RENDERING CORRECTLY INTO THE CANVASES
+
 import React, { useState, useEffect, useRef } from 'react';
 import { collect } from 'react-recollect';
 import {
@@ -272,25 +274,27 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }
 
-  function resize() {
-    const r = glC.current?.getBoundingClientRect()
-    if (r) {
-      setW(Math.max(1, Math.floor(r.width * dpr)));
-      setH(Math.max(1, Math.floor(r.height * dpr)));
-      setAspect(W / H);
-      if (glC.current.width !== W || glC.current.height !== H) {
-        glC.current.width = W;
-        glC.current.height = H;
-      }
-      gl.viewport(0, 0, W, H);
-    };
 
-  }
+  // function resize() {
+  //     const r = glC.current?.getBoundingClientRect()
+  //     if (r) {
+  //         setW(Math.max(1, Math.floor(r.width * dpr)));
+  //         setH(Math.max(1, Math.floor(r.height * dpr)));
+  //         setAspect(W / H);
+  //         if (glC.current.width !== W || glC.current.height !== H) {
+  //             glC.current.width = W;
+  //             glC.current.height = H;
+  //         }
+  //         gl.viewport(0, 0, W, H);
+  //     };
+  // }
+
 
   // Render Loop
   function animationFrame() {
-    resize();
+    // resize();
     const bg = bgColor.map(v => v / 255);
+    gl.viewport(0, 0, W, H);
     gl.clearColor(bg[0] * 0.25, bg[1] * 0.25, bg[2] * 0.25, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const v = view(), p = proj();
@@ -572,8 +576,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     downloadJSON(newGeom, 'geometry.json');
   }
 
-
-  // Undo last change
   function undo() {
     if (historyIndex > 0) {
       const prevState = history[historyIndex - 1];
@@ -582,7 +584,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }
 
-  // Redo next change
   function redo() {
     if (historyIndex < history.length - 1) {
       const nextState = history[historyIndex + 1];
@@ -611,6 +612,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
 
     if (gl) {
+      gl.enable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
       if (!prog) {
         let bufferObj = gl.createBuffer();
         setProg(program(VS, FS));
@@ -755,11 +758,11 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                 <label className={"btn"}>Load tiles.json <input id="fTiles" type="file" accept="application/json" hidden="" onChange={loadTiles} /></label>
 
                 <select id="tilePick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
-                  <option value="">— select tile —</option>
+                  <option value={currentTileKey}>— select tile —</option>
                 </select>
 
                 <select id="layerPick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectLayer}>
-                  <option value="">— select layer —</option>
+                  <option value={editLayerIndex}>— select layer —</option>
                 </select>
 
                 <label className={"btn"}>Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden="" onChange={loadAtlas} /></label>
