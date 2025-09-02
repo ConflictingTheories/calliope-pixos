@@ -24,6 +24,7 @@ import MapEditor from './map-editor/index.jsx';
 import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
+import { Reader, Writer } from '@zip.js/zip.js';
 
 /**
  * Primary React component that drives the editor UI.
@@ -48,13 +49,13 @@ const App = () => {
   // Helper to get file data from zip.js FS entry
   const getData = useCallback(async (entry, asText = false) => {
     if (!entry || typeof entry.getData !== 'function') return null;
-    // zip.js: getData({ type: 'text' | 'binarystring' })
-    // The getData method returns a Promise for the data directly, no streams needed.
     if (asText) {
-      console.log(entry);
-      return await entry.getData();
+      let stream = new TransformStream();
+      let data = new Response(stream.readable).text();
+      await entry.data.getData(stream.writable);
+      return await data;
     }
-    return await entry.getData();
+    return await entry.data.getData();
   }, []);
 
   /**
@@ -148,8 +149,8 @@ const App = () => {
             const layers = Array.isArray(obj.layers)
               ? obj.layers
               : obj.cells
-              ? [obj.cells]
-              : [];
+                ? [obj.cells]
+                : [];
             const attributes = Array.isArray(obj.attributes)
               ? obj.attributes
               : [];
@@ -286,6 +287,7 @@ const App = () => {
 
   const renderTilesetEditor = useCallback(async (entry) => {
     const tilesetContent = await getData(entry, true);
+    console.log(tilesetContent);
     setContents([
       <TilesetEditor
         key={Date.now()}
@@ -368,7 +370,7 @@ const App = () => {
         renderGeometryEditor(entry);
         return;
       }
-      if (name.includes('tiles') || name.includes('tileset')) {
+      if (name.includes('tileset')) {
         renderTilesetEditor(entry);
         return;
       }

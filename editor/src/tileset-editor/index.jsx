@@ -39,7 +39,16 @@ import './style.css';
 
 
 function TilesetEditor({ content, onSave, assets = [] }) {
-  const [tileset, setTileset] = useState({ tiles: [], geometry: [] });
+  const [tileset, setTileset] = useState({
+    name: "",
+    src: "",
+    sheetSize: [0, 0],
+    sheetOffsetX: 0,
+    sheetOffsetY: 0,
+    tileSize: 0,
+    bgColor: [0, 0, 0],
+    textures: {}, tiles: [], geometry: []
+  });
   const [error, setError] = useState(null);
 
   // canvas references
@@ -175,12 +184,19 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.uniform1f(loc.u_amb, parseFloat(amb.value));
     gl.uniform1i(loc.u_hasTex, 0);
     gl.uniform1f(loc.u_tint, 0.0);
+
+    if (atlasTex) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, atlasTex);
+      gl.uniform1i(loc.u_tex, 0);
+    }
+
     gl.bindBuffer(gl.ARRAY_BUFFER, gridVBO);
     gl.enableVertexAttribArray(loc.a_pos);
     gl.vertexAttribPointer(loc.a_pos, 3, gl.FLOAT, false, 0, 0);
     gl.disableVertexAttribArray(loc.a_nrm);
     gl.disableVertexAttribArray(loc.a_uv);
-    // Use gridVerts length for draw count
+
     gl.drawArrays(gl.LINES, 0, gridVerts.length / 3);
   }
 
@@ -504,6 +520,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   function applyTilesetEdits() {
     const parseHex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
     setTileset(tileset || {});
+    setGeom(tileset.geometry || {});
+    setTiles(tileset.tiles || {});
     tileset.name = tsName.value || 'default';
     setTileSize(tileset.tileSize = parseInt(tsTileSize.value) || 16);
     setSheetSize([parseInt(tsSheetW.value) || 512, parseInt(tsSheetH.value) || 512]);
@@ -538,6 +556,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   function loadTileset(e) {
     readJSON(e.target, (j) => {
       setTileset(j);
+      setGeom(j.geometry);
+      setTiles(j.tiles);
       ingestTileset();
     });
   }
@@ -625,22 +645,22 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       }
     }
     // todo -- needs to load in 3 files (tileset, tiles, and geometry, and it should autoload atlas from tileset)
-    // if (content) {
-    //   try {
-    //     console.log({cont:content.getData()})
-    //     const obj = JSON.parse(content);
-    //     const { tiles = [], geometry = [] } = obj;
-    //     setTileset({ tiles: [...tiles], geometry: [...geometry] });
-    //     setError(null);
-    //     // Initialize history with parsed tileset
-    //     const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
-    //     setHistory([initialSnapshot]);
-    //     setHistoryIndex(0);
-    //   } catch (err) {
-    //     console.warn('Failed to parse tileset JSON', err);
-    //     setError('Invalid tileset JSON');
-    //   }
-    // }
+    if (content) {
+      try {
+        console.log({ cont: content.getData() })
+        const obj = JSON.parse(content);
+        // const { tiles = [], geometry = [] } = obj;
+        setTileset(obj);
+        setError(null);
+        // Initialize history with parsed tileset
+        // const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
+        // setHistory([initialSnapshot]);
+        // setHistoryIndex(0);
+      } catch (err) {
+        console.warn('Failed to parse tileset JSON', err);
+        setError('Invalid tileset JSON');
+      }
+    }
   }, [content, glC, uvC, thC, gl, uvx, ctx, prog]);
 
   // Update a tile property
@@ -754,8 +774,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
             <div id="app">
               <div id="toolbar">
                 <label className={"btn"}>Load tileset.json <input id="fTileset" type="file" accept="application/json" hidden="" onChange={loadTileset} /></label>
-                <label className={"btn"}>Load geometry.json <input id="fGeom" type="file" accept="application/json" hidden="" onChange={loadGeometry} /></label>
-                <label className={"btn"}>Load tiles.json <input id="fTiles" type="file" accept="application/json" hidden="" onChange={loadTiles} /></label>
 
                 <select id="tilePick" className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
                   <option value={currentTileKey}>— select tile —</option>
@@ -772,11 +790,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                 <button onClick={applyTexture} id="btnUseTex" className={"btn"} title="Set selected layer’s texture key to the chosen one">Use chosen
                   texture</button>
 
-                <button id="btnExportGeom" className={"btn"} onClick={exportCurrentLayerGeometry}>Export geometry.json</button>
-                <button id="btnExportTiles" className={"btn"} onClick={() => {
-                  if (!tiles) { alert('Nothing to export'); return; }
-                  downloadJSON(tiles, 'tiles.json');
-                }}>Export tiles.json</button>
                 <button id="btnExportTileset" className={"btn"} onClick={() => {
                   if (!tileset) { alert('Nothing to export'); return; }
                   downloadJSON(tileset, 'tileset.json');

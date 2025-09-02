@@ -32,16 +32,14 @@ export class TilesetLoader {
 
     // extract component json files from zip file and compile into single config
     let tilesetJson = JSON.parse(await zip.file(`tilesets/${type}/tileset.json`).async('string'));
-    let tilesetGeometry = JSON.parse(await zip.file(`tilesets/${type}/geometry.json`).async('string'));
-    let tilesetTiles = JSON.parse(await zip.file(`tilesets/${type}/tiles.json`).async('string'));
-    let tilesetData = await this.loadTilesetData(tilesetJson, tilesetTiles, tilesetGeometry, zip);
+    let tilesetData = await this.loadTilesetData(tilesetJson, zip);
 
     await instance.onJsonLoadedFromZip(tilesetData, zip);
     return instance;
   }
 
   // load tileset data components and merge into config
-  async loadTilesetData(tilesetJson, Tiles, TilesetGeometry, zip) {
+  async loadTilesetData(tilesetJson, zip) {
     // extend tileset
     if (tilesetJson.extends) {
       await Promise.all(
@@ -54,36 +52,7 @@ export class TilesetLoader {
       tilesetJson.extends = null;
     }
     console.log({ tilesetJson });
-    // extend tiles
-    if (Tiles.extends) {
-      await Promise.all(
-        Tiles.extends.map(async (file) => {
-          let stringD = JSON.parse(await zip.file('tilesets/' + file + '/tiles.json').async('string'));
-          Tiles = mergeDeep(Tiles, stringD);
-        })
-      );
-      // unset
-      Tiles.extends = null;
-    }
-    console.log({ Tiles });
 
-    // extend geometry
-    if (TilesetGeometry.extends) {
-      await Promise.all(
-        TilesetGeometry.extends.map(async (file) => {
-          let stringD = JSON.parse(await zip.file('tilesets/' + file + '/geometry.json').async('string'));
-          TilesetGeometry = mergeDeep(TilesetGeometry, stringD);
-        })
-      );
-      // unset
-      TilesetGeometry.extends = null;
-    }
-    console.log({ TilesetGeometry });
-
-    let geometry = {};
-    Object.keys(tilesetJson.geometry).forEach((geo) => {
-      geometry[geo] = TilesetGeometry[tilesetJson.geometry[geo]];
-    });
     return {
       name: tilesetJson.name,
       src: tilesetJson.src,
@@ -96,9 +65,9 @@ export class TilesetLoader {
       textures: tilesetJson.textures,
       // Geometries for the tileset
       // type --> walkability -- 1/0 --> [down,left,up,right]
-      geometry: geometry,
+      geometry: tilesetJson.geometry,
       // tiles to use
-      tiles: Tiles,
+      tiles: tilesetJson.tiles,
     };
   }
 }
