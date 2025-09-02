@@ -22,12 +22,7 @@ import {
   Container,
   Row,
   Col,
-  Input,
-  InputNumber,
   Button,
-  ButtonGroup,
-  SelectPicker,
-  Checkbox,
   Message,
 } from 'rsuite';
 
@@ -37,7 +32,11 @@ import { V3 } from '../math/vector.jsx';
 // style
 import './style.css';
 
-
+/**
+ * Tileset viewer and editor
+ * @param {{content, onSave, assets}} props 
+ * @returns 
+ */
 function TilesetEditor({ content, onSave, assets = [] }) {
   const [tileset, setTileset] = useState({
     name: "",
@@ -68,8 +67,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const [tiles, setTiles] = useState(null);
-  const [geom, setGeom] = useState(null);
+  const [tiles, setTiles] = useState({});
+  const [geom, setGeom] = useState({});
   const [atlasImg, setAtlasImg] = useState(null);
   const [atlasTex, setAtlasTex] = useState(null);
   const [atlasSize, setAtlasSize] = useState([512, 512]);
@@ -294,33 +293,45 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
 
-  // function resize() {
-  //     const r = glC.current?.getBoundingClientRect()
-  //     if (r) {
-  //         setW(Math.max(1, Math.floor(r.width * dpr)));
-  //         setH(Math.max(1, Math.floor(r.height * dpr)));
-  //         setAspect(W / H);
-  //         if (glC.current.width !== W || glC.current.height !== H) {
-  //             glC.current.width = W;
-  //             glC.current.height = H;
-  //         }
-  //         gl.viewport(0, 0, W, H);
-  //     };
-  // }
+  function resize() {
+    const r = glC.current?.getBoundingClientRect()
+    if (r) {
+      setW(Math.max(1, Math.floor(r.width * dpr)));
+      setH(Math.max(1, Math.floor(r.height * dpr)));
+      setAspect(W / H);
+      if (glC.current.width !== W || glC.current.height !== H) {
+        glC.current.width = W;
+        glC.current.height = H;
+      }
+      gl.viewport(0, 0, W, H);
+    };
+  }
 
 
   // Render Loop
   function animationFrame() {
-    // resize();
+    resize();
+
+    // clear screen
     const bg = bgColor.map(v => v / 255);
     gl.viewport(0, 0, W, H);
     gl.clearColor(bg[0] * 0.25, bg[1] * 0.25, bg[2] * 0.25, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const v = view(), p = proj();
+
+    // display grid
     drawGrid(v, p);
-    for (let i = 0; i < layers.length; i++) drawLayer(layers[i], v, p, i === editLayerIndex);
-    hud.textContent = `${glC.current?.width}×${glC.current?.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+
+    // draw tile layers
+    for (let i = 0; i < layers.length; i++)
+      drawLayer(layers[i], v, p, i === editLayerIndex);
+
+    // thumbnail
     drawThumb();
+
+    // update
+    hud.textContent = `${glC.current?.width}×${glC.current?.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+
     requestAnimationFrame(animationFrame);
   }
 
@@ -493,7 +504,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   const [OES_uint, setOES] = useState(null);
-  
+
   const makeIndexBuffer = (arr, usage = gl.STATIC_DRAW) => {
     const b = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b);
@@ -634,16 +645,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }, [content, glC, uvC, thC, gl, uvx, ctx, prog]);
 
-  // Update a tile property
-  function updateTile(index, prop, value) {
-    const nextTiles = tileset.tiles.map((t, i) =>
-      i === index ? { ...t, [prop]: value } : t,
-    );
-    const nextTileset = { ...tileset, tiles: nextTiles };
-    setTileset(nextTileset);
-    pushHistorySnapshot(nextTileset);
-  }
-
   function handleSave() {
     if (onSave) {
       onSave(tileset);
@@ -719,15 +720,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     uvC.width = uvW;
     uvC.height = uvH;
     drawUV();
-  }
-
-  // Build options for texture selection from assets list
-  const textureOptions = [{ label: 'None', value: '' }, ...assets.map((a) => ({ label: a.name, value: a.name }))];
-
-  // Helper to find a data URI for a given texture name
-  function getTextureUri(name) {
-    const found = assets.find((a) => a.name === name);
-    return found ? found.uri : null;
   }
 
   return (
@@ -877,7 +869,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
           Redo
         </Button>
       </Row>
-      {tileset.geometry.length > 0 && (
+      {Object.keys(geom).length > 0 && (
         <Row style={{ marginTop: '2rem' }}>
           <Col sm={24} md={24} lg={24}>
             <Panel bordered header={<strong>Geometry Definitions</strong>}>
