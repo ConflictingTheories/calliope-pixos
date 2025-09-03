@@ -191,8 +191,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
     gl.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
     gl.uniform3f(loc.u_light, 1.0, 1.0, 1.0);
-    // gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
-    // gl.uniform1f(loc.u_amb, parseFloat(amb.value));
     gl.uniform1f(loc.u_amb, 1.0);
     gl.uniform1i(loc.u_hasTex, 0);
     gl.uniform1f(loc.u_tint, 0.0);
@@ -677,16 +675,13 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     if (!glC.current) return;
 
     // Prevent right-click context menu from appearing
-    glC.current.addEventListener('contextmenu', e => e.preventDefault());
 
     const handleMouseDown = (e) => {
       setDown(true);
       setLast([e.clientX, e.clientY]);
       setPanning(e.altKey || e.button === 1);
     };
-
     const handleMouseUp = () => setDown(false);
-
     const handleMouseMove = (e) => {
       if (!isDown) return;
 
@@ -708,19 +703,19 @@ function TilesetEditor({ content, onSave, assets = [] }) {
         ]);
       }
     };
-
     const handleWheel = (e) => setCamDist(Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)));
 
+    glC.current.addEventListener('contextmenu', e => e.preventDefault());
     glC.current.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
     glC.current.addEventListener('mousemove', handleMouseMove);
     glC.current.addEventListener('wheel', handleWheel);
+    window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       glC.current.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
       glC.current.removeEventListener('mousemove', handleMouseMove);
       glC.current.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [glC, isDown, last, panning, camYaw, camPitch, camDist, camTarget]);
 
@@ -733,75 +728,78 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   // draw UV map over Atlas Preview
-  // function drawUV() {
-  //   uvx.setTransform(1, 0, 0, 1, 0, 0);
-  //   uvx.clearRect(0, 0, uvW, uvH);
-  //   // background checker
-  //   for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
-  //     uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff';
-  //     uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10);
-  //   }
-  //   // draw atlas centered (fit)
-  //   let ox = 0, oy = 0, dw = uvW, dh = uvH;
-  //   if (atlasImg) {
-  //     const iw = atlasImg.width, ih = atlasImg.height;
-  //     const s = Math.min(uvW / iw, uvH / ih);
-  //     dw = iw * s;
-  //     dh = ih * s;
-  //     ox = (uvW - dw) / 2;
-  //     oy = (uvH - dh) / 2;
-  //     uvx.drawImage(atlasImg, ox, oy, dw, dh);
-  //   }
-  //   const i = editLayerIndex;
-  //   if (i < 0) return;
-  //   const L = layers[i];
-  //   // highlight current cell
-  //   const cell = L.tkey ? textures.get(L.tkey) : null;
-  //   if (cell && atlasImg) {
-  //     const [col, row] = cell;
-  //     const [sheetW, sheetH] = sheetSize;
-  //     const tile = tileSize;
-  //     const x = (sheetOff[0] + col * tile) / sheetW, y = (sheetOff[1] + row * tile) / sheetH;
-  //     const w = tile / sheetW, h = tile / sheetH;
-  //     uvx.strokeStyle = '#ff0077';
-  //     uvx.lineWidth = 2;
-  //     uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
-  //   }
-  //   // baked UV overlay (atlas space)
-  //   const baked = atlasBake(L.mesh.uv, L.tkey);
-  //   uvx.strokeStyle = '#1976d2';
-  //   uvx.lineWidth = 1.5;
-  //   uvx.fillStyle = 'rgba(25,118,210,0.08)';
-  //   const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
-  //   for (const f of faces) {
-  //     const ui = f * 6;
-  //     const P = [];
-  //     for (let v = 0; v < 3; v++) P.push([ox + baked[ui + v * 2] * dw, oy + baked[ui + v * 2 + 1] * dh]);
-  //     uvx.beginPath();
-  //     P.forEach((p, k) => k ? uvx.lineTo(p[0], p[1]) : uvx.moveTo(p[0], p[1]));
-  //     uvx.closePath();
-  //     uvx.fill();
-  //     uvx.stroke();
-  //     P.forEach(p => {
-  //       uvx.beginPath();
-  //       uvx.arc(p[0], p[1], 3, 0, 6.283);
-  //       uvx.fillStyle = '#1e3a8a';
-  //       uvx.fill();
-  //     });
-  //   }
-  // }
-
   function drawUV() {
-    uvx.setTransform(1, 0, 0, 1, 0, 0); uvx.clearRect(0, 0, uvW, uvH);
-    for (let y = 0; y < 8; y++)for (let x = 0; x < 8; x++) { uvx.fillStyle = ((x + y) & 1) ? '#f7f7f7' : '#ffffff'; uvx.fillRect(x * uvW / 8, y * uvH / 8, uvW / 8, uvH / 8); }
-    const i = editLayerIndex; if (i < 0) return; const L = layers[i];
+    if (!uvx) return;
+    uvx.setTransform(1, 0, 0, 1, 0, 0);
+    uvx.clearRect(0, 0, uvW, uvH);
+    // background checker
+    for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
+      uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff';
+      uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10);
+    }
+    // draw atlas centered (fit)
+    let ox = 0, oy = 0, dw = uvW, dh = uvH;
+    if (atlasImg) {
+      const iw = atlasImg.width, ih = atlasImg.height;
+      const s = Math.min(uvW / iw, uvH / ih);
+      dw = iw * s;
+      dh = ih * s;
+      ox = (uvW - dw) / 2;
+      oy = (uvH - dh) / 2;
+      uvx.drawImage(atlasImg, ox, oy, dw, dh);
+    }
+    const i = editLayerIndex;
+    if (i < 0) return;
+    const L = layers[i];
+    // highlight current cell
+    const cell = L.tkey ? textures.get(L.tkey) : null;
+    if (cell && atlasImg) {
+      const [col, row] = cell;
+      const [sheetW, sheetH] = sheetSize;
+      const tile = tileSize;
+      const x = (sheetOff[0] + col * tile) / sheetW, y = (sheetOff[1] + row * tile) / sheetH;
+      const w = tile / sheetW, h = tile / sheetH;
+      uvx.strokeStyle = '#ff0077';
+      uvx.lineWidth = 2;
+      uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
+    }
+    // baked UV overlay (atlas space)
+    const baked = atlasBake(L.mesh.uv, L.tkey);
+    uvx.strokeStyle = '#1976d2';
+    uvx.lineWidth = 1.5;
+    uvx.fillStyle = 'rgba(25,118,210,0.08)';
     const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
-    uvx.strokeStyle = '#1976d2'; uvx.lineWidth = 1;
     for (const f of faces) {
-      const ui = f * 6; uvx.beginPath(); for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; v ? uvx.lineTo(u, vv) : uvx.moveTo(u, vv); } uvx.closePath(); uvx.stroke();
-      for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; uvx.fillStyle = '#222'; uvx.beginPath(); uvx.arc(u, vv, 3, 0, 6.283); uvx.fill(); }
+      const ui = f * 6;
+      const P = [];
+      for (let v = 0; v < 3; v++) P.push([ox + baked[ui + v * 2] * dw, oy + baked[ui + v * 2 + 1] * dh]);
+      uvx.beginPath();
+      P.forEach((p, k) => k ? uvx.lineTo(p[0], p[1]) : uvx.moveTo(p[0], p[1]));
+      uvx.closePath();
+      uvx.fill();
+      uvx.stroke();
+      P.forEach(p => {
+        uvx.beginPath();
+        uvx.arc(p[0], p[1], 3, 0, 6.283);
+        uvx.fillStyle = '#1e3a8a';
+        uvx.fill();
+      });
     }
   }
+
+  // cropped (not working on texture display)
+  // function drawUV() {
+  //   if(!uvx) return;
+  //   uvx.setTransform(1, 0, 0, 1, 0, 0); uvx.clearRect(0, 0, uvW, uvH);
+  //   for (let y = 0; y < 8; y++)for (let x = 0; x < 8; x++) { uvx.fillStyle = ((x + y) & 1) ? '#f7f7f7' : '#ffffff'; uvx.fillRect(x * uvW / 8, y * uvH / 8, uvW / 8, uvH / 8); }
+  //   const i = editLayerIndex; if (i < 0) return; const L = layers[i];
+  //   const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
+  //   uvx.strokeStyle = '#1976d2'; uvx.lineWidth = 1;
+  //   for (const f of faces) {
+  //     const ui = f * 6; uvx.beginPath(); for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; v ? uvx.lineTo(u, vv) : uvx.moveTo(u, vv); } uvx.closePath(); uvx.stroke();
+  //     for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; uvx.fillStyle = '#222'; uvx.beginPath(); uvx.arc(u, vv, 3, 0, 6.283); uvx.fill(); }
+  //   }
+  // }
 
   function resizeUV() {
     const r = uvC.current?.getBoundingClientRect();
