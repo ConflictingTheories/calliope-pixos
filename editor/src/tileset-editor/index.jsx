@@ -38,6 +38,7 @@ import './style.css';
  * @returns 
  */
 function TilesetEditor({ content, onSave, assets = [] }) {
+
   const [tileset, setTileset] = useState({
     name: "",
     src: "",
@@ -58,6 +59,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const tilePick = useRef();
   const layerPick = useRef();
   const texPick = useRef();
+  const chkWire = useRef();
 
   const [W, setW] = useState(1), [H, setH] = useState(1), [aspect, setAspect] = useState(1);
   const [uvW, setUvW] = useState(1), [uvH, setUvH] = useState(1), [uvDrag, setUvDrag] = useState(null);
@@ -249,7 +251,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.enableVertexAttribArray(loc.a_uv);
     gl.vertexAttribPointer(loc.a_uv, 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, L.ibo);
-    if (!chkWire.checked) {
+    if (!chkWire.current.checked) {
       gl.drawElements(gl.TRIANGLES, L.idxCount, L.indexType, 0);
     } else {
       // generate edges using actual indices
@@ -432,25 +434,38 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   /* ===== UV bake (atlas-aware, Flip-V aware) ===== */
+  // function atlasBake(raw, tKey) {
+  //   const cell = tKey ? textures.get(tKey) : null;
+  //   const out = new Float32Array(raw.length);
+  //   const sheetW = (atlasSize?.[0]) || sheetSize[0], sheetH = (atlasSize?.[1]) || sheetSize[1];
+  //   let offX = 0, offY = 0, sclX = 1, sclY = 1;
+  //   if (cell) {
+  //     const [col, row] = cell, tileW = tileSize, tileH = tileSize;
+  //     offX = (sheetOff[0] + col * tileW) / sheetW;
+  //     offY = (sheetOff[1] + row * tileH) / sheetH;
+  //     sclX = tileW / sheetW; sclY = tileH / sheetH;
+  //   }
+  //   for (let i = 0; i < raw.length; i += 2) {
+  //     const u = raw[i], v = raw[i + 1];
+  //     const vf = flipV ? (1 - v) : v;
+  //     out[i] = offX + u * sclX;
+  //     out[i + 1] = offY + vf * sclY;
+  //   }
+  //   return out;
+  // }
+
   function atlasBake(raw, tKey) {
-    const cell = tKey ? textures.get(tKey) : null;
-    const out = new Float32Array(raw.length);
+    const cell = tKey ? textures.get(tKey) : null; if (!cell) return new Float32Array(raw);
+    const [col, row] = cell;
     const sheetW = (atlasSize?.[0]) || sheetSize[0], sheetH = (atlasSize?.[1]) || sheetSize[1];
-    let offX = 0, offY = 0, sclX = 1, sclY = 1;
-    if (cell) {
-      const [col, row] = cell, tileW = tileSize, tileH = tileSize;
-      offX = (sheetOff[0] + col * tileW) / sheetW;
-      offY = (sheetOff[1] + row * tileH) / sheetH;
-      sclX = tileW / sheetW; sclY = tileH / sheetH;
-    }
-    for (let i = 0; i < raw.length; i += 2) {
-      const u = raw[i], v = raw[i + 1];
-      const vf = flipV ? (1 - v) : v;
-      out[i] = offX + u * sclX;
-      out[i + 1] = offY + vf * sclY;
-    }
+    const tileW = tileSize, tileH = tileSize;
+    const offX = (sheetOff[0] + col * tileW) / sheetW, offY = (sheetOff[1] + row * tileH) / sheetH;
+    const sclX = tileW / sheetW, sclY = tileH / sheetH;
+    const out = new Float32Array(raw.length);
+    for (let i = 0; i < raw.length; i += 2) { out[i] = offX + raw[i] * sclX; out[i + 1] = offY + raw[i + 1] * sclY; }
     return out;
   }
+
   function updateLayerBakedUV(L) {
     const baked = atlasBake(L.mesh.uv, L.tkey);
     gl.bindBuffer(gl.ARRAY_BUFFER, L.vboUV);
@@ -596,6 +611,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }
 
+  useEffect(() => {
+    new ResizeObserver(resizeUV).observe(uvC.current);
+  }, [uvC])
+
   // Parse incoming JSON into state
   useEffect(() => {
     if (!gl) {
@@ -714,61 +733,73 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   // draw UV map over Atlas Preview
+  // function drawUV() {
+  //   uvx.setTransform(1, 0, 0, 1, 0, 0);
+  //   uvx.clearRect(0, 0, uvW, uvH);
+  //   // background checker
+  //   for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
+  //     uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff';
+  //     uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10);
+  //   }
+  //   // draw atlas centered (fit)
+  //   let ox = 0, oy = 0, dw = uvW, dh = uvH;
+  //   if (atlasImg) {
+  //     const iw = atlasImg.width, ih = atlasImg.height;
+  //     const s = Math.min(uvW / iw, uvH / ih);
+  //     dw = iw * s;
+  //     dh = ih * s;
+  //     ox = (uvW - dw) / 2;
+  //     oy = (uvH - dh) / 2;
+  //     uvx.drawImage(atlasImg, ox, oy, dw, dh);
+  //   }
+  //   const i = editLayerIndex;
+  //   if (i < 0) return;
+  //   const L = layers[i];
+  //   // highlight current cell
+  //   const cell = L.tkey ? textures.get(L.tkey) : null;
+  //   if (cell && atlasImg) {
+  //     const [col, row] = cell;
+  //     const [sheetW, sheetH] = sheetSize;
+  //     const tile = tileSize;
+  //     const x = (sheetOff[0] + col * tile) / sheetW, y = (sheetOff[1] + row * tile) / sheetH;
+  //     const w = tile / sheetW, h = tile / sheetH;
+  //     uvx.strokeStyle = '#ff0077';
+  //     uvx.lineWidth = 2;
+  //     uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
+  //   }
+  //   // baked UV overlay (atlas space)
+  //   const baked = atlasBake(L.mesh.uv, L.tkey);
+  //   uvx.strokeStyle = '#1976d2';
+  //   uvx.lineWidth = 1.5;
+  //   uvx.fillStyle = 'rgba(25,118,210,0.08)';
+  //   const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
+  //   for (const f of faces) {
+  //     const ui = f * 6;
+  //     const P = [];
+  //     for (let v = 0; v < 3; v++) P.push([ox + baked[ui + v * 2] * dw, oy + baked[ui + v * 2 + 1] * dh]);
+  //     uvx.beginPath();
+  //     P.forEach((p, k) => k ? uvx.lineTo(p[0], p[1]) : uvx.moveTo(p[0], p[1]));
+  //     uvx.closePath();
+  //     uvx.fill();
+  //     uvx.stroke();
+  //     P.forEach(p => {
+  //       uvx.beginPath();
+  //       uvx.arc(p[0], p[1], 3, 0, 6.283);
+  //       uvx.fillStyle = '#1e3a8a';
+  //       uvx.fill();
+  //     });
+  //   }
+  // }
+
   function drawUV() {
-    uvx.setTransform(1, 0, 0, 1, 0, 0);
-    uvx.clearRect(0, 0, uvW, uvH);
-    // background checker
-    for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
-      uvx.fillStyle = ((x + y) & 1) ? '#f6f6f6' : '#ffffff';
-      uvx.fillRect(x * uvW / 10, y * uvH / 10, uvW / 10, uvH / 10);
-    }
-    // draw atlas centered (fit)
-    let ox = 0, oy = 0, dw = uvW, dh = uvH;
-    if (atlasImg) {
-      const iw = atlasImg.width, ih = atlasImg.height;
-      const s = Math.min(uvW / iw, uvH / ih);
-      dw = iw * s;
-      dh = ih * s;
-      ox = (uvW - dw) / 2;
-      oy = (uvH - dh) / 2;
-      uvx.drawImage(atlasImg, ox, oy, dw, dh);
-    }
-    const i = editLayerIndex;
-    if (i < 0) return;
-    const L = layers[i];
-    // highlight current cell
-    const cell = L.tkey ? textures.get(L.tkey) : null;
-    if (cell && atlasImg) {
-      const [col, row] = cell;
-      const [sheetW, sheetH] = sheetSize;
-      const tile = tileSize;
-      const x = (sheetOff[0] + col * tile) / sheetW, y = (sheetOff[1] + row * tile) / sheetH;
-      const w = tile / sheetW, h = tile / sheetH;
-      uvx.strokeStyle = '#ff0077';
-      uvx.lineWidth = 2;
-      uvx.strokeRect(ox + x * dw, oy + y * dh, w * dw, h * dh);
-    }
-    // baked UV overlay (atlas space)
-    const baked = atlasBake(L.mesh.uv, L.tkey);
-    uvx.strokeStyle = '#1976d2';
-    uvx.lineWidth = 1.5;
-    uvx.fillStyle = 'rgba(25,118,210,0.08)';
+    uvx.setTransform(1, 0, 0, 1, 0, 0); uvx.clearRect(0, 0, uvW, uvH);
+    for (let y = 0; y < 8; y++)for (let x = 0; x < 8; x++) { uvx.fillStyle = ((x + y) & 1) ? '#f7f7f7' : '#ffffff'; uvx.fillRect(x * uvW / 8, y * uvH / 8, uvW / 8, uvH / 8); }
+    const i = editLayerIndex; if (i < 0) return; const L = layers[i];
     const faces = selectionFaces.size ? selectionFaces : new Set([...Array(L.mesh.triCount).keys()]);
+    uvx.strokeStyle = '#1976d2'; uvx.lineWidth = 1;
     for (const f of faces) {
-      const ui = f * 6;
-      const P = [];
-      for (let v = 0; v < 3; v++) P.push([ox + baked[ui + v * 2] * dw, oy + baked[ui + v * 2 + 1] * dh]);
-      uvx.beginPath();
-      P.forEach((p, k) => k ? uvx.lineTo(p[0], p[1]) : uvx.moveTo(p[0], p[1]));
-      uvx.closePath();
-      uvx.fill();
-      uvx.stroke();
-      P.forEach(p => {
-        uvx.beginPath();
-        uvx.arc(p[0], p[1], 3, 0, 6.283);
-        uvx.fillStyle = '#1e3a8a';
-        uvx.fill();
-      });
+      const ui = f * 6; uvx.beginPath(); for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; v ? uvx.lineTo(u, vv) : uvx.moveTo(u, vv); } uvx.closePath(); uvx.stroke();
+      for (let v = 0; v < 3; v++) { const u = L.mesh.uv[ui + v * 2] * uvW, vv = L.mesh.uv[ui + v * 2 + 1] * uvH; uvx.fillStyle = '#222'; uvx.beginPath(); uvx.arc(u, vv, 3, 0, 6.283); uvx.fill(); }
     }
   }
 
@@ -882,7 +913,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
                   <fieldset>
                     <legend>View</legend>
-                    <div className={"row"}><label><input type="checkbox" id="chkWire" /> Wireframe</label>
+                    <div className={"row"}><label><input type="checkbox" id="chkWire" ref={chkWire} /> Wireframe</label>
                       <label><input type="checkbox" id="chkFlipV" checked="" onChange={(e) => {
                         setFlipV(e.currentTarget.checked);
                         for (const L of layers)
