@@ -29,7 +29,6 @@ import {
 
 import { lookAt, perspective, invert, mul, identity } from '../math/matrix4.jsx';
 import { V3 } from '../math/vector.jsx';
-
 // style
 import './style.css';
 
@@ -59,7 +58,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const tilePick = useRef();
   const layerPick = useRef();
   const texPick = useRef();
-  const dpr = Math.min(devicePixelRatio || 1, 2);
 
   const [W, setW] = useState(1), [H, setH] = useState(1), [aspect, setAspect] = useState(1);
   const [uvW, setUvW] = useState(1), [uvH, setUvH] = useState(1), [uvDrag, setUvDrag] = useState(null);
@@ -85,19 +83,26 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [selectionFaces] = useState(new Set());
   const [flipV, setFlipV] = useState(false);
   const [loc, setLoc] = useState({});
-  const [gl, setGl] = useState(null);
-  const [uvx, setUvx] = useState(null);
-  const [ctx, setCtx] = useState(null);
 
-  const [lx, setLx] = useState(0.7);
-  const [ly, setLy] = useState(0.7);
-  const [lz, setLz] = useState(0.7);
-  const [amb, setAmb] = useState(0.7);
+  const [gl, setGl] = useState(null),
+    [uvx, setUvx] = useState(null),
+    [ctx, setCtx] = useState(null);
 
-  const [camDist, setCamDist] = useState(2.8);
-  const [camYaw, setCamYaw] = useState(0.7);
-  const [camPitch, setCamPitch] = useState(0.5);
-  const [camTarget, setCamTarget] = useState([0.5, 0.5, 0.5]);
+  let [lx, setLx] = useState(0.7),
+    [ly, setLy] = useState(0.7),
+    [lz, setLz] = useState(0.7),
+    [amb, setAmb] = useState(0.7);
+
+  let [camDist, setCamDist] = useState(2.8),
+    [camYaw, setCamYaw] = useState(0.7),
+    [camPitch, setCamPitch] = useState(0.5),
+    [camTarget, setCamTarget] = useState([0.5, 0.5, 0.5]);
+
+  let [isDown, setDown] = useState(false),
+    [last, setLast] = useState([0, 0]),
+    [panning, setPanning] = useState(false);
+
+  const dpr = Math.min(devicePixelRatio || 1, 2);
 
   const VS = `attribute vec3 a_pos;attribute vec3 a_nrm;attribute vec2 a_uv;uniform mat4 u_mvp,u_m,u_n;varying vec3 v_n;varying vec2 v_uv;void main(){v_n=mat3(u_n)*a_nrm;v_uv=a_uv;gl_Position=u_mvp*vec4(a_pos,1.0);}`;
   const FS = `precision mediump float;varying vec3 v_n;varying vec2 v_uv;uniform sampler2D u_tex;uniform vec3 u_light;uniform float u_amb;uniform bool u_hasTex;uniform float u_tint;void main(){vec3 n=normalize(v_n);float nd=max(dot(n,normalize(u_light)),0.0);vec3 base=u_hasTex?texture2D(u_tex,v_uv).rgb:vec3(0.82,0.84,0.88);base=mix(base,vec3(1.0,0.95,0.7),u_tint);gl_FragColor=vec4(base*(u_amb+0.9*nd),1.0);}`;
@@ -183,8 +188,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
     gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
     gl.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
-    gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
-    gl.uniform1f(loc.u_amb, parseFloat(amb.value));
+    gl.uniform3f(loc.u_light, 1.0, 1.0, 1.0);
+    // gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
+    // gl.uniform1f(loc.u_amb, parseFloat(amb.value));
+    gl.uniform1f(loc.u_amb, 1.0);
     gl.uniform1i(loc.u_hasTex, 0);
     gl.uniform1f(loc.u_tint, 0.0);
 
@@ -223,8 +230,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));
     gl.uniformMatrix4fv(loc.u_m, false, new Float32Array(m));
     gl.uniformMatrix4fv(loc.u_n, false, new Float32Array(nmat));
-    gl.uniform3f(loc.u_light, parseFloat(lx.value), parseFloat(ly.value), parseFloat(lz.value));
-    gl.uniform1f(loc.u_amb, parseFloat(amb.value));
+    gl.uniform3f(loc.u_light, lx, ly, lz);
+    gl.uniform1f(loc.u_amb, amb);
     gl.uniform1i(loc.u_hasTex, atlasTex ? 1 : 0);
     gl.uniform1f(loc.u_tint, isEdit ? 0.18 : 0.0);
     if (atlasTex) {
@@ -517,7 +524,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     return { buf: b, type: gl.UNSIGNED_SHORT };
   };
 
-  function makeTyped(arr) { OES_uint ? new Uint32Array(arr) : new Uint16Array(arr); }
+  function makeTyped(arr) { return OES_uint ? new Uint32Array(arr) : new Uint16Array(arr); }
 
 
   /* ===== Build layers for a tile (render all) ===== */
@@ -645,6 +652,58 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       }
     }
   }, [content, glC, uvC, thC, gl, uvx, ctx, prog]);
+
+
+  useEffect(() => {
+    if (!glC.current) return;
+
+    // Prevent right-click context menu from appearing
+    glC.current.addEventListener('contextmenu', e => e.preventDefault());
+
+    const handleMouseDown = (e) => {
+      setDown(true);
+      setLast([e.clientX, e.clientY]);
+      setPanning(e.altKey || e.button === 1);
+    };
+
+    const handleMouseUp = () => setDown(false);
+
+    const handleMouseMove = (e) => {
+      if (!isDown) return;
+
+      const dx = e.clientX - last[0];
+      const dy = e.clientY - last[1];
+      setLast([e.clientX, e.clientY]);
+
+      if (!panning && e.buttons === 1) {
+        setCamYaw(camYaw - dx * 0.005);
+        setCamPitch(Math.max(-1.45, Math.min(1.45, camPitch - dy * 0.005)));
+      } else {
+        const s = camDist * 0.0015;
+        const dir = [Math.sin(camYaw), 0, Math.cos(camYaw)];
+        const right = [dir[2], 0, -dir[0]];
+        setCamTarget([
+          camTarget[0] + right[0] * (-dx * s) + [0, 1, 0][2] * (dy * s),
+          camTarget[1] + right[1] * (-dx * s) + [0, 1, 0][2] * (dy * s),
+          camTarget[2] + right[2] * (-dx * s) + [0, 1, 0][2] * (dy * s)
+        ]);
+      }
+    };
+
+    const handleWheel = (e) => setCamDist(Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)));
+
+    glC.current.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    glC.current.addEventListener('mousemove', handleMouseMove);
+    glC.current.addEventListener('wheel', handleWheel);
+
+    return () => {
+      glC.current.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      glC.current.removeEventListener('mousemove', handleMouseMove);
+      glC.current.removeEventListener('wheel', handleWheel);
+    };
+  }, [glC, isDown, last, panning, camYaw, camPitch, camDist, camTarget]);
 
   function handleSave() {
     if (onSave) {

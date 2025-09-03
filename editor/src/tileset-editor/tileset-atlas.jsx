@@ -87,7 +87,7 @@ void main() {
 }`;
 
 // ---------- main component ----------
-export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, tileSize}) {
+export default function TilesetAtlasEditor({ atlasImage, atlasURL, sheetSize, tileSize }) {
 
   // selection
   const [sel, setSel] = useState({ gx: 0, gy: 0 }); // grid indices
@@ -106,22 +106,6 @@ export default function TilesetAtlasEditor({atlasImage, atlasURL, sheetSize, til
   });
   const initializedRef = useRef(false); // guard StrictMode double-mount
 
-  // --- file ingestion ---
-  useEffect(() => {
-    if (!atlasURL) return;
-    const img = new Image();
-    img.onload = () => {
-      setAtlasImage(img);
-      setSheetSize([img.naturalWidth, img.naturalHeight]);
-    };
-    img.onerror = () => {
-      console.error('Failed to load atlas image');
-    };
-    img.src = atlasURL;
-    return () => { /* no-op: URL revoked in a different effect */ };
-  }, [atlasURL]);
-
-  // revoke object URL on unmount / change
   useEffect(() => {
     return () => { if (atlasURL) URL.revokeObjectURL(atlasURL); };
   }, [atlasURL]);
