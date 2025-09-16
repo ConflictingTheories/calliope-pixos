@@ -30,36 +30,44 @@ export default class Hud {
    * @param {number} h
    * @param {*} colours
    */
-  drawButton(text, x, y, w, h, colours) {
-    const { ctx } = this;
+drawButton(text, x, y, w, h, colours) {
+  const { ctx } = this;
 
-    // Apply HUD style
-    this.applyStyle({
-      font: '20px invasion2000',
-      textAlign: 'center',
-      textBaseline: 'middle',
-      fillStyle: colours.background,
-      globalAlpha: 1.0,
-    });
+  // Apply HUD style
+  this.applyStyle({
+    font: '20px invasion2000',
+    textAlign: 'center',
+    textBaseline: 'middle',
+    fillStyle: colours.background,
+    globalAlpha: 1.0,
+  });
 
-    // Draw the button background
-    ctx.fillStyle = colours.background;
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.fill();
+  // Draw the button background
+  ctx.fillStyle = colours.background;
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.fill();
 
-    // Light gradient effect on top of the button
-    var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.7;
-    ctx.fillRect(x, y, w, h / 2);
+  // Light gradient effect on top of the button
+  var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+  grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+  ctx.fillStyle = grad;
+  ctx.globalAlpha = 0.7;
+  ctx.fillRect(x, y, w, h / 2);
 
-    // Draw the button text
-    ctx.fillStyle = colours.text;
-    ctx.fillText(text, x + w / 2, y + h / 2);
-  }
+  // Draw the button text
+  ctx.fillStyle = colours.text;
+  ctx.fillText(text, x + w / 2, y + h / 2);
+
+  // Add hover effect
+  ctx.beginPath();
+  ctx.strokeStyle = '#fff';
+  ctx.rect(x, y, w, h);
+  ctx.stroke();
+
+}
+
 
   /**
    * clear HUD overlay
