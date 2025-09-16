@@ -33,73 +33,52 @@ export default class Hud {
   drawButton(text, x, y, w, h, colours) {
     const { ctx } = this;
 
-    let halfHeight = h / 2;
+    // Apply HUD style
+    this.applyStyle({
+      font: '20px invasion2000',
+      textAlign: 'center',
+      textBaseline: 'middle',
+      fillStyle: colours.background,
+      globalAlpha: 1.0,
+    });
 
-    this.engine.ctx.save();
+    // Draw the button background
+    ctx.fillStyle = colours.background;
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.fill();
 
-    // draw the button
-    this.engine.ctx.fillStyle = colours.background;
+    // Light gradient effect on top of the button
+    var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(x, y, w, h / 2);
 
-    this.engine.ctx.beginPath();
-    this.engine.ctx.rect(x, y, w, h);
-    this.engine.ctx.rect(x, y, w, h);
-    this.engine.ctx.fill();
-    this.engine.ctx.clip();
-
-    // light gradient
-    var grad = this.engine.ctx.createLinearGradient(x, y, x, y + halfHeight);
-    grad.addColorStop(0, 'rgb(221,181,155)');
-    grad.addColorStop(1, 'rgb(22,13,8)');
-    this.engine.ctx.fillStyle = grad;
-    this.engine.ctx.globalAlpha = 0.5;
-    this.engine.ctx.fillRect(x, y, w, h);
-
-    // draw the top half of the button
-    this.engine.ctx.fillStyle = colours.top;
-
-    // draw the top and bottom particles
-    for (var i = 0; i < h; i += halfHeight) {
-      this.engine.ctx.fillStyle = i === 0 ? colours.top : colours.bottom;
-
-      for (var j = 0; j < 50; j++) {
-        // get random values for particle
-        var partX = x + Math.random() * w;
-        var partY = y + i + Math.random() * halfHeight;
-        var width = Math.random() * 10;
-        var height = Math.random() * 10;
-        var rotation = Math.random() * 360;
-        var alpha = Math.random();
-
-        this.engine.ctx.save();
-
-        // rotate the canvas by 'rotation'
-        this.engine.ctx.translate(partX, partY);
-        this.engine.ctx.rotate((rotation * Math.PI) / 180);
-        this.engine.ctx.translate(-partX, -partY);
-
-        // set alpha transparency to 'alpha'
-        this.engine.ctx.globalAlpha = alpha;
-
-        this.engine.ctx.fillRect(partX, partY, width, height);
-
-        this.engine.ctx.restore();
-      }
-    }
-
-    this.engine.ctx.font = '20px invasion2000';
-    this.engine.ctx.textAlign = 'center';
-    this.engine.ctx.textBaseline = 'middle';
-    this.engine.ctx.fillStyle = 'white';
-    this.engine.ctx.fillText(text, x + w / 2, y + h / 2, w);
-
-    this.engine.ctx.restore();
+    // Draw the button text
+    ctx.fillStyle = colours.text;
+    ctx.fillText(text, x + w / 2, y + h / 2);
   }
 
   /**
    * clear HUD overlay
    */
   clearHud() {
-    this.engine.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
+    this.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
+  }
+
+  applyStyle(styleConfig) {
+    // Apply style to the context
+    const defaultStyle = {
+      font: '20px invasion2000',
+      textAlign: 'center',
+      textBaseline: 'middle',
+      fillStyle: '#ffffff',
+      globalAlpha: 1.0,
+    };
+
+    Object.assign(this.ctx, defaultStyle, styleConfig);
   }
 
   /**
@@ -110,25 +89,27 @@ export default class Hud {
    * @param {string} src
    */
   writeText(text, x, y, src = null) {
-    this.engine.ctx.save();
-    this.engine.ctx.font = '20px invasion2000';
-    this.engine.ctx.textAlign = 'center';
-    this.engine.ctx.textBaseline = 'middle';
-    this.engine.ctx.fillStyle = 'white';
+    // Apply style
+    this.applyStyle({
+      font: '24px invasion2000',
+      textAlign: 'center',
+      textBaseline: 'middle',
+      fillStyle: '#ffffff',
+    });
+
     if (src) {
-      // draw portrait if set
-      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2 + 76, y ?? this.engine.ctx.canvas.clientHeight / 2);
-      this.engine.ctx.drawImage(src, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2, 76, 76);
+      // Draw portrait if set
+      this.ctx.drawImage(src, x ?? this.ctx.canvas.clientWidth / 2, y ?? this.ctx.canvas.clientHeight / 2, 76, 76);
+      this.ctx.fillText(text, x ?? this.ctx.canvas.clientWidth / 2 + 80, y ?? this.ctx.canvas.clientHeight / 2);
     } else {
-      this.engine.ctx.fillText(text, x ?? this.engine.ctx.canvas.clientWidth / 2, y ?? this.engine.ctx.canvas.clientHeight / 2);
+      this.ctx.fillText(text, x ?? this.ctx.canvas.clientWidth / 2, y ?? this.ctx.canvas.clientHeight / 2);
     }
-    this.engine.ctx.restore();
   }
 
   /**
    * Scrolling Textbox
    * @param {string} text
-   * @param {booleanq} scrolling
+   * @param {boolean} scrolling
    * @param {*} options
    * @returns
    */
@@ -157,18 +138,18 @@ export class textScrollBox {
     this.fontSize = 24;
     this.font = 'minecraftia';
     this.align = 'left';
-    this.background = '#999';
+    this.background = '#333';
     this.border = {
-      lineWidth: 4,
-      style: 'white',
+      lineWidth: 2,
+      style: '#fff',
       corner: 'round',
     };
     this.scrollBox = {
       width: 5,
-      background: '#568',
-      color: '#78a',
+      background: '#777',
+      color: '#999',
     };
-    this.fontStyle = 'white';
+    this.fontStyle = '#fff';
     this.lines = [];
     this.x = 0;
     this.y = 0;
