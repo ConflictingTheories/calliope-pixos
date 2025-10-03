@@ -25,7 +25,7 @@ export default class Avatar extends Sprite {
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    this.handleWalk = this.handleWalk.bind(this);
+    // todo - revisit this - for now this is more useful for debugging
     this.isLit = true;
     this.isSelected = true;
   }
@@ -33,7 +33,7 @@ export default class Avatar extends Sprite {
   /**
    * Initialization Hook
    */
-  init() {
+  init = () => {
     console.log({ msg: '- avatar hook', id: this.id, pos: this.pos, avatar: this });
   }
 
@@ -41,12 +41,12 @@ export default class Avatar extends Sprite {
    * Tick - Logical Step / Update
    * @param {number} time
    */
-  tick(time) {
+  tick = (time) => {
     // ONLY ONE MOVE AT A TIME
     if (!this.actionList.length) {
       let ret = this.checkInput();
       if (ret) {
-        this.addAction(ret).then(() => {});
+        this.addAction(ret).then(() => { });
       }
     }
     if (this.bindCamera) set(this.pos, this.engine.renderManager.camera.cameraPosition);
@@ -57,7 +57,7 @@ export default class Avatar extends Sprite {
    * @param {*} defaultMenus
    * @returns
    */
-  openMenu(menuConfig = {}, defaultMenus = []) {
+  openMenu = (menuConfig = {}, defaultMenus = []) => {
     return new ActionLoader(this.engine, 'prompt', [menuConfig, defaultMenus, false, { autoclose: false }], this);
   }
 
@@ -65,7 +65,7 @@ export default class Avatar extends Sprite {
    * Reads for Input to Respond to
    * @returns
    */
-  checkInput() {
+  checkInput = () => {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
     let touchmap = this.engine.gamepad.checkInput();
@@ -199,7 +199,7 @@ export default class Avatar extends Sprite {
    * @param {*} touchmap
    * @returns
    */
-  handleWalk(key, touchmap) {
+  handleWalk = (key, touchmap) => {
     let moveTime = 600; // move time in ms
     let facing = Direction.None;
     // Read Key presses

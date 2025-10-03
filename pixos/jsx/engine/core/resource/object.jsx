@@ -44,7 +44,6 @@ export default class ModelObject extends Loadable {
     this.lightIndex = null;
     this.onLoadActions = new ActionQueue();
     this.inventory = [];
-    this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
     this.isSelected = false;
@@ -55,7 +54,7 @@ export default class ModelObject extends Loadable {
    * @param {*} instanceData
    * @returns
    */
-  onLoad(instanceData) {
+  onLoad = (instanceData) => {
     if (this.loaded) return;
 
     // Zone Information
@@ -103,23 +102,22 @@ export default class ModelObject extends Loadable {
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
-      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
-      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded);
     }
 
-    // lighting?
+    // lighting
     if (this.isLit) {
       this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01, 0.01, 0.01]);
     }
 
-    //
-    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
   }
 
   /**
@@ -128,7 +126,7 @@ export default class ModelObject extends Loadable {
    * @param {*} zip
    * @returns
    */
-  async onLoadFromZip(instanceData, zip) {
+  onLoadFromZip = async (instanceData, zip) => {
     if (this.loaded) return;
 
     // Zone Information
@@ -178,14 +176,14 @@ export default class ModelObject extends Loadable {
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
-      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = await this.engine.resourceManager.loadTextureFromZip(this.portraitSrc, zip);
-      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded);
     }
 
     // lighting?
@@ -203,21 +201,21 @@ export default class ModelObject extends Loadable {
     }
 
     //
-    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
   }
 
   /**
    * Definition Loaded
    */
-  onTilesetDefinitionLoaded() {
-    this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+  onTilesetDefinitionLoaded = () => {
+    this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded);
   }
 
   /**
    * After Tileset / Texture Loaded
    * @returns
    */
-  onTilesetOrTextureLoaded() {
+  onTilesetOrTextureLoaded = () => {
     if (!this || this.loaded || (this.enableSpeech && this.speech && !this.speech.loaded) || (this.portrait && !this.portrait.loaded)) return;
 
     this.init(); // Hook for sprite implementations
@@ -236,7 +234,7 @@ export default class ModelObject extends Loadable {
    * Speech Area texture
    * @returns
    */
-  getSpeechBubbleTexture() {
+  getSpeechBubbleTexture = () => {
     return [
       [1.0, 1.0],
       [0.0, 1.0],
@@ -251,7 +249,7 @@ export default class ModelObject extends Loadable {
    * speech bubble position
    * @returns
    */
-  getSpeechBubbleVertices() {
+  getSpeechBubbleVertices = () => {
     return [
       new Vector(...[2, 0, 4]).toArray(),
       new Vector(...[0, 0, 4]).toArray(),
@@ -266,7 +264,7 @@ export default class ModelObject extends Loadable {
    * bind texture
    * @param {*} texture
    */
-  attach(texture) {
+  attach = (texture) => {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -276,7 +274,7 @@ export default class ModelObject extends Loadable {
   /**
    * draw obj model with materials and textures (needs work)
    */
-  drawTexturedObj() {
+  drawTexturedObj = () => {
     let { engine, mesh } = this;
     // draw each piece of the object (per material)
     if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
@@ -294,12 +292,10 @@ export default class ModelObject extends Loadable {
         if (mesh.materialsByIndex[i]?.mapDiffuse?.glTexture) this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
         // Specular
         engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
-        // Specular Exponent
         engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-
         // picking id
         engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
         engine.renderManager.shaderProgram.setMatrixUniforms({
@@ -321,9 +317,8 @@ export default class ModelObject extends Loadable {
       engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
       // Specular
       engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
-      // Specular Exponent
       engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
-
+      // picking Id
       engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
       engine.renderManager.shaderProgram.setMatrixUniforms({
         isSelected: this.isSelected,
@@ -336,10 +331,10 @@ export default class ModelObject extends Loadable {
   }
 
   /**
-   * Return id for picking
+   * Return id for picking (based on colour pixel translation)
    * @returns
    */
-  getPickingId() {
+  getPickingId = () => {
     const id = [
       ((this.objId >> 0) & 0xff) / 0xff,
       ((this.objId >> 8) & 0xff) / 0xff,
@@ -352,7 +347,7 @@ export default class ModelObject extends Loadable {
   /**
    * draw object with textures / materials
    */
-  drawObj() {
+  drawObj = () => {
     let { engine, mesh } = this;
     engine.gl.disableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
     engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
@@ -368,7 +363,7 @@ export default class ModelObject extends Loadable {
    * Draw Object
    * @returns
    */
-  draw() {
+  draw = () => {
     if (!this.loaded) return;
     // Increment object draw counter for debug metrics. Only increment if the
     // render manager's debug object is available. This helps track how
@@ -412,7 +407,7 @@ export default class ModelObject extends Loadable {
    * Set Facing
    * @param {*} facing
    */
-  setFacing(facing) {
+  setFacing = (facing) => {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }
@@ -432,7 +427,7 @@ export default class ModelObject extends Loadable {
    * Remove Action
    * @param {*} id
    */
-  removeAction(id) {
+  removeAction = (id) => {
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
@@ -440,7 +435,7 @@ export default class ModelObject extends Loadable {
   /**
    * Remove Action
    */
-  removeAllActions() {
+  removeAllActions = () => {
     this.actionList = [];
     this.actionDict = {};
   }
@@ -450,7 +445,7 @@ export default class ModelObject extends Loadable {
    * @param {number} time
    * @returns
    */
-  tickOuter(time) {
+  tickOuter = (time) => {
     if (!this.loaded) return;
     // Sort activities by increasing startTime, then by id
     this.actionList.sort((a, b) => {
@@ -476,7 +471,7 @@ export default class ModelObject extends Loadable {
   /**
    * Hook for sprite implementations
    */
-  init() {
+  init = () => {
     console.log('- object hook', this.id, this.pos, this.objId);
   }
 
@@ -485,7 +480,7 @@ export default class ModelObject extends Loadable {
    * @param {*} text
    * @param {*} showBubble
    */
-  speak(text, showBubble = false) {
+  speak = (text, showBubble = false) => {
     if (!text) this.speech.clearHud();
     else {
       this.textbox = this.engine.hud.scrollText(this.id + ':> ' + text, true, {
@@ -506,7 +501,7 @@ export default class ModelObject extends Loadable {
    * @param {*} finish
    * @returns
    */
-  async interact(sprite, finish) {
+  interact = async (sprite, finish) => {
     let ret = null;
     // React based on internal state
     switch (this.state) {
@@ -522,7 +517,7 @@ export default class ModelObject extends Loadable {
    * Set Facing
    * @param {*} facing
    */
-  setFacing(facing) {
+  setFacing = (facing) => {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
   }
@@ -532,7 +527,7 @@ export default class ModelObject extends Loadable {
    * @param {*} facing
    * @returns
    */
-  faceDir(facing) {
+  faceDir = (facing) => {
     if (this.facing == facing || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
   }
@@ -540,7 +535,7 @@ export default class ModelObject extends Loadable {
   /**
    * set message (for chat bubbles)
    */
-  setGreeting(greeting) {
+  setGreeting = (greeting) => {
     if (this.speech.clearHud) {
       this.speech.clearHud();
     }

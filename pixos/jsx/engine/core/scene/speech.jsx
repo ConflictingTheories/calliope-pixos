@@ -36,7 +36,7 @@ export default class Speech {
    * Run action if loaded or add to queue
    * @param {*} action
    */
-  runWhenLoaded(action) {
+  runWhenLoaded = (action) => {
     if (this.loaded) action();
     else this.onLoadActions.add(action);
   }
@@ -44,7 +44,7 @@ export default class Speech {
   /**
    * Load Texture from Image
    */
-  loadImage() {
+  loadImage = () => {
     let { gl } = this.engine;
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
@@ -61,7 +61,7 @@ export default class Speech {
   /**
    * Bind texture to Uniform
    */
-  attach() {
+  attach = () => {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
@@ -71,7 +71,7 @@ export default class Speech {
   /**
    * clear HUD overlay
    */
-  clearHud() {
+  clearHud = () => {
     const { ctx } = this;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     this.loadImage();
@@ -83,7 +83,7 @@ export default class Speech {
    * @param {number} x
    * @param {number} y
    */
-  writeText(text, x, y) {
+  writeText = (text, x, y) => {
     const { ctx } = this;
     ctx.save();
     ctx.font = '32px minecraftia';
@@ -101,7 +101,7 @@ export default class Speech {
    * @param {*} options
    * @returns
    */
-  scrollText(text, scrolling = false, options = {}) {
+  scrollText = (text, scrolling = false, options = {}) => {
     let txt = new textScrollBox(this.ctx);
     if (options.portrait) {
       txt.init(text, 10, 10, this.canvas.width - 20 - 84, (2 * this.canvas.height) / 3 - 20, options);

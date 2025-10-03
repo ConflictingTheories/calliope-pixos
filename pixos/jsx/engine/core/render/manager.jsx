@@ -86,7 +86,7 @@ export default class RenderManager {
   /**
    *
    */
-  init() {
+  init = () => {
     const { spritz, gl } = this.engine;
 
     // Configure GL
@@ -126,7 +126,7 @@ export default class RenderManager {
    * @param {*} source
    * @returns
    */
-  loadShader(type, source) {
+  loadShader = (type, source) => {
     const { gl } = this.engine;
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -346,7 +346,7 @@ export default class RenderManager {
   /**
    * Set FOV and Perspective
    */
-  initProjection() {
+  initProjection = () => {
     const { gl } = this.engine;
     const fieldOfView = degToRad(this.camera.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -367,7 +367,7 @@ export default class RenderManager {
    * Enable Culling
    * @returns
    */
-  enableCulling() {
+  enableCulling = () => {
     const { gl } = this.engine;
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
@@ -377,7 +377,7 @@ export default class RenderManager {
    * Disable Culling
    * @returns
    */
-  disableCulling() {
+  disableCulling = () => {
     const { gl } = this.engine;
     gl.disable(gl.CULL_FACE);
   }
@@ -386,7 +386,7 @@ export default class RenderManager {
    * Enable Blending
    * @returns
    */
-  enableBlending() {
+  enableBlending = () => {
     const { gl } = this.engine;
     gl.enable(gl.BLEND);
   }
@@ -395,7 +395,7 @@ export default class RenderManager {
    * Disable Blending
    * @returns
    */
-  disableBlending() {
+  disableBlending = () => {
     const { gl } = this.engine;
     gl.disable(gl.BLEND);
   }
@@ -403,7 +403,7 @@ export default class RenderManager {
   /**
    * Clear Screen with Color (RGBA)
    */
-  clearScreen() {
+  clearScreen = () => {
     const { gl } = this.engine;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.camera.uViewMat = create();
@@ -412,7 +412,7 @@ export default class RenderManager {
   /**
    * Use a frustum to clip the scene to a 1x1 pixel area
    */
-  applyPixelFrustum() {
+  applyPixelFrustum = () => {
     const { gl } = this.engine;
     const zNear = 0.1;
     const zFar = 100.0;
@@ -450,7 +450,7 @@ export default class RenderManager {
   /**
    * Go Fullscreen
    */
-  toggleFullscreen() {
+  toggleFullscreen = () => {
     if (!this.fullscreen) {
       try {
         this.engine.gamepadcanvas.parentElement.requestFullscreen();
@@ -471,7 +471,7 @@ export default class RenderManager {
   /**
    * push new matrix to model stack
    */
-  mvPushMatrix() {
+  mvPushMatrix = () => {
     let copy = create();
     set(this.uModelMat, copy);
     let m = create();
@@ -482,7 +482,7 @@ export default class RenderManager {
   /**
    * pop model stack and apply view
    */
-  mvPopMatrix() {
+  mvPopMatrix = () => {
     if (this.modelViewMatrixStack.length == 0) {
       throw 'Invalid popMatrix!';
     }
@@ -492,7 +492,7 @@ export default class RenderManager {
   /**
    * Render Frame
    */
-  transition() {
+  transition = () => {
     let now = new Date().getMilliseconds();
     this.transition.draw(
       ((this.transitionTime - now) / this.transitionDuration) % 1,
@@ -514,7 +514,7 @@ export default class RenderManager {
    * @param {*} itemSize
    * @returns
    */
-  createBuffer(contents, type, itemSize) {
+  createBuffer = (contents, type, itemSize) => {
     let { gl } = this.engine;
     let buf = gl.createBuffer();
     buf.itemSize = itemSize;
@@ -530,7 +530,7 @@ export default class RenderManager {
    * @param {*} buffer
    * @param {*} contents
    */
-  updateBuffer(buffer, contents) {
+  updateBuffer = (buffer, contents) => {
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
@@ -542,7 +542,7 @@ export default class RenderManager {
    * @param {*} buffer
    * @param {*} attribute
    */
-  bindBuffer(buffer, attribute) {
+  bindBuffer = (buffer, attribute) => {
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -557,7 +557,7 @@ export default class RenderManager {
    * @param {{effect?: string, direction?: string, duration?: number}} params
    * @returns {Promise<void>} Resolves when the transition has completed.
    */
-  startTransition(params = {}) {
+  startTransition = (params = {}) => {
     const { effect = 'fade', direction = 'out', duration = 1000 } = params;
     // If another transition is currently active we create a chained Promise that
     // will run after the existing one. This avoids overlapping transitions.
@@ -589,7 +589,7 @@ export default class RenderManager {
    * the engine render loop. When the transition ends it cleans up and calls
    * the stored callback.
    */
-  updateTransition() {
+  updateTransition = () => {
     if (!this.isTransitioning) {
       return;
     }
@@ -619,7 +619,7 @@ export default class RenderManager {
    *
    * @param {string} effect Name of the transition effect.
    */
-  initTransitionProgram(effect) {
+  initTransitionProgram = (effect) => {
     const { gl } = this.engine;
     // If already initialized, do nothing.
     if (this.transitionGL[effect]) return;
@@ -678,7 +678,7 @@ export default class RenderManager {
    * @param {number} progress A value between 0 and 1 indicating the
    * progress of the transition.
    */
-  renderTransition(progress) {
+  renderTransition = (progress) => {
     const { gl } = this.engine;
     const effect = this.transitionEffect || 'fade';
     // Ensure the program is compiled.
@@ -721,7 +721,7 @@ export default class RenderManager {
    * Reset debug counters at the start of a new frame. This should be
    * invoked by the engine's render loop before any drawing takes place.
    */
-  resetDebugCounters() {
+  resetDebugCounters = () => {
     if (this.debug) {
       this.debug.tilesDrawn = 0;
       this.debug.spritesDrawn = 0;

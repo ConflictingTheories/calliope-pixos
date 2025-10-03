@@ -29,7 +29,7 @@ export default class DynamicSprite extends Sprite {
   }
 
   // load in json properties to object
-  async loadJson() {
+  loadJson = async () => {
     // extended properties
     if (this.json.extends) {
       await Promise.all(
@@ -68,10 +68,10 @@ export default class DynamicSprite extends Sprite {
   }
 
   // Interaction
-  async interact(sprite, finish = () => {}) {
+  interact = async (sprite, finish = () => { }) => {
     let ret = null;
     let states = this.json.states ?? [];
-    
+
     // build state machine
     let stateMachine = {};
     await Promise.all(
@@ -82,14 +82,14 @@ export default class DynamicSprite extends Sprite {
           console.log({ msg: 'loading action', action });
         }
         console.log({ msg: 'switching state', state: state.name });
-        stateMachine[state.name] = {next:state.next, actions};
+        stateMachine[state.name] = { next: state.next, actions };
       })
     );
     console.log({ msg: 'loading stateMachine', stateMachine });
 
     // run state actions
     ret = [];
-    for(const action of stateMachine[this.state].actions){
+    for (const action of stateMachine[this.state].actions) {
       ret.push(await action(this, sprite, finish));
     }
 
@@ -103,7 +103,7 @@ export default class DynamicSprite extends Sprite {
   }
 
   // load actions based on provided state and load lua callbacks as needed
-  async loadActionDynamically(state, sprite, finish) {
+  loadActionDynamically = async (state, sprite, finish) => {
     console.log({ sprite, state });
     return await Promise.all(
       // load actions based on state
@@ -159,14 +159,14 @@ export default class DynamicSprite extends Sprite {
 
   // todo -- add select handler dynamically (onSelect)
   // Interaction
-  async onSelect(_this, sprite) {
+  onSelect = async (_this, sprite) => {
     if (!this.selectTrigger) {
       return;
     }
 
     // pass-through interaction
-    if(this.selectTrigger === 'interact'){
-      return await this.interact(sprite, ()=>{});
+    if (this.selectTrigger === 'interact') {
+      return await this.interact(sprite, () => { });
     }
 
     // lua scripting
@@ -189,9 +189,9 @@ export default class DynamicSprite extends Sprite {
     }
   }
 
-   // todo -- add step handler dynamically (onStep)
+  // todo -- add step handler dynamically (onStep)
   // Interaction
-  async onStep(_this, sprite) {
+  onStep = async (_this, sprite) => {
     if (!this.stepTrigger) {
       return;
     }

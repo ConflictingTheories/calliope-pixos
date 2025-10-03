@@ -41,9 +41,7 @@ export default class Sprite extends Loadable {
     this.speech = {};
     this.portrait = null;
     this.onLoadActions = new ActionQueue();
-    this.getTexCoords = this.getTexCoords.bind(this);
     this.inventory = [];
-    this.onTilesetOrTextureLoaded = this.onTilesetOrTextureLoaded.bind(this);
     this.blocking = true; // default - cannot passthrough
     this.override = false;
     this.isLit = true;
@@ -59,7 +57,7 @@ export default class Sprite extends Loadable {
    * @param {*} instanceData
    * @returns
    */
-  onLoad(instanceData) {
+  onLoad = (instanceData) => {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
       console.error('Invalid sprite definition');
@@ -81,7 +79,7 @@ export default class Sprite extends Loadable {
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     // Step Handler
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
-      let stepParent = this.onStep.bind(this);
+      let stepParent = this.onStep;
       this.onStep = async () => {
         await instanceData.onStep(this, this);
         console.log('made it to here');
@@ -90,7 +88,7 @@ export default class Sprite extends Loadable {
     }
     // select handler
     if (instanceData.onSelect && typeof instanceData.onSelect == 'function') {
-      let selectParent = this.onSelect.bind(this);
+      let selectParent = this.onSelect;
       this.onSelect = async () => {
         await instanceData.onSelect(this, this);
         console.log('made it to here');
@@ -99,19 +97,19 @@ export default class Sprite extends Loadable {
     }
     // Texture Buffer
     this.texture = this.engine.resourceManager.loadTexture(this.src);
-    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded);
     this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
-      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = this.engine.resourceManager.loadTexture(this.portraitSrc);
-      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded);
     }
     if (this.isLit) {
       console.log({ msg: 'Adding Light Loaded', id: this.id, pos: this.pos.toArray() });
@@ -127,7 +125,7 @@ export default class Sprite extends Loadable {
       );
     }
     //
-    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
   }
 
   /**
@@ -136,7 +134,7 @@ export default class Sprite extends Loadable {
    * @param {Zip} zip
    * @returns
    */
-  async onLoadFromZip(instanceData, zip) {
+  onLoadFromZip = async (instanceData, zip) => {
     if (this.loaded) return;
     if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
       console.error('Invalid sprite definition');
@@ -160,7 +158,7 @@ export default class Sprite extends Loadable {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {
-      let stepParent = this.onStep.bind(this);
+      let stepParent = this.onStep;
       this.onStep = async () => {
         await instanceData.onStep(this, this);
         await stepParent(this, this);
@@ -169,7 +167,7 @@ export default class Sprite extends Loadable {
 
     // Step Handler - todo
     // if (instanceData.onStep) {
-    //   let stepParent = this.onStep.bind(this);
+    //   let stepParent = this.onStep;
     //   this.onStep = async () => {
     //     // todo - need to add lua interpreter
     //     // -- should be able to run lua scripts
@@ -180,20 +178,20 @@ export default class Sprite extends Loadable {
 
     // Texture Buffer
     this.texture = await this.engine.resourceManager.loadTextureFromZip(this.src, zip);
-    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded);
     this.vertexTexBuf = this.engine.renderManager.createBuffer(this.getTexCoords(), this.engine.gl.DYNAMIC_DRAW, 2);
 
     // Speech bubble
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
-      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
       this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
     }
 
     // load Portrait
     if (this.portraitSrc) {
       this.portrait = await this.engine.resourceManager.loadTextureFromZip(this.portraitSrc, zip);
-      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+      this.portrait.runWhenLoaded(this.onTilesetOrTextureLoaded);
     }
 
     // lighting
@@ -211,13 +209,13 @@ export default class Sprite extends Loadable {
       );
     }
 
-    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
   }
 
   /**
    * Definition Loaded
    */
-  onTilesetDefinitionLoaded() {
+  onTilesetDefinitionLoaded = () => {
     // size of tiles (1x1 squares are assumed)
     let tileSize = this.zone.tileset.tileSize;
 
@@ -246,14 +244,14 @@ export default class Sprite extends Loadable {
       this.speechVerBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
     }
 
-    this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
+    this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded);
   }
 
   /**
    * After Tileset / Texture Loaded
    * @returns
    */
-  onTilesetOrTextureLoaded() {
+  onTilesetOrTextureLoaded = () => {
     if (
       !this ||
       this.loaded ||
@@ -280,7 +278,7 @@ export default class Sprite extends Loadable {
    * Get Texture Coordinates
    * @returns
    */
-  getTexCoords() {
+  getTexCoords = () => {
     let sequence = Direction.spriteSequence(this.facing, this.engine.renderManager.camera.cameraDir);
     let frames = this.frames[sequence] ?? this.frames['N']; //default up
     let length = frames.length;
@@ -301,7 +299,7 @@ export default class Sprite extends Loadable {
    * Speech Area texture
    * @returns
    */
-  getSpeechBubbleTexture() {
+  getSpeechBubbleTexture = () => {
     return [
       [1.0, 1.0],
       [0.0, 1.0],
@@ -316,7 +314,7 @@ export default class Sprite extends Loadable {
    * speech bubble position
    * @returns
    */
-  getSpeechBubbleVertices() {
+  getSpeechBubbleVertices = () => {
     return [
       new Vector(...[2, 0, 4]).toArray(),
       new Vector(...[0, 0, 4]).toArray(),
@@ -331,7 +329,7 @@ export default class Sprite extends Loadable {
    * Draw Sprite Sprite
    * @returns
    */
-  draw() {
+  draw = () => {
     if (!this.loaded) return;
     // Increment sprite draw counter for debug metrics. Counting draws at
     // the start ensures that only successfully rendered sprites are tallied.
@@ -448,7 +446,7 @@ export default class Sprite extends Loadable {
    * Return id for picking
    * @returns
    */
-  getPickingId() {
+  getPickingId = () => {
     const id = [((this.objId >> 0) & 0xff) / 0xff, ((this.objId >> 8) & 0xff) / 0xff, ((this.objId >> 16) & 0xff) / 0xff, 255];
     return id;
   }
@@ -457,7 +455,7 @@ export default class Sprite extends Loadable {
    * Set Frame
    * @param {number} frame
    */
-  setFrame(frame) {
+  setFrame = (frame) => {
     this.animFrame = frame;
     this.engine.renderManager.updateBuffer(this.vertexTexBuf, this.getTexCoords());
   }
@@ -466,7 +464,7 @@ export default class Sprite extends Loadable {
    * Set Facing
    * @param {string} facing
    */
-  setFacing(facing) {
+  setFacing = (facing) => {
     if (facing) this.facing = facing;
     this.setFrame(this.animFrame);
   }
@@ -475,7 +473,7 @@ export default class Sprite extends Loadable {
    * Add Action to Queue
    * @param {*} action
    */
-  async addAction(action) {
+  addAction = async (action) => {
     action = await Promise.resolve(action);
     if (this.actionDict[action.id]) this.removeAction(action.id);
     this.actionDict[action.id] = action;
@@ -486,7 +484,7 @@ export default class Sprite extends Loadable {
    * Remove Action
    * @param {string} id
    */
-  removeAction(id) {
+  removeAction = (id) => {
     this.actionList = this.actionList.filter((action) => action.id !== id);
     delete this.actionDict[id];
   }
@@ -494,7 +492,7 @@ export default class Sprite extends Loadable {
   /**
    * Remove all actions
    */
-  removeAllActions() {
+  removeAllActions = () => {
     this.actionList = [];
     this.actionDict = {};
   }
@@ -504,7 +502,7 @@ export default class Sprite extends Loadable {
    * @param {int} time
    * @returns
    */
-  tickOuter(time) {
+  tickOuter = (time) => {
     if (!this.loaded) return;
     // Sort activities by increasing startTime, then by id
     this.actionList.sort((a, b) => {
@@ -535,13 +533,13 @@ export default class Sprite extends Loadable {
   /**
    * Hook for sprite implementations
    */
-  init() {}
+  init = () => { }
 
   /**
    * load from json specification
    * @param {string} url
    */
-  async loadRemote(url) {
+  loadRemote = async (url) => {
     let response = await fetch(url);
     if (!response.ok) {
       throw new Error();
@@ -553,7 +551,7 @@ export default class Sprite extends Loadable {
    * process json object
    * @param {*} json
    */
-  processJson(json) {
+  processJson = (json) => {
     // TODO -- process json details
     this.update(json);
   }
@@ -564,7 +562,7 @@ export default class Sprite extends Loadable {
    * @param {boolean} showBubble
    * @param {*} dialogue
    */
-  speak(text, showBubble = false, dialogue = {}) {
+  speak = (text, showBubble = false, dialogue = {}) => {
     if (!text && this.speech.clearHud) this.speech.clearHud();
     else {
       // speech tts output
@@ -597,7 +595,7 @@ export default class Sprite extends Loadable {
    * @param {number} volume
    * @param {number} pitch
    */
-  speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
+  speechSynthesis = (text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) => {
     let speech = this.voice;
     let voices = window.speechSynthesis.getVoices() ?? [];
 
@@ -619,7 +617,7 @@ export default class Sprite extends Loadable {
    * @param {*} finish callback to call on completion
    * @returns
    */
-  async interact(sprite, finish) {
+  interact = async (sprite, finish) => {
     let ret = null;
     // React based on internal state
     switch (this.state) {
@@ -637,7 +635,7 @@ export default class Sprite extends Loadable {
    * @param {boolean} override
    * @returns
    */
-  faceDir(facing, override = false) {
+  faceDir = (facing, override = false) => {
     if ((!override && this.facing == facing) || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
   }
@@ -647,7 +645,7 @@ export default class Sprite extends Loadable {
    * @param {string} greeting
    * @returns
    */
-  setGreeting(greeting) {
+  setGreeting = (greeting) => {
     if (this.speech.clearHud) {
       this.speech.clearHud();
     }

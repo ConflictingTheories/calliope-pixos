@@ -29,7 +29,7 @@ export default class CutsceneManager {
    * @param {string} name
    * @param {Array<Object>} steps
    */
-  register(name, steps) {
+  register = (name, steps) => {
     this.scenes[name] = Array.isArray(steps) ? steps.slice() : [];
   }
 
@@ -40,7 +40,7 @@ export default class CutsceneManager {
    *
    * @param {string} name
    */
-  start(name) {
+  start = (name) => {
     const def = this.scenes[name];
     if (!def) {
       console.warn('Cutscene not found:', name);
@@ -54,7 +54,7 @@ export default class CutsceneManager {
   /**
    * Skip the active cutscene. Clears the queue and sets active false.
    */
-  skip() {
+  skip = () => {
     this.queue = [];
     this.active = false;
   }
@@ -62,7 +62,7 @@ export default class CutsceneManager {
   /**
    * Return true if a cutscene is running.
    */
-  isRunning() {
+  isRunning = () => {
     return this.active;
   }
 
@@ -71,7 +71,7 @@ export default class CutsceneManager {
    * cutscene steps sequentially. When all steps finish, the cutscene
    * becomes inactive.
    */
-  update() {
+  update = () => {
     if (!this.active) return;
     // if a step is currently processing, wait
     if (this._currentPromise) return;
@@ -88,16 +88,16 @@ export default class CutsceneManager {
       // -- in theory should be able to script a scene, set flags too, and have it proceed to the next scene if
       // -- if another one follows. -- I should be able to script a basic 'movie' using this
       case 'action':
-        promise = this._doAction(step);
+        promise = this.runAction(step);
         break;
       case 'wait':
-        promise = this._doWait(step.ms || 0);
+        promise = this.wait(step.ms || 0);
         break;
       case 'transition':
-        promise = this._doTransition(step);
+        promise = this.transition(step);
         break;
       case 'load_zone':
-        promise = this._doLoadZone(step);
+        promise = this.loadZone(step);
         break;
       default:
         console.warn('Unknown cutscene step:', step.type);
@@ -111,10 +111,10 @@ export default class CutsceneManager {
   }
 
   // internal step handlers
-  _doWait(ms) {
+  wait = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-  _doTransition(step) {
+  transition = (step) => {
     const rm = this.engine.renderManager;
     if (!rm) return Promise.resolve();
     const effect = step.effect || 'fade';
@@ -122,12 +122,12 @@ export default class CutsceneManager {
     const duration = step.duration || 500;
     return rm.startTransition({ effect, direction, duration });
   }
-  _doAction(step) {
+  runAction = (step) => {
     const action = step.action;
     if (!action) return Promise.resolve();
     return action();
   }
-  _doLoadZone(step) {
+  loadZone = (step) => {
     const { zone, remotely = false, zip } = step;
     if (!zone || !this.engine.spritz || !this.engine.spritz.world) {
       return Promise.resolve();

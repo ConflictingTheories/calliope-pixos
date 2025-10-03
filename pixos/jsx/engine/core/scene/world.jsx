@@ -40,10 +40,6 @@ export default class World {
     this.lastZoneTransitionTime = 0;
     this.isPaused = true;
     this.afterTickActions = new ActionQueue();
-    this.sortZones = this.sortZones.bind(this);
-    this.getZoneById = this.getZoneById.bind(this);
-    this.canWalk = this.canWalk.bind(this);
-    this.pathFind = this.pathFind.bind(this);
     this.menuConfig = {
       start: {
         onOpen: (menu) => {
@@ -58,14 +54,14 @@ export default class World {
    * push action into next frame
    * @param {*} action
    */
-  runAfterTick(action) {
+  runAfterTick = (action) => {
     this.afterTickActions.add(action);
   }
 
   /**
    * Sort zones for correct render order
    */
-  sortZones() {
+  sortZones = () => {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
   }
 
@@ -76,7 +72,7 @@ export default class World {
    * @param {*} skipCache
    * @returns
    */
-  async loadZoneFromZip(zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) {
+  loadZoneFromZip = async (zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     // Perform a transition when loading zones from a zip. Unless
@@ -147,7 +143,7 @@ export default class World {
    * @param {boolean} skipCache
    * @returns
    */
-  async loadZone(zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) {
+  loadZone = async (zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     const engine = this.engine;
     // Decide whether to perform a transition. We only start a new
@@ -198,7 +194,7 @@ export default class World {
    * Remove Zone
    * @param {string} zoneId
    */
-  removeZone(zoneId) {
+  removeZone = (zoneId) => {
     this.zoneList = this.zoneList.filter((zone) => {
       if (zone.id !== zoneId) {
         return true;
@@ -216,7 +212,7 @@ export default class World {
   /**
    * Remove Zones
    */
-  removeAllZones() {
+  removeAllZones = () => {
     this.zoneList.map((z) => {
       if (z.audio) {
         z.audio.pauseAudio();
@@ -232,7 +228,7 @@ export default class World {
    * Update
    * @param {number} time
    */
-  tick(time) {
+  tick = (time) => {
     for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
   }
@@ -241,7 +237,7 @@ export default class World {
    * read input (HIGHEST LEVEL)
    * @param {number} time
    */
-  checkInput(time) {
+  checkInput = (time) => {
     if (time > this.lastKey + 200) {
       let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
@@ -262,7 +258,7 @@ export default class World {
    * @param {*} menuConfig
    * @param {string[]} defaultMenus
    */
-  startMenu(menuConfig, defaultMenus = ['start']) {
+  startMenu = (menuConfig, defaultMenus = ['start']) => {
     this.addEvent(
       new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
@@ -272,7 +268,7 @@ export default class World {
    * Add Event to Queue
    * @param {*} event
    */
-  addEvent(event) {
+  addEvent = (event) => {
     if (this.eventDict[event.id]) this.removeAction(event.id);
     this.eventDict[event.id] = event;
     this.eventList.push(event);
@@ -282,7 +278,7 @@ export default class World {
    * Remove Action
    * @param {string} id
    */
-  removeAction(id) {
+  removeAction = (id) => {
     this.eventList = this.eventList.filter((event) => event.id !== id);
     delete this.eventDict[id];
   }
@@ -290,7 +286,7 @@ export default class World {
   /**
    * Remove All Actions
    */
-  removeAllActions() {
+  removeAllActions = () => {
     this.eventList = [];
     this.eventDict = {};
   }
@@ -299,7 +295,7 @@ export default class World {
    * Outer Tick Handler - run events, actions and ticks for zones
    * @param {number} time
    */
-  tickOuter(time) {
+  tickOuter = (time) => {
     // read input
     this.checkInput(time);
     // Sort activities by increasing startTime, then by id
@@ -326,7 +322,7 @@ export default class World {
   /**
    * Draw Each Zone
    */
-  draw() {
+  draw = () => {
     for (let z in this.zoneDict) this.zoneDict[z].draw(this.engine);
   }
 
@@ -336,7 +332,7 @@ export default class World {
    * @param {number} y
    * @returns
    */
-  zoneContaining(x, y) {
+  zoneContaining = (x, y) => {
     for (let z in this.zoneDict) {
       let zone = this.zoneDict[z];
       if (zone.loaded && zone.isInZone(x, y)) return zone;
@@ -350,7 +346,7 @@ export default class World {
    * @param {Vector} to
    * @returns
    */
-  pathFind(from, to) {
+  pathFind = (from, to) => {
     // memory
     let steps = [],
       visited = [],
@@ -398,7 +394,7 @@ export default class World {
    * @param {string} id
    * @returns
    */
-  getZoneById(id) {
+  getZoneById = (id) => {
     return this.zoneDict[id];
   }
 
@@ -408,7 +404,7 @@ export default class World {
    * @param {int} y
    * @returns
    */
-  getNeighbours(x, y) {
+  getNeighbours = (x, y) => {
     let top = [x, y + 1, Direction.Up],
       bottom = [x, y - 1, Direction.Down],
       left = [x - 1, y, Direction.Left],
@@ -423,7 +419,7 @@ export default class World {
    * @param {*} visited
    * @returns
    */
-  canWalk(neighbour, jsonNeighbour, visited) {
+  canWalk = (neighbour, jsonNeighbour, visited) => {
     let zone = this.zoneContaining(...neighbour);
     if (
       visited.indexOf(jsonNeighbour) >= 0 ||

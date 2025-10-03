@@ -24,7 +24,7 @@ export default class DynamicAvatar extends Avatar {
   }
 
   // load in json properties to object
-  async loadJson() {
+  loadJson = async () => {
     // extended properties
     if (this.json.extends) {
       await Promise.all(
@@ -58,7 +58,7 @@ export default class DynamicAvatar extends Avatar {
 
     // todo -- add select handler dynamically (onSelect)
   // Interaction
-  async onSelect(_this, sprite) {
+  onSelect = async (_this, sprite) => {
     if (!this.selectTrigger) {
       return;
     }

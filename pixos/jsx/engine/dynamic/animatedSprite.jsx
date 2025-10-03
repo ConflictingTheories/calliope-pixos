@@ -20,7 +20,7 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
   }
 
   // setup framerate
-  init() {
+  init = () => {
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
@@ -29,7 +29,7 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
   }
 
   // animate sprite on ticks
-  tick(time) {
+  tick = (time) => {
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;

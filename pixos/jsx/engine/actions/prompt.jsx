@@ -154,7 +154,7 @@ export default {
           skipChar = true;
           break;
         case 'Enter':
-          this.engine.setGreeting(this.text);
+          this.sprite.setGreeting(this.text);
           if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
           this.speechbox = this.sprite.speech.scrollText(this.text);
           this.sprite.speech.loadImage();

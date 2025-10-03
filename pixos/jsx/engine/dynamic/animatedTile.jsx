@@ -22,7 +22,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
   }
 
   // setup framerate
-  init() {
+  init = () => {
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
@@ -31,7 +31,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
   }
 
   // Update each frame
-  tick(time) {
+  tick = (time) => {
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;
@@ -51,7 +51,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
   }
 
   // Draw Frame
-  draw(engine) {
+  draw = (engine) => {
     if (!this.loaded) return;
     engine.renderManager.mvPushMatrix();
     translate(engine.renderManager.uModelMat, engine.renderManager.uModelMat, this.pos.toArray());

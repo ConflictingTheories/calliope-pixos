@@ -16,28 +16,20 @@ export default class Store {
    * Store
    */
   constructor() {
-     if (!Store._instance) {
-        this.store = {};
-        this.get = this.get.bind(this);
-        this.all = this.all.bind(this);
-        this.size = this.size.bind(this);
-        this.keys = this.keys.bind(this);
-        this.values = this.values.bind(this);
-        this.add = this.add.bind(this);
-        this.delete = this.delete.bind(this);
-        this.set = this.set.bind(this);
-        Store._instance = this;
-        }
-        return Store._instance;
+    if (!Store._instance) {
+      this.store = {};
+      Store._instance = this;
+    }
+    return Store._instance;
     // Store setup - session based
-   
+
   }
 
   /**
    * Returns a copy of the key-values in the store (note - only a copy is provided)
    * @returns 
    */
-  all() {
+  all = () => {
     return Object.assign({}, this.store);
   }
 
@@ -45,7 +37,7 @@ export default class Store {
    * Get list of keys (no values)
    * @returns 
    */
-  keys() {
+  keys = () => {
     return Object.keys(this.store);
   }
 
@@ -53,7 +45,7 @@ export default class Store {
    * Gets list of values from store (no keys)
    * @returns 
    */
-  values(){
+  values = () => {
     return Object.keys(this.store).map(key => this.store[key]);
   }
 
@@ -61,7 +53,7 @@ export default class Store {
    * Return size of keystore
    * @returns 
    */
-  size() {
+  size = () => {
     return Object.keys(this.store).length;
   }
 
@@ -71,7 +63,7 @@ export default class Store {
    * @param {*} key
    * @returns
    */
-  get(key) {
+  get = (key) => {
     if (!this.store[key]) {
       throw 'no key set'
     }
@@ -85,7 +77,7 @@ export default class Store {
    * @returns
    * @throws 
    */
-  add(key, value) {
+  add = (key, value) => {
     if (!!this.store[key]) {
       throw 'key already exists';
     }
@@ -98,7 +90,7 @@ export default class Store {
    * @param {*} changes
    * @returns
    */
-  set(key, changes) {
+  set = (key, changes) => {
     return (this.store[key] = { ...changes });
   }
 
@@ -106,7 +98,7 @@ export default class Store {
    * delete key from store
    * @returns
    */
-  delete(key) {
+  delete = (key) => {
     return (this.store[key] = null);
   }
 }

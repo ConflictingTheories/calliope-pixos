@@ -34,21 +34,10 @@ export class Camera {
     this.cameraDir = 'N';
     this.cameraPosition = new Vector(8, 8, -1);
     this.cameraOffset = new Vector(0, 0, 0);
-
-    // Bind methods for better performance and clarity in usage
-    this.setCamera = this.setCamera.bind(this);
-    this.lookAt = this.lookAt.bind(this);
-    this.panCCW = this.panCCW.bind(this);
-    this.panCW = this.panCW.bind(this);
-    this.tiltCCW = this.tiltCCW.bind(this);
-    this.tiltCW = this.tiltCW.bind(this);
-    this.pitchCCW = this.pitchCCW.bind(this);
-    this.pitchCW = this.pitchCW.bind(this);
-    this.changeAngle = this.changeAngle.bind(this);
   }
 
   /** Set Camera Pos & Angle to default */
-  setCamera() {
+  setCamera = () => {
     translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
     rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
     rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.y), [0, 1, 0]);
@@ -58,12 +47,12 @@ export class Camera {
   }
 
   /** Change Camera Angle */
-  changeAngle(dTheta) {
+  changeAngle = (dTheta) => {
     this.lookAt(this.cameraPosition.toArray(), this.cameraOffset.toArray(), dTheta);
   }
 
   /** Manually Position Camera and look at target */
-  lookAt(pos, target, up) {
+  lookAt = (pos, target, up) => {
     const zAxis = new Vector(...normalize(subtractVectors(pos, target)));
     const xAxis = up.cross(zAxis);
     const yAxis = zAxis.cross(xAxis);
@@ -81,7 +70,7 @@ export class Camera {
    * Translate camera
    * @param {*} direction - UP, LEFT, RIGHT, DOWN
    */
-  translateCam(direction) {
+  translateCam = (direction) => {
     const speed = 0.1; // Adjust sensitivity as needed
     switch (direction) {
       case 'UP':
@@ -104,7 +93,7 @@ export class Camera {
    * Rotate Camera
    * @param {*} direction 
    */
-  rotateCam(direction) {
+  rotateCam = (direction) => {
     const speed = 0.1; // Adjust sensitivity as needed
     switch (direction) {
       case 'LEFT':
@@ -123,32 +112,32 @@ export class Camera {
   }
 
   /** Pan Camera Clockwise */
-  panCW(radians = Math.PI / 4) {
+  panCW = (radians = Math.PI / 4) => {
     this.cameraVector.z -= Math.cos(radians);
   }
 
   /** Pan Camera Counter Clockwise */
-  panCCW(radians = Math.PI / 4) {
+  panCCW = (radians = Math.PI / 4) => {
     this.cameraVector.z += Math.cos(radians);
   }
 
   /** Pitch Camera Counter Clockwise */
-  pitchCW(radians = Math.PI / 4) {
+  pitchCW = (radians = Math.PI / 4) => {
     this.cameraVector.x -= Math.cos(radians);
   }
 
   /** Pitch Camera Counter Clockwise */
-  pitchCCW(radians = Math.PI / 4) {
+  pitchCCW = (radians = Math.PI / 4) => {
     this.cameraVector.x += Math.sin(radians);
   }
 
   /** Tilt Camera Counter Clockwise */
-  tiltCW(radians = Math.PI / 4) {
+  tiltCW = (radians = Math.PI / 4) => {
     this.cameraVector.y -= Math.cos(radians);
   }
 
   /** Tilt Camera Counter Clockwise */
-  tiltCCW(radians = Math.PI / 4) {
+  tiltCCW = (radians = Math.PI / 4) => {
     this.cameraVector.z += Math.sin(radians);
   }
 }

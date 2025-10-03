@@ -30,11 +30,9 @@ export class ControllerStick {
     this.gamepad.map['x-axis'] = 0;
     this.gamepad.map['y-axis'] = 0;
     this.colours = colours;
-    this.init = this.init.bind(this);
-    this.draw = this.draw.bind(this);
   }
   // Initialize
-  init() {
+  init = () => {
     let { layout, width } = this;
     this.x = width - layout.x;
     this.y = layout.y + (3 * this.radius) / 8;
@@ -46,7 +44,7 @@ export class ControllerStick {
     this.gamepad.map['y-axis'] = 0;
   }
   // draw joystick
-  draw() {
+  draw = () => {
     let { ctx } = this;
     ctx.fillStyle = this.colours.joystick.base;
     ctx.beginPath();
@@ -73,7 +71,7 @@ export class ControllerStick {
     ctx.closePath();
   }
   // manage event state
-  state(id, type) {
+  state = (id, type) => {
     let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
     var touch = {
@@ -132,7 +130,7 @@ export class ControllerStick {
     }
   }
   // reset state
-  reset() {
+  reset = () => {
     let { map } = this.gamepad;
     this.dx = this.x;
     this.dy = this.y;

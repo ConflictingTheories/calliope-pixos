@@ -52,7 +52,7 @@ export const updateFlagDebugInformation = (self) => {
     if (self.showFlagDebug && self.flagDebugDiv) {
         self.store.set('Debug::Flag::UpdateTime', Date.now());
         const flags = self.store.all();
-        console.log({self, keys: JSON.stringify(flags), store: self.store.keys()});
+        console.log({ self, keys: JSON.stringify(flags), store: self.store.keys() });
         const data = Object.keys(flags).map((key) => {
             return '' + key + ': ' + JSON.stringify(flags[key]) + '<br>'
         });

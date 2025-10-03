@@ -16,7 +16,7 @@ export default class Hud {
     return Hud._instance;
   }
 
-  init() {
+  init = () => {
     // setup anything needed at the start (run once)
     this.ctx = this.engine.ctx;
   }
@@ -30,53 +30,53 @@ export default class Hud {
    * @param {number} h
    * @param {*} colours
    */
-drawButton(text, x, y, w, h, colours) {
-  const { ctx } = this;
+  drawButton = (text, x, y, w, h, colours) => {
+    const { ctx } = this;
 
-  // Apply HUD style
-  this.applyStyle({
-    font: '20px invasion2000',
-    textAlign: 'center',
-    textBaseline: 'middle',
-    fillStyle: colours.background,
-    globalAlpha: 1.0,
-  });
+    // Apply HUD style
+    this.applyStyle({
+      font: '20px invasion2000',
+      textAlign: 'center',
+      textBaseline: 'middle',
+      fillStyle: colours.background,
+      globalAlpha: 1.0,
+    });
 
-  // Draw the button background
-  ctx.fillStyle = colours.background;
-  ctx.beginPath();
-  ctx.rect(x, y, w, h);
-  ctx.fill();
+    // Draw the button background
+    ctx.fillStyle = colours.background;
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.fill();
 
-  // Light gradient effect on top of the button
-  var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
-  grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-  grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
-  ctx.fillStyle = grad;
-  ctx.globalAlpha = 0.7;
-  ctx.fillRect(x, y, w, h / 2);
+    // Light gradient effect on top of the button
+    var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(x, y, w, h / 2);
 
-  // Draw the button text
-  ctx.fillStyle = colours.text;
-  ctx.fillText(text, x + w / 2, y + h / 2);
+    // Draw the button text
+    ctx.fillStyle = colours.text;
+    ctx.fillText(text, x + w / 2, y + h / 2);
 
-  // Add hover effect
-  ctx.beginPath();
-  ctx.strokeStyle = '#fff';
-  ctx.rect(x, y, w, h);
-  ctx.stroke();
+    // Add hover effect
+    ctx.beginPath();
+    ctx.strokeStyle = '#fff';
+    ctx.rect(x, y, w, h);
+    ctx.stroke();
 
-}
+  }
 
 
   /**
    * clear HUD overlay
    */
-  clearHud() {
+  clearHud = () => {
     this.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
   }
 
-  applyStyle(styleConfig) {
+  applyStyle = (styleConfig) => {
     // Apply style to the context
     const defaultStyle = {
       font: '20px invasion2000',
@@ -96,7 +96,7 @@ drawButton(text, x, y, w, h, colours) {
    * @param {number} y
    * @param {string} src
    */
-  writeText(text, x, y, src = null) {
+  writeText = (text, x, y, src = null) => {
     // Apply style
     this.applyStyle({
       font: '24px invasion2000',
@@ -121,7 +121,7 @@ drawButton(text, x, y, w, h, colours) {
    * @param {*} options
    * @returns
    */
-  scrollText(text, scrolling = false, options = {}) {
+  scrollText = (text, scrolling = false, options = {}) => {
     let txt = new textScrollBox(this.engine.ctx);
     txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
     txt.setOptions(options);
@@ -172,7 +172,7 @@ export class textScrollBox {
    * @param {number} height
    * @param {*} options
    */
-  init(text, x, y, width, height, options = {}) {
+  init = (text, x, y, width, height, options = {}) => {
     this.text = text;
     this.x = x;
     this.y = y;
@@ -187,7 +187,7 @@ export class textScrollBox {
    * Clean & format text
    * @param {boolean} dontFitText
    */
-  cleanit(dontFitText) {
+  cleanit = (dontFitText) => {
     if (this.dirty) {
       this.setFont();
       this.getTextPos();
@@ -202,7 +202,7 @@ export class textScrollBox {
    * Apply options
    * @param {*} options
    */
-  setOptions(options) {
+  setOptions = (options) => {
     Object.keys(this).forEach((key) => {
       if (options[key] !== undefined) {
         this[key] = options[key];
@@ -214,7 +214,7 @@ export class textScrollBox {
   /**
    * Apply font
    */
-  setFont() {
+  setFont = () => {
     this.fontStr = this.fontSize + 'px ' + this.font;
     this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.05);
   }
@@ -222,7 +222,7 @@ export class textScrollBox {
   /**
    * Get Text Position
    */
-  getTextPos() {
+  getTextPos = () => {
     if (this.align === 'left') {
       this.textPos = 2;
     } else if (this.align === 'right') {
@@ -235,7 +235,7 @@ export class textScrollBox {
   /**
    * Fit to Text box
    */
-  fitText() {
+  fitText = () => {
     let { ctx } = this;
     this.cleanit(true); // MUST PASS TRUE or will recurse to call stack overflow
     ctx.font = this.fontStr;
@@ -273,7 +273,7 @@ export class textScrollBox {
    * Draw Textbox border
    * @param {boolean} portrait
    */
-  drawBorder(portrait = false) {
+  drawBorder = (portrait = false) => {
     let { ctx } = this;
     let bw = this.border.lineWidth / 2;
     ctx.lineJoin = this.border.corner;
@@ -289,7 +289,7 @@ export class textScrollBox {
   /**
    * Draw Scrollbar on the side
    */
-  drawScrollBox() {
+  drawScrollBox = () => {
     let { ctx } = this;
     let scale = this.height / (this.lines.length * this.textHeight);
     ctx.fillStyle = this.scrollBox.background;
@@ -305,7 +305,7 @@ export class textScrollBox {
   /**
    * Draw Scrollbar on the side
    */
-  drawPortrait() {
+  drawPortrait = () => {
     let { ctx } = this;
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
   }
@@ -314,7 +314,7 @@ export class textScrollBox {
    * Scroll to position
    * @param {number} pos
    */
-  scroll(pos) {
+  scroll = (pos) => {
     this.cleanit();
     this.scrollY = -pos;
     if (this.scrollY > 0) {
@@ -328,7 +328,7 @@ export class textScrollBox {
    * Scroll to position
    * @param {number} x
    */
-  scrollLines(x) {
+  scrollLines = (x) => {
     this.cleanit();
     this.scrollY = -this.textHeight * x;
     if (this.scrollY > 0) {
@@ -341,7 +341,7 @@ export class textScrollBox {
   /**
    * Draw
    */
-  render() {
+  render = () => {
     let { ctx } = this;
     this.cleanit();
     ctx.font = this.fontStr;

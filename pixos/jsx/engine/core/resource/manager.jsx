@@ -46,9 +46,6 @@ export default class ResourceManager {
       this.textures = [];
       this.speeches = [];
 
-      this.loadSpeech = this.loadSpeech.bind(this);
-      this.loadTexture = this.loadTexture.bind(this);
-      this.loadTextureFromZip = this.loadTextureFromZip.bind(this);
       ResourceManager._instance = this;
     }
     return ResourceManager._instance;
@@ -59,7 +56,7 @@ export default class ResourceManager {
    * @param {*} src
    * @returns
    */
-  loadTexture(src) {
+  loadTexture = (src) => {
     if (this.textures[src]) return this.textures[src];
     this.textures[src] = new Texture(src, this.engine);
     return this.textures[src];
@@ -71,7 +68,7 @@ export default class ResourceManager {
    * @param {*} zip
    * @returns
    */
-  async loadTextureFromZip(src, zip) {
+  loadTextureFromZip = async (src, zip) => {
     if (this.textures[src]) return this.textures[src];
     let imageData = await zip.file(`textures/${src}`).async('arrayBuffer');
     let buffer = new Uint8Array(imageData);
@@ -87,7 +84,7 @@ export default class ResourceManager {
    * @param {*} canvas
    * @returns
    */
-  loadSpeech(src, canvas) {
+  loadSpeech = (src, canvas) => {
     if (this.speeches[src]) return this.speeches[src];
     this.speeches[src] = new Speech(canvas, this.engine, src);
     return this.speeches[src];

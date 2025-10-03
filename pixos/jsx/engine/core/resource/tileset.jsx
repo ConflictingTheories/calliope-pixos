@@ -27,14 +27,13 @@ export default class Tileset extends Loadable {
     this.loaded = false;
     this.onLoadActions = new ActionQueue();
     this.onDefinitionLoadActions = new ActionQueue();
-    this.onTextureLoaded = this.onTextureLoaded.bind(this);
   }
 
   /**
    * Received tileset definition JSON
    * @param {*} data
    */
-  onJsonLoaded(data) {
+  onJsonLoaded = (data) => {
     // Merge tileset definition into this object
     Object.keys(data).map((k) => {
       this[k] = data[k];
@@ -54,7 +53,7 @@ export default class Tileset extends Loadable {
    * @param {*} data
    * @param {*} zip
    */
-  async onJsonLoadedFromZip(data, zip) {
+  onJsonLoadedFromZip = async (data, zip) => {
     // Merge tileset definition into this object
     Object.keys(data).map((k) => {
       this[k] = data[k];
@@ -72,7 +71,7 @@ export default class Tileset extends Loadable {
   /**
    * run when loaded
    */
-  onTextureLoaded() {
+  onTextureLoaded = () => {
     this.loaded = true;
     this.onLoadActions.run();
   }
@@ -82,7 +81,7 @@ export default class Tileset extends Loadable {
    * but before the texture is ready
    * @param {*} action
    */
-  runWhenDefinitionLoaded(action) {
+  runWhenDefinitionLoaded = (action) => {
     if (this.definitionLoaded) action();
     else this.onDefinitionLoadActions.add(action);
   }
@@ -93,7 +92,7 @@ export default class Tileset extends Loadable {
    * @param {*} offset
    * @returns
    */
-  getTileVertices(id, offset) {
+  getTileVertices = (id, offset) => {
     return this.geometry[id].vertices
       .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + offset[1], vertex[2] + offset[2]]))
       .flat(3);
@@ -105,7 +104,7 @@ export default class Tileset extends Loadable {
    * @param {*} texId
    * @returns
    */
-  getTileTexCoords(id, texId) {
+  getTileTexCoords = (id, texId) => {
     let tileOffset = this.textures[texId];
     let size = [this.tileSize / this.sheetSize[0], this.tileSize / this.sheetSize[1]];
     return this.geometry[id].surfaces
@@ -118,7 +117,7 @@ export default class Tileset extends Loadable {
    * @param {*} tileId
    * @returns
    */
-  getWalkability(tileId) {
+  getWalkability = (tileId) => {
     return this.geometry[tileId].type;
   }
 
@@ -127,7 +126,7 @@ export default class Tileset extends Loadable {
    * @param {*} tileId
    * @returns
    */
-  getTileWalkPoly(tileId) {
+  getTileWalkPoly = (tileId) => {
     return this.geometry[tileId].walkPoly;
   }
 }

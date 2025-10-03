@@ -24,12 +24,6 @@ export default class LightManager {
       this.lights = {};
       this.renderManager = renderManager;
       this.engine = renderManager.engine;
-      // methods
-      this.addLight = this.addLight.bind(this);
-      this.removeLight = this.removeLight.bind(this);
-      this.tick = this.tick.bind(this);
-      this.render = this.render.bind(this);
-      this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
       LightManager.instance = this;
     }
 
@@ -49,7 +43,7 @@ export default class LightManager {
    * @param {*} enabled
    * @returns id
    */
-  addLight(id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1, 1, 1], density = 1.0, scatteringCoefficients = [1, 1, 1], enabled = true) {
+  addLight = (id, pos, color, attentuation = [0.8, 0.8, 0.8], direction = [1, 1, 1], density = 1.0, scatteringCoefficients = [1, 1, 1], enabled = true) => {
     const { shaderProgram } = this.renderManager;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
@@ -69,7 +63,7 @@ export default class LightManager {
    * @param {*} scatteringCoefficients
    * @param {*} enabled
    */
-  updateLight(id, pos, color, attentuation, direction, density, scatteringCoefficients, enabled) {
+  updateLight = (id, pos, color, attentuation, direction, density, scatteringCoefficients, enabled) => {
     let light = this.lights[id];
     if (!light) return;
     if (pos) light.pos = pos;
@@ -86,7 +80,7 @@ export default class LightManager {
    * add a light source to the renderer
    * @param {*} id
    */
-  removeLight(id) {
+  removeLight = (id) => {
     delete this.lights[id];
   }
 
@@ -94,7 +88,7 @@ export default class LightManager {
    * Update Point lighting
    * @returns
    */
-  tick() {
+  tick = () => {
     let keys = Object.keys(this.lights);
     for (let i = 0; i < keys.length; i++) {
       this.lights[keys[i]].tick();
@@ -102,7 +96,7 @@ export default class LightManager {
   }
 
   // Draw Lights to scene
-  render() {
+  render = () => {
     const { shaderProgram } = this.renderManager;
     let lightUniforms = shaderProgram.uLights;
 
@@ -118,9 +112,10 @@ export default class LightManager {
     }
   }
 
-  /** draw to frame
+  /** 
+   * draw to frame
    */
-  setMatrixUniforms() {
+  setMatrixUniforms = () => {
     // update lights
     this.tick();
 
@@ -144,19 +139,16 @@ export class PointLight {
     this.direction = direction ?? [1.0, 1.0, 1.0];
     this.enabled = enabled ?? true;
     this.frame = 0;
-    // methods
-    this.draw = this.draw.bind(this);
-    this.tick = this.tick.bind(this);
   }
 
   // update light (ex. for flicker)
-  tick() {
+  tick = () => {
     // for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
     this.frame++;
   }
 
   // draw light
-  draw(lightUniforms) {
+  draw = (lightUniforms) => {
     const { gl } = this.engine;
     gl.uniform1f(lightUniforms.enabled, this.enabled);
     gl.uniform3fv(lightUniforms.position, this.pos);

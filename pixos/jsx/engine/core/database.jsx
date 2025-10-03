@@ -29,10 +29,6 @@ export default class Database {
       msg: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
       tmp: '++id, key, value, timestamp', // key-store
     });
-    this.dbAdd = this.dbAdd.bind(this);
-    this.dbGet = this.dbGet.bind(this);
-    this.dbRemove = this.dbRemove.bind(this);
-    this.dbUpdate = this.dbUpdate.bind(this);
   }
 
   /**
@@ -41,7 +37,7 @@ export default class Database {
    * @param {*} key
    * @returns
    */
-  async dbGet(store, key) {
+  dbGet = async (store, key) => {
     return await this.db[store].get(key);
   }
 
@@ -51,7 +47,7 @@ export default class Database {
    * @param {*} value
    * @returns
    */
-  async dbAdd(store, value) {
+  dbAdd = async (store, value) => {
     return await this.db[store].add({ ...value });
   }
 
@@ -62,7 +58,7 @@ export default class Database {
    * @param {*} changes
    * @returns
    */
-  async dbUpdate(store, id, changes) {
+  dbUpdate = async (store, id, changes) => {
     return await this.db[store].update(id, { ...changes });
   }
 
@@ -72,7 +68,7 @@ export default class Database {
    * @param {*} id
    * @returns
    */
-  async dbRemove(store, id) {
+  dbRemove = async (store, id) => {
     return await this.db[store].delete(id);
   }
 }

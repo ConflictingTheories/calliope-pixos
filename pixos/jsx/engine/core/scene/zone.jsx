@@ -19,17 +19,6 @@ import { loadMap, dynamicCells } from '@Engine/dynamic/map.jsx';
 import Loadable from '@Engine/core/queue/loadable.jsx';
 import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.jsx';
 
-/**
- * Performance-focused rewrite of Zone.
- * Key changes:
- * - Arrow methods to avoid repeated .bind() allocations
- * - Consolidated loading paths and eliminated duplicate logic
- * - Precomputed picking IDs + fewer per-frame allocations
- * - Row rendering uses prebuilt selected set + cached shader/gl refs
- * - Safer trigger JS via Function constructor (no global eval)
- * - Fewer array scans in hot paths; early exits in isWalkable
- * - Optional debug logs gated behind this.engine?.debug
- */
 export default class Zone extends Loadable {
   /** @param {string} zoneId @param {World} world */
   constructor(zoneId, world) {
@@ -70,7 +59,7 @@ export default class Zone extends Loadable {
   /** ---------------------------
    * Loading helpers
    * --------------------------- */
-  _afterTilesetAndActorsLoaded = () => {
+  afterTilesetAndActorsLoaded = () => {
     if (
       this.loaded ||
       !this.tileset?.loaded ||
@@ -83,15 +72,15 @@ export default class Zone extends Loadable {
     this.onLoadActions.run();
   };
 
-  _attachTilesetListeners = () => {
+  attachTilesetListeners = () => {
     this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
-    this.tileset.runWhenLoaded(this._afterTilesetAndActorsLoaded);
+    this.tileset.runWhenLoaded(this.afterTilesetAndActorsLoaded);
   };
 
-  _finalizeCommon = async () => {
+  finalize = async () => {
     // notify sprites/objects when they load
-    for (const s of this.spriteList) s.runWhenLoaded(this._afterTilesetAndActorsLoaded);
-    for (const o of this.objectList) o.runWhenLoaded(this._afterTilesetAndActorsLoaded);
+    for (const s of this.spriteList) s.runWhenLoaded(this.afterTilesetAndActorsLoaded);
+    for (const o of this.objectList) o.runWhenLoaded(this.afterTilesetAndActorsLoaded);
   };
 
   /** Load Map Resource from URL */
@@ -108,7 +97,7 @@ export default class Zone extends Loadable {
       this.objects = typeof data.objects === 'function' ? data.objects(this.bounds, this) : data.objects || [];
 
       this.tileset = await this.tsLoader.load(data.tileset, this.spritzName);
-      this._attachTilesetListeners();
+      this.attachTilesetListeners();
 
       if (this.audioSrc) this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true);
 
@@ -117,7 +106,7 @@ export default class Zone extends Loadable {
         Promise.all(this.objects.map(this.loadObject)),
       ]);
 
-      await this._finalizeCommon();
+      await this.finalize();
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -137,20 +126,20 @@ export default class Zone extends Loadable {
       // Load in tileset assets
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
       this.tileset = await this.tsLoader.load(this.tileset, this.spritzName);
-      this._attachTilesetListeners();
+      this.attachTilesetListeners();
 
       // dynamically add sprites (if appl.) - todo - possibly same thing for objects?
       if (typeof this.sprites === 'function') this.sprites = this.sprites(this.bounds, this);
       this.sprites = this.sprites || [];
       this.objects = this.objects || [];
-      
+
       // populate
       await Promise.all([
         Promise.all(this.sprites.map(this.loadSprite)),
         Promise.all(this.objects.map(this.loadObject)),
       ]);
 
-      await this._finalizeCommon();
+      await this.finalize();
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -184,7 +173,7 @@ export default class Zone extends Loadable {
       if (typeof fn === 'function') return fn.bind(this, this);
     }
 
-    return () => {};
+    return () => { };
   };
 
   /** Load from JSON components within a zip */
@@ -272,8 +261,8 @@ export default class Zone extends Loadable {
         Promise.all(this.objects.map((o) => this.loadObjectFromZip(o, zip))),
       ]);
 
-      this._attachTilesetListeners();
-      await this._finalizeCommon();
+      this.attachTilesetListeners();
+      await this.finalize();
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }
@@ -412,7 +401,7 @@ export default class Zone extends Loadable {
 
   getSpriteById = (id) => this.spriteDict[id];
 
-  /** Portals */
+  /** Portals -- look into possibly removing this - or find some way of making it more generic */
   addPortal = (sprites, x, y) => {
     if (!this.portals?.length) return sprites;
     const h = this.getHeight(x, y);
@@ -425,7 +414,7 @@ export default class Zone extends Loadable {
     return sprites;
   };
 
-  /** Height at (x,y) in zone */
+  /** Height at (x,y) in zone  -- Need to look into supporting multiple layers for advanced map support */
   getHeight = (x, y) => {
     if (!this.isInZone(x, y)) {
       if (this.engine?.debug) console.error(`Height out of bounds [${x}, ${y}]`);
@@ -534,10 +523,10 @@ export default class Zone extends Loadable {
 
     // Build selected set once per frame
     const sel = this.selectedTiles;
-    this._selectedSet = (sel && sel.length) ? new Set(sel.map((t) => `${t[0]},${t[1]}`)) : null;
-    this._highlight = (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    this.selectedSet = (sel && sel.length) ? new Set(sel.map((t) => `${t[0]},${t[1]}`)) : null;
+    this.highlight = (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
 
-    // Only sort when out of order (O(n) check beats O(n log n) each frame)
+    // look into this
     const ensureSortedByY = (arr) => {
       for (let i = 1; i < arr.length; i++) if (arr[i - 1].pos.y > arr[i].pos.y) { arr.sort((a, b) => a.pos.y - b.pos.y); break; }
     };
@@ -550,6 +539,7 @@ export default class Zone extends Loadable {
     let si = 0; // sprite index
     let oi = 0; // object index
 
+    // Need to update to handle the different directions (there are some issues with clipping on other angles)
     const drawForward = this.engine.renderManager.camera.cameraDir === 'N' ||
       this.engine.renderManager.camera.cameraDir === 'NE' ||
       this.engine.renderManager.camera.cameraDir === 'NW' ||
@@ -557,13 +547,13 @@ export default class Zone extends Loadable {
 
     if (drawForward) {
       for (let j = 0; j < this.size[1]; j++) {
-        this.drawRow(j, this._selectedSet, this._highlight, rm, shaderProgram, pickerProgram, gl);
+        this.drawRow(j, this.selectedSet, this.highlight, rm, shaderProgram, pickerProgram, gl);
         while (oi < this.objectList.length && (this.objectList[oi].pos.y - this.bounds[1]) <= j) this.objectList[oi++].draw();
         while (si < this.spriteList.length && (this.spriteList[si].pos.y - this.bounds[1]) <= j) this.spriteList[si++].draw(this.engine);
       }
     } else {
       for (let j = this.size[1] - 1; j >= 0; j--) {
-        this.drawRow(j, this._selectedSet, this._highlight, rm, shaderProgram, pickerProgram, gl);
+        this.drawRow(j, this.selectedSet, this.highlight, rm, shaderProgram, pickerProgram, gl);
         while (oi < this.objectList.length && (this.bounds[1] - this.objectList[oi].pos.y) <= j) this.objectList[oi++].draw();
         while (si < this.spriteList.length && (this.bounds[1] - this.spriteList[si].pos.y) <= j) this.spriteList[si++].draw(this.engine);
       }
@@ -587,10 +577,7 @@ export default class Zone extends Loadable {
     if (time <= this.lastKey + 100) return;
     this.engine.gamepad.checkInput();
     this.lastKey = time;
-    if (this.engine.keyboard.lastPressedKey('o') === 'o') {
-      await this.moveSprite('monster', [7, 7, this.getHeight(7, 7)], false);
-      if (this.audio) this.audio.playAudio();
-    }
+    // todo - look into hooks - game modes (allow for scripting keymaps)
   };
 
   /** Geometry */
@@ -645,7 +632,7 @@ export default class Zone extends Loadable {
       const yHit = withinX(y, minY, o.pos.y, true);
 
       if (!o.walkable && xHit && yHit && !o.blocking && o.override) return true;
-      if (!o.walkable && ( (o.pos.x === x && o.pos.y === y) || (xHit && yHit) ) && o.blocking) return false;
+      if (!o.walkable && ((o.pos.x === x && o.pos.y === y) || (xHit && yHit)) && o.blocking) return false;
     }
 
     // tile walkability
@@ -683,12 +670,12 @@ export default class Zone extends Loadable {
             if (sprite && action.action) {
               const args = [...action.args];
               const options = args.pop();
-              await sprite.addAction(new ActionLoader(scope.engine, action.action, [...args, { ...options }], sprite, () => {}));
+              await sprite.addAction(new ActionLoader(scope.engine, action.action, [...args, { ...options }], sprite, () => { }));
             }
           }
           if (action.trigger) {
             const avatar = action.scope.getSpriteById('avatar');
-            if (avatar) await avatar.addAction(new ActionLoader(scope.engine, 'script', [action.trigger, action.scope, () => {}], avatar));
+            if (avatar) await avatar.addAction(new ActionLoader(scope.engine, 'script', [action.trigger, action.scope, () => { }], avatar));
           }
         } catch (e) {
           console.warn('runActions error', e?.message || e);
