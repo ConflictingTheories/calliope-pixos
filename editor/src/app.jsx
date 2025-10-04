@@ -55,7 +55,12 @@ const App = () => {
       await entry.data.getData(stream.writable);
       return await data;
     }
-    return await entry.data.getData();
+    // For binary data, use a different approach since text-based streams won't work directly
+    let arrayBuffer = [];
+    let stream = new TransformStream();
+    let data = new Response(stream.readable).bytes();
+    await entry.data.getData(stream.writable);
+    return await data; // Convert the ArrayBuffer to a Uint8Array for binary data handling
   }, []);
 
   /**
@@ -65,7 +70,7 @@ const App = () => {
   // Convert binary string to base64 data URI
   const toDataUri = useCallback((binaryString, mimeType) => {
     if (!binaryString) return '';
-    const bytes = new Uint8Array([...binaryString].map((c) => c.charCodeAt(0)));
+    const bytes = typeof binaryString !== 'string' ? binaryString : new Uint8Array([...binaryString].map((c) => c.charCodeAt(0)));
     let binary = '';
     bytes.forEach((b) => (binary += String.fromCharCode(b)));
     const base64String = btoa(binary);
