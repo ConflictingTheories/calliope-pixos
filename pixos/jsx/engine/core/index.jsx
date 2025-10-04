@@ -179,6 +179,7 @@ export default class GLEngine {
 
     // core render loop (actually render scene to screen)
     this.renderManager.clearScreen();
+    this.renderManager.renderSkybox();
     this.renderManager.activateShaderProgram();
     this.spritz.update(timestamp); // update scene
     this.spritz.render(this); // render scene

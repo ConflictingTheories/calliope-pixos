@@ -18,6 +18,7 @@ import { OBJ } from '../../utils/obj/index.js';
 
 import CameraManager from './camera.jsx';
 import LightManager from './light.jsx';
+import SkyboxManager from './skybox.jsx';
 import GLEngine from '../index.jsx';
 import { fetchTransitionShaderFiles } from './shaders.jsx'
 
@@ -78,6 +79,9 @@ export default class RenderManager {
       // Lights
       this.lightManager = new LightManager(this);
 
+      // Skybox
+      this.skyboxManager = new SkyboxManager(this);
+
       RenderManager._instance = this;
     }
     return RenderManager._instance;
@@ -116,6 +120,9 @@ export default class RenderManager {
 
     // Initialize Project Matrix
     this.initProjection();
+
+    // skybox
+    this.skyboxManager.init();
 
     this.initializedWebGl = true;
   }
@@ -715,6 +722,13 @@ export default class RenderManager {
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);
+  }
+
+  /**
+   * Display Skybox
+   */
+  renderSkybox = () => {
+    this.skyboxManager.renderSkybox(this.uProjMat);
   }
 
   /**
