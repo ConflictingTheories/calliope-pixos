@@ -25,26 +25,24 @@ import { collect } from 'react-recollect';
  *  - content (string): A data URI for the model to preview.
  */
 function ModelPreview({ content }) {
+  // If OBJ, use ObjModelViewer; else use <model-viewer>
+  if (!content) return null;
+  const isOBJ = typeof content === 'string' && content.trim().startsWith('v ');
+  if (isOBJ) {
+    const ObjModelViewer = require('./ObjModelViewer.jsx').default;
+    return <ObjModelViewer objContent={content} mtlContent={mtlContent} textureBasePath={textureBasePath || ''} />;
+  }
   useEffect(() => {
-    // If <model-viewer> isn’t registered, inject the script.
     if (!window.customElements || !window.customElements.get('model-viewer')) {
       const script = document.createElement('script');
       script.type = 'module';
-      script.src =
-        'https://unpkg.com/@google/model-viewer@3.2.1/dist/model-viewer.min.js';
+      script.src = 'https://unpkg.com/@google/model-viewer@3.2.1/dist/model-viewer.min.js';
       document.head.appendChild(script);
     }
   }, []);
-
-  if (!content) {
-    return null;
-  }
-
   return (
     <div style={{ padding: '1rem', width: '100%', height: '80vh' }}>
       <hr />
-      {/* model-viewer element automatically displays the model */}
-      {/* Enable camera controls and auto‑rotate for convenience */}
       <model-viewer
         src={content}
         style={{ width: '100%', height: '100%' }}
@@ -54,7 +52,6 @@ function ModelPreview({ content }) {
         exposure='1.0'
         background-color='#1a1a1a'
       >
-        {/* Fallback content shown while loading */}
         <span>Loading 3D model…</span>
       </model-viewer>
       <hr />

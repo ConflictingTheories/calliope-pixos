@@ -46,23 +46,72 @@ const TILE_COLOURS = [
  * updated cells matrix (passed through the optional onSave prop).
  */
 function MapEditor({ content, onSave }) {
+
   // Support multiple layers: layers is an array of grids (arrays of arrays)
   const [layers, setLayers] = useState([]);
   const [currentLayer, setCurrentLayer] = useState(0);
   const [selectedTile, setSelectedTile] = useState(1);
-  // Maintain a parallel structure for per‑cell attributes.  Each layer
-  // holds a grid of objects with arbitrary properties (walkable,
-  // event, etc.).  When no attributes are defined a cell contains
-  // an empty object.
   const [attributes, setAttributes] = useState([]);
-  // State for error messages when parsing JSON
   const [error, setError] = useState(null);
-  // Track the currently selected cell for editing attributes
   const [selectedCell, setSelectedCell] = useState({ layer: 0, x: null, y: null });
-
-  // History management for undo/redo
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Camera state for pan/zoom
+  const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 1 });
+  const cameraRef = React.useRef(camera);
+  cameraRef.current = camera;
+
+  // Mouse drag state
+  const [dragging, setDragging] = useState(false);
+  const dragStart = React.useRef({ x: 0, y: 0 });
+
+  // Camera event handlers
+  function handleMouseDown(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    setDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+  }
+  function handleMouseUp(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    setDragging(false);
+  }
+  function handleMouseMove(e) {
+    if (!dragging) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+  }
+  function handleWheel(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    let zoom = cameraRef.current.zoom + (e.deltaY < 0 ? 0.1 : -0.1);
+    zoom = Math.max(0.5, Math.min(2, zoom));
+    setCamera((prev) => ({ ...prev, zoom }));
+  }
+
+  // Touch support for pan/zoom
+  function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+      setDragging(true);
+      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  }
+  function handleTouchEnd(e) {
+    setDragging(false);
+  }
+  function handleTouchMove(e) {
+    if (!dragging || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - dragStart.current.x;
+    const dy = e.touches[0].clientY - dragStart.current.y;
+    dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+  }
 
   // Push a snapshot of the current state into the history.  This should
   // be invoked after state updates to record the new state.  It trims
@@ -225,7 +274,7 @@ function MapEditor({ content, onSave }) {
   const layerOptions = layers.map((_, idx) => ({ label: `Layer ${idx}`, value: idx }));
 
   return (
-    <Container style={{ padding: '1rem' }}>
+  <Container style={{ padding: '1rem' }}>
       {/* Display any JSON parsing errors */}
       {error && (
         <Row style={{ marginBottom: '0.5rem' }}>
@@ -268,7 +317,21 @@ function MapEditor({ content, onSave }) {
               </Col>
             </Row>
             <table
-              style={{ borderCollapse: 'collapse', margin: '0 auto' }}
+              style={{
+                borderCollapse: 'collapse',
+                margin: '0 auto',
+                transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+                transition: dragging ? 'none' : 'transform 0.1s',
+                cursor: dragging ? 'grab' : 'pointer',
+                userSelect: 'none',
+              }}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onWheel={handleWheel}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchMove}
             >
               <tbody>
                 {layers[currentLayer] &&

@@ -685,18 +685,23 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     // Prevent right-click context menu from appearing
 
     const handleMouseDown = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       setDown(true);
       setLast([e.clientX, e.clientY]);
       setPanning(e.altKey || e.button === 1);
     };
-    const handleMouseUp = () => setDown(false);
+    const handleMouseUp = (e) => {
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      setDown(false);
+    };
     const handleMouseMove = (e) => {
       if (!isDown) return;
-
+      e.stopPropagation();
+      e.preventDefault();
       const dx = e.clientX - last[0];
       const dy = e.clientY - last[1];
       setLast([e.clientX, e.clientY]);
-
       if (!panning && e.buttons === 1) {
         setCamYaw(camYaw - dx * 0.005);
         setCamPitch(Math.max(-1.45, Math.min(1.45, camPitch - dy * 0.005)));
@@ -711,7 +716,11 @@ function TilesetEditor({ content, onSave, assets = [] }) {
         ]);
       }
     };
-    const handleWheel = (e) => setCamDist(Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)));
+    const handleWheel = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setCamDist(Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)));
+    };
 
     glC.current.addEventListener('contextmenu', e => e.preventDefault());
     glC.current.addEventListener('mousedown', handleMouseDown);
