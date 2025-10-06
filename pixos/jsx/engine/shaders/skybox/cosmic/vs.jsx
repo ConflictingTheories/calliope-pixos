@@ -16,9 +16,8 @@ export default function vs() {
   attribute vec4 aPosition;
   varying vec4 vPosition;
   void main() {
-    v_position = aPosition;
+    vPosition = aPosition;
     gl_Position = aPosition;
-    gl_Position.z = 1;
   }
 `;
 }

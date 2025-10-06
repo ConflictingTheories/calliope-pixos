@@ -177,15 +177,20 @@ export default class GLEngine {
     this.spritz.render(this, timestamp);
     this.getSelectedObject();
 
-    // core render loop (actually render scene to screen)
-    this.renderManager.clearScreen();
-    this.renderManager.renderSkybox();
-    this.renderManager.activateShaderProgram();
-    this.spritz.update(timestamp); // update scene
-    this.spritz.render(this); // render scene
-    this.cutsceneManager.update(); // update cutscene (if appl.)
-    this.renderManager.updateTransition(); // update transitions
-    this.gamepad.render(); // may be optimizable?
+  // core render loop (actually render scene to screen)
+  const gl = this.renderManager.engine.gl;
+  this.renderManager.clearScreen();
+  // Draw skybox first, with depth writes disabled
+  gl.depthMask(false);
+  this.renderManager.renderSkybox();
+  gl.depthMask(true);
+  // Now draw world tiles/objects, then sprites
+  this.renderManager.activateShaderProgram();
+  this.spritz.update(timestamp); // update scene
+  this.spritz.render(this); // render scene
+  this.cutsceneManager.update(); // update cutscene (if appl.)
+  this.renderManager.updateTransition(); // update transitions
+  this.gamepad.render(); // may be optimizable?
 
     // Update debug overlay if enabled
     updateDebugInformation(this);
