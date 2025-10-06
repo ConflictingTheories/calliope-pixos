@@ -1,14 +1,18 @@
+
 # Pixospritz - Architecture & Engine Specification
 
-The PixoSpritz engine is designed to be a both a playground, game engine, and storytelling device. It is built around the idea of declarative game design, and package-based adventures over a shared protocol stack. The end result is to allow for a universal packaging system which can be adopted across various architectures and platforms to provide interoperability.
+## Overview
+The Pixospritz engine is a modular, declarative game engine and storytelling platform. It supports cross-platform, cross-publisher, and multi-game integration, allowing players to merge standalone titles into larger, persistent experiences. The engine is built in JavaScript/WebGL, but is designed for portability and extensibility.
 
-In addition to cross-platform operation, the design helps facility cross-publisher, and multi-game integration where players can merge unique standalone titles into larger more immersive experiences. Allowing players to take a character from one world into the next and continue their story.
-
-PixoSpritz envisions a kind of cooperative and multiplayer expierience unlike anything else. Rather than just have an MMO, or having users craft custom games within an online environment - the goal is to allow players to choose their paths and for the standard to allow for their interoperation.
-
-Learn a spell in a fantasy world, then roam the streets of New York and freeze taxis in the streets! This is the dream of PixoSpritz.
-
-## Architecture
+## Key Features
+- **Package-based design:** Game content is distributed in packages, supporting standalone and episodic play, and dynamic interoperability between packages.
+- **Universal protocol:** Standardized data formats and APIs for assets, scenes, actions, and scripting.
+- **Runtime extensibility:** Features like skybox shader switching, Lua scripting, and zone/manifest configuration can be changed at runtime.
+- **Rendering pipeline:** Modern WebGL pipeline with support for custom shaders, skyboxes, tiles, 3D models, sprites, and transitions. Skybox shaders can be switched programmatically, via Lua, or by zone/manifest config.
+- **Scripting:** Lua API exposes engine features, including skybox shader switching (`engine:set_skybox_shader("shaderName")`), zone management, and more.
+- **Zone/manifest extensibility:** Zones and game manifests can specify rendering, audio, and gameplay configuration, including skybox shaders and other effects.
+- **Editor integration:** Optional built-in editor for game development and debugging.
+- **Networked multiplayer:** Optional network layer for shared world states and real-time multiplayer.
 
 The overall architecture is split into two areas of application:
 
@@ -88,9 +92,15 @@ graph LR
             AM --> O[Sound Loader]
         end
 
+
     end
 
 ```
+
+## Rendering Pipeline
+- **SkyboxManager:** Supports multiple shader effects (cosmic, sunset, morning, etc.), runtime switching via API, Lua, or zone/manifest config.
+- **Tiles/Objects/Sprites:** Rendered in correct order with depth buffer management. Sprites, animated sprites, tiles, and 3D objects are all supported.
+- **Transitions:** Customizable transition effects between scenes/zones.
 
 ### Package Based Design
 

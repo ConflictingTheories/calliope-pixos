@@ -17,6 +17,19 @@ import { Texture } from '../resource/texture.jsx';
 import { fetchSkyboxShaderFiles } from './shaders.jsx';
 
 export default class SkyboxManager {
+    /**
+     * Change the active skybox shader at runtime
+     * @param {string} shaderName - e.g. 'cosmic', 'sunset', 'morning', 'sky'
+     */
+    async setSkyboxShader(shaderName) {
+        if (!this.engine.gl) return;
+        this.gl = this.engine.gl;
+        // Dynamically import shader sources
+        const vs = (await import(`../../shaders/skybox/${shaderName}/vs.jsx`)).default();
+        const fs = (await import(`../../shaders/skybox/${shaderName}/fs.jsx`)).default();
+        this.shaderProgram = this.initCosmicShaderProgram(vs, fs);
+        // Optionally re-init buffer/cubemap if needed
+    }
     /** Light Manager for Scene
      *
      * @param {GLEngine} engine

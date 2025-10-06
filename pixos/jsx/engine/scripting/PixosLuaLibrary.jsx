@@ -362,6 +362,12 @@ export default class PixosLuaLibrary {
           envScope.finish(success > 0);
         }
       },
+      // skybox shader switching
+      set_skybox_shader: async (shaderName) => {
+        if (engine.renderManager?.skyboxManager?.setSkyboxShader) {
+          await engine.renderManager.skyboxManager.setSkyboxShader(shaderName);
+        }
+      },
     });
   };
 }

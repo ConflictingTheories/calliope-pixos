@@ -106,6 +106,11 @@ export default class Zone extends Loadable {
         Promise.all(this.objects.map(this.loadObject)),
       ]);
 
+      // If zone specifies a skyboxShader, set it
+      if (data.skyboxShader && this.engine.renderManager?.skyboxManager?.setSkyboxShader) {
+        await this.engine.renderManager.skyboxManager.setSkyboxShader(data.skyboxShader);
+      }
+
       await this.finalize();
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
@@ -138,6 +143,11 @@ export default class Zone extends Loadable {
         Promise.all(this.sprites.map(this.loadSprite)),
         Promise.all(this.objects.map(this.loadObject)),
       ]);
+
+      // If zone specifies a skyboxShader, set it
+      if (data.skyboxShader && this.engine.renderManager?.skyboxManager?.setSkyboxShader) {
+        await this.engine.renderManager.skyboxManager.setSkyboxShader(data.skyboxShader);
+      }
 
       await this.finalize();
     } catch (e) {
