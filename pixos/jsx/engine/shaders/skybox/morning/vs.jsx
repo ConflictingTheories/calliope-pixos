@@ -18,7 +18,6 @@ export default function vs() {
   void main() {
     vPosition = aPosition;
     gl_Position = aPosition;
-    gl_Position.z = 1;
   }
 `;
 }

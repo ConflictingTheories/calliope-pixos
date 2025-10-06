@@ -122,7 +122,7 @@ export default class RenderManager {
     this.initProjection();
 
     // skybox
-    this.skyboxManager.init();
+    this.skyboxManager.init(null, 'sunset');
 
     this.initializedWebGl = true;
   }

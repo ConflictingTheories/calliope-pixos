@@ -27,7 +27,7 @@ export default class SkyboxManager {
         // Dynamically import shader sources
         const vs = (await import(`../../shaders/skybox/${shaderName}/vs.jsx`)).default();
         const fs = (await import(`../../shaders/skybox/${shaderName}/fs.jsx`)).default();
-        this.shaderProgram = this.initCosmicShaderProgram(vs, fs);
+        this.shaderProgram = this.initSkyboxShaderProgram(vs, fs);
         // Optionally re-init buffer/cubemap if needed
     }
     /** Light Manager for Scene
@@ -44,20 +44,36 @@ export default class SkyboxManager {
         return SkyboxManager.instance;
     }
 
-    async init(textureSrc, centre = [0.0, 0.0, 0.0]) {
+    /**
+     * 
+     * @param {*} textureSrc - todo allow for custom texture to be loaded
+     * @param {*} shaderName 
+     * @param {*} centre 
+     * @returns 
+     */
+    async init(textureSrc = null, shaderName = 'cosmic', centre = [0.0, 0.0, 0.0]) {
         if (!this.engine.gl) return;
         this.gl = this.engine.gl;
-        // Load cosmic shader source
-        const vsCosmic = (await import('../../shaders/skybox/cosmic/vs.jsx')).default();
-        const fsCosmic = (await import('../../shaders/skybox/cosmic/fs.jsx')).default();
-        // Create cubemap texture (replace with your cubemap loader if needed)
+
+        if (textureSrc) {
+            // todo - load in custom texture and apply to skybox
+        } else {
+            // default - cosmic
+            const vsCosmic = (await import('../../shaders/skybox/' + shaderName + '/vs.jsx')).default();
+            const fsCosmic = (await import('../../shaders/skybox/' + shaderName + '/fs.jsx')).default();
+            this.shaderProgram = this.initSkyboxShaderProgram(vsCosmic, fsCosmic);
+        }
+
+        // Create cubemap for skybox
         this.cubeMap = this.createDefaultCubeMap();
         this.skyboxCenter = centre;
-        this.shaderProgram = this.initCosmicShaderProgram(vsCosmic, fsCosmic);
         this.buffer = this.createSkyboxBuffer();
         this.initialized = true;
     }
-    // Create a default cubemap (placeholder, replace with actual cubemap loading)
+
+    /**
+     * Create a default cubemap (placeholder, replace with actual cubemap loading)
+     */
     createDefaultCubeMap() {
         const gl = this.gl;
         const texture = gl.createTexture();
@@ -71,6 +87,7 @@ export default class SkyboxManager {
             { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, color: [0, 255, 255, 255] },
             { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, color: [255, 0, 255, 255] },
         ];
+        // set colours as cubemap textures
         faceInfos.forEach((faceInfo) => {
             const { target, color } = faceInfo;
             const data = new Uint8Array(color);
@@ -82,8 +99,43 @@ export default class SkyboxManager {
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         return texture;
     }
-    // Initialize cosmic shader program
-    initCosmicShaderProgram(vsSource, fsSource) {
+
+    /**
+     * cube vertex buffer for skybox (cube skybox - todo - look into other shapes like sphere)
+     * @returns 
+     */
+    createSkyboxBuffer() {
+        this.vertices = [
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, -1.0,
+            1.0, 1.0, -1.0,
+            1.0, 1.0, -1.0,
+            -1.0, -1.0, -1.0,
+            -1.0, 1.0, -1.0,
+            -1.0, 1.0, 1.0,
+            -1.0, -1.0, 1.0,
+            1.0, -1.0, 1.0,
+            1.0, 1.0, 1.0,
+            1.0, 1.0, -1.0,
+            -1.0, -1.0, -1.0,
+            -1.0, -1.0, 1.0
+        ];
+
+        this.numVertices = this.vertices.length / 3;
+
+        const buffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.vertices), this.gl.STATIC_DRAW);
+        return buffer;
+    }
+
+    /**
+     * Initialize cosmic shader program
+     * @param {*} vsSource 
+     * @param {*} fsSource 
+     * @returns 
+     */
+    initSkyboxShaderProgram(vsSource, fsSource) {
         const gl = this.gl;
         const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
         const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
@@ -122,12 +174,32 @@ export default class SkyboxManager {
         return shader;
     }
 
+    // Draw skybox using cosmic shader
+    renderSkybox(viewDirectionProjectionInverse) {
+        if (!this.initialized || !this.shaderProgram) return;
+        const gl = this.gl;
+        gl.useProgram(this.shaderProgram);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        gl.enableVertexAttribArray(this.shaderProgram.aPosition);
+        gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
+        // Bind cubemap texture
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
+        gl.uniform1i(this.shaderProgram.uSkybox, 0);
+        // Set viewDirectionProjectionInverse uniform
+        gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
+        // Draw skybox
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.useProgram(null);
+    }
+
     /**
-     * Initialize Shader Program
+     * Initialize Shader Program - todo -- not working yet - needs to load from zip
      * @param {*} param1
      * @returns
      */
-    initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
+    initTextureShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
         const { gl } = this.engine;
         const self = this;
         const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
@@ -168,9 +240,9 @@ export default class SkyboxManager {
     }
 
     /**
-     * Create Skybox Program
+     * Create Skybox Program - todo - move into shader files
      */
-    createSkyboxProgram() {
+    createTextureSkyboxProgram() {
         const vertexShaderSource = `#version 300 es
         in vec3 aVertexPosition;
         uniform mat4 uProjectionMatrix;
@@ -201,49 +273,4 @@ export default class SkyboxManager {
         return this.initShaderProgram({ vs: vertexShaderSource, fs: fragmentShaderSource });
     }
 
-    // basic cube vertex buffer for skybox
-    createSkyboxBuffer() {
-        this.vertices = [
-            -1.0, -1.0, -1.0,
-            1.0, -1.0, -1.0,
-            1.0, 1.0, -1.0,
-            1.0, 1.0, -1.0,
-            -1.0, -1.0, -1.0,
-            -1.0, 1.0, -1.0,
-            -1.0, 1.0, 1.0,
-            -1.0, -1.0, 1.0,
-            1.0, -1.0, 1.0,
-            1.0, 1.0, 1.0,
-            1.0, 1.0, -1.0,
-            -1.0, -1.0, -1.0,
-            -1.0, -1.0, 1.0
-        ];
-
-        this.numVertices = this.vertices.length / 3;
-
-        const buffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.vertices), this.gl.STATIC_DRAW);
-        return buffer;
-    }
-
-    // Draw skybox using cosmic shader
-    renderSkybox(viewDirectionProjectionInverse) {
-        if (!this.initialized || !this.shaderProgram) return;
-        const gl = this.gl;
-        gl.useProgram(this.shaderProgram);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.enableVertexAttribArray(this.shaderProgram.aPosition);
-        gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
-        // Bind cubemap texture
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
-        gl.uniform1i(this.shaderProgram.uSkybox, 0);
-        // Set viewDirectionProjectionInverse uniform
-        gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
-        // Draw skybox
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.useProgram(null);
-    }
 }
