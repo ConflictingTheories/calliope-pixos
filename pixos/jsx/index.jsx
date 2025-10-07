@@ -16,7 +16,7 @@ import { collect } from 'react-recollect';
 // WebGL Component
 import WebGLView from '@Components/WebGLView.jsx';
 // Pixos Spritz Provider
-import SpritzProvider from '@Spritz/player.jsx';
+import SpritzProvider from '@Spritz/player.js';
 // Style Plugin
 import '../css/pixos.css';
 
