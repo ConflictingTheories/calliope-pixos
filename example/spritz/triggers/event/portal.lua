@@ -5,6 +5,8 @@
 local user_sprite = pixos.get_subject();
 local portal = pixos.get_caller();
 
+pixos.set_skybox_shader('cosmic');
+
 pixos.log({ msg = 'entering portal', portal = portal, user_sprite = user_sprite });
 
 -- Remove all zones from the world and load the zones from the portal.
@@ -40,5 +42,7 @@ table.insert(steps, { type = 'transition', effect = 'blur', direction = 'in', du
 pixos.sync({ pixos.run_cutscene(steps) })
 
 pixos.log(pixos.as_obj({ msg = 'exiting portal' }));
+
+pixos.set_skybox_shader('sunset');
 
 return nil;

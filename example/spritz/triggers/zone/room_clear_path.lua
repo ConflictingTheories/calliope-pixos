@@ -8,6 +8,8 @@ local to = pixos.vec_sub(pixos.get_camera_vector(),pixos.vector({0, 0, 1}));
 -- lock to every 45 degrees
 pixos.log(pixos.as_obj({ msg = 'trigger:: room_clear_path', from = from, to = to }));
 
+-- change skybox on room load
+pixos.set_skybox_shader('matrix');
 -- There are multiple ways to script things - though each is suited to a particular use.
 -- for example - cutscenes can be scripted using the cutscene manager (preferred way) or they
 -- can be drafted up manually. Likewise, the cutscene manager can be used to script other events

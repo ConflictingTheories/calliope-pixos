@@ -64,6 +64,12 @@ export function fetchSkyboxShaderFiles(type) {
   } else if (t === 'sunset') {
     vsSource = require('../../shaders/skybox/sunset/vs.jsx').default();
     fsSource = require('../../shaders/skybox/sunset/fs.jsx').default();
+  } else if (t === 'matrix') {
+    vsSource = require('../../shaders/skybox/matrix/vs.jsx').default();
+    fsSource = require('../../shaders/skybox/matrix/fs.jsx').default();
+  } else if (t === 'neon') {
+    vsSource = require('../../shaders/skybox/neon/vs.jsx').default();
+    fsSource = require('../../shaders/skybox/neon/fs.jsx').default();
   } else {
     // Default to cosmic.
     vsSource = require('../../shaders/skybox/cosmic/vs.jsx').default();

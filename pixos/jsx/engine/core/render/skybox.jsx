@@ -136,21 +136,36 @@ export default class SkyboxManager {
      * @returns 
      */
     initSkyboxShaderProgram(vsSource, fsSource) {
-        const gl = this.gl;
+        const { gl } = this.engine;
+
+        // Load and compile the shaders from the provided source code.
         const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
         const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
         let shaderProgram = gl.createProgram();
+
+        // Attach the vertex and fragment shaders to the shader program.
         gl.attachShader(shaderProgram, vertexShader);
         gl.attachShader(shaderProgram, fragmentShader);
+
+        // Link the shader program together.
         gl.linkProgram(shaderProgram);
+
+        // Check if the shader program was successfully linked.
         if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            throw new Error('WebGL unable to initialize the cosmic shader program');
+            throw new Error('WebGL unable to initialize the skybox shader program');
         }
-        // Attribute and uniform locations for cosmic shader
+
+        // Set up and cache the attribute location for 'aPosition'.
         shaderProgram.aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
         gl.enableVertexAttribArray(shaderProgram.aPosition);
+
+        // Cache the uniform locations for various uniforms used in the shaders.
+        shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
         shaderProgram.uSkybox = gl.getUniformLocation(shaderProgram, 'uSkybox');
         shaderProgram.uViewDirectionProjectionInverse = gl.getUniformLocation(shaderProgram, 'uViewDirectionProjectionInverse');
+        shaderProgram.uTime = gl.getUniformLocation(shaderProgram, 'uTime');
+
+        // Return the initialized shader program for use in rendering or further configuration.
         return shaderProgram;
     }
 
@@ -175,24 +190,44 @@ export default class SkyboxManager {
     }
 
     // Draw skybox using cosmic shader
-    renderSkybox(viewDirectionProjectionInverse) {
-        if (!this.initialized || !this.shaderProgram) return;
-        const gl = this.gl;
-        gl.useProgram(this.shaderProgram);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.enableVertexAttribArray(this.shaderProgram.aPosition);
-        gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
-        // Bind cubemap texture
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
-        gl.uniform1i(this.shaderProgram.uSkybox, 0);
-        // Set viewDirectionProjectionInverse uniform
-        gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
-        // Draw skybox
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.useProgram(null);
-    }
+    // Draw skybox using the specified shader program
+renderSkybox(viewDirectionProjectionInverse) {
+    if (!this.initialized || !this.shaderProgram) return; // Exit if the shader program is not initialized or available
+
+    const { gl } = this.engine;
+
+    // Use the shader program for rendering
+    gl.useProgram(this.shaderProgram);
+
+    // Bind the buffer containing vertex data (assuming it's already set up)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+
+    // Enable the attribute array for 'aPosition'
+    gl.enableVertexAttribArray(this.shaderProgram.aPosition);
+
+    // Specify how the buffer data should be read from the currently bound buffer
+    gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
+
+    // Bind the cubemap texture to a texture unit and set it as the active texture
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
+    gl.uniform1i(this.shaderProgram.uSkybox, 0); // Set the sampler2D uniform to use texture unit 0
+
+    // Set the viewDirectionProjectionInverse matrix uniform for the shader
+    gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
+
+    // Set the uTime uniform with the current time (assuming it's used in the shader)
+    const time = Date.now();
+    gl.uniform1f(this.shaderProgram.uTime, time);
+
+    // Draw the skybox using TRIANGLE_STRIP and the specified number of vertices
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
+
+    // Unbind the buffer and program after drawing
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
+}
+
 
     /**
      * Initialize Shader Program - todo -- not working yet - needs to load from zip
