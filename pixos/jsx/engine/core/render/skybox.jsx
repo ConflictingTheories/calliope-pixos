@@ -57,6 +57,8 @@ export default class SkyboxManager {
 
         if (textureSrc) {
             // todo - load in custom texture and apply to skybox
+            this.texture = await this.engine.resourceManager.loadTextureFromZip(textureSrc, this.engine.spritz.zip);
+            this.texture.runWhenLoaded(this.createTextureSkyboxProgram);
         } else {
             // default - cosmic
             const vsCosmic = (await import('../../shaders/skybox/' + shaderName + '/vs.jsx')).default();
@@ -191,42 +193,42 @@ export default class SkyboxManager {
 
     // Draw skybox using cosmic shader
     // Draw skybox using the specified shader program
-renderSkybox(viewDirectionProjectionInverse) {
-    if (!this.initialized || !this.shaderProgram) return; // Exit if the shader program is not initialized or available
+    renderSkybox(viewDirectionProjectionInverse) {
+        if (!this.initialized || !this.shaderProgram) return; // Exit if the shader program is not initialized or available
 
-    const { gl } = this.engine;
+        const { gl } = this.engine;
 
-    // Use the shader program for rendering
-    gl.useProgram(this.shaderProgram);
+        // Use the shader program for rendering
+        gl.useProgram(this.shaderProgram);
 
-    // Bind the buffer containing vertex data (assuming it's already set up)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        // Bind the buffer containing vertex data (assuming it's already set up)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
 
-    // Enable the attribute array for 'aPosition'
-    gl.enableVertexAttribArray(this.shaderProgram.aPosition);
+        // Enable the attribute array for 'aPosition'
+        gl.enableVertexAttribArray(this.shaderProgram.aPosition);
 
-    // Specify how the buffer data should be read from the currently bound buffer
-    gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
+        // Specify how the buffer data should be read from the currently bound buffer
+        gl.vertexAttribPointer(this.shaderProgram.aPosition, 3, gl.FLOAT, false, 0, 0);
 
-    // Bind the cubemap texture to a texture unit and set it as the active texture
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
-    gl.uniform1i(this.shaderProgram.uSkybox, 0); // Set the sampler2D uniform to use texture unit 0
+        // Bind the cubemap texture to a texture unit and set it as the active texture
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
+        gl.uniform1i(this.shaderProgram.uSkybox, 0); // Set the sampler2D uniform to use texture unit 0
 
-    // Set the viewDirectionProjectionInverse matrix uniform for the shader
-    gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
+        // Set the viewDirectionProjectionInverse matrix uniform for the shader
+        gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
 
-    // Set the uTime uniform with the current time (assuming it's used in the shader)
-    const time = Date.now();
-    gl.uniform1f(this.shaderProgram.uTime, time);
+        // Set the uTime uniform with the current time (assuming it's used in the shader)
+        const time = Date.now();
+        gl.uniform1f(this.shaderProgram.uTime, time);
 
-    // Draw the skybox using TRIANGLE_STRIP and the specified number of vertices
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
+        // Draw the skybox using TRIANGLE_STRIP and the specified number of vertices
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
 
-    // Unbind the buffer and program after drawing
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.useProgram(null);
-}
+        // Unbind the buffer and program after drawing
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.useProgram(null);
+    }
 
 
     /**
@@ -259,7 +261,6 @@ renderSkybox(viewDirectionProjectionInverse) {
         shaderProgram.uProjectionMatrix = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
         shaderProgram.uModelMatrix = gl.getUniformLocation(shaderProgram, 'uModelMatrix');
         shaderProgram.uViewMatrix = gl.getUniformLocation(shaderProgram, 'uViewMatrix');
-
         // Set up uniform functions
         shaderProgram.setMatrixUniforms = function () {
             const modelMatrix = self.uModelMat;
