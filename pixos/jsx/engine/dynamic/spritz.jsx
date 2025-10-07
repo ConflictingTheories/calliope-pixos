@@ -20,6 +20,7 @@ import JSZip from 'jszip';
 export default class ExampleDynamicSpritz extends Spritz {
   // Init Spritz
   init = async (engine) => {
+    Spritz._instance.loaded = false;
     // game Engine & Timing
     Spritz._instance.engine = engine;
     // Init Game Engine Components
@@ -54,6 +55,7 @@ export default class ExampleDynamicSpritz extends Spritz {
 
         // Exit Menu
         menu.completed = true;
+        Spritz._instance.loaded = true;
       } catch (e) {
         console.error(e);
         return;

@@ -93,7 +93,7 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
-    if (time > this.lastKey + this.moveLength) {
+    if (time > this.lastKey + Math.max(this.moveLength, 200)) {
       switch (this.sprite.engine.keyboard.lastPressed('q')) {
         // quit on q key press
         case 'q':

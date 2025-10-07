@@ -139,7 +139,7 @@ export default {
     // }
 
     // Keyboard
-    if (time > this.lastKey + 100) {
+    if (time > this.lastKey + 200) {
       let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {
         case 'Escape':

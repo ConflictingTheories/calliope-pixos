@@ -132,7 +132,7 @@ export default {
   // Handle Keyboard & Input States
   checkInput: function (time) {
     // Keyboard
-    if (time > this.lastKey + 100) {
+    if (time > this.lastKey + 200) {
       switch (this.engine.keyboard.lastPressedCode()) {
         case 'Escape':
           if (this.quittable) {

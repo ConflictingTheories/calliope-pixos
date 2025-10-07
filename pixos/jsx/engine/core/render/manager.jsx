@@ -122,7 +122,7 @@ export default class RenderManager {
     this.initProjection();
 
     // skybox
-    this.skyboxManager.init(null, 'neon');
+    this.skyboxManager.init();
 
     this.initializedWebGl = true;
   }
@@ -686,6 +686,7 @@ export default class RenderManager {
    * progress of the transition.
    */
   renderTransition = (progress) => {
+    if (!this.engine.spritz.loaded) return;
     const { gl } = this.engine;
     const effect = this.transitionEffect || 'fade';
     // Ensure the program is compiled.
@@ -728,6 +729,7 @@ export default class RenderManager {
    * Display Skybox
    */
   renderSkybox = () => {
+    if (!this.engine.spritz.loaded) return;
     this.skyboxManager.renderSkybox(this.uProjMat);
   }
 

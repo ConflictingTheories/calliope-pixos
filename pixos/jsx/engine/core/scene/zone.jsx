@@ -584,7 +584,7 @@ export default class Zone extends Loadable {
 
   /** Input */
   checkInput = async (time) => {
-    if (time <= this.lastKey + 100) return;
+    if (time <= this.lastKey + 200) return;
     this.engine.gamepad.checkInput();
     this.lastKey = time;
     // todo - look into hooks - game modes (allow for scripting keymaps)

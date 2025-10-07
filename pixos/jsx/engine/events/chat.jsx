@@ -40,7 +40,7 @@ export default {
   },
   // Handle Keyboard
   checkInput: function (time) {
-    if (time > this.lastKey + 100) {
+    if (time > this.lastKey + 200) {
       let skipChar = false;
       switch (this.engine.keyboard.lastPressedCode()) {
         case 'Escape':
