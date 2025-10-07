@@ -23,7 +23,7 @@ export default class ExampleDynamicSpritz extends Spritz {
     // game Engine & Timing
     Spritz._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Spritz._instance.world = new World(engine, 'dynamic'));
+    let world = (Spritz._instance.world = new World(Spritz._instance, 'dynamic'));
 
     // load spritz
     async function loadSpritz(menu) {
@@ -50,7 +50,7 @@ export default class ExampleDynamicSpritz extends Spritz {
         }
 
         // start
-        menu.world.isPaused = false;
+        world.isPaused = false;
 
         // Exit Menu
         menu.completed = true;

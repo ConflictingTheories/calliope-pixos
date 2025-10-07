@@ -50,7 +50,7 @@ export default class Spritz {
     // game Engine & Timing
     Spritz._instance.engine = engine;
     // Init Game Engine Components
-    let world = (Spritz._instance.world = new World(engine, 'spritz'));
+    let world = (Spritz._instance.world = new World(Spritz._instance, 'spritz'));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
     world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log('loading...done')));
     // show start menu

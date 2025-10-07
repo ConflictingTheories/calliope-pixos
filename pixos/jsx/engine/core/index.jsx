@@ -14,8 +14,8 @@
 import Utils from '../utils/index.jsx';
 import { GamePad } from '../utils/gamepad/index.jsx';
 import Keyboard from '../utils/keyboard.jsx';
-import Database from './database.jsx';
-import Store from './store.jsx';
+import Database from './database/index.jsx';
+import Store from './store/index.jsx';
 import Hud from './hud/index.jsx';
 import RenderManager from './render/manager.jsx';
 import ResourceManager from './resource/manager.jsx';

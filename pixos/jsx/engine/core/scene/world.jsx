@@ -17,10 +17,11 @@ import { Direction } from '@Engine/utils/enums.jsx';
 import { EventLoader } from '@Engine/utils/loaders/index.jsx';
 
 export default class World {
-  constructor(engine, id) {
+  constructor(spritz, id) {
     this.id = id;
+    this.spritz = spritz;
     this.objId = Math.round(Math.random() * 1000) + 1;
-    this.engine = engine;
+    this.engine = spritz.engine;
     this.zoneDict = {};
     this.zoneList = [];
     this.spriteDict = {};
