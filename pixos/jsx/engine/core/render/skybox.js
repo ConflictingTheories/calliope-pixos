@@ -166,6 +166,7 @@ export default class SkyboxManager {
         shaderProgram.uSkybox = gl.getUniformLocation(shaderProgram, 'uSkybox');
         shaderProgram.uViewDirectionProjectionInverse = gl.getUniformLocation(shaderProgram, 'uViewDirectionProjectionInverse');
         shaderProgram.uTime = gl.getUniformLocation(shaderProgram, 'uTime');
+    shaderProgram.uResolution = gl.getUniformLocation(shaderProgram, 'uResolution');
 
         // Return the initialized shader program for use in rendering or further configuration.
         return shaderProgram;
@@ -219,8 +220,19 @@ export default class SkyboxManager {
         gl.uniformMatrix4fv(this.shaderProgram.uViewDirectionProjectionInverse, false, viewDirectionProjectionInverse);
 
         // Set the uTime uniform with the current time (assuming it's used in the shader)
-        const time = Date.now();
-        gl.uniform1f(this.shaderProgram.uTime, time);
+        // pass time in seconds
+        const time = Date.now() * 0.001;
+        if (this.shaderProgram.uTime !== -1 && this.shaderProgram.uTime !== null) {
+            gl.uniform1f(this.shaderProgram.uTime, time);
+        }
+
+        // pass resolution if the shader expects it
+        if (this.shaderProgram.uResolution !== undefined) {
+            // try to grab drawing buffer size
+            const resX = gl.drawingBufferWidth || this.engine.canvas.width || 800;
+            const resY = gl.drawingBufferHeight || this.engine.canvas.height || 600;
+            gl.uniform2f(this.shaderProgram.uResolution, resX, resY);
+        }
 
         // Draw the skybox using TRIANGLE_STRIP and the specified number of vertices
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
