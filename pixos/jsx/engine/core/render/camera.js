@@ -104,8 +104,10 @@ export class Camera {
   const fy = -zy;
   const fz = -zz;
   // compute yaw and pitch from forward vector
-  this.yaw = Math.atan2(fx, fz);
-  this.pitch = Math.asin(fy / Math.max(1e-6, Math.hypot(fx, fy, fz)));
+  // For Z-up coordinate system we treat X/Y as horizontal plane and Z as up.
+  // yaw is angle in XY plane, pitch is elevation around horizontal plane.
+  this.yaw = Math.atan2(fy, fx);
+  this.pitch = Math.asin(fz / Math.max(1e-6, Math.hypot(fx, fy, fz)));
   // attempt to compute distance and target: assume target is along forward from position
   const forwardLen = Math.hypot(fx, fy, fz);
   const approxForward = new Vector(fx / (forwardLen || 1), fy / (forwardLen || 1), fz / (forwardLen || 1));
@@ -124,15 +126,16 @@ export class Camera {
   if (!Number.isFinite(this.pitch)) this.pitch = 0;
   if (!Number.isFinite(this.cameraDistance) || this.cameraDistance <= 0) this.cameraDistance = Math.max(0.1, Math.abs(this.cameraDistance) || 15.0);
   // Compute camera world-space position (eye) from target + spherical coords
-  const ex = this.cameraTarget.x + this.cameraDistance * Math.cos(this.pitch) * Math.sin(this.yaw);
-  const ey = this.cameraTarget.y + this.cameraDistance * Math.sin(this.pitch);
-  const ez = this.cameraTarget.z + this.cameraDistance * Math.cos(this.pitch) * Math.cos(this.yaw);
+  // Z is up. yaw is angle around Z axis in XY plane. pitch is elevation.
+  const ex = this.cameraTarget.x + this.cameraDistance * Math.cos(this.pitch) * Math.cos(this.yaw);
+  const ey = this.cameraTarget.y + this.cameraDistance * Math.cos(this.pitch) * Math.sin(this.yaw);
+  const ez = this.cameraTarget.z + this.cameraDistance * Math.sin(this.pitch);
   const pos = new Vector(ex, ey, ez);
   // update stored cameraPosition
   this.cameraPosition = new Vector(pos.x, pos.y, pos.z);
   const target = new Vector(this.cameraTarget.x, this.cameraTarget.y, this.cameraTarget.z);
-  // world up
-  const up = new Vector(0, 1, 0);
+  // world up (Z-up coordinate system)
+  const up = new Vector(0, 0, 1);
   this.lookAt(pos, target, up);
   }
 
@@ -143,8 +146,10 @@ export class Camera {
   translateCam = (direction) => {
     const speed = 0.5; // units per tick
     // Move the camera target in local camera plane (so camera orbits remain consistent)
-    const forward = new Vector(Math.cos(this.pitch) * Math.sin(this.yaw), 0, Math.cos(this.pitch) * Math.cos(this.yaw)).normal();
-    const right = new Vector(Math.sin(this.yaw - Math.PI / 2), 0, Math.cos(this.yaw - Math.PI / 2)).normal();
+  // forward points in the direction camera is facing (may have Z component)
+  const forward = new Vector(Math.cos(this.pitch) * Math.cos(this.yaw), Math.cos(this.pitch) * Math.sin(this.yaw), Math.sin(this.pitch)).normal();
+  // right vector is perpendicular in XY plane (no Z component) for strafing
+  const right = new Vector(-Math.sin(this.yaw), Math.cos(this.yaw), 0).normal();
     switch (direction) {
       case 'UP': // forward
         this.cameraTarget = this.cameraTarget.add(forward.mul(speed));
