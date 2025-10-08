@@ -166,7 +166,7 @@ export default class SkyboxManager {
         shaderProgram.uSkybox = gl.getUniformLocation(shaderProgram, 'uSkybox');
         shaderProgram.uViewDirectionProjectionInverse = gl.getUniformLocation(shaderProgram, 'uViewDirectionProjectionInverse');
         shaderProgram.uTime = gl.getUniformLocation(shaderProgram, 'uTime');
-    shaderProgram.uResolution = gl.getUniformLocation(shaderProgram, 'uResolution');
+        shaderProgram.uResolution = gl.getUniformLocation(shaderProgram, 'uResolution');
 
         // Return the initialized shader program for use in rendering or further configuration.
         return shaderProgram;
