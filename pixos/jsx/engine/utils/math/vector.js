@@ -86,7 +86,12 @@ export class Vector {
   }
 
   cross(n) {
-    return new Vector(this.x * n.x - this.y * n.y, this.y * n.y + this.x * n.x, this.z * n.z);
+    // Standard 3D cross product: (y1*z2 - z1*y2, z1*x2 - x1*z2, x1*y2 - y1*x2)
+    return new Vector(
+      this.y * n.z - this.z * n.y,
+      this.z * n.x - this.x * n.z,
+      this.x * n.y - this.y * n.x
+    );
   }
 
   length() {

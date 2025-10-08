@@ -274,6 +274,11 @@ function normalFromMat4(out, a) {
 
 const normalize = (v) => {
   let len = Math.hypot(...v);
+  // Guard against zero-length vectors which would produce NaN components.
+  if (!len || Math.abs(len) < EPSILON) {
+    // Return a safe default forward vector (world +Z) so callers don't get NaNs.
+    return [0, 0, 1];
+  }
   return [v[0] / len, v[1] / len, v[2] / len];
 };
 

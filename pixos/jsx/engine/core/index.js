@@ -211,8 +211,10 @@ export default class GLEngine {
    * Get Selected Object on screen
    * todo - need to move into own class
    */
-  getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {
-    if (this.spritz.world?.spriteList?.length <= 0) {
+    getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {  
+      // when FreeCam is active, suppress picking to avoid interfering with camera controls
+      if (this._freecamActive) return null;
+  if (this.spritz.world?.spriteList?.length <= 0) {
       return;
     }
     const gl = this.gl;

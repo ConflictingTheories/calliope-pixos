@@ -366,7 +366,11 @@ export default class RenderManager {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
-    this.camera.uViewMat = create();
+    // Do not reinitialize camera.uViewMat here — the Camera instance manages its own view matrix.
+    // Overwriting it each frame would discard any runtime modifications (eg. FreeCam).
+    if (!this.camera.uViewMat) {
+      this.camera.uViewMat = create();
+    }
     this.uProjMat[5] *= -1;
   }
 
@@ -413,7 +417,6 @@ export default class RenderManager {
   clearScreen = () => {
     const { gl } = this.engine;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.camera.uViewMat = create();
   }
 
   /**
@@ -451,7 +454,6 @@ export default class RenderManager {
 
     this.uProjMat = frustum(subLeft, subLeft + subWidth, subBottom, subBottom + subHeight, zNear, zFar);
     this.uProjMat[5] *= -1;
-    this.camera.uViewMat = create();
   }
 
   /**

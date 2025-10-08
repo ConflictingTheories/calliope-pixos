@@ -543,8 +543,9 @@ export default class Zone extends Loadable {
     ensureSortedByY(this.spriteList);
     ensureSortedByY(this.objectList);
 
-    rm.mvPushMatrix();
-    rm.camera.setCamera();
+  rm.mvPushMatrix();
+  // Do not reinitialize the camera when FreeCam is active — FreeCam edits camera.uViewMat directly
+  if (!this.engine._freecamActive) rm.camera.setCamera();
 
     let si = 0; // sprite index
     let oi = 0; // object index

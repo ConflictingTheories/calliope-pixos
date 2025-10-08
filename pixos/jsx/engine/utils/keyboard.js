@@ -23,6 +23,7 @@ export default class Keyboard {
     if (!Keyboard._instance) {
       this.activeKeys = [];
       this.activeCodes = [];
+  this._hooks = [];
       this.shift = false;
       this.engine = engine;
       Keyboard._instance = this;
@@ -40,6 +41,10 @@ export default class Keyboard {
     if (Keyboard._instance.activeKeys.indexOf(c) < 0) Keyboard._instance.activeKeys.push(c);
     if (Keyboard._instance.activeCodes.indexOf(e.key) < 0) Keyboard._instance.activeCodes.push(e.key);
     Keyboard._instance.shift = e.shiftKey;
+    // notify hooks (debug / custom controls) about raw key event
+    try {
+      (Keyboard._instance._hooks || []).forEach((h) => h(e, 'down'));
+    } catch (err) {}
   }
 
   onKeyUp(e) {
@@ -47,6 +52,22 @@ export default class Keyboard {
     let index = Keyboard._instance.activeKeys.indexOf(c);
     Keyboard._instance.activeKeys.splice(index, 1);
     Keyboard._instance.activeCodes.splice(index, 1);
+    try {
+      (Keyboard._instance._hooks || []).forEach((h) => h(e, 'up'));
+    } catch (err) {}
+  }
+
+  // Register a raw key event hook. Hook receives (event, type) where type is 'down' or 'up'
+  addHook(cb) {
+    if (!cb) return;
+    this._hooks = this._hooks || [];
+    this._hooks.push(cb);
+  }
+
+  removeHook(cb) {
+    if (!cb || !this._hooks) return;
+    const i = this._hooks.indexOf(cb);
+    if (i >= 0) this._hooks.splice(i, 1);
   }
 
   // Return the last pressed key from provided keys
