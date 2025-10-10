@@ -114,6 +114,18 @@ export default class Hud {
     }
   }
 
+  /** Draw the active mode name in the HUD (top-left) */
+  drawModeLabel = () => {
+    try {
+      const mode = this.engine?.spritz?.world?.modeManager?.getMode();
+      if (!mode) return;
+      this.applyStyle({ font: '18px invasion2000', textAlign: 'left', textBaseline: 'top', fillStyle: '#ff0' });
+      this.ctx.fillText(`MODE: ${mode}`, 12, 12);
+    } catch (e) {
+      // ignore
+    }
+  }
+
   /**
    * Scrolling Textbox
    * @param {string} text

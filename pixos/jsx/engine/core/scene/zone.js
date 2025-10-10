@@ -112,8 +112,8 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
-      // If the zone JSON declares a mode, load mode scripts from the zip
-      try { if (zoneJson.mode) await this.loadModeFromZip(zoneJson.mode, zip); } catch (e) { console.warn('zone mode load failed', e); }
+  // If the zone JSON declares a mode, load mode scripts from the spritz package
+  try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -252,12 +252,25 @@ export default class Zone extends Loadable {
         // attempt to require a JS module that exports { setup, update, teardown }
         // eslint-disable-next-line global-require, import/no-dynamic-require
         const mod = require('@Spritz/' + this.spritzName + '/modes/' + modeName + '/setup.js');
-        if (mod) {
+          if (mod) {
+            console.log('Zone.loadMode: found JS fallback for mode', modeName);
           const handlers = {};
           if (mod.setup) handlers.setup = mod.setup.bind(this);
           if (mod.update) handlers.update = mod.update.bind(this);
           if (mod.teardown) handlers.teardown = mod.teardown.bind(this);
           if (world && world.modeManager) world.modeManager.register(modeName, handlers);
+          // Call JS setup immediately so the fallback can register UI or call set_mode
+          try {
+            console.log('Zone.loadMode: running JS setup for', modeName);
+            const res = handlers.setup ? await handlers.setup() : null;
+            if (res && typeof res === 'object') {
+              // merge returned handlers
+              Object.assign(handlers, res);
+              world.modeManager.register(modeName, handlers);
+            }
+          } catch (e) {
+            console.warn('JS mode setup failed', modeName, e);
+          }
         }
       } catch (e) {
         // ignore missing JS fallback
@@ -683,6 +696,13 @@ export default class Zone extends Loadable {
   isInZone = (x, y) => (x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3]);
 
   onSelect = async (row, cell) => {
+    // allow active mode to intercept selection
+    try {
+      if (this.world?.modeManager && this.world.modeManager.handleSelect) {
+        const handled = await this.world.modeManager.handleSelect(this, row, cell, 'tile');
+        if (handled) return; // mode consumed selection
+      }
+    } catch (e) { console.warn('mode selection handler error', e); }
     // toggle select
     let removed = false;
     this.selectedTiles = this.selectedTiles.filter((t) => {

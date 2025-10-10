@@ -165,6 +165,8 @@ export default class GLEngine {
 
     // clear canvases
     this.hud.clearHud();
+  // Draw active mode label (if any)
+  if (this.hud.drawModeLabel) this.hud.drawModeLabel();
     this.renderManager.clearScreen();
 
     const timestamp = new Date().getTime();

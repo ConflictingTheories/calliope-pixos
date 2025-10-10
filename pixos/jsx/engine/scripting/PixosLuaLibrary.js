@@ -369,12 +369,16 @@ export default class PixosLuaLibrary {
       },
       register_mode: (name, handlers) => {
         try {
+          if (!name) {
+            console.warn('pixos.register_mode called with undefined name');
+            return;
+          }
           console.log('pixos.register_mode called ->', name);
           const world = engine.spritz.world;
           if (!world || !world.modeManager) return;
-          // handlers is expected to be a Lua table with optional setup/update/teardown functions
+          // handlers may be a Lua table; convert to JS object safely
           const h = {};
-          const asObj = handlers && typeof handlers.toObject === 'function' ? handlers.toObject() : handlers;
+          const asObj = handlers && typeof handlers.toObject === 'function' ? handlers.toObject() : handlers || {};
           if (asObj.setup) h.setup = asObj.setup;
           if (asObj.update) h.update = asObj.update;
           if (asObj.teardown) h.teardown = asObj.teardown;

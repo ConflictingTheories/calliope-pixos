@@ -243,8 +243,16 @@ export default class World {
    */
   checkInput = (time) => {
     if (time > this.lastKey + 200) {
-      let touchmap = this.engine.gamepad.checkInput();
       this.lastKey = time;
+      // Give current mode first crack at input
+      if (this.modeManager && this.modeManager.handleInput) {
+        try {
+          const handled = this.modeManager.handleInput(time);
+          // If a mode consumed input, do not run the default handling
+          if (handled) return;
+        } catch (e) { console.warn('mode input handler error', e); }
+      }
+      let touchmap = this.engine.gamepad.checkInput();
       // start
       if (this.engine.gamepad.keyPressed('start')) {
         touchmap['start'] = 0;

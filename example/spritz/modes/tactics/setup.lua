@@ -15,6 +15,13 @@ pixos.register_mode('tactics', {
 	teardown = function(params)
 		pixos.log('tactics: teardown')
 	end,
+
+	on_select = function(zone, row, cell, type, params)
+		-- consume selection and log for demo
+		pixos.log('tactics:on_select', { zone = zone.id, row = row, cell = cell, type = type })
+		-- return true to indicate selection handled (prevents default behaviour)
+		return true
+	end,
 })
 
 -- don't auto-set tactics as active unless requested by game script
