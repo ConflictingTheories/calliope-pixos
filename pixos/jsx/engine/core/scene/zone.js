@@ -112,6 +112,8 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
+  // If the zone JSON declares a mode, load mode scripts from the zip
+  try { if (zoneJson.mode) await this.loadModeFromZip(zoneJson.mode, zip); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -150,6 +152,8 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
+  // If zone specifies a default mode name on the map data, attempt to load it from spritz package
+  try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -184,6 +188,82 @@ export default class Zone extends Loadable {
     }
 
     return () => { };
+  };
+
+  /** Load mode scripts from a zip (Lua preferred). Registers handlers with the world's ModeManager. */
+  loadModeFromZip = async (modeName, zip) => {
+    try {
+      const setupFile = zip.file(`modes/${modeName}/setup.lua`);
+      const updateFile = zip.file(`modes/${modeName}/update.lua`);
+      const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
+      const world = this.world;
+
+      const interpreter = new PixosLuaInterpreter(this.engine);
+      interpreter.setScope({ zone: this, map: this, _this: this });
+      interpreter.initLibrary();
+
+      const handlers = {};
+      if (setupFile) {
+        const script = await setupFile.async('string');
+        // run the setup registration (it likely calls pixos.register_mode)
+        await interpreter.run(script);
+      }
+      // If update file exists, load it as a function and register as handler
+      if (updateFile) {
+        const updateScript = await updateFile.async('string');
+        // wrap as a function and register to call on each frame via ModeManager
+        // We return a JS function that executes the Lua chunk each time
+        handlers.update = async (time, params) => {
+          try {
+            // create a fresh interpreter env for update to avoid state bleed
+            const ui = new PixosLuaInterpreter(this.engine);
+            ui.setScope({ zone: this, map: this, _this: this, time, params });
+            ui.initLibrary();
+            // The update.lua is expected to return a function
+            const res = await ui.run(updateScript);
+            // If the script returned a callable (Lua function) we invoke it
+            if (typeof res === 'function') res(time, params);
+          } catch (e) { console.warn('mode update exec failed', e); }
+        };
+      }
+      if (teardownFile) {
+        const tdScript = await teardownFile.async('string');
+        handlers.teardown = async (params) => { try { const td = new PixosLuaInterpreter(this.engine); td.setScope({ zone: this }); td.initLibrary(); await td.run(tdScript); } catch (e) { console.warn('mode teardown failed', e); } };
+      }
+
+      // If the setup script used pixos.register_mode, the ModeManager will
+      // already have the registration. But ensure we add handlers if not.
+      if (world && world.modeManager) {
+        const existing = world.modeManager.registered[modeName];
+        if (!existing) world.modeManager.register(modeName, handlers);
+      }
+    } catch (e) {
+      console.warn('loadModeFromZip failed', modeName, e);
+    }
+  };
+
+  /** Load mode scripts from filesystem (JS fallback). */
+  loadMode = async (modeName) => {
+    try {
+      const world = this.world;
+      // prefer JS files under spritz package (setup.js / update.js)
+      try {
+        // attempt to require a JS module that exports { setup, update, teardown }
+        // eslint-disable-next-line global-require, import/no-dynamic-require
+        const mod = require('@Spritz/' + this.spritzName + '/modes/' + modeName + '/setup.js');
+        if (mod) {
+          const handlers = {};
+          if (mod.setup) handlers.setup = mod.setup.bind(this);
+          if (mod.update) handlers.update = mod.update.bind(this);
+          if (mod.teardown) handlers.teardown = mod.teardown.bind(this);
+          if (world && world.modeManager) world.modeManager.register(modeName, handlers);
+        }
+      } catch (e) {
+        // ignore missing JS fallback
+      }
+    } catch (e) {
+      console.warn('loadMode failed', modeName, e);
+    }
   };
 
   /** Load from JSON components within a zip */
@@ -273,6 +353,8 @@ export default class Zone extends Loadable {
 
       this.attachTilesetListeners();
       await this.finalize();
+  // If the loaded map object includes a 'mode' property attempt to load a mode module
+  try { if (this.mode) await this.loadMode(this.mode); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }

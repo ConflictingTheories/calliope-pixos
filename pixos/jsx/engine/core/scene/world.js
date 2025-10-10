@@ -12,6 +12,7 @@
 \*                                                 */
 
 import Zone from './zone.js';
+import ModeManager from '../mode/ModeManager.js';
 import ActionQueue from '../queue/index.js';
 import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
@@ -40,6 +41,8 @@ export default class World {
     // loadZone() and loadZoneFromZip() for usage.
     this.lastZoneTransitionTime = 0;
     this.isPaused = true;
+  // Mode manager handles current gameplay mode (explore, tactics, etc.)
+  this.modeManager = new ModeManager(this);
     this.afterTickActions = new ActionQueue();
     this.menuConfig = {
       start: {
@@ -318,6 +321,10 @@ export default class World {
     toRemove.forEach((event) => this.removeAction(event.id));
     // tick
     if (this.tick && !this.isPaused) this.tick(time);
+    // Let the mode manager run per-frame mode logic (Lua update handlers)
+    if (!this.isPaused && this.modeManager && this.modeManager.update) {
+      try { this.modeManager.update(time); } catch (e) { console.warn('mode update error', e); }
+    }
   }
 
   /**

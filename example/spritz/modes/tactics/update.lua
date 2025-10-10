@@ -1,3 +1,7 @@
--- TODO - this file will represent the game loop logic for the 'fight mode'
--- Effectively, it handle overrides, key-commands, etc.
--- and would perhaps be a turn-based style or a time-based or possibly a mini-game, etc
+-- Basic tactics mode update function (Lua)
+
+return function(time, params)
+	-- placeholder for turn processing. Real games should implement the
+	-- turn queue, selection cursor, and action resolution here.
+	return
+end

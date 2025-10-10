@@ -1,12 +1,20 @@
--- TODO - this will be the setup file which is run when a mode is setup (run initially - not looped)
--- this would be used for any particular mode specific settings, but could also be used to establish a 
--- zone, load in results, etc.
---
--- TODO:: on a related note - need to pass through "args/params" which can be passed through to scripts
--- both ideally from within other scripts, as well as when loading or swapping modes.
--- The idea would be - I could in theory re-use the scripts better, by having them act almost like functions
--- This could then be used in other places, and I feel like it would be useful for things like random events
--- or in game battles.
---
--- For example - may have a 'fight mode' - yet inside of it, I can pass through a list of enemy types,
--- or battle comfigurations, or 'zone-style' or themes
+-- Setup for 'tactics' mode: register handlers for a simple turn-based skeleton
+
+pixos.register_mode('tactics', {
+	setup = function(params)
+		pixos.log('tactics: setup called')
+		-- params may include an initial turn order or rules
+		-- place a cursor or menu if needed (game can create HUD elements separately)
+	end,
+
+	update = function(time, params)
+		-- tactics update can be used to run a turn state-machine implemented in Lua
+		-- by default do nothing; game scripts should implement the actual loop
+	end,
+
+	teardown = function(params)
+		pixos.log('tactics: teardown')
+	end,
+})
+
+-- don't auto-set tactics as active unless requested by game script

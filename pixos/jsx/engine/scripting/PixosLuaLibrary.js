@@ -350,6 +350,35 @@ export default class PixosLuaLibrary {
           obj[key] = value;
         }
       },
+      /** Mode API - allow Lua scripts to change or query current mode */
+      set_mode: (name, params) => {
+        try {
+          const world = engine.spritz.world;
+          if (world && world.modeManager) {
+            // params may be a Lua table - convert if necessary
+            const p = params && typeof params.toObject === 'function' ? params.toObject() : params;
+            world.modeManager.set(name, p);
+          }
+        } catch (e) {
+          console.warn('set_mode failed', e);
+        }
+      },
+      get_mode: () => {
+        try { return engine.spritz.world.modeManager.getMode(); } catch (e) { return null; }
+      },
+      register_mode: (name, handlers) => {
+        try {
+          const world = engine.spritz.world;
+          if (!world || !world.modeManager) return;
+          // handlers is expected to be a Lua table with optional setup/update/teardown functions
+          const h = {};
+          const asObj = handlers && typeof handlers.toObject === 'function' ? handlers.toObject() : handlers;
+          if (asObj.setup) h.setup = asObj.setup;
+          if (asObj.update) h.update = asObj.update;
+          if (asObj.teardown) h.teardown = asObj.teardown;
+          world.modeManager.register(name, h);
+        } catch (e) { console.warn('register_mode failed', e); }
+      },
       from: (obj, key) => {
         return obj[key];
       },
