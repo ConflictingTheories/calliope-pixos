@@ -22,6 +22,7 @@ export default class ModeManager {
     }
     const handlers = this.registered[name] || {};
     this.current = { name, handlers, params };
+  console.log('ModeManager: set mode ->', name, params);
     if (handlers.setup) {
       try { await handlers.setup(params); } catch (e) { console.warn('mode setup failed', e); }
     }

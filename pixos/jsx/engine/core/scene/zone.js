@@ -112,8 +112,8 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
-  // If the zone JSON declares a mode, load mode scripts from the zip
-  try { if (zoneJson.mode) await this.loadModeFromZip(zoneJson.mode, zip); } catch (e) { console.warn('zone mode load failed', e); }
+      // If the zone JSON declares a mode, load mode scripts from the zip
+      try { if (zoneJson.mode) await this.loadModeFromZip(zoneJson.mode, zip); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -152,8 +152,8 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
-  // If zone specifies a default mode name on the map data, attempt to load it from spritz package
-  try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      // If zone specifies a default mode name on the map data, attempt to load it from spritz package
+      try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -205,15 +205,16 @@ export default class Zone extends Loadable {
       const handlers = {};
       if (setupFile) {
         const script = await setupFile.async('string');
-        // run the setup registration (it likely calls pixos.register_mode)
-        await interpreter.run(script);
+  // run the setup registration (it likely calls pixos.register_mode)
+  console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+  await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
       if (updateFile) {
         const updateScript = await updateFile.async('string');
         // wrap as a function and register to call on each frame via ModeManager
         // We return a JS function that executes the Lua chunk each time
-        handlers.update = async (time, params) => {
+  handlers.update = async (time, params) => {
           try {
             // create a fresh interpreter env for update to avoid state bleed
             const ui = new PixosLuaInterpreter(this.engine);
@@ -353,8 +354,13 @@ export default class Zone extends Loadable {
 
       this.attachTilesetListeners();
       await this.finalize();
-  // If the loaded map object includes a 'mode' property attempt to load a mode module
-  try { if (this.mode) await this.loadMode(this.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      // If the loaded map object includes a 'mode' property attempt to load a mode module
+      try {
+        if (this.mode)
+          await this.loadMode(this.mode);
+      } catch (e) {
+        console.warn('zone mode load failed', e);
+      }
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }
@@ -625,9 +631,9 @@ export default class Zone extends Loadable {
     ensureSortedByY(this.spriteList);
     ensureSortedByY(this.objectList);
 
-  rm.mvPushMatrix();
-  // Do not reinitialize the camera when FreeCam is active — FreeCam edits camera.uViewMat directly
-  if (!this.engine._freecamActive) rm.camera.setCamera();
+    rm.mvPushMatrix();
+    // Do not reinitialize the camera when FreeCam is active — FreeCam edits camera.uViewMat directly
+    if (!this.engine._freecamActive) rm.camera.setCamera();
 
     let si = 0; // sprite index
     let oi = 0; // object index

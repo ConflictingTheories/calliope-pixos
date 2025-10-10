@@ -353,6 +353,7 @@ export default class PixosLuaLibrary {
       /** Mode API - allow Lua scripts to change or query current mode */
       set_mode: (name, params) => {
         try {
+          console.log('pixos.set_mode called ->', name, params);
           const world = engine.spritz.world;
           if (world && world.modeManager) {
             // params may be a Lua table - convert if necessary
@@ -368,6 +369,7 @@ export default class PixosLuaLibrary {
       },
       register_mode: (name, handlers) => {
         try {
+          console.log('pixos.register_mode called ->', name);
           const world = engine.spritz.world;
           if (!world || !world.modeManager) return;
           // handlers is expected to be a Lua table with optional setup/update/teardown functions
