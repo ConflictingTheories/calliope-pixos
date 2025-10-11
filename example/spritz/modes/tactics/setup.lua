@@ -22,6 +22,13 @@ pixos.register_mode('tactics', {
 		-- return true to indicate selection handled (prevents default behaviour)
 		return true
 	end,
+
+	check_input = function(time, params)
+		-- consume selection and log for demo
+		pixos.log('tactics:check_input', { params = params, time = time })
+		-- return true to indicate selection handled (prevents default behaviour)
+		return true
+	end,
 })
 
 -- don't auto-set tactics as active unless requested by game script

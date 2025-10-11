@@ -247,6 +247,7 @@ export default class World {
       // Give current mode first crack at input
       if (this.modeManager && this.modeManager.handleInput) {
         try {
+          console.log('----> Checking Custom Input Handler')
           const handled = this.modeManager.handleInput(time);
           // If a mode consumed input, do not run the default handling
           if (handled) return;

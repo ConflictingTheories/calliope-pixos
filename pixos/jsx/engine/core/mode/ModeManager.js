@@ -81,6 +81,7 @@ export default class ModeManager {
   handleInput(time) {
     if (!this.current) return false;
     const handlers = this.current.handlers;
+    console.log({handlers});
     try {
       if (handlers && handlers.check_input) return !!handlers.check_input(time, this.current.params);
     } catch (e) {
@@ -93,6 +94,7 @@ export default class ModeManager {
   handleSelect(zone, row, cell, type) {
     if (!this.current) return false;
     const handlers = this.current.handlers;
+    console.log({handlers});
     try {
       if (handlers && handlers.on_select) return !!handlers.on_select(zone, row, cell, type, this.current.params);
     } catch (e) {

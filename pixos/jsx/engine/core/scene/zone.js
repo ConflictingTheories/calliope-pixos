@@ -708,6 +708,7 @@ export default class Zone extends Loadable {
     // allow active mode to intercept selection
     try {
       if (this.world?.modeManager && this.world.modeManager.handleSelect) {
+        console.log('Running Custom Select Handler')
         const handled = await this.world.modeManager.handleSelect(this, row, cell, 'tile');
         if (handled) return; // mode consumed selection
       }
