@@ -29,7 +29,7 @@ const config = {
     rules: [
       // JavaScript/JSX Files
       {
-        test: /\.jsx$/,
+        test: /\.js[x]?$/,
         exclude: /node_modules/,
         use: ['babel-loader'],
       },

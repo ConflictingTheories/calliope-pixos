@@ -1,0 +1,4 @@
+-- TODO - this file will represent the game loop logic for the 'debug mode'
+-- Effectively, it handle overrides, key-commands, etc.
+-- the debug mode will likely have a free-cam, additional hotkeys, and will enable tools such as a picker
+-- but likely use the selected object in a debug menu as opposed to in-game.

@@ -1,10 +1,39 @@
 # Pixospritz - Avatar Specification
 
 ## Introduction
-The Avatar represents the player character themselves. It may refer to multiple "sprites" in the game world, and the user may or may not continue to represent a legeacy character or may instead embody a new character each time. Much like in tabletop games, players sometimes run longer campaigns and at other times play opt to play a one-off game with a single short storyline and completely random characters. In all these cases, they still represent their avatar and that avatar is making actions, interacting with the world, and causing events to occur.
-
-Some players may try to continue to use the same "player character" as their avatar, but in all cases, the avatar in these documents will refer to the conceptual entity and control point rather than refer to any particular character or sprite. In different games, additional actions and skills maybe available to the player's avatar to perform, but in all cases, those will typically be interfaced through the common means which the avatar can be controlled.
+The Avatar is the player's in-game representation, controlling actions, interactions, and progression. Avatars can be persistent across games or unique to each story. The engine supports multiple avatars, legacy characters, and dynamic skill sets, all managed via sprites, objects, and scripting.
 
 ## Format & Template
+An avatar is defined as:
+
+```json
+{
+  "id": "player1",
+  "sprite": "hero",
+  "skills": ["move", "interact", "chat"],
+  "inventory": [ ... ],
+  "stats": { "hp": 100, "mp": 50 },
+  "position": [x, y, z],
+  "legacy": true
+}
+```
+
+- `id`: Unique identifier for the avatar.
+- `sprite`: Associated sprite or character.
+- `skills`: Actions and abilities available to the avatar.
+- `inventory`: Items carried by the avatar.
+- `stats`: Numeric stats (HP, MP, etc.).
+- `position`: Current position in the world.
+- `legacy`: Whether the avatar persists across games.
+
+## Engine Features
+- Avatars can be controlled via player input, AI, or Lua scripts.
+- Avatars support persistent progression and legacy characters.
+- Avatars can be customized with skills, inventory, and stats.
+- Multiple avatars are supported for multiplayer or story modes.
 
 ## Tips
+- Use legacy avatars for persistent campaigns and cross-game progression.
+- Extend avatar data for custom skills, stats, and inventory.
+- Use Lua or engine plugins to manage avatar logic and events.
+- Avatars can be switched or updated at runtime for dynamic gameplay.

@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -14,8 +14,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import glEngine from '@Engine/core/index.jsx';
-import { minecraftia } from '@Engine/core/hud.jsx';
+import glEngine from '@Engine/core/index.js';
+import { minecraftia } from '@Engine/core/hud/index.js';
 //
 const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) => {
   // Canvas

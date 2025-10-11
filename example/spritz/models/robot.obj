@@ -1,5 +1,7 @@
+
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
 # File Created: 05.06.2013 13:21:36
+mtllib robot.mtl
 
 #
 # object LP_Body

@@ -1,5 +1,6 @@
 {
   "initialZones": ["base"],
+  "modes": ["explore", "fight", "debug"],
   "maps": ["room", "dungeon-top", "dungeon-bottom"],
   "tilesets": ["common", "sewer"],
   "sprites": ["characters/male", "npc/air-knight"],

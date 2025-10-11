@@ -2,7 +2,7 @@
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
-**  Copyright (c) 2020-2023 - Kyle Derby MacInnis  **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
 **    Any unauthorized distribution or transfer    **
 **       of this work is strictly prohibited.      **
@@ -16,7 +16,7 @@ import { collect } from 'react-recollect';
 // WebGL Component
 import WebGLView from '@Components/WebGLView.jsx';
 // Pixos Spritz Provider
-import SpritzProvider from '@Spritz/player.jsx';
+import SpritzProvider from '@Spritz/player.js';
 // Style Plugin
 import '../css/pixos.css';
 

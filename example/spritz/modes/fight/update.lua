@@ -1,0 +1,3 @@
+-- TODO - this file will represent the game loop logic for the 'fight mode'
+-- Effectively, it handle overrides, key-commands, etc.
+-- and would perhaps be a turn-based style or a time-based or possibly a mini-game, etc

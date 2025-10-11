@@ -1,0 +1,5 @@
+{
+    "name":"tactics",
+    "update":"update.lua",
+    "setup": "setup.lua"
+}
