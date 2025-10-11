@@ -23,7 +23,7 @@ export default class Keyboard {
     if (!Keyboard._instance) {
       this.activeKeys = [];
       this.activeCodes = [];
-  this._hooks = [];
+      this._hooks = [];
       this.shift = false;
       this.engine = engine;
       Keyboard._instance = this;
@@ -44,7 +44,7 @@ export default class Keyboard {
     // notify hooks (debug / custom controls) about raw key event
     try {
       (Keyboard._instance._hooks || []).forEach((h) => h(e, 'down'));
-    } catch (err) {}
+    } catch (err) { }
   }
 
   onKeyUp(e) {
@@ -54,7 +54,7 @@ export default class Keyboard {
     Keyboard._instance.activeCodes.splice(index, 1);
     try {
       (Keyboard._instance._hooks || []).forEach((h) => h(e, 'up'));
-    } catch (err) {}
+    } catch (err) { }
   }
 
   // Register a raw key event hook. Hook receives (event, type) where type is 'down' or 'up'

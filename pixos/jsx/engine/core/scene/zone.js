@@ -112,8 +112,13 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
-  // If the zone JSON declares a mode, load mode scripts from the spritz package
-  try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      // If the zone JSON declares a mode, load mode scripts from the spritz package
+      try {
+        if (data.mode)
+          await this.loadMode(data.mode);
+      } catch (e) {
+        console.warn('zone mode load failed', e);
+      }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -153,7 +158,12 @@ export default class Zone extends Loadable {
 
       await this.finalize();
       // If zone specifies a default mode name on the map data, attempt to load it from spritz package
-      try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      try {
+        if (data.mode)
+          await this.loadMode(data.mode);
+      } catch (e) {
+        console.warn('zone mode load failed', e);
+      }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -193,6 +203,8 @@ export default class Zone extends Loadable {
   /** Load mode scripts from a zip (Lua preferred). Registers handlers with the world's ModeManager. */
   loadModeFromZip = async (modeName, zip) => {
     try {
+      console.log('Loading Game Mode From Zip');
+
       const setupFile = zip.file(`modes/${modeName}/setup.lua`);
       const updateFile = zip.file(`modes/${modeName}/update.lua`);
       const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
@@ -205,16 +217,16 @@ export default class Zone extends Loadable {
       const handlers = {};
       if (setupFile) {
         const script = await setupFile.async('string');
-  // run the setup registration (it likely calls pixos.register_mode)
-  console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
-  await interpreter.run(script);
+        // run the setup registration (it likely calls pixos.register_mode)
+        console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+        await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
       if (updateFile) {
         const updateScript = await updateFile.async('string');
         // wrap as a function and register to call on each frame via ModeManager
         // We return a JS function that executes the Lua chunk each time
-  handlers.update = async (time, params) => {
+        handlers.update = async (time, params) => {
           try {
             // create a fresh interpreter env for update to avoid state bleed
             const ui = new PixosLuaInterpreter(this.engine);
@@ -229,7 +241,18 @@ export default class Zone extends Loadable {
       }
       if (teardownFile) {
         const tdScript = await teardownFile.async('string');
-        handlers.teardown = async (params) => { try { const td = new PixosLuaInterpreter(this.engine); td.setScope({ zone: this }); td.initLibrary(); await td.run(tdScript); } catch (e) { console.warn('mode teardown failed', e); } };
+        handlers.teardown = async (params) => {
+          try {
+            const td = new PixosLuaInterpreter(this.engine);
+            td.setScope({ zone: this });
+            td.initLibrary();
+            const res = await td.run(tdScript);
+            // if there is a returned callback, we can run it
+            if (typeof res === 'function') res(params);
+          } catch (e) {
+            console.warn('mode teardown failed', e);
+          }
+        };
       }
 
       // If the setup script used pixos.register_mode, the ModeManager will
@@ -247,34 +270,7 @@ export default class Zone extends Loadable {
   loadMode = async (modeName) => {
     try {
       const world = this.world;
-      // prefer JS files under spritz package (setup.js / update.js)
-      try {
-        // attempt to require a JS module that exports { setup, update, teardown }
-        // eslint-disable-next-line global-require, import/no-dynamic-require
-        const mod = require('@Spritz/' + this.spritzName + '/modes/' + modeName + '/setup.js');
-          if (mod) {
-            console.log('Zone.loadMode: found JS fallback for mode', modeName);
-          const handlers = {};
-          if (mod.setup) handlers.setup = mod.setup.bind(this);
-          if (mod.update) handlers.update = mod.update.bind(this);
-          if (mod.teardown) handlers.teardown = mod.teardown.bind(this);
-          if (world && world.modeManager) world.modeManager.register(modeName, handlers);
-          // Call JS setup immediately so the fallback can register UI or call set_mode
-          try {
-            console.log('Zone.loadMode: running JS setup for', modeName);
-            const res = handlers.setup ? await handlers.setup() : null;
-            if (res && typeof res === 'object') {
-              // merge returned handlers
-              Object.assign(handlers, res);
-              world.modeManager.register(modeName, handlers);
-            }
-          } catch (e) {
-            console.warn('JS mode setup failed', modeName, e);
-          }
-        }
-      } catch (e) {
-        // ignore missing JS fallback
-      }
+      await this.loadModeFromZip(modeName, world.spritz.zip);
     } catch (e) {
       console.warn('loadMode failed', modeName, e);
     }
@@ -335,6 +331,11 @@ export default class Zone extends Loadable {
       }
 
       // Audio
+      if (zoneJson.mode) {
+        try { this.mode = zoneJson.mode } catch (e) { console.error('audio load', e); }
+      }
+
+      // Audio
       if (zoneJson.audioSrc) {
         try { this.audio = await this.engine.resourceManager.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); } catch (e) { console.error('audio load', e); }
       }
@@ -366,14 +367,22 @@ export default class Zone extends Loadable {
       ]);
 
       this.attachTilesetListeners();
-      await this.finalize();
+      
       // If the loaded map object includes a 'mode' property attempt to load a mode module
+      // todo - look into whether this should be updated or moved - not sure if the zone should control the mode like this.
+      // in some cases, it makes sense, but I feel like if multiple zones are loaded, there could be conflicts, and the idea of
+      // the zone controlling gameplay could be confusing in some cases, but for "battle zones" it kind of makes sense - but this could
+      // be done via scripts - so possibly something which could be fully scripted instead of this kind of logic - and instead
+      // I will likely move this to the world object - and then it will be the 'initial' mode.
       try {
         if (this.mode)
           await this.loadMode(this.mode);
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
+      
+      await this.finalize();
+
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }

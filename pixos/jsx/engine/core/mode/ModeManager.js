@@ -11,8 +11,8 @@ export default class ModeManager {
   }
 
   register(name, handlers) {
-  console.log('ModeManager.register ->', name, 'hasSetup?', !!(handlers && handlers.setup), 'currentMode=', this.current?.name);
-  this.registered[name] = handlers;
+    console.log('ModeManager.register ->', name, 'hasSetup?', !!(handlers && handlers.setup), 'currentMode=', this.current?.name);
+    this.registered[name] = handlers;
     // If this mode is currently active but handlers were not present at set-time,
     // run its setup now so late-registered modes still initialize correctly.
     if (this.current && this.current.name === name) {
@@ -40,11 +40,20 @@ export default class ModeManager {
     if (!name) return;
     // teardown previous
     if (this.current && this.current.handlers?.teardown) {
-      try { await this.current.handlers.teardown(params); } catch (e) { console.warn('mode teardown failed', e); }
+      try {
+        await this.current.handlers.teardown(params);
+      } catch (e) {
+        console.warn('mode teardown failed', e);
+      }
     }
+    
+    if (!this.registered[name]) {
+      console.warn('Warning - Mode has not been registered')
+    }
+
     const handlers = this.registered[name] || {};
     this.current = { name, handlers, params };
-  console.log('ModeManager: set mode ->', name, params);
+    console.log('ModeManager: set mode ->', name, params, handlers);
     if (handlers.setup) {
       try {
         // Allow setup to optionally return an object of handlers
@@ -71,9 +80,9 @@ export default class ModeManager {
   /** Allow modes to handle input; return true if input was consumed */
   handleInput(time) {
     if (!this.current) return false;
-    const h = this.current.handlers;
+    const handlers = this.current.handlers;
     try {
-      if (h && h.check_input) return !!h.check_input(time, this.current.params);
+      if (handlers && handlers.check_input) return !!handlers.check_input(time, this.current.params);
     } catch (e) {
       console.warn('mode input handler failed', e);
     }
@@ -83,9 +92,9 @@ export default class ModeManager {
   /** Allow modes to handle selection (tile/sprite). Return true to consume default onSelect */
   handleSelect(zone, row, cell, type) {
     if (!this.current) return false;
-    const h = this.current.handlers;
+    const handlers = this.current.handlers;
     try {
-      if (h && h.on_select) return !!h.on_select(zone, row, cell, type, this.current.params);
+      if (handlers && handlers.on_select) return !!handlers.on_select(zone, row, cell, type, this.current.params);
     } catch (e) {
       console.warn('mode on_select failed', e);
     }
