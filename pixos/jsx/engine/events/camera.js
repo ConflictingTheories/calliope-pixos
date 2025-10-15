@@ -73,31 +73,18 @@ export default {
     }
 
     switch (this.cameraAction) {
-
-      case 'pan': // rotate?
-        let frac = (time - this.startTime) / (this.options.duration * 1000);
-        let from = this.options.from;
-        let to = this.options.to;
-        to.z = Math.round(to.z);
-        // use lerp to smoothly transition based on completion
-        lerp(from, to, frac, this.engine.renderManager.camera.cameraVector);
-        // set Facing Direction for proper sprite rendering
-        this.engine.renderManager.camera.cameraDir = Direction.adjustCameraDirection(to);
+      case 'pan':
+        if (this.options.from && this.options.to) {
+          const from = this.options.from;
+          const to = this.options.to;
+          to.z = Math.round(to.z); // lock to tiles
+          // Interpolate camera target position
+          const newTarget = lerp(from, to, progress);
+          camera.cameraTarget = camera.cameraVector = newTarget;
+          camera.cameraDir = Direction.adjustCameraDirection(newTarget); // used for billboard facing
+          camera.updateViewFromAngles();
+        }
         break;
-
-      // case 'pan':
-      //   if (this.options.from && this.options.to) {
-      //     const from = this.options.from;
-      //     const to = this.options.to;
-      //     // Interpolate camera target position
-      //     const newTarget = lerp(from, to, progress);
-      //     camera.cameraTarget = newTarget;
-      //     camera.updateViewFromAngles();
-      //     // Note: cameraDir is no longer directly set by cameraVector,
-      //     // it should be derived from the camera's forward vector if needed.
-      //     // For now, removing direct cameraDir manipulation here.
-      //   }
-      //   break;
       case 'zoom':
         if (typeof this.options.zoomDelta === 'number') {
           // Apply zoom incrementally or directly based on progress
@@ -126,11 +113,6 @@ export default {
       case 'translate':
         if (this.options.translateDirection) {
           // For continuous translation, this might be called repeatedly.
-          // For a one-shot event, we'd calculate the total translation and apply based on progress.
-          // For now, assuming it's a continuous movement if duration is long.
-          // If it's a fixed translation over duration, need to store start/end positions.
-          // For simplicity, calling translateCam directly for now, which applies a fixed speed.
-          // This might not be smooth over a duration without more state.
           if (!this.completed) { // Only translate while not completed
             camera.translateCam(this.options.translateDirection);
           }
@@ -138,6 +120,7 @@ export default {
         break;
       case 'focus':
         // TODO: Implement focus logic (e.g., move camera target to a specific point)
+        // needs to support top-down, iso, fps - todo - looks into binding as well.
         console.warn('Camera action "focus" not yet implemented.');
         break;
       default:

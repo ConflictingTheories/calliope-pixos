@@ -124,7 +124,7 @@ export const attachWebglDebugInfo = (self) => {
             // only handle keydown events here for toggles
             if (type !== 'down') return;
             if (ev.key !== 'F5') return;
-            try { ev.preventDefault(); ev.stopPropagation(); } catch (err) {}
+            try { ev.preventDefault(); ev.stopPropagation(); } catch (err) { }
             // toggle and kick off same activation path below
             self.showFreeCam = !self.showFreeCam;
             self.store.set('Debug::FreeCam::show', self.showFreeCam);
@@ -135,7 +135,7 @@ export const attachWebglDebugInfo = (self) => {
         kb.addHook && kb.addHook(kbHook);
         // store hook so it can be removed later if attachWebglDebugInfo is called multiple times
         self._debugFreeCamHook = kbHook;
-    } catch (err) {}
+    } catch (err) { }
 
     // central handler for activation/deactivation triggered by keyboard hook
     window.addEventListener('pixos:freecam:toggle', () => {
@@ -146,9 +146,10 @@ export const attachWebglDebugInfo = (self) => {
         const rotSpeed = 0.002;
 
         // wheel handler -> zoom in/out using camera.zoom
-        const onWheel = (we) => { try { we.preventDefault(); we.stopPropagation(); } catch (err) {};
+        const onWheel = (we) => {
+            try { we.preventDefault(); we.stopPropagation(); } catch (err) { };
             const dz = (we.deltaY > 0 ? 1 : -1) * 0.5;
-            try { rm.camera.zoom && rm.camera.zoom(dz); moveCounter++; } catch (err) {}
+            try { rm.camera.zoom && rm.camera.zoom(dz); moveCounter++; } catch (err) { }
         };
 
         // pointer move handler (pointer lock) -> rotate view matrix directly
@@ -165,14 +166,14 @@ export const attachWebglDebugInfo = (self) => {
                     rm.camera.updateViewFromAngles && rm.camera.updateViewFromAngles();
                     moveCounter++;
                 }
-            } catch (err) {}
+            } catch (err) { }
         };
 
         // keyboard-driven movement uses keyboard.activeCodes from engine.keyboard
-    let rafId = null;
-    let statusEl = null;
-    let moveCounter = 0;
-    let firstTick = true;
+        let rafId = null;
+        let statusEl = null;
+        let moveCounter = 0;
+        let firstTick = true;
         const tick = () => {
             // Use activeCodes which stores the unambiguous key strings (eg 'w', 'ArrowUp')
             const codes = (self.keyboard && self.keyboard.activeCodes) || [];
@@ -192,7 +193,7 @@ export const attachWebglDebugInfo = (self) => {
                     if (lower.indexOf('r') >= 0) { rm.camera.pitch = Math.max(-Math.PI / 2 + 0.01, rm.camera.pitch - 0.03); rm.camera.updateViewFromAngles(); moveCounter++; }
                     if (lower.indexOf('f') >= 0) { rm.camera.pitch = Math.min(Math.PI / 2 - 0.01, rm.camera.pitch + 0.03); rm.camera.updateViewFromAngles(); moveCounter++; }
                 }
-            } catch (err) {}
+            } catch (err) { }
 
             rafId = requestAnimationFrame(tick);
             // update status element so user can see what keys are active (helps debug focus)
@@ -215,7 +216,7 @@ export const attachWebglDebugInfo = (self) => {
                 // collect camera state safely
                 const cam = rm.camera || {};
                 if (firstTick) {
-                    try { console.log('[FreeCam] FIRST TICK viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) {}
+                    try { console.log('[FreeCam] FIRST TICK viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) { }
                     firstTick = false;
                 }
                 const pos = cam.cameraPosition ? [cam.cameraPosition.x, cam.cameraPosition.y, cam.cameraPosition.z] : ['n/a'];
@@ -227,7 +228,7 @@ export const attachWebglDebugInfo = (self) => {
                     'pos: ' + JSON.stringify(pos) + ' yaw:' + yaw + ' pitch:' + pitch + '\n' +
                     'uViewMat (trim): ' + JSON.stringify(vm) + '\n' +
                     'moves: ' + moveCounter;
-            } catch (err) {}
+            } catch (err) { }
         };
 
         if (self.showFreeCam) {
@@ -235,7 +236,7 @@ export const attachWebglDebugInfo = (self) => {
             // keep raw camera matrix; avoid decomposing it here (fragile)
             self._freeCamSaved = create();
             // log the incoming view matrix for diagnosis
-            try { console.log('[FreeCam] ENTER - current viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) {}
+            try { console.log('[FreeCam] ENTER - current viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) { }
             set(rm.camera.uViewMat, self._freeCamSaved);
             try {
                 self._freeCamSavedState = {
@@ -247,8 +248,8 @@ export const attachWebglDebugInfo = (self) => {
                     viewMat: create(),
                 };
                 set(rm.camera.uViewMat, self._freeCamSavedState.viewMat);
-                try { console.log('[FreeCam] ENTER - savedState.viewMat:', Array.from(self._freeCamSavedState.viewMat)); } catch (err) {}
-            } catch (err) {}
+                try { console.log('[FreeCam] ENTER - savedState.viewMat:', Array.from(self._freeCamSavedState.viewMat)); } catch (err) { }
+            } catch (err) { }
             if (self.spritz?.world) self.spritz.world.isPaused = true;
             self._freecamActive = true;
 
@@ -267,33 +268,13 @@ export const attachWebglDebugInfo = (self) => {
             info.innerHTML = 'FREE CAM (F5 to exit) &nbsp; WASD/Arrows: move & strafe &nbsp; Q/E: yaw &nbsp; R/F: pitch &nbsp; Wheel: zoom';
             document.body.appendChild(info);
 
-            // One-click focus & capture button (helps ensure wrapper has focus and pointer lock)
-            const captureBtn = document.createElement('button');
-            captureBtn.id = 'pixos-freecam-capture';
-            captureBtn.innerText = 'Click to Focus & Capture';
-            captureBtn.style.position = 'absolute';
-            captureBtn.style.bottom = '40px';
-            captureBtn.style.left = '50%';
-            captureBtn.style.transform = 'translateX(-50%)';
-            captureBtn.style.zIndex = '10003';
-            captureBtn.style.padding = '6px 10px';
-            captureBtn.style.fontFamily = 'monospace';
-            captureBtn.style.fontSize = '12px';
-            captureBtn.style.cursor = 'pointer';
-            // Prefer appending to the canvas wrapper (if present) so the click is a direct user gesture
-            try {
-                if (canvas && canvas.parentElement) {
-                    canvas.parentElement.appendChild(captureBtn);
-                } else document.body.appendChild(captureBtn);
-            } catch (err) { document.body.appendChild(captureBtn); }
-
             const onPointerLockChange = () => {
                 const locked = document.pointerLockElement === canvas || document.mozPointerLockElement === canvas;
                 try {
                     const s = document.getElementById('pixos-freecam-status');
                     if (s) s.innerText = 'Keys: ' + JSON.stringify((self.keyboard && self.keyboard.activeCodes) || []) + ' | pointerLock: ' + (locked ? 'yes' : 'no');
-                    try { console.log('[FreeCam] pointerLock change - locked:', locked, 'viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) {}
-                } catch (err) {}
+                    try { console.log('[FreeCam] pointerLock change - locked:', locked, 'viewMat:', Array.from(rm.camera.uViewMat)); } catch (err) { }
+                } catch (err) { }
             };
 
             const captureClick = (ev) => {
@@ -303,35 +284,31 @@ export const attachWebglDebugInfo = (self) => {
                     if (canvas && canvas.parentElement) {
                         canvas.parentElement.focus && canvas.parentElement.focus();
                     }
-                } catch (err) {}
+                } catch (err) { }
                 // request pointer lock on canvas
-                try { canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock; canvas.requestPointerLock(); } catch (err) {}
+                try { canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock; canvas.requestPointerLock(); } catch (err) { }
             };
 
-            // add both click and pointerdown handlers as some browsers/platforms treat them differently
-            captureBtn.addEventListener('click', captureClick);
-            captureBtn.addEventListener('pointerdown', captureClick);
             // also mousedown as a final fallback
-            captureBtn.addEventListener('mousedown', captureClick);
             document.addEventListener('pointerlockchange', onPointerLockChange);
             document.addEventListener('mozpointerlockchange', onPointerLockChange);
 
-            try { self._bodyOverflowSaved = document.body.style.overflow; document.body.style.overflow = 'hidden'; } catch (err) {}
+            try { self._bodyOverflowSaved = document.body.style.overflow; document.body.style.overflow = 'hidden'; } catch (err) { }
 
             // pointer lock request
-            try { canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock; canvas.requestPointerLock(); } catch (err) {}
+            try { canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock; canvas.requestPointerLock(); } catch (err) { }
 
             window.addEventListener('wheel', onWheel, { passive: false, capture: true });
             document.addEventListener('pointermove', onPointerMove, { capture: true });
             // also listen for mousemove for browsers that don't support pointermove while locked
             document.addEventListener('mousemove', onPointerMove, { capture: true });
             rafId = requestAnimationFrame(tick);
-            self._freecamHandlers = { onWheel, onPointerMove, rafId, captureBtn, captureClick, onPointerLockChange };
+            self._freecamHandlers = { onWheel, onPointerMove, rafId, captureClick, onPointerLockChange };
         } else {
             // exit freecam
             if (self._freeCamSavedState) {
                 try {
-                    try { console.log('[FreeCam] EXIT - restoring savedState.viewMat:', Array.from(self._freeCamSavedState.viewMat)); } catch (err) {}
+                    try { console.log('[FreeCam] EXIT - restoring savedState.viewMat:', Array.from(self._freeCamSavedState.viewMat)); } catch (err) { }
                     // restore raw view matrix snapshot
                     set(self._freeCamSavedState.viewMat, rm.camera.uViewMat);
                     // restore camera params to ensure consistent tileset-style behavior
@@ -343,47 +320,39 @@ export const attachWebglDebugInfo = (self) => {
                             if (self._freeCamSavedState.target) rm.camera.cameraTarget = self._freeCamSavedState.target;
                             rm.camera.updateViewFromAngles && rm.camera.updateViewFromAngles();
                         }
-                    } catch (err) {}
-                } catch (err) {}
+                    } catch (err) { }
+                } catch (err) { }
                 self._freeCamSavedState = null;
             } else if (self._freeCamSaved) {
                 try {
-                    try { console.log('[FreeCam] EXIT - restoring _freeCamSaved:', Array.from(self._freeCamSaved)); } catch (err) {}
+                    try { console.log('[FreeCam] EXIT - restoring _freeCamSaved:', Array.from(self._freeCamSaved)); } catch (err) { }
                     set(self._freeCamSaved, rm.camera.uViewMat);
-                    try { rm.camera.setFromViewMatrix(rm.camera.uViewMat); } catch (err) {}
-                } catch (err) {}
+                    try { rm.camera.setFromViewMatrix(rm.camera.uViewMat); } catch (err) { }
+                } catch (err) { }
             }
             if (self.spritz?.world) self.spritz.world.isPaused = false;
             self._freecamActive = false;
             const info = document.getElementById('pixos-freecam-info'); if (info) document.body.removeChild(info);
-            try { document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock; document.exitPointerLock(); } catch (err) {}
+            try { document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock; document.exitPointerLock(); } catch (err) { }
 
             if (self._freecamHandlers) {
                 window.removeEventListener('wheel', self._freecamHandlers.onWheel, { capture: true });
                 document.removeEventListener('pointermove', self._freecamHandlers.onPointerMove, { capture: true });
                 document.removeEventListener('mousemove', self._freecamHandlers.onPointerMove, { capture: true });
                 try {
-                    if (self._freecamHandlers.captureBtn && self._freecamHandlers.captureClick) {
-                        self._freecamHandlers.captureBtn.removeEventListener('click', self._freecamHandlers.captureClick);
-                        self._freecamHandlers.captureBtn.removeEventListener('pointerdown', self._freecamHandlers.captureClick);
-                        self._freecamHandlers.captureBtn.removeEventListener('mousedown', self._freecamHandlers.captureClick);
-                        if (self._freecamHandlers.captureBtn.parentElement) self._freecamHandlers.captureBtn.parentElement.removeChild(self._freecamHandlers.captureBtn);
-                    }
-                } catch (err) {}
-                try {
                     if (self._freecamHandlers.onPointerLockChange) {
                         document.removeEventListener('pointerlockchange', self._freecamHandlers.onPointerLockChange);
                         document.removeEventListener('mozpointerlockchange', self._freecamHandlers.onPointerLockChange);
                     }
-                } catch (err) {}
+                } catch (err) { }
                 cancelAnimationFrame(self._freecamHandlers.rafId);
                 self._freecamHandlers = null;
             }
-            try { document.body.style.overflow = self._bodyOverflowSaved ?? ''; } catch (err) {}
+            try { document.body.style.overflow = self._bodyOverflowSaved ?? ''; } catch (err) { }
             try {
                 const s = document.getElementById('pixos-freecam-status');
                 if (s) document.body.removeChild(s);
-            } catch (err) {}
+            } catch (err) { }
         }
     });
 }

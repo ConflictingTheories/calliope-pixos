@@ -1,6 +1,5 @@
 **/node_modules
 **/build
 **/output
-**/.DS_STORE
-.DS_STORE
-ext/TileME
+**/.DS_Store
+.DS_Store
