@@ -250,7 +250,7 @@ export default class PixosLuaLibrary {
         engine.renderManager.camera.setCamera();
       },
       get_camera_vector: () => {
-        return engine.renderManager.camera.cameraVector;
+        return engine.renderManager.camera.cameraTarget;
       },
       look_at: (pos, trgt, up) => {
         let position = this.lua.utils.ensureArray(pos.toObject());

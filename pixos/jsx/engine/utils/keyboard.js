@@ -12,72 +12,133 @@
 \*                                                 */
 import GLEngine from '@Engine/core/index.js';
 
+/**
+ * @callback KeyboardHookCallback
+ * @param {KeyboardEvent} event - The raw keyboard event.
+ * @param {'down'|'up'} type - The type of event ('down' for keydown, 'up' for keyup).
+ */
+
+/**
+ * Keyboard - Manages keyboard input for the game engine.
+ * This class tracks active keys, provides methods to check key states,
+ * and allows for custom hooks to be registered for raw keyboard events.
+ */
 export default class Keyboard {
   /**
-   *
-   * @param {GLEngine} engine
-   * @returns
+   * Creates an instance of Keyboard.
+   * @param {GLEngine} engine - The main game engine instance.
+   * @returns {Keyboard} The singleton instance of the Keyboard manager.
    */
   constructor(engine) {
-    // Instance
+    // Ensure singleton instance
     if (!Keyboard._instance) {
-      this.activeKeys = [];
-      this.activeCodes = [];
-      this._hooks = [];
-      this.shift = false;
+      /** @type {string[]} */
+      this.activeKeys = []; // Stores lowercase character codes of currently pressed keys
+      /** @type {string[]} */
+      this.activeCodes = []; // Stores `event.key` values of currently pressed keys
+      /** @type {KeyboardHookCallback[]} */
+      this._hooks = []; // Registered callbacks for raw key events
+      /** @type {boolean} */
+      this.shift = false; // True if Shift key is currently pressed
+      /** @type {GLEngine} */
       this.engine = engine;
       Keyboard._instance = this;
     }
     return Keyboard._instance;
   }
 
+  /**
+   * Initializes keyboard event listeners on the window.
+   * This should be called once during engine setup.
+   */
   init() {
-    // setup initial event listeners
+    window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
   }
 
+  /**
+   * Handles the `keydown` event. Adds the pressed key to active lists and notifies hooks.
+   * @param {KeyboardEvent} e - The keyboard event.
+   */
   onKeyDown(e) {
     e.preventDefault();
-    let c = String.fromCharCode(e.keyCode).toLowerCase();
-    if (Keyboard._instance.activeKeys.indexOf(c) < 0) Keyboard._instance.activeKeys.push(c);
-    if (Keyboard._instance.activeCodes.indexOf(e.key) < 0) Keyboard._instance.activeCodes.push(e.key);
+    const c = String.fromCharCode(e.keyCode).toLowerCase();
+    if (Keyboard._instance.activeKeys.indexOf(c) < 0) {
+      Keyboard._instance.activeKeys.push(c);
+    }
+    if (Keyboard._instance.activeCodes.indexOf(e.key) < 0) {
+      Keyboard._instance.activeCodes.push(e.key);
+    }
     Keyboard._instance.shift = e.shiftKey;
-    // notify hooks (debug / custom controls) about raw key event
+    // Notify hooks (debug / custom controls) about raw key event
     try {
       (Keyboard._instance._hooks || []).forEach((h) => h(e, 'down'));
-    } catch (err) { }
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Error in keyboard hook (keydown):', err);
+      }
+    }
   }
 
+  /**
+   * Handles the `keyup` event. Removes the released key from active lists and notifies hooks.
+   * @param {KeyboardEvent} e - The keyboard event.
+   */
   onKeyUp(e) {
-    let c = String.fromCharCode(e.keyCode).toLowerCase();
+    const c = String.fromCharCode(e.keyCode).toLowerCase();
     let index = Keyboard._instance.activeKeys.indexOf(c);
-    Keyboard._instance.activeKeys.splice(index, 1);
-    Keyboard._instance.activeCodes.splice(index, 1);
+    if (index > -1) {
+      Keyboard._instance.activeKeys.splice(index, 1);
+    }
+    // Remove from activeCodes as well
+    index = Keyboard._instance.activeCodes.indexOf(e.key);
+    if (index > -1) {
+      Keyboard._instance.activeCodes.splice(index, 1);
+    }
+    Keyboard._instance.shift = e.shiftKey;
     try {
       (Keyboard._instance._hooks || []).forEach((h) => h(e, 'up'));
-    } catch (err) { }
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Error in keyboard hook (keyup):', err);
+      }
+    }
   }
 
-  // Register a raw key event hook. Hook receives (event, type) where type is 'down' or 'up'
+  /**
+   * Registers a raw key event hook.
+   * @param {KeyboardHookCallback} cb - The callback function to register.
+   */
   addHook(cb) {
     if (!cb) return;
-    this._hooks = this._hooks || [];
+    this._hooks = this._hooks || []; // Ensure _hooks is initialized
     this._hooks.push(cb);
   }
 
+  /**
+   * Removes a previously registered raw key event hook.
+   * @param {KeyboardHookCallback} cb - The callback function to remove.
+   */
   removeHook(cb) {
     if (!cb || !this._hooks) return;
     const i = this._hooks.indexOf(cb);
-    if (i >= 0) this._hooks.splice(i, 1);
+    if (i >= 0) {
+      this._hooks.splice(i, 1);
+    }
   }
 
-  // Return the last pressed key from provided keys
+  /**
+   * Returns the last pressed key from a provided list of keys.
+   * @param {string} keys - A string of keys to check (e.g., 'wasd').
+   * @returns {string|null} The last pressed key from the list, or null if none are pressed.
+   */
   lastPressed(keys) {
-    let lower = keys.toLowerCase();
+    const lower = keys.toLowerCase();
     let max = null;
     let maxI = -1;
-    for (let i = 0; i < keys.length; i++) {
-      let k = lower[i];
-      let index = Keyboard._instance.activeKeys.indexOf(k);
+    for (let i = 0; i < lower.length; i++) {
+      const k = lower[i];
+      const index = Keyboard._instance.activeKeys.indexOf(k);
       if (index > maxI) {
         max = k;
         maxI = index;
@@ -86,21 +147,32 @@ export default class Keyboard {
     return max;
   }
 
-  // Return the last pressed key in keys
+  /**
+   * Returns the last pressed key code (from `event.key`) that is not in the ignore list.
+   * Note: This method modifies `activeCodes` by popping elements. Consider `peekLastPressedCode` for non-destructive check.
+   * @param {string} [ignore=''] - A string of key codes to ignore.
+   * @returns {string|null} The last pressed key code, or null if none are found or all are ignored.
+   */
   lastPressedCode(ignore = '') {
-    let last = Keyboard._instance.activeCodes.pop();
-    let lower = ignore.toLowerCase();
-    for (let i = 0; i < lower.length; i++) {
-      let index = Keyboard._instance.activeKeys.indexOf(last);
-      if (index < 0) {
-        last = Keyboard._instance.activeCodes.pop();
+    // This method's logic seems to be intended to return the *most recently pressed* key
+    // that is not in the ignore list, by repeatedly popping from `activeCodes`.
+    // This is a destructive operation on `activeCodes`.
+    let last = null;
+    const lowerIgnore = ignore.toLowerCase();
+    while (Keyboard._instance.activeCodes.length > 0) {
+      last = Keyboard._instance.activeCodes.pop();
+      if (lowerIgnore.indexOf(last.toLowerCase()) === -1) {
+        return last;
       }
     }
-    return last;
+    return null;
   }
 
-  // Return the last pressed key in keys
+  /**
+   * Returns the last pressed key (from `String.fromCharCode(e.keyCode)`) from the active keys list.
+   * @returns {string|null} The last pressed key, or null if no keys are active.
+   */
   lastPressedKey() {
-    return Keyboard._instance.activeKeys[Keyboard._instance.activeKeys.length - 1];
+    return Keyboard._instance.activeKeys[Keyboard._instance.activeKeys.length - 1] || null;
   }
 }
