@@ -53,6 +53,12 @@ export default class ExampleDynamicSpritz extends Spritz {
         // start
         world.isPaused = false;
 
+        // Connect to network if specified
+        if (manifest.network && manifest.network.url) {
+          console.log('Network connection found -- attempting connectiong to server')
+          engine.networkManager.connect(manifest.network.url);
+        }
+
         // Exit Menu
         menu.completed = true;
         Spritz._instance.loaded = true;

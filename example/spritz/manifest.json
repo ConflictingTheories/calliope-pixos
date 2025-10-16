@@ -3,6 +3,10 @@
   "modes": ["explore", "fight", "debug"],
   "maps": ["room", "dungeon-top", "dungeon-bottom"],
   "tilesets": ["common", "sewer"],
+  "network": {
+    "enabled": true,
+    "url": "ws://localhost:8080"
+  },
   "sprites": ["characters/male", "npc/air-knight"],
   "objects": [],
   "textures": [],
