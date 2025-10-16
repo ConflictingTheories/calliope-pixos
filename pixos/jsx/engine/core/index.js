@@ -248,8 +248,11 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
 
     // Update and render based on the active game mode
+    if (!this.modeManager.handleInput(timestamp)) {
+      // If mode doesn't handle input, do default update
+      this.spritz.update(timestamp);
+    }
     this.modeManager.update(timestamp); // Update active mode
-    this.spritz.update(timestamp); // Update scene (might be overridden by mode)
     this.spritz.render(this); // Render scene (might be overridden by mode)
 
     this.cutsceneManager.update(); // Update cutscene (if applicable)

@@ -77,12 +77,9 @@ export default {
         if (this.options.from && this.options.to) {
           const from = this.options.from;
           const to = this.options.to;
-          to.z = Math.round(to.z); // lock to tiles
           // Interpolate camera target position
           const newTarget = lerp(from, to, progress);
-          camera.cameraTarget = camera.cameraVector = newTarget;
-          camera.cameraDir = Direction.adjustCameraDirection(newTarget); // used for billboard facing
-          camera.updateViewFromAngles();
+          camera.setTarget(newTarget);
         }
         break;
       case 'zoom':

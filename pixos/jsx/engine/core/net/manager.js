@@ -77,13 +77,17 @@ class NetworkManager {
   }
 
   joinZone(zoneId) {
-    const { scene } = this.engine.renderManager.getRenderState();
-    const { player } = scene.getAvatars();
-    this.send('join-zone', { zoneId, avatar: player.getAvatarData() });
+    const avatar = this.engine.spritz.world.getAvatar();
+    this.send('join-zone', { zoneId, avatar: avatar.getAvatarData() });
   }
 
-  sendAction(action) {
-    this.send('action', action);
+  sendAction(action, sprite) {
+    const data = {
+      action: action.constructor.name.toLowerCase(),
+      params: action.params,
+      spriteId: sprite.id,
+    };
+    this.send('action', data);
   }
 
   handleZoneJoined(payload) {
@@ -96,20 +100,19 @@ class NetworkManager {
     if (payload.client.clientId === this.clientId) return;
     console.log(`Player ${payload.client.clientId} joined the zone`);
     
-    const { scene } = this.engine.renderManager.getRenderState();
-    if (scene) {
-        const newPlayer = scene.createAvatar(payload.client.avatar);
+    const world = this.engine.spritz.world;
+    if (world) {
+        const newPlayer = world.createAvatar(payload.client.avatar);
         this.players.set(payload.client.clientId, newPlayer);
     }
   }
 
   handlePlayerLeft(payload) {
     console.log(`Player ${payload.clientId} left the zone`);
-    // TODO: Add logic to remove the avatar of the player who left
     const player = this.players.get(payload.clientId);
     if (player) {
-        const { scene } = this.engine.renderManager.getRenderState();
-        if (scene) scene.removeAvatar(player);
+        const world = this.engine.spritz.world;
+        if (world) world.removeAvatar(player);
         this.players.delete(payload.clientId);
     }
   }
@@ -117,10 +120,13 @@ class NetworkManager {
   handleAction(payload) {
     if (payload.clientId === this.clientId) return;
     console.log(`Received action from ${payload.clientId}:`, payload);
-    // TODO: Add logic to apply the action to the correct player's avatar
     const player = this.players.get(payload.clientId);
     if (player) {
-        this.engine.actionManager.run(payload, player);
+        const Action = this.engine.spritz.world.actionFactory(payload.action);
+        if(Action) {
+          const action = new Action(player, ...Object.values(payload.params));
+          player.addAction(action);
+        }
     }
   }
 }

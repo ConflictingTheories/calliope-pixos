@@ -41,6 +41,15 @@ export class Camera {
   this.cameraOffset = new Vector(0, 0, 0);
   }
 
+  /**
+   * Sets the camera target and updates the view.
+   * @param {Vector} target The new camera target.
+   */
+  setTarget = (target) => {
+    this.cameraTarget = target;
+    this.updateViewFromAngles();
+  };
+
   /** Set Camera Pos & Angle to default */
   setCamera = () => {
   // Legacy behavior preserved for engine scenes: build view matrix from
