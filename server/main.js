@@ -22,6 +22,9 @@ wss.on('connection', (ws) => {
       console.log(`Received message from ${clientId}:`, data);
 
       switch (data.type) {
+        case 'load-zone':
+          handleLoadZone(clientId, data.payload);
+          break;
         case 'join-zone':
           handleJoinZone(clientId, data.payload);
           break;
@@ -40,6 +43,23 @@ wss.on('connection', (ws) => {
     handleDisconnect(clientId);
   });
 });
+
+function handleLoadZone(clientId, payload) {
+  const client = clients.get(clientId);
+  if (!client) return;
+
+  const { zoneId } = payload;
+
+  // Add to new zone
+  if (!zones.has(zoneId)) {
+    zones.set(zoneId, new Set());
+  }
+  const zone = zones.get(zoneId);
+  zone.add(clientId);
+
+  client.ws.send(JSON.stringify({ type: 'zone-loaded', payload: { zoneId } }));
+  console.log(`Client ${clientId} loaded zone ${zoneId}`);
+}
 
 function handleJoinZone(clientId, payload) {
   const client = clients.get(clientId);

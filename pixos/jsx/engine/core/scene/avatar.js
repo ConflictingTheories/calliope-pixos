@@ -30,6 +30,33 @@ export default class Avatar extends Sprite {
     this.isSelected = true;
   }
 
+  getAvatarData = () => {
+    return {
+      id: this.objId,
+      templateLoaded: this.templateLoaded,
+      drawOffset: this.drawOffset,
+      hotspotOffset: this.hotspotOffset,
+      animFrame: this.animFrame,
+      fixed: this.fixed,
+      pos: this.pos,
+      scale: this.scale,
+      facing: this.facing,
+      actionDict: this.actionDict,
+      actionList: this.actionList,
+      gender: this.gender,
+      speech: this.speech,
+      portrait: this.portrait,
+      inventory: this.inventory,
+      blocking: this.blocking,
+      override: this.override,
+      isLit: this.isLit,
+      lightIndex: this.lightIndex,
+      lightColor: this.lightColor,
+      density: this.density,
+      isSelected: this.isSelected
+    }
+  }
+
   /**
    * Initialization Hook
    */

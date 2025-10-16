@@ -56,6 +56,18 @@ export default class Zone extends Loadable {
     this._highlight = null;
   }
 
+  getZoneData = () => {
+    return {
+      id: this.id,
+      objId: this.objId,
+      scripts: this.scripts,
+      data: this.data,
+      objects: Object.keys(this.objectDict),
+      sprites: Object.keys(this.spriteDict),
+      selectedTiles: this.selectedTiles,
+    }
+  }
+
   /** ---------------------------
    * Loading helpers
    * --------------------------- */
@@ -81,6 +93,7 @@ export default class Zone extends Loadable {
     // notify sprites/objects when they load
     for (const s of this.spriteList) s.runWhenLoaded(this.afterTilesetAndActorsLoaded);
     for (const o of this.objectList) o.runWhenLoaded(this.afterTilesetAndActorsLoaded);
+    this.engine.networkManager.loadZone(this.id, this);
   };
 
   /** Load Map Resource from URL */
@@ -164,6 +177,13 @@ export default class Zone extends Loadable {
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
+
+      try {
+        this.engine.networkManager.joinZone(this.id);
+      } catch (e) {
+        console.warn('Network Error :: could not send zone commend to server')
+      }
+
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -367,7 +387,7 @@ export default class Zone extends Loadable {
       ]);
 
       this.attachTilesetListeners();
-      
+
       // If the loaded map object includes a 'mode' property attempt to load a mode module
       // todo - look into whether this should be updated or moved - not sure if the zone should control the mode like this.
       // in some cases, it makes sense, but I feel like if multiple zones are loaded, there could be conflicts, and the idea of
@@ -380,7 +400,7 @@ export default class Zone extends Loadable {
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
-      
+
       await this.finalize();
 
     } catch (e) {

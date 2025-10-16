@@ -1,4 +1,3 @@
-import { store } from '../store';
 
 class NetworkManager {
   constructor(engine) {
@@ -53,8 +52,14 @@ class NetworkManager {
       switch (data.type) {
         case 'connected':
           this.clientId = data.clientId;
-          store.set("clientId", this.clientId);
+          this.engine.store.set("clientId", this.clientId);
           console.log(`Connected to server with client ID: ${this.clientId}`);
+          break;
+        case 'zone-loaded':
+          this.handleZoneLoaded(data.payload);
+          break;
+        case 'zone-change':
+          this.handleZoneChange(data.payload);
           break;
         case 'zone-joined':
           this.handleZoneJoined(data.payload);
@@ -76,6 +81,10 @@ class NetworkManager {
     }
   }
 
+  loadZone(zoneId, zone) {
+    this.send('load-zone', { zoneId, zone: zone.getZoneData() });
+  }
+
   joinZone(zoneId) {
     const avatar = this.engine.spritz.world.getAvatar();
     this.send('join-zone', { zoneId, avatar: avatar.getAvatarData() });
@@ -85,9 +94,15 @@ class NetworkManager {
     const data = {
       action: action.constructor.name.toLowerCase(),
       params: action.params,
-      spriteId: sprite.id,
+      spriteId: sprite.id + '-' + this.clientId,
     };
     this.send('action', data);
+  }
+
+  handleZoneLoaded(payload) {
+    console.log(`Loaded zone ${payload.zoneId}`);
+    // todo -- add zone to list - establish zone state from payload
+    // -- Flags and state can be managed jointly
   }
 
   handleZoneJoined(payload) {
@@ -96,14 +111,19 @@ class NetworkManager {
     payload.players.forEach(playerData => this.handlePlayerJoined({ client: playerData }));
   }
 
+  handleZoneChange(payload) {
+    console.log(`Change zone ${payload.zoneId}`);
+    // todo -- handle zone changes to state - this could be from triggers in other zones
+  }
+
   handlePlayerJoined(payload) {
     if (payload.client.clientId === this.clientId) return;
     console.log(`Player ${payload.client.clientId} joined the zone`);
-    
+
     const world = this.engine.spritz.world;
     if (world) {
-        const newPlayer = world.createAvatar(payload.client.avatar);
-        this.players.set(payload.client.clientId, newPlayer);
+      const newPlayer = world.createAvatar(payload.client.avatar);
+      this.players.set(payload.client.clientId, newPlayer);
     }
   }
 
@@ -111,9 +131,9 @@ class NetworkManager {
     console.log(`Player ${payload.clientId} left the zone`);
     const player = this.players.get(payload.clientId);
     if (player) {
-        const world = this.engine.spritz.world;
-        if (world) world.removeAvatar(player);
-        this.players.delete(payload.clientId);
+      const world = this.engine.spritz.world;
+      if (world) world.removeAvatar(player);
+      this.players.delete(payload.clientId);
     }
   }
 
@@ -122,11 +142,11 @@ class NetworkManager {
     console.log(`Received action from ${payload.clientId}:`, payload);
     const player = this.players.get(payload.clientId);
     if (player) {
-        const Action = this.engine.spritz.world.actionFactory(payload.action);
-        if(Action) {
-          const action = new Action(player, ...Object.values(payload.params));
-          player.addAction(action);
-        }
+      const Action = this.engine.spritz.world.actionFactory(payload.action);
+      if (Action) {
+        const action = new Action(player, ...Object.values(payload.params));
+        player.addAction(action);
+      }
     }
   }
 }

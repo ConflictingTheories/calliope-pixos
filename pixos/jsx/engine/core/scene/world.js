@@ -54,6 +54,10 @@ export default class World {
     };
   }
 
+  getAvatar = () => {
+    return this.spriteDict['avatar'];
+  }
+
   /**
    * push action into next frame
    * @param {*} action
