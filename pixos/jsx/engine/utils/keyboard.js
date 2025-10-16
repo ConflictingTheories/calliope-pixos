@@ -128,6 +128,24 @@ export default class Keyboard {
   }
 
   /**
+   * Checks if a specific key (by character) is currently pressed.
+   * @param {string} key - The character of the key to check (e.g., 'w').
+   * @returns {boolean} True if the key is currently pressed.
+   */
+  isKeyPressed(key) {
+    return this.activeKeys.includes(key.toLowerCase());
+  }
+
+  /**
+   * Checks if a specific key (by code, e.g., 'ArrowLeft') is currently pressed.
+   * @param {string} code - The `key` property from a KeyboardEvent.
+   * @returns {boolean} True if the key is currently pressed.
+   */
+  isCodePressed(code) {
+    return this.activeCodes.includes(code);
+  }
+
+  /**
    * Returns the last pressed key from a provided list of keys.
    * @param {string} keys - A string of keys to check (e.g., 'wasd').
    * @returns {string|null} The last pressed key from the list, or null if none are pressed.

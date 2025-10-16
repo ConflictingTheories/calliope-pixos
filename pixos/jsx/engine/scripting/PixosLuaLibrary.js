@@ -35,6 +35,19 @@ export default class PixosLuaLibrary {
       get_world: () => {
         return engine.spritz.world;
       },
+      // network functions
+      send_action: (action = false) => {
+        const { networkManager } = engine;
+        if (networkManager && networkManager.ws) {
+          const sent = networkManager.sendAction(action.toObject());
+          if (action)
+            return ()=>Promise.resolve(sent);
+          return sent;
+        }
+        if (action)
+          return ()=>Promise.resolve(false);
+        return false;
+      },
       // flag functions
       all_flags: (action = false) => {
         const flags = engine.store.all();

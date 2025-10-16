@@ -21,7 +21,7 @@ export default class ActionQueue {
 
   /**
    * Add to Queue
-   * @param {*} action 
+   * @param {Action) action
    */
   add(action) {
     this.actions.push(action);

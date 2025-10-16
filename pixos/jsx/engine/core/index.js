@@ -14,6 +14,7 @@
 import Utils from '../utils/index.js';
 import { GamePad } from '../utils/gamepad/index.js';
 import Keyboard from '../utils/keyboard.js';
+import Mouse from '../utils/mouse.js';
 import Database from './database/index.js';
 import Store from './store/index.js';
 import Hud from './hud/index.js';
@@ -21,6 +22,8 @@ import RenderManager from './render/manager.js';
 import ResourceManager from './resource/manager.js';
 import CutsceneManager from './cutscene/manager.js';
 import ModeManager from './mode/ModeManager.js'; // Import ModeManager
+import InputManager from './input/InputManager.js'; // Import InputManager
+import NetworkManager from './net/manager.js';
 import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
 
 /**
@@ -70,6 +73,9 @@ export default class GLEngine {
     /** @type {object} */
     this.utils = Utils;
 
+    /** @type {NetworkManager} */
+    this.networkManager = new NetworkManager(this);
+
     /** @type {ResourceManager} */
     this.resourceManager = new ResourceManager(this);
 
@@ -79,11 +85,8 @@ export default class GLEngine {
     /** @type {Hud} */
     this.hud = new Hud(this);
 
-    /** @type {Keyboard} */
-    this.keyboard = new Keyboard(this);
-
-    /** @type {GamePad} */
-    this.gamepad = new GamePad(this);
+    /** @type {InputManager} */
+    this.inputManager = new InputManager(this); // Initialize InputManager
 
     /** @type {SpeechSynthesisUtterance} */
     this.voice = new SpeechSynthesisUtterance();
@@ -99,6 +102,9 @@ export default class GLEngine {
 
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
+
+    // Game Loop
+    this.running = false;
 
     /** @type {WebGL2RenderingContext} */
     this.gl = null;
@@ -160,8 +166,8 @@ export default class GLEngine {
     // Initial time
     this.time = new Date().getTime();
 
-    // Init keyboard
-    this.keyboard.init();
+    // Init Input Manager
+    this.inputManager.init();
 
     // Initialize HUD
     this.hud.init();
@@ -170,7 +176,9 @@ export default class GLEngine {
     this.renderManager.init();
 
     // Configure Gamepad & touch
-    this.gamepad.init();
+    this.gamepad = this.inputManager.gamepad;
+    this.keyboard = this.inputManager.keyboard;
+    this.mouse = this.inputManager.mouse;
     this.touch = this.gamepad.listen.bind(this.gamepad);
 
     // Initialize Spritz game
@@ -217,6 +225,9 @@ export default class GLEngine {
 
     const timestamp = new Date().getTime();
 
+    // Update Input Manager
+    this.inputManager.update();
+
     // Object picking pass (for selection)
     // TODO: This will be "mode" dependent - and some modes will have the picker, but it too will need some
     // updates - it will need to support more than just specific types, and may require additionally support
@@ -255,7 +266,10 @@ export default class GLEngine {
    * Stops the main render loop.
    */
   close() {
-    cancelAnimationFrame(this.requestId);
+    if (this.requestId) {
+      cancelAnimationFrame(this.requestId);
+      this.requestId = null;
+    }
   }
 
   /**
@@ -297,7 +311,7 @@ export default class GLEngine {
     let id = data[0] + (data[1] << 8) + (data[2] << 16);
 
     // Only process selection if a left click occurred
-    if (!this.gamepad.touches['desktop'].leftClick) {
+    if (!this.inputManager.isActionActive('select')) {
       return id;
     }
 

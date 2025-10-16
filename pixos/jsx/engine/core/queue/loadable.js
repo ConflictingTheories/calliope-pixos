@@ -13,7 +13,7 @@
 export default class Loadable {
   /**
    * Run action if loaded or add to queue
-   * @param {*} action
+   * @param {function} action
    */
   runWhenLoaded(action) {
     if (this.loaded) action();
