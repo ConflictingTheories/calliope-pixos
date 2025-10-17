@@ -58,7 +58,13 @@ export default class World {
   createAvatar = (avatarData) => {
     const zone = this.zoneContaining(avatarData.x, avatarData.y);
     if (zone) {
-      const avatar = new Avatar(zone, avatarData.id, avatarData);
+      const avatar = new Avatar(this.engine);
+      avatar.onLoad({
+        zone: zone,
+        id: avatarData.id,
+        pos: new Vector(avatarData.x, avatarData.y, avatarData.z || 0),
+        ...avatarData
+      });
       zone.addSprite(avatar);
       return avatar;
     }

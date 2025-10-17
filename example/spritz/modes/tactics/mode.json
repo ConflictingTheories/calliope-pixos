@@ -11,6 +11,27 @@
         },
         "end_turn": {
             "keyboard": "Enter"
+        },
+        "move-up": {
+            "keyboard": "w"
+        },
+        "move-down": {
+            "keyboard": "s"
+        },
+        "move-left": {
+            "keyboard": "a"
+        },
+        "move-right": {
+            "keyboard": "d"
+        },
+        "interact": {
+            "keyboard": "k"
+        },
+        "menu": {
+            "keyboard": "m"
+        },
+        "chat": {
+            "keyboard": " "
         }
     }
 }

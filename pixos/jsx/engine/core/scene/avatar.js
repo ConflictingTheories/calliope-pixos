@@ -73,10 +73,30 @@ export default class Avatar extends Sprite {
     if (!this.actionList.length) {
       let ret = this.checkInput();
       if (ret) {
-        this.addAction(ret).then(() => { });
+        this.addAction(ret).then(() => {
+          // Send action to server if multiplayer is enabled
+          if (this.engine.networkManager && this.engine.networkManager.ws && this.engine.networkManager.ws.readyState === WebSocket.OPEN) {
+            this.engine.networkManager.sendAction(ret, this);
+          }
+        });
       }
     }
+
+    // Send position updates to server periodically or on change
+    if (this.engine.networkManager && this.engine.networkManager.ws && this.engine.networkManager.ws.readyState === WebSocket.OPEN) {
+      this.engine.networkManager.updateAvatarPosition(this);
+    }
+
     if (this.bindCamera) set(this.pos, this.engine.renderManager.camera.cameraPosition);
+  }
+
+  /**
+   * Check input from the Input Manager instead of hardcoded keys
+   * @returns {ActionLoader|null} Action to perform or null
+   */
+  checkInput = () => {
+    // Let Input Manager handle input based on current mode mappings
+    return this.engine.inputManager.getAvatarAction(this);
   }
   /**
    * open menu
@@ -89,10 +109,10 @@ export default class Avatar extends Sprite {
   }
 
   /**
-   * Reads for Input to Respond to
+   * Reads for Input to Respond to - Legacy method, now delegates to InputManager
    * @returns
    */
-  checkInput = () => {
+  checkInputLegacy = () => {
     // Action Keys
     let key = this.engine.keyboard.lastPressedCode();
     let touchmap = this.engine.gamepad.checkInput();

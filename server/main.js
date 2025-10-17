@@ -28,6 +28,15 @@ wss.on('connection', (ws) => {
         case 'join-zone':
           handleJoinZone(clientId, data.payload);
           break;
+        case 'zone-state':
+          handleZoneState(clientId, data.payload);
+          break;
+        case 'zone-state-request':
+          handleZoneStateRequest(clientId, data.payload);
+          break;
+        case 'update-avatar':
+          handleUpdateAvatar(clientId, data.payload);
+          break;
         case 'action':
           actionQueue.push({ clientId, action: data.payload });
           break;
@@ -93,6 +102,11 @@ function handleJoinZone(clientId, payload) {
 
   broadcastToZone(zoneId, { type: 'player-joined', payload: { client: { clientId, avatar } } }, clientId);
   console.log(`Client ${clientId} joined zone ${zoneId}`);
+
+  // After joining, request zone state to sync all sprites
+  setTimeout(() => {
+    broadcastToZone(zoneId, { type: 'zone-state-request', payload: { zoneId } });
+  }, 100); // Small delay to ensure join is processed
 }
 
 function handleDisconnect(clientId) {
@@ -124,6 +138,56 @@ function broadcastToZone(zoneId, message, excludeClientId = null) {
       }
     }
   }
+}
+
+function handleZoneState(clientId, payload) {
+  const client = clients.get(clientId);
+  if (!client || !client.zoneId) return;
+
+  // Broadcast zone state to all clients in the zone
+  broadcastToZone(client.zoneId, { type: 'zone-state', payload: payload });
+}
+
+function handleZoneStateRequest(clientId, payload) {
+  const client = clients.get(clientId);
+  if (!client || !client.zoneId) return;
+
+  const { zoneId } = payload;
+  const zone = zones.get(zoneId);
+  if (!zone) return;
+
+  // Collect all sprites in the zone from all clients
+  const sprites = [];
+  for (const cid of zone) {
+    const c = clients.get(cid);
+    if (c && c.avatar) {
+      sprites.push({
+        id: c.avatar.id || `player-${cid}`,
+        objId: c.avatar.objId || cid,
+        x: c.avatar.x || 0,
+        y: c.avatar.y || 0,
+        z: c.avatar.z || 0,
+        avatar: c.avatar
+      });
+    }
+  }
+
+  // Send zone state to the requesting client
+  const ws = clients.get(clientId).ws;
+  if (ws.readyState === ws.OPEN) {
+    ws.send(JSON.stringify({ type: 'zone-state', payload: { zoneId, sprites } }));
+  }
+}
+
+function handleUpdateAvatar(clientId, payload) {
+  const client = clients.get(clientId);
+  if (!client || !client.zoneId) return;
+
+  // Update client's avatar data
+  client.avatar = { ...client.avatar, ...payload.avatar };
+
+  // Broadcast avatar update to other clients in the same zone
+  broadcastToZone(client.zoneId, { type: 'avatar-update', payload: { clientId, avatar: payload.avatar } }, clientId);
 }
 
 /**

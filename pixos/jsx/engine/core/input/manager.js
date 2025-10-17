@@ -14,6 +14,9 @@
 import Keyboard from '../../utils/keyboard.js';
 import Mouse from '../../utils/mouse.js';
 import { GamePad } from '../../utils/gamepad/index.js';
+import { ActionLoader } from '../../utils/loaders/index.js';
+import { Vector } from '../../utils/math/vector.js';
+import Touch from '../../utils/touch.js';
 
 /**
  * @typedef {object} ActionMapping
@@ -48,6 +51,7 @@ export default class InputManager {
       this.mouse = new Mouse(engine);
       /** @type {GamePad} */
       this.gamepad = new GamePad(engine);
+      this.touch = new Touch(engine);
       /** @type {Object.<string, ModeMappings>} */
       this.mappings = {}; // Mode-specific mappings
       /** @type {Object.<string, function[]>} */
@@ -70,15 +74,16 @@ export default class InputManager {
     this.keyboard.init();
     this.mouse.init();
     this.gamepad.init();
+    this.touch.init();
     // Set default mappings
     this.setModeMappings('default', {
       actions: {
-        move_up: { keyboard: 'w', gamepad: 'up' },
-        move_down: { keyboard: 's', gamepad: 'down' },
-        move_left: { keyboard: 'a', gamepad: 'left' },
-        move_right: { keyboard: 'd', gamepad: 'right' },
-        interact: { keyboard: 'k', gamepad: 'a' },
-        select: { mouse: 'left' },
+        move_up: { keyboard: 'w', gamepad: 'up', touch: 'swipe_up' },
+        move_down: { keyboard: 's', gamepad: 'down', touch: 'swipe_down' },
+        move_left: { keyboard: 'a', gamepad: 'left', touch: 'swipe_left' },
+        move_right: { keyboard: 'd', gamepad: 'right', touch: 'swipe_right' },
+        interact: { keyboard: 'k', gamepad: 'a', touch: 'tap' },
+        select: { mouse: 'left', touch: 'tap' },
         camera_pan_left: { keyboard: 'ArrowLeft' },
         camera_pan_right: { keyboard: 'ArrowRight' },
         camera_pan_up: { keyboard: 'ArrowUp' },
@@ -233,7 +238,9 @@ export default class InputManager {
       if (mapping.mouse && this.mouse.isButtonPressed(mapping.mouse)) {
         active = true;
       }
-      // TODO: Add touch checks
+      if (mapping.touch && this.touch.isGestureActive(mapping.touch)) {
+        active = true;
+      }
 
       const wasActive = this.actionStates[action];
       this.actionStates[action] = active;
@@ -292,7 +299,9 @@ export default class InputManager {
     if (mapping.mouse && this.mouse.isButtonPressed(mapping.mouse)) {
       return 'mouse:' + mapping.mouse;
     }
-    // TODO: Mouse and touch
+    if (mapping.touch && this.touch.isGestureActive(mapping.touch)) {
+      return 'touch:' + mapping.touch;
+    }
     return null;
   }
 
@@ -302,6 +311,67 @@ export default class InputManager {
    */
   getMode() {
     return this.currentMode;
+  }
+
+  /**
+   * Gets the appropriate action for the avatar based on current input and mode mappings.
+   * @param {Avatar} avatar - The avatar to get action for.
+   * @returns {ActionLoader|null} Action to perform or null.
+   */
+  getAvatarAction(avatar) {
+    const modeMappings = this.mappings[this.currentMode] || this.mappings['default'];
+    const actions = { ...this.mappings['default'].actions, ...modeMappings.actions };
+
+    // Check for movement actions
+    if (this.isActionActive('move_up')) {
+      return avatar.handleWalk('w', {});
+    }
+    if (this.isActionActive('move_down')) {
+      return avatar.handleWalk('s', {});
+    }
+    if (this.isActionActive('move_left')) {
+      return avatar.handleWalk('a', {});
+    }
+    if (this.isActionActive('move_right')) {
+      return avatar.handleWalk('d', {});
+    }
+
+    // Check for interaction actions
+    if (this.isActionActive('interact')) {
+      return new ActionLoader(this.engine, 'interact', [avatar.pos.toArray(), avatar.facing, avatar.zone.world], avatar);
+    }
+
+    // Check for other actions based on mappings
+    for (const action in actions) {
+      if (this.isActionActive(action)) {
+        // Map action names to avatar methods
+        switch (action) {
+          case 'menu':
+            return avatar.openMenu();
+          case 'chat':
+            return new ActionLoader(this.engine, 'chat', ['>:', true, { autoclose: false }], avatar);
+          case 'dance':
+            return new ActionLoader(this.engine, 'dance', [300, avatar.zone], avatar);
+          case 'patrol':
+            return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone], avatar);
+          case 'run':
+            return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 200, avatar.zone], avatar);
+          case 'face-up':
+            return avatar.faceDir(0); // Assuming Direction.Up = 0
+          case 'face-down':
+            return avatar.faceDir(2); // Assuming Direction.Down = 2
+          case 'face-left':
+            return avatar.faceDir(3); // Assuming Direction.Left = 3
+          case 'face-right':
+            return avatar.faceDir(1); // Assuming Direction.Right = 1
+          default:
+            // For custom actions, try to create ActionLoader with action name
+            return new ActionLoader(this.engine, action, [], avatar);
+        }
+      }
+    }
+
+    return null;
   }
 
   /**

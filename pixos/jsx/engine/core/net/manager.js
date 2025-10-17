@@ -19,6 +19,7 @@ class NetworkManager {
     this.players = new Map();
     /** @type {string} */
     this.authority = 'server'; // Default to server authority, can be overridden by manifest
+    this.setAuthorityFromManifest();
   }
 
   /**
@@ -108,6 +109,15 @@ class NetworkManager {
         case 'players-update':
           this.handlePlayersUpdate(data.payload);
           break;
+        case 'zone-state':
+          this.handleZoneState(data.payload);
+          break;
+        case 'zone-state-request':
+          // Server-side only, ignore
+          break;
+        case 'avatar-update':
+          this.handleAvatarUpdate(data.payload);
+          break;
         case 'action':
           this.handleAction(data.payload);
           break;
@@ -157,6 +167,25 @@ class NetworkManager {
   }
 
   /**
+   * Updates the client's avatar position on the server.
+   * @param {object} avatar - The avatar sprite.
+   */
+  updateAvatarPosition(avatar) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const data = {
+        avatar: {
+          id: avatar.id,
+          x: avatar.pos.x,
+          y: avatar.pos.y,
+          z: avatar.pos.z,
+          facing: avatar.facing
+        }
+      };
+      this.send('update-avatar', data);
+    }
+  }
+
+  /**
    * Handles zone loaded message.
    * @param {object} payload - The payload containing zoneId.
    */
@@ -174,6 +203,23 @@ class NetworkManager {
     console.log(`Joined zone ${payload.zoneId} with players:`, payload.players);
     // Create avatars for existing players in the zone
     payload.players.forEach(playerData => this.handlePlayerJoined({ client: playerData }));
+    // Request zone state from server to sync all sprites
+    this.send('zone-state-request', { zoneId: payload.zoneId });
+  }
+
+  getZoneSprites(zoneId) {
+    const world = this.engine.spritz.world;
+    if (!world) return [];
+    const zone = world.getZoneById(zoneId);
+    if (!zone) return [];
+    return zone.spriteList.map(sprite => ({
+      id: sprite.id,
+      objId: sprite.objId,
+      x: sprite.pos.x,
+      y: sprite.pos.y,
+      z: sprite.pos.z,
+      avatar: sprite.getAvatarData ? sprite.getAvatarData() : sprite
+    }));
   }
 
   /**
@@ -273,6 +319,70 @@ class NetworkManager {
         const action = new Action(player, ...Object.values(payload.params));
         player.addAction(action);
       }
+    }
+  }
+
+  /**
+   * Handles zone state message to synchronize all sprites in the zone.
+   * @param {object} payload - The payload containing zoneId and sprites.
+   */
+  handleZoneState(payload) {
+    console.log(`Received zone state for ${payload.zoneId}:`, payload.sprites);
+    const world = this.engine.spritz.world;
+    if (!world) return;
+
+    const zone = world.getZoneById(payload.zoneId);
+    if (!zone) return;
+
+    // Update or create sprites based on zone state
+    payload.sprites.forEach(spriteData => {
+      // Skip own avatar to avoid duplication
+      if (spriteData.id === 'avatar') return;
+
+      let existingSprite = zone.spriteDict[spriteData.id];
+      if (existingSprite) {
+        // Update existing sprite position/data
+        existingSprite.pos.x = spriteData.x;
+        existingSprite.pos.y = spriteData.y;
+        existingSprite.pos.z = spriteData.z || 0;
+        // Update other properties as needed
+      } else {
+        // Create new sprite/avatar
+        const avatarData = {
+          id: spriteData.id,
+          x: spriteData.x,
+          y: spriteData.y,
+          z: spriteData.z || 0,
+          ...spriteData.avatar
+        };
+        world.createAvatar(avatarData);
+      }
+    });
+  }
+
+  /**
+   * Sets the network authority from the manifest.
+   */
+  setAuthorityFromManifest() {
+    if (this.engine && this.engine.spritz && this.engine.spritz.manifest && this.engine.spritz.manifest.network) {
+      this.authority = this.engine.spritz.manifest.network.authority || 'server';
+    }
+  }
+
+  /**
+   * Handles avatar update message to synchronize avatar positions.
+   * @param {object} payload - The payload containing clientId and avatar data.
+   */
+  handleAvatarUpdate(payload) {
+    console.log(`Received avatar update for ${payload.clientId}:`, payload.avatar);
+    const player = this.players.get(payload.clientId);
+    if (player) {
+      // Update player avatar position and properties
+      player.pos.x = payload.avatar.x;
+      player.pos.y = payload.avatar.y;
+      player.pos.z = payload.avatar.z;
+      player.facing = payload.avatar.facing;
+      // Update other properties as needed
     }
   }
 
