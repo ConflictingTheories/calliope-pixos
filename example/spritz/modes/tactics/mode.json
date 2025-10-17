@@ -1,5 +1,16 @@
 {
-    "name":"tactics",
-    "update":"update.lua",
-    "setup": "setup.lua"
+    "name": "tactics",
+    "update": "update.lua",
+    "setup": "setup.lua",
+    "actions": {
+        "select_unit": {
+            "mouse": "left"
+        },
+        "move_unit": {
+            "mouse": "right"
+        },
+        "end_turn": {
+            "keyboard": "Enter"
+        }
+    }
 }

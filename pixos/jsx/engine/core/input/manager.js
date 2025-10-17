@@ -78,6 +78,7 @@ export default class InputManager {
         move_left: { keyboard: 'a', gamepad: 'left' },
         move_right: { keyboard: 'd', gamepad: 'right' },
         interact: { keyboard: 'k', gamepad: 'a' },
+        select: { mouse: 'left' },
         camera_pan_left: { keyboard: 'ArrowLeft' },
         camera_pan_right: { keyboard: 'ArrowRight' },
         camera_pan_up: { keyboard: 'ArrowUp' },
@@ -110,7 +111,7 @@ export default class InputManager {
 
     this.setModeMappings('tactics', {
       actions: {
-        select_unit: { mouse: 'left' },
+        select: { mouse: 'left' },
         move_unit: { mouse: 'right' },
         end_turn: { keyboard: 'Enter' },
       },
@@ -162,17 +163,7 @@ export default class InputManager {
     this.mappings[mode] = mappings;
   }
 
-  /**
-   * Switches to a new input mode.
-   * @param {string} mode - The mode to switch to.
-   */
-  setMode(mode) {
-    if (this.mappings[mode]) {
-      this.currentMode = mode;
-    } else {
-      console.warn(`Input mode "${mode}" not found, staying in "${this.currentMode}"`);
-    }
-  }
+
 
   /**
    * Registers a hook for an action.
@@ -184,6 +175,18 @@ export default class InputManager {
       this.hooks[action] = [];
     }
     this.hooks[action].push(callback);
+  }
+
+  /**
+   * Registers a custom action hook for scripting.
+   * @param {string} action - The action name.
+   * @param {function} hook - The hook function to call when action is triggered.
+   */
+  registerActionHook(action, hook) {
+    if (!this.hooks[action]) {
+      this.hooks[action] = [];
+    }
+    this.hooks[action].push(hook);
   }
 
   /**
@@ -207,7 +210,6 @@ export default class InputManager {
   update() {
     const modeMappings = this.mappings[this.currentMode] || this.mappings['default'];
     const actions = { ...this.mappings['default'].actions, ...modeMappings.actions };
-
 
     // Update action states
     for (const action in actions) {
@@ -256,6 +258,22 @@ export default class InputManager {
   }
 
   /**
+   * Sets the current input mode and notifies the mode manager.
+   * @param {string} mode - The mode to switch to.
+   */
+  setMode(mode) {
+    if (this.mappings[mode] || mode === 'default') {
+      this.currentMode = mode;
+      // Notify engine to update mode manager
+      if (this.engine && this.engine.modeManager) {
+        this.engine.modeManager.set(mode);
+      }
+    } else {
+      console.warn(`Input mode "${mode}" not found, staying in "${this.currentMode}"`);
+    }
+  }
+
+  /**
    * Gets the last pressed key or button for an action.
    * @param {string} action - The action name.
    * @returns {string|null} The input that triggered the action.
@@ -284,5 +302,32 @@ export default class InputManager {
    */
   getMode() {
     return this.currentMode;
+  }
+
+  /**
+   * Binds a key or input to an action for the current mode.
+   * @param {string} action - The action name.
+   * @param {string} inputType - The input type ('keyboard', 'mouse', 'gamepad').
+   * @param {string} inputValue - The input value (key name, button, etc.).
+   */
+  bindAction(action, inputType, inputValue) {
+    if (!this.mappings[this.currentMode]) {
+      this.mappings[this.currentMode] = { actions: {} };
+    }
+    if (!this.mappings[this.currentMode].actions[action]) {
+      this.mappings[this.currentMode].actions[action] = {};
+    }
+    this.mappings[this.currentMode].actions[action][inputType] = inputValue;
+  }
+
+  /**
+   * Unbinds an action for the current mode.
+   * @param {string} action - The action name.
+   * @param {string} inputType - The input type to unbind.
+   */
+  unbindAction(action, inputType) {
+    if (this.mappings[this.currentMode] && this.mappings[this.currentMode].actions[action]) {
+      delete this.mappings[this.currentMode].actions[action][inputType];
+    }
   }
 }

@@ -1,36 +1,62 @@
 
+/**
+ * NetworkManager - Handles WebSocket connections for multiplayer functionality.
+ * Manages client-server communication, zone joining, player synchronization, and action broadcasting.
+ */
 class NetworkManager {
+  /**
+   * Creates an instance of NetworkManager.
+   * @param {import('../index.js').default} engine - The main game engine instance.
+   */
   constructor(engine) {
+    /** @type {import('../index.js').default} */
     this.engine = engine;
+    /** @type {WebSocket|null} */
     this.ws = null;
+    /** @type {string|null} */
     this.clientId = null;
+    /** @type {Map<string, object>} */
     this.players = new Map();
+    /** @type {string} */
+    this.authority = 'server'; // Default to server authority, can be overridden by manifest
   }
 
-  connect(url) {
+  /**
+   * Establishes a WebSocket connection to the server.
+   * @param {string} url - The WebSocket URL to connect to.
+   * @returns {Promise<void>} A promise that resolves when the connection is established.
+   */
+  async connect(url) {
     if (this.ws) {
       this.disconnect();
     }
 
     this.ws = new WebSocket(url);
 
-    this.ws.onopen = () => {
-      console.log('WebSocket connection established');
-    };
+    return new Promise((resolve, reject) => {
+      this.ws.onopen = () => {
+        console.log('WebSocket connection established');
+        resolve();
+      };
 
-    this.ws.onmessage = (event) => {
-      this.handleMessage(event.data);
-    };
+      this.ws.onmessage = (event) => {
+        this.handleMessage(event.data);
+      };
 
-    this.ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
+      this.ws.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
 
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        reject(error);
+      };
+    });
   }
 
+  /**
+   * Disconnects the WebSocket connection.
+   */
   disconnect() {
     if (this.ws) {
       this.ws.close();
@@ -38,12 +64,21 @@ class NetworkManager {
     }
   }
 
+  /**
+   * Sends a message to the server.
+   * @param {string} type - The message type.
+   * @param {object} payload - The message payload.
+   */
   send(type, payload) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({ type, payload }));
     }
   }
 
+  /**
+   * Handles incoming messages from the server.
+   * @param {string} message - The raw message string.
+   */
   handleMessage(message) {
     try {
       const data = JSON.parse(message);
@@ -70,6 +105,9 @@ class NetworkManager {
         case 'player-left':
           this.handlePlayerLeft(data.payload);
           break;
+        case 'players-update':
+          this.handlePlayersUpdate(data.payload);
+          break;
         case 'action':
           this.handleAction(data.payload);
           break;
@@ -81,41 +119,76 @@ class NetworkManager {
     }
   }
 
+  /**
+   * Loads a zone on the server.
+   * @param {string} zoneId - The ID of the zone to load.
+   * @param {object} zone - The zone object.
+   */
   loadZone(zoneId, zone) {
-    this.send('load-zone', { zoneId, zone: zone.getZoneData() });
+    this.send('load-zone', { zoneId, zone: zone.getZoneData ? zone.getZoneData() : zone });
   }
 
+  /**
+   * Joins a zone.
+   * @param {string} zoneId - The ID of the zone to join.
+   */
   joinZone(zoneId) {
     const avatar = this.engine.spritz.world.getAvatar();
     this.send('join-zone', { zoneId, avatar: avatar.getAvatarData() });
   }
 
+  /**
+   * Sends an action to the server or handles locally based on authority.
+   * @param {object} action - The action object.
+   * @param {object} sprite - The sprite performing the action.
+   */
   sendAction(action, sprite) {
-    const data = {
-      action: action.constructor.name.toLowerCase(),
-      params: action.params,
-      spriteId: sprite.id + '-' + this.clientId,
-    };
-    this.send('action', data);
+    if (this.authority === 'server') {
+      const data = {
+        action: action.constructor.name.toLowerCase(),
+        params: action.params,
+        spriteId: sprite.id + '-' + this.clientId,
+      };
+      this.send('action', data);
+    } else {
+      // Client authority: handle locally and broadcast
+      this.handleAction({ clientId: this.clientId, action: action.constructor.name.toLowerCase(), params: action.params, spriteId: sprite.id });
+    }
   }
 
+  /**
+   * Handles zone loaded message.
+   * @param {object} payload - The payload containing zoneId.
+   */
   handleZoneLoaded(payload) {
     console.log(`Loaded zone ${payload.zoneId}`);
-    // todo -- add zone to list - establish zone state from payload
-    // -- Flags and state can be managed jointly
+    // Automatically join the zone after loading
+    this.joinZone(payload.zoneId);
   }
 
+  /**
+   * Handles zone joined message.
+   * @param {object} payload - The payload containing zoneId and players.
+   */
   handleZoneJoined(payload) {
     console.log(`Joined zone ${payload.zoneId} with players:`, payload.players);
     // Create avatars for existing players in the zone
     payload.players.forEach(playerData => this.handlePlayerJoined({ client: playerData }));
   }
 
+  /**
+   * Handles zone change message.
+   * @param {object} payload - The payload containing zoneId.
+   */
   handleZoneChange(payload) {
     console.log(`Change zone ${payload.zoneId}`);
-    // todo -- handle zone changes to state - this could be from triggers in other zones
+    // TODO: Handle zone changes to state - this could be from triggers in other zones
   }
 
+  /**
+   * Handles player joined message.
+   * @param {object} payload - The payload containing client info.
+   */
   handlePlayerJoined(payload) {
     if (payload.client.clientId === this.clientId) return;
     console.log(`Player ${payload.client.clientId} joined the zone`);
@@ -127,6 +200,10 @@ class NetworkManager {
     }
   }
 
+  /**
+   * Handles player left message.
+   * @param {object} payload - The payload containing clientId.
+   */
   handlePlayerLeft(payload) {
     console.log(`Player ${payload.clientId} left the zone`);
     const player = this.players.get(payload.clientId);
@@ -137,10 +214,59 @@ class NetworkManager {
     }
   }
 
+  /**
+   * Handles players update message.
+   * @param {object} payload - The payload containing updated players list.
+   */
+  handlePlayersUpdate(payload) {
+    console.log('Players update:', payload.players);
+    // Update local players map
+    const existingPlayers = new Set(this.players.keys());
+    const newPlayers = new Set(payload.players.map(p => p.clientId));
+
+    // Remove players no longer in the zone
+    for (const clientId of existingPlayers) {
+      if (!newPlayers.has(clientId)) {
+        const player = this.players.get(clientId);
+        if (player) {
+          const world = this.engine.spritz.world;
+          if (world) world.removeAvatar(player);
+          this.players.delete(clientId);
+        }
+      }
+    }
+
+    // Add or update players
+    payload.players.forEach(playerData => {
+      if (playerData.clientId !== this.clientId) {
+        const world = this.engine.spritz.world;
+        if (world) {
+          if (this.players.has(playerData.clientId)) {
+            // Update existing player avatar if needed
+            const existingPlayer = this.players.get(playerData.clientId);
+            // Assuming avatar data can be updated, but for simplicity, recreate if different
+            if (JSON.stringify(existingPlayer.getAvatarData()) !== JSON.stringify(playerData.avatar)) {
+              world.removeAvatar(existingPlayer);
+              const newPlayer = world.createAvatar(playerData.avatar);
+              this.players.set(playerData.clientId, newPlayer);
+            }
+          } else {
+            const newPlayer = world.createAvatar(playerData.avatar);
+            this.players.set(playerData.clientId, newPlayer);
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles action message.
+   * @param {object} payload - The payload containing action details.
+   */
   handleAction(payload) {
-    if (payload.clientId === this.clientId) return;
+    if (payload.clientId === this.clientId && this.authority === 'server') return; // Avoid echo for server authority
     console.log(`Received action from ${payload.clientId}:`, payload);
-    const player = this.players.get(payload.clientId);
+    const player = this.players.get(payload.clientId) || this.engine.spritz.world.getAvatar(); // For own actions in client authority
     if (player) {
       const Action = this.engine.spritz.world.actionFactory(payload.action);
       if (Action) {
@@ -148,6 +274,14 @@ class NetworkManager {
         player.addAction(action);
       }
     }
+  }
+
+  /**
+   * Sets the network authority.
+   * @param {string} authority - 'server' or 'client'.
+   */
+  setAuthority(authority) {
+    this.authority = authority;
   }
 }
 

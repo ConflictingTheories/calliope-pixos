@@ -41,46 +41,46 @@ export default class PixosLuaLibrary {
         if (networkManager && networkManager.ws) {
           const sent = networkManager.sendAction(action.toObject());
           if (action)
-            return ()=>Promise.resolve(sent);
+            return () => Promise.resolve(sent);
           return sent;
         }
         if (action)
-          return ()=>Promise.resolve(false);
+          return () => Promise.resolve(false);
         return false;
       },
       // flag functions
       all_flags: (action = false) => {
         const flags = engine.store.all();
         if (action)
-          return ()=>Promise.resolve(flags);
+          return () => Promise.resolve(flags);
         return flags;
       },
       has_flag: (key, action = false) => {
         console.log('checking flag via lua', key, action);
         const hasFlag = engine.store.keys().includes(key);
         if (action)
-          return ()=>Promise.resolve(hasFlag);
+          return () => Promise.resolve(hasFlag);
         return hasFlag;
       },
       set_flag: (key, value, action = false) => {
         console.log('setting flag via lua', key, action);
         const flag = engine.store.set(key, value.toObject());
         if (action)
-          return ()=>Promise.resolve(flag);
+          return () => Promise.resolve(flag);
         return flag;
       },
       add_flag: (key, value, action = false) => {
         console.log('adding flag via lua', key, action);
         engine.store.add(key, value.toObject());
         if (action)
-          return ()=>Promise.resolve(true);
+          return () => Promise.resolve(true);
         return true;
       },
       get_flag: (key, action = false) => {
         console.log('getting flag via lua', key, action);
         const flag = engine.store.get(key);
         if (action)
-          return ()=>Promise.resolve(flag);
+          return () => Promise.resolve(flag);
         return flag;
       },
       // world functions
@@ -165,7 +165,7 @@ export default class PixosLuaLibrary {
         return () =>
           new Promise((resolve) => {
             console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
-            if (envScope.zone.playCutscene) {pol
+            if (envScope.zone.playCutscene) {
               console.log({ msg: 'cutscene function found' });
               return envScope.zone.playCutscene(cutscene).then(() => {
                 resolve();
@@ -319,7 +319,49 @@ export default class PixosLuaLibrary {
       },
 
       // input functions
-      // ...
+      bind_action: (action, inputType, inputValue) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.bindAction(action, inputType, inputValue);
+          }
+        } catch (e) {
+          console.warn('bind_action failed', e);
+        }
+      },
+      unbind_action: (action, inputType) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.unbindAction(action, inputType);
+          }
+        } catch (e) {
+          console.warn('unbind_action failed', e);
+        }
+      },
+      register_action_hook: (action, hook) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.registerActionHook(action, hook);
+          }
+        } catch (e) {
+          console.warn('register_action_hook failed', e);
+        }
+      },
+      is_action_active: (action) => {
+        try {
+          return engine.inputManager ? engine.inputManager.isActionActive(action) : false;
+        } catch (e) {
+          console.warn('is_action_active failed', e);
+          return false;
+        }
+      },
+      get_action_input: (action) => {
+        try {
+          return engine.inputManager ? engine.inputManager.getActionInput(action) : null;
+        } catch (e) {
+          console.warn('get_action_input failed', e);
+          return null;
+        }
+      },
 
       // audio functions
       // ...
@@ -379,6 +421,18 @@ export default class PixosLuaLibrary {
       },
       get_mode: () => {
         try { return engine.spritz.world.modeManager.getMode(); } catch (e) { return null; }
+      },
+      set_mode_mappings: (name, params) => {
+        try {
+          console.log('pixos.set_mode_mappings called ->', name, params);
+          if (engine && engine.inputManager) {
+            // params may be a Lua table - convert if necessary
+            const p = params && typeof params.toObject === 'function' ? params.toObject() : params;
+            engine.inputManager.setModeMappings(name, p);
+          }
+        } catch (e) {
+          console.warn('set_mode_mappings failed', e);
+        }
       },
       register_mode: (name, handlers) => {
         try {

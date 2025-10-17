@@ -5,7 +5,8 @@
   "tilesets": ["common", "sewer"],
   "network": {
     "enabled": true,
-    "url": "ws://localhost:8080"
+    "url": "ws://localhost:8080",
+    "authority": "server"
   },
   "sprites": ["characters/male", "npc/air-knight"],
   "objects": [],

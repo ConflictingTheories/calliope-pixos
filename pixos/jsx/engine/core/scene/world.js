@@ -16,6 +16,7 @@ import ModeManager from '../mode/ModeManager.js';
 import ActionQueue from '../queue/index.js';
 import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
+import Avatar from './avatar.js';
 
 export default class World {
   constructor(spritz, id) {
@@ -52,6 +53,23 @@ export default class World {
         },
       },
     };
+  }
+
+  createAvatar = (avatarData) => {
+    const zone = this.zoneContaining(avatarData.x, avatarData.y);
+    if (zone) {
+      const avatar = new Avatar(zone, avatarData.id, avatarData);
+      zone.addSprite(avatar);
+      return avatar;
+    }
+    return null;
+  }
+
+  removeAvatar = (avatar) => {
+    const zone = avatar.zone;
+    if (zone) {
+      zone.removeSprite(avatar);
+    }
   }
 
   getAvatar = () => {
@@ -489,5 +507,3 @@ export default class World {
 //
 //    return results
 // }
-
-// ----

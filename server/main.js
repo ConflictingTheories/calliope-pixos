@@ -69,7 +69,7 @@ function handleJoinZone(clientId, payload) {
   client.avatar = avatar;
 
   // Remove from previous zone if any
-  if (client.zoneId) {
+  if (client.zoneId && client.zoneId !== zoneId) {
     const oldZone = zones.get(client.zoneId);
     if (oldZone) {
       oldZone.delete(clientId);
@@ -102,6 +102,9 @@ function handleDisconnect(clientId) {
     if (zone) {
       zone.delete(clientId);
       broadcastToZone(client.zoneId, { type: 'player-left', payload: { clientId } });
+      // Broadcast updated player list after disconnect
+      const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: clients.get(id).avatar }));
+      broadcastToZone(client.zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
     }
   }
   clients.delete(clientId);
@@ -123,6 +126,9 @@ function broadcastToZone(zoneId, message, excludeClientId = null) {
   }
 }
 
+/**
+ * Processes the action queue, broadcasting actions to the appropriate zones.
+ */
 function processActionQueue() {
   if (actionQueue.length > 0) {
     const { clientId, action } = actionQueue.shift();

@@ -12,9 +12,6 @@
 \*                                                 */
 
 import Utils from '../utils/index.js';
-import { GamePad } from '../utils/gamepad/index.js';
-import Keyboard from '../utils/keyboard.js';
-import Mouse from '../utils/mouse.js';
 import Database from './database/index.js';
 import Store from './store/index.js';
 import Hud from './hud/index.js';
@@ -175,11 +172,20 @@ export default class GLEngine {
     // Initialize render manager
     this.renderManager.init();
 
-    // Configure Gamepad & touch
+    // Configure Gamepad & touch - now handled through InputManager
+    // Direct access deprecated, use inputManager instead
     this.gamepad = this.inputManager.gamepad;
     this.keyboard = this.inputManager.keyboard;
     this.mouse = this.inputManager.mouse;
     this.touch = this.gamepad.listen.bind(this.gamepad);
+
+    // Initialize network if enabled
+    if (spritz.manifest?.network?.enabled) {
+      await this.networkManager.connect(spritz.manifest.network.url);
+      if (spritz.manifest.network.authority) {
+        this.networkManager.setAuthority(spritz.manifest.network.authority);
+      }
+    }
 
     // Initialize Spritz game
     await spritz.init(this);
@@ -237,6 +243,18 @@ export default class GLEngine {
     this.spritz.render(this, timestamp); // Render scene for picking pass
     this.getSelectedObject(); // Process object selection
 
+    // Update and render based on the active game mode
+    if (!this.modeManager.handleInput(timestamp)) {
+      // If mode doesn't handle input, do default update
+      this.spritz.update(timestamp);
+    }
+
+    // Sync input mode with game mode
+    const currentMode = this.modeManager.getMode();
+    if (currentMode && this.inputManager.getMode() !== currentMode) {
+      this.inputManager.setMode(currentMode);
+    }
+
     // Core render loop (actually render scene to screen)
     const gl = this.renderManager.engine.gl;
     this.renderManager.clearScreen();
@@ -247,11 +265,6 @@ export default class GLEngine {
     // Now draw world tiles/objects, then sprites
     this.renderManager.activateShaderProgram();
 
-    // Update and render based on the active game mode
-    if (!this.modeManager.handleInput(timestamp)) {
-      // If mode doesn't handle input, do default update
-      this.spritz.update(timestamp);
-    }
     this.modeManager.update(timestamp); // Update active mode
     this.spritz.render(this); // Render scene (might be overridden by mode)
 
@@ -313,7 +326,7 @@ export default class GLEngine {
 
     let id = data[0] + (data[1] << 8) + (data[2] << 16);
 
-    // Only process selection if a left click occurred
+    // // Only process selection if a left click occurred
     if (!this.inputManager.isActionActive('select')) {
       return id;
     }
