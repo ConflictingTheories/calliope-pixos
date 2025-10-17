@@ -14,7 +14,7 @@
 import Keyboard from '../../utils/keyboard.js';
 import Mouse from '../../utils/mouse.js';
 import { GamePad } from '../../utils/gamepad/index.js';
-import { ActionLoader } from '../../utils/loaders/index.js';
+import { ActionLoader, EventLoader } from '../../utils/loaders/index.js';
 import { Vector } from '../../utils/math/vector.js';
 import Touch from '../../utils/touch.js';
 
@@ -366,6 +366,59 @@ export default class InputManager {
             return avatar.faceDir(1); // Assuming Direction.Right = 1
           default:
             // For custom actions, try to create ActionLoader with action name
+            // Skip actions that don't have corresponding action files
+            if (action.startsWith('camera_')) {
+              // Handle camera actions directly using legacy camera logic
+              const from = this.engine.renderManager.camera.cameraVector;
+              let to = this.engine.renderManager.camera.cameraVector;
+              switch (action) {
+                case 'camera_rotate_left':
+                  to = from.sub(new Vector(0, 0, 1));
+                  to.z = to.z % 9;
+                  if (to.z === 0 && from.z === 8) {
+                    from.z = 0;
+                  }
+                  if (to.z === 0 && from.z === 7) {
+                    to.z = 8;
+                  }
+                  avatar.zone.world.addEvent(
+                    new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
+                  );
+                  break;
+                case 'camera_rotate_right':
+                  to = from.add(new Vector(0, 0, 1));
+                  to.z = to.z % 9;
+                  if (to.z === 0 && from.z === 8) {
+                    from.z = 0;
+                  }
+                  if (to.z === 0 && from.z === 7) {
+                    to.z = 8;
+                  }
+                  avatar.zone.world.addEvent(
+                    new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
+                  );
+                  break;
+                case 'camera_zoom_in':
+                  // Camera zoom in logic
+                  break;
+                case 'camera_zoom_out':
+                  // Camera zoom out logic
+                  break;
+                case 'camera_pan_left':
+                  // Camera pan left logic
+                  break;
+                case 'camera_pan_right':
+                  // Camera pan right logic
+                  break;
+                case 'camera_pan_up':
+                  // Camera pan up logic
+                  break;
+                case 'camera_pan_down':
+                  // Camera pan down logic
+                  break;
+              }
+              return null; // Don't create action for camera controls
+            }
             return new ActionLoader(this.engine, action, [], avatar);
         }
       }

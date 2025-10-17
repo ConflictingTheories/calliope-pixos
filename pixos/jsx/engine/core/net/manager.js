@@ -135,7 +135,10 @@ class NetworkManager {
    * @param {object} zone - The zone object.
    */
   loadZone(zoneId, zone) {
-    this.send('load-zone', { zoneId, zone: zone.getZoneData ? zone.getZoneData() : zone });
+    const zoneData = zone.getZoneData ? zone.getZoneData() : zone;
+    // Remove circular references
+    const cleanZoneData = JSON.parse(JSON.stringify(zoneData));
+    this.send('load-zone', { zoneId, zone: cleanZoneData });
   }
 
   /**
@@ -144,7 +147,10 @@ class NetworkManager {
    */
   joinZone(zoneId) {
     const avatar = this.engine.spritz.world.getAvatar();
-    this.send('join-zone', { zoneId, avatar: avatar.getAvatarData() });
+    const avatarData = avatar.getAvatarData();
+    // Remove circular references
+    const cleanAvatarData = JSON.parse(JSON.stringify(avatarData));
+    this.send('join-zone', { zoneId, avatar: cleanAvatarData });
   }
 
   /**
@@ -181,7 +187,9 @@ class NetworkManager {
           facing: avatar.facing
         }
       };
-      this.send('update-avatar', data);
+      // Remove circular references
+      const cleanData = JSON.parse(JSON.stringify(data));
+      this.send('update-avatar', cleanData);
     }
   }
 
