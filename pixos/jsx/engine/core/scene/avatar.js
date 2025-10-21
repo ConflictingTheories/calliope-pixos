@@ -109,50 +109,6 @@ export default class Avatar extends Sprite {
   }
 
   /**
-   * Reads for Input to Respond to - Legacy method, now delegates to InputManager
-   * @returns
-   */
-  checkInputLegacy = () => {
-    // Action Keys
-    let touchmap = this.engine.gamepad.checkInput();
-    // Gamepad controls - TODO
-    if (this.engine.gamepad.keyPressed('a')) {
-      // select
-      return new ActionLoader(this.engine, 'interact', [this.pos.toArray(), this.facing, this.zone.world], this);
-    }
-    // camera
-    if (touchmap['x'] === 1) {
-      this.bindCamera = !this.bindCamera;
-    }
-    // menu
-    if (touchmap['y'] === 1) {
-      return this.openMenu(
-        {
-          main: {
-            text: 'Close Menu',
-            x: 100,
-            y: 100,
-            w: 150,
-            h: 75,
-            colours: {
-              top: '#333',
-              bottom: '#777',
-              background: '#999',
-            },
-            trigger: (menu) => {
-              menu.completed = true;
-            },
-          },
-        },
-        ['main']
-      );
-    }
-
-    // Walk
-    return this.handleWalk(this.engine.keyboard.lastPressedKey(), touchmap);
-  }
-
-  /**
    * Handle the walking keys (wasd + extras (optonal))
    * @param {*} key
    * @param {*} touchmap
@@ -166,12 +122,6 @@ export default class Avatar extends Sprite {
       // Movement
       case 'w':
         facing = Direction.Up;
-        break;
-      case 'y':
-        this.pos.z++;
-        break;
-      case 'f':
-        this.pos.z--;
         break;
       case 's':
         facing = Direction.Down;
@@ -191,12 +141,9 @@ export default class Avatar extends Sprite {
       // Run
       case 'r':
         return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
-      case 't':
-        this.engine.renderManager.startTransition({ duration: 2 });
-        return;
     }
 
-    // Mobile Gamepad
+    // TODO - Needs to move into input handler Mobile Gamepad
     // X axis - joystick
     if (touchmap['x-dir'] === 1) {
       // right

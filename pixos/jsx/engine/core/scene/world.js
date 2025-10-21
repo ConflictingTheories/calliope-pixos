@@ -97,6 +97,8 @@ export default class World {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
   }
 
+
+
   /**
    * Fetch and Load Zone
    * @param {string} zoneId
@@ -107,16 +109,9 @@ export default class World {
   loadZoneFromZip = async (zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     // check cache ?
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
-    // Perform a transition when loading zones from a zip. Unless
-    // transitionParams is explicitly set to null, we fade out before
-    // loading and fade back in after the new zone is ready. The caller can
-    // override the effect or duration via transitionParams.
     const engine = this.engine;
-    // Determine whether to perform a transition. We check that transitions
-    // have been requested, that a render manager exists and that the last
-    // transition finished sufficiently long ago. Without this guard, two
-    // zone loads invoked in rapid succession (e.g. from a Lua script and
-    // a changezone action) would trigger two separate fade sequences.
+
+    // transition effects
     let useTransition = false;
     if (transitionParams && engine?.renderManager) {
       const rm = engine.renderManager;
@@ -151,20 +146,22 @@ export default class World {
       }
     });
     if (z.audio) {
-      console.log(z.audio);
       z.audio.playAudio();
     }
+
     // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
 
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
+
     // fade back in once the new zone has finished loading
     if (useTransition) {
       const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
+
     return z;
   }
 
@@ -178,10 +175,8 @@ export default class World {
   loadZone = async (zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
     const engine = this.engine;
-    // Decide whether to perform a transition. We only start a new
-    // transition if the previous one has completed and a small delay has
-    // elapsed. Otherwise the new transition will be queued by
-    // startTransition() if one is in progress.
+
+    // transition effects
     let useTransition = false;
     if (transitionParams && engine?.renderManager) {
       const rm = engine.renderManager;
@@ -195,10 +190,12 @@ export default class World {
       const { effect = 'cross', duration = 500 } = transitionParams;
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
+
     // Fetch Zone Remotely (allows for custom maps - with approved sprites / actions)
     let z = new Zone(zoneId, this);
     if (remotely) await z.loadRemote();
     else await z.load();
+
     // audio
     this.zoneList.map((x) => {
       if (x.audio) {
@@ -209,11 +206,14 @@ export default class World {
       console.log(z.audio);
       z.audio.playAudio();
     }
+
     // add zone
     this.zoneDict[zoneId] = z;
     this.zoneList.push(z);
+
     // Sort for correct render order
     z.runWhenLoaded(this.sortZones);
+
     // fade back in once the new zone has finished loading
     if (useTransition) {
       const { effect = 'cross', duration = 500 } = transitionParams;
@@ -272,15 +272,14 @@ export default class World {
   checkInput = (time) => {
     if (time > this.lastKey + 200) {
       this.lastKey = time;
-      // Give current mode first crack at input
+
+      // Give game mode first priority at input
       if (this.modeManager && this.modeManager.handleInput) {
-        try {
-          console.log('----> Checking Custom Input Handler')
-          const handled = this.modeManager.handleInput(time);
-          // If a mode consumed input, do not run the default handling
-          if (handled) return;
+        try { // If a mode consumed input, do not run the default handling
+          if (this.modeManager.handleInput(time)) return;
         } catch (e) { console.warn('mode input handler error', e); }
       }
+      // todo -- gamepad needs work - the joysticks need to be mapped to input man
       let touchmap = this.engine.gamepad.checkInput();
       // start
       if (this.engine.gamepad.keyPressed('start')) {

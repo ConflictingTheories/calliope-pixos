@@ -82,7 +82,6 @@ export default class Sprite extends Loadable {
       let stepParent = this.onStep;
       this.onStep = async () => {
         await instanceData.onStep(this, this);
-        console.log('made it to here');
         await stepParent(this, this);
       };
     }
@@ -91,7 +90,6 @@ export default class Sprite extends Loadable {
       let selectParent = this.onSelect;
       this.onSelect = async () => {
         await instanceData.onSelect(this, this);
-        console.log('made it to here');
         await selectParent(this, this);
       };
     }
@@ -196,7 +194,6 @@ export default class Sprite extends Loadable {
 
     // lighting
     if (this.isLit) {
-      console.log({ msg: 'Adding Light', id: this.id, pos: this.pos.toArray() });
       this.lightIndex = this.engine.renderManager.lightManager.addLight(
         this.id,
         this.pos.toArray(),
@@ -447,7 +444,12 @@ export default class Sprite extends Loadable {
    * @returns
    */
   getPickingId = () => {
-    const id = [((this.objId >> 0) & 0xff) / 0xff, ((this.objId >> 8) & 0xff) / 0xff, ((this.objId >> 16) & 0xff) / 0xff, 255];
+    const id = [
+      ((this.objId >> 0) & 0xff) / 0xff,
+      ((this.objId >> 8) & 0xff) / 0xff,
+      ((this.objId >> 16) & 0xff) / 0xff,
+      255
+    ];
     return id;
   }
 
@@ -544,16 +546,7 @@ export default class Sprite extends Loadable {
     if (!response.ok) {
       throw new Error();
     }
-    this.processJson(response.json());
-  }
-
-  /**
-   * process json object
-   * @param {*} json
-   */
-  processJson = (json) => {
-    // TODO -- process json details
-    this.update(json);
+    this.update(response.json());
   }
 
   /**
