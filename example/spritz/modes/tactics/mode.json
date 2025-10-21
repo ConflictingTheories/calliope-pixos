@@ -12,16 +12,16 @@
         "end_turn": {
             "keyboard": "Enter"
         },
-        "move-up": {
+        "move_up": {
             "keyboard": "w"
         },
-        "move-down": {
+        "move_down": {
             "keyboard": "s"
         },
-        "move-left": {
+        "move_left": {
             "keyboard": "a"
         },
-        "move-right": {
+        "move_right": {
             "keyboard": "d"
         },
         "interact": {

@@ -17,6 +17,7 @@ import { GamePad } from '../../utils/gamepad/index.js';
 import { ActionLoader, EventLoader } from '../../utils/loaders/index.js';
 import { Vector } from '../../utils/math/vector.js';
 import Touch from '../../utils/touch.js';
+import { Direction } from '../../utils/enums.js';
 
 /**
  * @typedef {object} ActionMapping
@@ -103,58 +104,6 @@ export default class InputManager {
         dance: { keyboard: 'u' },
         height_up: { keyboard: 'y' },
         height_down: { keyboard: 'f' },
-      },
-    });
-
-    // Mode-specific mappings
-    this.setModeMappings('explore', {
-      actions: {
-        // Inherit defaults, add mode-specific
-        camera_focus: { keyboard: 'f' },
-      },
-    });
-
-    this.setModeMappings('tactics', {
-      actions: {
-        select: { mouse: 'left' },
-        move_unit: { mouse: 'right' },
-        end_turn: { keyboard: 'Enter' },
-      },
-    });
-
-    this.setModeMappings('fight', {
-      actions: {
-        attack: { keyboard: 'k', gamepad: 'a' },
-        defend: { keyboard: 'd' },
-        special: { keyboard: 's' },
-      },
-    });
-
-    this.setModeMappings('fps', {
-      actions: {
-        look_left: { mouse: 'move_x_negative' },
-        look_right: { mouse: 'move_x_positive' },
-        look_up: { mouse: 'move_y_negative' },
-        look_down: { mouse: 'move_y_positive' },
-        move_forward: { keyboard: 'w' },
-        move_backward: { keyboard: 's' },
-        strafe_left: { keyboard: 'a' },
-        strafe_right: { keyboard: 'd' },
-        jump: { keyboard: ' ' },
-        crouch: { keyboard: 'c' },
-        shoot: { mouse: 'left' },
-        reload: { keyboard: 'r' },
-      },
-    });
-
-    this.setModeMappings('racing', {
-      actions: {
-        accelerate: { keyboard: 'w', gamepad: 'a' },
-        brake: { keyboard: 's', gamepad: 'b' },
-        steer_left: { keyboard: 'a', gamepad: 'left' },
-        steer_right: { keyboard: 'd', gamepad: 'right' },
-        boost: { keyboard: ' ' },
-        handbrake: { keyboard: 'Shift' },
       },
     });
   }
@@ -322,32 +271,33 @@ export default class InputManager {
     const modeMappings = this.mappings[this.currentMode] || this.mappings['default'];
     const actions = { ...this.mappings['default'].actions, ...modeMappings.actions };
 
-    // Check for movement actions
-    if (this.isActionActive('move_up')) {
-      return avatar.handleWalk('w', {});
-    }
-    if (this.isActionActive('move_down')) {
-      return avatar.handleWalk('s', {});
-    }
-    if (this.isActionActive('move_left')) {
-      return avatar.handleWalk('a', {});
-    }
-    if (this.isActionActive('move_right')) {
-      return avatar.handleWalk('d', {});
-    }
-
-    // Check for interaction actions
-    if (this.isActionActive('interact')) {
-      return new ActionLoader(this.engine, 'interact', [avatar.pos.toArray(), avatar.facing, avatar.zone.world], avatar);
-    }
-
     // Check for other actions based on mappings
     for (const action in actions) {
       if (this.isActionActive(action)) {
         // Map action names to avatar methods
         switch (action) {
           case 'menu':
-            return avatar.openMenu();
+            // todo -- need to find a way to pass in params with actions
+            return avatar.openMenu(
+              {
+                main: {
+                  text: 'Close Menu',
+                  x: 100,
+                  y: 100,
+                  w: 150,
+                  h: 75,
+                  colours: {
+                    top: '#333',
+                    bottom: '#777',
+                    background: '#999',
+                  },
+                  trigger: (menu) => {
+                    menu.completed = true;
+                  },
+                },
+              },
+              ['main']
+            );
           case 'chat':
             return new ActionLoader(this.engine, 'chat', ['>:', true, { autoclose: false }], avatar);
           case 'dance':
@@ -356,13 +306,27 @@ export default class InputManager {
             return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone], avatar);
           case 'run':
             return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 200, avatar.zone], avatar);
-          case 'face-up':
+          case 'interact':
+            return new ActionLoader(this.engine, 'interact', [avatar.pos.toArray(), avatar.facing, avatar.zone.world], avatar);
+          case 'help':
+            return new ActionLoader(this.engine, 'dialogue', ['Welcome! You pressed help! Press Escape to close', false, { autoclose: true }], avatar);
+          case 'clear_speech':
+            return avatar.speech.clearHud();
+          case 'move_up':
+            return avatar.handleWalk('w', {});
+          case 'move_down':
+            return avatar.handleWalk('s', {});
+          case 'move_left':
+            return avatar.handleWalk('a', {});
+          case 'move_right':
+            return avatar.handleWalk('d', {});
+          case 'face_up':
             return avatar.faceDir(0); // Assuming Direction.Up = 0
-          case 'face-down':
+          case 'face_down':
             return avatar.faceDir(2); // Assuming Direction.Down = 2
-          case 'face-left':
+          case 'face_left':
             return avatar.faceDir(3); // Assuming Direction.Left = 3
-          case 'face-right':
+          case 'face_right':
             return avatar.faceDir(1); // Assuming Direction.Right = 1
           default:
             // For custom actions, try to create ActionLoader with action name
@@ -374,20 +338,21 @@ export default class InputManager {
               switch (action) {
                 case 'camera_rotate_left':
                   to = from.sub(new Vector(0, 0, 1));
-                  to.z = to.z % 9;
+                  to.z = Math.round(to.z % 9);
                   if (to.z === 0 && from.z === 8) {
                     from.z = 0;
                   }
                   if (to.z === 0 && from.z === 7) {
                     to.z = 8;
                   }
+                  avatar.faceDir(Direction.adjustCameraDirection(to));
                   avatar.zone.world.addEvent(
                     new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
                   );
                   break;
                 case 'camera_rotate_right':
                   to = from.add(new Vector(0, 0, 1));
-                  to.z = to.z % 9;
+                  to.z = Math.round(to.z % 9 ?? 8);
                   if (to.z === 0 && from.z === 8) {
                     from.z = 0;
                   }
@@ -415,6 +380,14 @@ export default class InputManager {
                   break;
                 case 'camera_pan_down':
                   // Camera pan down logic
+                  break;
+                case 'camera_bind':
+                  // Camera binds to avatar
+                  avatar.bindCamera = true;
+                  break;
+                case 'camera_unbind':
+                  // Camera unbinds from avatar
+                  avatar.bindCamera = false;
                   break;
               }
               return null; // Don't create action for camera controls
