@@ -12,7 +12,7 @@
 \*                                                 */
 
 import Zone from './zone.js';
-import ModeManager from '../mode/ModeManager.js';
+import ModeManager from '../mode/manager.js';
 import ActionQueue from '../queue/index.js';
 import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';

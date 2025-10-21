@@ -18,7 +18,7 @@ import Hud from './hud/index.js';
 import RenderManager from './render/manager.js';
 import ResourceManager from './resource/manager.js';
 import CutsceneManager from './cutscene/manager.js';
-import ModeManager from './mode/ModeManager.js'; // Import ModeManager
+import ModeManager from './mode/manager.js'; // Import ModeManager
 import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
 import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
