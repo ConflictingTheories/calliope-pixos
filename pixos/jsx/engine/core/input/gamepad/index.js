@@ -12,7 +12,7 @@
 \*                                                 */
 import GLEngine from '@Engine/core/index.js';
 
-import { Controller } from '@Engine/utils/gamepad/Controller.js';
+import { Controller } from '@Engine/core/input/gamepad/Controller.js';
 export class GamePad {
   /** Game Pad
    * inspired by https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas

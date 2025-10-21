@@ -11,8 +11,8 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ControllerStick } from '@Engine/utils/gamepad/ControllerStick.js';
-import { ControllerButtons } from '@Engine/utils/gamepad/ControllerButtons.js';
+import { ControllerStick } from '@Engine/core/input/gamepad/ControllerStick.js';
+import { ControllerButtons } from '@Engine/core/input/gamepad/ControllerButtons.js';
 // Controller Manager for Gamepad
 export class Controller {
   constructor(ctx, button_offset, touches, start, select, colours, gamepad) {

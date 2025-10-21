@@ -11,12 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import Keyboard from '../../utils/keyboard.js';
-import Mouse from '../../utils/mouse.js';
-import { GamePad } from '../../utils/gamepad/index.js';
+import Keyboard from './keyboard.js';
+import Mouse from './mouse.js';
+import { GamePad } from './gamepad/index.js';
+import Touch from './touch.js';
 import { ActionLoader, EventLoader } from '../../utils/loaders/index.js';
 import { Vector } from '../../utils/math/vector.js';
-import Touch from '../../utils/touch.js';
 import { Direction } from '../../utils/enums.js';
 
 /**
