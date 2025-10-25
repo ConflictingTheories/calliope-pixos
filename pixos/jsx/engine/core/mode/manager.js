@@ -1,11 +1,12 @@
-/**
- * @typedef {object} ModeHandlers
- * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
- * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.
- * @property {function(number, object): Promise<void>} [update] - Function called every frame to update the mode's state.
- * @property {function(number, object): boolean} [check_input] - Function to handle input events. Returns true if input was consumed.
- * @property {function(object, number, number, string, object): boolean} [on_select] - Function to handle object selection events. Returns true to consume default selection.
- */
+  /**
+   * @typedef {object} ModeHandlers
+   * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
+   * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.
+   * @property {function(number, object): Promise<void>} [update] - Function called every frame to update the mode's state.
+   * @property {function(number, object): boolean} [check_input] - Function to handle input events. Returns true if input was consumed.
+   * @property {function(object, number, number, string, object): boolean} [on_select] - Function to handle object selection events. Returns true to consume default selection.
+   * @property {boolean} [picker] - Whether the mode should enable object picking.
+   */
 
 /**
  * ModeManager - manages game modes (explore, tactics, etc.).
@@ -210,5 +211,13 @@ export default class ModeManager {
    */
   getMode() {
     return this.current?.name || null;
+  }
+
+  /**
+   * Checks if the current mode has picker enabled.
+   * @returns {boolean} True if picker is enabled for the current mode.
+   */
+  hasPicker() {
+    return this.current?.handlers?.picker === true;
   }
 }

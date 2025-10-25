@@ -55,7 +55,7 @@ export default class Mouse {
     canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    // Optional: context menu prevention
+    // Prevent context menu on right click
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 

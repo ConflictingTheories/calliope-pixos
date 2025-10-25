@@ -63,6 +63,8 @@ export default class InputManager {
       this.actionStates = {}; // Current state of actions
       /** @type {Object.<string, number>} */
       this.lastActionTime = {}; // Timestamp of last action trigger
+      /** @type {Object.<string, boolean>} */
+      this.actionPressed = {}; // True on the frame the action was first pressed
       InputManager._instance = this;
     }
     return InputManager._instance;
@@ -85,6 +87,7 @@ export default class InputManager {
         move_right: { keyboard: 'd', gamepad: 'right', touch: 'swipe_right' },
         interact: { keyboard: 'k', gamepad: 'a', touch: 'tap' },
         select: { mouse: 'left', touch: 'tap' },
+        select_right: { mouse: 'right' },
         camera_pan_left: { keyboard: 'ArrowLeft' },
         camera_pan_right: { keyboard: 'ArrowRight' },
         camera_pan_up: { keyboard: 'ArrowUp' },
@@ -193,6 +196,7 @@ export default class InputManager {
 
       const wasActive = this.actionStates[action];
       this.actionStates[action] = active;
+      this.actionPressed[action] = active && !wasActive;
 
       // Trigger hooks for single-press events (rising edge)
       if (active && !wasActive) {
@@ -214,6 +218,15 @@ export default class InputManager {
   }
 
   /**
+   * Checks if an action was pressed this frame.
+   * @param {string} action - The action name.
+   * @returns {boolean} True if the action was pressed this frame.
+   */
+  isActionPressed(action) {
+    return !!this.actionPressed[action];
+  }
+
+  /**
    * Sets the current input mode and notifies the mode manager.
    * @param {string} mode - The mode to switch to.
    */
@@ -227,6 +240,16 @@ export default class InputManager {
     } else {
       console.warn(`Input mode "${mode}" not found, staying in "${this.currentMode}"`);
     }
+  }
+
+  /**
+   * Handles input for the current mode.
+   * @param {number} time - The current time.
+   * @returns {boolean} True if input was handled by the mode, false otherwise.
+   */
+  handleInput(time) {
+    if (!this.engine || !this.engine.modeManager) return false;
+    return this.engine.modeManager.handleInput(time);
   }
 
   /**

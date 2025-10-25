@@ -11,8 +11,29 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * @typedef {Float32Array(3)} Vector3
+ */
+
+/**
+ * @typedef {Float32Array(4)} Vector4
+ */
+
+/**
+ * @typedef {Float32Array(9)} Matrix3
+ */
+
+/**
+ * @typedef {Float32Array(16)} Matrix4
+ */
+
 const EPSILON = 0.000001;
 
+/**
+ * 
+ * @param {number[]} mat 
+ * @returns {Matrix4}
+ */
 const from = (mat) => {
   let dest = new Float32Array(16);
   dest[0] = mat[0];
@@ -34,6 +55,10 @@ const from = (mat) => {
   return dest;
 };
 
+/**
+ * 
+ * @returns {Matrix4}
+ */
 const create = () => {
   let matrix = new Float32Array(16);
   matrix[0] = 1;
@@ -43,6 +68,10 @@ const create = () => {
   return matrix;
 };
 
+/**
+ * 
+ * @returns {Matrix3}
+ */
 const create3 = () => {
   let matrix = new Float32Array(9);
   matrix[0] = 1;
@@ -51,6 +80,10 @@ const create3 = () => {
   return matrix;
 };
 
+/**
+ * 
+ * @returns {Matrix4}
+ */
 const perspective = (fovy, aspect, near, far) => {
   let matrix = new Float32Array(16);
   let f = 1.0 / Math.tan(fovy / 2);
@@ -78,6 +111,10 @@ const perspective = (fovy, aspect, near, far) => {
   return matrix;
 };
 
+/**
+ * 
+ * @returns {Matrix4}
+ */
 const frustum = (l, r, b, t, n, f) => {
   let m = new Float32Array(16);
 
@@ -104,6 +141,10 @@ const frustum = (l, r, b, t, n, f) => {
   return m;
 };
 
+/**
+ * 
+ * @returns {Matrix4}
+ */
 const translate = (m1, m2, v) => {
   let matrix = m1;
   let [x, y, z] = v;
@@ -130,10 +171,19 @@ const translate = (m1, m2, v) => {
   return matrix;
 };
 
+/**
+ * @param {Vector3} a
+ * @param {Vector3} b
+ * @returns {Vector3}
+ */
 const subtractVectors = (a, b) => {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 };
 
+/**
+ * 
+ * @returns {Matrix4}
+ */
 const rotate = (m1, m2, rad, axis) => {
   let matrix = m1;
   let [x, y, z] = axis;
@@ -186,10 +236,21 @@ const rotate = (m1, m2, rad, axis) => {
   return matrix;
 };
 
+/**
+ * 
+ * @param {*} value 
+ * @returns {boolean}
+ */
 function isPowerOf2(value) {
   return (value & (value - 1)) == 0;
 }
 
+/**
+ * 
+ * @param {Matrix4} mat 
+ * @param {Matrix4} dest 
+ * @returns {Matrix4}
+ */
 function set(mat, dest) {
   dest[0] = mat[0];
   dest[1] = mat[1];
@@ -213,10 +274,10 @@ function set(mat, dest) {
 /**
  * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
  *
- * @param {mat3} out mat3 receiving operation result
- * @param {mat4} a Mat4 to derive the normal matrix from
+ * @param {Matrix3} out mat3 receiving operation result
+ * @param {Matrix4} a Mat4 to derive the normal matrix from
  *
- * @returns {mat3} out
+ * @returns {Matrix3} out
  */
 function normalFromMat4(out, a) {
   var a00 = a[0],
@@ -272,6 +333,11 @@ function normalFromMat4(out, a) {
   return out;
 }
 
+/**
+ * 
+ * @param {Vector3} v 
+ * @returns {Vector3}
+ */
 const normalize = (v) => {
   let len = Math.hypot(...v);
   // Guard against zero-length vectors which would produce NaN components.

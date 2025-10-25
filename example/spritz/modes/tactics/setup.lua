@@ -1,6 +1,8 @@
 -- Setup for 'tactics' mode: register handlers for a simple turn-based skeleton
 
 pixos.register_mode('tactics', {
+	picker = true,
+
 	setup = function(params)
 		pixos.log('tactics: setup called')
 		-- params may include an initial turn order or rules
@@ -19,15 +21,28 @@ pixos.register_mode('tactics', {
 	on_select = function(zone, row, cell, type, params)
 		-- consume selection and log for demo
 		pixos.log('tactics:on_select', { zone = zone.id, row = row, cell = cell, type = type })
+		-- Emit flame particles at the selected position
+		local pos = {row, cell, 1}  -- Assuming tile position, adjust z as needed
+		if type == 'tile' then
+			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
+		elseif type == 'sprite' then
+			-- For sprite, use sprite position
+			pos = {row.pos.x, row.pos.y, row.pos.z}
+			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
+		elseif type == 'object' then
+			-- For object, use object position
+			pos = {row.pos.x, row.pos.y, row.pos.z}
+			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
+		end
 		-- return true to indicate selection handled (prevents default behaviour)
 		return true
 	end,
 
 	check_input = function(time, params)
-		-- consume selection and log for demo
+		-- consume input and log for demo
 		pixos.log('tactics:check_input', { params = params, time = time })
-		-- return true to indicate selection handled (prevents default behaviour)
-		return true
+		-- return false to allow default input handling (pass through)
+		return false
 	end,
 })
 

@@ -21,6 +21,7 @@ import LightManager from './light.js';
 import SkyboxManager from './skybox.js';
 import GLEngine from '../index.js';
 import { fetchTransitionShaderFiles } from './shaders.js';
+import ParticleManager from './ParticleManager.js';
 
 /**
  * @typedef {object} ShaderSource
@@ -53,13 +54,13 @@ export default class RenderManager {
       this.fullscreen = engine.fullscreen;
 
       // Matrices
-      /** @type {number[]} */
+      /** @type {Float32Array(16)} */
       this.uProjMat = create();
-      /** @type {number[]} */
+      /** @type {Float32Array(16)} */
       this.uModelMat = create();
-      /** @type {number[]} */
+      /** @type {Float32Array(9)} */
       this.normalMat = create3();
-      /** @type {Array<[number[], number[]]>} */
+      /** @type {Array<[Float32Array(16), Float32Array(16)]>} */
       this.modelViewMatrixStack = [];
 
       // Properties
@@ -130,6 +131,14 @@ export default class RenderManager {
       /** @type {SkyboxManager} */
       this.skyboxManager = new SkyboxManager(this);
 
+  // Particle system
+  /** @type {ParticleManager} */
+  this.particleManager = new ParticleManager(this);
+
+  // Particle shader program
+  /** @type {WebGLProgram|null} */
+  this.particleShaderProgram = null;
+
       /** @type {WebGLProgram|null} */
       this.shaderProgram = null; // The main shader program for rendering game objects
 
@@ -154,6 +163,9 @@ export default class RenderManager {
 
     // Initialize Main Shader Program
     this.initShaderProgram(spritz.shaders);
+
+    // Initialize Particle Shader Program
+    this.initParticleShaderProgram();
 
     // Initialize picker shader (special shader which allows for picking objects on screen)
     this.initShaderEffects({
@@ -344,6 +356,87 @@ export default class RenderManager {
     this.shaderProgram = shaderProgram;
     return shaderProgram;
   };
+
+  /**
+   * Initializes the particle shader program for optimized particle rendering.
+   * @returns {WebGLProgram} The initialized particle shader program.
+   * @throws {Error} If the particle shader program fails to link.
+   */
+  initParticleShaderProgram = () => {
+    const { gl } = this.engine;
+    const self = this;
+
+    const vsSource = require('../../shaders/particles/vs.js').default();
+    const fsSource = require('../../shaders/particles/fs.js').default();
+
+    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
+
+    // Generate particle shader program
+    let particleShaderProgram = gl.createProgram();
+    gl.attachShader(particleShaderProgram, vertexShader);
+    gl.attachShader(particleShaderProgram, fragmentShader);
+    gl.bindAttribLocation(particleShaderProgram, 0, 'aVertexPosition');
+    gl.bindAttribLocation(particleShaderProgram, 1, 'aTextureCoord');
+
+    gl.linkProgram(particleShaderProgram);
+    if (!gl.getProgramParameter(particleShaderProgram, gl.LINK_STATUS)) {
+      throw new Error(`WebGL unable to initialize the particle shader program: ${gl.getProgramInfoLog(particleShaderProgram)}`);
+    }
+
+    // Get attribute locations
+    particleShaderProgram.aVertexPosition = gl.getAttribLocation(particleShaderProgram, 'aVertexPosition');
+    gl.enableVertexAttribArray(particleShaderProgram.aVertexPosition);
+
+    particleShaderProgram.aTextureCoord = gl.getAttribLocation(particleShaderProgram, 'aTextureCoord');
+    gl.enableVertexAttribArray(particleShaderProgram.aTextureCoord);
+
+    // Get uniform locations
+    particleShaderProgram.uProjectionMatrix = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
+    particleShaderProgram.uModelMatrix = gl.getUniformLocation(particleShaderProgram, 'uModelMatrix');
+    particleShaderProgram.uViewMatrix = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
+    particleShaderProgram.uScale = gl.getUniformLocation(particleShaderProgram, 'uScale');
+    particleShaderProgram.uParticleColor = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
+
+    /**
+     * Sets the matrix and other common uniforms for the particle shader program.
+     * @param {object} [options] - Options for setting uniforms.
+     * @param {Vector|null} [options.scale=null] - The scale vector for the particle.
+     * @param {number[]|null} [options.color=null] - The color of the particle.
+     */
+    particleShaderProgram.setMatrixUniforms = function ({ scale = null, color = null }) {
+      gl.uniformMatrix4fv(this.uProjectionMatrix, false, self.uProjMat);
+      gl.uniformMatrix4fv(this.uModelMatrix, false, self.uModelMat);
+      gl.uniformMatrix4fv(this.uViewMatrix, false, self.camera.uViewMat);
+
+      // Scale
+      gl.uniform3fv(this.uScale, scale ? scale.toArray() : self.scale.toArray());
+
+      // Particle color
+      gl.uniform3fv(this.uParticleColor, color ? color : [1.0, 1.0, 1.0]);
+    };
+
+    this.particleShaderProgram = particleShaderProgram;
+    return particleShaderProgram;
+  };
+
+  /**
+   * Update particles. Call from engine loop with timestamp.
+   */
+  updateParticles = (timestamp) => {
+    if (this.particleManager && typeof this.particleManager.update === 'function') {
+      this.particleManager.update(timestamp);
+    }
+  }
+
+  /**
+   * Render particles. Should be called after main scene draw or where appropriate.
+   */
+  renderParticles = () => {
+    if (this.particleManager && typeof this.particleManager.render === 'function') {
+      this.particleManager.render();
+    }
+  }
 
   /**
    * Activates the main shader program for rendering.

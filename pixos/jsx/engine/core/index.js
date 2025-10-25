@@ -234,17 +234,16 @@ export default class GLEngine {
     // Update Input Manager
     this.inputManager.update();
 
-    // Object picking pass (for selection)
-    // TODO: This will be "mode" dependent - and some modes will have the picker, but it too will need some
-    // updates - it will need to support more than just specific types, and may require additionally support
-    // for further specification (such as in a battle - only allowing selection of enemies to attack).
-    // Enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen).
-    this.renderManager.activatePickerShaderProgram(false);
-    this.spritz.render(this, timestamp); // Render scene for picking pass
-    this.getSelectedObject(); // Process object selection
+    // Object picking pass (for selection) - only if mode has picker enabled
+    if (this.modeManager.hasPicker()) {
+      // Enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen).
+      this.renderManager.activatePickerShaderProgram(false);
+      this.spritz.render(this, timestamp); // Render scene for picking pass
+      this.getSelectedObject(); // Process object selection
+    }
 
     // Update and render based on the active game mode
-    if (!this.modeManager.handleInput(timestamp)) {
+    if (!this.inputManager.handleInput(timestamp)) {
       // If mode doesn't handle input, do default update
       this.spritz.update(timestamp);
     }
@@ -266,10 +265,21 @@ export default class GLEngine {
     this.renderManager.activateShaderProgram();
 
     this.modeManager.update(timestamp); // Update active mode
+
+    // Allow particle system to update physics with a stable timestamp
+    if (this.renderManager && this.renderManager.updateParticles) {
+      try { this.renderManager.updateParticles(timestamp); } catch (e) { console.warn('updateParticles failed', e); }
+    }
+
     this.spritz.render(this); // Render scene (might be overridden by mode)
 
     this.cutsceneManager.update(); // Update cutscene (if applicable)
     this.renderManager.updateTransition(); // Update transitions
+
+    // Render particles after main scene but before HUD/gamepad
+    if (this.renderManager && this.renderManager.renderParticles) {
+      try { this.renderManager.renderParticles(); } catch (e) { console.warn('renderParticles failed', e); }
+    }
     this.gamepad.render(); // Render gamepad (may be optimizable?)
 
     // Update debug overlay if enabled
@@ -326,8 +336,8 @@ export default class GLEngine {
 
     let id = data[0] + (data[1] << 8) + (data[2] << 16);
 
-    // // Only process selection if a left click occurred
-    if (!this.inputManager.isActionActive('select')) {
+    // Only process selection if a left click occurred this frame
+    if (!this.inputManager.isActionPressed('select')) {
       return id;
     }
 
@@ -340,9 +350,12 @@ export default class GLEngine {
               sprite.isSelected = true;
               if (this.spritz.world.spriteDict[sprite.id]) {
                 this.spritz.world.spriteDict[sprite.id].isSelected = true;
-                // TODO: Add a new trigger method onSelect()
-                if (typeof this.spritz.world.spriteDict[sprite.id].onSelect === 'function') {
-                  this.spritz.world.spriteDict[sprite.id].onSelect(sprite.zone, sprite);
+                // Allow mode to handle selection first
+                if (!this.modeManager.handleSelect(sprite.zone, sprite, null, 'sprite')) {
+                  // TODO: Add a new trigger method onSelect()
+                  if (typeof this.spritz.world.spriteDict[sprite.id].onSelect === 'function') {
+                    this.spritz.world.spriteDict[sprite.id].onSelect(sprite.zone, sprite);
+                  }
                 }
               }
             } else {
@@ -357,9 +370,12 @@ export default class GLEngine {
               obj.isSelected = true;
               if (this.spritz.world.objectDict[obj.id]) {
                 this.spritz.world.objectDict[obj.id].isSelected = true;
-                // TODO: Add a new trigger method onSelect()
-                if (typeof this.spritz.world.objectDict[obj.id].onSelect === 'function') {
-                  this.spritz.world.objectDict[obj.id].onSelect(obj.zone, obj);
+                // Allow mode to handle selection first
+                if (!this.modeManager.handleSelect(obj.zone, obj, null, 'object')) {
+                  // TODO: Add a new trigger method onSelect()
+                  if (typeof this.spritz.world.objectDict[obj.id].onSelect === 'function') {
+                    this.spritz.world.objectDict[obj.id].onSelect(obj.zone, obj);
+                  }
                 }
               }
             } else {
@@ -377,8 +393,11 @@ export default class GLEngine {
           // Search zones and find selected tile
           this.spritz.world.zoneList.forEach((zone) => {
             if (zone.objId === zoneObjId) {
-              if (typeof zone.onSelect === 'function') {
-                zone.onSelect(row, cell);
+              // Allow mode to handle selection first
+              if (!this.modeManager.handleSelect(zone, row, cell, 'tile')) {
+                if (typeof zone.onSelect === 'function') {
+                  zone.onSelect(row, cell);
+                }
               }
             }
           });

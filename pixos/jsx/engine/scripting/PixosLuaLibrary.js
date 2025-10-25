@@ -449,6 +449,9 @@ export default class PixosLuaLibrary {
           if (asObj.setup) h.setup = asObj.setup;
           if (asObj.update) h.update = asObj.update;
           if (asObj.teardown) h.teardown = asObj.teardown;
+          if (asObj.check_input) h.check_input = asObj.check_input;
+          if (asObj.on_select) h.on_select = asObj.on_select;
+          if (asObj.picker !== undefined) h.picker = asObj.picker;
           world.modeManager.register(name, h);
         } catch (e) { console.warn('register_mode failed', e); }
       },
@@ -468,6 +471,55 @@ export default class PixosLuaLibrary {
       set_skybox_shader: async (shaderName) => {
         if (engine.renderManager?.skyboxManager?.setSkyboxShader) {
           await engine.renderManager.skyboxManager.setSkyboxShader(shaderName);
+        }
+      },
+      // particle system
+      emit_particles: (posTbl, cfgTbl) => {
+        try {
+          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
+          const cfg = cfgTbl && typeof cfgTbl.toObject === 'function' ? cfgTbl.toObject() : cfgTbl || {};
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            // allow shorthand preset names
+            if (cfg.preset) {
+              const presetCfg = engine.renderManager.particleManager.preset(cfg.preset);
+              if (presetCfg) Object.assign(cfg, presetCfg);
+            }
+            engine.renderManager.particleManager.emit(pos, cfg);
+          }
+        } catch (e) {
+          console.warn('emit_particles failed', e);
+        }
+      },
+      create_particles: (posTbl, presetName) => {
+        try {
+          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
+          const preset = presetName || null;
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            const cfg = preset ? engine.renderManager.particleManager.preset(preset) : {};
+            engine.renderManager.particleManager.emit(pos, cfg || {});
+          }
+        } catch (e) {
+          console.warn('create_particles failed', e);
+        }
+      },
+      clear_particles: () => {
+        try {
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            engine.renderManager.particleManager.particles = [];
+          }
+        } catch (e) {
+          console.warn('clear_particles failed', e);
+        }
+      },
+      get_particle_count: () => {
+        try {
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            return engine.renderManager.particleManager.particles.length;
+          }
+          return 0;
+        } catch (e) {
+          console.warn('get_particle_count failed', e);
+          return 0;
         }
       },
     });
