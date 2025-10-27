@@ -12,12 +12,14 @@
 \*                                                 */
 
 /**
- * Transition Shader files for transition effects
- * @param {*} type 
- * @returns 
+ * Fetches vertex and fragment shader source code for transition effects.
+ * @param {string} type - The type of transition effect (e.g., 'fade', 'cross', 'swirl').
+ * @returns {[string, string]} An array containing the vertex shader source and fragment shader source.
  */
 export function fetchTransitionShaderFiles(type) {
+  /** @type {string|null} */
   let vsSource = null;
+  /** @type {string|null} */
   let fsSource = null;
 
   const t = (type || '').toLowerCase();
@@ -45,12 +47,14 @@ export function fetchTransitionShaderFiles(type) {
 
 
 /**
- * Skybox Shader files (todo -- WIP)
- * @param {*} type 
- * @returns 
+ * Fetches vertex and fragment shader source code for skybox effects.
+ * @param {string} type - The type of skybox effect (e.g., 'cosmic', 'morning', 'sky').
+ * @returns {[string, string]} An array containing the vertex shader source and fragment shader source.
  */
 export function fetchSkyboxShaderFiles(type) {
+  /** @type {string|null} */
   let vsSource = null;
+  /** @type {string|null} */
   let fsSource = null;
 
   const t = (type || '').toLowerCase();

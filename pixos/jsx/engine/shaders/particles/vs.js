@@ -1,3 +1,8 @@
+/**
+ * Vertex shader for particle rendering in the Pixos game engine.
+ * Handles particle positioning, scaling, and passes texture coordinates and color to the fragment shader.
+ * @returns {string} The GLSL vertex shader source code.
+ */
 export default function() {
   return `
     attribute vec3 aVertexPosition;
