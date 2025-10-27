@@ -11,23 +11,43 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * @fileoverview Speech class for Pixos game engine.
+ * Handles speech bubbles and text rendering.
+ */
+
 import ActionQueue from '@Engine/core/queue/index.js';
 import { textScrollBox } from '@Engine/core/hud/index.js';
 
+/**
+ * @typedef {object} SpeechOptions
+ * @property {boolean} [portrait] - Whether to include a portrait.
+ */
+
+/**
+ * Speech - Handles speech bubbles and positioned text.
+ */
 export default class Speech {
   /**
-   * Speech Bubble and positioned text
-   * @param {*} canvas
-   * @param {*} engine
-   * @param {string} id
+   * Creates an instance of Speech.
+   * @param {HTMLCanvasElement} canvas - The canvas element.
+   * @param {import('../index.js').default} engine - The game engine instance.
+   * @param {string} id - The speech ID.
    */
   constructor(canvas, engine, id) {
+    /** @type {string} */
     this.id = id;
+    /** @type {import('../index.js').default} */
     this.engine = engine;
+    /** @type {HTMLCanvasElement} */
     this.canvas = canvas;
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = canvas.getContext('2d');
+    /** @type {WebGLTexture} */
     this.glTexture = engine.gl.createTexture();
+    /** @type {boolean} */
     this.loaded = false;
+    /** @type {ActionQueue} */
     this.onLoadActions = new ActionQueue();
     this.loadImage();
   }

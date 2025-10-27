@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
 import { Vector, set } from '@Engine/utils/math/vector.js';
 import { Direction } from '@Engine/utils/enums.js';
 import ActionQueue from '../queue/index.js';
