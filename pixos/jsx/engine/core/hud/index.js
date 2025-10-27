@@ -1,3 +1,16 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 import GLEngine from '../index.js';
 
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');

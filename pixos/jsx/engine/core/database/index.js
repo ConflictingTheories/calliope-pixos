@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
 import Dexie from 'dexie';
 
 export default class Database {

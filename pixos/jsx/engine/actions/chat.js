@@ -11,34 +11,68 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * @fileoverview Chat action for Pixos game engine.
+ * Handles dialogue input and display for sprites.
+ */
+
+/**
+ * @typedef {object} ChatOptions
+ * @property {boolean} [autoclose=false] - Whether to auto-close the chat after a time.
+ * @property {number} [endTime] - Timestamp when to auto-close.
+ */
+
+/**
+ * Chat action object for handling dialogue interactions.
+ */
 export default {
-  // Initialize Dialogue Object
+  /**
+   * Initializes the chat action.
+   * @param {string} prompt - The initial prompt text.
+   * @param {boolean} [scrolling=true] - Whether the text scrolls.
+   * @param {ChatOptions} [options={}] - Additional options.
+   */
   init: function (prompt, scrolling = true, options = {}) {
+    /** @type {import('../core/index.js').default} */
     this.engine = this.sprite.engine;
+    /** @type {string} */
     this.text = '';
+    /** @type {string} */
     this.prompt = prompt;
+    /** @type {boolean} */
     this.scrolling = scrolling;
+    /** @type {number} */
     this.line = 0;
+    /** @type {ChatOptions} */
     this.options = options;
+    /** @type {boolean} */
     this.completed = false;
+    /** @type {number} */
     this.lastKey = new Date().getTime();
   },
-  // Update & Scroll
+
+  /**
+   * Updates and scrolls the chat.
+   * @param {number} time - The current time.
+   * @returns {boolean} True if the chat is completed.
+   */
   tick: function (time) {
-    if (!this.loaded) return;
-    // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
+    if (!this.loaded) return false;
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
+      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000;
       if (time > this.endTime) {
         this.completed = true;
       }
     }
-    // Handle Input (todo - needs to be cleaned up - control overrides should be more consistent and controlled)
     this.checkInput(time);
     this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
     return this.completed;
   },
-  // Handle Keyboard
+
+  /**
+   * Handles keyboard input for the chat.
+   * @param {number} time - The current time.
+   */
   checkInput: function (time) {
     if (time > this.lastKey + 100) {
       let skipChar = false;
@@ -63,8 +97,6 @@ export default {
           skipChar = true;
           break;
       }
-      // debounce keypresses
-      // write to chat box
       if (!skipChar) {
         let char = this.engine.keyboard.lastPressedKey();
         if (char) {

@@ -1,4 +1,17 @@
-  /**
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
+/**
    * @typedef {object} ModeHandlers
    * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
    * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.

@@ -1,6 +1,19 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 /**
- * Runs all updates for debug information
- * @param {*} self - engine core
+ * Runs all updates for debug information.
+ * @param {import('../index.js').default} self - The engine core instance.
  */
 import { create, set, translate, rotate } from '../../utils/math/matrix4.js';
 import { Vector } from '../../utils/math/vector.js';
@@ -11,8 +24,8 @@ export const updateDebugInformation = (self) => {
 }
 
 /**
- * Webgl Debug Information Panel - Update
- * @param {*} self - engine core
+ * Updates WebGL debug information panel.
+ * @param {import('../index.js').default} self - The engine core instance.
  */
 export const updateWebglDebugInformation = (self) => {
     if (self.showWebglDebug && self.webglDebugDiv) {
@@ -48,8 +61,8 @@ export const updateWebglDebugInformation = (self) => {
 }
 
 /**
- * Updates Flag debug information based on latest values
- * @param {*} self 
+ * Updates flag debug information based on latest values.
+ * @param {import('../index.js').default} self - The engine core instance.
  */
 export const updateFlagDebugInformation = (self) => {
     if (self.showFlagDebug && self.flagDebugDiv) {
@@ -64,8 +77,8 @@ export const updateFlagDebugInformation = (self) => {
 }
 
 /**
- * Display Flag information debug window on the right hand top corner (note: may need to adjust sizing and padding for larger volumes)
- * @param {*} self - engine core
+ * Attaches flag debug information window to the top-right corner.
+ * @param {import('../index.js').default} self - The engine core instance.
  */
 export const attachFlagDebugInfo = (self) => {
     const div = document.createElement('div');
@@ -92,8 +105,8 @@ export const attachFlagDebugInfo = (self) => {
 }
 
 /**
- * Attach webgl debug window to the instance
- * @param {*} self - engine core
+ * Attaches WebGL debug window to the instance.
+ * @param {import('../index.js').default} self - The engine core instance.
  */
 export const attachWebglDebugInfo = (self) => {
     const div = document.createElement('div');

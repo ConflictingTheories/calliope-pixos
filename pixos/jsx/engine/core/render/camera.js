@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
 import { create, normalize, rotate, translate, set } from '../../utils/math/matrix4.js';
 import { Vector, negate, degToRad } from '../../utils/math/vector.js';
 import RenderManager from './manager.js';

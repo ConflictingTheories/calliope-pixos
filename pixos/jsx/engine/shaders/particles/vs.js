@@ -1,3 +1,16 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 /**
  * Vertex shader for particle rendering in the Pixos game engine.
  * Handles particle positioning, scaling, and passes texture coordinates and color to the fragment shader.

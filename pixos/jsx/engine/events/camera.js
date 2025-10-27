@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
 import { lerp } from '@Engine/utils/math/vector.js';
 import { Camera } from '@Engine/core/render/camera.js'; // Import Camera class for JSDoc
 import { Direction } from '@Engine/utils/enums.js';
