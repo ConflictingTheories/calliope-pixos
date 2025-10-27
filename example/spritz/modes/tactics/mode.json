@@ -2,16 +2,17 @@
     "name": "tactics",
     "update": "update.lua",
     "setup": "setup.lua",
+    "picker": true,
     "actions": {
-    "select": {
-        "mouse": "left"
-    },
-    "move_unit": {
-        "mouse": "right"
-    },
-    "select_right": {
-        "mouse": "right"
-    },
+        "select": {
+            "mouse": "left"
+        },
+        "move_unit": {
+            "mouse": "right"
+        },
+        "select_right": {
+            "mouse": "right"
+        },
         "end_turn": {
             "keyboard": "Enter"
         },

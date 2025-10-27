@@ -1,5 +1,5 @@
-import { create, set } from '../../utils/math/matrix4.js';
-import { Vector } from '../../utils/math/vector.js';
+import { create, rotate, set, translate } from '../../utils/math/matrix4.js';
+import { degToRad, Vector } from '../../utils/math/vector.js';
 
 export default class ParticleManager {
   constructor(renderManager) {
@@ -22,11 +22,11 @@ export default class ParticleManager {
     // A simple unit quad centered at origin (two triangles)
     const quad = [
       -0.5, -0.5, 0,
-      -0.5,  0.5, 0,
-       0.5,  0.5, 0,
+      -0.5, 0.5, 0,
+      0.5, 0.5, 0,
       -0.5, -0.5, 0,
-       0.5,  0.5, 0,
-       0.5, -0.5, 0,
+      0.5, 0.5, 0,
+      0.5, -0.5, 0,
     ];
     // Simple UVs (not used when not texturing)
     const uvs = [
@@ -49,7 +49,22 @@ export default class ParticleManager {
    * config: { count, life, speed, spread, size, color, gravity, drag, preset }
    */
   emit = (position = [0, 0, 0], config = {}) => {
-    const pos = Array.isArray(position) ? position : position.toArray ? position.toArray() : [0, 0, 0];
+    let pos = Array.isArray(position) ? position : position.toArray ? position.toArray() : [0, 0, 0];
+    let x = pos[0], y = pos[1], zOffset = pos[2] || 0;
+    let zone = this.engine.spritz.world.zoneContaining(x, y);
+    let z = zOffset;
+    if (zone) {
+      z += zone.getHeight(x, y);
+    }
+
+    console.log({ msg: 'particle emit at zone', zone })
+    pos = [x, y, z];
+
+    console.log({ msg: 'particle emit at pos', pos })
+
+    console.log({ msg: 'particle emit', config })
+
+
     const c = Object.assign(
       {
         count: 8,
@@ -94,7 +109,7 @@ export default class ParticleManager {
       case 'sparks':
         return { count: 12, life: 700, speed: 0.06, spread: 1.2, size: 0.15, color: [1, 0.8, 0.2], gravity: [0, -0.002, 0] };
       case 'flame':
-        return { count: 20, life: 2000, speed: 0.02, spread: 0.8, size: 0.6, color: [1, 0.5, 0.1], gravity: [0, -0.0003, 0], drag: 0.995 };
+        return { count: 200, life: 2000, speed: 0.02, spread: 0.8, size: 0.06, color: [1, 0.5, 0.1], gravity: [0, -0.0003, 0], drag: 0.995 };
       case 'water':
         return { count: 20, life: 800, speed: 0.05, spread: 1.5, size: 0.12, color: [0.6, 0.7, 1.0], gravity: [0, -0.003, 0], drag: 0.996 };
       case 'weapon':
@@ -166,6 +181,18 @@ export default class ParticleManager {
       m[12] = p.pos[0];
       m[13] = p.pos[1];
       m[14] = p.pos[2];
+      //  translate(
+      //         rm.uModelMat,
+      //         rm.uModelMat,
+      //         (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+      //       );
+      // translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
+      rotate(
+        rm.uModelMat,
+        rm.uModelMat,
+        degToRad(rm.camera.cameraAngle * rm.camera.cameraVector.z),
+        [0, 0, -1]
+      );
 
       // Set scale and matrix uniforms - uniform scale for proper billboarding
       const scaleVec = new Vector(p.size, p.size, p.size);

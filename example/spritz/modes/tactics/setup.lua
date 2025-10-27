@@ -22,7 +22,7 @@ pixos.register_mode('tactics', {
 		-- consume selection and log for demo
 		pixos.log('tactics:on_select', { zone = zone.id, row = row, cell = cell, type = type })
 		-- Emit flame particles at the selected position
-		local pos = {row, cell, 1}  -- Assuming tile position, adjust z as needed
+		local pos = {cell, row, 1}  -- Assuming tile position, adjust z as needed
 		if type == 'tile' then
 			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
 		elseif type == 'sprite' then
@@ -41,9 +41,11 @@ pixos.register_mode('tactics', {
 	check_input = function(time, params)
 		-- consume input and log for demo
 		pixos.log('tactics:check_input', { params = params, time = time })
+		
 		-- return false to allow default input handling (pass through)
 		return false
 	end,
 })
 
--- don't auto-set tactics as active unless requested by game script
+-- Set tactics as active mode
+pixos.set_mode('tactics')
