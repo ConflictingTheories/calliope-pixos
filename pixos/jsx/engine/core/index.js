@@ -28,15 +28,16 @@ import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } fro
  * @property {function(GLEngine): Promise<void>} init - Initializes the game.
  * @property {function(GLEngine, number): void} render - Renders the game scene.
  * @property {function(number): void} update - Updates the game state.
- * @property {import('./scene/world.js').World} world - The game world instance.
+ * @property {import('./scene/world.js').default} world - The game world instance.
  * @property {object} shaders - Shader programs for the game.
  * @property {object} effects - Visual effects for the game.
  * @property {boolean} loaded - Indicates if the game resources are loaded.
+ * @property {object} [manifest] - Game manifest with network settings.
  */
 
 /**
  * Core Pixos Graphics & Game Engine.
- * This class orchestrates the main game loop, rendering, input handling, and resource management.
+ * Orchestrates the main game loop, rendering, input handling, and resource management.
  */
 export default class GLEngine {
   /**
@@ -101,23 +102,24 @@ export default class GLEngine {
     this.modeManager = new ModeManager(this); // Initialize ModeManager
 
     // Game Loop
+    /** @type {boolean} */
     this.running = false;
 
-    /** @type {WebGL2RenderingContext} */
+    /** @type {WebGL2RenderingContext|null} */
     this.gl = null;
-    /** @type {CanvasRenderingContext2D} */
+    /** @type {CanvasRenderingContext2D|null} */
     this.ctx = null;
-    /** @type {CanvasRenderingContext2D} */
+    /** @type {CanvasRenderingContext2D|null} */
     this.gp = null;
     /** @type {number} */
     this.frameCount = 0;
-    /** @type {SpritzGame} */
+    /** @type {SpritzGame|null} */
     this.spritz = null;
     /** @type {boolean} */
     this.fullscreen = false;
     /** @type {number} */
     this.time = 0;
-    /** @type {number} */
+    /** @type {number|null} */
     this.requestId = null; // For requestAnimationFrame
 
     // Bind methods to the instance
@@ -134,8 +136,11 @@ export default class GLEngine {
    * @throws {Error} If WebGL, HUD canvas, or Gamepad canvas cannot be initialized.
    */
   async init(spritz) {
+    /** @type {CanvasRenderingContext2D|null} */
     const ctx = this.hudcanvas.getContext('2d');
+    /** @type {WebGL2RenderingContext|null} */
     const gl = this.canvas.getContext('webgl2');
+    /** @type {CanvasRenderingContext2D|null} */
     const gp = this.gamepadcanvas.getContext('2d');
 
     if (!gl) {
@@ -201,19 +206,9 @@ export default class GLEngine {
 
   /**
    * The main render loop for the game engine.
-   * This method is called continuously via `requestAnimationFrame` to update and draw the game.
-   * It handles debug counters, clears canvases, updates game state, renders the scene,
-   * and manages transitions.
-   *
-   * TODO: Add support for multiple game 'modes' - these will be customizable and
-   * will allow for overriding the default behaviour.
-   * - Such as battle mode, explore mode, FPS, Debug, etc.
-   * - Games will be able to handle the core render loop via Lua allowing for greater flexibility.
-   * - Additionally, there will be an overhaul made to the way that keybindings and click-handlers are
-   * - managed which should allow for greater control schemes to be developed via the packages.
-   * - One thing to note - will need to have good event-flow control. Need to support passing back and forth
-   * - between modes - such as getting into a battle in 'explore' and then shifting into 'fight' mode
-   * - which could load up a battle arena, random encounters, and when done, return to the 'explore' mode.
+   * Called continuously via `requestAnimationFrame` to update and draw the game.
+   * Handles debug counters, clears canvases, updates game state, renders the scene, and manages transitions.
+   * @returns {void}
    */
   render() {
     this.frameCount++;
@@ -239,7 +234,6 @@ export default class GLEngine {
       // Enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen).
       this.renderManager.activatePickerShaderProgram(false);
       this.spritz.render(this, timestamp); // Render scene for picking pass
-      this.getSelectedObject(); // Process object selection
     }
 
     // Update and render based on the active game mode
@@ -290,6 +284,7 @@ export default class GLEngine {
 
   /**
    * Stops the main render loop.
+   * @returns {void}
    */
   close() {
     if (this.requestId) {
@@ -300,15 +295,11 @@ export default class GLEngine {
 
   /**
    * Detects and returns the selected object on screen based on mouse/touch input.
-   * This method uses a color-picking technique where objects are rendered with unique
-   * IDs to an off-screen buffer, and the pixel under the cursor is read to identify the object.
+   * Uses a color-picking technique where objects are rendered with unique IDs to an off-screen buffer,
+   * and the pixel under the cursor is read to identify the object.
    * @param {'sprite'|'object'|'tile'|string} [type='sprite|object|tile'] - The type(s) of objects to consider for selection, pipe-separated.
    * @param {boolean} [useFrustum=false] - Whether to use a 1x1 pixel frustum for picking (performance optimization).
    * @returns {number|null} The ID of the selected object, or null if no object is selected or freecam is active.
-   *
-   * TODO: Refactor this into its own `Picker` class for better organization and testability.
-   * TODO: Implement `onSelect()` trigger method for sprites and objects.
-   * TODO: Improve tile selection logic and integrate with game modes.
    */
   getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {
     // When FreeCam is active, suppress picking to avoid interfering with camera controls
@@ -415,6 +406,7 @@ export default class GLEngine {
    * Sets a greeting text.
    * @deprecated This method should be moved to a more appropriate class, e.g., `Hud` or a new `DialogueManager`.
    * @param {string} text - The greeting text to set.
+   * @returns {void}
    */
   setGreeting(text) {
     if (process.env.NODE_ENV === 'development') {
@@ -431,14 +423,17 @@ export default class GLEngine {
   /**
    * Converts text to speech using the Web Speech API.
    * @param {string} text - The text to speak.
-   * @param {SpeechSynthesisVoice} [voice=null] - The voice to use. Defaults to the first available voice.
+   * @param {SpeechSynthesisVoice|null} [voice=null] - The voice to use. Defaults to the first available voice.
    * @param {string} [lang='en'] - The language of the speech.
-   * @param {number} [rate=null] - The speed of the speech (0.1 to 10).
-   * @param {number} [volume=null] - The volume of the speech (0 to 1).
-   * @param {number} [pitch=null] - The pitch of the speech (0 to 2).
+   * @param {number|null} [rate=null] - The speed of the speech (0.1 to 10).
+   * @param {number|null} [volume=null] - The volume of the speech (0 to 1).
+   * @param {number|null} [pitch=null] - The pitch of the speech (0 to 2).
+   * @returns {void}
    */
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
+    /** @type {SpeechSynthesisUtterance} */
     let speech = this.voice;
+    /** @type {SpeechSynthesisVoice[]} */
     let voices = window.speechSynthesis.getVoices() ?? [];
     // Set voice
     speech.voice = voice || voices[0];

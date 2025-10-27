@@ -1,21 +1,76 @@
-import { create, rotate, set, translate } from '../../utils/math/matrix4.js';
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
+import { rotate } from '../../utils/math/matrix4.js';
 import { degToRad, Vector } from '../../utils/math/vector.js';
 
+/**
+ * @typedef {object} ParticleConfig
+ * @property {number} [count=8] - Number of particles to emit.
+ * @property {number} [life=1000] - Lifetime in milliseconds.
+ * @property {number} [speed=0.02] - Initial speed.
+ * @property {number} [spread=0.5] - Spread factor for direction.
+ * @property {number} [size=0.5] - Particle size.
+ * @property {number[]} [color=[1.0, 0.7, 0.2]] - RGB color array.
+ * @property {number[]} [gravity=[0, -0.00098, 0]] - Gravity vector.
+ * @property {number} [drag=0.995] - Drag coefficient.
+ * @property {string} [preset] - Preset name for quick config.
+ */
+
+/**
+ * @typedef {object} Particle
+ * @property {number[]} pos - Position [x, y, z].
+ * @property {number[]} vel - Velocity [vx, vy, vz].
+ * @property {number} life - Total lifetime.
+ * @property {number} age - Current age.
+ * @property {number} size - Size scalar.
+ * @property {number[]} color - RGB color.
+ * @property {number[]} gravity - Gravity vector.
+ * @property {number} drag - Drag coefficient.
+ */
+
+/**
+ * ParticleManager - Manages particle effects in the Pixos game engine.
+ * Handles emission, physics updates, and rendering of particles.
+ */
 export default class ParticleManager {
+  /**
+   * Creates an instance of ParticleManager.
+   * @param {import('./manager.js').default} renderManager - The render manager instance.
+   */
   constructor(renderManager) {
+    /** @type {import('./manager.js').default} */
     this.renderManager = renderManager;
+    /** @type {import('../index.js').default} */
     this.engine = renderManager.engine;
+    /** @type {Particle[]} */
     this.particles = [];
+    /** @type {boolean} */
     this.initialized = false;
+    /** @type {WebGLBuffer|null} */
     this.vertexPosBuf = null;
+    /** @type {WebGLBuffer|null} */
     this.vertexTexBuf = null;
+    /** @type {number|null} */
     this.lastUpdateTime = null;
   }
 
   /**
-   * Initialize GL buffers. Called after RenderManager has initialized shaders/GL.
+   * Initializes GL buffers. Called after RenderManager has initialized shaders/GL.
+   * @returns {void}
    */
   init = () => {
+    /** @type {WebGL2RenderingContext} */
     const gl = this.engine.gl;
     if (!gl) return;
 
@@ -44,27 +99,33 @@ export default class ParticleManager {
   };
 
   /**
-   * Emit particles based on a config object.
-   * position: [x,y,z] or Vector
-   * config: { count, life, speed, spread, size, color, gravity, drag, preset }
+   * Emits particles based on a config object.
+   * @param {number[]|Vector} [position=[0, 0, 0]] - Position [x, y, z] or Vector.
+   * @param {ParticleConfig} [config={}] - Configuration for particles.
+   * @returns {void}
    */
   emit = (position = [0, 0, 0], config = {}) => {
+    /** @type {number[]} */
     let pos = Array.isArray(position) ? position : position.toArray ? position.toArray() : [0, 0, 0];
     let x = pos[0], y = pos[1], zOffset = pos[2] || 0;
+    /** @type {import('../../scene/zone.js').Zone|null} */
     let zone = this.engine.spritz.world.zoneContaining(x, y);
     let z = zOffset;
     if (zone) {
       z += zone.getHeight(x, y);
     }
 
-    console.log({ msg: 'particle emit at zone', zone })
+    if (process.env.NODE_ENV === 'development') {
+      console.log({ msg: 'particle emit at zone', zone });
+    }
     pos = [x, y, z];
 
-    console.log({ msg: 'particle emit at pos', pos })
+    if (process.env.NODE_ENV === 'development') {
+      console.log({ msg: 'particle emit at pos', pos });
+      console.log({ msg: 'particle emit', config });
+    }
 
-    console.log({ msg: 'particle emit', config })
-
-
+    /** @type {ParticleConfig} */
     const c = Object.assign(
       {
         count: 8,
@@ -88,7 +149,8 @@ export default class ParticleManager {
       const vy = ry * c.speed * (0.5 + Math.random() * 1.5);
       const vz = rz * c.speed * (0.5 + Math.random() * 1.5);
 
-      this.particles.push({
+      /** @type {Particle} */
+      const particle = {
         pos: [pos[0], pos[1], pos[2]],
         vel: [vx, vy, vz],
         life: c.life,
@@ -97,12 +159,15 @@ export default class ParticleManager {
         color: c.color,
         gravity: c.gravity,
         drag: c.drag,
-      });
+      };
+      this.particles.push(particle);
     }
   };
 
   /**
-   * Some handy presets
+   * Returns a preset configuration for particles.
+   * @param {string} name - The preset name.
+   * @returns {ParticleConfig|null} The preset config or null if not found.
    */
   preset = (name) => {
     switch ((name || '').toLowerCase()) {
@@ -120,7 +185,9 @@ export default class ParticleManager {
   };
 
   /**
-   * Update physics. timestamp in ms.
+   * Updates particle physics. Timestamp in ms.
+   * @param {number} timestamp - Current timestamp.
+   * @returns {void}
    */
   update = (timestamp) => {
     if (!this.lastUpdateTime) this.lastUpdateTime = timestamp;
@@ -130,6 +197,7 @@ export default class ParticleManager {
 
     // Update particle physics
     for (let i = this.particles.length - 1; i >= 0; i--) {
+      /** @type {Particle} */
       const p = this.particles[i];
       // apply gravity
       p.vel[0] += (p.gravity[0] || 0) * dt;
@@ -151,15 +219,19 @@ export default class ParticleManager {
   };
 
   /**
-   * Render particles using the dedicated particle shader as proper billboards.
+   * Renders particles using the dedicated particle shader as proper billboards.
+   * @returns {void}
    */
   render = () => {
     if (!this.initialized) this.init();
     if (!this.initialized) return;
     if (!this.particles.length) return;
 
+    /** @type {import('./manager.js').default} */
     const rm = this.renderManager;
+    /** @type {WebGL2RenderingContext} */
     const gl = this.engine.gl;
+    /** @type {WebGLProgram} */
     const shader = rm.particleShaderProgram;
     if (!shader) return;
 
@@ -181,12 +253,6 @@ export default class ParticleManager {
       m[12] = p.pos[0];
       m[13] = p.pos[1];
       m[14] = p.pos[2];
-      //  translate(
-      //         rm.uModelMat,
-      //         rm.uModelMat,
-      //         (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
-      //       );
-      // translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
       rotate(
         rm.uModelMat,
         rm.uModelMat,

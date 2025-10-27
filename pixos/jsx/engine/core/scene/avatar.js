@@ -17,19 +17,28 @@ import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Sprite from '@Engine/core/scene/sprite.js';
 
+/**
+ * Avatar - Represents the player-controlled character in the game.
+ */
 export default class Avatar extends Sprite {
   /**
-   * Special class of Sprite which is controlled by the player
-   * @param {*} engine
+   * Creates an instance of Avatar.
+   * @param {GLEngine} engine - The game engine instance.
    */
   constructor(engine) {
     // Initialize Sprite
     super(engine);
-    // todo - revisit this - for now this is more useful for debugging
+    // TODO: Revisit this - for now this is more useful for debugging
+    /** @type {boolean} */
     this.isLit = true;
+    /** @type {boolean} */
     this.isSelected = true;
   }
 
+  /**
+   * Gets the avatar data for serialization or debugging.
+   * @returns {Object} The avatar data object.
+   */
   getAvatarData = () => {
     return {
       id: this.objId,
@@ -58,15 +67,15 @@ export default class Avatar extends Sprite {
   }
 
   /**
-   * Initialization Hook
+   * Initialization hook for the avatar.
    */
   init = () => {
     console.log({ msg: '- avatar hook', id: this.id, pos: this.pos, avatar: this });
   }
 
   /**
-   * Tick - Logical Step / Update
-   * @param {number} time
+   * Tick - Logical step / update for the avatar.
+   * @param {number} time - The current time.
    */
   tick = (time) => {
     // ONLY ONE MOVE AT A TIME
@@ -91,28 +100,29 @@ export default class Avatar extends Sprite {
   }
 
   /**
-   * Check input from the Input Manager instead of hardcoded keys
-   * @returns {ActionLoader|null} Action to perform or null
+   * Checks input from the Input Manager instead of hardcoded keys.
+   * @returns {ActionLoader|null} Action to perform or null.
    */
   checkInput = () => {
     // Let Input Manager handle input based on current mode mappings
     return this.engine.inputManager.getAvatarAction(this);
   }
+
   /**
-   * open menu
-   * @param {*} menuConfig
-   * @param {*} defaultMenus
-   * @returns
+   * Opens a menu for the avatar.
+   * @param {Object} menuConfig - The menu configuration.
+   * @param {Array} defaultMenus - The default menus.
+   * @returns {ActionLoader} The action loader for the menu.
    */
   openMenu = (menuConfig = {}, defaultMenus = []) => {
     return new ActionLoader(this.engine, 'prompt', [menuConfig, defaultMenus, false, { autoclose: false }], this);
   }
 
   /**
-   * Handle the walking keys (wasd + extras (optonal))
-   * @param {*} key
-   * @param {*} touchmap
-   * @returns
+   * Handles the walking keys (WASD + extras).
+   * @param {string} key - The key pressed.
+   * @param {Object} touchmap - The touch map for mobile input.
+   * @returns {ActionLoader|null} The action loader or null.
    */
   handleWalk = (key, touchmap) => {
     let moveTime = 600; // move time in ms
@@ -143,7 +153,7 @@ export default class Avatar extends Sprite {
         return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
     }
 
-    // TODO - Needs to move into input handler Mobile Gamepad
+    // TODO: Needs to move into input handler Mobile Gamepad
     // X axis - joystick
     if (touchmap['x-dir'] === 1) {
       // right

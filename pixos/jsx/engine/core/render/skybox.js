@@ -16,10 +16,13 @@ import { Vector, degToRad } from '../../utils/math/vector.js';
 import { Texture } from '../resource/texture.js';
 import { fetchSkyboxShaderFiles } from './shaders.js';
 
+/**
+ * SkyboxManager - Manages skybox rendering, including shader switching and cubemap setup.
+ */
 export default class SkyboxManager {
     /**
-     * Change the active skybox shader at runtime
-     * @param {string} shaderName - e.g. 'cosmic', 'sunset', 'morning', 'sky'
+     * Changes the active skybox shader at runtime.
+     * @param {string} shaderName - The shader name (e.g., 'cosmic', 'sunset', 'morning', 'sky').
      */
     async setSkyboxShader(shaderName) {
         if (!this.engine.gl) return;
@@ -30,13 +33,17 @@ export default class SkyboxManager {
         this.shaderProgram = this.initSkyboxShaderProgram(vs, fs);
         // Optionally re-init buffer/cubemap if needed
     }
-    /** Light Manager for Scene
-     *
-     * @param {GLEngine} engine
+
+    /**
+     * Creates an instance of SkyboxManager.
+     * @param {RenderManager} renderManager - The render manager instance.
+     * @returns {SkyboxManager} The singleton instance.
      */
     constructor(renderManager) {
         if (!SkyboxManager.instance) {
+            /** @type {RenderManager} */
             this.renderManager = renderManager;
+            /** @type {GLEngine} */
             this.engine = renderManager.engine;
             SkyboxManager.instance = this;
         }
@@ -45,11 +52,10 @@ export default class SkyboxManager {
     }
 
     /**
-     * 
-     * @param {*} textureSrc - todo allow for custom texture to be loaded
-     * @param {*} shaderName 
-     * @param {*} centre 
-     * @returns 
+     * Initializes the skybox with optional texture and shader.
+     * @param {string|null} textureSrc - The texture source (TODO: allow custom texture loading).
+     * @param {string} shaderName - The shader name.
+     * @param {number[]} centre - The skybox center [x, y, z].
      */
     async init(textureSrc = null, shaderName = 'cosmic', centre = [0.0, 0.0, 0.0]) {
         if (!this.engine.gl) return;
@@ -74,7 +80,8 @@ export default class SkyboxManager {
     }
 
     /**
-     * Create a default cubemap (placeholder, replace with actual cubemap loading)
+     * Creates a default cubemap (placeholder, replace with actual cubemap loading).
+     * @returns {WebGLTexture} The cubemap texture.
      */
     createDefaultCubeMap() {
         const gl = this.gl;
@@ -103,8 +110,8 @@ export default class SkyboxManager {
     }
 
     /**
-     * cube vertex buffer for skybox (cube skybox - todo - look into other shapes like sphere)
-     * @returns 
+     * Creates the cube vertex buffer for the skybox (cube skybox - TODO: look into other shapes like sphere).
+     * @returns {WebGLBuffer} The vertex buffer.
      */
     createSkyboxBuffer() {
         this.vertices = [
@@ -132,10 +139,10 @@ export default class SkyboxManager {
     }
 
     /**
-     * Initialize cosmic shader program
-     * @param {*} vsSource 
-     * @param {*} fsSource 
-     * @returns 
+     * Initializes the skybox shader program.
+     * @param {string} vsSource - The vertex shader source.
+     * @param {string} fsSource - The fragment shader source.
+     * @returns {WebGLProgram} The shader program.
      */
     initSkyboxShaderProgram(vsSource, fsSource) {
         const { gl } = this.engine;
@@ -173,10 +180,10 @@ export default class SkyboxManager {
     }
 
     /**
-     * Load and Compile Shader Source
-     * @param {*} type
-     * @param {*} source
-     * @returns
+     * Loads and compiles shader source.
+     * @param {number} type - The shader type (gl.VERTEX_SHADER or gl.FRAGMENT_SHADER).
+     * @param {string} source - The shader source code.
+     * @returns {WebGLShader} The compiled shader.
      */
     loadShader = (type, source) => {
         const { gl } = this.engine;
@@ -192,8 +199,10 @@ export default class SkyboxManager {
         return shader;
     }
 
-    // Draw skybox using cosmic shader
-    // Draw skybox using the specified shader program
+    /**
+     * Renders the skybox using the specified shader program.
+     * @param {Float32Array} viewDirectionProjectionInverse - The inverse view-direction-projection matrix.
+     */
     renderSkybox(viewDirectionProjectionInverse) {
         if (!this.initialized || !this.shaderProgram) return; // Exit if the shader program is not initialized or available
 
@@ -244,9 +253,11 @@ export default class SkyboxManager {
 
 
     /**
-     * Initialize Shader Program - todo -- not working yet - needs to load from zip
-     * @param {*} param1
-     * @returns
+     * Initializes the texture shader program (TODO: not working yet - needs to load from zip).
+     * @param {Object} param1 - The shader sources.
+     * @param {string} param1.vs - The vertex shader source.
+     * @param {string} param1.fs - The fragment shader source.
+     * @returns {WebGLProgram} The shader program.
      */
     initTextureShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
         const { gl } = this.engine;
@@ -288,7 +299,8 @@ export default class SkyboxManager {
     }
 
     /**
-     * Create Skybox Program - todo - move into shader files
+     * Creates the texture skybox program (TODO: move into shader files).
+     * @returns {WebGLProgram} The shader program.
      */
     createTextureSkyboxProgram() {
         const vertexShaderSource = `#version 300 es

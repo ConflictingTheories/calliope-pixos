@@ -38,29 +38,41 @@ import ParticleManager from './ParticleManager.js';
  */
 
 /**
+ * @typedef {object} LightUniform
+ * @property {WebGLUniformLocation|null} enabled - Whether the light is enabled.
+ * @property {WebGLUniformLocation|null} color - Light color.
+ * @property {WebGLUniformLocation|null} position - Light position.
+ * @property {WebGLUniformLocation|null} attenuation - Light attenuation.
+ * @property {WebGLUniformLocation|null} direction - Light direction.
+ * @property {WebGLUniformLocation|null} scatteringCoefficients - Scattering coefficients.
+ * @property {WebGLUniformLocation|null} density - Light density.
+ */
+
+/**
  * RenderManager - Manages all WebGL rendering operations, including shaders, cameras, lights,
- * and screen transitions. It acts as a central point for drawing the game world.
+ * and screen transitions. Acts as a central point for drawing the game world.
  */
 export default class RenderManager {
   /**
    * Creates an instance of RenderManager.
-   * @param {GLEngine} engine - The main game engine instance.
+   * @param {import('../index.js').default} engine - The main game engine instance.
+   * @returns {RenderManager} The singleton instance.
    */
   constructor(engine) {
     if (!RenderManager._instance) {
-      /** @type {GLEngine} */
+      /** @type {import('../index.js').default} */
       this.engine = engine;
       /** @type {boolean} */
       this.fullscreen = engine.fullscreen;
 
       // Matrices
-      /** @type {Float32Array(16)} */
+      /** @type {Float32Array} */
       this.uProjMat = create();
-      /** @type {Float32Array(16)} */
+      /** @type {Float32Array} */
       this.uModelMat = create();
-      /** @type {Float32Array(9)} */
-      this.normalMat = create3();
-      /** @type {Array<[Float32Array(16), Float32Array(16)]>} */
+      /** @type {Float32Array} */
+      this.normalMatrix = create3();
+      /** @type {Array<[Float32Array, Float32Array]>} */
       this.modelViewMatrixStack = [];
 
       // Properties
@@ -75,34 +87,17 @@ export default class RenderManager {
       /** @type {Object.<string, WebGLProgram>} */
       this.effectPrograms = {};
       /** @type {WebGLFramebuffer|null} */
-      this.fb = null; // Framebuffer for off-screen rendering (e.g., picker)
+      this.framebuffer = null; // Framebuffer for off-screen rendering (e.g., picker)
 
       // Transitions
       /** @type {boolean} */
       this.isTransitioning = false;
-      /**
-       * The following properties are used to drive custom transition effects. A
-       * transition is considered active when `isTransitioning` is true. The
-       * `transitionEffect` identifies which visual effect to draw (fade,
-       * cross, swirl). `transitionDirection` is either "out" (overlay is
-       * applied over the scene) or "in" (overlay is removed). `transitionStartTime`
-       * and `transitionDuration` control the timing, while
-       * `transitionCallback` is invoked once the transition completes.
-       */
-      /** @type {object|null} */
-      this.transition = null; // Deprecated, replaced by transitionGL
-      /** @type {object} */
-      this.transitionParams = {}; // Deprecated
-      /** @type {WebGLTexture|null} */
-      this.transitionTexture = null; // Deprecated
-      /** @type {number} */
-      this.transitionDuration = 0;
-      /** @type {number} */
-      this.transitionTime = 0; // Deprecated
       /** @type {string|null} */
       this.transitionEffect = null;
       /** @type {'out'|'in'} */
       this.transitionDirection = 'out';
+      /** @type {number} */
+      this.transitionDuration = 0;
       /** @type {number} */
       this.transitionStartTime = 0;
       /** @type {function(): void|null} */
@@ -131,13 +126,13 @@ export default class RenderManager {
       /** @type {SkyboxManager} */
       this.skyboxManager = new SkyboxManager(this);
 
-  // Particle system
-  /** @type {ParticleManager} */
-  this.particleManager = new ParticleManager(this);
+      // Particle system
+      /** @type {ParticleManager} */
+      this.particleManager = new ParticleManager(this);
 
-  // Particle shader program
-  /** @type {WebGLProgram|null} */
-  this.particleShaderProgram = null;
+      // Particle shader program
+      /** @type {WebGLProgram|null} */
+      this.particleShaderProgram = null;
 
       /** @type {WebGLProgram|null} */
       this.shaderProgram = null; // The main shader program for rendering game objects
@@ -149,8 +144,10 @@ export default class RenderManager {
 
   /**
    * Initializes the rendering manager, setting up WebGL context, shaders, and projection.
+   * @returns {void}
    */
   init = () => {
+    /** @type {import('../index.js').SpritzGame} */
     const { spritz, gl } = this.engine;
 
     // Configure GL
@@ -159,7 +156,7 @@ export default class RenderManager {
     gl.enable(gl.DEPTH_TEST); // Enable depth testing
     gl.depthFunc(gl.LEQUAL); // Near things obscure far things
 
-    this.fb = gl.createFramebuffer();
+    this.framebuffer = gl.createFramebuffer();
 
     // Initialize Main Shader Program
     this.initShaderProgram(spritz.shaders);
@@ -202,7 +199,9 @@ export default class RenderManager {
    * @throws {Error} If the shader fails to compile.
    */
   loadShader = (type, source) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
+    /** @type {WebGLShader} */
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -217,19 +216,22 @@ export default class RenderManager {
 
   /**
    * Initializes the main shader program used for rendering game objects.
-   * This method compiles vertex and fragment shaders, links them into a program,
-   * and retrieves all attribute and uniform locations.
+   * Compiles vertex and fragment shaders, links them into a program, and retrieves all attribute and uniform locations.
    * @param {ShaderSource} shaders - An object containing vertex and fragment shader source.
    * @returns {WebGLProgram} The initialized shader program.
    * @throws {Error} If the shader program fails to link.
    */
   initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;
+    /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    /** @type {WebGLShader} */
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // Generate shader program
+    /** @type {WebGLProgram} */
     let shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
@@ -274,6 +276,7 @@ export default class RenderManager {
 
     // Light uniforms
     shaderProgram.maxLights = 32; // Max number of lights supported by the shader
+    /** @type {LightUniform[]} */
     shaderProgram.uLights = [];
     for (let i = 0; i < shaderProgram.maxLights; i++) {
       shaderProgram.uLights[i] = {
@@ -295,6 +298,7 @@ export default class RenderManager {
      * @param {number} [options.sampler=1.0] - Whether to use a texture sampler (1.0) or material color (0.0).
      * @param {boolean} [options.isSelected=false] - Whether the object is currently selected.
      * @param {number[]|null} [options.colorMultiplier=null] - A color multiplier to apply to the object.
+     * @returns {void}
      */
     shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
@@ -302,9 +306,9 @@ export default class RenderManager {
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
 
       // Normal matrix (for transforming normals correctly with model-view transformations)
-      self.normalMat = create3();
-      normalFromMat4(self.normalMat, self.uModelMat);
-      gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMat);
+      self.normalMatrix = create3();
+      normalFromMat4(self.normalMatrix, self.uModelMat);
+      gl.uniformMatrix3fv(this.nMatrixUniform, false, self.normalMatrix);
 
       // Scale
       gl.uniform3fv(this.scale, scale ? scale.toArray() : self.scale.toArray());
@@ -335,6 +339,7 @@ export default class RenderManager {
     /**
      * Applies attribute pointers for a given mesh, linking mesh buffer data to shader attributes.
      * @param {object} mesh - The mesh object containing vertex buffer layout.
+     * @returns {void}
      */
     shaderProgram.applyAttributePointers = function (mesh) {
       const layout = mesh.vertexBuffer.layout;
@@ -363,16 +368,20 @@ export default class RenderManager {
    * @throws {Error} If the particle shader program fails to link.
    */
   initParticleShaderProgram = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;
 
     const vsSource = require('../../shaders/particles/vs.js').default();
     const fsSource = require('../../shaders/particles/fs.js').default();
 
+    /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    /** @type {WebGLShader} */
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // Generate particle shader program
+    /** @type {WebGLProgram} */
     let particleShaderProgram = gl.createProgram();
     gl.attachShader(particleShaderProgram, vertexShader);
     gl.attachShader(particleShaderProgram, fragmentShader);
@@ -392,28 +401,29 @@ export default class RenderManager {
     gl.enableVertexAttribArray(particleShaderProgram.aTextureCoord);
 
     // Get uniform locations
-    particleShaderProgram.uProjectionMatrix = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
-    particleShaderProgram.uModelMatrix = gl.getUniformLocation(particleShaderProgram, 'uModelMatrix');
-    particleShaderProgram.uViewMatrix = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
-    particleShaderProgram.uScale = gl.getUniformLocation(particleShaderProgram, 'uScale');
-    particleShaderProgram.uParticleColor = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
+    particleShaderProgram.pMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
+    particleShaderProgram.mMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uModelMatrix');
+    particleShaderProgram.vMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
+    particleShaderProgram.scaleUniform = gl.getUniformLocation(particleShaderProgram, 'uScale');
+    particleShaderProgram.particleColorUniform = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
 
     /**
      * Sets the matrix and other common uniforms for the particle shader program.
      * @param {object} [options] - Options for setting uniforms.
      * @param {Vector|null} [options.scale=null] - The scale vector for the particle.
      * @param {number[]|null} [options.color=null] - The color of the particle.
+     * @returns {void}
      */
     particleShaderProgram.setMatrixUniforms = function ({ scale = null, color = null }) {
-      gl.uniformMatrix4fv(this.uProjectionMatrix, false, self.uProjMat);
-      gl.uniformMatrix4fv(this.uModelMatrix, false, self.uModelMat);
-      gl.uniformMatrix4fv(this.uViewMatrix, false, self.camera.uViewMat);
+      gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
+      gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
+      gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
 
       // Scale
-      gl.uniform3fv(this.uScale, scale ? scale.toArray() : self.scale.toArray());
+      gl.uniform3fv(this.scaleUniform, scale ? scale.toArray() : self.scale.toArray());
 
       // Particle color
-      gl.uniform3fv(this.uParticleColor, color ? color : [1.0, 1.0, 1.0]);
+      gl.uniform3fv(this.particleColorUniform, color ? color : [1.0, 1.0, 1.0]);
     };
 
     this.particleShaderProgram = particleShaderProgram;
@@ -421,7 +431,9 @@ export default class RenderManager {
   };
 
   /**
-   * Update particles. Call from engine loop with timestamp.
+   * Updates particles. Call from engine loop with timestamp.
+   * @param {number} timestamp - The current timestamp.
+   * @returns {void}
    */
   updateParticles = (timestamp) => {
     if (this.particleManager && typeof this.particleManager.update === 'function') {
@@ -430,7 +442,8 @@ export default class RenderManager {
   }
 
   /**
-   * Render particles. Should be called after main scene draw or where appropriate.
+   * Renders particles. Should be called after main scene draw or where appropriate.
+   * @returns {void}
    */
   renderParticles = () => {
     if (this.particleManager && typeof this.particleManager.render === 'function') {
@@ -440,9 +453,11 @@ export default class RenderManager {
 
   /**
    * Activates the main shader program for rendering.
-   * This sets the program as current and binds the default framebuffer.
+   * Sets the program as current and binds the default framebuffer.
+   * @returns {void}
    */
   activateShaderProgram = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.useProgram(this.shaderProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Render to screen
@@ -451,17 +466,19 @@ export default class RenderManager {
 
   /**
    * Activates the picker shader program for object selection.
-   * This special shader renders objects with unique color IDs for picking.
+   * Renders objects with unique color IDs for picking.
    * @param {boolean} useFrustum - If true, a 1x1 pixel frustum is used for optimized picking.
+   * @returns {void}
    */
   activatePickerShaderProgram = (useFrustum) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.useProgram(this.effectPrograms['picker']);
 
     // TODO: Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen.
     if (useFrustum) {
       // Bind frame buffer (TODO: Not working as expected, needs investigation)
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
       this.initProjection(); // Re-initialize projection for the frustum
       this.applyPixelFrustum();
     } else {
@@ -473,27 +490,32 @@ export default class RenderManager {
   /**
    * Activates a specific shader effect program.
    * @param {string} id - The ID of the effect program to activate.
+   * @returns {void}
    */
   activateShaderEffectProgram = (id) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.useProgram(this.effectPrograms[id]);
   };
 
   /**
    * Initializes a shader effect program.
-   * This compiles the shaders for a given effect, links them, and calls an
-   * initialization callback to set up any effect-specific uniforms or attributes.
+   * Compiles the shaders for a given effect, links them, and calls an initialization callback to set up any effect-specific uniforms or attributes.
    * @param {EffectShaderConfig} config - Configuration object for the effect shader.
    * @returns {WebGLProgram} The initialized effect shader program.
    * @throws {Error} If the shader effect program fails to link.
    */
   initShaderEffects = ({ vs: vsSource, fs: fsSource, id: id, init: init }) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;
+    /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    /** @type {WebGLShader} */
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // Generate shader program
+    /** @type {WebGLProgram} */
     let effectProgram = gl.createProgram();
     gl.attachShader(effectProgram, vertexShader);
     gl.attachShader(effectProgram, fragmentShader);
@@ -517,9 +539,11 @@ export default class RenderManager {
 
   /**
    * Sets up the projection matrix based on the camera's field of view and canvas aspect ratio.
-   * This also configures the WebGL viewport and depth/blend states.
+   * Configures the WebGL viewport and depth/blend states.
+   * @returns {void}
    */
   initProjection = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const fieldOfView = degToRad(this.camera.fov);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -537,7 +561,7 @@ export default class RenderManager {
     if (!this.camera.uViewMat) {
       this.camera.uViewMat = create();
     }
-    // TODO: Investigate why uProjMat[5] is multiplied by -1. This often indicates
+    // TODO: Investigate why projectionMatrix[5] is multiplied by -1. This often indicates
     // a coordinate system mismatch (e.g., WebGL's Y-up vs. a different convention).
     // It might be a workaround that could be resolved by adjusting camera or model matrices.
     this.uProjMat[5] *= -1;
@@ -545,8 +569,10 @@ export default class RenderManager {
 
   /**
    * Enables back-face culling.
+   * @returns {void}
    */
   enableCulling = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
@@ -554,43 +580,52 @@ export default class RenderManager {
 
   /**
    * Disables back-face culling.
+   * @returns {void}
    */
   disableCulling = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.disable(gl.CULL_FACE);
   }
 
   /**
    * Enables blending.
+   * @returns {void}
    */
   enableBlending = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.enable(gl.BLEND);
   }
 
   /**
    * Disables blending.
+   * @returns {void}
    */
   disableBlending = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.disable(gl.BLEND);
   }
 
   /**
    * Clears the color and depth buffers of the WebGL canvas.
+   * @returns {void}
    */
   clearScreen = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
   /**
    * Applies a 1x1 pixel frustum for optimized object picking.
-   * This effectively narrows the view to a single pixel under the mouse cursor.
-   * TODO: This functionality needs to be thoroughly tested and potentially refined
-   * as it's marked as "not working" in `activatePickerShaderProgram`.
+   * Narrows the view to a single pixel under the mouse cursor.
+   * TODO: This functionality needs to be thoroughly tested and potentially refined as it's marked as "not working" in `activatePickerShaderProgram`.
+   * @returns {void}
    */
   applyPixelFrustum = () => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const zNear = 0.1;
     const zFar = 100.0;
@@ -625,6 +660,7 @@ export default class RenderManager {
 
   /**
    * Toggles fullscreen mode for the game canvas.
+   * @returns {void}
    */
   toggleFullscreen = () => {
     if (!this.fullscreen) {
@@ -650,8 +686,8 @@ export default class RenderManager {
 
   /**
    * Pushes the current model and view matrices onto a stack.
-   * This is useful for hierarchical transformations where a parent's transformation
-   * needs to be temporarily saved before applying child transformations.
+   * Useful for hierarchical transformations where a parent's transformation needs to be temporarily saved before applying child transformations.
+   * @returns {void}
    */
   mvPushMatrix = () => {
     let copyModel = create();
@@ -663,8 +699,9 @@ export default class RenderManager {
 
   /**
    * Pops the last saved model and view matrices from the stack and applies them.
-   * This restores the transformation state to a previous point.
+   * Restores the transformation state to a previous point.
    * @throws {Error} If the matrix stack is empty.
+   * @returns {void}
    */
   mvPopMatrix = () => {
     if (this.modelViewMatrixStack.length === 0) {
@@ -674,9 +711,9 @@ export default class RenderManager {
   }
 
   /**
-   * @deprecated This method seems to be an older transition implementation and is likely
-   * superseded by `startTransition` and `updateTransition`. It should be removed or refactored.
+   * @deprecated This method seems to be an older transition implementation and is likely superseded by `startTransition` and `updateTransition`. It should be removed or refactored.
    * Renders a frame of the old transition system.
+   * @returns {void}
    */
   transition = () => {
     let now = new Date().getMilliseconds();
@@ -706,7 +743,9 @@ export default class RenderManager {
    * @returns {WebGLBuffer} The created WebGL buffer.
    */
   createBuffer = (contents, type, itemSize) => {
+    /** @type {WebGL2RenderingContext} */
     let { gl } = this.engine;
+    /** @type {WebGLBuffer} */
     let buf = gl.createBuffer();
     buf.itemSize = itemSize;
     buf.numItems = contents.length / itemSize;
@@ -720,8 +759,10 @@ export default class RenderManager {
    * Updates the data in an existing WebGL buffer.
    * @param {WebGLBuffer} buffer - The buffer to update.
    * @param {number[]} contents - The new data to put into the buffer.
+   * @returns {void}
    */
   updateBuffer = (buffer, contents) => {
+    /** @type {WebGL2RenderingContext} */
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
@@ -732,19 +773,18 @@ export default class RenderManager {
    * Binds a WebGL buffer to an attribute location.
    * @param {WebGLBuffer} buffer - The buffer to bind.
    * @param {number} attribute - The attribute location to bind the buffer to.
+   * @returns {void}
    */
   bindBuffer = (buffer, attribute) => {
+    /** @type {WebGL2RenderingContext} */
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
   }
 
   /**
-   * Begins a custom screen transition. This will overlay an effect (fade, cross, or swirl)
-   * on top of the current scene for the specified duration. When the effect
-   * completes, the returned Promise resolves. If another transition is already
-   * running, this will queue a new one once the current one finishes.
-   *
+   * Begins a custom screen transition. Overlays an effect (fade, cross, or swirl) on top of the current scene for the specified duration.
+   * When the effect completes, the returned Promise resolves. If another transition is already running, this will queue a new one once the current one finishes.
    * @param {{effect?: string, direction?: 'out'|'in', duration?: number}} params - Transition parameters.
    * @returns {Promise<void>} Resolves when the transition has completed.
    */
@@ -776,9 +816,9 @@ export default class RenderManager {
   }
 
   /**
-   * Updates an in-progress transition. Should be called once per frame from
-   * the engine render loop. When the transition ends, it cleans up and calls
-   * the stored callback.
+   * Updates an in-progress transition. Should be called once per frame from the engine render loop.
+   * When the transition ends, it cleans up and calls the stored callback.
+   * @returns {void}
    */
   updateTransition = () => {
     if (!this.isTransitioning) {
@@ -803,15 +843,15 @@ export default class RenderManager {
   }
 
   /**
-   * Compiles and caches a WebGL shader program for the requested transition
-   * effect. The program draws a full-screen quad with a fragment shader
-   * specific to the effect (fade, cross, or swirl). This function is called
-   * automatically by `renderTransition()` the first time an effect is used.
-   *
+   * Compiles and caches a WebGL shader program for the requested transition effect.
+   * The program draws a full-screen quad with a fragment shader specific to the effect (fade, cross, or swirl).
+   * This function is called automatically by `renderTransition()` the first time an effect is used.
    * @param {string} effect - Name of the transition effect.
    * @throws {Error} If the transition shader program fails to link.
+   * @returns {void}
    */
   initTransitionProgram = (effect) => {
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     // If already initialized, do nothing.
     if (this.transitionGL[effect]) return;
@@ -826,8 +866,11 @@ export default class RenderManager {
     let [vsSource, fsSource] = fetchTransitionShaderFiles(effectName);
 
     // Compile and link the program.
+    /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
+    /** @type {WebGLShader} */
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
+    /** @type {WebGLProgram} */
     const program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
@@ -838,6 +881,7 @@ export default class RenderManager {
     }
     // Create a buffer for the quad vertices (-1 to 1). We'll use a
     // triangle strip with four vertices.
+    /** @type {WebGLBuffer} */
     const quadBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
     // Four corners: bottom-left, top-left, bottom-right, top-right.
@@ -864,14 +908,13 @@ export default class RenderManager {
   }
 
   /**
-   * Renders the transition overlay. This draws a full-screen quad with the
-   * precompiled shader corresponding to the current transition effect.
-   *
-   * @param {number} progress - A value between 0 and 1 indicating the
-   * progress of the transition.
+   * Renders the transition overlay. Draws a full-screen quad with the precompiled shader corresponding to the current transition effect.
+   * @param {number} progress - A value between 0 and 1 indicating the progress of the transition.
+   * @returns {void}
    */
   renderTransition = (progress) => {
     if (!this.engine.spritz.loaded) return; // Only render if game is loaded
+    /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const effect = this.transitionEffect || 'fade';
     // Ensure the program is compiled.
@@ -922,6 +965,7 @@ export default class RenderManager {
 
   /**
    * Renders the skybox.
+   * @returns {void}
    */
   renderSkybox = () => {
     if (!this.engine.spritz.loaded) return;
@@ -929,8 +973,8 @@ export default class RenderManager {
   }
 
   /**
-   * Resets debug counters at the start of a new frame. This should be
-   * invoked by the engine's render loop before any drawing takes place.
+   * Resets debug counters at the start of a new frame. Should be invoked by the engine's render loop before any drawing takes place.
+   * @returns {void}
    */
   resetDebugCounters = () => {
     if (this.debug) {
