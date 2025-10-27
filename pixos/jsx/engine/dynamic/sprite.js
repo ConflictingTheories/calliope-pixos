@@ -222,7 +222,7 @@ export default class DynamicSprite extends Sprite {
   /**
    * Handles step interaction, with Lua scripting support.
    * @param {Object} _this - The context.
-   * @param {Sprite} sprite - The sprite being selected.
+   * @param {Sprite} sprite - The sprite stepping.
    * @returns {Promise<any>}
    */
   onStep = async (_this, sprite) => {

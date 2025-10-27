@@ -16,9 +16,15 @@ import Spritz from '@Engine/core/scene/spritz.js';
 import World from '@Engine/core/scene/world.js';
 import JSZip from 'jszip';
 
-// Spritz Object
+/**
+ * ExampleDynamicSpritz - A dynamic Spritz implementation for loading games from zip files.
+ */
 export default class ExampleDynamicSpritz extends Spritz {
-  // Init Spritz
+  /**
+   * Initializes the dynamic Spritz instance.
+   * @param {GLEngine} engine - The game engine instance.
+   * @returns {Promise<void>}
+   */
   init = async (engine) => {
     Spritz._instance.loaded = false;
     // game Engine & Timing
