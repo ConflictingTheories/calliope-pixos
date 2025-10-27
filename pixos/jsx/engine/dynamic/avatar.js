@@ -15,15 +15,29 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import Avatar from '@Engine/core/scene/avatar.js';
 import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
 
+/**
+ * DynamicAvatar - A dynamic avatar with JSON loading and Lua scripting support.
+ */
 export default class DynamicAvatar extends Avatar {
+  /**
+   * Creates an instance of DynamicAvatar.
+   * @param {GLEngine} engine - The game engine instance.
+   * @param {Object} json - The JSON configuration.
+   * @param {Object} zip - The zip file data.
+   */
   constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
+    /** @type {Object} */
     this.json = json;
+    /** @type {Object} */
     this.zip = zip;
   }
 
-  // load in json properties to object
+  /**
+   * Loads JSON properties into the object.
+   * @returns {Promise<void>}
+   */
   loadJson = async () => {
     // extended properties
     if (this.json.extends) {
@@ -56,15 +70,19 @@ export default class DynamicAvatar extends Avatar {
     this.enableSpeech = this.json.enableSpeech; // speech bubble
   }
 
-    // todo -- add select handler dynamically (onSelect)
-  // Interaction
+  /**
+   * Handles selection interaction, with Lua scripting support.
+   * @param {Object} _this - The context.
+   * @param {Sprite} sprite - The sprite being selected.
+   * @returns {Promise<any>}
+   */
   onSelect = async (_this, sprite) => {
     if (!this.selectTrigger) {
       return;
     }
 
-    // pass-through interaction 
-    if(this.selectTrigger === 'interact'){
+    // pass-through interaction
+    if (this.selectTrigger === 'interact') {
       return await this.interact(this);
     }
 
