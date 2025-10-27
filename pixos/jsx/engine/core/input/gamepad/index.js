@@ -22,24 +22,39 @@ export class GamePad {
    */
   constructor(engine) {
     if (!GamePad._instance) {
+      /** @type {GLEngine} */
       this.engine = engine;
+      /** @type {boolean} */
       this.dirty = true;
+      /** @type {boolean} */
       this.showTrace = true;
+      /** @type {boolean} */
       this.showDebug = true;
+      /** @type {number} */
       this.opacity = 0.4;
+      /** @type {string} */
       this.font = 'minecraftia';
 
       // Start & Select Buttons
+      /** @type {boolean} */
       this.start = false;
+      /** @type {boolean} */
       this.select = false;
+      /** @type {Object.<string, any>} */
       this.touches = {};
+      /** @type {number} */
       this.lastKey = new Date().getTime();
+      /** @type {any[]} */
       this.listeners = [];
+      /** @type {Object.<string, any>} */
       this.map = {};
+      /** @type {number} */
       this.x = 0;
+      /** @type {number} */
       this.y = 0;
 
       // Button Colours
+      /** @type {Object.<string, string>} */
       this.colours = {
         red: `rgba(255,0,0,${this.opacity})`,
         green: `rgba(5,220,30,${this.opacity})`,
@@ -62,7 +77,7 @@ export class GamePad {
   }
 
   /**
-   *
+   * Initializes the gamepad with layout and controller setup.
    */
   init() {
     // Font
@@ -72,10 +87,10 @@ export class GamePad {
     this.radius = this.engine.gp.canvas.width / 12;
 
     // Button placement
-    this.button_offset = { x: this.radius * 2.5, y: 105 };
+    this.buttonOffset = { x: this.radius * 2.5, y: 105 };
 
     // Button Layouts
-    let buttons_layout = [
+    let buttonsLayout = [
       {
         x: -this.radius - this.radius / 2 + this.radius / 4,
         y: -this.radius / 4,
@@ -106,7 +121,7 @@ export class GamePad {
       },
     ];
     if (this.start) {
-      buttons_layout.push({
+      buttonsLayout.push({
         color: this.colours.black,
         y: -55,
         w: 50,
@@ -115,7 +130,7 @@ export class GamePad {
       });
     }
     if (this.select) {
-      buttons_layout.push({
+      buttonsLayout.push({
         y: -55,
         w: 50,
         h: 15,
@@ -125,8 +140,8 @@ export class GamePad {
     }
 
     // setup controller
-    this.buttons_layout = buttons_layout;
-    this.controller = new Controller(this.engine.gp, this.button_offset, this.touches, this.start, this.select, this.colours, this);
+    this.buttonsLayout = buttonsLayout;
+    this.controller = new Controller(this.engine.gp, this.buttonOffset, this.touches, this.start, this.select, this.colours, this);
     this.initOptions();
   }
 
@@ -187,11 +202,11 @@ export class GamePad {
 
   // debounce
   debounce() {
-    let { controller, buttons_layout } = this;
+    let { controller, buttonsLayout } = this;
     let t = this.lastKey;
     this.lastKey = new Date().getTime() + 100;
     // todo - clear key
-    for (var n = 0; n < buttons_layout.length; n++) {
+    for (var n = 0; n < buttonsLayout.length; n++) {
       controller.buttons.reset(n);
     }
     return t < this.lastKey;
@@ -204,7 +219,7 @@ export class GamePad {
 
   // Event Listener
   listen(e) {
-    let { touches, controller, buttons_layout } = this;
+    let { touches, controller, buttonsLayout } = this;
     if (e.type) {
       var type = e.type;
       if (e.type.indexOf('mouse') != -1) {
@@ -242,14 +257,14 @@ export class GamePad {
             this.disableScroll();
             controller.stick.state(id);
             if (new Date().getTime() > this.lastKey + 150) {
-              for (var n = 0; n < buttons_layout.length; n++) {
+              for (var n = 0; n < buttonsLayout.length; n++) {
                 controller.buttons.state(id, n);
               }
               this.lastKey = new Date().getTime();
             }
             break;
           case 'touchend':
-            for (var n = 0; n < buttons_layout.length; n++) {
+            for (var n = 0; n < buttonsLayout.length; n++) {
               controller.buttons.reset(n);
             }
             break;
@@ -273,13 +288,13 @@ export class GamePad {
               touches[id].rightClick = e.button == 2;
             }
             controller.stick.state(id, type);
-            for (var n = 0; n < buttons_layout.length; n++) {
+            for (var n = 0; n < buttonsLayout.length; n++) {
               controller.buttons.state(id, n, type);
             }
             break;
           case 'mouseup':
             controller.stick.state(id, type);
-            for (var n = 0; n < buttons_layout.length; n++) {
+            for (var n = 0; n < buttonsLayout.length; n++) {
               controller.buttons.state(id, n, type);
             }
             touches[id].leftClick = 0;
@@ -293,8 +308,8 @@ export class GamePad {
         if (touches[id].id == 'stick') {
           controller.stick.reset();
         }
-        for (var n = 0; n < buttons_layout.length; n++) {
-          if (touches[id].id == buttons_layout[n].name) {
+        for (var n = 0; n < buttonsLayout.length; n++) {
+          if (touches[id].id == buttonsLayout[n].name) {
             controller.buttons.reset(n);
           }
         }
@@ -314,7 +329,7 @@ export class GamePad {
         }
         if (e.touches.length == 0) {
           touches = {};
-          for (var n = 0; n < buttons_layout.length; n++) {
+          for (var n = 0; n < buttonsLayout.length; n++) {
             controller.buttons.reset(n);
           }
           controller.stick.reset();
@@ -350,25 +365,25 @@ export class GamePad {
             break;
           default:
             if (keys[prop]) {
-              for (var n = 0; n < buttons_layout.length; n++) {
-                if (buttons_layout[n].key) {
-                  if (buttons_layout[n].key == prop) {
-                    touches[buttons_layout[n].name] = {
-                      id: buttons_layout[n].name,
-                      x: buttons_layout[n]['hit'].x[0] + buttons_layout[n].w / 2,
-                      y: buttons_layout[n]['hit'].y[0] + buttons_layout[n].h / 2,
+              for (var n = 0; n < buttonsLayout.length; n++) {
+                if (buttonsLayout[n].key) {
+                  if (buttonsLayout[n].key == prop) {
+                    touches[buttonsLayout[n].name] = {
+                      id: buttonsLayout[n].name,
+                      x: buttonsLayout[n]['hit'].x[0] + buttonsLayout[n].w / 2,
+                      y: buttonsLayout[n]['hit'].y[0] + buttonsLayout[n].h / 2,
                     };
-                    controller.buttons.state(buttons_layout[n].name, n, 'mousedown');
+                    controller.buttons.state(buttonsLayout[n].name, n, 'mousedown');
                   }
                 }
               }
             } else {
               if (!keys[prop]) {
-                for (var n = 0; n < buttons_layout.length; n++) {
-                  if (buttons_layout[n].key) {
-                    if (buttons_layout[n].key == prop) {
+                for (var n = 0; n < buttonsLayout.length; n++) {
+                  if (buttonsLayout[n].key) {
+                    if (buttonsLayout[n].key == prop) {
                       controller.buttons.reset(n);
-                      delete touches[buttons_layout[n].name];
+                      delete touches[buttonsLayout[n].name];
                     }
                   }
                 }

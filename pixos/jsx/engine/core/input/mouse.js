@@ -14,43 +14,57 @@
 import GLEngine from '@Engine/core/index.js';
 
 /**
- * @callback MouseHookCallback
- * @param {MouseEvent} event - The raw mouse event.
- * @param {'down'|'up'|'move'} type - The type of event.
+ * @typedef {object} MousePosition
+ * @property {number} x - X coordinate.
+ * @property {number} y - Y coordinate.
  */
 
 /**
- * Mouse - Manages mouse input for the game engine.
- * This class tracks button states, position, and movement,
- * and allows for custom hooks to be registered for raw mouse events.
+ * @typedef {object} MouseMovement
+ * @property {number} x - X movement delta.
+ * @property {number} y - Y movement delta.
+ */
+
+/**
+ * @callback MouseHookCallback
+ * @param {MouseEvent} event - The raw mouse event.
+ * @param {'down'|'up'|'move'} type - The type of event.
+ * @returns {void}
+ */
+
+/**
+ * Mouse - Manages mouse input for the Pixos game engine.
+ * Tracks button states, position, and movement, and allows custom hooks for raw events.
  */
 export default class Mouse {
   /**
    * Creates an instance of Mouse.
-   * @param {GLEngine} engine - The main game engine instance.
+   * @param {import('../index.js').default} engine - The main game engine instance.
    * @returns {Mouse} The singleton instance of the Mouse manager.
    */
   constructor(engine) {
     if (!Mouse._instance) {
-      /** @type {GLEngine} */
+      /** @type {import('../index.js').default} */
       this.engine = engine;
       /** @type {boolean[]} */
       this.buttons = [false, false, false]; // Left, Middle, Right
-      /** @type {{x: number, y: number}} */
+      /** @type {MousePosition} */
       this.position = { x: 0, y: 0 };
-      /** @type {{x: number, y: number}} */
+      /** @type {MouseMovement} */
       this.movement = { x: 0, y: 0 };
       /** @type {MouseHookCallback[]} */
-      this._hooks = [];
+      this.hooks = [];
       Mouse._instance = this;
     }
     return Mouse._instance;
   }
 
   /**
-   * Initializes mouse event listeners on the window.
+   * Initializes mouse event listeners on the canvas.
+   * @returns {void}
    */
   init() {
+    /** @type {HTMLCanvasElement} */
     const canvas = this.engine.canvas;
     canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
@@ -62,37 +76,40 @@ export default class Mouse {
   /**
    * Handles the `mousedown` event.
    * @param {MouseEvent} e - The mouse event.
+   * @returns {void}
    */
   onMouseDown(e) {
     e.preventDefault();
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = true;
     }
-    this._notifyHooks(e, 'down');
+    this.notifyHooks(e, 'down');
   }
 
   /**
    * Handles the `mouseup` event.
    * @param {MouseEvent} e - The mouse event.
+   * @returns {void}
    */
   onMouseUp(e) {
     e.preventDefault();
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = false;
     }
-    this._notifyHooks(e, 'up');
+    this.notifyHooks(e, 'up');
   }
 
   /**
    * Handles the `mousemove` event.
    * @param {MouseEvent} e - The mouse event.
+   * @returns {void}
    */
   onMouseMove(e) {
     this.position.x = e.clientX;
     this.position.y = e.clientY;
     this.movement.x = e.movementX;
     this.movement.y = e.movementY;
-    this._notifyHooks(e, 'move');
+    this.notifyHooks(e, 'move');
   }
 
   /**
@@ -100,10 +117,11 @@ export default class Mouse {
    * @param {MouseEvent} event - The event object.
    * @param {'down'|'up'|'move'} type - The event type.
    * @private
+   * @returns {void}
    */
-  _notifyHooks(event, type) {
+  notifyHooks(event, type) {
     try {
-      this._hooks.forEach((h) => h(event, type));
+      this.hooks.forEach((h) => h(event, type));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(`Error in mouse hook (${type}):`, err);
@@ -126,7 +144,7 @@ export default class Mouse {
 
   /**
    * Gets the current mouse position.
-   * @returns {{x: number, y: number}}
+   * @returns {MousePosition} The current position.
    */
   getPosition() {
     return this.position;
@@ -134,7 +152,7 @@ export default class Mouse {
 
   /**
    * Gets the latest mouse movement delta.
-   * @returns {{x: number, y: number}}
+   * @returns {MouseMovement} The movement delta.
    */
   getMovement() {
     return this.movement;
@@ -143,17 +161,19 @@ export default class Mouse {
   /**
    * Registers a raw mouse event hook.
    * @param {MouseHookCallback} cb - The callback function.
+   * @returns {void}
    */
   addHook(cb) {
-    if (cb) this._hooks.push(cb);
+    if (cb) this.hooks.push(cb);
   }
 
   /**
    * Removes a raw mouse event hook.
    * @param {MouseHookCallback} cb - The callback function.
+   * @returns {void}
    */
   removeHook(cb) {
-    const i = this._hooks.indexOf(cb);
-    if (i >= 0) this._hooks.splice(i, 1);
+    const i = this.hooks.indexOf(cb);
+    if (i >= 0) this.hooks.splice(i, 1);
   }
 }

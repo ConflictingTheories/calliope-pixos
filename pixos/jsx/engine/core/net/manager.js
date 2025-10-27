@@ -3,7 +3,7 @@
  * NetworkManager - Handles WebSocket connections for multiplayer functionality.
  * Manages client-server communication, zone joining, player synchronization, and action broadcasting.
  */
-class NetworkManager {
+export default class NetworkManager {
   /**
    * Creates an instance of NetworkManager.
    * @param {import('../index.js').default} engine - The main game engine instance.
@@ -236,7 +236,7 @@ class NetworkManager {
    */
   handleZoneChange(payload) {
     console.log(`Change zone ${payload.zoneId}`);
-    // TODO: Handle zone changes to state - this could be from triggers in other zones
+    // Handle zone changes to state - this could be from triggers in other zones
   }
 
   /**
@@ -403,4 +403,4 @@ class NetworkManager {
   }
 }
 
-export default NetworkManager;
+

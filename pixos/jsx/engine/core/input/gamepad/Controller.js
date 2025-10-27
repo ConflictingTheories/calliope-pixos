@@ -15,27 +15,55 @@ import { ControllerStick } from '@Engine/core/input/gamepad/ControllerStick.js';
 import { ControllerButtons } from '@Engine/core/input/gamepad/ControllerButtons.js';
 // Controller Manager for Gamepad
 export class Controller {
-  constructor(ctx, button_offset, touches, start, select, colours, gamepad) {
+  /**
+   * Creates an instance of Controller.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {Object} buttonOffset - The offset for button placement.
+   * @param {Object.<string, any>} touches - The touch state object.
+   * @param {boolean} start - Whether start button is enabled.
+   * @param {boolean} select - Whether select button is enabled.
+   * @param {Object.<string, string>} colours - The color scheme.
+   * @param {GamePad} gamepad - The parent gamepad instance.
+   */
+  constructor(ctx, buttonOffset, touches, start, select, colours, gamepad) {
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = ctx;
+    /** @type {GamePad} */
     this.gamepad = gamepad;
+    /** @type {number} */
     this.width = ctx.canvas.width;
+    /** @type {number} */
     this.height = ctx.canvas.height;
+    /** @type {number} */
     this.radius = ctx.canvas.width / 10;
+    /** @type {Object.<string, any>} */
     this.touches = touches;
+    /** @type {boolean} */
     this.start = start;
+    /** @type {boolean} */
     this.select = select;
-    this.button_offset = button_offset;
+    /** @type {Object} */
+    this.buttonOffset = buttonOffset;
+    /** @type {Object.<string, string>} */
     this.colours = colours;
-    this.layout = { x: this.width - this.button_offset.x, y: this.height - this.button_offset.y };
+    /** @type {Object} */
+    this.layout = { x: this.width - this.buttonOffset.x, y: this.height - this.buttonOffset.y };
+    /** @type {ControllerStick} */
     this.stick = new ControllerStick(this.ctx, this.layout, this.touches, this.colours, this.radius, this.gamepad);
+    /** @type {ControllerButtons} */
     this.buttons = new ControllerButtons(this.ctx, this.layout, this.touches, this.start, this.select, this.colours, this.radius, this.gamepad);
   }
-  // Initialize
+  /**
+   * Initializes the controller components.
+   */
   init() {
     this.stick.init();
     this.buttons.init();
   }
-  // draw
+
+  /**
+   * Draws the controller components.
+   */
   draw() {
     this.stick.draw();
     this.buttons.draw();

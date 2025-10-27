@@ -3,8 +3,8 @@
    * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
    * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.
    * @property {function(number, object): Promise<void>} [update] - Function called every frame to update the mode's state.
-   * @property {function(number, object): boolean} [check_input] - Function to handle input events. Returns true if input was consumed.
-   * @property {function(object, number, number, string, object): boolean} [on_select] - Function to handle object selection events. Returns true to consume default selection.
+   * @property {function(number, object): boolean} [checkInput] - Function to handle input events. Returns true if input was consumed.
+   * @property {function(object, number, number, string, object): boolean} [onSelect] - Function to handle object selection events. Returns true to consume default selection.
    * @property {boolean} [picker] - Whether the mode should enable object picking.
    */
 
@@ -24,7 +24,7 @@ export default class ModeManager {
     /** @type {import('../index.js').default} */
     this.engine = engine;
     /** @type {object|null} */
-    this.current = null; // { name, handlers: ModeHandlers, params }
+    this.currentMode = null; // { name, handlers: ModeHandlers, params }
     /** @type {Object.<string, ModeHandlers>} */
     this.registered = Object.create(null);
   }
@@ -38,23 +38,23 @@ export default class ModeManager {
    */
   register(name, handlers) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('ModeManager.register ->', name, 'hasSetup?', !!(handlers && handlers.setup), 'currentMode=', this.current?.name);
+      console.log('ModeManager.register ->', name, 'hasSetup?', !!(handlers && handlers.setup), 'currentMode=', this.currentMode?.name);
     }
     this.registered[name] = handlers;
     // If this mode is currently active but handlers were not present at set-time,
     // run its setup now so late-registered modes still initialize correctly.
-    if (this.current && this.current.name === name) {
-      const params = this.current.params || {};
+    if (this.currentMode && this.currentMode.name === name) {
+      const params = this.currentMode.params || {};
       (async () => {
         try {
           const h = this.registered[name];
-          this.current.handlers = h;
+          this.currentMode.handlers = h;
           if (h && h.setup) {
             const res = await h.setup(params);
             if (res && typeof res === 'object') {
               Object.assign(h, res);
               this.registered[name] = h;
-              this.current.handlers = h;
+              this.currentMode.handlers = h;
             }
           }
         } catch (e) {
@@ -74,11 +74,11 @@ export default class ModeManager {
   async set(name, params = {}) {
     if (!name) return;
     // Teardown previous mode
-    if (this.current && this.current.handlers?.teardown) {
+    if (this.currentMode && this.currentMode.handlers?.teardown) {
       try {
-        await this.current.handlers.teardown(params);
+        await this.currentMode.handlers.teardown(params);
       } catch (e) {
-        console.warn(`Mode teardown failed for mode "${this.current.name}":`, e);
+        console.warn(`Mode teardown failed for mode "${this.currentMode.name}":`, e);
       }
     }
 
@@ -87,7 +87,7 @@ export default class ModeManager {
     }
 
     const handlers = this.registered[name] || {};
-    this.current = { name, handlers, params };
+    this.currentMode = { name, handlers, params };
     if (process.env.NODE_ENV === 'development') {
       console.log('ModeManager: set mode ->', name, params, handlers);
     }
@@ -97,11 +97,11 @@ export default class ModeManager {
         // Allow setup to optionally return an object of handlers
         const res = await handlers.setup(params);
         if (res && typeof res === 'object') {
-          // Merge returned handlers into the active handlers so check_input/on_select/etc. are available
+          // Merge returned handlers into the active handlers so checkInput/onSelect/etc. are available
           Object.assign(handlers, res);
           // Update registration to reflect merged handlers
           this.registered[name] = handlers;
-          this.current.handlers = handlers;
+          this.currentMode.handlers = handlers;
         }
       } catch (e) {
         console.warn(`Mode setup failed for mode "${name}":`, e);
@@ -116,13 +116,13 @@ export default class ModeManager {
    * @returns {Promise<void>} A promise that resolves after the mode's update function has run.
    */
   async update(time) {
-    if (!this.current) return;
-    const h = this.current.handlers;
+    if (!this.currentMode) return;
+    const h = this.currentMode.handlers;
     if (h && h.update) {
       try {
-        await h.update(time, this.current.params);
+        await h.update(time, this.currentMode.params);
       } catch (e) {
-        console.warn(`Mode update failed for mode "${this.current.name}":`, e);
+        console.warn(`Mode update failed for mode "${this.currentMode.name}":`, e);
       }
     }
   }
@@ -133,15 +133,15 @@ export default class ModeManager {
    * @returns {boolean} True if the input was consumed by the mode, false otherwise.
    */
   handleInput(time) {
-    if (!this.current) return false;
-    const handlers = this.current.handlers;
+    if (!this.currentMode) return false;
+    const handlers = this.currentMode.handlers;
     if (process.env.NODE_ENV === 'development') {
       console.log('ModeManager.handleInput: current handlers ->', handlers);
     }
     try {
-      if (handlers && handlers.check_input) return !!handlers.check_input(time, this.current.params);
+      if (handlers && handlers.checkInput) return !!handlers.checkInput(time, this.currentMode.params);
     } catch (e) {
-      console.warn(`Mode input handler failed for mode "${this.current.name}":`, e);
+      console.warn(`Mode input handler failed for mode "${this.currentMode.name}":`, e);
     }
     return false;
   }
@@ -155,15 +155,15 @@ export default class ModeManager {
    * @returns {boolean} True if the selection was consumed by the mode, false otherwise.
    */
   handleSelect(zone, row, cell, type) {
-    if (!this.current) return false;
-    const handlers = this.current.handlers;
+    if (!this.currentMode) return false;
+    const handlers = this.currentMode.handlers;
     if (process.env.NODE_ENV === 'development') {
       console.log('ModeManager.handleSelect: current handlers ->', handlers);
     }
     try {
-      if (handlers && handlers.on_select) return !!handlers.on_select(zone, row, cell, type, this.current.params);
+      if (handlers && handlers.onSelect) return !!handlers.onSelect(zone, row, cell, type, this.currentMode.params);
     } catch (e) {
-      console.warn(`Mode on_select handler failed for mode "${this.current.name}":`, e);
+      console.warn(`Mode onSelect handler failed for mode "${this.currentMode.name}":`, e);
     }
     return false;
   }
@@ -175,25 +175,25 @@ export default class ModeManager {
   set(name) {
     if (this.registered[name]) {
       // Teardown current mode if exists
-      if (this.current && this.current.handlers.teardown) {
+      if (this.currentMode && this.currentMode.handlers.teardown) {
         (async () => {
           try {
-            await this.current.handlers.teardown(this.current.params);
+            await this.currentMode.handlers.teardown(this.currentMode.params);
           } catch (e) {
-            console.warn(`Mode teardown failed for mode "${this.current.name}":`, e);
+            console.warn(`Mode teardown failed for mode "${this.currentMode.name}":`, e);
           }
         })();
       }
 
-      this.current = { name, handlers: this.registered[name], params: {} };
+      this.currentMode = { name, handlers: this.registered[name], params: {} };
 
       // Setup new mode
-      if (this.current.handlers.setup) {
+      if (this.currentMode.handlers.setup) {
         (async () => {
           try {
-            const additionalHandlers = await this.current.handlers.setup(this.current.params);
+            const additionalHandlers = await this.currentMode.handlers.setup(this.currentMode.params);
             if (additionalHandlers) {
-              this.current.handlers = { ...this.current.handlers, ...additionalHandlers };
+              this.currentMode.handlers = { ...this.currentMode.handlers, ...additionalHandlers };
             }
           } catch (e) {
             console.warn(`Mode setup failed for mode "${name}":`, e);
@@ -210,7 +210,7 @@ export default class ModeManager {
    * @returns {string|null} The name of the current mode, or null if no mode is active.
    */
   getMode() {
-    return this.current?.name || null;
+    return this.currentMode?.name || null;
   }
 
   /**
@@ -218,6 +218,6 @@ export default class ModeManager {
    * @returns {boolean} True if picker is enabled for the current mode.
    */
   hasPicker() {
-    return this.current?.handlers?.picker === true;
+    return this.currentMode?.handlers?.picker === true;
   }
 }

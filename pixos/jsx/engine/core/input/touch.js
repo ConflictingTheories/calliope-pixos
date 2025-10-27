@@ -38,7 +38,7 @@ export default class Touch {
       /** @type {Object.<string, boolean>} */
       this.gestures = {}; // Active gestures
       /** @type {TouchHookCallback[]} */
-      this._hooks = [];
+      this.hooks = [];
       /** @type {number} */
       this.startTime = 0;
       /** @type {{x: number, y: number}} */
@@ -131,7 +131,7 @@ export default class Touch {
    */
   _notifyHooks(event, type) {
     try {
-      this._hooks.forEach((h) => h(event, type));
+      this.hooks.forEach((h) => h(event, type));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(`Error in touch hook (${type}):`, err);
@@ -161,7 +161,7 @@ export default class Touch {
    * @param {TouchHookCallback} cb - The callback function.
    */
   addHook(cb) {
-    if (cb) this._hooks.push(cb);
+    if (cb) this.hooks.push(cb);
   }
 
   /**
@@ -169,7 +169,7 @@ export default class Touch {
    * @param {TouchHookCallback} cb - The callback function.
    */
   removeHook(cb) {
-    const i = this._hooks.indexOf(cb);
-    if (i >= 0) this._hooks.splice(i, 1);
+    const i = this.hooks.indexOf(cb);
+    if (i >= 0) this.hooks.splice(i, 1);
   }
 }

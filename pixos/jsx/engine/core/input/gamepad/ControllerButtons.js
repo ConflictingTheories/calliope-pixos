@@ -27,28 +27,49 @@ CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
 
 // Controller Button Manager
 export class ControllerButtons {
+  /**
+   * Creates an instance of ControllerButtons.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {Object} layout - The layout object for positioning.
+   * @param {Object.<string, any>} touches - The touch state object.
+   * @param {boolean} start - Whether start button is enabled.
+   * @param {boolean} select - Whether select button is enabled.
+   * @param {Object.<string, string>} colours - The color scheme.
+   * @param {number} radius - The radius for buttons.
+   * @param {GamePad} gamepad - The parent gamepad instance.
+   */
   constructor(ctx, layout, touches, start, select, colours, radius, gamepad) {
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = ctx;
+    /** @type {GamePad} */
     this.gamepad = gamepad;
+    /** @type {Object} */
     this.layout = layout;
+    /** @type {number} */
     this.radius = radius;
+    /** @type {Object.<string, any>} */
     this.touches = touches;
+    /** @type {boolean} */
     this.start = start;
+    /** @type {boolean} */
     this.select = select;
+    /** @type {Object.<string, string>} */
     this.colours = colours;
   }
-  // Initialize
+  /**
+   * Initializes the button layouts and hit areas.
+   */
   init() {
     let { layout, ctx } = this;
-    let { buttons_layout } = this.gamepad;
+    let { buttonsLayout } = this.gamepad;
     let width = ctx.canvas.width;
-    for (var n = 0; n < buttons_layout.length; n++) {
-      var button = buttons_layout[n];
+    for (var n = 0; n < buttonsLayout.length; n++) {
+      var button = buttonsLayout[n];
       var x = layout.x - button.x;
       var y = layout.y - button.y;
       if (button.r) {
         var r = button.r;
-        buttons_layout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
+        buttonsLayout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
       } else {
         button.x = width / 3 - button.w;
         if (this.start && this.select) {
@@ -63,16 +84,18 @@ export class ControllerButtons {
         }
         var x = button.x;
         var y = layout.y - button.y;
-        buttons_layout[n]['hit'] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
+        buttonsLayout[n]['hit'] = { x: [x, x + button.w], y: [y, y + button.h], active: false };
       }
       this.gamepad.map[button.name] = 0;
     }
   }
-  // render Button
+  /**
+   * Renders the buttons on the canvas.
+   */
   draw() {
     let { ctx, layout } = this;
-    for (var n = 0; n < this.gamepad.buttons_layout.length; n++) {
-      var button = this.gamepad.buttons_layout[n];
+    for (var n = 0; n < this.gamepad.buttonsLayout.length; n++) {
+      var button = this.gamepad.buttonsLayout[n];
       var color = button.color;
       var x = layout.x - button.x;
       var y = layout.y - button.y;
@@ -141,7 +164,12 @@ export class ControllerButtons {
       }
     }
   }
-  // State of Buttons
+  /**
+   * Updates the state of a button based on touch input.
+   * @param {string} id - The touch identifier.
+   * @param {number} n - The button index.
+   * @param {string} [type] - The event type.
+   */
   state(id, n, type) {
     let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
@@ -150,7 +178,7 @@ export class ControllerButtons {
         x: touches[id].x,
         y: touches[id].y,
       };
-      var button = this.gamepad.buttons_layout[n];
+      var button = this.gamepad.buttonsLayout[n];
       var name = button.name;
 
       var dx = parseInt(touch.x - button.dx);
@@ -192,9 +220,12 @@ export class ControllerButtons {
       }
     }
   }
-  // Reset State
+  /**
+   * Resets the state of a button.
+   * @param {number} n - The button index.
+   */
   reset(n) {
-    this.gamepad.buttons_layout[n].hit.active = false;
-    this.gamepad.map[this.gamepad.buttons_layout[n].name] = 0;
+    this.gamepad.buttonsLayout[n].hit.active = false;
+    this.gamepad.map[this.gamepad.buttonsLayout[n].name] = 0;
   }
 }

@@ -13,25 +13,48 @@
 
 // Controller Joystick Manager
 export class ControllerStick {
+  /**
+   * Creates an instance of ControllerStick.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {Object} layout - The layout object for positioning.
+   * @param {Object.<string, any>} touches - The touch state object.
+   * @param {Object.<string, string>} colours - The color scheme.
+   * @param {number} radius - The radius for the stick.
+   * @param {GamePad} gamepad - The parent gamepad instance.
+   */
   constructor(ctx, layout, touches, colours, radius, gamepad) {
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = ctx;
+    /** @type {GamePad} */
     this.gamepad = gamepad;
+    /** @type {number} */
     this.width = ctx.canvas.width;
+    /** @type {number} */
     this.height = ctx.canvas.height;
+    /** @type {Object} */
     this.layout = layout;
+    /** @type {Object.<string, any>} */
     this.touches = touches;
+    /** @type {number} */
     this.radius = radius;
+    /** @type {number} */
     this.x = 0;
+    /** @type {number} */
     this.y = 0;
+    /** @type {number} */
     this.dx = 0;
+    /** @type {number} */
     this.dy = 0;
     this.gamepad.map['x-dir'] = 0;
     this.gamepad.map['y-dir'] = 0;
     this.gamepad.map['x-axis'] = 0;
     this.gamepad.map['y-axis'] = 0;
+    /** @type {Object.<string, string>} */
     this.colours = colours;
   }
-  // Initialize
+  /**
+   * Initializes the stick position and resets map values.
+   */
   init = () => {
     let { layout, width } = this;
     this.x = width - layout.x;
@@ -43,7 +66,9 @@ export class ControllerStick {
     this.gamepad.map['x-axis'] = 0;
     this.gamepad.map['y-axis'] = 0;
   }
-  // draw joystick
+  /**
+   * Draws the joystick on the canvas.
+   */
   draw = () => {
     let { ctx } = this;
     ctx.fillStyle = this.colours.joystick.base;
@@ -70,7 +95,11 @@ export class ControllerStick {
     ctx.fill();
     ctx.closePath();
   }
-  // manage event state
+  /**
+   * Manages the event state for the joystick.
+   * @param {string} id - The touch identifier.
+   * @param {string} [type] - The event type.
+   */
   state = (id, type) => {
     let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
@@ -129,7 +158,9 @@ export class ControllerStick {
       }
     }
   }
-  // reset state
+  /**
+   * Resets the joystick state.
+   */
   reset = () => {
     let { map } = this.gamepad;
     this.dx = this.x;

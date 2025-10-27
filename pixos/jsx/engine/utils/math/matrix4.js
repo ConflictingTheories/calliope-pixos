@@ -12,27 +12,27 @@
 \*                                                 */
 
 /**
- * @typedef {Float32Array(3)} Vector3
+ * @typedef {Float32Array} Vector3 - A 3-component vector as a Float32Array.
  */
 
 /**
- * @typedef {Float32Array(4)} Vector4
+ * @typedef {Float32Array} Vector4 - A 4-component vector as a Float32Array.
  */
 
 /**
- * @typedef {Float32Array(9)} Matrix3
+ * @typedef {Float32Array} Matrix3 - A 3x3 matrix as a Float32Array.
  */
 
 /**
- * @typedef {Float32Array(16)} Matrix4
+ * @typedef {Float32Array} Matrix4 - A 4x4 matrix as a Float32Array.
  */
 
 const EPSILON = 0.000001;
 
 /**
- * 
- * @param {number[]} mat 
- * @returns {Matrix4}
+ * Creates a Matrix4 from an array of 16 numbers.
+ * @param {number[]} mat - Array of 16 numbers representing the matrix.
+ * @returns {Matrix4} The resulting 4x4 matrix.
  */
 const from = (mat) => {
   let dest = new Float32Array(16);
@@ -56,8 +56,8 @@ const from = (mat) => {
 };
 
 /**
- * 
- * @returns {Matrix4}
+ * Creates an identity Matrix4.
+ * @returns {Matrix4} The identity 4x4 matrix.
  */
 const create = () => {
   let matrix = new Float32Array(16);
@@ -69,8 +69,8 @@ const create = () => {
 };
 
 /**
- * 
- * @returns {Matrix3}
+ * Creates an identity Matrix3.
+ * @returns {Matrix3} The identity 3x3 matrix.
  */
 const create3 = () => {
   let matrix = new Float32Array(9);
@@ -81,8 +81,12 @@ const create3 = () => {
 };
 
 /**
- * 
- * @returns {Matrix4}
+ * Creates a perspective projection Matrix4.
+ * @param {number} fovy - Vertical field of view in radians.
+ * @param {number} aspect - Aspect ratio (width/height).
+ * @param {number} near - Near clipping plane.
+ * @param {number} far - Far clipping plane.
+ * @returns {Matrix4} The perspective projection matrix.
  */
 const perspective = (fovy, aspect, near, far) => {
   let matrix = new Float32Array(16);
@@ -112,8 +116,14 @@ const perspective = (fovy, aspect, near, far) => {
 };
 
 /**
- * 
- * @returns {Matrix4}
+ * Creates a frustum projection Matrix4.
+ * @param {number} l - Left clipping plane.
+ * @param {number} r - Right clipping plane.
+ * @param {number} b - Bottom clipping plane.
+ * @param {number} t - Top clipping plane.
+ * @param {number} n - Near clipping plane.
+ * @param {number} f - Far clipping plane.
+ * @returns {Matrix4} The frustum projection matrix.
  */
 const frustum = (l, r, b, t, n, f) => {
   let m = new Float32Array(16);
@@ -142,8 +152,11 @@ const frustum = (l, r, b, t, n, f) => {
 };
 
 /**
- * 
- * @returns {Matrix4}
+ * Translates a Matrix4 by a vector.
+ * @param {Matrix4} m1 - The matrix to store the result in.
+ * @param {Matrix4} m2 - The matrix to translate.
+ * @param {Vector3} v - The translation vector [x, y, z].
+ * @returns {Matrix4} The translated matrix.
  */
 const translate = (m1, m2, v) => {
   let matrix = m1;
@@ -172,17 +185,22 @@ const translate = (m1, m2, v) => {
 };
 
 /**
- * @param {Vector3} a
- * @param {Vector3} b
- * @returns {Vector3}
+ * Subtracts two vectors.
+ * @param {Vector3} a - The first vector.
+ * @param {Vector3} b - The second vector.
+ * @returns {Vector3} The resulting vector a - b.
  */
 const subtractVectors = (a, b) => {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 };
 
 /**
- * 
- * @returns {Matrix4}
+ * Rotates a Matrix4 around an axis by a given angle.
+ * @param {Matrix4} m1 - The matrix to store the result in.
+ * @param {Matrix4} m2 - The matrix to rotate.
+ * @param {number} rad - The angle in radians.
+ * @param {Vector3} axis - The axis to rotate around [x, y, z].
+ * @returns {Matrix4} The rotated matrix.
  */
 const rotate = (m1, m2, rad, axis) => {
   let matrix = m1;
@@ -237,19 +255,19 @@ const rotate = (m1, m2, rad, axis) => {
 };
 
 /**
- * 
- * @param {*} value 
- * @returns {boolean}
+ * Checks if a value is a power of 2.
+ * @param {number} value - The value to check.
+ * @returns {boolean} True if the value is a power of 2.
  */
 function isPowerOf2(value) {
   return (value & (value - 1)) == 0;
 }
 
 /**
- * 
- * @param {Matrix4} mat 
- * @param {Matrix4} dest 
- * @returns {Matrix4}
+ * Copies a Matrix4 to another.
+ * @param {Matrix4} mat - The source matrix.
+ * @param {Matrix4} dest - The destination matrix.
+ * @returns {Matrix4} The destination matrix.
  */
 function set(mat, dest) {
   dest[0] = mat[0];
@@ -272,12 +290,10 @@ function set(mat, dest) {
 }
 
 /**
- * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
- *
- * @param {Matrix3} out mat3 receiving operation result
- * @param {Matrix4} a Mat4 to derive the normal matrix from
- *
- * @returns {Matrix3} out
+ * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix.
+ * @param {Matrix3} out - The Matrix3 to store the result in.
+ * @param {Matrix4} a - The Matrix4 to derive the normal matrix from.
+ * @returns {Matrix3} The resulting normal matrix.
  */
 function normalFromMat4(out, a) {
   var a00 = a[0],
@@ -334,9 +350,9 @@ function normalFromMat4(out, a) {
 }
 
 /**
- * 
- * @param {Vector3} v 
- * @returns {Vector3}
+ * Normalizes a vector to unit length.
+ * @param {Vector3} v - The vector to normalize.
+ * @returns {Vector3} The normalized vector.
  */
 const normalize = (v) => {
   let len = Math.hypot(...v);

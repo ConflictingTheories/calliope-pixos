@@ -37,7 +37,7 @@ export default class Keyboard {
       /** @type {string[]} */
       this.activeCodes = []; // Stores `event.key` values of currently pressed keys
       /** @type {KeyboardHookCallback[]} */
-      this._hooks = []; // Registered callbacks for raw key events
+      this.hooks = []; // Registered callbacks for raw key events
       /** @type {boolean} */
       this.shift = false; // True if Shift key is currently pressed
       /** @type {GLEngine} */
@@ -72,7 +72,7 @@ export default class Keyboard {
     Keyboard._instance.shift = e.shiftKey;
     // Notify hooks (debug / custom controls) about raw key event
     try {
-      (Keyboard._instance._hooks || []).forEach((h) => h(e, 'down'));
+      (Keyboard._instance.hooks || []).forEach((h) => h(e, 'down'));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn('Error in keyboard hook (keydown):', err);
@@ -97,7 +97,7 @@ export default class Keyboard {
     }
     Keyboard._instance.shift = e.shiftKey;
     try {
-      (Keyboard._instance._hooks || []).forEach((h) => h(e, 'up'));
+      (Keyboard._instance.hooks || []).forEach((h) => h(e, 'up'));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn('Error in keyboard hook (keyup):', err);
@@ -111,8 +111,8 @@ export default class Keyboard {
    */
   addHook(cb) {
     if (!cb) return;
-    this._hooks = this._hooks || []; // Ensure _hooks is initialized
-    this._hooks.push(cb);
+    this.hooks = this.hooks || []; // Ensure hooks is initialized
+    this.hooks.push(cb);
   }
 
   /**
@@ -120,10 +120,10 @@ export default class Keyboard {
    * @param {KeyboardHookCallback} cb - The callback function to remove.
    */
   removeHook(cb) {
-    if (!cb || !this._hooks) return;
-    const i = this._hooks.indexOf(cb);
+    if (!cb || !this.hooks) return;
+    const i = this.hooks.indexOf(cb);
     if (i >= 0) {
-      this._hooks.splice(i, 1);
+      this.hooks.splice(i, 1);
     }
   }
 

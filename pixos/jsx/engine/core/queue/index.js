@@ -11,24 +11,29 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * ActionQueue - Manages a queue of actions or events for sequential execution.
+ */
 export default class ActionQueue {
   /**
-   * Action/Event Queue
+   * Creates an instance of ActionQueue.
    */
   constructor() {
+    /** @type {Array<Function>} */
     this.actions = [];
   }
 
   /**
-   * Add to Queue
-   * @param {Action) action
+   * Adds an action to the queue.
+   * @param {Function} action - The action function to add.
    */
   add(action) {
     this.actions.push(action);
   }
 
   /**
-   * Run Action
+   * Runs all actions in the queue, filtering out completed ones.
+   * @param {...any} args - Arguments to pass to each action.
    */
   run() {
     let args = arguments;
