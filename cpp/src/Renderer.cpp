@@ -84,11 +84,9 @@ void Renderer::init(GLFWwindow *window)
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void Renderer::render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit)
+void Renderer::render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit, int width, int height)
 {
-    int width, height;
-    glfwGetCurrentContext(); // Ensure context is current
-    glViewport(0, 0, 920, 720); // Set viewport to left side, leaving space for UI
+    glViewport(0, 0, width, height); // Full viewport, UI overlaid
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.047f, 0.047f, 0.063f, 1.0f);
@@ -96,7 +94,7 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
 
     shader->use();
     shader->setUniform("uView", camera.getViewMatrix());
-    shader->setUniform("uProj", camera.getProjectionMatrix(920.0f / 720.0f)); // Aspect ratio for left side
+    shader->setUniform("uProj", camera.getProjectionMatrix((float)width / height)); // Full aspect ratio
     shader->setUniform("uLightDir", vec3(-0.6f, 0.8f, 0.6f));
 
     glBindVertexArray(cube->vao);
@@ -133,23 +131,33 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     glBindVertexArray(0);
 }
 
-void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string> &abilities, std::function<void(int)> castCallback)
+void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string> &abilities, std::function<void(int)> castCallback, int width, int height)
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     // Main UI panel on the right side
-    ImGui::SetNextWindowPos(ImVec2(920, 10)); // Position for right side in 1280x720
-    ImGui::SetNextWindowSize(ImVec2(350, 700));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+    ImGui::SetNextWindowPos(ImVec2(width - 360, 10)); // Position for right side
+    ImGui::SetNextWindowSize(ImVec2(350, height - 20));
     ImGui::Begin("Disgaea Prototype - C++ OpenGL", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
+    // Header panel
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(1.0f, 1.0f, 1.0f, 0.02f));
+    ImGui::BeginChild("header", ImVec2(0, 50), true);
     ImGui::Text("Disgaea Prototype - C++ OpenGL");
-    ImGui::Text("WebGL2, no libs. Tiles, units, labels, HP/MP, damage pop, abilities, selection.");
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "WebGL2, no libs. Tiles, units, labels, HP/MP, damage pop, abilities, selection.");
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+
     ImGui::Separator();
 
     if (selectedUnit)
     {
+        // Unit info panel
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(1.0f, 1.0f, 1.0f, 0.02f));
+        ImGui::BeginChild("unit_info", ImVec2(0, 100), true);
         ImGui::Text("Selected Unit: %s", selectedUnit->name.c_str());
         ImGui::Text("HP: %d/%d", selectedUnit->hp, selectedUnit->maxHp);
         ImGui::Text("MP: %d/%d", selectedUnit->mp, selectedUnit->maxMp);
@@ -165,17 +173,24 @@ void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string>
         ImGui::ProgressBar(mpRatio, ImVec2(-1, 20), "");
         ImGui::SameLine();
         ImGui::Text("MP");
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
 
         ImGui::Separator();
         ImGui::Text("Abilities:");
 
+        // Abilities panel
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(1.0f, 1.0f, 1.0f, 0.02f));
+        ImGui::BeginChild("abilities", ImVec2(0, 0), true);
         for (size_t i = 0; i < abilities.size(); ++i)
         {
-            if (ImGui::Button(abilities[i].c_str()))
+            if (ImGui::Button(abilities[i].c_str(), ImVec2(-1, 30)))
             {
                 castCallback(i);
             }
         }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
     }
     else
     {
@@ -183,6 +198,7 @@ void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string>
     }
 
     ImGui::End();
+    ImGui::PopStyleColor(); // Pop the window background color
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

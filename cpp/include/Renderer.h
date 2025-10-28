@@ -24,8 +24,8 @@ public:
     ~Renderer();
 
     void init(GLFWwindow *window);
-    void render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit);
-    void renderUI(const Unit* selectedUnit, const std::vector<std::string>& abilities, std::function<void(int)> castCallback);
+    void render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit, int width, int height);
+    void renderUI(const Unit* selectedUnit, const std::vector<std::string>& abilities, std::function<void(int)> castCallback, int width, int height);
 
 private:
     Shader *shader;

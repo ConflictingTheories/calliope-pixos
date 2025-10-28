@@ -89,8 +89,8 @@ void Game::render()
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     glViewport(0, 0, width, height);
-    renderer.render(camera, units, grid, selectedUnit);
-    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index) { castAbility(index); });
+    renderer.render(camera, units, grid, selectedUnit, width, height);
+    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index) { castAbility(index); }, width, height);
 }
 
 void Game::castAbility(int abilityIndex)

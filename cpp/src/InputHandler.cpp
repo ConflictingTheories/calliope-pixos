@@ -51,13 +51,13 @@ void InputHandler::update(float deltaTime)
 
 void InputHandler::handleMouseClick(double mouseX, double mouseY)
 {
-    // Check if click is in the 3D viewport (left side)
-    if (mouseX > 920) return; // UI area
-
     int width, height;
     glfwGetWindowSize(window, &width, &height);
+    // Check if click is in the UI area
+    if (mouseX > width - 360) return; // UI area
+
     Mat4 view = camera.getViewMatrix();
-    Mat4 proj = camera.getProjectionMatrix(920.0f / 720.0f); // Match renderer's aspect
+    Mat4 proj = camera.getProjectionMatrix((float)width / height); // Full aspect ratio
     Ray ray = getRayFromScreen(mouseX, mouseY, view, proj);
     Vec3 hit = intersectRayPlane(ray);
     if (hit.y != 0)
@@ -96,6 +96,12 @@ void InputHandler::handleMouseDrag(double mouseX, double mouseY)
     else if (mouseButton == GLFW_MOUSE_BUTTON_RIGHT)
     {
         // Pan (simplified)
+        camera.target.x -= dx * 0.005f * camera.distance;
+        camera.target.z -= dy * 0.005f * camera.distance;
+    }
+    else if (mouseButton == GLFW_MOUSE_BUTTON_MIDDLE)
+    {
+        // Pan with middle mouse
         camera.target.x -= dx * 0.005f * camera.distance;
         camera.target.z -= dy * 0.005f * camera.distance;
     }
