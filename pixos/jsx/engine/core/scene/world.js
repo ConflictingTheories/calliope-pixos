@@ -11,6 +11,11 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * @fileoverview World class for Pixos game engine.
+ * Manages zones, sprites, and game state.
+ */
+
 import Zone from './zone.js';
 import ModeManager from '../mode/manager.js';
 import ActionQueue from '../queue/index.js';
@@ -18,43 +23,74 @@ import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
 
+/**
+ * @typedef {object} MenuConfig
+ * @property {object} start - Start menu configuration.
+ */
+
+/**
+ * World - Manages the game world including zones, sprites, and events.
+ */
 export default class World {
+  /**
+   * Creates an instance of World.
+   * @param {object} spritz - The spritz instance.
+   * @param {string} id - The world ID.
+   */
   constructor(spritz, id) {
+    /** @type {string} */
     this.id = id;
+    /** @type {object} */
     this.spritz = spritz;
+    /** @type {number} */
     this.objId = Math.round(Math.random() * 1000) + 1;
+    /** @type {import('../index.js').default} */
     this.engine = spritz.engine;
+    /** @type {Object.<string, Zone>} */
     this.zoneDict = {};
+    /** @type {Zone[]} */
     this.zoneList = [];
+    /** @type {Object.<string, object>} */
     this.spriteDict = {};
+    /** @type {object[]} */
     this.spriteList = [];
+    /** @type {Object.<string, object>} */
     this.objectDict = {};
+    /** @type {object[]} */
     this.objectList = [];
+    /** @type {Object.<string, object>} */
     this.tilesetDict = {};
+    /** @type {object[]} */
     this.tilesetList = [];
+    /** @type {object[]} */
     this.eventList = [];
+    /** @type {Object.<string, object>} */
     this.eventDict = {};
+    /** @type {number} */
     this.lastKey = new Date().getTime();
-    // Track the last time a zone transition ran. This timestamp is used to
-    // avoid back-to-back transitions when multiple zone loads are invoked
-    // within a short period (for example, when a Lua script immediately
-    // loads a zone after another zone has just been loaded). See
-    // loadZone() and loadZoneFromZip() for usage.
+    /** @type {number} */
     this.lastZoneTransitionTime = 0;
+    /** @type {boolean} */
     this.isPaused = true;
-    // Mode manager handles current gameplay mode (explore, tactics, etc.)
+    /** @type {ModeManager} */
     this.modeManager = new ModeManager(this);
+    /** @type {ActionQueue} */
     this.afterTickActions = new ActionQueue();
+    /** @type {MenuConfig} */
     this.menuConfig = {
       start: {
         onOpen: (menu) => {
-          // auto-close - do nothing
           menu.completed = true;
         },
       },
     };
   }
 
+  /**
+   * Creates an avatar in the world.
+   * @param {object} avatarData - The avatar data.
+   * @returns {Avatar|null} The created avatar or null.
+   */
   createAvatar = (avatarData) => {
     const zone = this.zoneContaining(avatarData.x, avatarData.y);
     if (zone) {
@@ -69,42 +105,51 @@ export default class World {
       return avatar;
     }
     return null;
-  }
+  };
 
+  /**
+   * Removes an avatar from the world.
+   * @param {Avatar} avatar - The avatar to remove.
+   */
   removeAvatar = (avatar) => {
     const zone = avatar.zone;
     if (zone) {
       zone.removeSprite(avatar);
     }
-  }
-
-  getAvatar = () => {
-    return this.spriteDict['avatar'];
-  }
+  };
 
   /**
-   * push action into next frame
-   * @param {*} action
+   * Gets the avatar sprite.
+   * @returns {object|null} The avatar sprite.
+   */
+  getAvatar = () => {
+    return this.spriteDict['avatar'];
+  };
+
+  /**
+   * Pushes an action to run after the current tick.
+   * @param {function(): void} action - The action to run.
    */
   runAfterTick = (action) => {
     this.afterTickActions.add(action);
-  }
+  };
 
   /**
-   * Sort zones for correct render order
+   * Sorts zones for correct render order.
    */
   sortZones = () => {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
-  }
+  };
 
 
 
   /**
-   * Fetch and Load Zone
-   * @param {string} zoneId
-   * @param {Zip} zip
-   * @param {*} skipCache
-   * @returns
+   * Loads a zone from a zip archive.
+   * @param {string} zoneId - The zone ID.
+   * @param {object} zip - The zip archive.
+   * @param {boolean} [skipCache=false] - Whether to skip cache.
+   * @param {object} [transitionParams={ effect: 'cross', duration: 500 }] - Transition parameters.
+   * @returns {Promise<Zone>} The loaded zone.
    */
   loadZoneFromZip = async (zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     // check cache ?
@@ -163,14 +208,15 @@ export default class World {
     }
 
     return z;
-  }
+  };
 
   /**
-   * Fetch and Load Zone
-   * @param {string} zoneId
-   * @param {boolean} remotely
-   * @param {boolean} skipCache
-   * @returns
+   * Loads a zone.
+   * @param {string} zoneId - The zone ID.
+   * @param {boolean} [remotely=false] - Whether to load remotely.
+   * @param {boolean} [skipCache=false] - Whether to skip cache.
+   * @param {object} [transitionParams={ effect: 'cross', duration: 500 }] - Transition parameters.
+   * @returns {Promise<Zone>} The loaded zone.
    */
   loadZone = async (zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
     if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
@@ -220,11 +266,11 @@ export default class World {
       await engine.renderManager.startTransition({ effect: effect, direction: 'in', duration: duration });
     }
     return z;
-  }
+  };
 
   /**
-   * Remove Zone
-   * @param {string} zoneId
+   * Removes a zone.
+   * @param {string} zoneId - The zone ID to remove.
    */
   removeZone = (zoneId) => {
     this.zoneList = this.zoneList.filter((zone) => {
@@ -239,10 +285,10 @@ export default class World {
       }
     });
     delete this.zoneDict[zoneId];
-  }
+  };
 
   /**
-   * Remove Zones
+   * Removes all zones.
    */
   removeAllZones = () => {
     this.zoneList.map((z) => {
@@ -254,110 +300,100 @@ export default class World {
     });
     this.zoneList = [];
     this.zoneDict = {};
-  }
+  };
 
   /**
-   * Update
-   * @param {number} time
+   * Updates the world.
+   * @param {number} time - The current time.
    */
   tick = (time) => {
     for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
-  }
+  };
 
   /**
-   * read input (HIGHEST LEVEL)
-   * @param {number} time
+   * Checks input at the world level.
+   * @param {number} time - The current time.
    */
   checkInput = (time) => {
     if (time > this.lastKey + 200) {
       this.lastKey = time;
 
-      // Give game mode first priority at input
       if (this.modeManager && this.modeManager.handleInput) {
-        try { // If a mode consumed input, do not run the default handling
+        try {
           if (this.modeManager.handleInput(time)) return;
         } catch (e) { console.warn('mode input handler error', e); }
       }
-      // todo -- gamepad needs work - the joysticks need to be mapped to input man
       let touchmap = this.engine.gamepad.checkInput();
-      // start
       if (this.engine.gamepad.keyPressed('start')) {
         touchmap['start'] = 0;
       }
-      // select
       if (this.engine.gamepad.keyPressed('select')) {
         touchmap['select'] = 0;
         this.engine.toggleFullscreen();
       }
     }
-  }
+  };
 
   /**
-   * open start menu
-   * @param {*} menuConfig
-   * @param {string[]} defaultMenus
+   * Opens the start menu.
+   * @param {object} menuConfig - The menu configuration.
+   * @param {string[]} [defaultMenus=['start']] - Default menus.
    */
   startMenu = (menuConfig, defaultMenus = ['start']) => {
     this.addEvent(
       new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
     );
-  }
+  };
 
   /**
-   * Add Event to Queue
-   * @param {*} event
+   * Adds an event to the queue.
+   * @param {object} event - The event to add.
    */
   addEvent = (event) => {
     if (this.eventDict[event.id]) this.removeAction(event.id);
     this.eventDict[event.id] = event;
     this.eventList.push(event);
-  }
+  };
 
   /**
-   * Remove Action
-   * @param {string} id
+   * Removes an action.
+   * @param {string} id - The action ID.
    */
   removeAction = (id) => {
     this.eventList = this.eventList.filter((event) => event.id !== id);
     delete this.eventDict[id];
-  }
+  };
 
   /**
-   * Remove All Actions
+   * Removes all actions.
    */
   removeAllActions = () => {
     this.eventList = [];
     this.eventDict = {};
-  }
+  };
 
   /**
-   * Outer Tick Handler - run events, actions and ticks for zones
-   * @param {number} time
+   * Handles outer tick logic for events and zones.
+   * @param {number} time - The current time.
    */
   tickOuter = (time) => {
-    // read input
     this.checkInput(time);
-    // Sort activities by increasing startTime, then by id
     this.eventList.sort((a, b) => {
       let dt = a.startTime - b.startTime;
       if (!dt) return dt;
       return a.id > b.id ? 1 : -1;
     });
-    // Run & Queue for Removal when complete
     let toRemove = [];
     this.eventList.forEach((event) => {
       if (!event.loaded || event.startTime > time || (event.pausable && this.isPaused)) return;
       if (event.tick(time)) {
-        toRemove.push(event); // remove from backlog
-        event.onComplete(); // call completion handler
+        toRemove.push(event);
+        event.onComplete();
       }
     });
-    // clear completed activities
     toRemove.forEach((event) => this.removeAction(event.id));
-    // tick
     if (this.tick && !this.isPaused) this.tick(time);
-    // Let the mode manager run per-frame mode logic (Lua update handlers)
     if (!this.isPaused && this.modeManager && this.modeManager.update) {
       try {
         this.modeManager.update(time);
@@ -365,20 +401,20 @@ export default class World {
         console.warn('mode update error', e);
       }
     }
-  }
+  };
 
   /**
-   * Draw Each Zone
+   * Draws each zone.
    */
   draw = () => {
     for (let z in this.zoneDict) this.zoneDict[z].draw(this.engine);
-  }
+  };
 
   /**
-   * Check for Cell inclusion
-   * @param {number} x
-   * @param {number} y
-   * @returns
+   * Finds the zone containing the given coordinates.
+   * @param {number} x - The x coordinate.
+   * @param {number} y - The y coordinate.
+   * @returns {Zone|null} The zone containing the point.
    */
   zoneContaining = (x, y) => {
     for (let z in this.zoneDict) {
@@ -386,13 +422,13 @@ export default class World {
       if (zone.loaded && zone.isInZone(x, y)) return zone;
     }
     return null;
-  }
+  };
 
   /**
-   * Finds a path if one exists between two points on the world
-   * @param {Vector} from
-   * @param {Vector} to
-   * @returns
+   * Finds a path between two points.
+   * @param {Array<number>} from - The starting point.
+   * @param {Array<number>} to - The ending point.
+   * @returns {Array} The path.
    */
   pathFind = (from, to) => {
     // memory
@@ -435,22 +471,22 @@ export default class World {
       .filter((x) => x[0]);
     // Flatten Path from Segments
     return steps.flat();
-  }
+  };
 
   /**
-   * Get Zone by ID
-   * @param {string} id
-   * @returns
+   * Gets a zone by ID.
+   * @param {string} id - The zone ID.
+   * @returns {Zone|null} The zone.
    */
   getZoneById = (id) => {
     return this.zoneDict[id];
-  }
+  };
 
   /**
-   *  Gets adjacencies
-   * @param {int} x
-   * @param {int} y
-   * @returns
+   * Gets adjacent cells.
+   * @param {number} x - The x coordinate.
+   * @param {number} y - The y coordinate.
+   * @returns {Array<Array<number>>} The neighbors.
    */
   getNeighbours = (x, y) => {
     let top = [x, y + 1, Direction.Up],
@@ -458,14 +494,14 @@ export default class World {
       left = [x - 1, y, Direction.Left],
       right = [x + 1, y, Direction.Right];
     return [top, left, right, bottom];
-  }
+  };
 
   /**
-   * Should we skip?
-   * @param {*} neighbour
-   * @param {*} jsonNeighbour
-   * @param {*} visited
-   * @returns
+   * Checks if a cell can be walked on.
+   * @param {Array<number>} neighbour - The neighbor cell.
+   * @param {string} jsonNeighbour - The JSON string of the neighbor.
+   * @param {Array<string>} visited - Visited cells.
+   * @returns {boolean} Whether it can be walked.
    */
   canWalk = (neighbour, jsonNeighbour, visited) => {
     let zone = this.zoneContaining(...neighbour);
@@ -478,37 +514,5 @@ export default class World {
       return false;
     }
     return true;
-  }
+  };
 }
-
-// Pathfinding Algorithm (Note: Needs some work -- has some issues, and is not efficient)
-// ---------------------
-// Start Point
-// Goal
-
-// Path []
-// Current Point
-
-// --- Func
-//
-// Get Neighbours - Foreach Neighbour
-//  - Check Neighbour
-//    - Check Goal
-//        - Found it - Return Path
-//        - Else
-//          - Get Neighbours
-
-// ----
-
-// GetNeighbours (x, y){
-//    results = []
-//    top = (x,y+1)
-//    bottom = (x,y-1)
-//    left = (x-1,y)
-//    right = (x+1,y)
-//
-//    for each above
-//      if (isWalkable()) add to results
-//
-//    return results
-// }

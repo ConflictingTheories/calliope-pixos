@@ -52,8 +52,8 @@ export default class Mouse {
       this.position = { x: 0, y: 0 };
       /** @type {MouseMovement} */
       this.movement = { x: 0, y: 0 };
-      /** @type {MouseHookCallback[]} */
-      this.hooks = [];
+  /** @type {MouseHookCallback[]} */
+  this._hooks = []; // raw mouse event hooks
       Mouse._instance = this;
     }
     return Mouse._instance;
@@ -80,10 +80,15 @@ export default class Mouse {
    */
   onMouseDown(e) {
     e.preventDefault();
+    const canvas = this.engine.canvas;
+    const rect = canvas.getBoundingClientRect();
+    this.position.x = e.clientX - rect.left;
+    this.position.y = e.clientY - rect.top;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = true;
+      if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseDown', e.button, this.position);
     }
-    this.notifyHooks(e, 'down');
+    this._notifyHooks(e, 'down');
   }
 
   /**
@@ -93,10 +98,15 @@ export default class Mouse {
    */
   onMouseUp(e) {
     e.preventDefault();
+    const canvas = this.engine.canvas;
+    const rect = canvas.getBoundingClientRect();
+    this.position.x = e.clientX - rect.left;
+    this.position.y = e.clientY - rect.top;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = false;
+      if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseUp', e.button, this.position);
     }
-    this.notifyHooks(e, 'up');
+    this._notifyHooks(e, 'up');
   }
 
   /**
@@ -105,11 +115,15 @@ export default class Mouse {
    * @returns {void}
    */
   onMouseMove(e) {
-    this.position.x = e.clientX;
-    this.position.y = e.clientY;
-    this.movement.x = e.movementX;
-    this.movement.y = e.movementY;
-    this.notifyHooks(e, 'move');
+  const canvas = this.engine.canvas;
+  const rect = canvas.getBoundingClientRect();
+  const newX = e.clientX - rect.left;
+  const newY = e.clientY - rect.top;
+  this.movement.x = newX - this.position.x;
+  this.movement.y = newY - this.position.y;
+  this.position.x = newX;
+  this.position.y = newY;
+  this._notifyHooks(e, 'move');
   }
 
   /**
@@ -119,12 +133,16 @@ export default class Mouse {
    * @private
    * @returns {void}
    */
-  notifyHooks(event, type) {
+  _notifyHooks(event, type) {
     try {
-      this.hooks.forEach((h) => h(event, type));
+      this._hooks.forEach((h) => {
+        try { h(event, type); } catch (errInner) {
+          if (process.env.NODE_ENV === 'development') console.warn('Error in mouse hook callback:', errInner);
+        }
+      });
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`Error in mouse hook (${type}):`, err);
+        console.warn(`Error while notifying mouse hooks (${type}):`, err);
       }
     }
   }
@@ -164,7 +182,7 @@ export default class Mouse {
    * @returns {void}
    */
   addHook(cb) {
-    if (cb) this.hooks.push(cb);
+  if (typeof cb === 'function') this._hooks.push(cb);
   }
 
   /**
@@ -173,7 +191,7 @@ export default class Mouse {
    * @returns {void}
    */
   removeHook(cb) {
-    const i = this.hooks.indexOf(cb);
-    if (i >= 0) this.hooks.splice(i, 1);
+    const i = this._hooks.indexOf(cb);
+    if (i >= 0) this._hooks.splice(i, 1);
   }
 }

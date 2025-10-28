@@ -43,20 +43,20 @@ export default class GLEngine {
   /**
    * Creates an instance of GLEngine.
    * @param {HTMLCanvasElement} canvas - The main WebGL canvas.
-   * @param {HTMLCanvasElement} hudcanvas - The 2D canvas for HUD elements.
+   * @param {HTMLCanvasElement} hudCanvas - The 2D canvas for HUD elements.
    * @param {HTMLCanvasElement} mipmap - The canvas for mipmap generation (or similar utility).
-   * @param {HTMLCanvasElement} gamepadcanvas - The 2D canvas for mobile gamepad controls.
+   * @param {HTMLCanvasElement} gamepadCanvas - The 2D canvas for mobile gamepad controls.
    * @param {HTMLInputElement} fileUpload - The file input element for resource loading.
    * @param {number} width - The desired width of the game viewport.
    * @param {number} height - The desired height of the game viewport.
    */
-  constructor(canvas, hudcanvas, mipmap, gamepadcanvas, fileUpload, width, height) {
+  constructor(canvas, hudCanvas, mipmap, gamepadCanvas, fileUpload, width, height) {
     /** @type {HTMLCanvasElement} */
     this.canvas = canvas;
     /** @type {HTMLCanvasElement} */
-    this.hudcanvas = hudcanvas;
+    this.hudCanvas = hudCanvas;
     /** @type {HTMLCanvasElement} */
-    this.gamepadcanvas = gamepadcanvas;
+    this.gamepadCanvas = gamepadCanvas;
     /** @type {HTMLCanvasElement} */
     this.mipmap = mipmap;
 
@@ -137,11 +137,11 @@ export default class GLEngine {
    */
   async init(spritz) {
     /** @type {CanvasRenderingContext2D|null} */
-    const ctx = this.hudcanvas.getContext('2d');
+    const ctx = this.hudCanvas.getContext('2d');
     /** @type {WebGL2RenderingContext|null} */
     const gl = this.canvas.getContext('webgl2');
     /** @type {CanvasRenderingContext2D|null} */
-    const gp = this.gamepadcanvas.getContext('2d');
+    const gp = this.gamepadCanvas.getContext('2d');
 
     if (!gl) {
       throw new Error('WebGL: unable to initialize');
@@ -157,8 +157,11 @@ export default class GLEngine {
     ctx.canvas.width = gl.canvas.clientWidth;
     ctx.canvas.height = gl.canvas.clientHeight;
 
+    /** @type {WebGL2RenderingContext} */
     this.gl = gl;
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = ctx;
+    /** @type {CanvasRenderingContext2D} */
     this.gp = gp;
     this.frameCount = 0;
 
@@ -179,10 +182,14 @@ export default class GLEngine {
 
     // Configure Gamepad & touch - now handled through InputManager
     // Direct access deprecated, use inputManager instead
+    /** @deprecated Use inputManager.gamepad instead. */
     this.gamepad = this.inputManager.gamepad;
+    /** @deprecated Use inputManager.keyboard instead. */
     this.keyboard = this.inputManager.keyboard;
+    /** @deprecated Use inputManager.mouse instead. */
     this.mouse = this.inputManager.mouse;
-    this.touch = this.gamepad.listen.bind(this.gamepad);
+    /** @deprecated Use inputManager.touch instead. */
+    this.touch = this.inputManager.touch;
 
     // Initialize network if enabled
     if (spritz.manifest?.network?.enabled) {
@@ -208,7 +215,6 @@ export default class GLEngine {
    * The main render loop for the game engine.
    * Called continuously via `requestAnimationFrame` to update and draw the game.
    * Handles debug counters, clears canvases, updates game state, renders the scene, and manages transitions.
-   * @returns {void}
    */
   render() {
     this.frameCount++;
@@ -284,7 +290,6 @@ export default class GLEngine {
 
   /**
    * Stops the main render loop.
-   * @returns {void}
    */
   close() {
     if (this.requestId) {
@@ -406,7 +411,6 @@ export default class GLEngine {
    * Sets a greeting text.
    * @deprecated This method should be moved to a more appropriate class, e.g., `Hud` or a new `DialogueManager`.
    * @param {string} text - The greeting text to set.
-   * @returns {void}
    */
   setGreeting(text) {
     if (process.env.NODE_ENV === 'development') {
@@ -428,7 +432,6 @@ export default class GLEngine {
    * @param {number|null} [rate=null] - The speed of the speech (0.1 to 10).
    * @param {number|null} [volume=null] - The volume of the speech (0 to 1).
    * @param {number|null} [pitch=null] - The pitch of the speech (0 to 2).
-   * @returns {void}
    */
   speechSynthesis(text, voice = null, lang = 'en', rate = null, volume = null, pitch = null) {
     /** @type {SpeechSynthesisUtterance} */
