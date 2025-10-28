@@ -51,11 +51,12 @@ inline Mat4 mat4Multiply(const Mat4 &a, const Mat4 &b)
     {
         for (int j = 0; j < 4; ++j)
         {
-            result[i * 4 + j] = 0.0f;
+            float s = 0.0f;
             for (int k = 0; k < 4; ++k)
             {
-                result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+                s += a[i * 4 + k] * b[k * 4 + j];
             }
+            result[i * 4 + j] = s;
         }
     }
     return result;

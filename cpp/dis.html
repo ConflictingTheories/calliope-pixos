@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Disgaea Prototype — Vanilla WebGL2</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: #0b0b10;
+      color: #ddd;
+      font-family: Inter, system-ui, Segoe UI, Roboto
+    }
+
+    #app {
+      height: 100%;
+      display: flex
+    }
+
+    #viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%
+    }
+
+    .ui {
+      width: 360px;
+      background: linear-gradient(180deg, #0f1220, #0b0b10);
+      padding: 16px;
+      box-sizing: border-box;
+      border-left: 1px solid rgba(255, 255, 255, 0.03)
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 8px
+    }
+
+    button {
+      background: #26303f;
+      color: #fff;
+      border: 0;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer
+    }
+
+    .ability {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .label-dom {
+      pointer-events: none;
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px
+    }
+
+    .bar-wrap {
+      width: 140px;
+      height: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 6px auto
+    }
+
+    .hp-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b6b, #ff3b3b)
+    }
+
+    .mp-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #4db6ff, #2a8cff)
+    }
+
+    .damage-float {
+      position: absolute;
+      pointer-events: none;
+      font-weight: 900;
+      font-size: 20px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      transform-origin: center
+    }
+
+    .small {
+      font-size: 13px;
+      color: #9aa
+    }
+
+    #debug {
+      font-family: monospace;
+      font-size: 12px;
+      color: #9ad;
+      white-space: pre-wrap
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div id="viewport">
+      <canvas id="glcanvas"></canvas>
+    </div>
+
+    <div class="ui">
+      <div class="panel">
+        <h1>Disgaea Prototype — Vanilla WebGL2</h1>
+        <div class="small">WebGL2, no libs. Tiles, units, labels, HP/MP, damage pop, abilities, selection.</div>
+      </div>
+
+      <div class="panel">
+        <div class="small">Selected Unit</div>
+        <div id="selectedInfo" style="margin-top:8px">— none —</div>
+      </div>
+
+      <div class="panel ability">
+        <div class="small">Abilities</div>
+        <button id="ability1">Slash (single) — 10 MP</button>
+        <button id="ability2">Fireball (AOE r1) — 20 MP</button>
+        <button id="ability3">Warp (move ally) — 15 MP</button>
+      </div>
+
+      <div class="panel">
+        <div class="small">Controls</div>
+        <div class="small">Left-click select / target. Drag to orbit. Right-drag to pan. Scroll to zoom.</div>
+      </div>
+
+      <div class="panel">
+        <div id="debug"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===========================
+       Minimal math helpers (vec3, mat4)
+       =========================== */
+    function vec3(x = 0, y = 0, z = 0) { return { x, y, z }; }
+    function add(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
+    function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+    function mulS(v, s) { return { x: v.x * s, y: v.y * s, z: v.z * s }; }
+    function dot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+    function cross(a, b) { return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }; }
+    function length(v) { return Math.hypot(v.x, v.y, v.z); }
+    function normalize(v) { const L = length(v) || 1; return { x: v.x / L, y: v.y / L, z: v.z / L }; }
+
+    /* 4x4 matrix functions column-major for WebGL */
+    function mat4Identity() { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]); }
+    function mat4Multiply(a, b) {
+      const out = new Float32Array(16);
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          let s = 0;
+          for (let k = 0; k < 4; k++) s += a[k * 4 + i] * b[j * 4 + k];
+          out[j * 4 + i] = s;
+        }
+      }
+      return out;
+    }
+    function mat4Translate(tx, ty, tz) { const m = mat4Identity(); m[12] = tx; m[13] = ty; m[14] = tz; return m; }
+    function mat4Scale(sx, sy, sz) { const m = mat4Identity(); m[0] = sx; m[5] = sy; m[10] = sz; return m; }
+    function mat4RotateX(a) { const m = mat4Identity(); const c = Math.cos(a), s = Math.sin(a); m[5] = c; m[6] = s; m[9] = -s; m[10] = c; return m; }
+    function mat4RotateY(a) { const m = mat4Identity(); const c = Math.cos(a), s = Math.sin(a); m[0] = c; m[2] = -s; m[8] = s; m[10] = c; return m; }
+    function mat4Perspective(fovy, aspect, near, far) {
+      const f = 1.0 / Math.tan(fovy / 2);
+      const nf = 1 / (near - far);
+      const out = new Float32Array(16);
+      out[0] = f / aspect;
+      out[5] = f;
+      out[10] = (far + near) * nf;
+      out[11] = -1;
+      out[14] = (2 * far * near) * nf;
+      out[15] = 0;
+      return out;
+    }
+    function mat4LookAt(eye, center, up) {
+      const f = normalize(sub(center, eye));
+      const s = normalize(cross(f, up));
+      const u = cross(s, f);
+      const out = mat4Identity();
+      out[0] = s.x; out[4] = s.y; out[8] = s.z;
+      out[1] = u.x; out[5] = u.y; out[9] = u.z;
+      out[2] = -f.x; out[6] = -f.y; out[10] = -f.z;
+      out[12] = -dot(s, eye);
+      out[13] = -dot(u, eye);
+      out[14] = dot(f, eye);
+      return out;
+    }
+    function transformPoint(m, p) {
+      const x = m[0] * p.x + m[4] * p.y + m[8] * p.z + m[12];
+      const y = m[1] * p.x + m[5] * p.y + m[9] * p.z + m[13];
+      const z = m[2] * p.x + m[6] * p.y + m[10] * p.z + m[14];
+      const w = m[3] * p.x + m[7] * p.y + m[11] * p.z + m[15];
+      return { x: x / w, y: y / w, z: z / w, w: w };
+    }
+
+    /* ===========================
+       WebGL2 init and shaders
+       =========================== */
+    const canvas = document.getElementById('glcanvas');
+    const gl = canvas.getContext('webgl2', { antialias: true });
+    if (!gl) { alert('WebGL2 not supported'); throw new Error('no webgl2'); }
+
+    function resizeCanvas() { const r = canvas.getBoundingClientRect(); canvas.width = r.width * devicePixelRatio; canvas.height = r.height * devicePixelRatio; gl.viewport(0, 0, canvas.width, canvas.height); }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    /* Simple vertex + fragment shaders to color by uniform */
+    const vs = `#version 300 es
+in vec3 aPosition;
+in vec3 aNormal;
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProj;
+out vec3 vNormal;
+out vec3 vWorldPos;
+void main(){
+  vec4 world = uModel * vec4(aPosition,1.0);
+  vWorldPos = world.xyz;
+  vNormal = mat3(uModel) * aNormal;
+  gl_Position = uProj * uView * world;
+}
+`;
+    const fs = `#version 300 es
+precision highp float;
+in vec3 vNormal;
+in vec3 vWorldPos;
+uniform vec3 uColor;
+uniform vec3 uLightDir;
+out vec4 outColor;
+void main(){
+  float N = max(dot(normalize(vNormal), normalize(uLightDir)), 0.1);
+  vec3 col = uColor * (0.4 + 0.6 * N);
+  outColor = vec4(col, 1.0);
+}
+`;
+
+    function compileShader(src, type) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(s)); throw new Error('shader compile fail');
+      }
+      return s;
+    }
+    function createProgram(vsSrc, fsSrc) {
+      const p = gl.createProgram();
+      gl.attachShader(p, compileShader(vsSrc, gl.VERTEX_SHADER));
+      gl.attachShader(p, compileShader(fsSrc, gl.FRAGMENT_SHADER));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { console.error(gl.getProgramInfoLog(p)); throw new Error('program link fail'); }
+      return p;
+    }
+    const program = createProgram(vs, fs);
+    gl.useProgram(program);
+    const attribs = {
+      pos: gl.getAttribLocation(program, 'aPosition'),
+      nrm: gl.getAttribLocation(program, 'aNormal')
+    };
+    const uniforms = {
+      model: gl.getUniformLocation(program, 'uModel'),
+      view: gl.getUniformLocation(program, 'uView'),
+      proj: gl.getUniformLocation(program, 'uProj'),
+      color: gl.getUniformLocation(program, 'uColor'),
+      light: gl.getUniformLocation(program, 'uLightDir')
+    };
+
+    /* Basic cube geometry (centered at origin, size 1) */
+    const cubeData = (function () {
+      // 36 vertices (6 faces * 2 triangles * 3 verts)
+      const positions = new Float32Array([
+        // +X
+        0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5,
+        // -X
+        -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5,
+        // +Y
+        -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5,
+        // -Y
+        -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5,
+        // +Z
+        -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5,
+        // -Z
+        0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5
+      ]);
+      const normals = new Float32Array([
+        // +X normals
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+        // -X
+        -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+        // +Y
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+        // -Y
+        0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+        // +Z
+        0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+        // -Z
+        0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1
+      ]);
+      return { positions, normals, vertexCount: positions.length / 3 };
+    })();
+
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, cubeData.positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(attribs.pos);
+    gl.vertexAttribPointer(attribs.pos, 3, gl.FLOAT, false, 0, 0);
+
+    const nrmBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, nrmBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, cubeData.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(attribs.nrm);
+    gl.vertexAttribPointer(attribs.nrm, 3, gl.FLOAT, false, 0, 0);
+
+    gl.bindVertexArray(null);
+
+    /* Grid tiles (we'll draw as flat cubes with small height) */
+    const GRID = { cols: 12, rows: 8, tileSize: 1.0 };
+
+    /* Scene state: units with positions in grid coords */
+    let uid = 1;
+    const units = [];
+    function createUnit(opts) {
+      const id = uid++;
+      const isAlly = !!opts.ally;
+      const col = opts.col ?? 0, row = opts.row ?? 0;
+      const hp = opts.hp ?? 100, mp = opts.mp ?? 50;
+      const unit = {
+        id, name: opts.name ?? (isAlly ? 'Ally' : 'Enemy') + '#' + id,
+        col, row, hp, maxHp: hp, mp, maxMp: mp, isAlly,
+        // visual properties
+        color: isAlly ? { r: 0.27, g: 0.66, b: 1 } : { r: 1, g: 0.48, b: 0.48 },
+        // DOM label element created later
+        labelEl: null
+      };
+      units.push(unit);
+      return unit;
+    }
+
+    // sample units
+    createUnit({ ally: true, col: 2, row: 3, name: 'Laharl', hp: 120, mp: 60 });
+    createUnit({ ally: true, col: 3, row: 4, name: 'Etna', hp: 90, mp: 80 });
+    createUnit({ ally: false, col: 8, row: 3, name: 'Prisoner', hp: 150, mp: 20 });
+    createUnit({ ally: false, col: 9, row: 5, name: 'Monster', hp: 110, mp: 30 });
+
+    /* DOM label creation: for each unit, create a DOM element positioned by projection */
+    const viewport = document.getElementById('viewport');
+    function makeLabel(unit) {
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.transform = 'translate(-50%,-100%)';
+      wrapper.style.pointerEvents = 'none';
+      wrapper.style.width = '160px';
+      wrapper.innerHTML = `
+    <div class="label-dom">${unit.name}</div>
+    <div class="bar-wrap"><div class="hp-inner" style="width:${(unit.hp / unit.maxHp * 100).toFixed(0)}%"></div></div>
+    <div class="bar-wrap"><div class="mp-inner" style="width:${(unit.mp / unit.maxMp * 100).toFixed(0)}%"></div></div>
+    <div class="small" style="text-align:center;color:#9aa;margin-top:4px">(${unit.col}, ${unit.row})</div>
+  `;
+      viewport.appendChild(wrapper);
+      unit.labelEl = wrapper;
+    }
+    for (const u of units) makeLabel(u);
+
+    /* Camera orbit controls (simple) */
+    let camAzimuth = -Math.PI / 4;
+    let camElevation = Math.PI / 5;
+    let camDistance = Math.max(GRID.cols, GRID.rows) * 1.5;
+    let camTarget = { x: GRID.cols / 2 - 0.5, y: 0, z: GRID.rows / 2 - 0.5 };
+
+    let isPointerDown = false, lastX = 0, lastY = 0, pointerButton = 0;
+    canvas.addEventListener('pointerdown', (e) => { isPointerDown = true; lastX = e.clientX; lastY = e.clientY; pointerButton = e.button; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointerup', (e) => { isPointerDown = false; canvas.releasePointerCapture(e.pointerId); });
+    canvas.addEventListener('pointercancel', () => { isPointerDown = false; });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      const dx = (e.clientX - lastX), dy = (e.clientY - lastY);
+      lastX = e.clientX; lastY = e.clientY;
+      if (pointerButton === 0) { // left drag => rotate
+        camAzimuth -= dx * 0.005;
+        camElevation = Math.max(0.12, Math.min(Math.PI / 2 - 0.05, camElevation - dy * 0.005));
+      } else if (pointerButton === 2) { // right drag => pan
+        const panSpeed = 0.005 * camDistance;
+        // compute right and up vectors approx
+        const right = { x: Math.cos(camAzimuth), y: 0, z: -Math.sin(camAzimuth) };
+        const up = { x: 0, y: 1, z: 0 };
+        camTarget.x += (-right.x * dx + up.x * dy) * panSpeed;
+        camTarget.z += (-right.z * dx + up.z * dy) * panSpeed;
+        camTarget.y += (-right.y * dx + up.y * dy) * panSpeed;
+      }
+    });
+    canvas.addEventListener('wheel', (e) => { e.preventDefault(); camDistance *= (1 + e.deltaY * 0.001); camDistance = Math.max(3, Math.min(60, camDistance)); }, { passive: false });
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    /* Raycast: from screen to world ray */
+    function screenToNDC(x, y) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: ((x - rect.left) / rect.width) * 2 - 1, y: -((y - rect.top) / rect.height) * 2 + 1 };
+    }
+    function inverseMat4(m) { // naive inverse for view*proj combos (acceptable here). Use generic algorithm (Gauss).
+      // We'll use a general inversion for 4x4
+      const inv = new Float32Array(16), a = m;
+      inv[0] = a[5] * a[10] * a[15] - a[5] * a[11] * a[14] - a[9] * a[6] * a[15] + a[9] * a[7] * a[14] + a[13] * a[6] * a[11] - a[13] * a[7] * a[10];
+      inv[4] = -a[4] * a[10] * a[15] + a[4] * a[11] * a[14] + a[8] * a[6] * a[15] - a[8] * a[7] * a[14] - a[12] * a[6] * a[11] + a[12] * a[7] * a[10];
+      inv[8] = a[4] * a[9] * a[15] - a[4] * a[11] * a[13] - a[8] * a[5] * a[15] + a[8] * a[7] * a[13] + a[12] * a[5] * a[11] - a[12] * a[7] * a[9];
+      inv[12] = -a[4] * a[9] * a[14] + a[4] * a[10] * a[13] + a[8] * a[5] * a[14] - a[8] * a[6] * a[13] - a[12] * a[5] * a[10] + a[12] * a[6] * a[9];
+      inv[1] = -a[1] * a[10] * a[15] + a[1] * a[11] * a[14] + a[9] * a[2] * a[15] - a[9] * a[3] * a[14] - a[13] * a[2] * a[11] + a[13] * a[3] * a[10];
+      inv[5] = a[0] * a[10] * a[15] - a[0] * a[11] * a[14] - a[8] * a[2] * a[15] + a[8] * a[3] * a[14] + a[12] * a[2] * a[11] - a[12] * a[3] * a[10];
+      inv[9] = -a[0] * a[9] * a[15] + a[0] * a[11] * a[13] + a[8] * a[1] * a[15] - a[8] * a[3] * a[13] - a[12] * a[1] * a[11] + a[12] * a[3] * a[9];
+      inv[13] = a[0] * a[9] * a[14] - a[0] * a[10] * a[13] - a[8] * a[1] * a[14] + a[8] * a[2] * a[13] + a[12] * a[1] * a[10] - a[12] * a[2] * a[9];
+      inv[2] = a[1] * a[6] * a[15] - a[1] * a[7] * a[14] - a[5] * a[2] * a[15] + a[5] * a[3] * a[14] + a[13] * a[2] * a[7] - a[13] * a[3] * a[6];
+      inv[6] = -a[0] * a[6] * a[15] + a[0] * a[7] * a[14] + a[4] * a[2] * a[15] - a[4] * a[3] * a[14] - a[12] * a[2] * a[7] + a[12] * a[3] * a[6];
+      inv[10] = a[0] * a[5] * a[15] - a[0] * a[7] * a[13] - a[4] * a[1] * a[15] + a[4] * a[3] * a[13] + a[12] * a[1] * a[7] - a[12] * a[3] * a[5];
+      inv[14] = -a[0] * a[5] * a[14] + a[0] * a[6] * a[13] + a[4] * a[1] * a[14] - a[4] * a[2] * a[13] - a[12] * a[1] * a[6] + a[12] * a[2] * a[5];
+      inv[3] = -a[1] * a[6] * a[11] + a[1] * a[7] * a[10] + a[5] * a[2] * a[11] - a[5] * a[3] * a[10] - a[9] * a[2] * a[7] + a[9] * a[3] * a[6];
+      inv[7] = a[0] * a[6] * a[11] - a[0] * a[7] * a[10] - a[4] * a[2] * a[11] + a[4] * a[3] * a[10] + a[8] * a[2] * a[7] - a[8] * a[3] * a[6];
+      inv[11] = -a[0] * a[5] * a[11] + a[0] * a[7] * a[9] + a[4] * a[1] * a[11] - a[4] * a[3] * a[9] - a[8] * a[1] * a[7] + a[8] * a[3] * a[5];
+      inv[15] = a[0] * a[5] * a[10] - a[0] * a[6] * a[9] - a[4] * a[1] * a[10] + a[4] * a[2] * a[9] + a[8] * a[1] * a[6] - a[8] * a[2] * a[5];
+      let det = a[0] * inv[0] + a[1] * inv[4] + a[2] * inv[8] + a[3] * inv[12];
+      if (det === 0) return mat4Identity();
+      det = 1.0 / det;
+      for (let i = 0; i < 16; i++) inv[i] *= det;
+      return inv;
+    }
+    function unproject(ndcX, ndcY, viewMat, projMat) {
+      const inv = inverseMat4(mat4Multiply(projMat, viewMat));
+      const clip = [ndcX, ndcY, -1, 1];
+      // transform clip by inverse to world
+      const x = inv[0] * clip[0] + inv[4] * clip[1] + inv[8] * clip[2] + inv[12] * clip[3];
+      const y = inv[1] * clip[0] + inv[5] * clip[1] + inv[9] * clip[2] + inv[13] * clip[3];
+      const z = inv[2] * clip[0] + inv[6] * clip[1] + inv[10] * clip[2] + inv[14] * clip[3];
+      const w = inv[3] * clip[0] + inv[7] * clip[1] + inv[11] * clip[2] + inv[15] * clip[3];
+      return { x: x / w, y: y / w, z: z / w };
+    }
+    function getRayFromScreen(x, y, viewMat, projMat) {
+      const ndc = screenToNDC(x, y);
+      const pNear = unproject(ndc.x, ndc.y, viewMat, projMat); // z=-1 near
+      const pFar = (function () {
+        const clip = [ndc.x, ndc.y, 1, 1];
+        const inv = inverseMat4(mat4Multiply(projMat, viewMat));
+        const x2 = inv[0] * clip[0] + inv[4] * clip[1] + inv[8] * clip[2] + inv[12] * clip[3];
+        const y2 = inv[1] * clip[0] + inv[5] * clip[1] + inv[9] * clip[2] + inv[13] * clip[3];
+        const z2 = inv[2] * clip[0] + inv[6] * clip[1] + inv[10] * clip[2] + inv[14] * clip[3];
+        const w2 = inv[3] * clip[0] + inv[7] * clip[1] + inv[11] * clip[2] + inv[15] * clip[3];
+        return { x: x2 / w2, y: y2 / w2, z: z2 / w2 };
+      })();
+      const dir = normalize(sub(pFar, pNear));
+      return { origin: pNear, dir };
+    }
+
+    /* Ray-plane intersection with y=0 plane (tiles lie on y=0). Return point or null */
+    function intersectRayPlane(ray) {
+      const oy = ray.origin.y, dy = ray.dir.y;
+      if (Math.abs(dy) < 1e-6) return null;
+      const t = -oy / dy;
+      if (t < 0) return null;
+      return add(ray.origin, mulS(ray.dir, t));
+    }
+
+    /* Selection state */
+    let selectedUnit = null;
+    let hoveredTile = null;
+
+    /* Click handling: left click selects unit on tile or issues move */
+    canvas.addEventListener('click', (e) => {
+      // compute camera matrices
+      const cam = computeCamera();
+      const view = cam.viewMat, proj = cam.projMat;
+      const ray = getRayFromScreen(e.clientX, e.clientY, view, proj);
+      const hit = intersectRayPlane(ray);
+      if (!hit) return;
+      const gx = Math.floor(hit.x + 0.5);
+      const gz = Math.floor(hit.z + 0.5);
+      if (gx < 0 || gx >= GRID.cols || gz < 0 || gz >= GRID.rows) return;
+      // find unit at tile
+      const unit = units.find(u => u.col === gx && u.row === gz);
+      if (unit) {
+        selectUnit(unit);
+      } else if (selectedUnit) {
+        // attempt move: simple Manhattan check range <=6
+        const dx = Math.abs(selectedUnit.col - gx), dz = Math.abs(selectedUnit.row - gz);
+        if (dx + dz <= 6) {
+          moveUnit(selectedUnit, gx, gz);
+        } else {
+          // out of range
+        }
+      }
+    });
+
+    /* update label positions by projecting unit world pos to screen */
+    function projectToScreen(pos, viewMat, projMat) {
+      const mvp = mat4Multiply(projMat, viewMat);
+      const p = transformPoint(mvp, pos);
+      const rect = canvas.getBoundingClientRect();
+      return { x: (p.x * 0.5 + 0.5) * rect.width + rect.left, y: (-p.y * 0.5 + 0.5) * rect.height + rect.top, z: p.z };
+    }
+
+    /* Visual updates */
+    function updateLabels(viewMat, projMat) {
+      for (const u of units) {
+        const worldPos = { x: u.col * GRID.tileSize, y: 1.6, z: u.row * GRID.tileSize };
+        const screen = projectToScreen(worldPos, viewMat, projMat);
+        if (u.labelEl) {
+          u.labelEl.style.left = screen.x + 'px';
+          u.labelEl.style.top = screen.y + 'px';
+          // update bars and position text
+          const hpEl = u.labelEl.querySelector('.hp-inner');
+          const mpEl = u.labelEl.querySelector('.mp-inner');
+          const posText = u.labelEl.querySelector('.small');
+          if (hpEl) hpEl.style.width = Math.max(0, (u.hp / u.maxHp * 100)).toFixed(0) + '%';
+          if (mpEl) mpEl.style.width = Math.max(0, (u.mp / u.maxMp * 100)).toFixed(0) + '%';
+          if (posText) posText.textContent = `(${u.col}, ${u.row})`;
+          // hide if behind camera
+          u.labelEl.style.display = (screen.z < 1) ? 'block' : 'none';
+        }
+      }
+    }
+
+    /* move with small animation (linear over time) */
+    const motions = [];
+    function moveUnit(unit, gx, gz) {
+      const start = { x: unit.col * GRID.tileSize, y: 0, z: unit.row * GRID.tileSize };
+      const end = { x: gx * GRID.tileSize, y: 0, z: gz * GRID.tileSize };
+      const dur = 300;
+      const t0 = performance.now();
+      motions.push({ unit, start, end, dur, t0 });
+      unit.col = gx; unit.row = gz;
+    }
+
+    /* Floating damage numbers */
+    function spawnDamageFloat(worldPos, dmg) {
+      const div = document.createElement('div');
+      div.className = 'damage-float';
+      div.style.left = '0px'; div.style.top = '0px';
+      div.textContent = '-' + dmg;
+      document.body.appendChild(div);
+      const start = performance.now();
+      const dur = 900;
+      function step(now) {
+        const t = Math.min(1, (now - start) / dur);
+        // project worldPos each frame
+        const cam = computeCamera();
+        const screen = projectToScreen({ x: worldPos.x, y: worldPos.y + t * 0.6, z: worldPos.z }, cam.viewMat, cam.projMat);
+        div.style.left = screen.x + 'px';
+        div.style.top = screen.y + 'px';
+        div.style.opacity = String(1 - t);
+        div.style.transform = `translate(-50%,-50%) scale(${1 - 0.25 * t}) translateY(${-t * 30}px)`;
+        if (t < 1) requestAnimationFrame(step); else div.remove();
+      }
+      requestAnimationFrame(step);
+    }
+
+    /* Simple damage application */
+    function applyDamage(unit, dmg) {
+      unit.hp = Math.max(0, unit.hp - dmg);
+      spawnDamageFloat({ x: unit.col * GRID.tileSize, y: 1.6, z: unit.row * GRID.tileSize }, dmg);
+      if (unit.hp === 0) {
+        // mark dead (tint)
+        unit.color = { r: 0.5, g: 0.5, b: 0.5 };
+      }
+    }
+
+    /* AOE effect visualization: create DOM circle overlay to mimic effect */
+    function spawnAOE(cx, cz, radius) {
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.pointerEvents = 'none';
+      div.style.borderRadius = '50%';
+      div.style.background = 'rgba(255,95,58,0.25)';
+      document.body.appendChild(div);
+      const start = performance.now();
+      function step(now) {
+        const t = (now - start) / 600;
+        const cam = computeCamera();
+        const p1 = projectToScreen({ x: (cx - radius) * GRID.tileSize, y: 0.01, z: (cz - radius) * GRID.tileSize }, cam.viewMat, cam.projMat);
+        const p2 = projectToScreen({ x: (cx + radius) * GRID.tileSize, y: 0.01, z: (cz + radius) * GRID.tileSize }, cam.viewMat, cam.projMat);
+        const w = Math.abs(p2.x - p1.x);
+        div.style.left = (p1.x + w * 0.5) + 'px';
+        div.style.top = (p1.y + Math.abs(p2.y - p1.y) * 0.5) + 'px';
+        div.style.width = w + 'px';
+        div.style.height = w + 'px';
+        div.style.transform = 'translate(-50%,-50%)';
+        div.style.opacity = String(Math.max(0, 0.6 - t));
+        if (t < 1) requestAnimationFrame(step); else div.remove();
+      }
+      requestAnimationFrame(step);
+    }
+
+    /* Selection UI */
+    function selectUnit(u) {
+      selectedUnit = u;
+      const info = document.getElementById('selectedInfo');
+      info.innerHTML = `<div style="display:flex;align-items:center"><strong style="font-size:14px">${u.name}</strong><div style="margin-left:auto">(${u.col},${u.row})</div></div>
+    <div style="margin-top:6px">HP: ${u.hp}/${u.maxHp} &nbsp; MP: ${u.mp}/${u.maxMp}</div>`;
+    }
+
+    /* Abilities */
+    const ABILITIES = {
+      slash: { mpCost: 10, type: 'single', power: 30 },
+      fireball: { mpCost: 20, type: 'aoe', power: 40, radius: 1 },
+      warp: { mpCost: 15, type: 'move' }
+    };
+
+    document.getElementById('ability1').addEventListener('click', () => cast('slash'));
+    document.getElementById('ability2').addEventListener('click', () => cast('fireball'));
+    document.getElementById('ability3').addEventListener('click', () => cast('warp'));
+
+    function cast(key) {
+      if (!selectedUnit) { alert('Select a unit first'); return; }
+      const a = ABILITIES[key];
+      if (selectedUnit.mp < a.mpCost) { alert('Not enough MP'); return; }
+      selectedUnit.mp -= a.mpCost;
+
+      // need hovered tile; take last mouse position
+      const lastMouse = lastX ? { x: lastX, y: lastY } : { x: canvas.width / 2, y: canvas.height / 2 };
+      const cam = computeCamera();
+      const ray = getRayFromScreen(lastMouse.x, lastMouse.y, cam.viewMat, cam.projMat);
+      const hit = intersectRayPlane(ray);
+      if (!hit) return alert('Hover a tile to target');
+      const gx = Math.floor(hit.x + 0.5), gz = Math.floor(hit.z + 0.5);
+      if (a.type === 'single') {
+        const target = units.find(u => u.col === gx && u.row === gz);
+        if (!target) return alert('No unit on target tile');
+        applyDamage(target, a.power);
+      } else if (a.type === 'aoe') {
+        spawnAOE(gx, gz, a.radius);
+        for (const u of units) {
+          const dx = Math.abs(u.col - gx), dz = Math.abs(u.row - gz);
+          const dist = Math.max(dx, dz);
+          if (dist <= a.radius) applyDamage(u, a.power);
+        }
+      } else if (a.type === 'move') {
+        // find another ally (not caster)
+        const allies = units.filter(u => u.isAlly && u !== selectedUnit);
+        if (allies.length === 0) return alert('No ally to warp');
+        const target = allies[0];
+        // teleport target to tile
+        moveUnit(target, gx, gz);
+      }
+      // update label immediately for mp
+      updateLabels(cam.viewMat, cam.projMat);
+    }
+
+    /* Compute camera matrices (view & projection) and set GL uniforms */
+    function computeCamera() {
+      const eye = {
+        x: camTarget.x + camDistance * Math.cos(camElevation) * Math.sin(camAzimuth),
+        y: camTarget.y + camDistance * Math.sin(camElevation),
+        z: camTarget.z + camDistance * Math.cos(camElevation) * Math.cos(camAzimuth)
+      };
+      const up = { x: 0, y: 1, z: 0 };
+      const viewMat = mat4LookAt(eye, camTarget, up);
+      const aspect = canvas.clientWidth / canvas.clientHeight;
+      const projMat = mat4Perspective(Math.PI / 4, aspect, 0.1, 200);
+      return { eye, viewMat, projMat };
+    }
+
+    /* Render loop */
+    let lastTime = performance.now();
+    function render(now) {
+      const dt = now - lastTime; lastTime = now;
+      resizeCanvas();
+
+      // update motion animations
+      for (let i = motions.length - 1; i >= 0; i--) {
+        const m = motions[i];
+        const t = Math.min(1, (now - m.t0) / m.dur);
+        // linear interpolation
+        const px = m.start.x + (m.end.x - m.start.x) * t;
+        const pz = m.start.z + (m.end.z - m.start.z) * t;
+        // we only use physics in label projection; underlying unit col/row already updated
+        // if t==1 remove
+        if (t >= 1) motions.splice(i, 1);
+        // store temporary display position
+        m.unit._displayPos = { x: px, y: 0, z: pz };
+      }
+
+      // clear
+      gl.enable(gl.DEPTH_TEST);
+      gl.clearColor(0.047, 0.047, 0.063, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // camera
+      const cam = computeCamera();
+      gl.useProgram(program);
+      gl.uniform3f(uniforms.light, -0.6, 0.8, 0.6);
+
+      // upload view and proj
+      gl.uniformMatrix4fv(uniforms.view, false, cam.viewMat);
+      gl.uniformMatrix4fv(uniforms.proj, false, cam.projMat);
+
+      gl.bindVertexArray(vao);
+
+      // draw grid tiles as thin cubes
+      for (let x = 0; x < GRID.cols; x++) {
+        for (let z = 0; z < GRID.rows; z++) {
+          const model = mat4Multiply(mat4Translate(x * GRID.tileSize, -0.1, z * GRID.tileSize), mat4Scale(GRID.tileSize * 0.98, 0.18, GRID.tileSize * 0.98));
+          gl.uniformMatrix4fv(uniforms.model, false, model);
+          // color
+          const odd = ((x + z) % 2 === 0);
+          gl.uniform3f(uniforms.color, odd ? 0.16 : 0.12, odd ? 0.2 : 0.19, odd ? 0.23 : 0.2);
+          gl.drawArrays(gl.TRIANGLES, 0, cubeData.vertexCount);
+        }
+      }
+
+      // draw units
+      for (const u of units) {
+        const displayPos = u._displayPos ? u._displayPos : { x: u.col * GRID.tileSize, y: 0, z: u.row * GRID.tileSize };
+        const model = mat4Multiply(mat4Translate(displayPos.x, 0.5, displayPos.z), mat4Scale(0.6, 1.2, 0.6));
+        gl.uniformMatrix4fv(uniforms.model, false, model);
+        // color (if selected, highlight)
+        let c = u.color;
+        if (selectedUnit === u) {
+          // brighter
+          gl.uniform3f(uniforms.color, Math.min(1, c.r * 1.15), Math.min(1, c.g * 1.15), Math.min(1, c.b * 1.15));
+        } else {
+          gl.uniform3f(uniforms.color, c.r, c.g, c.b);
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, cubeData.vertexCount);
+      }
+
+      gl.bindVertexArray(null);
+
+      // update labels and debug
+      updateLabels(cam.viewMat, cam.projMat);
+      document.getElementById('debug').textContent = `Units: ${units.length}\nSelected: ${selectedUnit ? selectedUnit.name : 'none'}\nCamera dist: ${camDistance.toFixed(2)}`;
+
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+    /* Initialize selected with none */
+    selectUnit(null);
+
+    /* Keyboard shortcuts for testing */
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '1') cast('slash');
+      if (e.key === '2') cast('fireball');
+      if (e.key === '3') cast('warp');
+    });
+  </script>
+</body>
+
+</html>

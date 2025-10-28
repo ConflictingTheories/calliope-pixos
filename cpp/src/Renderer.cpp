@@ -80,7 +80,7 @@ void Renderer::init(GLFWwindow *window)
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
@@ -116,7 +116,7 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     // Draw units
     for (const auto &unit : units)
     {
-        Vec3 pos = unit.displayPos;
+        Vec3 pos = vec3(unit.col * grid.tileSize, 0.0f, unit.row * grid.tileSize);
         Mat4 model = mat4Translate(pos.x, 0.5f, pos.z) * mat4Scale(0.6f, 1.2f, 0.6f);
         shader->setUniform("uModel", model);
         Vec3 color = unit.color;

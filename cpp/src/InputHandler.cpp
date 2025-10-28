@@ -69,8 +69,8 @@ void InputHandler::handleMouseClick(double mouseX, double mouseY)
     Vec3 hit = intersectRayPlane(ray);
     if (hit.y == 1) // No hit (y=1 indicates no intersection)
         return;
-    int gx = static_cast<int>(std::floor(hit.x / grid.tileSize + 0.5f));
-    int gz = static_cast<int>(std::floor(hit.z / grid.tileSize + 0.5f));
+    int gx = static_cast<int>(std::floor(hit.x / grid.tileSize));
+    int gz = static_cast<int>(std::floor(hit.z / grid.tileSize));
     if (!grid.isValidTile(gx, gz))
         return;
     Unit *unit = getUnitAtTile(gx, gz);
@@ -87,7 +87,6 @@ void InputHandler::handleMouseClick(double mouseX, double mouseY)
         {
             selectedUnit->col = gx;
             selectedUnit->row = gz;
-            selectedUnit->displayPos = vec3(gx * grid.tileSize, 0.0f, gz * grid.tileSize);
         }
     }
 }

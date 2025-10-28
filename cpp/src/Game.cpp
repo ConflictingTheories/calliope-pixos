@@ -155,7 +155,6 @@ void Game::moveUnit(Unit &unit, int col, int row)
 {
     unit.col = col;
     unit.row = row;
-    unit.displayPos = vec3(col * grid.tileSize, 0.0f, row * grid.tileSize);
 }
 
 void Game::applyDamage(Unit &unit, int dmg)
