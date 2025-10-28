@@ -1,6 +1,7 @@
 #include "InputHandler.h"
 #include "MathUtils.h"
 #include <iostream>
+#include <imgui.h>
 
 InputHandler::InputHandler(GLFWwindow *window, Camera &camera, const Grid &grid, std::vector<Unit> &units, Unit *&selectedUnit)
     : window(window), camera(camera), grid(grid), units(units), selectedUnit(selectedUnit)
@@ -51,9 +52,13 @@ void InputHandler::update(float deltaTime)
 
 void InputHandler::handleMouseClick(double mouseX, double mouseY)
 {
+    // Check if ImGui wants the click
+    if (ImGui::GetIO().WantCaptureMouse)
+        return;
+
     int winWidth, winHeight;
     glfwGetWindowSize(window, &winWidth, &winHeight);
-    // Check if click is in the UI area
+    // Check if click is in the UI area (right side)
     if (mouseX > winWidth - 360) return; // UI area
 
     int fbWidth, fbHeight;
@@ -133,7 +138,10 @@ Vec3 InputHandler::intersectRayPlane(const Ray &ray) const
     float t = -oy / dy;
     if (t < 0)
         return vec3(0, 1, 0);
-    return add(ray.origin, mulS(ray.dir, t));
+    Vec3 hit = add(ray.origin, mulS(ray.dir, t));
+    // Debug: print hit position
+    std::cout << "Hit: " << hit.x << ", " << hit.y << ", " << hit.z << std::endl;
+    return hit;
 }
 
 Unit *InputHandler::getUnitAtTile(int col, int row) const

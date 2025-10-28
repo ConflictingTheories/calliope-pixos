@@ -80,7 +80,7 @@ void Renderer::init(GLFWwindow *window)
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, false);
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
@@ -139,9 +139,6 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
 
 void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string> &abilities, std::function<void(int)> castCallback, int width, int height)
 {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
 
     // Draw unit labels in screen space
     // This is a simplified implementation; proper 3D text would require billboarding

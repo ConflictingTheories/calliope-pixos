@@ -65,6 +65,11 @@ void Game::createUnits()
 
 void Game::update(float deltaTime)
 {
+    // ImGui new frame for input handling
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
     inputHandler->update(deltaTime);
     // Handle keyboard for abilities (only if not pressed last frame to avoid spam)
     static bool keyPressed[3] = {false, false, false};
