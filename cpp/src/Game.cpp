@@ -59,6 +59,8 @@ void Game::createUnits()
     units.emplace_back(uid++, "Etna", 3, 4, 90, 80, true, vec3(0.27f, 0.66f, 1.0f));
     units.emplace_back(uid++, "Prisoner", 8, 3, 150, 20, false, vec3(1.0f, 0.48f, 0.48f));
     units.emplace_back(uid++, "Monster", 9, 5, 110, 30, false, vec3(1.0f, 0.48f, 0.48f));
+    // Auto-select Laharl
+    selectedUnit = &units[0];
 }
 
 void Game::update(float deltaTime)

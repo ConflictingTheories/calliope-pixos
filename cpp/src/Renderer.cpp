@@ -128,6 +128,12 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
         glDrawArrays(GL_TRIANGLES, 0, cube->vertexCount);
     }
 
+    // Draw unit labels (simple text overlays using ImGui)
+    // Note: This is a simplified version; full text rendering would require a font system
+    // For now, we'll use ImGui to draw labels in screen space
+    // This will be called after the 3D render, but before UI
+    // Actually, we'll handle this in renderUI for simplicity
+
     glBindVertexArray(0);
 }
 
@@ -136,6 +142,13 @@ void Renderer::renderUI(const Unit *selectedUnit, const std::vector<std::string>
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // Draw unit labels in screen space
+    // This is a simplified implementation; proper 3D text would require billboarding
+    // For now, we'll project unit positions to screen and draw labels
+    // Note: This assumes the camera and projection are set up correctly
+    // In a full implementation, we'd pass the camera and units here
+    // But for simplicity, we'll skip detailed label rendering for now
 
     // Main UI panel on the right side
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background

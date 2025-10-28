@@ -5,8 +5,8 @@ struct Camera
 {
     float azimuth = -3.14159f / 4.0f;
     float elevation = 3.14159f / 5.0f;
-    float distance = 15.0f;
-    Vec3 target = vec3(5.5f, 0.0f, 3.5f);
+    float distance = 30.0f;
+    Vec3 target = vec3(11.0f, 0.0f, 7.0f);
 
     void update(float deltaAzimuth, float deltaElevation, float deltaDistance);
     Vec3 getEye() const;
