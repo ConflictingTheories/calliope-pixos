@@ -33,7 +33,8 @@ InputHandler::InputHandler(GLFWwindow *window, Camera &camera, const Grid &grid,
 void InputHandler::update(float deltaTime)
 {
     // Handle clicks
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDown)
+    bool leftPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    if (leftPressed && !wasLeftPressed)
     {
         double x, y;
         glfwGetCursorPos(window, &x, &y);
@@ -41,10 +42,11 @@ void InputHandler::update(float deltaTime)
         isMouseDown = true;
         mouseButton = GLFW_MOUSE_BUTTON_LEFT;
     }
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+    if (!leftPressed)
     {
         isMouseDown = false;
     }
+    wasLeftPressed = leftPressed;
 }
 
 void InputHandler::handleMouseClick(double mouseX, double mouseY)
