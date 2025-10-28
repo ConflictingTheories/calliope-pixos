@@ -1,7 +1,8 @@
 #pragma once
 #include "MathUtils.h"
 
-struct Camera {
+struct Camera
+{
     float azimuth = -3.14159f / 4.0f;
     float elevation = 3.14159f / 5.0f;
     float distance = 15.0f;

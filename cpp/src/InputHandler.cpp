@@ -2,10 +2,12 @@
 #include "MathUtils.h"
 #include <iostream>
 
-InputHandler::InputHandler(GLFWwindow* window, Camera& camera, const Grid& grid, std::vector<Unit>& units, Unit*& selectedUnit)
-    : window(window), camera(camera), grid(grid), units(units), selectedUnit(selectedUnit) {
+InputHandler::InputHandler(GLFWwindow *window, Camera &camera, const Grid &grid, std::vector<Unit> &units, Unit *&selectedUnit)
+    : window(window), camera(camera), grid(grid), units(units), selectedUnit(selectedUnit)
+{
     glfwSetWindowUserPointer(window, this);
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) {
+    glfwSetMouseButtonCallback(window, [](GLFWwindow *w, int button, int action, int mods)
+                               {
         auto* handler = static_cast<InputHandler*>(glfwGetWindowUserPointer(w));
         if (action == GLFW_PRESS) {
             handler->isMouseDown = true;
@@ -13,55 +15,67 @@ InputHandler::InputHandler(GLFWwindow* window, Camera& camera, const Grid& grid,
             glfwGetCursorPos(w, &handler->lastMouseX, &handler->lastMouseY);
         } else if (action == GLFW_RELEASE) {
             handler->isMouseDown = false;
-        }
-    });
-    glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) {
+        } });
+    glfwSetCursorPosCallback(window, [](GLFWwindow *w, double x, double y)
+                             {
         auto* handler = static_cast<InputHandler*>(glfwGetWindowUserPointer(w));
         if (handler->isMouseDown) {
             handler->handleMouseDrag(x, y);
         }
         handler->lastMouseX = x;
-        handler->lastMouseY = y;
-    });
-    glfwSetScrollCallback(window, [](GLFWwindow* w, double x, double y) {
+        handler->lastMouseY = y; });
+    glfwSetScrollCallback(window, [](GLFWwindow *w, double x, double y)
+                          {
         auto* handler = static_cast<InputHandler*>(glfwGetWindowUserPointer(w));
-        handler->handleScroll(y);
-    });
+        handler->handleScroll(y); });
 }
 
-void InputHandler::update(float deltaTime) {
+void InputHandler::update(float deltaTime)
+{
     // Handle clicks
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDown) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDown)
+    {
         double x, y;
         glfwGetCursorPos(window, &x, &y);
         handleMouseClick(x, y);
         isMouseDown = true;
         mouseButton = GLFW_MOUSE_BUTTON_LEFT;
     }
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+    {
         isMouseDown = false;
     }
 }
 
-void InputHandler::handleMouseClick(double mouseX, double mouseY) {
+void InputHandler::handleMouseClick(double mouseX, double mouseY)
+{
+    // Check if click is in the 3D viewport (left side)
+    if (mouseX > 920) return; // UI area
+
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     Mat4 view = camera.getViewMatrix();
-    Mat4 proj = camera.getProjectionMatrix(static_cast<float>(width) / height);
+    Mat4 proj = camera.getProjectionMatrix(920.0f / 720.0f); // Match renderer's aspect
     Ray ray = getRayFromScreen(mouseX, mouseY, view, proj);
     Vec3 hit = intersectRayPlane(ray);
-    if (hit.y != 0) return; // No hit
+    if (hit.y != 0)
+        return; // No hit
     int gx = static_cast<int>(std::floor(hit.x + 0.5f));
     int gz = static_cast<int>(std::floor(hit.z + 0.5f));
-    if (!grid.isValidTile(gx, gz)) return;
-    Unit* unit = getUnitAtTile(gx, gz);
-    if (unit) {
+    if (!grid.isValidTile(gx, gz))
+        return;
+    Unit *unit = getUnitAtTile(gx, gz);
+    if (unit)
+    {
         selectedUnit = unit;
-    } else if (selectedUnit) {
+    }
+    else if (selectedUnit)
+    {
         // Move
         int dx = std::abs(selectedUnit->col - gx);
         int dz = std::abs(selectedUnit->row - gz);
-        if (dx + dz <= 6) {
+        if (dx + dz <= 6)
+        {
             selectedUnit->col = gx;
             selectedUnit->row = gz;
             selectedUnit->displayPos = vec3(gx * grid.tileSize, 0.0f, gz * grid.tileSize);
@@ -69,23 +83,29 @@ void InputHandler::handleMouseClick(double mouseX, double mouseY) {
     }
 }
 
-void InputHandler::handleMouseDrag(double mouseX, double mouseY) {
+void InputHandler::handleMouseDrag(double mouseX, double mouseY)
+{
     double dx = mouseX - lastMouseX;
     double dy = mouseY - lastMouseY;
-    if (mouseButton == GLFW_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == GLFW_MOUSE_BUTTON_LEFT)
+    {
         camera.update(-dx * 0.005f, -dy * 0.005f, 0.0f);
-    } else if (mouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
+    }
+    else if (mouseButton == GLFW_MOUSE_BUTTON_RIGHT)
+    {
         // Pan (simplified)
         camera.target.x -= dx * 0.005f * camera.distance;
         camera.target.z -= dy * 0.005f * camera.distance;
     }
 }
 
-void InputHandler::handleScroll(double scrollY) {
+void InputHandler::handleScroll(double scrollY)
+{
     camera.update(0.0f, 0.0f, -scrollY * camera.distance * 0.001f);
 }
 
-Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4& view, const Mat4& proj) const {
+Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4 &view, const Mat4 &proj) const
+{
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     float ndcX = (2.0f * mouseX) / width - 1.0f;
@@ -97,17 +117,23 @@ Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4& vie
     return {near, dir};
 }
 
-Vec3 InputHandler::intersectRayPlane(const Ray& ray) const {
+Vec3 InputHandler::intersectRayPlane(const Ray &ray) const
+{
     float oy = ray.origin.y, dy = ray.dir.y;
-    if (std::abs(dy) < 1e-6f) return vec3(0, 1, 0); // No hit
+    if (std::abs(dy) < 1e-6f)
+        return vec3(0, 1, 0); // No hit
     float t = -oy / dy;
-    if (t < 0) return vec3(0, 1, 0);
+    if (t < 0)
+        return vec3(0, 1, 0);
     return add(ray.origin, mulS(ray.dir, t));
 }
 
-Unit* InputHandler::getUnitAtTile(int col, int row) const {
-    for (auto& unit : units) {
-        if (unit.col == col && unit.row == row) return &unit;
+Unit *InputHandler::getUnitAtTile(int col, int row) const
+{
+    for (auto &unit : units)
+    {
+        if (unit.col == col && unit.row == row)
+            return &unit;
     }
     return nullptr;
 }

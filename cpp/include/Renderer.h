@@ -4,25 +4,32 @@
 #include "Unit.h"
 #include "Grid.h"
 #include <vector>
+#include <functional>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
-struct CubeGeometry {
+struct CubeGeometry
+{
     GLuint vao, vbo, nbo;
     int vertexCount;
     CubeGeometry();
     ~CubeGeometry();
 };
 
-class Renderer {
+class Renderer
+{
 public:
     Renderer();
     ~Renderer();
 
-    void init();
-    void render(const Camera& camera, const std::vector<Unit>& units, const Grid& grid, const Unit* selectedUnit);
+    void init(GLFWwindow *window);
+    void render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit);
+    void renderUI(const Unit* selectedUnit, const std::vector<std::string>& abilities, std::function<void(int)> castCallback);
 
 private:
-    Shader* shader;
-    CubeGeometry* cube;
+    Shader *shader;
+    CubeGeometry *cube;
 
-    void drawCube(const Mat4& model, const Vec3& color);
+    void drawCube(const Mat4 &model, const Vec3 &color);
 };

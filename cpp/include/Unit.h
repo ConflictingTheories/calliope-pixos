@@ -2,7 +2,8 @@
 #include "MathUtils.h"
 #include <string>
 
-struct Unit {
+struct Unit
+{
     int id;
     std::string name;
     int col, row;
@@ -15,7 +16,7 @@ struct Unit {
     Vec3 displayPos;
     bool isMoving = false;
 
-    Unit(int id, const std::string& name, int col, int row, int hp, int mp, bool isAlly, const Vec3& color);
+    Unit(int id, const std::string &name, int col, int row, int hp, int mp, bool isAlly, const Vec3 &color);
     void takeDamage(int dmg);
     bool isDead() const { return hp <= 0; }
 };
