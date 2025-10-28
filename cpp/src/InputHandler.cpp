@@ -51,19 +51,21 @@ void InputHandler::update(float deltaTime)
 
 void InputHandler::handleMouseClick(double mouseX, double mouseY)
 {
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
+    int winWidth, winHeight;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
     // Check if click is in the UI area
-    if (mouseX > width - 360) return; // UI area
+    if (mouseX > winWidth - 360) return; // UI area
 
+    int fbWidth, fbHeight;
+    glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
     Mat4 view = camera.getViewMatrix();
-    Mat4 proj = camera.getProjectionMatrix((float)width / height); // Full aspect ratio
-    Ray ray = getRayFromScreen(mouseX, mouseY, view, proj);
+    Mat4 proj = camera.getProjectionMatrix((float)fbWidth / fbHeight); // Full aspect ratio
+    Ray ray = getRayFromScreen(mouseX, mouseY, view, proj, winWidth, winHeight);
     Vec3 hit = intersectRayPlane(ray);
-    if (hit.y != 0)
-        return; // No hit
-    int gx = static_cast<int>(std::floor(hit.x + 0.5f));
-    int gz = static_cast<int>(std::floor(hit.z + 0.5f));
+    if (hit.y == 1) // No hit (y=1 indicates no intersection)
+        return;
+    int gx = static_cast<int>(std::floor(hit.x / grid.tileSize + 0.5f));
+    int gz = static_cast<int>(std::floor(hit.z / grid.tileSize + 0.5f));
     if (!grid.isValidTile(gx, gz))
         return;
     Unit *unit = getUnitAtTile(gx, gz);
@@ -112,12 +114,10 @@ void InputHandler::handleScroll(double scrollY)
     camera.update(0.0f, 0.0f, -scrollY * camera.distance * 0.001f);
 }
 
-Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4 &view, const Mat4 &proj) const
+Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4 &view, const Mat4 &proj, int winWidth, int winHeight) const
 {
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    float ndcX = (2.0f * mouseX) / width - 1.0f;
-    float ndcY = 1.0f - (2.0f * mouseY) / height;
+    float ndcX = (2.0f * mouseX) / winWidth - 1.0f;
+    float ndcY = 1.0f - (2.0f * mouseY) / winHeight;
     Mat4 invVP = mat4Inverse(proj * view);
     Vec3 near = transformPoint(invVP, vec3(ndcX, ndcY, -1.0f));
     Vec3 far = transformPoint(invVP, vec3(ndcX, ndcY, 1.0f));

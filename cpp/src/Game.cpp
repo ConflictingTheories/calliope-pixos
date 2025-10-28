@@ -88,11 +88,13 @@ void Game::update(float deltaTime)
 
 void Game::render()
 {
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-    renderer.render(camera, units, grid, selectedUnit, width, height);
-    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index) { castAbility(index); }, width, height);
+    int fbWidth, fbHeight;
+    glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+    glViewport(0, 0, fbWidth, fbHeight);
+    int winWidth, winHeight;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    renderer.render(camera, units, grid, selectedUnit, fbWidth, fbHeight);
+    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index) { castAbility(index); }, winWidth, winHeight);
 }
 
 void Game::castAbility(int abilityIndex)
