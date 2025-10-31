@@ -92,16 +92,97 @@ export default class World {
   addRemoteAvatar(clientId, avatarData) {
     // Create and add a new avatar sprite for the remote player using engine Avatar class
     try {
+      // Instantiate Avatar and try to copy template properties from the local player avatar
       const avatar = new Avatar(this.engine);
+
+      // Try to find a local avatar template to copy necessary rendering/template fields
+      const localTemplate = this.getAvatar();
+      if (localTemplate) {
+        // Copy minimal template fields required by Sprite.onLoad
+        avatar.src = localTemplate.src;
+        avatar.portraitSrc = localTemplate.portraitSrc;
+        avatar.sheetSize = localTemplate.sheetSize;
+        avatar.tileSize = localTemplate.tileSize;
+        avatar.frames = localTemplate.frames;
+        avatar.hotspotOffset = localTemplate.hotspotOffset;
+        avatar.drawOffset = localTemplate.drawOffset;
+        avatar.enableSpeech = localTemplate.enableSpeech;
+        avatar.bindCamera = false; // remote avatars shouldn't bind camera
+        // Copy runtime resources so remote avatar can render immediately
+        try {
+          if (localTemplate.texture) avatar.texture = localTemplate.texture;
+          if (localTemplate.vertexTexBuf) avatar.vertexTexBuf = localTemplate.vertexTexBuf;
+          if (localTemplate.vertexPosBuf) avatar.vertexPosBuf = localTemplate.vertexPosBuf;
+          if (localTemplate.speech && localTemplate.speechTexBuf) avatar.speech = localTemplate.speech, avatar.speechTexBuf = localTemplate.speechTexBuf;
+          // mark as loaded so draw will render without waiting for async onLoad
+          avatar.loaded = true;
+          avatar.templateLoaded = true;
+        } catch (e) {
+          console.warn('Failed to copy runtime template resources for remote avatar', e);
+        }
+      } else {
+        console.warn('No local avatar template found; remote avatar may not render correctly');
+      }
+
       avatar.onLoad({
         zone: this.getZoneById(avatarData.zone || avatarData.zoneId) || this.zoneContaining(avatarData.x || 0, avatarData.y || 0),
         id: avatarData.id || `player-${clientId}`,
         pos: new Vector(avatarData.x || (avatarData.pos && avatarData.pos.x) || 0, avatarData.y || (avatarData.pos && avatarData.pos.y) || 0, avatarData.z || (avatarData.pos && avatarData.pos.z) || 0),
-        ...avatarData
+        ...avatarData,
       });
+
       // Add to the zone if available
       const zone = avatar.zone;
-      if (zone) zone.addSprite(avatar);
+      if (zone) {
+        zone.addSprite(avatar);
+        console.log(`Added remote avatar for client ${clientId} to zone ${zone.id} at (${avatar.pos.x},${avatar.pos.y},${avatar.pos.z})`);
+      }
+      // If avatar not fully loaded (no texture/buffers), create a minimal visible fallback
+      try {
+        if (!avatar.loaded) {
+          // create simple quad geometry for immediate rendering
+          const verts = [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 0, 1],
+            [0, 0, 1]
+          ];
+          const poly = [
+            [verts[2], verts[3], verts[0]],
+            [verts[2], verts[0], verts[1]]
+          ].flat(3);
+          const tex = [
+            [1.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0]
+          ].flat(3);
+
+          // create buffers
+          try {
+            avatar.vertexPosBuf = this.engine.renderManager.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
+            avatar.vertexTexBuf = this.engine.renderManager.createBuffer(tex, this.engine.gl.DYNAMIC_DRAW, 2);
+          } catch (e) {
+            // engine may not be initialized in some tests; ignore
+          }
+
+          // assign zone tileset texture if available
+          if (zone && zone.tileset && zone.tileset.texture) {
+            avatar.texture = zone.tileset.texture;
+          }
+
+          // mark loaded so sprite.draw will render
+          avatar.loaded = true;
+          avatar.templateLoaded = true;
+          // give it a visible selection so it's easier to spot
+          avatar.isSelected = true;
+          console.log(`Remote avatar fallback created for client ${clientId}`);
+        }
+      } catch (e) {
+        console.warn('Error creating remote avatar fallback', e);
+      }
       this.remoteAvatars.set(clientId, avatar);
       return avatar;
     } catch (e) {

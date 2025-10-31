@@ -134,8 +134,13 @@ function broadcastToZone(zoneId, message, excludeClientId = null) {
     for (const clientId of zone) {
       if (clientId !== excludeClientId) {
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === client.ws.OPEN) {
-          client.ws.send(messageString);
+        if (client && client.ws && client.ws.readyState === 1) {
+          try {
+            client.ws.send(messageString);
+            console.log(`Broadcast to ${clientId} in zone ${zoneId}: ${message.type || 'message'}`);
+          } catch (e) {
+            console.warn(`Failed to send to ${clientId}:`, e);
+          }
         }
       }
     }
@@ -174,7 +179,7 @@ function handleZoneStateRequest(clientId, payload) {
 
   // Send zone state to the requesting client
   const ws = clients.get(clientId).ws;
-  if (ws.readyState === ws.OPEN) {
+  if (ws && ws.readyState === 1) {
     ws.send(JSON.stringify({ type: 'zone-state', payload: { zoneId, sprites } }));
   }
 }
@@ -187,6 +192,7 @@ function handleUpdateAvatar(clientId, payload) {
   client.avatar = { ...client.avatar, ...payload.avatar };
 
   // Broadcast avatar update to other clients in the same zone
+  console.log(`Broadcasting avatar-update from ${clientId} to zone ${client.zoneId}`);
   broadcastToZone(client.zoneId, { type: 'avatar-update', payload: { clientId, avatar: payload.avatar } }, clientId);
 }
 

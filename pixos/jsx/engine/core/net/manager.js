@@ -70,6 +70,29 @@ export default class NetworkManager {
   }
 
   /**
+   * Safely stringify an object for logging (avoids circular refs).
+   * @param {any} obj
+   */
+  safeStringify(obj) {
+    try {
+      return JSON.stringify(obj);
+    } catch (e) {
+      try {
+        // Fallback: show a minimal shallow representation
+        const out = {};
+        Object.keys(obj || {}).forEach(k => {
+          const v = obj[k];
+          if (v && (typeof v === 'object')) out[k] = Array.isArray(v) ? `[Array(${v.length})]` : `{${v.constructor && v.constructor.name}}`;
+          else out[k] = v;
+        });
+        return JSON.stringify(out);
+      } catch (e2) {
+        return String(obj);
+      }
+    }
+  }
+
+  /**
    * Disconnects the WebSocket connection.
    */
   disconnect() {
@@ -139,7 +162,10 @@ export default class NetworkManager {
           console.log(`Unknown message type: ${data.type}`);
       }
     } catch (error) {
-      console.error('Failed to parse message from server:', error);
+  // Avoid serializing circular structures in the incoming message; log a safe preview instead.
+  const preview = typeof message === 'string' ? (message.length > 1000 ? message.slice(0, 1000) + '... (truncated)' : message) : this.safeStringify(message);
+  console.error('Failed to parse message from server. Parse error:', error);
+  console.error('Raw message preview:', preview);
     }
   }
 
@@ -150,8 +176,14 @@ export default class NetworkManager {
    */
   loadZone(zoneId, zone) {
     const zoneData = zone.getZoneData ? zone.getZoneData() : zone;
-    // Remove circular references
-    const cleanZoneData = JSON.parse(JSON.stringify(zoneData));
+    // Try to remove circular references safely; fall back to a minimal payload if needed
+    let cleanZoneData;
+    try {
+      cleanZoneData = JSON.parse(JSON.stringify(zoneData));
+    } catch (e) {
+      console.warn('Zone data contains circular refs, sending minimal zone info instead');
+      cleanZoneData = { id: zoneId, name: zone && zone.name };
+    }
     this.send('load-zone', { zoneId, zone: cleanZoneData });
   }
 
@@ -163,14 +195,23 @@ export default class NetworkManager {
     this.zoneId = zoneId;
     const avatar = this.engine.spritz.world.getAvatar();
     const avatarData = avatar.getAvatarData();
-    // Remove circular references
-    const cleanAvatarData = JSON.parse(JSON.stringify(avatarData));
-    // Ensure server receives simple x/y/z properties for easier server-side handling
-    if (avatar && avatar.pos) {
-      cleanAvatarData.x = avatar.pos.x;
-      cleanAvatarData.y = avatar.pos.y;
-      cleanAvatarData.z = avatar.pos.z;
-    }
+    // Build a safe, plain avatar payload to avoid circular refs (DOM/React objects may be attached)
+    const cleanAvatarData = {
+      id: avatarData.id || avatar.objId || avatar.id || 'avatar',
+      templateLoaded: !!avatarData.templateLoaded,
+      animFrame: avatarData.animFrame || 0,
+      facing: avatarData.facing || 0,
+      fixed: !!avatarData.fixed,
+      isSelected: !!avatarData.isSelected,
+      // simple position
+      x: avatar && avatar.pos ? avatar.pos.x : (avatarData.pos && avatarData.pos.x) || 0,
+      y: avatar && avatar.pos ? avatar.pos.y : (avatarData.pos && avatarData.pos.y) || 0,
+      z: avatar && avatar.pos ? avatar.pos.z : (avatarData.pos && avatarData.pos.z) || 0,
+      // include small useful bits, but avoid large or circular objects
+      drawOffset: avatarData.drawOffset ? { x: avatarData.drawOffset.x, y: avatarData.drawOffset.y } : undefined,
+      hotspotOffset: avatarData.hotspotOffset ? { x: avatarData.hotspotOffset.x, y: avatarData.hotspotOffset.y } : undefined,
+      scale: avatarData.scale ? { x: avatarData.scale.x, y: avatarData.scale.y } : undefined
+    };
     this.send('join-zone', { zoneId, avatar: cleanAvatarData });
   }
 
@@ -267,6 +308,12 @@ export default class NetworkManager {
   handlePlayerJoined(payload) {
     if (payload.client.clientId === this.clientId) return;
     console.log(`Player ${payload.client.clientId} joined the zone`);
+    // HUD / quick notification if available
+    try {
+      if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
+        this.engine.hud.scrollText(`Player ${payload.client.clientId} joined`, true, { autoclose: true, duration: 3000 });
+      }
+    } catch (e) { /* ignore HUD errors */ }
 
     const world = this.engine.spritz.world;
     if (world) {
@@ -282,6 +329,11 @@ export default class NetworkManager {
    */
   handlePlayerLeft(payload) {
     console.log(`Player ${payload.clientId} left the zone`);
+    try {
+      if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
+        this.engine.hud.scrollText(`Player ${payload.clientId} left`, true, { autoclose: true, duration: 3000 });
+      }
+    } catch (e) { /* ignore HUD errors */ }
     const player = this.players.get(payload.clientId);
     if (player) {
       const world = this.engine.spritz.world;
@@ -296,6 +348,11 @@ export default class NetworkManager {
    */
   handlePlayersUpdate(payload) {
     console.log('Players update:', payload.players);
+    try {
+      if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
+        this.engine.hud.scrollText(`Players in zone: ${payload.players.map(p=>p.clientId).join(', ')}`, true, { autoclose: true, duration: 3000 });
+      }
+    } catch (e) { /* ignore HUD errors */ }
     // Update local players map
   const existingPlayers = new Set(this.players.keys());
   const newPlayers = new Set(payload.players.map(p => p.clientId));
