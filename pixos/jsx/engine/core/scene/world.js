@@ -92,13 +92,23 @@ export default class World {
   addRemoteAvatar(clientId, avatarData) {
     // Create and add a new avatar sprite for the remote player using engine Avatar class
     try {
+      // If we already have this remote avatar, update and return it
+      if (this.remoteAvatars.has(clientId)) {
+        const existing = this.remoteAvatars.get(clientId);
+        try { console.log(`Remote avatar for ${clientId} already exists, updating instead`); } catch (e) { }
+        if (avatarData.x != null) existing.pos.x = avatarData.x;
+        if (avatarData.y != null) existing.pos.y = avatarData.y;
+        if (avatarData.z != null) existing.pos.z = avatarData.z;
+        if (avatarData.facing != null) existing.facing = avatarData.facing;
+        return existing;
+      }
       // Instantiate Avatar and try to copy template properties from the local player avatar
       const avatar = new Avatar(this.engine);
 
       // Try to find a local avatar template to copy necessary rendering/template fields
       const localTemplate = this.getAvatar();
       if (localTemplate) {
-        // Copy minimal template fields required by Sprite.onLoad
+        // Copy minimal template fields required by Sprite
         avatar.src = localTemplate.src;
         avatar.portraitSrc = localTemplate.portraitSrc;
         avatar.sheetSize = localTemplate.sheetSize;
@@ -109,81 +119,67 @@ export default class World {
         avatar.enableSpeech = localTemplate.enableSpeech;
         avatar.bindCamera = false; // remote avatars shouldn't bind camera
         // Copy runtime resources so remote avatar can render immediately
-        try {
-          if (localTemplate.texture) avatar.texture = localTemplate.texture;
-          if (localTemplate.vertexTexBuf) avatar.vertexTexBuf = localTemplate.vertexTexBuf;
-          if (localTemplate.vertexPosBuf) avatar.vertexPosBuf = localTemplate.vertexPosBuf;
-          if (localTemplate.speech && localTemplate.speechTexBuf) avatar.speech = localTemplate.speech, avatar.speechTexBuf = localTemplate.speechTexBuf;
-          // mark as loaded so draw will render without waiting for async onLoad
-          avatar.loaded = true;
-          avatar.templateLoaded = true;
-        } catch (e) {
-          console.warn('Failed to copy runtime template resources for remote avatar', e);
-        }
+        if (localTemplate.texture) avatar.texture = localTemplate.texture;
+        if (localTemplate.vertexTexBuf) avatar.vertexTexBuf = localTemplate.vertexTexBuf;
+        if (localTemplate.vertexPosBuf) avatar.vertexPosBuf = localTemplate.vertexPosBuf;
+        if (localTemplate.speech && localTemplate.speechTexBuf) avatar.speech = localTemplate.speech, avatar.speechTexBuf = localTemplate.speechTexBuf;
+        // mark as loaded so draw will render without waiting for async onLoad
+        avatar.loaded = true;
+        avatar.templateLoaded = true;
       } else {
         console.warn('No local avatar template found; remote avatar may not render correctly');
       }
 
-      avatar.onLoad({
-        zone: this.getZoneById(avatarData.zone || avatarData.zoneId) || this.zoneContaining(avatarData.x || 0, avatarData.y || 0),
-        id: avatarData.id || `player-${clientId}`,
-        pos: new Vector(avatarData.x || (avatarData.pos && avatarData.pos.x) || 0, avatarData.y || (avatarData.pos && avatarData.pos.y) || 0, avatarData.z || (avatarData.pos && avatarData.pos.z) || 0),
-        ...avatarData,
-      });
+      // Ensure unique sprite id to avoid collisions with local 'avatar' id
+      const baseId = avatarData.id || 'player';
+      const spriteId = `${baseId}-${clientId}`;
 
-      // Add to the zone if available
-      const zone = avatar.zone;
+      // Set properties and create buffers synchronously
+      const zone = this.getZoneById(avatarData.zone || avatarData.zoneId) || this.zoneContaining(avatarData.x || 0, avatarData.y || 0);
+      avatar.zone = zone;
+      avatar.id = spriteId;
+      avatar.pos = new Vector(avatarData.x || (avatarData.pos && avatarData.pos.x) || 0, avatarData.y || (avatarData.pos && avatarData.pos.y) || 0, avatarData.z || (avatarData.pos && avatarData.pos.z) || 0);
+      avatar.facing = avatarData.facing || 0;
+      avatar.isSelected = false; // remote avatars not selected
+
+      // Create buffers synchronously with fallback tile size
+      let tileSize = (zone && zone.tileset && zone.tileset.tileSize) ? zone.tileset.tileSize : 32;
+      let normTile = [avatar.tileSize[0] / tileSize, avatar.tileSize[1] / tileSize];
+      let verts = [
+        [0, 0, 0],
+        [normTile[0], 0, 0],
+        [normTile[0], 0, normTile[1]],
+        [0, 0, normTile[1]],
+      ];
+      let poly = [
+        [verts[2], verts[3], verts[0]],
+        [verts[2], verts[0], verts[1]]
+      ].flat(3);
+      avatar.vertexPosBuf = this.engine.renderManager.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
+      let texCoords = avatar.getTexCoords();
+      avatar.vertexTexBuf = this.engine.renderManager.createBuffer(texCoords, this.engine.gl.DYNAMIC_DRAW, 2);
+      if (avatar.enableSpeech) {
+        avatar.speechVerBuf = this.engine.renderManager.createBuffer(avatar.getSpeechBubbleVertices(), this.engine.gl.STATIC_DRAW, 3);
+        avatar.speechTexBuf = this.engine.renderManager.createBuffer(avatar.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      }
+
+      // Add to the zone if available. Ensure id/zone registration happens *before* we store
+      // this.remoteAvatars to avoid updates arriving before registration completes.
       if (zone) {
-        zone.addSprite(avatar);
-        console.log(`Added remote avatar for client ${clientId} to zone ${zone.id} at (${avatar.pos.x},${avatar.pos.y},${avatar.pos.z})`);
+        // Ensure zone has spriteDict and spriteList
+        if (!zone.spriteDict) zone.spriteDict = {};
+        if (!zone.spriteList) zone.spriteList = [];
+        // register in dictionaries and lists synchronously
+        this.spriteDict[avatar.id] = avatar;
+        zone.spriteDict[avatar.id] = avatar;
+        if (!zone.spriteList.includes(avatar)) zone.spriteList.push(avatar);
+        if (!this.spriteList.includes(avatar)) this.spriteList.push(avatar);
+        console.log(`Added remote avatar for client ${clientId} as sprite '${avatar.id}' to zone ${zone.id} at (${avatar.pos.x},${avatar.pos.y},${avatar.pos.z})`);
       }
-      // If avatar not fully loaded (no texture/buffers), create a minimal visible fallback
-      try {
-        if (!avatar.loaded) {
-          // create simple quad geometry for immediate rendering
-          const verts = [
-            [0, 0, 0],
-            [1, 0, 0],
-            [1, 0, 1],
-            [0, 0, 1]
-          ];
-          const poly = [
-            [verts[2], verts[3], verts[0]],
-            [verts[2], verts[0], verts[1]]
-          ].flat(3);
-          const tex = [
-            [1.0, 1.0],
-            [0.0, 1.0],
-            [0.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 0.0],
-            [1.0, 0.0]
-          ].flat(3);
 
-          // create buffers
-          try {
-            avatar.vertexPosBuf = this.engine.renderManager.createBuffer(poly, this.engine.gl.STATIC_DRAW, 3);
-            avatar.vertexTexBuf = this.engine.renderManager.createBuffer(tex, this.engine.gl.DYNAMIC_DRAW, 2);
-          } catch (e) {
-            // engine may not be initialized in some tests; ignore
-          }
-
-          // assign zone tileset texture if available
-          if (zone && zone.tileset && zone.tileset.texture) {
-            avatar.texture = zone.tileset.texture;
-          }
-
-          // mark loaded so sprite.draw will render
-          avatar.loaded = true;
-          avatar.templateLoaded = true;
-          // give it a visible selection so it's easier to spot
-          avatar.isSelected = true;
-          console.log(`Remote avatar fallback created for client ${clientId}`);
-        }
-      } catch (e) {
-        console.warn('Error creating remote avatar fallback', e);
-      }
+      // store mapping after registration
       this.remoteAvatars.set(clientId, avatar);
+      try { console.log(`Remote avatar map now has ${this.remoteAvatars.size} entries`); } catch (e) { }
       return avatar;
     } catch (e) {
       console.warn('Failed to add remote avatar', e);
@@ -194,7 +190,16 @@ export default class World {
   removeRemoteAvatar(clientId) {
     const avatar = this.remoteAvatars.get(clientId);
     if (avatar) {
-      if (avatar.zone) avatar.zone.removeSprite(avatar);
+      try {
+        if (avatar.zone) {
+          // remove by id if possible
+          const idToRemove = avatar.id || (avatar.objId ? avatar.objId : null);
+          if (idToRemove) avatar.zone.removeSprite(idToRemove);
+          else avatar.zone.removeSprite(avatar);
+        }
+      } catch (e) {
+        try { if (avatar.zone) avatar.zone.removeSprite(avatar); } catch (e2) { }
+      }
       this.remoteAvatars.delete(clientId);
     }
   }
@@ -202,6 +207,7 @@ export default class World {
   updateRemoteAvatar(clientId, avatarData) {
     const avatar = this.remoteAvatars.get(clientId);
     if (avatar) {
+      try { console.log(`updateRemoteAvatar: client=${clientId} pre pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
       if (typeof avatar.setPosition === 'function') {
         avatar.setPosition(avatarData.x, avatarData.y, avatarData.z);
       } else if (avatar.pos) {
@@ -216,6 +222,14 @@ export default class World {
         if (avatarData.facing != null) avatar.facing = avatarData.facing;
         if (avatarData.animFrame != null) avatar.animFrame = avatarData.animFrame;
       }
+      // Defensive: ensure sprite is marked loaded so draw will execute
+      if (!avatar.loaded) {
+        console.warn(`Remote avatar ${clientId} was not loaded; forcing loaded=true so renderer will attempt to draw.`);
+        avatar.loaded = true;
+        avatar.templateLoaded = true;
+        if (!avatar.texture || typeof avatar.texture.attach !== 'function') avatar.texture = { loaded: true, attach: () => { } };
+      }
+      try { console.log(`updateRemoteAvatar: client=${clientId} post pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
       return avatar;
     }
     return null;

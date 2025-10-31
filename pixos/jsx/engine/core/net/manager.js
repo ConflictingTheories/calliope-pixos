@@ -36,6 +36,9 @@ export default class NetworkManager {
     this.setAuthorityFromManifest();
   }
 
+  // Lazy import for action loader fallback
+  static _ActionLoader = null;
+
   /**
    * Establishes a WebSocket connection to the server.
    * @param {string} url - The WebSocket URL to connect to.
@@ -319,7 +322,8 @@ export default class NetworkManager {
     if (world) {
   // Use world.addRemoteAvatar to create a remote avatar representation
   world.addRemoteAvatar(payload.client.clientId, payload.client.avatar);
-  this.players.set(payload.client.clientId, payload.client.avatar);
+      // store a lightweight player entry keyed by clientId
+      this.players.set(payload.client.clientId, Object.assign({}, payload.client.avatar, { clientId: payload.client.clientId }));
     }
   }
 
@@ -394,10 +398,30 @@ export default class NetworkManager {
     console.log(`Received action from ${payload.clientId}:`, payload);
     const player = this.players.get(payload.clientId) || this.engine.spritz.world.getAvatar(); // For own actions in client authority
     if (player) {
-      const Action = this.engine.spritz.world.actionFactory(payload.action);
-      if (Action) {
-        const action = new Action(player, ...Object.values(payload.params));
-        player.addAction(action);
+      try {
+        let Action = null;
+        const world = this.engine.spritz && this.engine.spritz.world;
+        if (world && typeof world.actionFactory === 'function') {
+          Action = world.actionFactory(payload.action);
+        }
+        // Fallback: use ActionLoader to construct action if factory missing
+        if (!Action) {
+          if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = require('@Engine/utils/loaders/ActionLoader.js').ActionLoader;
+          const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => {});
+          // loader.load returns an instance of Action (synchronously in our loader implementation)
+          const instance = loader;
+          // Some path: ActionLoader returns an Action instance via its load helper
+          if (instance && instance.instances == null) {
+            // unlikely shape; log and skip
+            console.warn('ActionLoader returned unexpected instance for action', payload.action, instance);
+          }
+          // ActionLoader already enqueued the action on the sprite via its callbacks;
+        } else {
+          const action = new Action(player, ...Object.values(payload.params || {}));
+          player.addAction(action);
+        }
+      } catch (e) {
+        console.warn('Failed to handle action payload', payload, e);
       }
     }
   }
@@ -416,30 +440,52 @@ export default class NetworkManager {
 
     // Update or create sprites based on zone state
     payload.sprites.forEach(spriteData => {
-      // Skip own avatar to avoid duplication
-      // Skip the local player's avatar (id may be 'avatar' or match clientId)
-      if (spriteData.id === 'avatar' || spriteData.clientId === this.clientId) return;
+      // Skip own avatar (identified by clientId)
+      if (spriteData.clientId === this.clientId) return;
 
-      // If we have a remote avatar for this clientId, update it; otherwise create one
-      const clientId = spriteData.clientId || (spriteData.avatar && spriteData.avatar.clientId);
-      if (clientId) {
-        if (this.players.has(clientId)) {
-          world.updateRemoteAvatar(clientId, { x: spriteData.x, y: spriteData.y, z: spriteData.z, ...spriteData.avatar });
+      try {
+        // Prefer updating remote avatars by clientId to avoid id mismatch between clients and server
+        if (spriteData.clientId && world.remoteAvatars && world.remoteAvatars.has(spriteData.clientId)) {
+          // Use existing remote avatar mapping
+          world.updateRemoteAvatar(spriteData.clientId, {
+            x: spriteData.x,
+            y: spriteData.y,
+            z: spriteData.z || 0,
+            facing: (spriteData.avatar && spriteData.avatar.facing) || spriteData.facing,
+            animFrame: (spriteData.avatar && spriteData.avatar.animFrame) || spriteData.animFrame,
+            ...((spriteData.avatar) || {})
+          });
         } else {
-          world.addRemoteAvatar(clientId, { id: spriteData.id, x: spriteData.x, y: spriteData.y, z: spriteData.z, ...spriteData.avatar });
-          this.players.set(clientId, spriteData.avatar || {});
+          // Fallback: try to match by sprite id in zone spriteDict
+          let existingSprite = zone.spriteDict[spriteData.id];
+          if (existingSprite) {
+            existingSprite.pos.x = spriteData.x;
+            existingSprite.pos.y = spriteData.y;
+            existingSprite.pos.z = spriteData.z || 0;
+            if (spriteData.avatar) {
+              if (spriteData.avatar.facing != null) existingSprite.facing = spriteData.avatar.facing;
+              if (spriteData.avatar.animFrame != null) existingSprite.animFrame = spriteData.avatar.animFrame;
+            }
+          } else {
+            // Create remote avatar using world.addRemoteAvatar if possible, providing clientId-aware data
+            const avatarPayload = {
+              id: spriteData.id || (`player-${spriteData.clientId}`),
+              x: spriteData.x,
+              y: spriteData.y,
+              z: spriteData.z || 0,
+              facing: (spriteData.avatar && spriteData.avatar.facing) || spriteData.facing,
+              animFrame: (spriteData.avatar && spriteData.avatar.animFrame) || spriteData.animFrame,
+              ...((spriteData.avatar) || {})
+            };
+            if (spriteData.clientId && typeof world.addRemoteAvatar === 'function') {
+              world.addRemoteAvatar(spriteData.clientId, avatarPayload);
+            } else if (typeof world.createAvatar === 'function') {
+              world.createAvatar(avatarPayload);
+            }
+          }
         }
-      } else {
-        // Fallback: try to match by sprite id in zone spriteDict
-        let existingSprite = zone.spriteDict[spriteData.id];
-        if (existingSprite) {
-          existingSprite.pos.x = spriteData.x;
-          existingSprite.pos.y = spriteData.y;
-          existingSprite.pos.z = spriteData.z || 0;
-        } else {
-          const avatarData = { id: spriteData.id, x: spriteData.x, y: spriteData.y, z: spriteData.z || 0, ...spriteData.avatar };
-          world.createAvatar(avatarData);
-        }
+      } catch (e) {
+        console.warn('Error handling zone state sprite update:', e);
       }
     });
   }
