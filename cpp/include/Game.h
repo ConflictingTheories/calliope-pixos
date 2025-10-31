@@ -18,14 +18,14 @@ struct Ability
 
 class Game
 {
-public:
+    public:
     Game();
     ~Game();
 
     void init();
     void run();
 
-private:
+    private:
     GLFWwindow *window;
     Camera camera;
     Grid grid;
@@ -37,7 +37,8 @@ private:
     std::vector<Ability> abilities = {
         {"Slash", 10, 30, 0},
         {"Fireball", 20, 40, 1},
-        {"Warp", 15, 0, 0}};
+        {"Warp", 15, 0, 0}
+    };
 
     void createUnits();
     void update(float deltaTime);
@@ -46,5 +47,6 @@ private:
     void moveUnit(Unit &unit, int col, int row);
     void applyDamage(Unit &unit, int dmg);
     void spawnAOE(int cx, int cz, int radius);
+    
     const std::vector<std::string> getAbilityNames() const;
 };

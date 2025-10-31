@@ -22,6 +22,7 @@ import ActionQueue from '../queue/index.js';
 import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
+import { Vector } from '@Engine/utils/math/vector.js';
 
 /**
  * @typedef {object} MenuConfig
@@ -50,6 +51,8 @@ export default class World {
     this.zoneDict = {};
     /** @type {Zone[]} */
     this.zoneList = [];
+    /** @type {Object.<string, object>} */
+    this.remoteAvatars = new Map();
     /** @type {Object.<string, object>} */
     this.spriteDict = {};
     /** @type {object[]} */
@@ -84,6 +87,64 @@ export default class World {
         },
       },
     };
+  }
+
+  addRemoteAvatar(clientId, avatarData) {
+    // Create and add a new avatar sprite for the remote player using engine Avatar class
+    try {
+      const avatar = new Avatar(this.engine);
+      avatar.onLoad({
+        zone: this.getZoneById(avatarData.zone || avatarData.zoneId) || this.zoneContaining(avatarData.x || 0, avatarData.y || 0),
+        id: avatarData.id || `player-${clientId}`,
+        pos: new Vector(avatarData.x || (avatarData.pos && avatarData.pos.x) || 0, avatarData.y || (avatarData.pos && avatarData.pos.y) || 0, avatarData.z || (avatarData.pos && avatarData.pos.z) || 0),
+        ...avatarData
+      });
+      // Add to the zone if available
+      const zone = avatar.zone;
+      if (zone) zone.addSprite(avatar);
+      this.remoteAvatars.set(clientId, avatar);
+      return avatar;
+    } catch (e) {
+      console.warn('Failed to add remote avatar', e);
+      return null;
+    }
+  }
+
+  removeRemoteAvatar(clientId) {
+    const avatar = this.remoteAvatars.get(clientId);
+    if (avatar) {
+      if (avatar.zone) avatar.zone.removeSprite(avatar);
+      this.remoteAvatars.delete(clientId);
+    }
+  }
+
+  updateRemoteAvatar(clientId, avatarData) {
+    const avatar = this.remoteAvatars.get(clientId);
+    if (avatar) {
+      if (typeof avatar.setPosition === 'function') {
+        avatar.setPosition(avatarData.x, avatarData.y, avatarData.z);
+      } else if (avatar.pos) {
+        avatar.pos.x = avatarData.x;
+        avatar.pos.y = avatarData.y;
+        avatar.pos.z = avatarData.z || avatar.pos.z;
+      }
+      if (typeof avatar.updateState === 'function') {
+        avatar.updateState(avatarData);
+      } else {
+        // fallback: apply facing and animation frame
+        if (avatarData.facing != null) avatar.facing = avatarData.facing;
+        if (avatarData.animFrame != null) avatar.animFrame = avatarData.animFrame;
+      }
+      return avatar;
+    }
+    return null;
+  }
+
+  applyRemoteAction(clientId, action, params, spriteId) {
+    const avatar = this.remoteAvatars.get(clientId);
+    if (avatar) {
+      avatar.performAction(action, params); // implement this in your avatar class
+    }
   }
 
   /**

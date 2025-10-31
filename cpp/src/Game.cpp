@@ -20,8 +20,7 @@ void Game::init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(1280, 720, "Disgaea OpenGL", nullptr, nullptr);
-    if (!window)
+    if (!(window = glfwCreateWindow(1280, 720, "Disgaea OpenGL", nullptr, nullptr)))
         throw std::runtime_error("Failed to create GLFW window");
 
     glfwMakeContextCurrent(window);
@@ -31,7 +30,9 @@ void Game::init()
         throw std::runtime_error("Failed to initialize GLEW");
 
     renderer.init(window);
+
     createUnits();
+
     inputHandler = std::make_unique<InputHandler>(window, camera, grid, units, selectedUnit);
 }
 
@@ -96,19 +97,25 @@ void Game::render()
     int fbWidth, fbHeight;
     glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
     glViewport(0, 0, fbWidth, fbHeight);
+    
     int winWidth, winHeight;
     glfwGetWindowSize(window, &winWidth, &winHeight);
+    
     renderer.render(camera, units, grid, selectedUnit, fbWidth, fbHeight);
-    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index) { castAbility(index); }, winWidth, winHeight);
+    renderer.renderUI(selectedUnit, getAbilityNames(), [this](int index)
+                      { castAbility(index); }, winWidth, winHeight);
 }
 
 void Game::castAbility(int abilityIndex)
 {
     if (!selectedUnit || abilityIndex >= abilities.size())
         return;
+    
     const auto &ability = abilities[abilityIndex];
+    
     if (selectedUnit->mp < ability.mpCost)
         return;
+    
     selectedUnit->mp -= ability.mpCost;
 
     // Simplified: assume target is current mouse position or something

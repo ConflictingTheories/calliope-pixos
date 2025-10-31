@@ -191,6 +191,10 @@ export default class GLEngine {
     /** @deprecated Use inputManager.touch instead. */
     this.touch = this.inputManager.touch;
 
+    /** @deprecated Eventually move this into inputManager.touch instead. */
+    this.touchHandler = this.gamepad.listen.bind(this.gamepad);
+
+
     // Initialize network if enabled
     if (spritz.manifest?.network?.enabled) {
       await this.networkManager.connect(spritz.manifest.network.url);

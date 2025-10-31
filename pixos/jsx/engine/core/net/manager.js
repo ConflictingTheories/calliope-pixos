@@ -31,6 +31,8 @@ export default class NetworkManager {
     this.players = new Map();
     /** @type {string} */
     this.authority = 'server'; // Default to server authority, can be overridden by manifest
+    /** @type {string|null} */
+    this.zoneId = null;
     this.setAuthorityFromManifest();
   }
 
@@ -158,10 +160,17 @@ export default class NetworkManager {
    * @param {string} zoneId - The ID of the zone to join.
    */
   joinZone(zoneId) {
+    this.zoneId = zoneId;
     const avatar = this.engine.spritz.world.getAvatar();
     const avatarData = avatar.getAvatarData();
     // Remove circular references
     const cleanAvatarData = JSON.parse(JSON.stringify(avatarData));
+    // Ensure server receives simple x/y/z properties for easier server-side handling
+    if (avatar && avatar.pos) {
+      cleanAvatarData.x = avatar.pos.x;
+      cleanAvatarData.y = avatar.pos.y;
+      cleanAvatarData.z = avatar.pos.z;
+    }
     this.send('join-zone', { zoneId, avatar: cleanAvatarData });
   }
 
@@ -261,8 +270,9 @@ export default class NetworkManager {
 
     const world = this.engine.spritz.world;
     if (world) {
-      const newPlayer = world.createAvatar(payload.client.avatar);
-      this.players.set(payload.client.clientId, newPlayer);
+  // Use world.addRemoteAvatar to create a remote avatar representation
+  world.addRemoteAvatar(payload.client.clientId, payload.client.avatar);
+  this.players.set(payload.client.clientId, payload.client.avatar);
     }
   }
 
@@ -287,18 +297,16 @@ export default class NetworkManager {
   handlePlayersUpdate(payload) {
     console.log('Players update:', payload.players);
     // Update local players map
-    const existingPlayers = new Set(this.players.keys());
-    const newPlayers = new Set(payload.players.map(p => p.clientId));
+  const existingPlayers = new Set(this.players.keys());
+  const newPlayers = new Set(payload.players.map(p => p.clientId));
 
     // Remove players no longer in the zone
     for (const clientId of existingPlayers) {
       if (!newPlayers.has(clientId)) {
-        const player = this.players.get(clientId);
-        if (player) {
-          const world = this.engine.spritz.world;
-          if (world) world.removeAvatar(player);
-          this.players.delete(clientId);
-        }
+        // Remove remote avatar via world API
+        const world = this.engine.spritz.world;
+        if (world) world.removeRemoteAvatar(clientId);
+        this.players.delete(clientId);
       }
     }
 
@@ -308,17 +316,12 @@ export default class NetworkManager {
         const world = this.engine.spritz.world;
         if (world) {
           if (this.players.has(playerData.clientId)) {
-            // Update existing player avatar if needed
-            const existingPlayer = this.players.get(playerData.clientId);
-            // Assuming avatar data can be updated, but for simplicity, recreate if different
-            if (JSON.stringify(existingPlayer.getAvatarData()) !== JSON.stringify(playerData.avatar)) {
-              world.removeAvatar(existingPlayer);
-              const newPlayer = world.createAvatar(playerData.avatar);
-              this.players.set(playerData.clientId, newPlayer);
-            }
+            // Update remote avatar data
+            world.updateRemoteAvatar(playerData.clientId, playerData.avatar);
+            this.players.set(playerData.clientId, playerData.avatar);
           } else {
-            const newPlayer = world.createAvatar(playerData.avatar);
-            this.players.set(playerData.clientId, newPlayer);
+            world.addRemoteAvatar(playerData.clientId, playerData.avatar);
+            this.players.set(playerData.clientId, playerData.avatar);
           }
         }
       }
@@ -357,25 +360,29 @@ export default class NetworkManager {
     // Update or create sprites based on zone state
     payload.sprites.forEach(spriteData => {
       // Skip own avatar to avoid duplication
-      if (spriteData.id === 'avatar') return;
+      // Skip the local player's avatar (id may be 'avatar' or match clientId)
+      if (spriteData.id === 'avatar' || spriteData.clientId === this.clientId) return;
 
-      let existingSprite = zone.spriteDict[spriteData.id];
-      if (existingSprite) {
-        // Update existing sprite position/data
-        existingSprite.pos.x = spriteData.x;
-        existingSprite.pos.y = spriteData.y;
-        existingSprite.pos.z = spriteData.z || 0;
-        // Update other properties as needed
+      // If we have a remote avatar for this clientId, update it; otherwise create one
+      const clientId = spriteData.clientId || (spriteData.avatar && spriteData.avatar.clientId);
+      if (clientId) {
+        if (this.players.has(clientId)) {
+          world.updateRemoteAvatar(clientId, { x: spriteData.x, y: spriteData.y, z: spriteData.z, ...spriteData.avatar });
+        } else {
+          world.addRemoteAvatar(clientId, { id: spriteData.id, x: spriteData.x, y: spriteData.y, z: spriteData.z, ...spriteData.avatar });
+          this.players.set(clientId, spriteData.avatar || {});
+        }
       } else {
-        // Create new sprite/avatar
-        const avatarData = {
-          id: spriteData.id,
-          x: spriteData.x,
-          y: spriteData.y,
-          z: spriteData.z || 0,
-          ...spriteData.avatar
-        };
-        world.createAvatar(avatarData);
+        // Fallback: try to match by sprite id in zone spriteDict
+        let existingSprite = zone.spriteDict[spriteData.id];
+        if (existingSprite) {
+          existingSprite.pos.x = spriteData.x;
+          existingSprite.pos.y = spriteData.y;
+          existingSprite.pos.z = spriteData.z || 0;
+        } else {
+          const avatarData = { id: spriteData.id, x: spriteData.x, y: spriteData.y, z: spriteData.z || 0, ...spriteData.avatar };
+          world.createAvatar(avatarData);
+        }
       }
     });
   }
@@ -395,14 +402,17 @@ export default class NetworkManager {
    */
   handleAvatarUpdate(payload) {
     console.log(`Received avatar update for ${payload.clientId}:`, payload.avatar);
-    const player = this.players.get(payload.clientId);
-    if (player) {
-      // Update player avatar position and properties
-      player.pos.x = payload.avatar.x;
-      player.pos.y = payload.avatar.y;
-      player.pos.z = payload.avatar.z;
-      player.facing = payload.avatar.facing;
-      // Update other properties as needed
+    // Update remote avatar via world helper
+    const world = this.engine.spritz.world;
+    if (world) {
+      const updated = world.updateRemoteAvatar(payload.clientId, payload.avatar);
+      if (!updated) {
+        // If avatar didn't exist, create it
+        world.addRemoteAvatar(payload.clientId, { id: payload.avatar.id || `player-${payload.clientId}`, ...payload.avatar });
+        this.players.set(payload.clientId, payload.avatar);
+      } else {
+        this.players.set(payload.clientId, payload.avatar);
+      }
     }
   }
 
@@ -414,5 +424,3 @@ export default class NetworkManager {
     this.authority = authority;
   }
 }
-
-

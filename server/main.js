@@ -99,8 +99,10 @@ function handleJoinZone(clientId, payload) {
     .map(id => ({ clientId: id, avatar: clients.get(id).avatar }));
 
   client.ws.send(JSON.stringify({ type: 'zone-joined', payload: { zoneId, players: playersInZone } }));
-
+  // Inform others a player joined and broadcast current players list
   broadcastToZone(zoneId, { type: 'player-joined', payload: { client: { clientId, avatar } } }, clientId);
+  const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: clients.get(id).avatar }));
+  broadcastToZone(zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
   console.log(`Client ${clientId} joined zone ${zoneId}`);
 
   // After joining, request zone state to sync all sprites
@@ -116,9 +118,9 @@ function handleDisconnect(clientId) {
     if (zone) {
       zone.delete(clientId);
       broadcastToZone(client.zoneId, { type: 'player-left', payload: { clientId } });
-      // Broadcast updated player list after disconnect
-      const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: clients.get(id).avatar }));
-      broadcastToZone(client.zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
+  // Broadcast updated player list after disconnect
+  const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: clients.get(id).avatar }));
+  broadcastToZone(client.zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
     }
   }
   clients.delete(clientId);
@@ -161,14 +163,12 @@ function handleZoneStateRequest(clientId, payload) {
   for (const cid of zone) {
     const c = clients.get(cid);
     if (c && c.avatar) {
-      sprites.push({
-        id: c.avatar.id || `player-${cid}`,
-        objId: c.avatar.objId || cid,
-        x: c.avatar.x || 0,
-        y: c.avatar.y || 0,
-        z: c.avatar.z || 0,
-        avatar: c.avatar
-      });
+  // Normalize avatar representation: some clients send pos under 'pos' or top-level x/y
+  const x = (c.avatar.pos && c.avatar.pos.x) != null ? c.avatar.pos.x : (c.avatar.x != null ? c.avatar.x : 0);
+  const y = (c.avatar.pos && c.avatar.pos.y) != null ? c.avatar.pos.y : (c.avatar.y != null ? c.avatar.y : 0);
+  const z = (c.avatar.pos && c.avatar.pos.z) != null ? c.avatar.pos.z : (c.avatar.z != null ? c.avatar.z : 0);
+  const id = c.avatar.id != null ? c.avatar.id : `player-${cid}`;
+  sprites.push({ clientId: cid, id, objId: c.avatar.objId || cid, x, y, z, avatar: { ...c.avatar, x, y, z, id, clientId: cid } });
     }
   }
 
