@@ -228,7 +228,7 @@ export default class NetworkManager {
       const data = {
         action: action.constructor.name.toLowerCase(),
         params: action.params,
-        spriteId: sprite.id + '-' + this.clientId,
+        spriteId: sprite.id,
       };
       this.send('action', data);
     } else {
@@ -394,35 +394,34 @@ export default class NetworkManager {
    * @param {object} payload - The payload containing action details.
    */
   handleAction(payload) {
-    if (payload.clientId === this.clientId && this.authority === 'server') return; // Avoid echo for server authority
+    if (payload.clientId === this.clientId) return; // Skip own actions to prevent double application
     console.log(`Received action from ${payload.clientId}:`, payload);
-    const player = this.players.get(payload.clientId) || this.engine.spritz.world.getAvatar(); // For own actions in client authority
-    if (player) {
-      try {
-        let Action = null;
-        const world = this.engine.spritz && this.engine.spritz.world;
-        if (world && typeof world.actionFactory === 'function') {
-          Action = world.actionFactory(payload.action);
-        }
-        // Fallback: use ActionLoader to construct action if factory missing
-        if (!Action) {
-          if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = require('@Engine/utils/loaders/ActionLoader.js').ActionLoader;
-          const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => {});
-          // loader.load returns an instance of Action (synchronously in our loader implementation)
-          const instance = loader;
-          // Some path: ActionLoader returns an Action instance via its load helper
-          if (instance && instance.instances == null) {
-            // unlikely shape; log and skip
-            console.warn('ActionLoader returned unexpected instance for action', payload.action, instance);
-          }
-          // ActionLoader already enqueued the action on the sprite via its callbacks;
-        } else {
-          const action = new Action(player, ...Object.values(payload.params || {}));
-          player.addAction(action);
-        }
-      } catch (e) {
-        console.warn('Failed to handle action payload', payload, e);
+    const player = this.engine.spritz.world.remoteAvatars.get(payload.clientId); // Only handle remote avatars
+    if (!player) return;
+    try {
+      let Action = null;
+      const world = this.engine.spritz && this.engine.spritz.world;
+      if (world && typeof world.actionFactory === 'function') {
+        Action = world.actionFactory(payload.action);
       }
+      // Fallback: use ActionLoader to construct action if factory missing
+      if (!Action) {
+        if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = require('@Engine/utils/loaders/ActionLoader.js').ActionLoader;
+        const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => {});
+        // loader.load returns an instance of Action (synchronously in our loader implementation)
+        const instance = loader;
+        // Some path: ActionLoader returns an Action instance via its load helper
+        if (instance && instance.instances == null) {
+          // unlikely shape; log and skip
+          console.warn('ActionLoader returned unexpected instance for action', payload.action, instance);
+        }
+        // ActionLoader already enqueued the action on the sprite via its callbacks;
+      } else {
+        const action = new Action(player, ...Object.values(payload.params || {}));
+        player.addAction(action);
+      }
+    } catch (e) {
+      console.warn('Failed to handle action payload', payload, e);
     }
   }
 
