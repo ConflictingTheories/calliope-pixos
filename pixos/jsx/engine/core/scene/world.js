@@ -23,7 +23,6 @@ import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
 import { Vector } from '@Engine/utils/math/vector.js';
-
 /**
  * @typedef {object} MenuConfig
  * @property {object} start - Start menu configuration.

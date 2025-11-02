@@ -8,7 +8,8 @@
     "clean": "rimraf build",
     "compile": "npm run clean && cross-env NODE_ENV=production babel pixos/jsx --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
     "webpack": "npx webpack",
-    "start:server": "node server/main.js"
+    "start:server": "node server/v2/main.js",
+    "start:server:legacy": "node server/v1/main.js"
   },
   "files": [
     "dist",

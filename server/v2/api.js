@@ -22,7 +22,7 @@ export default class API {
       ws.on('message', message => this.onMessage(clientId, message));
 
       ws.on('close', () => {
-        handleDisconnect(clientId);
+        this.zoneHandler.handleDisconnect(clientId);
       });
     });
   }

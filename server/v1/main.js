@@ -172,7 +172,7 @@ function handleZoneStateRequest(clientId, payload) {
   const x = (c.avatar.pos && c.avatar.pos.x) != null ? c.avatar.pos.x : (c.avatar.x != null ? c.avatar.x : 0);
   const y = (c.avatar.pos && c.avatar.pos.y) != null ? c.avatar.pos.y : (c.avatar.y != null ? c.avatar.y : 0);
   const z = (c.avatar.pos && c.avatar.pos.z) != null ? c.avatar.pos.z : (c.avatar.z != null ? c.avatar.z : 0);
-  const id = c.avatar.id != null ? c.avatar.id : `player-${cid}`;
+  const id = c.avatar.id != null ? c.avatar.id : `avatar-${cid}`;
   sprites.push({ clientId: cid, id, objId: c.avatar.objId || cid, x, y, z, avatar: { ...c.avatar, x, y, z, id, clientId: cid } });
     }
   }
