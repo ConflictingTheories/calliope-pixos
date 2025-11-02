@@ -172,6 +172,32 @@ export default class PixosLuaLibrary {
         }
       },
 
+      /**
+       * Set the backdrop for the current cutscene.
+       * @param {string} backdrop - The backdrop label to set.
+       */
+      set_backdrop: (backdrop) => {
+        try {
+          engine.cutsceneManager.setBackdrop({ backdrop });
+        } catch (e) {
+          console.warn('Failed to set backdrop', e);
+        }
+      },
+
+      /**
+       * Show a cutout in the current cutscene.
+       * @param {string} sprite - The sprite ID.
+       * @param {string} cutout - The cutout label.
+       * @param {string} [position='left'] - The position ('left' or 'right').
+       */
+      show_cutout: (sprite, cutout, position = 'left') => {
+        try {
+          engine.cutsceneManager.showCutout({ sprite, cutout, position });
+        } catch (e) {
+          console.warn('Failed to show cutout', e);
+        }
+      },
+
       // zone functions
       play_cutscene: (cutscene) => {
         // todo - not working

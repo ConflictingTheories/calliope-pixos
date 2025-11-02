@@ -29,6 +29,10 @@ export default class Hud {
     if (!Hud._instance) {
       /** @type {GLEngine} */
       this.engine = engine;
+      /** @type {Image|null} */
+      this.backdropImage = null;
+      /** @type {Array} */
+      this.cutoutImages = []; // Array of {image, position} objects
       Hud._instance = this;
     }
     return Hud._instance;
@@ -99,6 +103,22 @@ export default class Hud {
   }
 
   /**
+   * Sets the backdrop image for cutscenes.
+   * @param {Image|null} image - The backdrop image.
+   */
+  setBackdrop = (image) => {
+    this.backdropImage = image;
+  }
+
+  /**
+   * Sets the cutout images for cutscenes.
+   * @param {Array} cutouts - Array of {image, position} objects.
+   */
+  setCutouts = (cutouts) => {
+    this.cutoutImages = cutouts;
+  }
+
+  /**
    * Applies style configuration to the canvas context.
    * @param {Object} styleConfig - The style properties to apply.
    * @param {string} [styleConfig.font='20px invasion2000'] - Font style.
@@ -160,6 +180,39 @@ export default class Hud {
   }
 
   /**
+   * Draws the backdrop and cutouts for cutscenes.
+   */
+  drawCutsceneElements = () => {
+    const { ctx } = this;
+    const canvasWidth = ctx.canvas.width;
+    const canvasHeight = ctx.canvas.height;
+
+    // Draw backdrop if set
+    if (this.backdropImage) {
+      ctx.drawImage(this.backdropImage, 0, 0, canvasWidth, canvasHeight);
+    }
+
+    // Draw cutouts
+    this.cutoutImages.forEach(({ image, position }) => {
+      if (image) {
+        const x = position === 'left' ? 50 : canvasWidth - 250;
+        const y = canvasHeight / 2 - 100;
+        const width = 200;
+        const height = 200;
+        if (position === 'right') {
+          // Mirror for right side
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, -x - width, y, width, height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(image, x, y, width, height);
+        }
+      }
+    });
+  }
+
+  /**
    * Creates a scrolling textbox for dialogue.
    * @param {string} text - The text to display.
    * @param {boolean} [scrolling=false] - Whether to enable scrolling.
@@ -167,6 +220,9 @@ export default class Hud {
    * @returns {textScrollBox} The created textbox instance.
    */
   scrollText = (text, scrolling = false, options = {}) => {
+    // Draw cutscene elements first (backdrop and cutouts)
+    this.drawCutsceneElements();
+
     let txt = new textScrollBox(this.engine.ctx);
     txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
     txt.setOptions(options);
