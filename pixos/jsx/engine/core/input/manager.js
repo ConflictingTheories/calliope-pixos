@@ -184,8 +184,21 @@ export default class InputManager {
       if (mapping.keyboard && checkKeyboard(mapping.keyboard)) {
         active = true;
       }
-      if (mapping.gamepad && this.gamepad.keyPressed(mapping.gamepad)) {
-        active = true;
+      if (mapping.gamepad) {
+        // Check for button presses
+        if (this.gamepad.keyPressed(mapping.gamepad)) {
+          active = true;
+        }
+        // Check for joystick axis with threshold for directions
+        else if (mapping.gamepad === 'up' && this.gamepad.map['y-axis'] < -0.5) {
+          active = true;
+        } else if (mapping.gamepad === 'down' && this.gamepad.map['y-axis'] > 0.5) {
+          active = true;
+        } else if (mapping.gamepad === 'left' && this.gamepad.map['x-axis'] < -0.5) {
+          active = true;
+        } else if (mapping.gamepad === 'right' && this.gamepad.map['x-axis'] > 0.5) {
+          active = true;
+        }
       }
       if (mapping.mouse && this.mouse.isButtonPressed(mapping.mouse)) {
         active = true;
@@ -265,8 +278,20 @@ export default class InputManager {
     if (mapping.keyboard && this.keyboard.isKeyPressed(mapping.keyboard)) {
       return 'keyboard:' + mapping.keyboard;
     }
-    if (mapping.gamepad && this.gamepad.keyPressed(mapping.gamepad)) {
-      return 'gamepad:' + mapping.gamepad;
+    if (mapping.gamepad) {
+      if (this.gamepad.keyPressed(mapping.gamepad)) {
+        return 'gamepad:' + mapping.gamepad;
+      }
+      // Check for joystick axis with threshold for directions
+      if (mapping.gamepad === 'up' && this.gamepad.map['y-axis'] < -0.5) {
+        return 'gamepad:up';
+      } else if (mapping.gamepad === 'down' && this.gamepad.map['y-axis'] > 0.5) {
+        return 'gamepad:down';
+      } else if (mapping.gamepad === 'left' && this.gamepad.map['x-axis'] < -0.5) {
+        return 'gamepad:left';
+      } else if (mapping.gamepad === 'right' && this.gamepad.map['x-axis'] > 0.5) {
+        return 'gamepad:right';
+      }
     }
     if (mapping.mouse && this.mouse.isButtonPressed(mapping.mouse)) {
       return 'mouse:' + mapping.mouse;
