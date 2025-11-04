@@ -15,13 +15,24 @@ import { translate, rotate } from '@Engine/utils/math/matrix4.js';
 import DynamicSprite from '@Engine/dynamic/sprite.js';
 import { degToRad } from '../utils/math/vector.js';
 
+/**
+ * DynamicAnimatedTile - A dynamic tile with animation capabilities.
+ */
 export default class DynamicAnimatedTile extends DynamicSprite {
+  /**
+   * Creates an instance of DynamicAnimatedTile.
+   * @param {GLEngine} engine - The game engine instance.
+   * @param {Object} json - The JSON configuration.
+   * @param {Object} zip - The zip file data.
+   */
   constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine, json, zip);
   }
 
-  // setup framerate
+  /**
+   * Initializes the animated tile, setting up framerate.
+   */
   init = () => {
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
@@ -30,7 +41,10 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     }
   }
 
-  // Update each frame
+  /**
+   * Updates the tile each frame.
+   * @param {number} time - The current time.
+   */
   tick = (time) => {
     if (this.lastTime == 0) {
       this.lastTime = time;
@@ -50,7 +64,10 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     }
   }
 
-  // Draw Frame
+  /**
+   * Draws the tile frame.
+   * @param {GLEngine} engine - The game engine instance.
+   */
   draw = (engine) => {
     if (!this.loaded) return;
     engine.renderManager.mvPushMatrix();

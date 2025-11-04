@@ -15,6 +15,9 @@ pixos.set_skybox_shader('matrix');
 -- can be drafted up manually. Likewise, the cutscene manager can be used to script other events
 -- or they can be triggered manually.
 
+pixos.emit_particles({5, 5, -8}, { preset = 'flame', count = 20, life = 2000 })
+
+
 -- Using Cutscene Manager
 local steps = {}
 -- table.insert(steps, { type = 'action', action = pixos.set_flag('test-flag', {msg = 'test'}, true)})

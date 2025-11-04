@@ -16,11 +16,11 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
 
 /**
- * Load Map Information
- * @param {*} json
- * @param {*} cells
- * @param {*} zip
- * @returns
+ * Loads map information from JSON, cells, and zip data.
+ * @param {Object} json - The JSON configuration.
+ * @param {Array|string} cells - The cells data.
+ * @param {Object} zip - The zip file data.
+ * @returns {Promise<Object>} The loaded map data.
  */
 export async function loadMap(json, cells, zip) {
   console.log('loading map....');
@@ -135,10 +135,10 @@ export async function loadMap(json, cells, zip) {
 }
 
 /**
- * Generate Map Cells from Tileset
- * @param {*} cells
- * @param {*} Tileset
- * @returns
+ * Generates map cells from a tileset.
+ * @param {Array|string} cells - The cells data.
+ * @param {Object} Tileset - The tileset mapping.
+ * @returns {Array|string} The generated cells.
  */
 export function dynamicCells(cells, Tileset) {
   // handle cells generator

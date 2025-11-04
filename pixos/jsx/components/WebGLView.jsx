@@ -138,27 +138,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     setPreview(true);
   }
 
-  // Screen capture from spritz and hud
-  function captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext) {
-    // stream video output (single canvas element?)
-    cStream = mergeCanvas.captureStream();
-    engine.streamToVideo(cStream, previewRef);
-
-    // setup recorder (todo -- move into the engine to access audio streams)
-    recorder = new MediaRecorder(cStream);
-
-    // capture streams
-    let gameVideo = engine.streamToVideo(canvas.captureStream());
-    let hudVideo = engine.streamToVideo(hud.captureStream());
-
-    // merge hud + canvas into preview (for recording / screen capture)
-    (function mergeStreams() {
-      mergeContext.drawImage(gameVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // game
-      mergeContext.drawImage(hudVideo, 0, 0, mergeCanvas.width, mergeCanvas.height); // hud
-      requestAnimationFrame(mergeStreams);
-    })();
-  }
-
   useEffect(async () => {
     // handle resize
     window.addEventListener('resize', setDimension);
@@ -169,16 +148,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     const gamepad = gamepadRef.current;
     const fileUpload = fileRef.current;
 
-    // merge streams canvas
-    const mergeCanvas = mergeCanvasRef.current;
-    let mergeContext = mergeCanvas.getContext('2d');
-
     // Webgl Engine
     engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
-
-    // screen capture
-    // dragElement(previewBoxRef);
-    captureVideoStreams(canvas, hud, recorder, cStream, mergeCanvas, mergeContext);
 
     // load fonts
     await loadFonts();
@@ -203,26 +174,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
   let canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
-  let recordBtnStyle = {
-    display: isRecording ? 'none' : 'block',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: 100,
-    height: '2.5rem',
-    padding: '0.5rem',
-    opacity: 0.8,
-  };
-  let showRecordBtnStyle = {
-    display: showRecording ? 'none' : 'block',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 100,
-    height: '2.5rem',
-    padding: '0.5rem',
-    opacity: 0.8,
-  };
 
   return (
     <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>
@@ -238,11 +189,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
         tabIndex={0}
       >
-        {/* Preview & Recording */}
-        <div style={{ display: !showRecording ? 'none' : 'block' }} ref={previewBoxRef}>
-          <video style={{ display: isRecording ? 'block' : 'none' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={previewRef}></video>
-          <video style={{ display: isRecording ? 'none' : 'block' }} width={canvasWidth / 2} height={canvasHeight / 2} ref={recordingRef}></video>
-        </div>
         {/* Game */}
         <div style={{ display: showRecording ? 'none' : 'block' }}>
           {/* // WEBGL - For 3D Rendering */}
@@ -316,19 +262,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       </div>
       <div>
         <input type="file" ref={fileRef} src={zipData ?? null} hidden />
-        {/* Recording Buttons - todo - style and include video controls */}
-        <button style={recordBtnStyle} ref={recordBtnRef} onClick={() => startRecording(cStream, recorder)}>
-          Record Gameplay
-        </button>
-        <button style={{ ...recordBtnStyle, display: isRecording ? 'block' : 'none' }} ref={recordBtnRef} onClick={() => stopRecording(recorder)}>
-          Stop Recording
-        </button>
-        <button style={{ ...showRecordBtnStyle }} ref={previewBtnRef} onClick={() => showPreview()}>
-          Show Recording
-        </button>
-        <button style={{ ...showRecordBtnStyle, display: showRecording ? 'block' : 'none' }} ref={previewBtnRef} onClick={() => hidePreview()}>
-          Show Game
-        </button>
       </div>
     </div>
   );

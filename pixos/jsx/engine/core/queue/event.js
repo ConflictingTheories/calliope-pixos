@@ -10,28 +10,36 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+/**
+ * Event - Represents high-level events analogous to actions, managed at the world level.
+ */
 export default class Event {
   /**
-   * Events are High-Level Analogues to actions
-   * @param {string} type
-   * @param {World} world
-   * @param {*} callback
+   * Creates an instance of Event.
+   * @param {string} type - The type of event.
+   * @param {World} world - The world instance.
+   * @param {Function} [callback] - Optional callback on completion.
    */
   constructor(type, world, callback) {
+    /** @type {string} */
     this.type = type;
+    /** @type {World} */
     this.world = world;
+    /** @type {Function} */
     this.callback = callback;
+    /** @type {number} */
     this.time = new Date().getTime();
+    /** @type {string} */
     this.id = world.id + '-' + type + '-' + this.time;
   }
 
   /**
-   * configure event
-   * @param {string} type
-   * @param {World} world
-   * @param {string} id
-   * @param {number} time
-   * @param {*} args
+   * Configures the event with provided parameters.
+   * @param {string} type - The type of event.
+   * @param {World} world - The world instance.
+   * @param {string} id - The event ID.
+   * @param {number} time - The start time.
+   * @param {*} args - Creation arguments.
    */
   configure(type, world, id, time, args) {
     this.world = world;
@@ -42,8 +50,8 @@ export default class Event {
   }
 
   /**
-   * initialize on load
-   * @param {*} args
+   * Initializes the event on load.
+   * @param {*} args - Initialization arguments.
    */
   async onLoad(args) {
     await this.init.apply(this, args);
@@ -51,8 +59,8 @@ export default class Event {
   }
 
   /**
-   * serialize
-   * @returns
+   * Serializes the event for storage or transmission.
+   * @returns {object} Serialized event data.
    */
   serialize() {
     return {
@@ -65,8 +73,8 @@ export default class Event {
   }
 
   /**
-   * callback on completion
-   * @returns
+   * Calls the completion callback if provided.
+   * @returns {*} Result of the callback or null.
    */
   onComplete() {
     return this.callback ? this.callback() : null;

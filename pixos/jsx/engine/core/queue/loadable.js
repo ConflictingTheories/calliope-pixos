@@ -10,10 +10,13 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+/**
+ * Loadable - Base class for objects that can be loaded asynchronously, with support for queuing actions until loaded.
+ */
 export default class Loadable {
   /**
-   * Run action if loaded or add to queue
-   * @param {*} action
+   * Runs an action immediately if loaded, otherwise adds it to the onLoadActions queue.
+   * @param {Function} action - The action to run or queue.
    */
   runWhenLoaded(action) {
     if (this.loaded) action();
@@ -21,8 +24,8 @@ export default class Loadable {
   }
 
   /**
-   * update and override properties
-   * @param {*} data
+   * Updates the object by assigning new properties.
+   * @param {*} data - The data object to merge into this instance.
    */
   update(data) {
     Object.assign(this, data);

@@ -11,47 +11,51 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * Store - A singleton key-value store for game state and session data.
+ */
 export default class Store {
   /**
-   * Store
+   * Creates an instance of Store.
+   * @returns {Store} The singleton instance.
    */
   constructor() {
     if (!Store._instance) {
+      /** @type {Object.<string, any>} */
       this.store = {};
       Store._instance = this;
     }
     return Store._instance;
     // Store setup - session based
-
   }
 
   /**
-   * Returns a copy of the key-values in the store (note - only a copy is provided)
-   * @returns 
+   * Returns a copy of the key-values in the store (note - only a copy is provided).
+   * @returns {Object.<string, any>} A copy of the store object.
    */
   all = () => {
     return Object.assign({}, this.store);
   }
 
   /**
-   * Get list of keys (no values)
-   * @returns 
+   * Gets list of keys (no values).
+   * @returns {string[]} Array of keys.
    */
   keys = () => {
     return Object.keys(this.store);
   }
 
   /**
-   * Gets list of values from store (no keys)
-   * @returns 
+   * Gets list of values from store (no keys).
+   * @returns {any[]} Array of values.
    */
   values = () => {
     return Object.keys(this.store).map(key => this.store[key]);
   }
 
   /**
-   * Return size of keystore
-   * @returns 
+   * Returns size of keystore.
+   * @returns {number} The number of keys in the store.
    */
   size = () => {
     return Object.keys(this.store).length;
@@ -59,23 +63,24 @@ export default class Store {
 
 
   /**
-   * fetch value from store
-   * @param {*} key
-   * @returns
+   * Fetches value from store.
+   * @param {string} key - The key to retrieve.
+   * @returns {any} The value associated with the key.
+   * @throws {string} If the key does not exist.
    */
   get = (key) => {
     if (!this.store[key]) {
-      throw 'no key set'
+      throw 'no key set';
     }
     return this.store[key];
   }
 
   /**
-   * add key to store but only if not existing
-   * @param {*} key
-   * @param {*} value
-   * @returns
-   * @throws 
+   * Adds key to store but only if not existing.
+   * @param {string} key - The key to add.
+   * @param {any} value - The value to store.
+   * @returns {any} The stored value.
+   * @throws {string} If the key already exists.
    */
   add = (key, value) => {
     if (!!this.store[key]) {
@@ -85,18 +90,19 @@ export default class Store {
   }
 
   /**
-   * set key in store (no checks for existing - just overwrites)
-   * @param {*} key
-   * @param {*} changes
-   * @returns
+   * Sets key in store (no checks for existing - just overwrites).
+   * @param {string} key - The key to set.
+   * @param {any} changes - The value to store.
+   * @returns {any} The stored value.
    */
   set = (key, changes) => {
     return (this.store[key] = { ...changes });
   }
 
   /**
-   * delete key from store
-   * @returns
+   * Deletes key from store.
+   * @param {string} key - The key to delete.
+   * @returns {null} Null.
    */
   delete = (key) => {
     return (this.store[key] = null);

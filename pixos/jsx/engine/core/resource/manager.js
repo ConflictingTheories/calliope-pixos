@@ -22,29 +22,32 @@ import Speech from '../scene/speech.js';
 import { OBJ } from '../../utils/obj/index.js';
 import GLEngine from '../index.js';
 
+/**
+ * ResourceManager - Manages loading and caching of game resources like textures, audio, models, etc.
+ */
 export default class ResourceManager {
-  /** Rendering Manager for Engine
-   *
-   * @param {GLEngine} engine
+  /**
+   * Creates an instance of ResourceManager.
+   * @param {GLEngine} engine - The game engine instance.
+   * @returns {ResourceManager} The singleton instance.
    */
   constructor(engine) {
     if (!ResourceManager._instance) {
+      /** @type {GLEngine} */
       this.engine = engine;
 
+      /** @type {OBJ} */
       this.objLoader = OBJ;
+      /** @type {AudioLoader} */
       this.audioLoader = new AudioLoader(this);
 
-      // todo - need to move all resources into this class
-      // --> tilesets
-      // --> textures
-      // --> audio
-      // --> models
-      // --> fonts
-      // --> possibly shaders....
+      // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
 
       // ASSETS
-      this.textures = [];
-      this.speeches = [];
+      /** @type {Object.<string, Texture>} */
+      this.textures = {};
+      /** @type {Object.<string, Speech>} */
+      this.speeches = {};
 
       ResourceManager._instance = this;
     }
@@ -52,9 +55,9 @@ export default class ResourceManager {
   }
 
   /**
-   * load texture
-   * @param {*} src
-   * @returns
+   * Loads a texture from a source URL.
+   * @param {string} src - The texture source URL.
+   * @returns {Texture} The loaded texture.
    */
   loadTexture = (src) => {
     if (this.textures[src]) return this.textures[src];
@@ -63,10 +66,10 @@ export default class ResourceManager {
   }
 
   /**
-   * load texture from zip
-   * @param {*} src
-   * @param {*} zip
-   * @returns
+   * Loads a texture from a zip file.
+   * @param {string} src - The texture filename in the zip.
+   * @param {JSZip} zip - The zip file instance.
+   * @returns {Promise<Texture>} The loaded texture.
    */
   loadTextureFromZip = async (src, zip) => {
     if (this.textures[src]) return this.textures[src];
@@ -79,10 +82,10 @@ export default class ResourceManager {
   }
 
   /**
-   * load speech
-   * @param {*} src
-   * @param {*} canvas
-   * @returns
+   * Loads a speech instance.
+   * @param {string} src - The speech source.
+   * @param {HTMLCanvasElement} canvas - The canvas element.
+   * @returns {Speech} The loaded speech instance.
    */
   loadSpeech = (src, canvas) => {
     if (this.speeches[src]) return this.speeches[src];

@@ -16,9 +16,15 @@ import Spritz from '@Engine/core/scene/spritz.js';
 import World from '@Engine/core/scene/world.js';
 import JSZip from 'jszip';
 
-// Spritz Object
+/**
+ * ExampleDynamicSpritz - A dynamic Spritz implementation for loading games from zip files.
+ */
 export default class ExampleDynamicSpritz extends Spritz {
-  // Init Spritz
+  /**
+   * Initializes the dynamic Spritz instance.
+   * @param {GLEngine} engine - The game engine instance.
+   * @returns {Promise<void>}
+   */
   init = async (engine) => {
     Spritz._instance.loaded = false;
     // game Engine & Timing
@@ -38,6 +44,12 @@ export default class ExampleDynamicSpritz extends Spritz {
         let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
         console.log(manifest);
 
+        // Connect to network if specified
+        if (manifest.network && manifest.network.url) {
+          console.log('Network connection found -- attempting connectiong to server')
+          engine.networkManager.connect(manifest.network.url);
+        }
+
         // load initial zone(s) from zip file. We await each load sequentially so that
         // screen transitions complete cleanly between zones. Each call will fade
         // out the current view, load the zone and then fade back in. Note: if
@@ -50,7 +62,7 @@ export default class ExampleDynamicSpritz extends Spritz {
           await world.loadZoneFromZip(zone, zip, true, { effect: 'cross', duration: 500 });
         }
 
-        // start
+        // start game
         world.isPaused = false;
 
         // Exit Menu

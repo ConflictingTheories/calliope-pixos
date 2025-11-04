@@ -17,18 +17,33 @@ import { mergeDeep } from '@Engine/utils/enums.js';
 import Sprite from '@Engine/core/scene/sprite.js';
 import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
 
+/**
+ * DynamicSprite - A dynamic sprite with JSON loading, state machines, and Lua scripting support.
+ */
 export default class DynamicSprite extends Sprite {
+  /**
+   * Creates an instance of DynamicSprite.
+   * @param {GLEngine} engine - The game engine instance.
+   * @param {Object} json - The JSON configuration.
+   * @param {Object} zip - The zip file data.
+   */
   constructor(engine, json, zip) {
     // Initialize Sprite
     super(engine);
+    /** @type {GLEngine} */
     this.engine = engine;
+    /** @type {Object} */
     this.json = json;
+    /** @type {Object} */
     this.zip = zip;
     // store json config
     this.ActionLoader = ActionLoader;
   }
 
-  // load in json properties to object
+  /**
+   * Loads JSON properties into the object.
+   * @returns {Promise<void>}
+   */
   loadJson = async () => {
     // extended properties
     if (this.json.extends) {
@@ -67,7 +82,12 @@ export default class DynamicSprite extends Sprite {
     this.enableSpeech = this.json.enableSpeech; // speech bubble
   }
 
-  // Interaction
+  /**
+   * Handles interaction with state machine and Lua callbacks.
+   * @param {Sprite} sprite - The interacting sprite.
+   * @param {function} [finish=() => {}] - Callback on completion.
+   * @returns {Promise<Array>} The interaction results.
+   */
   interact = async (sprite, finish = () => { }) => {
     let ret = null;
     let states = this.json.states ?? [];
@@ -102,7 +122,13 @@ export default class DynamicSprite extends Sprite {
     return ret;
   }
 
-  // load actions based on provided state and load lua callbacks as needed
+  /**
+   * Loads actions dynamically based on state and Lua callbacks.
+   * @param {Object} state - The state configuration.
+   * @param {Sprite} sprite - The sprite context.
+   * @param {function} finish - The finish callback.
+   * @returns {Promise<Array>} The loaded actions.
+   */
   loadActionDynamically = async (state, sprite, finish) => {
     console.log({ sprite, state });
     return await Promise.all(
@@ -157,8 +183,12 @@ export default class DynamicSprite extends Sprite {
     );
   }
 
-  // todo -- add select handler dynamically (onSelect)
-  // Interaction
+  /**
+   * Handles selection interaction, with Lua scripting support.
+   * @param {Object} _this - The context.
+   * @param {Sprite} sprite - The sprite being selected.
+   * @returns {Promise<any>}
+   */
   onSelect = async (_this, sprite) => {
     if (!this.selectTrigger) {
       return;
@@ -189,8 +219,12 @@ export default class DynamicSprite extends Sprite {
     }
   }
 
-  // todo -- add step handler dynamically (onStep)
-  // Interaction
+  /**
+   * Handles step interaction, with Lua scripting support.
+   * @param {Object} _this - The context.
+   * @param {Sprite} sprite - The sprite stepping.
+   * @returns {Promise<any>}
+   */
   onStep = async (_this, sprite) => {
     if (!this.stepTrigger) {
       return;

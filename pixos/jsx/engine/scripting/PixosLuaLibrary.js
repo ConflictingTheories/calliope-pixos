@@ -1,3 +1,16 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 
 export default class PixosLuaLibrary {
@@ -35,39 +48,52 @@ export default class PixosLuaLibrary {
       get_world: () => {
         return engine.spritz.world;
       },
+      // network functions
+      send_action: (action = false) => {
+        const { networkManager } = engine;
+        if (networkManager && networkManager.ws) {
+          const sent = networkManager.sendAction(action.toObject());
+          if (action)
+            return () => Promise.resolve(sent);
+          return sent;
+        }
+        if (action)
+          return () => Promise.resolve(false);
+        return false;
+      },
       // flag functions
       all_flags: (action = false) => {
         const flags = engine.store.all();
         if (action)
-          return ()=>Promise.resolve(flags);
+          return () => Promise.resolve(flags);
         return flags;
       },
       has_flag: (key, action = false) => {
         console.log('checking flag via lua', key, action);
         const hasFlag = engine.store.keys().includes(key);
         if (action)
-          return ()=>Promise.resolve(hasFlag);
+          return () => Promise.resolve(hasFlag);
         return hasFlag;
       },
       set_flag: (key, value, action = false) => {
         console.log('setting flag via lua', key, action);
         const flag = engine.store.set(key, value.toObject());
         if (action)
-          return ()=>Promise.resolve(flag);
+          return () => Promise.resolve(flag);
         return flag;
       },
       add_flag: (key, value, action = false) => {
         console.log('adding flag via lua', key, action);
         engine.store.add(key, value.toObject());
         if (action)
-          return ()=>Promise.resolve(true);
+          return () => Promise.resolve(true);
         return true;
       },
       get_flag: (key, action = false) => {
         console.log('getting flag via lua', key, action);
         const flag = engine.store.get(key);
         if (action)
-          return ()=>Promise.resolve(flag);
+          return () => Promise.resolve(flag);
         return flag;
       },
       // world functions
@@ -146,13 +172,39 @@ export default class PixosLuaLibrary {
         }
       },
 
+      /**
+       * Set the backdrop for the current cutscene.
+       * @param {string} backdrop - The backdrop label to set.
+       */
+      set_backdrop: (backdrop) => {
+        try {
+          engine.cutsceneManager.setBackdrop({ backdrop });
+        } catch (e) {
+          console.warn('Failed to set backdrop', e);
+        }
+      },
+
+      /**
+       * Show a cutout in the current cutscene.
+       * @param {string} sprite - The sprite ID.
+       * @param {string} cutout - The cutout label.
+       * @param {string} [position='left'] - The position ('left' or 'right').
+       */
+      show_cutout: (sprite, cutout, position = 'left') => {
+        try {
+          engine.cutsceneManager.showCutout({ sprite, cutout, position });
+        } catch (e) {
+          console.warn('Failed to show cutout', e);
+        }
+      },
+
       // zone functions
       play_cutscene: (cutscene) => {
         // todo - not working
         return () =>
           new Promise((resolve) => {
             console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
-            if (envScope.zone.playCutscene) {pol
+            if (envScope.zone.playCutscene) {
               console.log({ msg: 'cutscene function found' });
               return envScope.zone.playCutscene(cutscene).then(() => {
                 resolve();
@@ -250,7 +302,7 @@ export default class PixosLuaLibrary {
         engine.renderManager.camera.setCamera();
       },
       get_camera_vector: () => {
-        return engine.renderManager.camera.cameraVector;
+        return engine.renderManager.camera.cameraTarget;
       },
       look_at: (pos, trgt, up) => {
         let position = this.lua.utils.ensureArray(pos.toObject());
@@ -306,7 +358,49 @@ export default class PixosLuaLibrary {
       },
 
       // input functions
-      // ...
+      bind_action: (action, inputType, inputValue) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.bindAction(action, inputType, inputValue);
+          }
+        } catch (e) {
+          console.warn('bind_action failed', e);
+        }
+      },
+      unbind_action: (action, inputType) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.unbindAction(action, inputType);
+          }
+        } catch (e) {
+          console.warn('unbind_action failed', e);
+        }
+      },
+      register_action_hook: (action, hook) => {
+        try {
+          if (engine.inputManager) {
+            engine.inputManager.registerActionHook(action, hook);
+          }
+        } catch (e) {
+          console.warn('register_action_hook failed', e);
+        }
+      },
+      is_action_active: (action) => {
+        try {
+          return engine.inputManager ? engine.inputManager.isActionActive(action) : false;
+        } catch (e) {
+          console.warn('is_action_active failed', e);
+          return false;
+        }
+      },
+      get_action_input: (action) => {
+        try {
+          return engine.inputManager ? engine.inputManager.getActionInput(action) : null;
+        } catch (e) {
+          console.warn('get_action_input failed', e);
+          return null;
+        }
+      },
 
       // audio functions
       // ...
@@ -367,6 +461,18 @@ export default class PixosLuaLibrary {
       get_mode: () => {
         try { return engine.spritz.world.modeManager.getMode(); } catch (e) { return null; }
       },
+      set_mode_mappings: (name, params) => {
+        try {
+          console.log('pixos.set_mode_mappings called ->', name, params);
+          if (engine && engine.inputManager) {
+            // params may be a Lua table - convert if necessary
+            const p = params && typeof params.toObject === 'function' ? params.toObject() : params;
+            engine.inputManager.setModeMappings(name, p);
+          }
+        } catch (e) {
+          console.warn('set_mode_mappings failed', e);
+        }
+      },
       register_mode: (name, handlers) => {
         try {
           if (!name) {
@@ -382,6 +488,9 @@ export default class PixosLuaLibrary {
           if (asObj.setup) h.setup = asObj.setup;
           if (asObj.update) h.update = asObj.update;
           if (asObj.teardown) h.teardown = asObj.teardown;
+          if (asObj.check_input) h.check_input = asObj.check_input;
+          if (asObj.on_select) h.on_select = asObj.on_select;
+          if (asObj.picker !== undefined) h.picker = asObj.picker;
           world.modeManager.register(name, h);
         } catch (e) { console.warn('register_mode failed', e); }
       },
@@ -401,6 +510,55 @@ export default class PixosLuaLibrary {
       set_skybox_shader: async (shaderName) => {
         if (engine.renderManager?.skyboxManager?.setSkyboxShader) {
           await engine.renderManager.skyboxManager.setSkyboxShader(shaderName);
+        }
+      },
+      // particle system
+      emit_particles: (posTbl, cfgTbl) => {
+        try {
+          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
+          const cfg = cfgTbl && typeof cfgTbl.toObject === 'function' ? cfgTbl.toObject() : cfgTbl || {};
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            // allow shorthand preset names
+            if (cfg.preset) {
+              const presetCfg = engine.renderManager.particleManager.preset(cfg.preset);
+              if (presetCfg) Object.assign(cfg, presetCfg);
+            }
+            engine.renderManager.particleManager.emit(pos, cfg);
+          }
+        } catch (e) {
+          console.warn('emit_particles failed', e);
+        }
+      },
+      create_particles: (posTbl, presetName) => {
+        try {
+          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
+          const preset = presetName || null;
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            const cfg = preset ? engine.renderManager.particleManager.preset(preset) : {};
+            engine.renderManager.particleManager.emit(pos, cfg || {});
+          }
+        } catch (e) {
+          console.warn('create_particles failed', e);
+        }
+      },
+      clear_particles: () => {
+        try {
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            engine.renderManager.particleManager.particles = [];
+          }
+        } catch (e) {
+          console.warn('clear_particles failed', e);
+        }
+      },
+      get_particle_count: () => {
+        try {
+          if (engine.renderManager && engine.renderManager.particleManager) {
+            return engine.renderManager.particleManager.particles.length;
+          }
+          return 0;
+        } catch (e) {
+          console.warn('get_particle_count failed', e);
+          return 0;
         }
       },
     });

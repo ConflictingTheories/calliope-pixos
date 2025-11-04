@@ -69,5 +69,11 @@
   "hotspotOffset": [0.5, 0.5, 0],
   "bindCamera": true,
   "enableSpeech": true,
-  "selectTrigger": "sprite/test_select"
+  "selectTrigger": "sprite/test_select",
+  "cutouts": {
+    "happy": "cutout_happy.png",
+    "sad": "cutout_sad.png",
+    "angry": "cutout_angry.png",
+    "neutral": "cutout_neutral.png"
+  }
 }

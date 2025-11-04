@@ -10,6 +10,7 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
 // Animate a sprite without moving them
 export default {
   init: function (length, untilFrame, finish) {

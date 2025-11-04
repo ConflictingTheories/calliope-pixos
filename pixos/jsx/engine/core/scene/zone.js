@@ -1,6 +1,6 @@
 /*                                                 *\
 ** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
+**          Calliope - Pixos Game Engine   	       **
 ** ----------------------------------------------- **
 **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
@@ -10,6 +10,12 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
+/**
+ * @fileoverview Zone class for Pixos game engine.
+ * Manages map zones, sprites, objects, and rendering.
+ */
+
 import { Direction, mergeDeep } from '@Engine/utils/enums.js';
 import Resources from '@Engine/utils/resources.js';
 import ActionQueue from '@Engine/core/queue/index.js';
@@ -19,46 +25,95 @@ import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
 
+/**
+ * @typedef {object} ZoneData
+ * @property {string} id - Zone ID.
+ * @property {number} objId - Object ID.
+ * @property {object[]} scripts - Scripts.
+ * @property {object} data - Zone data.
+ * @property {string[]} objects - Object IDs.
+ * @property {string[]} sprites - Sprite IDs.
+ * @property {Array<number[]>} selectedTiles - Selected tiles.
+ */
+
+/**
+ * Zone - Represents a map zone with tiles, sprites, and objects.
+ */
 export default class Zone extends Loadable {
-  /** @param {string} zoneId @param {World} world */
+  /**
+   * Creates an instance of Zone.
+   * @param {string} zoneId - The zone ID.
+   * @param {import('./world.js').default} world - The world instance.
+   */
   constructor(zoneId, world) {
     super();
+    /** @type {string} */
     this.spritzName = world.id;
+    /** @type {string} */
     this.id = zoneId;
+    /** @type {number} */
     this.objId = Math.round(Math.random() * 100);
+    /** @type {import('./world.js').default} */
     this.world = world;
-
-    // state
+    /** @type {object} */
     this.data = {};
+    /** @type {Object.<string, object>} */
     this.spriteDict = Object.create(null);
+    /** @type {object[]} */
     this.spriteList = [];
+    /** @type {Object.<string, object>} */
     this.objectDict = Object.create(null);
+    /** @type {object[]} */
     this.objectList = [];
+    /** @type {Array<number[]>} */
     this.selectedTiles = [];
+    /** @type {object[]} */
     this.lights = [];
+    /** @type {object[]} */
     this.spritz = [];
+    /** @type {object[]} */
     this.scripts = this.scripts || [];
-
+    /** @type {number} */
     this.lastKey = 0;
+    /** @type {import('../index.js').default} */
     this.engine = world.engine;
+    /** @type {ActionQueue} */
     this.onLoadActions = new ActionQueue();
-
-    // loaders
+    /** @type {SpriteLoader} */
     this.spriteLoader = new SpriteLoader(world.engine);
+    /** @type {ObjectLoader} */
     this.objectLoader = new ObjectLoader(world.engine);
+    /** @type {typeof EventLoader} */
     this.EventLoader = EventLoader;
+    /** @type {TilesetLoader} */
     this.tsLoader = new TilesetLoader(world.engine);
-
+    /** @type {object|null} */
     this.audio = null;
-
-    // cached per-frame helpers (set each frame in draw())
+    /** @type {Set<string>|null} */
     this._selectedSet = null;
+    /** @type {number[]|null} */
     this._highlight = null;
   }
 
-  /** ---------------------------
-   * Loading helpers
-   * --------------------------- */
+  /**
+   * Gets the zone data.
+   * @returns {ZoneData} The zone data.
+   */
+  getZoneData = () => {
+    return {
+      id: this.id,
+      objId: this.objId,
+      scripts: this.scripts,
+      data: this.data,
+      objects: Object.keys(this.objectDict),
+      sprites: Object.keys(this.spriteDict),
+      selectedTiles: this.selectedTiles,
+    };
+  };
+
+  /**
+   * Called after tileset and actors are loaded.
+   */
   afterTilesetAndActorsLoaded = () => {
     if (
       this.loaded ||
@@ -72,18 +127,26 @@ export default class Zone extends Loadable {
     this.onLoadActions.run();
   };
 
+  /**
+   * Attaches tileset listeners.
+   */
   attachTilesetListeners = () => {
     this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
     this.tileset.runWhenLoaded(this.afterTilesetAndActorsLoaded);
   };
 
+  /**
+   * Finalizes the zone loading.
+   */
   finalize = async () => {
-    // notify sprites/objects when they load
     for (const s of this.spriteList) s.runWhenLoaded(this.afterTilesetAndActorsLoaded);
     for (const o of this.objectList) o.runWhenLoaded(this.afterTilesetAndActorsLoaded);
+    this.engine.networkManager.loadZone(this.id, this);
   };
 
-  /** Load Map Resource from URL */
+  /**
+   * Loads the zone remotely.
+   */
   loadRemote = async () => {
     const res = await fetch(Resources.zoneRequestUrl(this.id));
     if (!res.ok) return;
@@ -112,14 +175,21 @@ export default class Zone extends Loadable {
       }
 
       await this.finalize();
-  // If the zone JSON declares a mode, load mode scripts from the spritz package
-  try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      // If the zone JSON declares a mode, load mode scripts from the spritz package
+      try {
+        if (data.mode)
+          await this.loadMode(data.mode);
+      } catch (e) {
+        console.warn('zone mode load failed', e);
+      }
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
   };
 
-  /** Load Tileset Directly (precompiled) */
+  /**
+   * Loads the zone.
+   */
   load = async () => {
     try {
       const data = require('@Spritz/' + this.spritzName + '/maps/' + this.id + '/map.js').default;
@@ -153,13 +223,30 @@ export default class Zone extends Loadable {
 
       await this.finalize();
       // If zone specifies a default mode name on the map data, attempt to load it from spritz package
-      try { if (data.mode) await this.loadMode(data.mode); } catch (e) { console.warn('zone mode load failed', e); }
+      try {
+        if (data.mode)
+          await this.loadMode(data.mode);
+      } catch (e) {
+        console.warn('zone mode load failed', e);
+      }
+
+      try {
+        this.engine.networkManager.joinZone(this.id);
+      } catch (e) {
+        console.warn('Network Error :: could not send zone commend to server')
+      }
+
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
   };
 
-  /** Load trigger scripts from a zip (Lua preferred, JS fallback) */
+  /**
+   * Loads a trigger from a zip archive.
+   * @param {string} trigger - The trigger name.
+   * @param {object} zip - The zip archive.
+   * @returns {function(): void} The trigger function.
+   */
   loadTriggerFromZip = async (trigger, zip) => {
     // Try Lua first
     try {
@@ -190,9 +277,15 @@ export default class Zone extends Loadable {
     return () => { };
   };
 
-  /** Load mode scripts from a zip (Lua preferred). Registers handlers with the world's ModeManager. */
+  /**
+   * Loads a mode from a zip archive.
+   * @param {string} modeName - The mode name.
+   * @param {object} zip - The zip archive.
+   */
   loadModeFromZip = async (modeName, zip) => {
     try {
+      console.log('Loading Game Mode From Zip');
+
       const setupFile = zip.file(`modes/${modeName}/setup.lua`);
       const updateFile = zip.file(`modes/${modeName}/update.lua`);
       const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
@@ -205,16 +298,16 @@ export default class Zone extends Loadable {
       const handlers = {};
       if (setupFile) {
         const script = await setupFile.async('string');
-  // run the setup registration (it likely calls pixos.register_mode)
-  console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
-  await interpreter.run(script);
+        // run the setup registration (it likely calls pixos.register_mode)
+        console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+        await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
       if (updateFile) {
         const updateScript = await updateFile.async('string');
         // wrap as a function and register to call on each frame via ModeManager
         // We return a JS function that executes the Lua chunk each time
-  handlers.update = async (time, params) => {
+        handlers.update = async (time, params) => {
           try {
             // create a fresh interpreter env for update to avoid state bleed
             const ui = new PixosLuaInterpreter(this.engine);
@@ -229,7 +322,18 @@ export default class Zone extends Loadable {
       }
       if (teardownFile) {
         const tdScript = await teardownFile.async('string');
-        handlers.teardown = async (params) => { try { const td = new PixosLuaInterpreter(this.engine); td.setScope({ zone: this }); td.initLibrary(); await td.run(tdScript); } catch (e) { console.warn('mode teardown failed', e); } };
+        handlers.teardown = async (params) => {
+          try {
+            const td = new PixosLuaInterpreter(this.engine);
+            td.setScope({ zone: this });
+            td.initLibrary();
+            const res = await td.run(tdScript);
+            // if there is a returned callback, we can run it
+            if (typeof res === 'function') res(params);
+          } catch (e) {
+            console.warn('mode teardown failed', e);
+          }
+        };
       }
 
       // If the setup script used pixos.register_mode, the ModeManager will
@@ -243,44 +347,26 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Load mode scripts from filesystem (JS fallback). */
+  /**
+   * Loads a mode.
+   * @param {string} modeName - The mode name.
+   */
   loadMode = async (modeName) => {
     try {
       const world = this.world;
-      // prefer JS files under spritz package (setup.js / update.js)
-      try {
-        // attempt to require a JS module that exports { setup, update, teardown }
-        // eslint-disable-next-line global-require, import/no-dynamic-require
-        const mod = require('@Spritz/' + this.spritzName + '/modes/' + modeName + '/setup.js');
-          if (mod) {
-            console.log('Zone.loadMode: found JS fallback for mode', modeName);
-          const handlers = {};
-          if (mod.setup) handlers.setup = mod.setup.bind(this);
-          if (mod.update) handlers.update = mod.update.bind(this);
-          if (mod.teardown) handlers.teardown = mod.teardown.bind(this);
-          if (world && world.modeManager) world.modeManager.register(modeName, handlers);
-          // Call JS setup immediately so the fallback can register UI or call set_mode
-          try {
-            console.log('Zone.loadMode: running JS setup for', modeName);
-            const res = handlers.setup ? await handlers.setup() : null;
-            if (res && typeof res === 'object') {
-              // merge returned handlers
-              Object.assign(handlers, res);
-              world.modeManager.register(modeName, handlers);
-            }
-          } catch (e) {
-            console.warn('JS mode setup failed', modeName, e);
-          }
-        }
-      } catch (e) {
-        // ignore missing JS fallback
-      }
+      await this.loadModeFromZip(modeName, world.spritz.zip);
     } catch (e) {
       console.warn('loadMode failed', modeName, e);
     }
   };
 
-  /** Load from JSON components within a zip */
+  /**
+   * Loads a zone from a zip archive.
+   * @param {object} zoneJson - The zone JSON.
+   * @param {object} cellJson - The cell JSON.
+   * @param {object} zip - The zip archive.
+   * @param {boolean} [skipCache=false] - Whether to skip cache.
+   */
   loadZoneFromZip = async (zoneJson, cellJson, zip, skipCache = false) => {
     try {
       // Zone extensions
@@ -335,6 +421,11 @@ export default class Zone extends Loadable {
       }
 
       // Audio
+      if (zoneJson.mode) {
+        try { this.mode = zoneJson.mode } catch (e) { console.error('audio load', e); }
+      }
+
+      // Audio
       if (zoneJson.audioSrc) {
         try { this.audio = await this.engine.resourceManager.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); } catch (e) { console.error('audio load', e); }
       }
@@ -366,25 +457,37 @@ export default class Zone extends Loadable {
       ]);
 
       this.attachTilesetListeners();
-      await this.finalize();
+
       // If the loaded map object includes a 'mode' property attempt to load a mode module
+      // todo - look into whether this should be updated or moved - not sure if the zone should control the mode like this.
+      // in some cases, it makes sense, but I feel like if multiple zones are loaded, there could be conflicts, and the idea of
+      // the zone controlling gameplay could be confusing in some cases, but for "battle zones" it kind of makes sense - but this could
+      // be done via scripts - so possibly something which could be fully scripted instead of this kind of logic - and instead
+      // I will likely move this to the world object - and then it will be the 'initial' mode.
       try {
         if (this.mode)
           await this.loadMode(this.mode);
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
+
+      await this.finalize();
+
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }
   };
 
-  /** Tear down */
+  /**
+   * Runs when the zone is deleted.
+   */
   runWhenDeleted = () => {
     for (const l of this.lights) this.engine.renderManager.lightManager.removeLight(l.id);
   };
 
-  /** Tileset definition loaded: build GPU buffers + picking IDs */
+  /**
+   * Called when tileset definition is loaded.
+   */
   onTilesetDefinitionLoaded = () => {
     const width = this.size[0];
     const height = this.size[1];
@@ -438,7 +541,10 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Trigger scripts to load (useful for menus, etc.) */
+  /**
+   * Loads scripts.
+   * @param {boolean} [refresh=false] - Whether to refresh.
+   */
   loadScripts = (refresh = false) => {
     if (this.world.isPaused) return;
     const zone = this;
@@ -447,7 +553,10 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Actor loaders */
+  /**
+   * Loads an object.
+   * @param {object} data - The object data.
+   */
   loadObject = async (data) => {
     data.zone = this;
     if (!this.objectDict[data.id]) {
@@ -458,6 +567,11 @@ export default class Zone extends Loadable {
     }
   };
 
+  /**
+   * Loads an object from a zip archive.
+   * @param {object} data - The object data.
+   * @param {object} zip - The zip archive.
+   */
   loadObjectFromZip = async (data, zip) => {
     data.zone = this;
     if (!this.objectDict[data.id]) {
@@ -468,6 +582,10 @@ export default class Zone extends Loadable {
     }
   };
 
+  /**
+   * Loads a sprite.
+   * @param {object} data - The sprite data.
+   */
   loadSprite = async (data) => {
     data.zone = this;
     if (!this.spriteDict[data.id]) {
@@ -478,6 +596,11 @@ export default class Zone extends Loadable {
     }
   };
 
+  /**
+   * Loads a sprite from a zip archive.
+   * @param {object} data - The sprite data.
+   * @param {object} zip - The zip archive.
+   */
   loadSpriteFromZip = async (data, zip) => {
     data.zone = this;
     if (!this.spriteDict[data.id]) {
@@ -488,7 +611,10 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Sprite management */
+  /**
+   * Adds a sprite.
+   * @param {object} sprite - The sprite.
+   */
   addSprite = (sprite) => {
     sprite.zone = this;
     this.world.spriteDict[sprite.id] = this.spriteDict[sprite.id] = sprite;
@@ -496,6 +622,10 @@ export default class Zone extends Loadable {
     this.world.spriteList.push(sprite);
   };
 
+  /**
+   * Removes a sprite.
+   * @param {string} id - The sprite ID.
+   */
   removeSprite = (id) => {
     const keep = (s) => {
       if (s.id !== id) return true; s.removeAllActions(); return false;
@@ -506,13 +636,27 @@ export default class Zone extends Loadable {
     delete this.world.spriteDict[id];
   };
 
+  /**
+   * Removes all sprites.
+   */
   removeAllSprites = () => {
     for (const s of this.spriteList) this.removeSprite(s.id);
   };
 
+  /**
+   * Gets a sprite by ID.
+   * @param {string} id - The sprite ID.
+   * @returns {object|null} The sprite.
+   */
   getSpriteById = (id) => this.spriteDict[id];
 
-  /** Portals -- look into possibly removing this - or find some way of making it more generic */
+  /**
+   * Adds a portal.
+   * @param {object[]} sprites - The sprites.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @returns {object[]} The sprites.
+   */
   addPortal = (sprites, x, y) => {
     if (!this.portals?.length) return sprites;
     const h = this.getHeight(x, y);
@@ -525,7 +669,12 @@ export default class Zone extends Loadable {
     return sprites;
   };
 
-  /** Height at (x,y) in zone  -- Need to look into supporting multiple layers for advanced map support */
+  /**
+   * Gets the height at a position.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @returns {number} The height.
+   */
   getHeight = (x, y) => {
     if (!this.isInZone(x, y)) {
       if (this.engine?.debug) console.error(`Height out of bounds [${x}, ${y}]`);
@@ -570,7 +719,16 @@ export default class Zone extends Loadable {
     return cell[2];
   };
 
-  /** Row render — expects selected set/highlight from draw() */
+  /**
+   * Draws a row.
+   * @param {number} row - The row.
+   * @param {Set<string>} selectedSet - The selected set.
+   * @param {number[]} highlight - The highlight.
+   * @param {object} rm - The render manager.
+   * @param {object} shaderProgram - The shader program.
+   * @param {object} pickerProgram - The picker program.
+   * @param {WebGLRenderingContext} gl - The WebGL context.
+   */
   drawRow = (row, selectedSet, highlight, rm, shaderProgram, pickerProgram, gl) => {
     // Attach tileset once per row (sprites may switch textures between rows)
     this.tileset.texture.attach();
@@ -600,7 +758,11 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Single cell draw (editor tooling) */
+  /**
+   * Draws a cell.
+   * @param {number} row - The row.
+   * @param {number} cell - The cell.
+   */
   drawCell = (row, cell) => {
     const rm = this.engine.renderManager;
     const gl = this.engine.gl;
@@ -623,7 +785,9 @@ export default class Zone extends Loadable {
     gl.drawArrays(gl.TRIANGLES, 0, vPos.numItems);
   };
 
-  /** Draw frame */
+  /**
+   * Draws the zone.
+   */
   draw = () => {
     if (!this.loaded) return;
 
@@ -677,14 +841,21 @@ export default class Zone extends Loadable {
     rm.mvPopMatrix();
   };
 
-  /** Tick/update */
+  /**
+   * Ticks the zone.
+   * @param {number} time - The time.
+   * @param {boolean} isPaused - Whether paused.
+   */
   tick = (time, isPaused) => {
     if (!this.loaded || isPaused) return;
     this.checkInput(time);
     for (const s of this.spriteList) s.tickOuter(time);
   };
 
-  /** Input */
+  /**
+   * Checks input.
+   * @param {number} time - The time.
+   */
   checkInput = async (time) => {
     if (time <= this.lastKey + 200) return;
     this.engine.gamepad.checkInput();
@@ -692,13 +863,24 @@ export default class Zone extends Loadable {
     // todo - look into hooks - game modes (allow for scripting keymaps)
   };
 
-  /** Geometry */
+  /**
+   * Checks if a position is in the zone.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @returns {boolean} Whether in zone.
+   */
   isInZone = (x, y) => (x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3]);
 
+  /**
+   * Handles selection.
+   * @param {number} row - The row.
+   * @param {number} cell - The cell.
+   */
   onSelect = async (row, cell) => {
     // allow active mode to intercept selection
     try {
       if (this.world?.modeManager && this.world.modeManager.handleSelect) {
+        console.log('Running Custom Select Handler')
         const handled = await this.world.modeManager.handleSelect(this, row, cell, 'tile');
         if (handled) return; // mode consumed selection
       }
@@ -729,7 +911,13 @@ export default class Zone extends Loadable {
     }
   };
 
-  /** Walkability */
+  /**
+   * Checks if walkable.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @param {number} direction - The direction.
+   * @returns {boolean|null} Whether walkable.
+   */
   isWalkable = (x, y, direction) => {
     if (!this.isInZone(x, y)) return null;
 
@@ -758,24 +946,53 @@ export default class Zone extends Loadable {
     return (this.walkability[(y - this.bounds[1]) * this.size[0] + (x - this.bounds[0])] & direction) !== 0;
   };
 
+  /**
+   * Checks if within range.
+   * @param {number} x - The value.
+   * @param {number} a - The min.
+   * @param {number} b - The max.
+   * @param {boolean} [include=false] - Whether inclusive.
+   * @returns {boolean} Whether within.
+   */
   within = (x, a, b, include = false) => (include ? (x >= a && x <= b) : (x > a && x < b));
 
-  /** Scripting */
+  /**
+   * Triggers a script.
+   * @param {string} id - The script ID.
+   */
   triggerScript = (id) => {
     for (const x of this.scripts) if (x.id === id) this.runWhenLoaded(x.trigger.bind(this));
   };
 
-  /** Actions */
+  /**
+   * Moves a sprite.
+   * @param {string} id - The sprite ID.
+   * @param {number[]} location - The location.
+   * @param {boolean} [running=false] - Whether running.
+   * @returns {Promise} The promise.
+   */
   moveSprite = async (id, location, running = false) => new Promise(async (resolve) => {
     const sprite = this.getSpriteById(id);
     await sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
   });
 
+  /**
+   * Shows sprite dialogue.
+   * @param {string} id - The sprite ID.
+   * @param {string} dialogue - The dialogue.
+   * @param {object} [options={ autoclose: true }] - The options.
+   * @returns {Promise} The promise.
+   */
   spriteDialogue = async (id, dialogue, options = { autoclose: true }) => new Promise(async (resolve) => {
     const sprite = this.getSpriteById(id);
     await sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
   });
 
+  /**
+   * Runs actions.
+   * @param {object[]} actions - The actions.
+   * @returns {Promise} The promise.
+   */
   runActions = async (actions) => {
     const scope = this;
     let p = Promise.resolve();
@@ -804,7 +1021,12 @@ export default class Zone extends Loadable {
     return p.catch((err) => { if (this.engine?.debug) console.warn('runActions chain', err); });
   };
 
-  /** Cutscenes */
+  /**
+   * Plays a cutscene.
+   * @param {string} id - The cutscene ID.
+   * @param {object} [spritz=null] - The spritz.
+   * @returns {Promise} The promise.
+   */
   playCutScene = async (id, spritz = null) => {
     const seq = spritz || this.spritz;
     for (const x of seq) {

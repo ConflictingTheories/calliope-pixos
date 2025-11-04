@@ -10,28 +10,36 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+/**
+ * Action - Represents an action performed by sprites or objects in the game.
+ */
 export default class Action {
   /**
-   * Actions are performed by sprites / objects
-   * @param {string} type
-   * @param {*} sprite
-   * @param {*} callback
+   * Creates an instance of Action.
+   * @param {string} type - The type of action.
+   * @param {*} sprite - The sprite performing the action.
+   * @param {Function} [callback] - Optional callback on completion.
    */
   constructor(type, sprite, callback) {
+    /** @type {string} */
     this.type = type;
+    /** @type {*} */
     this.sprite = sprite;
+    /** @type {Function} */
     this.callback = callback;
+    /** @type {number} */
     this.time = new Date().getTime();
+    /** @type {string} */
     this.id = sprite.id + '-' + type + '-' + this.time;
   }
 
   /**
-   * configure action
-   * @param {string} type
-   * @param {*} sprite
-   * @param {string} id
-   * @param {number} time
-   * @param {*} args
+   * Configures the action with provided parameters.
+   * @param {string} type - The type of action.
+   * @param {*} sprite - The sprite performing the action.
+   * @param {string} id - The action ID.
+   * @param {number} time - The start time.
+   * @param {*} args - Creation arguments.
    */
   configure(type, sprite, id, time, args) {
     this.sprite = sprite;
@@ -42,8 +50,8 @@ export default class Action {
   }
 
   /**
-   * initialize on load
-   * @param {*} args
+   * Initializes the action on load.
+   * @param {*} args - Initialization arguments.
    */
   async onLoad(args) {
     await this.init.apply(this, args);
@@ -51,8 +59,8 @@ export default class Action {
   }
 
   /**
-   * serialize
-   * @returns
+   * Serializes the action for storage or transmission.
+   * @returns {object} Serialized action data.
    */
   serialize() {
     return {
@@ -66,8 +74,8 @@ export default class Action {
   }
 
   /**
-   * callback on completion
-   * @returns
+   * Calls the completion callback if provided.
+   * @returns {*} Result of the callback or null.
    */
   onComplete() {
     return this.callback ? this.callback() : null;

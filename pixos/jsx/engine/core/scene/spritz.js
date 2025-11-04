@@ -175,7 +175,7 @@ export default class Spritz {
       case 'touchmove':
       case 'touchcancel':
       default:
-        Spritz._instance.engine.touch(e);
+        Spritz._instance.engine.touchHandler(e);
         break;
     }
   };

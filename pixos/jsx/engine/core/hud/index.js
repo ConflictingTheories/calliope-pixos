@@ -1,23 +1,49 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
 import GLEngine from '../index.js';
 
 export const minecraftia = new FontFace('minecraftia', 'url(/pixos/font/minecraftia.ttf)');
 
+/**
+ * Hud - Manages Heads-Up Display elements for the Pixos game engine.
+ * Handles drawing buttons, text, mode labels, and scrolling textboxes.
+ */
 export default class Hud {
   /**
-   *
-   * @param {GLEngine} engine
-   * @returns
+   * Creates an instance of Hud.
+   * @param {GLEngine} engine - The main game engine instance.
+   * @returns {Hud} The singleton instance.
    */
   constructor(engine) {
     if (!Hud._instance) {
+      /** @type {GLEngine} */
       this.engine = engine;
+      /** @type {Image|null} */
+      this.backdropImage = null;
+      /** @type {Array} */
+      this.cutoutImages = []; // Array of {image, position} objects
       Hud._instance = this;
     }
     return Hud._instance;
   }
 
+  /**
+   * Initializes the HUD context.
+   */
   init = () => {
     // setup anything needed at the start (run once)
+    /** @type {CanvasRenderingContext2D} */
     this.ctx = this.engine.ctx;
   }
 
@@ -70,12 +96,37 @@ export default class Hud {
 
 
   /**
-   * clear HUD overlay
+   * Clears the HUD overlay.
    */
   clearHud = () => {
     this.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
   }
 
+  /**
+   * Sets the backdrop image for cutscenes.
+   * @param {Image|null} image - The backdrop image.
+   */
+  setBackdrop = (image) => {
+    this.backdropImage = image;
+  }
+
+  /**
+   * Sets the cutout images for cutscenes.
+   * @param {Array} cutouts - Array of {image, position} objects.
+   */
+  setCutouts = (cutouts) => {
+    this.cutoutImages = cutouts;
+  }
+
+  /**
+   * Applies style configuration to the canvas context.
+   * @param {Object} styleConfig - The style properties to apply.
+   * @param {string} [styleConfig.font='20px invasion2000'] - Font style.
+   * @param {string} [styleConfig.textAlign='center'] - Text alignment.
+   * @param {string} [styleConfig.textBaseline='middle'] - Text baseline.
+   * @param {string} [styleConfig.fillStyle='#ffffff'] - Fill color.
+   * @param {number} [styleConfig.globalAlpha=1.0] - Global alpha.
+   */
   applyStyle = (styleConfig) => {
     // Apply style to the context
     const defaultStyle = {
@@ -90,11 +141,11 @@ export default class Hud {
   }
 
   /**
-   * Write Text to HUD
-   * @param {string} text
-   * @param {number} x
-   * @param {number} y
-   * @param {string} src
+   * Writes text to the HUD.
+   * @param {string} text - The text to write.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @param {string|null} [src=null] - Optional image source for portrait.
    */
   writeText = (text, x, y, src = null) => {
     // Apply style
@@ -114,7 +165,9 @@ export default class Hud {
     }
   }
 
-  /** Draw the active mode name in the HUD (top-left) */
+  /**
+   * Draws the active mode name in the HUD (top-left).
+   */
   drawModeLabel = () => {
     try {
       const mode = this.engine?.spritz?.world?.modeManager?.getMode();
@@ -127,13 +180,49 @@ export default class Hud {
   }
 
   /**
-   * Scrolling Textbox
-   * @param {string} text
-   * @param {boolean} scrolling
-   * @param {*} options
-   * @returns
+   * Draws the backdrop and cutouts for cutscenes.
+   */
+  drawCutsceneElements = () => {
+    const { ctx } = this;
+    const canvasWidth = ctx.canvas.width;
+    const canvasHeight = ctx.canvas.height;
+
+    // Draw backdrop if set
+    if (this.backdropImage) {
+      ctx.drawImage(this.backdropImage, 0, 0, canvasWidth, canvasHeight);
+    }
+
+    // Draw cutouts
+    this.cutoutImages.forEach(({ image, position }) => {
+      if (image) {
+        const x = position === 'left' ? 50 : canvasWidth - 250;
+        const y = canvasHeight / 2 - 100;
+        const width = 200;
+        const height = 200;
+        if (position === 'right') {
+          // Mirror for right side
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, -x - width, y, width, height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(image, x, y, width, height);
+        }
+      }
+    });
+  }
+
+  /**
+   * Creates a scrolling textbox for dialogue.
+   * @param {string} text - The text to display.
+   * @param {boolean} [scrolling=false] - Whether to enable scrolling.
+   * @param {Object} [options={}] - Additional options for the textbox.
+   * @returns {textScrollBox} The created textbox instance.
    */
   scrollText = (text, scrolling = false, options = {}) => {
+    // Draw cutscene elements first (backdrop and cutouts)
+    this.drawCutsceneElements();
+
     let txt = new textScrollBox(this.engine.ctx);
     txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
     txt.setOptions(options);
@@ -145,11 +234,14 @@ export default class Hud {
   }
 }
 
+/**
+ * textScrollBox - A scrolling text box UI for dialogue.
+ * Courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
+ */
 export class textScrollBox {
   /**
-   * Scrolling Text Box UI (For Dialogue)
-   * --> courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
-   * @param {*} ctx
+   * Creates an instance of textScrollBox.
+   * @param {CanvasRenderingContext2D} ctx - The canvas context.
    */
   constructor(ctx) {
     this.ctx = ctx;
@@ -176,13 +268,13 @@ export class textScrollBox {
   }
 
   /**
-   * initialize textbox
-   * @param {string} text
-   * @param {number} x
-   * @param {number} y
-   * @param {number} width
-   * @param {number} height
-   * @param {*} options
+   * Initializes the textbox.
+   * @param {string} text - The text to display.
+   * @param {number} x - The x position.
+   * @param {number} y - The y position.
+   * @param {number} width - The width.
+   * @param {number} height - The height.
+   * @param {Object} [options={}] - Additional options.
    */
   init = (text, x, y, width, height, options = {}) => {
     this.text = text;
@@ -196,8 +288,8 @@ export class textScrollBox {
   }
 
   /**
-   * Clean & format text
-   * @param {boolean} dontFitText
+   * Cleans and formats the text.
+   * @param {boolean} [dontFitText=false] - Whether to skip fitting text.
    */
   cleanit = (dontFitText) => {
     if (this.dirty) {
@@ -211,8 +303,8 @@ export class textScrollBox {
   }
 
   /**
-   * Apply options
-   * @param {*} options
+   * Applies options to the textbox.
+   * @param {Object} options - The options to apply.
    */
   setOptions = (options) => {
     Object.keys(this).forEach((key) => {
@@ -224,7 +316,7 @@ export class textScrollBox {
   }
 
   /**
-   * Apply font
+   * Applies the font settings.
    */
   setFont = () => {
     this.fontStr = this.fontSize + 'px ' + this.font;
@@ -232,7 +324,7 @@ export class textScrollBox {
   }
 
   /**
-   * Get Text Position
+   * Gets the text position.
    */
   getTextPos = () => {
     if (this.align === 'left') {
@@ -245,7 +337,7 @@ export class textScrollBox {
   }
 
   /**
-   * Fit to Text box
+   * Fits the text to the textbox.
    */
   fitText = () => {
     let { ctx } = this;
@@ -282,8 +374,8 @@ export class textScrollBox {
   }
 
   /**
-   * Draw Textbox border
-   * @param {boolean} portrait
+   * Draws the textbox border.
+   * @param {boolean} [portrait=false] - Whether to include portrait space.
    */
   drawBorder = (portrait = false) => {
     let { ctx } = this;
@@ -299,7 +391,7 @@ export class textScrollBox {
   }
 
   /**
-   * Draw Scrollbar on the side
+   * Draws the scrollbar on the side.
    */
   drawScrollBox = () => {
     let { ctx } = this;
@@ -315,7 +407,7 @@ export class textScrollBox {
   }
 
   /**
-   * Draw Scrollbar on the side
+   * Draws the portrait.
    */
   drawPortrait = () => {
     let { ctx } = this;
@@ -323,8 +415,8 @@ export class textScrollBox {
   }
 
   /**
-   * Scroll to position
-   * @param {number} pos
+   * Scrolls to a position.
+   * @param {number} pos - The scroll position.
    */
   scroll = (pos) => {
     this.cleanit();
@@ -337,8 +429,8 @@ export class textScrollBox {
   }
 
   /**
-   * Scroll to position
-   * @param {number} x
+   * Scrolls by lines.
+   * @param {number} x - The number of lines to scroll.
    */
   scrollLines = (x) => {
     this.cleanit();
@@ -351,7 +443,7 @@ export class textScrollBox {
   }
 
   /**
-   * Draw
+   * Renders the textbox.
    */
   render = () => {
     let { ctx } = this;
