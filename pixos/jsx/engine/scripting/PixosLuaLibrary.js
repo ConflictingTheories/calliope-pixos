@@ -16,11 +16,11 @@ import { EventLoader } from '@Engine/utils/loaders/index.js';
 export default class PixosLuaLibrary {
   /**
    * Constructor
-   * @param {luainjs} luainjs - Lua in JS Library
+   * @param {pixoscript} pixoscript - PixoScript Library
    * @constructor
    */
-  constructor(luainjs) {
-    this.lua = luainjs;
+  constructor(pixoscript) {
+    this.pixoscript = pixoscript;
   }
 
   /**
@@ -29,7 +29,7 @@ export default class PixosLuaLibrary {
   getLibrary = (engine, envScope) => {
     console.log({ msg: 'creating lua library', envScope });
 
-    return new this.lua.Table({
+    return new this.pixoscript.Table({
       // passed in scope
       ...envScope,
       // core functions
@@ -135,7 +135,7 @@ export default class PixosLuaLibrary {
       register_cutscene: (name, steps) => {
         try {
           // Convert Lua table to JS array of step objects
-          const arr = this.lua.utils.ensureArray(steps.toObject());
+          const arr = this.pixoscript.utils.ensureArray(steps.toObject());
           const jsSteps = arr.map((item) => {
             // `item` may be a Lua Table; convert to JS object
             return item && typeof item.toObject === 'function' ? item.toObject() : item;
@@ -239,7 +239,7 @@ export default class PixosLuaLibrary {
         return () =>
           new Promise((resolve) => {
             try {
-              const arr = this.lua.utils.ensureArray(steps.toObject());
+              const arr = this.pixoscript.utils.ensureArray(steps.toObject());
               const jsSteps = arr.map((item) => {
                 return item && typeof item.toObject === 'function' ? item.toObject() : item;
               });
@@ -285,7 +285,7 @@ export default class PixosLuaLibrary {
         return () =>
           new Promise((resolve) => {
             console.log({ msg: 'moving sprite via lua', zone: envScope.zone, spriteId, location, running });
-            return envScope.zone.moveSprite(spriteId, this.lua.utils.ensureArray(location.toObject()), running).then(() => {
+            return envScope.zone.moveSprite(spriteId, this.pixoscript.utils.ensureArray(location.toObject()), running).then(() => {
               console.log({ msg: 'moved sprite via lua', zone: envScope.zone, spriteId, location, running });
               resolve();
             });
@@ -305,9 +305,9 @@ export default class PixosLuaLibrary {
         return engine.renderManager.camera.cameraTarget;
       },
       look_at: (pos, trgt, up) => {
-        let position = this.lua.utils.ensureArray(pos.toObject());
-        let target = this.lua.utils.ensureArray(trgt.toObject());
-        let upDir = this.lua.utils.ensureArray(up.toObject());
+        let position = this.pixoscript.utils.ensureArray(pos.toObject());
+        let target = this.pixoscript.utils.ensureArray(trgt.toObject());
+        let upDir = this.pixoscript.utils.ensureArray(up.toObject());
         engine.renderManager.camera.lookAt(position, target, upDir);
       },
       pan_camera: (from, to, duration) => {
@@ -337,23 +337,23 @@ export default class PixosLuaLibrary {
 
       _pan: (direction, radians = Math.PI / 4) => {
         if (direction === 'CCW') {
-          engine.renderManager.camera.panCCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.panCCW(this.pixoscript.utils.coerceToNumber(radians));
         } else {
-          engine.renderManager.camera.panCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.panCW(this.pixoscript.utils.coerceToNumber(radians));
         }
       },
       pitch: (direction, radians = Math.PI / 4) => {
         if (direction === 'CCW') {
-          engine.renderManager.camera.pitchCCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.pitchCCW(this.pixoscript.utils.coerceToNumber(radians));
         } else {
-          engine.renderManager.camera.pitchCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.pitchCW(this.pixoscript.utils.coerceToNumber(radians));
         }
       },
       tilt: (direction, radians = Math.PI / 4) => {
         if (direction === 'CCW') {
-          engine.renderManager.camera.tiltCCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.tiltCCW(this.pixoscript.utils.coerceToNumber(radians));
         } else {
-          engine.renderManager.camera.tiltCW(this.luainjs.CoerceArgToFloat(radians));
+          engine.renderManager.camera.tiltCW(this.pixoscript.utils.coerceToNumber(radians));
         }
       },
 
@@ -410,7 +410,7 @@ export default class PixosLuaLibrary {
 
       // math functions
       vector: (tbl) => {
-        let [x, y, z] = this.lua.utils.ensureArray(tbl.toObject());
+        let [x, y, z] = this.pixoscript.utils.ensureArray(tbl.toObject());
         return new engine.utils.Vector(x, y, z);
       },
       vec_sub: (a, b) => {
@@ -427,10 +427,10 @@ export default class PixosLuaLibrary {
         return tbl.toObject();
       },
       as_array: (tbl) => {
-        return this.lua.utils.ensureArray(tbl.toObject());
+        return this.pixoscript.utils.ensureArray(tbl.toObject());
       },
       as_table: (obj) => {
-        const table = new this.lua.Table();
+        const table = new this.pixoscript.Table();
         for (const [key, value] of Object.entries(obj)) {
           table.set(key, value);
         }

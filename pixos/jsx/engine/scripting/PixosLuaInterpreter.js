@@ -12,12 +12,13 @@
 \*                                                 */
 
 import PixosLuaLibrary from '@Engine/scripting/PixosLuaLibrary.js';
-import * as luainjs from 'lua-in-js';
+import * as pixoscript from 'pixoscript';
+
 export default class PixosLuaInterpreter {
   constructor(engine) {
     this.engine = engine;
-    this.lua = luainjs;
-    this.pixosLib = new PixosLuaLibrary(this.lua);
+    this.pixoscript = pixoscript;
+    this.pixosLib = new PixosLuaLibrary(this.pixoscript);
     this.scope = {};
     this.env = null;
     this.library = null;
@@ -32,7 +33,7 @@ export default class PixosLuaInterpreter {
   };
 
   createEnv = () => {
-    this.env = this.lua.createEnv();
+    this.env = this.pixoscript.createEnv({});
     return this.env;
   };
 
