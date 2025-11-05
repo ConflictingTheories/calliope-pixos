@@ -3126,7 +3126,7 @@ call-bound@^1.0.2, call-bound@^1.0.3:
 
 calliope-pixos@^0.8.2:
   version "0.8.2"
-  resolved "https://registry.yarnpkg.com/calliope-pixos/-/calliope-pixos-0.8.2.tgz#f54d67985dd33ecab8d3aef671ed038f04ffc855"
+  resolved "https://registry.yarnpkg.com/calliope-pixospritz/-/calliope-pixos-0.8.2.tgz#f54d67985dd33ecab8d3aef671ed038f04ffc855"
   integrity sha512-psqijI1Df7Fr2RBUt7u6cIolDzXfLQ7LFuACRRvSJhJRJB25i9RGjPKgSGxDel076iZdWgKsIp/KNvka7LHOtg==
   dependencies:
     babel-loader "^8.2.5"

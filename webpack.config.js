@@ -4,7 +4,7 @@ require('babel-register');
 // Webpack Configuration
 const config = {
   // Entry
-  entry: './pixos/jsx/index.jsx',
+  entry: './pixospritz/jsx/index.jsx',
   // Output
   output: {
     library: 'calliope-pixos',
@@ -14,11 +14,11 @@ const config = {
   },
   resolve: {
     alias: {
-      '@Components': path.resolve(__dirname, 'pixos/jsx/components'),
-      '@Engine': path.resolve(__dirname, 'pixos/jsx/engine'),
-      '@Sprites': path.resolve(__dirname, 'pixos/jsx/sprites'),
-      '@Tilesets': path.resolve(__dirname, 'pixos/jsx/tilesets'),
-      '@Spritz': path.resolve(__dirname, 'pixos/jsx/spritz'),
+      '@Components': path.resolve(__dirname, 'pixospritz/jsx/components'),
+      '@Engine': path.resolve(__dirname, 'pixospritz/jsx/engine'),
+      '@Sprites': path.resolve(__dirname, 'pixospritz/jsx/sprites'),
+      '@Tilesets': path.resolve(__dirname, 'pixospritz/jsx/tilesets'),
+      '@Spritz': path.resolve(__dirname, 'pixospritz/jsx/spritz'),
     },
     fallback: {
       buffer: require.resolve('buffer/'),
