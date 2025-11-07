@@ -1,0 +1,2 @@
+drawSprite("player", 100, 200)
+playSound("jump")
