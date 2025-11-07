@@ -139,7 +139,11 @@ export default class GLEngine {
     /** @type {CanvasRenderingContext2D|null} */
     const ctx = this.hudCanvas.getContext('2d');
     /** @type {WebGL2RenderingContext|null} */
-    const gl = this.canvas.getContext('webgl2');
+    const gl = this.canvas.getContext('webgl2', {
+      antialias: true,
+      depth: true,
+      preserveDrawingBuffer: false
+    });
     /** @type {CanvasRenderingContext2D|null} */
     const gp = this.gamepadCanvas.getContext('2d');
 

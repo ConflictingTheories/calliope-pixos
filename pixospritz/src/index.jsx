@@ -31,7 +31,7 @@ class Pixos extends Component {
   }
 
   // Update world on Edit
-  componentWillReceiveProps(nextProps) {
+  getDerivedStateFromProps(nextProps) {
     if (JSON.stringify(this.props.networkString) != JSON.stringify(nextProps.networkString)) {
       this.setState({
         networkString: nextProps.networkString,

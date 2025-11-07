@@ -152,9 +152,6 @@ export default class NetworkManager {
         case 'zone-state':
           this.handleZoneState(data.payload);
           break;
-        case 'zone-state-request':
-          // Server-side only, ignore
-          break;
         case 'avatar-update':
           this.handleAvatarUpdate(data.payload);
           break;
@@ -165,10 +162,10 @@ export default class NetworkManager {
           console.log(`Unknown message type: ${data.type}`);
       }
     } catch (error) {
-  // Avoid serializing circular structures in the incoming message; log a safe preview instead.
-  const preview = typeof message === 'string' ? (message.length > 1000 ? message.slice(0, 1000) + '... (truncated)' : message) : this.safeStringify(message);
-  console.error('Failed to parse message from server. Parse error:', error);
-  console.error('Raw message preview:', preview);
+      // Avoid serializing circular structures in the incoming message; log a safe preview instead.
+      const preview = typeof message === 'string' ? (message.length > 1000 ? message.slice(0, 1000) + '... (truncated)' : message) : this.safeStringify(message);
+      console.error('Failed to parse message from server. Parse error:', error);
+      console.error('Raw message preview:', preview);
     }
   }
 
@@ -320,8 +317,8 @@ export default class NetworkManager {
 
     const world = this.engine.spritz.world;
     if (world) {
-  // Use world.addRemoteAvatar to create a remote avatar representation
-  world.addRemoteAvatar(payload.client.clientId, payload.client.avatar);
+      // Use world.addRemoteAvatar to create a remote avatar representation
+      world.addRemoteAvatar(payload.client.clientId, payload.client.avatar);
       // store a lightweight player entry keyed by clientId
       this.players.set(payload.client.clientId, Object.assign({}, payload.client.avatar, { clientId: payload.client.clientId }));
     }
@@ -354,12 +351,12 @@ export default class NetworkManager {
     console.log('Players update:', payload.players);
     try {
       if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
-        this.engine.hud.scrollText(`Players in zone: ${payload.players.map(p=>p.clientId).join(', ')}`, true, { autoclose: true, duration: 3000 });
+        this.engine.hud.scrollText(`Players in zone: ${payload.players.map(p => p.clientId).join(', ')}`, true, { autoclose: true, duration: 3000 });
       }
     } catch (e) { /* ignore HUD errors */ }
     // Update local players map
-  const existingPlayers = new Set(this.players.keys());
-  const newPlayers = new Set(payload.players.map(p => p.clientId));
+    const existingPlayers = new Set(this.players.keys());
+    const newPlayers = new Set(payload.players.map(p => p.clientId));
 
     // Remove players no longer in the zone
     for (const clientId of existingPlayers) {
@@ -407,7 +404,7 @@ export default class NetworkManager {
       // Fallback: use ActionLoader to construct action if factory missing
       if (!Action) {
         if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = require('@Engine/utils/loaders/ActionLoader.js').ActionLoader;
-        const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => {});
+        const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => { });
         // loader.load returns an instance of Action (synchronously in our loader implementation)
         const instance = loader;
         // Some path: ActionLoader returns an Action instance via its load helper
