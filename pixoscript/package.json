@@ -1,7 +1,7 @@
 {
   "name": "pixoscript",
   "version": "1.0.2",
-  "description": "A custom Lua-like scripting language for Pixos game engine",
+  "description": "A custom scripting language for Pixos game engine",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "node test.js"
   },
   "keywords": [
-    "lua",
+    "pixoscript",
     "scripting",
     "game-engine",
     "pixos",

@@ -23,7 +23,7 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.js';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * @typedef {object} ZoneData
@@ -254,7 +254,7 @@ export default class Zone extends Loadable {
       if (file) {
         const luaScript = await file.async('string');
         return (_this, subject) => {
-          const interpreter = new PixosLuaInterpreter(_this.engine);
+          const interpreter = new PixoScriptInterpreter(_this.engine);
           interpreter.setScope({ _this, zone: this, subject });
           interpreter.initLibrary();
           return interpreter.run(luaScript);
@@ -291,7 +291,7 @@ export default class Zone extends Loadable {
       const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
       const world = this.world;
 
-      const interpreter = new PixosLuaInterpreter(this.engine);
+      const interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ zone: this, map: this, _this: this });
       interpreter.initLibrary();
 
@@ -310,7 +310,7 @@ export default class Zone extends Loadable {
         handlers.update = async (time, params) => {
           try {
             // create a fresh interpreter env for update to avoid state bleed
-            const ui = new PixosLuaInterpreter(this.engine);
+            const ui = new PixoScriptInterpreter(this.engine);
             ui.setScope({ zone: this, map: this, _this: this, time, params });
             ui.initLibrary();
             // The update.lua is expected to return a function
@@ -324,7 +324,7 @@ export default class Zone extends Loadable {
         const tdScript = await teardownFile.async('string');
         handlers.teardown = async (params) => {
           try {
-            const td = new PixosLuaInterpreter(this.engine);
+            const td = new PixoScriptInterpreter(this.engine);
             td.setScope({ zone: this });
             td.initLibrary();
             const res = await td.run(tdScript);
@@ -902,7 +902,7 @@ export default class Zone extends Loadable {
       const file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
-      const interpreter = new PixosLuaInterpreter(this.engine);
+      const interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: this, subject: new interpreter.lua.Table([row, cell]) });
       interpreter.initLibrary();
       return await interpreter.run(luaScript);

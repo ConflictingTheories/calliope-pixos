@@ -13,7 +13,7 @@
 
 import { Vector } from '@Engine/utils/math/vector.js';
 import Avatar from '@Engine/core/scene/avatar.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * DynamicAvatar - A dynamic avatar with JSON loading and Lua scripting support.
@@ -95,7 +95,7 @@ export default class DynamicAvatar extends Avatar {
       let luaScript = await file.async('string');
       console.log({ msg: 'trigger lua statement', luaScript });
 
-      let interpreter = new PixosLuaInterpreter(this.engine);
+      let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: _this, zone: sprite.zone, subject: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');

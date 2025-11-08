@@ -358,8 +358,8 @@ const App = () => {
     if (!entry) return;
     const name = entry.name.toLowerCase();
     setSelectedEntry(entry);
-    if (name.endsWith('.lua')) {
-      renderScriptEditor(entry, 'lua');
+    if (name.endsWith('.pxs')) {
+      renderScriptEditor(entry, 'pixoscript');
       return;
     }
     if (name.endsWith('.txt')) {

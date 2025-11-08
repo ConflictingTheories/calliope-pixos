@@ -113,8 +113,8 @@ function ZipManager({ openFile, onZipLoaded }) {
     let defaultContent = '';
     if (name.endsWith('.json')) {
       defaultContent = '{}';
-    } else if (name.endsWith('.lua')) {
-      defaultContent = '-- New script\n';
+    } else if (name.endsWith('.pxs')) {
+      defaultContent = '-- New pixoscript\n';
     }
     try {
       zip.file(name, defaultContent);

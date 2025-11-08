@@ -13,7 +13,7 @@
 
 import { Direction } from '@Engine/utils/enums.js';
 import { Vector } from '@Engine/utils/math/vector.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * Loads map information from JSON, cells, and zip data.
@@ -67,7 +67,7 @@ export async function loadMap(json, cells, zip) {
 
         // defer execution of lua until trigger is called
         let result = ((_this) => {
-          let interpreter = new PixosLuaInterpreter(_this.engine);
+          let interpreter = new PixoScriptInterpreter(_this.engine);
           interpreter.setScope({ _this, zone: this, subject: _this });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - zone")');

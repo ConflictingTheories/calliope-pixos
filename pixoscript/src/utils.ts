@@ -4,7 +4,7 @@ import { Table } from './Table.js'
 type LuaType = undefined | boolean | number | string | Function | Table // thread | userdata
 
 interface Config {
-    LUA_PATH?: string
+    PIXOSCRIPT_PATH?: string
     fileExists?: (path: string) => boolean
     loadFile?: (path: string) => string
     stdin?: string

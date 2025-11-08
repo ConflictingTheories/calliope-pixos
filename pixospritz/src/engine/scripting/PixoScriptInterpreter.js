@@ -11,14 +11,14 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import PixosLuaLibrary from '@Engine/scripting/PixosLuaLibrary.js';
+import PixoScriptLibrary from '@Engine/scripting/PixoScriptLibrary.js';
 import * as pixoscript from 'pixoscript';
 
-export default class PixosLuaInterpreter {
+export default class PixoScriptInterpreter {
   constructor(engine) {
     this.engine = engine;
     this.pixoscript = pixoscript;
-    this.pixosLib = new PixosLuaLibrary(this.pixoscript);
+    this.pixosLib = new PixoScriptLibrary(this.pixoscript);
     this.scope = {};
     this.env = null;
     this.library = null;

@@ -58,7 +58,7 @@ function createEnv(
     loadLib: (name: string, value: Table) => void
 } {
     const cfg: Config = {
-        LUA_PATH: './?.lua',
+      PIXOSCRIPT_PATH: './?.pxs',
         stdin: '',
         stdout: console.log,
         ...config

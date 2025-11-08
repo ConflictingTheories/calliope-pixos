@@ -13,7 +13,7 @@
 
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 
-export default class PixosLuaLibrary {
+export default class PixoScriptLibrary {
   /**
    * Constructor
    * @param {pixoscript} pixoscript - PixoScript Library
@@ -27,7 +27,7 @@ export default class PixosLuaLibrary {
    * Create Script Environment
    */
   getLibrary = (engine, envScope) => {
-    console.log({ msg: 'creating lua library', envScope });
+    console.log({ msg: 'creating pixoscript library', envScope });
 
     return new this.pixoscript.Table({
       // passed in scope
