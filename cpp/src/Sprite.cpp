@@ -29,19 +29,21 @@ void Sprite::render() {
 
     // Enable vertex attributes
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     // Set sprite color (yellow for avatar)
     shader->setVec3("uColor", glm::vec3(1.0f, 1.0f, 0.0f));
 
-    // Create quad vertices for sprite
-    float size = 0.5f;
+    // Create quad vertices for sprite with texture coordinates
+    float halfSize = 16.0f; // 32/2 pixels
     float vertices[] = {
-        pos.x - size, pos.y - size, pos.z,
-        pos.x + size, pos.y - size, pos.z,
-        pos.x + size, pos.y + size, pos.z,
-        pos.x - size, pos.y - size, pos.z,
-        pos.x + size, pos.y + size, pos.z,
-        pos.x - size, pos.y + size, pos.z
+        // positions          // texture coords
+        pos.x - halfSize, pos.y - halfSize, pos.z,    0.0f, 1.0f,
+        pos.x + halfSize, pos.y - halfSize, pos.z,    1.0f, 1.0f,
+        pos.x + halfSize, pos.y + halfSize, pos.z,    1.0f, 0.0f,
+        pos.x - halfSize, pos.y - halfSize, pos.z,    0.0f, 1.0f,
+        pos.x + halfSize, pos.y + halfSize, pos.z,    1.0f, 0.0f,
+        pos.x - halfSize, pos.y + halfSize, pos.z,    0.0f, 0.0f
     };
 
     // Create VBO for sprite
@@ -50,7 +52,8 @@ void Sprite::render() {
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // Draw the sprite
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -58,6 +61,7 @@ void Sprite::render() {
     // Clean up
     glDeleteBuffers(1, &spriteVBO);
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
     glUseProgram(0);
 
     std::cout << "Sprite::render() called at (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;

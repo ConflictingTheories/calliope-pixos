@@ -13,8 +13,8 @@
 - [ ] Fix zone change logic and pathfinding integration
 
 ## Rendering System
-- [ ] Port WebGL shaders to OpenGL GLSL
-- [ ] Implement tile and sprite rendering in Zone::render()
+- [x] Port WebGL shaders to OpenGL GLSL
+- [x] Implement tile and sprite rendering in Zone::render()
 - [ ] Add camera system and projection matrices
 - [ ] Implement lighting and effects
 

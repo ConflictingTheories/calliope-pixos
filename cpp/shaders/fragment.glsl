@@ -1,16 +1,15 @@
 #version 330 core
 precision highp float;
 
-in vec3 vNormal;
-in vec3 vWorldPos;
+in vec2 vTexCoord;
 
 uniform vec3 uColor;
-uniform vec3 uLightDir;
+uniform sampler2D uTexture;
 
 out vec4 outColor;
 
 void main(){
-    float N = max(dot(normalize(vNormal), normalize(uLightDir)), 0.1);
-    vec3 col = uColor * (0.4 + 0.6 * N);
-    outColor = vec4(col, 1.0);
+    vec4 texColor = texture(uTexture, vTexCoord);
+    if (texColor.a < 0.1) discard; // Discard transparent pixels
+    outColor = texColor * vec4(uColor, 1.0);
 }

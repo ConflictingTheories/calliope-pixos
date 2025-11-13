@@ -51,31 +51,39 @@ void Zone::renderTiles() {
 
     // Enable vertex attributes
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int tileId = tileMap[y][x];
             if (tileId == 0) continue; // Skip empty tiles
 
+            // Get tileset for this tile
+            auto tileset = getTilesetById("default"); // TODO: Map tileId to tileset
+            if (!tileset) continue;
+
+            // Bind tileset texture
+            tileset->bindTexture();
+
             // Calculate world position
             glm::vec2 worldPos = tileToWorld(y, x);
 
-            // Simple color based on tile ID
-            float r = (tileId * 37) % 255 / 255.0f;
-            float g = (tileId * 71) % 255 / 255.0f;
-            float b = (tileId * 113) % 255 / 255.0f;
+            // Get tile UV coordinates
+            const Tile* tile = tileset->getTile(tileId);
+            if (!tile) continue;
 
-            // Set color uniform
-            shader->setVec3("uColor", glm::vec3(r, g, b));
+            // Set color uniform (white for textured tiles)
+            shader->setVec3("uColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-            // Create quad vertices for this tile
+            // Create quad vertices with texture coordinates
             float vertices[] = {
-                worldPos.x, worldPos.y, 0.0f,
-                worldPos.x + tileSize, worldPos.y, 0.0f,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,
-                worldPos.x, worldPos.y, 0.0f,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,
-                worldPos.x, worldPos.y + tileSize, 0.0f
+                // positions          // texture coords
+                worldPos.x, worldPos.y, 0.0f,                          tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y, 0.0f,               tile->uvMax.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,   tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y, 0.0f,                          tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,   tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y + tileSize, 0.0f,              tile->uvMin.x, tile->uvMin.y
             };
 
             // Create VBO for this tile
@@ -84,17 +92,20 @@ void Zone::renderTiles() {
             glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
             // Draw the tile
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
             // Clean up
             glDeleteBuffers(1, &tileVBO);
+            tileset->unbindTexture();
         }
     }
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
     glUseProgram(0);
 
     std::cout << "Zone::renderTiles() called for " << width << "x" << height << " tiles" << std::endl;
@@ -230,4 +241,20 @@ void Zone::loadSprites(const nlohmann::json& data) {
 
 void Zone::loadEvents(const nlohmann::json& data) {
     // TODO: Implement event loading
+}
+
+void Zone::addTileset(std::shared_ptr<Tileset> tileset) {
+    tilesets[tileset->id] = tileset;
+}
+
+void Zone::removeTileset(const std::string& id) {
+    auto it = tilesets.find(id);
+    if (it != tilesets.end()) {
+        tilesets.erase(it);
+    }
+}
+
+std::shared_ptr<Tileset> Zone::getTilesetById(const std::string& id) const {
+    auto it = tilesets.find(id);
+    return it != tilesets.end() ? it->second : nullptr;
 }

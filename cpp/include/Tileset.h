@@ -53,7 +53,9 @@ public:
 
     GLEngine* engine;
 
+public:
+    void generateTiles();
+
 private:
     void loadTexture(const std::string& path);
-    void generateTiles();
 };

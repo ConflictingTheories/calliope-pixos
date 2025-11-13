@@ -102,16 +102,16 @@ void Shader::compileShaders(const char* vertexSource, const char* fragmentSource
 }
 
 void RenderManager::initBuffers() {
-    // Create a simple quad for rendering
+    // Create a simple quad for rendering with texture coordinates
     float vertices[] = {
-        // positions
-        0.0f, 1.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
+        // positions          // texture coords
+        0.0f, 1.0f, 0.0f,    0.0f, 1.0f,  // bottom-left
+        1.0f, 0.0f, 0.0f,    1.0f, 0.0f,  // top-right
+        0.0f, 0.0f, 0.0f,    0.0f, 0.0f,  // top-left
 
-        0.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 0.0f,
-        1.0f, 0.0f, 0.0f
+        0.0f, 1.0f, 0.0f,    0.0f, 1.0f,  // bottom-left
+        1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // bottom-right
+        1.0f, 0.0f, 0.0f,    1.0f, 0.0f   // top-right
     };
 
     glGenVertexArrays(1, &VAO);
@@ -121,8 +121,13 @@ void RenderManager::initBuffers() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

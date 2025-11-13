@@ -22,7 +22,7 @@ void World::init(const std::string& gamePath, const nlohmann::json& manifest) {
     if (!zones.empty()) {
         auto avatar = std::make_shared<Avatar>(engine);
         avatar->id = "avatar";
-        avatar->pos = glm::vec3(8.0f, 8.0f, 0.0f); // Default position
+        avatar->pos = glm::vec3(256.0f, 256.0f, 0.0f); // Center of zone (16*32/2)
         addAvatar(avatar);
     }
 
@@ -57,8 +57,8 @@ void World::createTestZone() {
     auto zone = std::make_shared<Zone>("test_zone", this);
     zone->width = 16;
     zone->height = 16;
-    zone->tileSize = 1.0f;
-    zone->bounds = {0.0f, 0.0f, 16.0f, 16.0f};
+    zone->tileSize = 32.0f; // 32 pixels per tile
+    zone->bounds = {0.0f, 0.0f, 16.0f * 32.0f, 16.0f * 32.0f};
 
     // Create a simple tile map (16x16 grid)
     zone->tileMap.resize(16, std::vector<int>(16, 0));
@@ -68,6 +68,20 @@ void World::createTestZone() {
             zone->tileMap[y][x] = ((x + y) % 2) + 1; // 1 or 2
         }
     }
+
+    // Create a test tileset
+    auto tileset = std::make_shared<Tileset>(engine, "default");
+    tileset->tileWidth = 32;
+    tileset->tileHeight = 32;
+    tileset->columns = 2;
+    tileset->rows = 1;
+    tileset->tileCount = 2;
+    tileset->firstGid = 1;
+
+    // Generate tiles
+    tileset->generateTiles();
+
+    zone->addTileset(tileset);
 
     zones[zone->id] = zone;
     zoneList.push_back(zone);
