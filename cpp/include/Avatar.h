@@ -8,18 +8,10 @@
 #include <nlohmann/json.hpp>
 #include "Sprite.h"
 #include "Action.h"
+#include "Direction.h"
 
 class GLEngine;
 class Zone;
-
-
-enum class Direction {
-    None = 0,
-    Up = 1,
-    Down = 2,
-    Left = 3,
-    Right = 4
-};
 
 class Avatar : public Sprite {
 public:
@@ -42,6 +34,13 @@ public:
     // Input handling
     void handleInput();
     void performAction(const std::string& action, const std::vector<std::string>& params);
+
+    // Dialogue and menus
+    void openMenu(const std::unordered_map<std::string, std::string>& menuConfig = {}, const std::vector<std::string>& defaultMenus = {});
+    void showDialogue(const std::string& text, const std::unordered_map<std::string, std::string>& options = {});
+
+    // Walking input
+    void handleWalk(const std::string& key, const std::unordered_map<std::string, bool>& touchmap = {});
 
     // Inventory
     void addItem(const std::string& itemId, int quantity = 1);
