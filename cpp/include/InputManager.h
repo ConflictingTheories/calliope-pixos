@@ -1,22 +1,48 @@
 #pragma once
+
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <memory>
 #include <unordered_map>
 #include <string>
-#include <functional>
 #include <vector>
-#include <memory>
 
 class GLEngine;
 
-struct ActionMapping {
-    std::string keyboard;
-    std::string gamepad;
-    std::string mouse;
-    std::string touch;
+enum class InputType {
+    Keyboard,
+    Mouse,
+    Gamepad
 };
 
-struct ModeMappings {
-    std::unordered_map<std::string, ActionMapping> actions;
+enum class Action {
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    Interact,
+    Menu,
+    CameraZoomIn,
+    CameraZoomOut,
+    CameraPanUp,
+    CameraPanDown,
+    CameraPanLeft,
+    CameraPanRight,
+    CameraBind,
+    CameraUnbind,
+    Dance,
+    Patrol,
+    ChangeZone,
+    FaceDirection,
+    Dialogue,
+    Script,
+    Prompt
+};
+
+struct ActionMapping {
+    InputType type;
+    int key; // GLFW key code or button
+    std::string description;
 };
 
 class InputManager {
@@ -27,49 +53,68 @@ public:
     void init();
     void update(double dt);
 
+    // Input handling
     void handleKey(int key, int scancode, int action, int mods);
     void handleMouse(double xpos, double ypos);
     void handleMouseButton(int button, int action, int mods);
-    void handleGamepad();
+    void handleScroll(double xoffset, double yoffset);
 
-    void setModeMappings(const std::string& mode, const ModeMappings& mappings);
-    void addActionHook(const std::string& action, std::function<void(const std::string&, const std::string&)> callback);
-    void registerActionHook(const std::string& action, std::function<void(const std::string&, const std::string&)> hook);
-    void removeActionHook(const std::string& action, std::function<void(const std::string&, const std::string&)> callback);
+    // Action mapping
+    void bindAction(Action action, InputType type, int key);
+    void unbindAction(Action action, InputType type);
+    bool isActionPressed(Action action) const;
+    bool isActionJustPressed(Action action) const;
 
-    bool isActionActive(const std::string& action) const;
-    bool isActionPressed(const std::string& action) const;
+    // Mouse
+    glm::vec2 getMousePosition() const;
+    glm::vec2 getMouseDelta() const;
+    bool isMouseButtonPressed(int button) const;
+
+    // Keyboard
+    bool isKeyPressed(int key) const;
+    bool isKeyJustPressed(int key) const;
+
+    // Gamepad (if supported)
+    bool isGamepadConnected() const;
+    glm::vec2 getLeftStick() const;
+    glm::vec2 getRightStick() const;
+    float getLeftTrigger() const;
+    float getRightTrigger() const;
+
+    // Mode-specific mappings
     void setMode(const std::string& mode);
-    std::string getMode() const;
-    std::string getActionInput(const std::string& action) const;
-    void bindAction(const std::string& action, const std::string& inputType, const std::string& inputValue);
-    void unbindAction(const std::string& action, const std::string& inputType);
+    std::string getCurrentMode() const;
 
-    // Mouse state
-    double mouseX, mouseY;
-    double mouseDeltaX, mouseDeltaY;
+    // Hooks for scripting
+    void addActionHook(Action action, std::function<void()> hook);
+    void removeActionHook(Action action);
 
-    // Keyboard state
-    std::unordered_map<int, bool> keyStates;
-    std::unordered_map<int, bool> keyPressed;
-
-    // Gamepad state
-    int gamepadCount;
-    std::vector<float> gamepadAxes;
-    std::vector<unsigned char> gamepadButtons;
+    GLEngine* engine;
 
 private:
-    GLEngine* engine;
-    std::unordered_map<std::string, ModeMappings> mappings;
+    GLFWwindow* window;
     std::string currentMode;
-    std::unordered_map<std::string, std::vector<std::function<void(const std::string&, const std::string&)>>> hooks;
-    std::unordered_map<std::string, bool> actionStates;
-    std::unordered_map<std::string, bool> actionPressed;
-    std::unordered_map<std::string, double> lastActionTime;
+
+    // Key states
+    std::unordered_map<int, bool> keyStates;
+    std::unordered_map<int, bool> keyStatesPrev;
+
+    // Mouse states
+    glm::vec2 mousePosition;
+    glm::vec2 mousePositionPrev;
+    std::unordered_map<int, bool> mouseButtonStates;
+    std::unordered_map<int, bool> mouseButtonStatesPrev;
+
+    // Action mappings
+    std::unordered_map<std::string, std::unordered_map<Action, ActionMapping>> modeMappings;
+
+    // Action states
+    std::unordered_map<Action, bool> actionStates;
+    std::unordered_map<Action, bool> actionStatesPrev;
+
+    // Hooks
+    std::unordered_map<Action, std::vector<std::function<void()>>> actionHooks;
 
     void updateActionStates();
-    bool checkKeyboard(const std::string& key) const;
-    bool checkGamepad(const std::string& button) const;
-    bool checkMouse(const std::string& button) const;
-    bool checkTouch(const std::string& gesture) const;
+    void processActionHooks();
 };

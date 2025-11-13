@@ -4,13 +4,44 @@
 #include "Event.h"
 #include <algorithm>
 #include <iostream>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 World::World(GLEngine* eng) : engine(eng) {}
 
 World::~World() {}
 
-void World::init() {
-    // Initialize default zone or load from data
+void World::init(const std::string& gamePath, const nlohmann::json& manifest) {
+    this->gamePath = gamePath;
+    this->manifest = manifest;
+
+    // Load initial zones from manifest
+    if (manifest.contains("initialZones")) {
+        for (const auto& zoneId : manifest["initialZones"]) {
+            loadZone(zoneId);
+        }
+    }
+
+    std::cout << "World initialized with " << zones.size() << " zones" << std::endl;
+}
+
+void World::loadZone(const std::string& zoneId) {
+    std::string mapPath = gamePath + "/maps/" + zoneId + "/map.json";
+    std::ifstream mapFile(mapPath);
+    if (!mapFile.is_open()) {
+        std::cerr << "Failed to load map: " << mapPath << std::endl;
+        return;
+    }
+
+    nlohmann::json mapData;
+    mapFile >> mapData;
+    mapFile.close();
+
+    auto zone = std::make_shared<Zone>(zoneId, this);
+    zone->loadFromJson(mapData, gamePath);
+    addZone(zone);
+
+    std::cout << "Loaded zone: " << zoneId << std::endl;
 }
 
 void World::update(double dt) {

@@ -1,23 +1,57 @@
 #pragma once
+
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <memory>
 #include <string>
 #include <vector>
-#include <glm/glm.hpp>
+#include <unordered_map>
+#include <nlohmann/json.hpp>
+
+class GLEngine;
+
+struct Tile {
+    int id;
+    std::string name;
+    bool walkable;
+    bool interactive;
+    glm::vec2 uvMin;
+    glm::vec2 uvMax;
+    std::unordered_map<std::string, std::string> properties;
+};
 
 class Tileset {
 public:
-    Tileset();
+    Tileset(GLEngine* engine, const std::string& id);
     ~Tileset();
 
-    void load(const std::string& path);
-    glm::vec3 getTileVertices(int tileId, const glm::vec3& pos) const;
-    glm::vec2 getTileTexCoords(int tileId, int variant) const;
-    int getWalkability(int tileId) const;
+    void init();
+    void loadFromJson(const nlohmann::json& data, const std::string& gamePath);
+    void bindTexture();
+    void unbindTexture();
+
+    // Tile queries
+    const Tile* getTile(int id) const;
+    bool isTileWalkable(int id) const;
+    bool isTileInteractive(int id) const;
 
     // Properties
-    int tileWidth;
-    int tileHeight;
-    int tilesPerRow;
-    int totalTiles;
-    std::string texturePath;
-    bool loaded;
+    std::string id;
+    std::string name;
+    std::string imagePath;
+    int tileWidth, tileHeight;
+    int imageWidth, imageHeight;
+    int columns, rows;
+    int tileCount;
+    int firstGid;
+
+    // OpenGL
+    GLuint textureId;
+    std::vector<Tile> tiles;
+
+    GLEngine* engine;
+
+private:
+    void loadTexture(const std::string& path);
+    void generateTiles();
 };

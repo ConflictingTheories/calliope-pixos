@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <nlohmann/json.hpp>
 #include "RenderManager.h"
 #include "InputManager.h"
 #include "ModeManager.h"
@@ -11,7 +12,7 @@ struct GLFWwindow;
 
 class GLEngine {
 public:
-    GLEngine();
+    GLEngine(const std::string& gamePath, const nlohmann::json& manifest);
     ~GLEngine();
 
     void init(int width, int height, const std::string& title);
@@ -28,6 +29,8 @@ public:
     GLFWwindow* window;
     int windowWidth, windowHeight;
     std::string windowTitle;
+    std::string gamePath;
+    nlohmann::json manifest;
 
     // Game state
     bool isRunning;

@@ -27,6 +27,9 @@ void RenderManager::clearScreen() {
 }
 
 void RenderManager::render() {
+    // Set up camera view matrix
+    viewMatrix = camera.getViewMatrix();
+
     // Render skybox first
     renderSkybox();
 

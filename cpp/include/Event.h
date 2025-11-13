@@ -1,19 +1,42 @@
 #pragma once
+
+#include <glm/glm.hpp>
+#include <memory>
 #include <string>
+#include <vector>
 #include <functional>
+#include <nlohmann/json.hpp>
+
+class GLEngine;
+class Zone;
 
 class Event {
 public:
-    Event(const std::string& name, std::function<void()> callback);
-    ~Event();
+    Event(GLEngine* engine, const std::string& id);
+    virtual ~Event();
 
-    void trigger();
-    const std::string& getName() const;
-    std::string id;
+    virtual void init();
+    virtual void update(double dt);
+    virtual void trigger();
+
+    // Timing
     bool tick(double dt);
-    void onComplete();
+    void reset();
 
-private:
-    std::string name;
-    std::function<void()> callback;
+    // Properties
+    std::string id;
+    int objId;
+    bool active;
+    bool repeating;
+    float duration;
+    float timer;
+
+    // Callbacks
+    std::function<void()> onTrigger;
+    std::function<void()> onComplete;
+
+    GLEngine* engine;
+
+protected:
+    float elapsedTime;
 };

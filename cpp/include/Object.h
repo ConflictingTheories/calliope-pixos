@@ -1,28 +1,42 @@
 #pragma once
-#include <glm/glm.hpp>
-#include <string>
-#include <memory>
 
+#include <glm/glm.hpp>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <nlohmann/json.hpp>
+
+class GLEngine;
 class Zone;
 
 class Object {
 public:
-    Object();
+    Object(GLEngine* engine, const std::string& id);
     virtual ~Object();
 
     virtual void init();
     virtual void update(double dt);
     virtual void render();
 
+    // Interaction
+    virtual void onInteract(Sprite* interactor);
+    virtual void onSelect();
+    virtual void onDeselect();
+
     // Properties
     std::string id;
+    int objId;
     glm::vec3 pos;
     glm::vec3 scale;
-    glm::vec3 size;
-    bool walkable;
-    bool blocking;
-    bool override;
+    float rotation;
 
-    // Zone reference
+    bool interactive;
+    bool visible;
+    bool solid;
+
+    // Custom properties
+    std::unordered_map<std::string, std::string> properties;
+
+    GLEngine* engine;
     std::weak_ptr<Zone> zone;
 };

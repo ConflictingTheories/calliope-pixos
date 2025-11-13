@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(PixospritzOpenGL)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -18,6 +18,17 @@ pkg_check_modules(LUA REQUIRED lua)
 # GLM
 find_package(GLM REQUIRED)
 include_directories(${GLM_INCLUDE_DIRS} /opt/homebrew/include)
+
+# Add nlohmann/json
+include(FetchContent)
+set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+FetchContent_Declare(
+  nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.11.2
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 # Link directories
 link_directories(/opt/homebrew/lib)
@@ -42,7 +53,7 @@ set(IMGUI_SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES})
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLFW3_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${LUA_LIBRARIES} "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" m)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLFW3_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${LUA_LIBRARIES} nlohmann_json::nlohmann_json "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" m)
 
 # Copy shaders to build directory
 configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/vertex.glsl COPYONLY)

@@ -13,5 +13,7 @@ void Sprite::update(double dt) {
 }
 
 void Sprite::render() {
-    // Default render logic
+    // Simple sprite rendering - render a colored quad
+    // TODO: Use modern OpenGL with VBOs and shaders
+    // For now, placeholder - actual rendering will be handled by RenderManager
 }

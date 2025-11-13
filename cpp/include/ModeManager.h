@@ -1,18 +1,19 @@
 #pragma once
+
+#include <memory>
 #include <unordered_map>
 #include <string>
 #include <functional>
-#include <memory>
 
 class GLEngine;
 
 struct ModeHandlers {
-    std::function<void(std::unordered_map<std::string, std::string>)> setup;
-    std::function<void(std::unordered_map<std::string, std::string>)> teardown;
-    std::function<void(double, std::unordered_map<std::string, std::string>)> update;
-    std::function<bool(double, std::unordered_map<std::string, std::string>)> checkInput;
-    std::function<bool(std::shared_ptr<void>, int, int, std::string)> onSelect;
-    bool picker;
+    std::function<void()> setup;
+    std::function<void()> teardown;
+    std::function<void(double)> update;
+    std::function<bool(int, int, int, const std::string&)> checkInput;
+    std::function<bool(class Zone*, int, int, const std::string&)> onSelect;
+    bool picker = false;
 };
 
 class ModeManager {
@@ -22,18 +23,25 @@ public:
 
     void init();
     void update(double dt);
-    bool handleInput(double dt);
-    bool handleSelect(std::shared_ptr<void> zone, int row, int cell, const std::string& type);
 
+    // Mode registration
     void registerMode(const std::string& name, const ModeHandlers& handlers);
-    void set(const std::string& name, std::unordered_map<std::string, std::string> params = {});
-    std::string getMode() const;
+    void unregisterMode(const std::string& name);
+
+    // Mode switching
+    void setMode(const std::string& name);
+    std::string getCurrentMode() const;
+
+    // Input and selection handling
+    bool checkInput(int key, int action, int mods);
+    bool handleSelect(class Zone* zone, int row, int cell, const std::string& type);
+
+    // Picker mode
     bool hasPicker() const;
 
-private:
     GLEngine* engine;
+
+private:
     std::string currentMode;
-    std::unordered_map<std::string, ModeHandlers> registered;
-    ModeHandlers* currentHandlers;
-    std::unordered_map<std::string, std::string> currentParams;
+    std::unordered_map<std::string, ModeHandlers> registeredModes;
 };

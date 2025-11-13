@@ -3,9 +3,11 @@
 #include "GLEngine.h"
 #include <iostream>
 #include <chrono>
+#include <nlohmann/json.hpp>
+#include <fstream>
 
-GLEngine::GLEngine()
-    : window(nullptr), windowWidth(1280), windowHeight(720), windowTitle("Pixospritz OpenGL"),
+GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
+    : window(nullptr), gamePath(gamePath), manifest(manifest), windowWidth(1280), windowHeight(720), windowTitle("Pixospritz OpenGL"),
       isRunning(false), lastTime(0.0), deltaTime(0.0) {}
 
 GLEngine::~GLEngine() {
@@ -53,7 +55,7 @@ void GLEngine::init(int width, int height, const std::string& title) {
     renderManager->init();
     inputManager->init();
     modeManager->init();
-    world->init();
+    world->init(gamePath, manifest);
 
     isRunning = true;
     lastTime = glfwGetTime();

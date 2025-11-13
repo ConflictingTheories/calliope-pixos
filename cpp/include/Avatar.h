@@ -1,11 +1,24 @@
 #pragma once
-#include "Sprite.h"
+
 #include <glm/glm.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
+#include "Sprite.h"
 
 class GLEngine;
+class Zone;
+class Action;
+
+enum class Direction {
+    None = 0,
+    Up = 1,
+    Down = 2,
+    Left = 3,
+    Right = 4
+};
 
 class Avatar : public Sprite {
 public:
@@ -16,28 +29,42 @@ public:
     void update(double dt) override;
     void render() override;
 
-    // Avatar-specific methods
-    void handleInput();
-    void moveTo(const glm::vec3& target, float speed);
-    void faceDirection(int direction);
-    void performAction(const std::string& action, const std::vector<std::string>& params);
+    // Movement
+    void moveTo(const glm::vec3& position, float duration = 0.0f);
+    void faceDirection(Direction dir);
+    Direction getFacingDirection() const;
+
+    // Actions
+    void addAction(std::shared_ptr<Action> action);
+    void clearActions();
+
+    // Inventory
+    void addItem(const std::string& itemId, int quantity = 1);
+    void removeItem(const std::string& itemId, int quantity = 1);
+    int getItemCount(const std::string& itemId) const;
+
+    // Dialogue
+    void speak(const std::string& text, float duration = 3.0f);
 
     // Properties
-    bool isLit;
-    bool isSelected;
-    int facing;
+    Direction facing;
+    std::unordered_map<std::string, int> inventory;
     std::string gender;
-    std::unordered_map<std::string, std::string> actionDict;
-    std::vector<std::string> actionList;
     std::string portrait;
-    std::vector<std::string> inventory;
     bool blocking;
     bool override;
+
+    // Lighting
+    bool isLit;
     int lightIndex;
     glm::vec3 lightColor;
     float density;
 
+    // Selection
+    bool isSelected;
+
 private:
-    GLEngine* engine;
-    std::vector<std::string> currentActions;
+    std::vector<std::shared_ptr<Action>> actionQueue;
+    float speechTimer;
+    std::string currentSpeech;
 };

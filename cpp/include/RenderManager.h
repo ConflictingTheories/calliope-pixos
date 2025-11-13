@@ -1,23 +1,17 @@
 #pragma once
+
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <vector>
 #include <string>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "Camera.h"
-#include "Shader.h"
 
 class GLEngine;
-
-struct Light {
-    glm::vec3 position;
-    glm::vec3 color;
-    float attenuation;
-    glm::vec3 direction;
-    float density;
-    float scatteringCoefficients;
-    bool enabled;
-};
+class Camera;
+class Light;
+class Skybox;
+class Shader;
 
 class RenderManager {
 public:
@@ -27,35 +21,57 @@ public:
     void init();
     void clearScreen();
     void render();
-    void initProjection();
-
-    // Shaders
-    Shader shaderProgram;
-    Shader pickerProgram;
-    Shader skyboxShader;
+    void resize(int width, int height);
 
     // Camera
-    Camera camera;
+    void setCamera(std::shared_ptr<Camera> camera);
+    std::shared_ptr<Camera> getCamera() const;
 
     // Lighting
-    std::vector<Light> lights;
-    void addLight(int id, const glm::vec3& pos, const glm::vec3& color, float attenuation, const glm::vec3& direction, float density, float scattering, bool enabled);
-    void removeLight(int id);
+    void addLight(std::shared_ptr<Light> light);
+    void removeLight(std::shared_ptr<Light> light);
 
     // Skybox
-    void setSkyboxShader(const std::string& shaderName);
-    void renderSkybox();
+    void setSkybox(std::shared_ptr<Skybox> skybox);
+
+    // Shaders
+    std::shared_ptr<Shader> loadShader(const std::string& vertexPath, const std::string& fragmentPath);
+    std::shared_ptr<Shader> getShader(const std::string& name) const;
 
     // Matrices
-    glm::mat4 projectionMatrix;
-    glm::mat4 viewMatrix;
-    glm::mat4 modelMatrix;
+    glm::mat4 getProjectionMatrix() const;
+    glm::mat4 getViewMatrix() const;
 
-    // Engine reference
+    // Rendering functions
+    void renderZone(class Zone* zone);
+    void renderSprite(class Sprite* sprite);
+    void renderObject(class Object* object);
+
+    // Transitions
+    void renderTransition(float progress, bool direction);
+
+    // Debug
+    void setDebugMode(bool enabled);
+    bool isDebugMode() const;
+
     GLEngine* engine;
 
 private:
-    void setupShaders();
-    void setupLights();
-    void setupSkybox();
+    void initProjection();
+    void updateMatrices();
+
+    std::shared_ptr<Camera> camera;
+    std::vector<std::shared_ptr<Light>> lights;
+    std::shared_ptr<Skybox> skybox;
+    std::unordered_map<std::string, std::shared_ptr<Shader>> shaders;
+
+    glm::mat4 projectionMatrix;
+    glm::mat4 viewMatrix;
+
+    int screenWidth, screenHeight;
+    bool debugMode;
+
+    // Transition buffers
+    GLuint transitionVAO, transitionVBO;
+    std::shared_ptr<Shader> transitionShader;
 };

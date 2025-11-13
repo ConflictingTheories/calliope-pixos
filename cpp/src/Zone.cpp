@@ -106,9 +106,8 @@ void Zone::loadTileset(const std::string& tilesetPath) {
 void Zone::renderTiles() {
     if (!tileset) return;
 
-    // Use render manager to render tiles
-    // This would involve setting up vertex buffers, etc.
-    // Placeholder for now
+    // TODO: Implement proper tile rendering with VBOs and shaders
+    // For now, placeholder - actual rendering will be handled by RenderManager
 }
 
 void Zone::sortSprites() {

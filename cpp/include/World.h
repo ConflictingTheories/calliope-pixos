@@ -1,8 +1,10 @@
 #pragma once
+
 #include <memory>
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <nlohmann/json.hpp>
 #include "Zone.h"
 #include "Event.h"
 #include "Avatar.h"
@@ -14,7 +16,7 @@ public:
     World(GLEngine* engine);
     ~World();
 
-    void init();
+    void init(const std::string& gamePath, const nlohmann::json& manifest);
     void update(double dt);
     void render();
 
@@ -42,6 +44,8 @@ public:
 
     // Engine reference
     GLEngine* engine;
+    std::string gamePath;
+    nlohmann::json manifest;
 
 private:
     std::unordered_map<std::string, std::shared_ptr<Zone>> zones;
