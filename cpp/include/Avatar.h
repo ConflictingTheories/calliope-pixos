@@ -7,10 +7,11 @@
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 #include "Sprite.h"
+#include "Action.h"
 
 class GLEngine;
 class Zone;
-class Action;
+
 
 enum class Direction {
     None = 0,
@@ -37,6 +38,10 @@ public:
     // Actions
     void addAction(std::shared_ptr<Action> action);
     void clearActions();
+
+    // Input handling
+    void handleInput();
+    void performAction(const std::string& action, const std::vector<std::string>& params);
 
     // Inventory
     void addItem(const std::string& itemId, int quantity = 1);
@@ -67,4 +72,5 @@ private:
     std::vector<std::shared_ptr<Action>> actionQueue;
     float speechTimer;
     std::string currentSpeech;
+    std::vector<std::string> currentActions;
 };

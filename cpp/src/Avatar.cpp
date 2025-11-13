@@ -2,7 +2,7 @@
 #include "GLEngine.h"
 #include <iostream>
 
-Avatar::Avatar(GLEngine* eng) : Sprite(), engine(eng), isLit(true), isSelected(true), facing(0), blocking(false), override(false), lightIndex(0), lightColor(1.0f), density(1.0f) {}
+Avatar::Avatar(GLEngine* eng) : Sprite(eng), isLit(true), isSelected(true), facing(Direction::Up), blocking(false), override(false), lightIndex(0), lightColor(1.0f), density(1.0f) {}
 
 Avatar::~Avatar() {}
 
@@ -27,29 +27,29 @@ void Avatar::handleInput() {
     if (!engine->inputManager) return;
 
     // Movement
-    if (engine->inputManager->isActionActive("move_up")) {
+    if (engine->inputManager->isActionPressed(InputAction::MoveUp)) {
         pos.y += 0.1f;
-        facing = 0; // Up
+        facing = Direction::Up;
     }
-    if (engine->inputManager->isActionActive("move_down")) {
+    if (engine->inputManager->isActionPressed(InputAction::MoveDown)) {
         pos.y -= 0.1f;
-        facing = 2; // Down
+        facing = Direction::Down;
     }
-    if (engine->inputManager->isActionActive("move_left")) {
+    if (engine->inputManager->isActionPressed(InputAction::MoveLeft)) {
         pos.x -= 0.1f;
-        facing = 3; // Left
+        facing = Direction::Left;
     }
-    if (engine->inputManager->isActionActive("move_right")) {
+    if (engine->inputManager->isActionPressed(InputAction::MoveRight)) {
         pos.x += 0.1f;
-        facing = 1; // Right
+        facing = Direction::Right;
     }
 
     // Actions
-    if (engine->inputManager->isActionPressed("interact")) {
+    if (engine->inputManager->isActionPressed(InputAction::Interact)) {
         performAction("interact", {});
     }
-    if (engine->inputManager->isActionPressed("run")) {
-        performAction("run", {});
+    if (engine->inputManager->isActionPressed(InputAction::Dance)) {
+        performAction("dance", {});
     }
 }
 
@@ -58,8 +58,8 @@ void Avatar::moveTo(const glm::vec3& target, float speed) {
     pos += direction * speed;
 }
 
-void Avatar::faceDirection(int direction) {
-    facing = direction;
+void Avatar::faceDirection(Direction dir) {
+    facing = dir;
 }
 
 void Avatar::performAction(const std::string& action, const std::vector<std::string>& params) {

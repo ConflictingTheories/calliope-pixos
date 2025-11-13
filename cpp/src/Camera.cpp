@@ -1,6 +1,10 @@
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
+Camera::Camera() : position(0.0f, 0.0f, 3.0f), target(0.0f), up(0.0f, 1.0f, 0.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), worldUp(0.0f, 1.0f, 0.0f), fov(45.0f), nearPlane(0.1f), farPlane(100.0f), yaw(-90.0f), pitch(0.0f), zoomLevel(45.0f), mouseSensitivity(0.1f), movementSpeed(2.5f), bound(false) {}
+
+Camera::~Camera() {}
+
 void Camera::init()
 {
     updateVectors();
@@ -31,5 +35,5 @@ glm::mat4 Camera::getViewMatrix() const
 
 glm::mat4 Camera::getProjectionMatrix(float aspect) const
 {
-    return glm::perspective(glm::radians(zoom), aspect, 0.1f, 100.0f);
+    return glm::perspective(glm::radians(zoomLevel), aspect, nearPlane, farPlane);
 }

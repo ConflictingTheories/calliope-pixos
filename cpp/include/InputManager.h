@@ -15,7 +15,7 @@ enum class InputType {
     Gamepad
 };
 
-enum class Action {
+enum class InputAction {
     MoveUp,
     MoveDown,
     MoveLeft,
@@ -60,10 +60,10 @@ public:
     void handleScroll(double xoffset, double yoffset);
 
     // Action mapping
-    void bindAction(Action action, InputType type, int key);
-    void unbindAction(Action action, InputType type);
-    bool isActionPressed(Action action) const;
-    bool isActionJustPressed(Action action) const;
+    void bindAction(InputAction action, InputType type, int key);
+    void unbindAction(InputAction action, InputType type);
+    bool isActionPressed(InputAction action) const;
+    bool isActionJustPressed(InputAction action) const;
 
     // Mouse
     glm::vec2 getMousePosition() const;
@@ -86,8 +86,8 @@ public:
     std::string getCurrentMode() const;
 
     // Hooks for scripting
-    void addActionHook(Action action, std::function<void()> hook);
-    void removeActionHook(Action action);
+    void addActionHook(InputAction action, std::function<void()> hook);
+    void removeActionHook(InputAction action);
 
     GLEngine* engine;
 
@@ -106,14 +106,14 @@ private:
     std::unordered_map<int, bool> mouseButtonStatesPrev;
 
     // Action mappings
-    std::unordered_map<std::string, std::unordered_map<Action, ActionMapping>> modeMappings;
+    std::unordered_map<std::string, std::unordered_map<InputAction, ActionMapping>> modeMappings;
 
     // Action states
-    std::unordered_map<Action, bool> actionStates;
-    std::unordered_map<Action, bool> actionStatesPrev;
+    std::unordered_map<InputAction, bool> actionStates;
+    std::unordered_map<InputAction, bool> actionStatesPrev;
 
     // Hooks
-    std::unordered_map<Action, std::vector<std::function<void()>>> actionHooks;
+    std::unordered_map<InputAction, std::vector<std::function<void()>>> actionHooks;
 
     void updateActionStates();
     void processActionHooks();

@@ -8,7 +8,7 @@
 
 class Zone;
 class GLEngine;
-class Action;
+#include "Action.h"
 
 class Sprite {
 public:

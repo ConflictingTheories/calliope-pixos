@@ -1,25 +1,37 @@
 #include "Event.h"
 
-Event::Event(const std::string& name, std::function<void()> callback) : name(name), callback(callback) {}
+Event::Event(GLEngine* engine, const std::string& id) : engine(engine), id(id), objId(0), active(false), repeating(false), duration(0.0f), timer(0.0f), elapsedTime(0.0f) {}
 
 Event::~Event() {}
 
-void Event::trigger() {
-    if (callback) {
-        callback();
+void Event::init() {
+    // Default implementation
+}
+
+void Event::update(double dt) {
+    elapsedTime += dt;
+    if (elapsedTime >= duration) {
+        trigger();
+        if (!repeating) {
+            active = false;
+        } else {
+            elapsedTime = 0.0f;
+        }
     }
 }
 
-const std::string& Event::getName() const {
-    return name;
+void Event::trigger() {
+    if (onTrigger) {
+        onTrigger();
+    }
 }
 
 bool Event::tick(double dt) {
-    // Placeholder: assume events complete immediately for now
-    return true;
+    update(dt);
+    return !active;
 }
 
-void Event::onComplete() {
-    // Placeholder: call callback or handle completion
-    trigger();
+void Event::reset() {
+    elapsedTime = 0.0f;
+    active = true;
 }

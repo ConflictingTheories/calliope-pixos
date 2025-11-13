@@ -4,8 +4,7 @@ project(PixospritzOpenGL)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-add_definitions(-DGLEW_STATIC)
+
 
 # Find packages
 find_package(OpenGL REQUIRED)
@@ -14,6 +13,9 @@ pkg_check_modules(GLFW3 REQUIRED glfw3)
 pkg_check_modules(GLEW REQUIRED glew)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(LUA REQUIRED lua)
+
+# Define GLEW_STATIC before including GLEW
+add_definitions(-DGLEW_STATIC)
 
 # GLM
 find_package(GLM REQUIRED)

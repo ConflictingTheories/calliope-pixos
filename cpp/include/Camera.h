@@ -12,7 +12,7 @@ public:
     ~Camera();
 
     void init();
-    void update(double dt);
+    void update(float deltaTime);
 
     // Position and orientation
     void setPosition(const glm::vec3& pos);
@@ -37,16 +37,22 @@ public:
     glm::vec3 position;
     glm::vec3 target;
     glm::vec3 up;
+    glm::vec3 front;
+    glm::vec3 right;
+    glm::vec3 worldUp;
     float fov;
     float nearPlane;
     float farPlane;
     float yaw, pitch;
     float zoomLevel;
+    float mouseSensitivity;
+    float movementSpeed;
 
     bool bound;
     std::weak_ptr<Sprite> boundSprite;
 
+public:
+    void updateVectors();
 private:
-    void updateViewMatrix();
     glm::mat4 viewMatrix;
 };

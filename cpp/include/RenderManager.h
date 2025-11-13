@@ -1,11 +1,11 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <vector>
 #include <string>
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class GLEngine;
 class Camera;
@@ -41,6 +41,7 @@ public:
     // Matrices
     glm::mat4 getProjectionMatrix() const;
     glm::mat4 getViewMatrix() const;
+    void initProjection();
 
     // Rendering functions
     void renderZone(class Zone* zone);
@@ -57,7 +58,6 @@ public:
     GLEngine* engine;
 
 private:
-    void initProjection();
     void updateMatrices();
 
     std::shared_ptr<Camera> camera;
