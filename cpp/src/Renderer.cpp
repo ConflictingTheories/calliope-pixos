@@ -2,6 +2,8 @@
 #include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 CubeGeometry::CubeGeometry()
 {
@@ -95,7 +97,7 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     shader->use();
     shader->setUniform("uView", camera.getViewMatrix());
     shader->setUniform("uProj", camera.getProjectionMatrix((float)width / height)); // Full aspect ratio
-    shader->setUniform("uLightDir", vec3(-0.6f, 0.8f, 0.6f));
+    shader->setUniform("uLightDir", glm::vec3(-0.6f, 0.8f, 0.6f));
 
     glBindVertexArray(cube->vao);
 
@@ -104,10 +106,10 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     {
         for (int z = 0; z < grid.rows; ++z)
         {
-            Mat4 model = mat4Translate(x * grid.tileSize, -0.1f, z * grid.tileSize) *
-                         mat4Scale(grid.tileSize * 0.98f, 0.18f, grid.tileSize * 0.98f);
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x * grid.tileSize, -0.1f, z * grid.tileSize)) *
+                             glm::scale(glm::mat4(1.0f), glm::vec3(grid.tileSize * 0.98f, 0.18f, grid.tileSize * 0.98f));
             shader->setUniform("uModel", model);
-            Vec3 color = ((x + z) % 2 == 0) ? vec3(0.16f, 0.2f, 0.23f) : vec3(0.12f, 0.19f, 0.2f);
+            glm::vec3 color = ((x + z) % 2 == 0) ? glm::vec3(0.16f, 0.2f, 0.23f) : glm::vec3(0.12f, 0.19f, 0.2f);
             shader->setUniform("uColor", color);
             glDrawArrays(GL_TRIANGLES, 0, cube->vertexCount);
         }
@@ -116,13 +118,14 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     // Draw units
     for (const auto &unit : units)
     {
-        Vec3 pos = vec3(unit.col * grid.tileSize, 0.0f, unit.row * grid.tileSize);
-        Mat4 model = mat4Translate(pos.x, 0.5f, pos.z) * mat4Scale(0.6f, 1.2f, 0.6f);
+        glm::vec3 pos = glm::vec3(unit.col * grid.tileSize, 0.0f, unit.row * grid.tileSize);
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.6f, 1.2f, 0.6f));
+        model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0f));
         shader->setUniform("uModel", model);
-        Vec3 color = unit.color;
+        glm::vec3 color = glm::vec3(unit.color.x, unit.color.y, unit.color.z);
         if (&unit == selectedUnit)
         {
-            color = vec3(std::min(1.0f, color.x * 1.15f), std::min(1.0f, color.y * 1.15f), std::min(1.0f, color.z * 1.15f));
+            color = glm::vec3(std::min(1.0f, color.x * 1.15f), std::min(1.0f, color.y * 1.15f), std::min(1.0f, color.z * 1.15f));
         }
         shader->setUniform("uColor", color);
         glDrawArrays(GL_TRIANGLES, 0, cube->vertexCount);

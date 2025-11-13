@@ -1,28 +1,35 @@
 #include "Camera.h"
-#include <algorithm>
-#include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
 
-void Camera::update(float deltaAzimuth, float deltaElevation, float deltaDistance)
+void Camera::init()
 {
-    azimuth += deltaAzimuth;
-    elevation = std::max(0.12f, std::min(3.14159f / 2.0f - 0.05f, elevation + deltaElevation));
-    distance = std::max(3.0f, std::min(60.0f, distance + deltaDistance));
+    updateVectors();
 }
 
-Vec3 Camera::getEye() const
+void Camera::update(float deltaTime)
 {
-    return target + vec3(
-                        distance * std::cos(elevation) * std::sin(azimuth),
-                        distance * std::sin(elevation),
-                        distance * std::cos(elevation) * std::cos(azimuth));
+    // Update camera vectors based on yaw and pitch
+    updateVectors();
 }
 
-Mat4 Camera::getViewMatrix() const
+void Camera::updateVectors()
 {
-    return mat4LookAt(getEye(), target, vec3(0.0f, 1.0f, 0.0f));
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    this->front = glm::normalize(front);
+
+    right = glm::normalize(glm::cross(front, worldUp));
+    up = glm::normalize(glm::cross(right, front));
 }
 
-Mat4 Camera::getProjectionMatrix(float aspect) const
+glm::mat4 Camera::getViewMatrix() const
 {
-    return mat4Perspective(3.14159f / 4.0f, aspect, 0.1f, 200.0f);
+    return glm::lookAt(position, position + front, up);
+}
+
+glm::mat4 Camera::getProjectionMatrix(float aspect) const
+{
+    return glm::perspective(glm::radians(zoom), aspect, 0.1f, 100.0f);
 }

@@ -1,15 +1,22 @@
 #include "Shader.h"
+#include <GL/glew.h>
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <glm/gtc/type_ptr.hpp>
 
-Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
-{
+Shader::Shader() : program(0) {}
+
+Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) : program(0) {
+    load(vertexPath, fragmentPath);
+}
+
+void Shader::load(const std::string &vertexPath, const std::string &fragmentPath) {
     std::string vertexSource = loadShaderSource(vertexPath);
     std::string fragmentSource = loadShaderSource(fragmentPath);
 
-    GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+    unsigned int vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
+    unsigned int fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
 
     program = glCreateProgram();
     glAttachShader(program, vertexShader);
@@ -40,13 +47,37 @@ void Shader::use() const
     glUseProgram(program);
 }
 
-void Shader::setUniform(const std::string &name, const Mat4 &mat) const
+void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 {
     GLint location = glGetUniformLocation(program, name.c_str());
-    glUniformMatrix4fv(location, 1, GL_FALSE, mat.m);
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::setUniform(const std::string &name, const Vec3 &vec) const
+void Shader::setVec3(const std::string &name, const glm::vec3 &vec) const
+{
+    GLint location = glGetUniformLocation(program, name.c_str());
+    glUniform3f(location, vec.x, vec.y, vec.z);
+}
+
+void Shader::setFloat(const std::string &name, float value) const
+{
+    GLint location = glGetUniformLocation(program, name.c_str());
+    glUniform1f(location, value);
+}
+
+void Shader::setBool(const std::string &name, bool value) const
+{
+    GLint location = glGetUniformLocation(program, name.c_str());
+    glUniform1i(location, value ? 1 : 0);
+}
+
+void Shader::setUniform(const std::string &name, const glm::mat4 &mat) const
+{
+    GLint location = glGetUniformLocation(program, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::setUniform(const std::string &name, const glm::vec3 &vec) const
 {
     GLint location = glGetUniformLocation(program, name.c_str());
     glUniform3f(location, vec.x, vec.y, vec.z);
@@ -69,9 +100,9 @@ std::string Shader::loadShaderSource(const std::string &path) const
     return source;
 }
 
-GLuint Shader::compileShader(const std::string &source, GLenum type) const
+unsigned int Shader::compileShader(const std::string &source, unsigned int type) const
 {
-    GLuint shader = glCreateShader(type);
+    unsigned int shader = glCreateShader(type);
     const char *src = source.c_str();
     glShaderSource(shader, 1, &src, nullptr);
     glCompileShader(shader);

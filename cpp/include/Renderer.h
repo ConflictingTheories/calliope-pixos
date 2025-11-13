@@ -11,7 +11,7 @@
 
 struct CubeGeometry
 {
-    GLuint vao, vbo, nbo;
+    unsigned int vao, vbo, nbo;
     int vertexCount;
     CubeGeometry();
     ~CubeGeometry();

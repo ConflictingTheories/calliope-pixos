@@ -1,13 +1,14 @@
-#include "Game.h"
+#include "GLEngine.h"
 #include <iostream>
 
 int main()
 {
     try
     {
-        Game game;
-        game.init();
-        game.run();
+        GLEngine engine;
+        engine.init(1280, 720, "Pixospritz OpenGL");
+        engine.run();
+        engine.shutdown();
     }
     catch (const std::exception &e)
     {

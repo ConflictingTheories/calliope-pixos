@@ -1,23 +1,30 @@
 #pragma once
-#include <GL/glew.h>
 #include <string>
+#include <glm/glm.hpp>
 #include "MathUtils.h"
 
 class Shader
 {
 public:
+    Shader();
     Shader(const std::string &vertexPath, const std::string &fragmentPath);
     ~Shader();
 
     void use() const;
-    GLuint getProgram() const { return program; }
+    unsigned int getProgram() const { return program; }
+    void load(const std::string &vertexPath, const std::string &fragmentPath);
 
-    void setUniform(const std::string &name, const Mat4 &mat) const;
-    void setUniform(const std::string &name, const Vec3 &vec) const;
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
+    void setVec3(const std::string &name, const glm::vec3 &vec) const;
+    void setFloat(const std::string &name, float value) const;
+    void setBool(const std::string &name, bool value) const;
+
+    void setUniform(const std::string &name, const glm::mat4 &mat) const;
+    void setUniform(const std::string &name, const glm::vec3 &vec) const;
     void setUniform(const std::string &name, float value) const;
 
 private:
-    GLuint program;
+    unsigned int program;
     std::string loadShaderSource(const std::string &path) const;
-    GLuint compileShader(const std::string &source, GLenum type) const;
+    unsigned int compileShader(const std::string &source, unsigned int type) const;
 };

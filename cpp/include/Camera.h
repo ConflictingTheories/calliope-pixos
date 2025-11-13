@@ -1,15 +1,24 @@
 #pragma once
-#include "MathUtils.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 struct Camera
 {
-    float azimuth = -3.14159f / 4.0f;
-    float elevation = 3.14159f / 5.0f;
-    float distance = 18.0f;
-    Vec3 target = vec3(5.5f, 0.0f, 3.5f);
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 right;
+    glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    void update(float deltaAzimuth, float deltaElevation, float deltaDistance);
-    Vec3 getEye() const;
-    Mat4 getViewMatrix() const;
-    Mat4 getProjectionMatrix(float aspect) const;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float movementSpeed = 2.5f;
+    float mouseSensitivity = 0.1f;
+    float zoom = 45.0f;
+
+    void init();
+    void update(float deltaTime);
+    void updateVectors();
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getProjectionMatrix(float aspect) const;
 };

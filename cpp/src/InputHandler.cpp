@@ -2,6 +2,8 @@
 #include "MathUtils.h"
 #include <iostream>
 #include <imgui.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 InputHandler::InputHandler(GLFWwindow *window, Camera &camera, const Grid &grid, std::vector<Unit> &units, Unit *&selectedUnit)
     : window(window), camera(camera), grid(grid), units(units), selectedUnit(selectedUnit)
@@ -63,8 +65,8 @@ void InputHandler::handleMouseClick(double mouseX, double mouseY)
 
     int fbWidth, fbHeight;
     glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-    Mat4 view = camera.getViewMatrix();
-    Mat4 proj = camera.getProjectionMatrix((float)fbWidth / fbHeight); // Full aspect ratio
+    glm::mat4 view = camera.getViewMatrix();
+    glm::mat4 proj = camera.getProjectionMatrix((float)fbWidth / fbHeight); // Full aspect ratio
     Ray ray = getRayFromScreen(mouseX, mouseY, view, proj, winWidth, winHeight);
     Vec3 hit = intersectRayPlane(ray);
     if (hit.y == 1) // No hit (y=1 indicates no intersection)
@@ -97,36 +99,44 @@ void InputHandler::handleMouseDrag(double mouseX, double mouseY)
     double dy = mouseY - lastMouseY;
     if (mouseButton == GLFW_MOUSE_BUTTON_LEFT)
     {
-        camera.update(-dx * 0.005f, -dy * 0.005f, 0.0f);
+        // Rotate camera
+        camera.yaw += dx * camera.mouseSensitivity;
+        camera.pitch += dy * camera.mouseSensitivity;
+        camera.pitch = glm::clamp(camera.pitch, -89.0f, 89.0f);
+        camera.updateVectors();
     }
     else if (mouseButton == GLFW_MOUSE_BUTTON_RIGHT)
     {
-        // Pan (simplified)
-        camera.target.x -= dx * 0.005f * camera.distance;
-        camera.target.z -= dy * 0.005f * camera.distance;
+        // Pan camera
+        glm::vec3 right = glm::normalize(glm::cross(camera.front, camera.up));
+        camera.position -= right * (float)dx * camera.movementSpeed * 0.01f;
+        camera.position += camera.up * (float)dy * camera.movementSpeed * 0.01f;
     }
     else if (mouseButton == GLFW_MOUSE_BUTTON_MIDDLE)
     {
         // Pan with middle mouse
-        camera.target.x -= dx * 0.005f * camera.distance;
-        camera.target.z -= dy * 0.005f * camera.distance;
+        glm::vec3 right = glm::normalize(glm::cross(camera.front, camera.up));
+        camera.position -= right * (float)dx * camera.movementSpeed * 0.01f;
+        camera.position += camera.up * (float)dy * camera.movementSpeed * 0.01f;
     }
 }
 
 void InputHandler::handleScroll(double scrollY)
 {
-    camera.update(0.0f, 0.0f, -scrollY * camera.distance * 0.001f);
+    camera.position += camera.front * (float)scrollY * camera.movementSpeed;
 }
 
-Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const Mat4 &view, const Mat4 &proj, int winWidth, int winHeight) const
+Ray InputHandler::getRayFromScreen(double mouseX, double mouseY, const glm::mat4 &view, const glm::mat4 &proj, int winWidth, int winHeight) const
 {
     float ndcX = (2.0f * mouseX) / winWidth - 1.0f;
     float ndcY = 1.0f - (2.0f * mouseY) / winHeight;
-    Mat4 invVP = mat4Inverse(proj * view);
-    Vec3 near = transformPoint(invVP, vec3(ndcX, ndcY, -1.0f));
-    Vec3 far = transformPoint(invVP, vec3(ndcX, ndcY, 1.0f));
-    Vec3 dir = normalize(sub(far, near));
-    return {near, dir};
+    glm::mat4 invVP = glm::inverse(proj * view);
+    glm::vec4 near4 = invVP * glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+    glm::vec4 far4 = invVP * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
+    glm::vec3 near = glm::vec3(near4) / near4.w;
+    glm::vec3 far = glm::vec3(far4) / far4.w;
+    glm::vec3 dir = glm::normalize(far - near);
+    return {vec3(near.x, near.y, near.z), vec3(dir.x, dir.y, dir.z)};
 }
 
 Vec3 InputHandler::intersectRayPlane(const Ray &ray) const

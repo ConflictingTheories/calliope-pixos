@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "Game.h"
 #include <iostream>
 #include <chrono>
