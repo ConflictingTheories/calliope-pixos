@@ -54,6 +54,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Event>> events;
     std::vector<std::shared_ptr<Event>> eventList;
 
+    void loadZone(const std::string& zoneId);
     void sortZones();
     bool canWalk(const std::vector<float>& neighbour, const std::string& jsonNeighbour, const std::vector<std::string>& visited) const;
     std::vector<std::vector<float>> getNeighbours(float x, float y) const;

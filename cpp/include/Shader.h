@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
-#include <unordered_map>
 
 class Shader {
 public:
@@ -29,8 +28,10 @@ public:
     GLuint id;
 
 private:
-    void checkCompileErrors(GLuint shader, const std::string& type);
+    void checkCompileErrors(GLuint shader, const std::string& type) const;
     GLint getUniformLocation(const std::string& name) const;
+    std::string loadShaderSource(const std::string& path) const;
+    unsigned int compileShader(const std::string& source, unsigned int type) const;
 
     mutable std::unordered_map<std::string, GLint> uniformCache;
 };

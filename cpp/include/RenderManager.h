@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <GL/glew.h>
+#include <unordered_map>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -12,6 +12,19 @@ class Camera;
 class Light;
 class Skybox;
 class Shader;
+class Zone;
+class Sprite;
+class Object;
+
+struct LightData {
+    glm::vec3 position;
+    glm::vec3 color;
+    float attenuation;
+    glm::vec3 direction;
+    float density;
+    float scatteringCoefficients;
+    bool enabled;
+};
 
 class RenderManager {
 public:
@@ -28,8 +41,8 @@ public:
     std::shared_ptr<Camera> getCamera() const;
 
     // Lighting
-    void addLight(std::shared_ptr<Light> light);
-    void removeLight(std::shared_ptr<Light> light);
+    void addLight(int id, const glm::vec3& pos, const glm::vec3& color, float attenuation, const glm::vec3& direction, float density, float scattering, bool enabled);
+    void removeLight(int id);
 
     // Skybox
     void setSkybox(std::shared_ptr<Skybox> skybox);
@@ -59,19 +72,28 @@ public:
 
 private:
     void updateMatrices();
+    void setupShaders();
+    void setupLights();
+    void setupSkybox();
+    void renderSkybox();
 
     std::shared_ptr<Camera> camera;
-    std::vector<std::shared_ptr<Light>> lights;
+    std::vector<LightData> lights;
     std::shared_ptr<Skybox> skybox;
     std::unordered_map<std::string, std::shared_ptr<Shader>> shaders;
 
+    std::shared_ptr<Shader> shaderProgram;
+    std::shared_ptr<Shader> pickerProgram;
+    std::shared_ptr<Shader> skyboxShader;
+
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
+    glm::mat4 modelMatrix;
 
     int screenWidth, screenHeight;
     bool debugMode;
 
     // Transition buffers
-    GLuint transitionVAO, transitionVBO;
+    unsigned int transitionVAO, transitionVBO;
     std::shared_ptr<Shader> transitionShader;
 };

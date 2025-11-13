@@ -21,6 +21,10 @@ add_definitions(-DGLEW_STATIC)
 find_package(GLM REQUIRED)
 include_directories(${GLM_INCLUDE_DIRS} /opt/homebrew/include)
 
+# Ensure OpenGL is included before GLEW
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIR} BEFORE)
+
 # Add nlohmann/json
 include(FetchContent)
 set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
@@ -36,7 +40,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 link_directories(/opt/homebrew/lib)
 
 # Include directories
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS} include imgui)
+include_directories(include imgui ${GLEW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
 
 # Source files
 file(GLOB SOURCES "src/*.cpp")

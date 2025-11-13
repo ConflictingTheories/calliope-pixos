@@ -21,25 +21,19 @@ void ModeManager::init() {
 void ModeManager::update(double dt) {
     if (currentHandlers && currentHandlers->update) {
         try {
-            currentHandlers->update(dt, currentParams);
+            currentHandlers->update(dt);
         } catch (const std::exception& e) {
             std::cerr << "Mode update failed for mode '" << currentMode << "': " << e.what() << std::endl;
         }
     }
 }
 
-bool ModeManager::handleInput(double dt) {
-    if (currentHandlers && currentHandlers->checkInput) {
-        try {
-            return currentHandlers->checkInput(dt, currentParams);
-        } catch (const std::exception& e) {
-            std::cerr << "Mode input handler failed for mode '" << currentMode << "': " << e.what() << std::endl;
-        }
-    }
+bool ModeManager::checkInput(int key, int action, int mods) {
+    // TODO: Implement input checking
     return false;
 }
 
-bool ModeManager::handleSelect(std::shared_ptr<void> zone, int row, int cell, const std::string& type) {
+bool ModeManager::handleSelect(class Zone* zone, int row, int cell, const std::string& type) {
     if (currentHandlers && currentHandlers->onSelect) {
         try {
             return currentHandlers->onSelect(zone, row, cell, type);
@@ -51,40 +45,43 @@ bool ModeManager::handleSelect(std::shared_ptr<void> zone, int row, int cell, co
 }
 
 void ModeManager::registerMode(const std::string& name, const ModeHandlers& handlers) {
-    registered[name] = handlers;
+    registeredModes[name] = handlers;
 }
 
-void ModeManager::set(const std::string& name, std::unordered_map<std::string, std::string> params) {
+void ModeManager::unregisterMode(const std::string& name) {
+    registeredModes.erase(name);
+}
+
+void ModeManager::setMode(const std::string& name) {
     // Teardown previous mode
     if (currentHandlers && currentHandlers->teardown) {
         try {
-            currentHandlers->teardown(currentParams);
+            currentHandlers->teardown();
         } catch (const std::exception& e) {
             std::cerr << "Mode teardown failed for mode '" << currentMode << "': " << e.what() << std::endl;
         }
     }
 
-    if (registered.find(name) == registered.end()) {
+    if (registeredModes.find(name) == registeredModes.end()) {
         std::cerr << "Warning: Mode '" << name << "' has not been registered." << std::endl;
         return;
     }
 
-    const auto& handlers = registered[name];
+    const auto& handlers = registeredModes[name];
     currentMode = name;
     currentHandlers = const_cast<ModeHandlers*>(&handlers);
-    currentParams = params;
 
     // Setup new mode
     if (currentHandlers->setup) {
         try {
-            currentHandlers->setup(currentParams);
+            currentHandlers->setup();
         } catch (const std::exception& e) {
             std::cerr << "Mode setup failed for mode '" << currentMode << "': " << e.what() << std::endl;
         }
     }
 }
 
-std::string ModeManager::getMode() const {
+std::string ModeManager::getCurrentMode() const {
     return currentMode;
 }
 

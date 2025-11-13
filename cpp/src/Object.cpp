@@ -1,6 +1,8 @@
 #include "Object.h"
 
-Object::Object() : pos(0.0f), scale(1.0f), size(1.0f), walkable(true), blocking(false), override(false) {}
+Object::Object(GLEngine* engine, const std::string& id)
+    : engine(engine), id(id), objId(0), pos(0.0f), scale(1.0f), rotation(0.0f),
+      interactive(false), visible(true), solid(false) {}
 
 Object::~Object() {}
 
@@ -14,4 +16,16 @@ void Object::update(double dt) {
 
 void Object::render() {
     // Default render logic
+}
+
+void Object::onInteract(Sprite* interactor) {
+    // Default interaction logic
+}
+
+void Object::onSelect() {
+    // Default selection logic
+}
+
+void Object::onDeselect() {
+    // Default deselection logic
 }

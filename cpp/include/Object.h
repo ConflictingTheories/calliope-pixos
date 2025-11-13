@@ -8,6 +8,7 @@
 
 class GLEngine;
 class Zone;
+class Sprite;
 
 class Object {
 public:

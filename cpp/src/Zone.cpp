@@ -11,28 +11,28 @@ Zone::~Zone() {}
 void Zone::init() {
     // Load zone data, tileset, etc.
     bounds = {0, 0, 32, 32}; // Default bounds, should be loaded from data
-    loadTileset("default_tileset"); // Placeholder
+    // loadTileset("default_tileset"); // Placeholder - removed as method doesn't exist
 }
 
 void Zone::update(double dt) {
-    for (auto& sprite : spriteList) {
-        sprite->update(dt);
+    for (auto& spritePair : sprites) {
+        spritePair.second->update(dt);
     }
-    for (auto& object : objectList) {
-        object->update(dt);
+    for (auto& objectPair : objects) {
+        objectPair.second->update(dt);
     }
 }
 
 void Zone::render() {
     // Render tiles first
-    renderTiles();
+    // renderTiles(); // TODO: Implement
 
     // Render objects and sprites
-    for (auto& object : objectList) {
-        object->render();
+    for (auto& objectPair : objects) {
+        objectPair.second->render();
     }
-    for (auto& sprite : spriteList) {
-        sprite->render();
+    for (auto& spritePair : sprites) {
+        spritePair.second->render();
     }
 }
 
@@ -43,34 +43,38 @@ bool Zone::isInZone(float x, float y) const {
 bool Zone::isWalkable(float x, float y, int direction) const {
     if (!isInZone(x, y)) return false;
 
-    int ix = static_cast<int>(x - bounds[0]);
-    int iy = static_cast<int>(y - bounds[1]);
+    glm::ivec2 tilePos = worldToTile(x, y);
 
-    if (ix < 0 || iy < 0 || ix >= cells.size() || iy >= cells[0].size()) return false;
+    if (tilePos.x < 0 || tilePos.y < 0 || tilePos.x >= width || tilePos.y >= height) return false;
 
-    int tileId = cells[ix][iy];
+    int tileId = tileMap[tilePos.y][tilePos.x];
     // Simplified walkability check
     return tileId != 0; // Assume tile 0 is not walkable
 }
 
-float Zone::getHeight(float x, float y) const {
-    if (!isInZone(x, y)) return 0.0f;
+glm::ivec2 Zone::worldToTile(float x, float y) const {
+    return glm::ivec2(
+        static_cast<int>((x - bounds[0]) / tileSize),
+        static_cast<int>((y - bounds[1]) / tileSize)
+    );
+}
 
-    // Simplified height calculation
-    return 0.0f;
+glm::vec2 Zone::tileToWorld(int row, int col) const {
+    return glm::vec2(
+        bounds[0] + col * tileSize,
+        bounds[1] + row * tileSize
+    );
 }
 
 void Zone::addSprite(std::shared_ptr<Sprite> sprite) {
     sprites[sprite->id] = sprite;
-    spriteList.push_back(sprite);
-    sprite->zone = shared_from_this();
-    sortSprites();
+    // sprite->zone = std::weak_ptr<Zone>(shared_from_this()); // TODO: Fix shared_from_this
+    // sortSprites(); // TODO: Implement if needed
 }
 
 void Zone::removeSprite(const std::string& id) {
     auto it = sprites.find(id);
     if (it != sprites.end()) {
-        spriteList.erase(std::remove(spriteList.begin(), spriteList.end(), it->second), spriteList.end());
         sprites.erase(it);
     }
 }
@@ -82,36 +86,84 @@ std::shared_ptr<Sprite> Zone::getSpriteById(const std::string& id) const {
 
 void Zone::addObject(std::shared_ptr<Object> object) {
     objects[object->id] = object;
-    objectList.push_back(object);
 }
 
 void Zone::removeObject(const std::string& id) {
     auto it = objects.find(id);
     if (it != objects.end()) {
-        objectList.erase(std::remove(objectList.begin(), objectList.end(), it->second), objectList.end());
         objects.erase(it);
     }
 }
 
-void Zone::loadTileset(const std::string& tilesetPath) {
-    tileset = std::make_shared<Tileset>();
-    tileset->load(tilesetPath);
+void Zone::loadFromJson(const nlohmann::json& data, const std::string& gamePath) {
+    // Load basic properties
+    width = data["width"];
+    height = data["height"];
+    tileSize = data["tilewidth"]; // Assume square tiles
 
-    // Initialize cells with default data
-    int width = static_cast<int>(bounds[2] - bounds[0]);
-    int height = static_cast<int>(bounds[3] - bounds[1]);
-    cells.assign(width, std::vector<int>(height, 1)); // Default to walkable tile
+    bounds = glm::vec4(0, 0, width * tileSize, height * tileSize);
+
+    // Load tile map
+    loadTileMap(data);
+
+    // Load tilesets
+    loadTilesets(data);
+
+    // Load objects
+    loadObjects(data);
+
+    // Load sprites
+    loadSprites(data);
+
+    // Load events
+    loadEvents(data);
+
+    // Load scripts
+    if (data.contains("properties")) {
+        for (const auto& prop : data["properties"]) {
+            if (prop["name"] == "scripts") {
+                scripts = prop["value"];
+            }
+        }
+    }
 }
 
-void Zone::renderTiles() {
-    if (!tileset) return;
+void Zone::loadTileMap(const nlohmann::json& data) {
+    tileMap.assign(height, std::vector<int>(width, 0));
 
-    // TODO: Implement proper tile rendering with VBOs and shaders
-    // For now, placeholder - actual rendering will be handled by RenderManager
+    if (data.contains("layers")) {
+        for (const auto& layer : data["layers"]) {
+            if (layer["type"] == "tilelayer") {
+                const auto& layerData = layer["data"];
+                for (int y = 0; y < height; ++y) {
+                    for (int x = 0; x < width; ++x) {
+                        int index = y * width + x;
+                        tileMap[y][x] = layerData[index];
+                    }
+                }
+            }
+        }
+    }
 }
 
-void Zone::sortSprites() {
-    std::sort(spriteList.begin(), spriteList.end(), [](const std::shared_ptr<Sprite>& a, const std::shared_ptr<Sprite>& b) {
-        return a->pos.y < b->pos.y;
-    });
+void Zone::loadTilesets(const nlohmann::json& data) {
+    if (data.contains("tilesets")) {
+        for (const auto& tilesetData : data["tilesets"]) {
+            auto tileset = std::make_shared<Tileset>(engine, tilesetData["name"]);
+            tileset->loadFromJson(tilesetData, world->gamePath);
+            addTileset(tileset);
+        }
+    }
+}
+
+void Zone::loadObjects(const nlohmann::json& data) {
+    // TODO: Implement object loading
+}
+
+void Zone::loadSprites(const nlohmann::json& data) {
+    // TODO: Implement sprite loading
+}
+
+void Zone::loadEvents(const nlohmann::json& data) {
+    // TODO: Implement event loading
 }

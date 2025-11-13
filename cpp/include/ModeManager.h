@@ -44,4 +44,6 @@ public:
 private:
     std::string currentMode;
     std::unordered_map<std::string, ModeHandlers> registeredModes;
+    ModeHandlers* currentHandlers;
+    std::unordered_map<std::string, std::string> currentParams;
 };

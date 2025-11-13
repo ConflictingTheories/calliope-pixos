@@ -14,6 +14,9 @@ class Tileset;
 class Event;
 class GLEngine;
 
+#include "Object.h"
+#include "Tileset.h"
+
 class Zone {
 public:
     Zone(const std::string& id, World* world);

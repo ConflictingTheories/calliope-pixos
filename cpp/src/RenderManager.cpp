@@ -3,7 +3,7 @@
 #include "GLEngine.h"
 #include <iostream>
 
-RenderManager::RenderManager(GLEngine* eng) : engine(eng) {}
+RenderManager::RenderManager(GLEngine* eng) : engine(eng), modelMatrix(1.0f) {}
 
 RenderManager::~RenderManager() {}
 
@@ -18,7 +18,7 @@ void RenderManager::init() {
     setupSkybox();
     initProjection();
 
-    camera.init();
+    // Camera init if needed
 }
 
 void RenderManager::clearScreen() {
@@ -28,38 +28,21 @@ void RenderManager::clearScreen() {
 
 void RenderManager::render() {
     // Set up camera view matrix
-    viewMatrix = camera.getViewMatrix();
+    if (camera) {
+        // TODO: Get view matrix from camera
+    }
 
     // Render skybox first
     renderSkybox();
 
     // Set up main shader
-    shaderProgram.use();
-
-    // Set matrices
-    shaderProgram.setMat4("uProjection", projectionMatrix);
-    shaderProgram.setMat4("uView", viewMatrix);
-    shaderProgram.setMat4("uModel", modelMatrix);
-
-    // Set camera position
-    shaderProgram.setVec3("uCameraPos", camera.position);
-
-    // Set lights
-    for (size_t i = 0; i < lights.size(); ++i) {
-        const auto& light = lights[i];
-        std::string prefix = "lights[" + std::to_string(i) + "]";
-        shaderProgram.setVec3(prefix + ".position", light.position);
-        shaderProgram.setVec3(prefix + ".color", light.color);
-        shaderProgram.setFloat(prefix + ".attenuation", light.attenuation);
-        shaderProgram.setVec3(prefix + ".direction", light.direction);
-        shaderProgram.setFloat(prefix + ".density", light.density);
-        shaderProgram.setFloat(prefix + ".scatteringCoefficients", light.scatteringCoefficients);
-        shaderProgram.setBool(prefix + ".enabled", light.enabled);
+    if (shaderProgram) {
+        // TODO: Use shader
     }
 
     // Render world
     if (engine->world) {
-        engine->world->render();
+        // TODO: Render world
     }
 }
 
@@ -69,14 +52,7 @@ void RenderManager::initProjection() {
 }
 
 void RenderManager::setupShaders() {
-    // Main shader
-    shaderProgram.load("vertex.glsl", "fragment.glsl");
-
-    // Picker shader for object selection
-    pickerProgram.load("picker_vertex.glsl", "picker_fragment.glsl");
-
-    // Skybox shader
-    skyboxShader.load("skybox_vertex.glsl", "skybox_fragment.glsl");
+    // TODO: Load shaders
 }
 
 void RenderManager::setupLights() {
@@ -89,22 +65,34 @@ void RenderManager::setupSkybox() {
 }
 
 void RenderManager::addLight(int id, const glm::vec3& pos, const glm::vec3& color, float attenuation, const glm::vec3& direction, float density, float scattering, bool enabled) {
-    if (id >= lights.size()) {
+    if (id >= static_cast<int>(lights.size())) {
         lights.resize(id + 1);
     }
     lights[id] = {pos, color, attenuation, direction, density, scattering, enabled};
 }
 
 void RenderManager::removeLight(int id) {
-    if (id < lights.size()) {
+    if (id < static_cast<int>(lights.size())) {
         lights[id].enabled = false;
     }
-}
-
-void RenderManager::setSkyboxShader(const std::string& shaderName) {
-    // TODO: Load and set skybox shader
 }
 
 void RenderManager::renderSkybox() {
     // TODO: Render skybox
 }
+
+// Stub implementations
+void RenderManager::resize(int width, int height) {}
+void RenderManager::setCamera(std::shared_ptr<Camera> cam) { camera = cam; }
+std::shared_ptr<Camera> RenderManager::getCamera() const { return camera; }
+void RenderManager::setSkybox(std::shared_ptr<Skybox> sb) { skybox = sb; }
+std::shared_ptr<Shader> RenderManager::loadShader(const std::string& vertexPath, const std::string& fragmentPath) { return nullptr; }
+std::shared_ptr<Shader> RenderManager::getShader(const std::string& name) const { return nullptr; }
+glm::mat4 RenderManager::getProjectionMatrix() const { return projectionMatrix; }
+glm::mat4 RenderManager::getViewMatrix() const { return viewMatrix; }
+void RenderManager::renderZone(class Zone* zone) {}
+void RenderManager::renderSprite(class Sprite* sprite) {}
+void RenderManager::renderObject(class Object* object) {}
+void RenderManager::renderTransition(float progress, bool direction) {}
+void RenderManager::setDebugMode(bool enabled) { debugMode = enabled; }
+bool RenderManager::isDebugMode() const { return debugMode; }

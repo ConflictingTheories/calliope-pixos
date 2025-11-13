@@ -95,9 +95,17 @@ private:
     GLFWwindow* window;
     std::string currentMode;
 
+    // Mouse states
+    double mouseX, mouseY;
+    double mouseDeltaX, mouseDeltaY;
+    int gamepadCount;
+    std::vector<float> gamepadAxes;
+    std::vector<unsigned char> gamepadButtons;
+
     // Key states
     std::unordered_map<int, bool> keyStates;
     std::unordered_map<int, bool> keyStatesPrev;
+    std::unordered_map<int, bool> keyPressed;
 
     // Mouse states
     glm::vec2 mousePosition;
@@ -117,4 +125,5 @@ private:
 
     void updateActionStates();
     void processActionHooks();
+    void handleGamepad();
 };

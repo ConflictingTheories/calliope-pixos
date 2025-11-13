@@ -1,12 +1,14 @@
 #pragma once
 
-#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
+
+// Include OpenGL headers after GLM to avoid conflicts
+#include <GL/glew.h>
 
 class GLEngine;
 

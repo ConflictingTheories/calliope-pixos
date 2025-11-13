@@ -132,7 +132,7 @@ void World::addRemoteAvatar(int clientId, const std::unordered_map<std::string, 
     auto avatar = std::make_shared<Avatar>(engine);
     avatar->id = "remote_" + std::to_string(clientId);
     avatar->pos = glm::vec3(avatarData.at("x"), avatarData.at("y"), avatarData.at("z"));
-    avatar->facing = avatarData.at("facing");
+    avatar->facing = static_cast<Direction>(avatarData.at("facing"));
 
     auto zone = zoneContaining(avatar->pos.x, avatar->pos.y);
     if (zone) {
@@ -161,7 +161,7 @@ void World::updateRemoteAvatar(int clientId, const std::unordered_map<std::strin
         avatar->pos.x = avatarData.at("x");
         avatar->pos.y = avatarData.at("y");
         avatar->pos.z = avatarData.at("z");
-        avatar->facing = avatarData.at("facing");
+        avatar->facing = static_cast<Direction>(avatarData.at("facing"));
     }
 }
 
