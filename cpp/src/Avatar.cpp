@@ -24,31 +24,31 @@ void Avatar::render() {
 }
 
 void Avatar::handleInput() {
-    if (!engine->inputManager) return;
+    if (!engine->getInputManager()) return;
 
     // Movement
-    if (engine->inputManager->isActionPressed(InputAction::MoveUp)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::MoveUp)) {
         pos.y += 0.1f;
         facing = Direction::Up;
     }
-    if (engine->inputManager->isActionPressed(InputAction::MoveDown)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::MoveDown)) {
         pos.y -= 0.1f;
         facing = Direction::Down;
     }
-    if (engine->inputManager->isActionPressed(InputAction::MoveLeft)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::MoveLeft)) {
         pos.x -= 0.1f;
         facing = Direction::Left;
     }
-    if (engine->inputManager->isActionPressed(InputAction::MoveRight)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::MoveRight)) {
         pos.x += 0.1f;
         facing = Direction::Right;
     }
 
     // Actions
-    if (engine->inputManager->isActionPressed(InputAction::Interact)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::Interact)) {
         performAction("interact", {});
     }
-    if (engine->inputManager->isActionPressed(InputAction::Dance)) {
+    if (engine->getInputManager()->isActionPressed(InputAction::Dance)) {
         performAction("dance", {});
     }
 }

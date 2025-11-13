@@ -151,7 +151,7 @@ void Zone::loadTilesets(const nlohmann::json& data) {
         for (const auto& tilesetData : data["tilesets"]) {
             auto tileset = std::make_shared<Tileset>(engine, tilesetData["name"]);
             tileset->loadFromJson(tilesetData, world->gamePath);
-            addTileset(tileset);
+            tilesets[tileset->id] = tileset;
         }
     }
 }

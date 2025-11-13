@@ -11,6 +11,10 @@ GLuint program;
 
 Shader::Shader() : id(0) {}
 
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) : id(0) {
+    init(vertexPath, fragmentPath);
+}
+
 Shader::~Shader()
 {
     glDeleteProgram(id);

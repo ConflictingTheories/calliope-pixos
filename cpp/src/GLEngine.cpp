@@ -1,48 +1,55 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include "GLEngine.h"
+#include "RenderManager.h"
+#include "InputManager.h"
+#include "ModeManager.h"
+#include "World.h"
 #include <iostream>
-#include <chrono>
 #include <nlohmann/json.hpp>
-#include <fstream>
 
-GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
-    : window(nullptr), gamePath(gamePath), manifest(manifest), windowWidth(1280), windowHeight(720), windowTitle("Pixospritz OpenGL"),
-      isRunning(false), lastTime(0.0), deltaTime(0.0) {}
-
-GLEngine::~GLEngine() {
-    shutdown();
+GLEngine::GLEngine()
+    : window(nullptr), initialized(false) {
 }
 
-void GLEngine::init(int width, int height, const std::string& title) {
-    windowWidth = width;
-    windowHeight = height;
-    windowTitle = title;
+GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
+    : window(nullptr), initialized(false) {
+    // TODO: Initialize with gamePath and manifest
+}
 
-    // Initialize GLFW
+GLEngine::~GLEngine() {
+    if (window) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+}
+
+bool GLEngine::init() {
+    return init(800, 600, "Pixospritz OpenGL");
+}
+
+bool GLEngine::init(int width, int height, const std::string& title) {
     if (!glfwInit()) {
-        throw std::runtime_error("Failed to initialize GLFW");
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return false;
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    window = glfwCreateWindow(windowWidth, windowHeight, windowTitle.c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
     if (!window) {
+        std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        throw std::runtime_error("Failed to create GLFW window");
+        return false;
     }
 
     glfwMakeContextCurrent(window);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetKeyCallback(window, keyCallback);
-    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSwapInterval(1); // Enable vsync
 
-    // Initialize GLEW
     if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("Failed to initialize GLEW");
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        return false;
     }
 
     // Initialize managers
@@ -51,26 +58,53 @@ void GLEngine::init(int width, int height, const std::string& title) {
     modeManager = std::make_unique<ModeManager>(this);
     world = std::make_unique<World>(this);
 
-    // Initialize components
-    renderManager->init();
-    inputManager->init();
-    modeManager->init();
-    world->init(gamePath, manifest);
+    initialized = true;
+    return true;
+}
 
-    isRunning = true;
-    lastTime = glfwGetTime();
+void GLEngine::render() {
+    if (!initialized) return;
+
+    renderManager->render();
+    glfwSwapBuffers(window);
+}
+
+void GLEngine::update(float dt) {
+    if (!initialized) return;
+
+    inputManager->update(dt);
+    modeManager->update(dt);
+    world->update(dt);
+}
+
+void GLEngine::setGreeting(const std::string& text) {
+    greeting = text;
+    std::cout << "Setting GREETING: " << text << std::endl;
+}
+
+void GLEngine::speechSynthesis(const std::string& text, const std::string* voice,
+                              const std::string* lang, float* rate,
+                              float* volume, float* pitch) {
+    // Placeholder - implement speech synthesis if needed
+    std::cout << "Speech synthesis: " << text << std::endl;
+}
+
+glm::vec2 GLEngine::screenSize() const {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    return glm::vec2(width, height);
 }
 
 void GLEngine::run() {
-    while (isRunning && !glfwWindowShouldClose(window)) {
+    double lastTime = glfwGetTime();
+    while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
-        deltaTime = currentTime - lastTime;
+        float deltaTime = static_cast<float>(currentTime - lastTime);
         lastTime = currentTime;
 
         update(deltaTime);
         render();
 
-        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 }
@@ -78,49 +112,6 @@ void GLEngine::run() {
 void GLEngine::shutdown() {
     if (window) {
         glfwDestroyWindow(window);
-        window = nullptr;
-    }
-    glfwTerminate();
-}
-
-void GLEngine::update(double dt) {
-    inputManager->update(dt);
-    modeManager->update(dt);
-    world->update(dt);
-}
-
-void GLEngine::render() {
-    renderManager->clearScreen();
-    world->render();
-    renderManager->render();
-}
-
-void GLEngine::handleInput() {
-    // Input is handled via callbacks and InputManager
-}
-
-void GLEngine::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-    GLEngine* engine = static_cast<GLEngine*>(glfwGetWindowUserPointer(window));
-    if (engine) {
-        engine->windowWidth = width;
-        engine->windowHeight = height;
-        glViewport(0, 0, width, height);
-        if (engine->renderManager) {
-            engine->renderManager->initProjection();
-        }
-    }
-}
-
-void GLEngine::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    GLEngine* engine = static_cast<GLEngine*>(glfwGetWindowUserPointer(window));
-    if (engine && engine->inputManager) {
-        engine->inputManager->handleKey(key, scancode, action, mods);
-    }
-}
-
-void GLEngine::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    GLEngine* engine = static_cast<GLEngine*>(glfwGetWindowUserPointer(window));
-    if (engine && engine->inputManager) {
-        engine->inputManager->handleMouse(xpos, ypos);
+        glfwTerminate();
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include <memory>
 #include <vector>
 #include <unordered_map>

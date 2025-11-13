@@ -7,6 +7,7 @@
 class Shader {
 public:
     Shader();
+    Shader(const std::string& vertexPath, const std::string& fragmentPath);
     ~Shader();
 
     void init(const std::string& vertexSource, const std::string& fragmentSource);

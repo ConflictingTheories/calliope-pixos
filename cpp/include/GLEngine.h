@@ -1,48 +1,55 @@
 #pragma once
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <string>
-#include <nlohmann/json.hpp>
-#include "RenderManager.h"
+#include <vector>
+
 #include "InputManager.h"
+#include "RenderManager.h"
 #include "ModeManager.h"
 #include "World.h"
 
-// Forward declaration for GLFW
-struct GLFWwindow;
-
 class GLEngine {
-public:
-    GLEngine(const std::string& gamePath, const nlohmann::json& manifest);
-    ~GLEngine();
-
-    void init(int width, int height, const std::string& title);
-    void run();
-    void shutdown();
-
-    // Managers
+private:
+    GLFWwindow* window;
     std::unique_ptr<RenderManager> renderManager;
     std::unique_ptr<InputManager> inputManager;
     std::unique_ptr<ModeManager> modeManager;
     std::unique_ptr<World> world;
 
-    // Window
-    GLFWwindow* window;
-    int windowWidth, windowHeight;
-    std::string windowTitle;
-    std::string gamePath;
-    nlohmann::json manifest;
+public:
+    // Getters for managers
+    RenderManager* getRenderManager() { return renderManager.get(); }
+    InputManager* getInputManager() { return inputManager.get(); }
+    ModeManager* getModeManager() { return modeManager.get(); }
+    World* getWorld() { return world.get(); }
 
-    // Game state
-    bool isRunning;
-    double lastTime;
-    double deltaTime;
+    GLFWwindow* getWindow() { return window; }
 
-private:
-    void update(double dt);
+    std::string greeting;
+
+    // Speech synthesis voice - placeholder
+    std::string voice;
+
+    bool initialized;
+
+public:
+    GLEngine();
+    GLEngine(const std::string& gamePath, const nlohmann::json& manifest);
+    ~GLEngine();
+
+    bool init();
+    bool init(int width, int height, const std::string& title);
     void render();
-    void handleInput();
-
-    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void mouseCallback(GLFWwindow* window, double xpos, double ypos);
+    void update(float dt);
+    void run();
+    void shutdown();
+    void setGreeting(const std::string& text);
+    void speechSynthesis(const std::string& text, const std::string* voice = nullptr,
+                        const std::string* lang = nullptr, float* rate = nullptr,
+                        float* volume = nullptr, float* pitch = nullptr);
+    glm::vec2 screenSize() const;
 };

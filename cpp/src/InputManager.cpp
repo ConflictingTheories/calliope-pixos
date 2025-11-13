@@ -1,159 +1,115 @@
 #include "InputManager.h"
 #include "GLEngine.h"
+#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
 #include <iostream>
-#include <algorithm>
 
-InputManager::InputManager(GLEngine* eng) : engine(eng), currentMode("default"), mouseX(0.0), mouseY(0.0), mouseDeltaX(0.0), mouseDeltaY(0.0), gamepadCount(0) {}
+InputManager::InputManager(GLEngine* engine)
+    : engine(engine), mouseX(0), mouseY(0), mouseLeftPressed(false), mouseRightPressed(false), gamepad(nullptr) {
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {
+        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+    }
 
-InputManager::~InputManager() {}
-
-void InputManager::init() {
-    // Initialize gamepad
-    gamepadCount = glfwJoystickPresent(GLFW_JOYSTICK_1) ? 1 : 0;
-    if (gamepadCount > 0) {
-        gamepadAxes.resize(6, 0.0f);
-        gamepadButtons.resize(14, 0);
+    // Open first available gamepad
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            gamepad = SDL_GameControllerOpen(i);
+            if (gamepad) {
+                std::cout << "Gamepad connected: " << SDL_GameControllerName(gamepad) << std::endl;
+                break;
+            }
+        }
     }
 }
 
-void InputManager::update(double dt) {
-    // Update previous states
-    keyStatesPrev = keyStates;
+InputManager::~InputManager() {
+    if (gamepad) {
+        SDL_GameControllerClose(gamepad);
+    }
+    SDL_Quit();
+}
 
-    // Update mouse delta
-    double newMouseX, newMouseY;
-    glfwGetCursorPos(engine->window, &newMouseX, &newMouseY);
-    mouseDeltaX = newMouseX - mouseX;
-    mouseDeltaY = newMouseY - mouseY;
-    mouseX = newMouseX;
-    mouseY = newMouseY;
+void InputManager::update(float dt) {
+    // Poll SDL events for gamepad
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        // Handle SDL events if needed
+    }
 
-    // Update gamepad
+    handleKeyboard();
+    handleMouse();
     handleGamepad();
-
-    // Update action states
-    updateActionStates();
 }
 
-void InputManager::handleKey(int key, int scancode, int action, int mods) {
-    bool pressed = (action == GLFW_PRESS);
-    keyStates[key] = pressed;
-    keyPressed[key] = pressed && !keyStatesPrev[key];
+bool InputManager::isActionPressed(InputAction action) {
+    switch (action) {
+        case InputAction::MoveUp:
+            return isKeyPressed("W") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP));
+        case InputAction::MoveDown:
+            return isKeyPressed("S") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN));
+        case InputAction::MoveLeft:
+            return isKeyPressed("A") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT));
+        case InputAction::MoveRight:
+            return isKeyPressed("D") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+        case InputAction::Interact:
+            return isKeyPressed("E") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A));
+        case InputAction::Dance:
+            return isKeyPressed("U") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X));
+        default:
+            return false;
+    }
 }
 
-void InputManager::handleMouse(double xpos, double ypos) {
-    mouseX = xpos;
-    mouseY = ypos;
+bool InputManager::isKeyPressed(const std::string& key) {
+    return keyPressed[key];
 }
 
-void InputManager::handleMouseButton(int button, int action, int mods) {
-    // TODO: Implement mouse button handling
+bool InputManager::isKeyHeld(const std::string& key) {
+    return keyHeld[key];
+}
+
+bool InputManager::isMouseButtonPressed(int button) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) return mouseLeftPressed;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) return mouseRightPressed;
+    return false;
+}
+
+void InputManager::handleKeyboard() {
+    GLFWwindow* window = engine->getWindow();
+
+    // Clear previous state
+    keyPressed.clear();
+    keyReleased.clear();
+
+    // Check common keys
+    std::vector<std::pair<std::string, int>> keys = {
+        {"W", GLFW_KEY_W}, {"A", GLFW_KEY_A}, {"S", GLFW_KEY_S}, {"D", GLFW_KEY_D},
+        {"E", GLFW_KEY_E}, {"U", GLFW_KEY_U}, {"SPACE", GLFW_KEY_SPACE}
+    };
+
+    for (const auto& key : keys) {
+        int state = glfwGetKey(window, key.second);
+        if (state == GLFW_PRESS) {
+            keyPressed[key.first] = true;
+            keyHeld[key.first] = true;
+        } else if (state == GLFW_RELEASE) {
+            keyReleased[key.first] = true;
+            keyHeld[key.first] = false;
+        }
+    }
+}
+
+void InputManager::handleMouse() {
+    GLFWwindow* window = engine->getWindow();
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    mouseLeftPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    mouseRightPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 }
 
 void InputManager::handleGamepad() {
-    if (gamepadCount > 0) {
-        int axesCount, buttonCount;
-        const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
-        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
+    if (!gamepad) return;
 
-        if (axes) {
-            gamepadAxes.assign(axes, axes + std::min(axesCount, 6));
-        }
-        if (buttons) {
-            gamepadButtons.assign(buttons, buttons + std::min(buttonCount, 14));
-        }
-    }
-}
-
-void InputManager::updateActionStates() {
-    // TODO: Implement action state updates
-}
-
-void InputManager::processActionHooks() {
-    // TODO: Implement action hooks
-}
-
-// Stub implementations for missing methods
-bool InputManager::isKeyJustPressed(int key) const {
-    auto it = keyPressed.find(key);
-    return it != keyPressed.end() && it->second;
-}
-
-glm::vec2 InputManager::getMousePosition() const {
-    return glm::vec2(mouseX, mouseY);
-}
-
-glm::vec2 InputManager::getMouseDelta() const {
-    return glm::vec2(mouseDeltaX, mouseDeltaY);
-}
-
-bool InputManager::isMouseButtonPressed(int button) const {
-    auto it = mouseButtonStates.find(button);
-    return it != mouseButtonStates.end() && it->second;
-}
-
-bool InputManager::isGamepadConnected() const {
-    return gamepadCount > 0;
-}
-
-glm::vec2 InputManager::getLeftStick() const {
-    if (gamepadAxes.size() >= 2) {
-        return glm::vec2(gamepadAxes[0], gamepadAxes[1]);
-    }
-    return glm::vec2(0.0f);
-}
-
-glm::vec2 InputManager::getRightStick() const {
-    if (gamepadAxes.size() >= 4) {
-        return glm::vec2(gamepadAxes[2], gamepadAxes[3]);
-    }
-    return glm::vec2(0.0f);
-}
-
-float InputManager::getLeftTrigger() const {
-    if (gamepadAxes.size() >= 5) {
-        return gamepadAxes[4];
-    }
-    return 0.0f;
-}
-
-float InputManager::getRightTrigger() const {
-    if (gamepadAxes.size() >= 6) {
-        return gamepadAxes[5];
-    }
-    return 0.0f;
-}
-
-void InputManager::setMode(const std::string& mode) {
-    currentMode = mode;
-}
-
-std::string InputManager::getCurrentMode() const {
-    return currentMode;
-}
-
-void InputManager::bindAction(InputAction action, InputType type, int key) {
-    // TODO: Implement
-}
-
-void InputManager::unbindAction(InputAction action, InputType type) {
-    // TODO: Implement
-}
-
-bool InputManager::isActionPressed(InputAction action) const {
-    // TODO: Implement
-    return false;
-}
-
-bool InputManager::isActionJustPressed(InputAction action) const {
-    // TODO: Implement
-    return false;
-}
-
-void InputManager::addActionHook(InputAction action, std::function<void()> hook) {
-    // TODO: Implement
-}
-
-void InputManager::removeActionHook(InputAction action) {
-    // TODO: Implement
+    // Update gamepad state if needed
+    SDL_GameControllerUpdate();
 }
