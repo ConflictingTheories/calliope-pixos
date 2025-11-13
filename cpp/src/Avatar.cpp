@@ -44,20 +44,16 @@ void Avatar::handleInput() {
 
     // Movement
     if (engine->getInputManager()->isActionPressed(InputAction::MoveUp)) {
-        pos.y += 0.1f;
-        facing = Direction::Up;
+        handleWalk("w", {});
     }
     if (engine->getInputManager()->isActionPressed(InputAction::MoveDown)) {
-        pos.y -= 0.1f;
-        facing = Direction::Down;
+        handleWalk("s", {});
     }
     if (engine->getInputManager()->isActionPressed(InputAction::MoveLeft)) {
-        pos.x -= 0.1f;
-        facing = Direction::Left;
+        handleWalk("a", {});
     }
     if (engine->getInputManager()->isActionPressed(InputAction::MoveRight)) {
-        pos.x += 0.1f;
-        facing = Direction::Right;
+        handleWalk("d", {});
     }
 
     // Actions
@@ -65,7 +61,7 @@ void Avatar::handleInput() {
         performAction("interact", {});
     }
     if (engine->getInputManager()->isActionPressed(InputAction::Dance)) {
-        performAction("dance", {});
+        handleWalk("u", {});
     }
 }
 

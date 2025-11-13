@@ -16,10 +16,21 @@ void World::init(const std::string& gamePath, const nlohmann::json& manifest) {
     this->manifest = manifest;
 
     // Load initial zones from manifest
-    if (manifest.contains("initialZones")) {
+    if (manifest.contains("initialZones") && !manifest["initialZones"].empty()) {
         for (const auto& zoneId : manifest["initialZones"]) {
             loadZone(zoneId);
         }
+    } else {
+        // Create a basic test zone if no zones loaded
+        createTestZone();
+    }
+
+    // Create and add avatar if zones exist
+    if (!zones.empty()) {
+        auto avatar = std::make_shared<Avatar>(engine);
+        avatar->id = "avatar";
+        avatar->pos = glm::vec3(8.0f, 8.0f, 0.0f); // Default position
+        addAvatar(avatar);
     }
 
     std::cout << "World initialized with " << zones.size() << " zones" << std::endl;
@@ -42,6 +53,29 @@ void World::loadZone(const std::string& zoneId) {
     addZone(zone);
 
     std::cout << "Loaded zone: " << zoneId << std::endl;
+}
+
+void World::createTestZone() {
+    auto zone = std::make_shared<Zone>("test_zone", this);
+    zone->width = 16;
+    zone->height = 16;
+    zone->tileSize = 1.0f;
+    zone->bounds = {0.0f, 0.0f, 16.0f, 16.0f};
+
+    // Create a simple tile map (16x16 grid)
+    zone->tileMap.resize(16, std::vector<int>(16, 0));
+    for (int y = 0; y < 16; ++y) {
+        for (int x = 0; x < 16; ++x) {
+            // Create a checkerboard pattern
+            zone->tileMap[y][x] = ((x + y) % 2) + 1; // 1 or 2
+        }
+    }
+
+    zones[zone->id] = zone;
+    zoneList.push_back(zone);
+    sortZones();
+
+    std::cout << "Created test zone with " << zone->width << "x" << zone->height << " tiles" << std::endl;
 }
 
 void World::update(double dt) {

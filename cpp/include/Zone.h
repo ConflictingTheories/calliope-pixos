@@ -84,4 +84,5 @@ private:
     void loadSprites(const nlohmann::json& data);
     void loadTilesets(const nlohmann::json& data);
     void loadEvents(const nlohmann::json& data);
+    void renderTiles();
 };

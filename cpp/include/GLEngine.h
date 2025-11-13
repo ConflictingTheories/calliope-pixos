@@ -20,6 +20,9 @@ private:
     std::unique_ptr<ModeManager> modeManager;
     std::unique_ptr<World> world;
 
+    std::string gamePath;
+    nlohmann::json manifest;
+
 public:
     // Getters for managers
     RenderManager* getRenderManager() { return renderManager.get(); }

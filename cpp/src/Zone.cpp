@@ -3,6 +3,7 @@
 #include "GLEngine.h"
 #include <algorithm>
 #include <iostream>
+#include <GL/glew.h>
 
 Zone::Zone(const std::string& zoneId, World* w) : id(zoneId), world(w), engine(w->engine) {}
 
@@ -25,7 +26,7 @@ void Zone::update(double dt) {
 
 void Zone::render() {
     // Render tiles first
-    // renderTiles(); // TODO: Implement
+    renderTiles();
 
     // Render objects and sprites
     for (auto& objectPair : objects) {
@@ -33,6 +34,33 @@ void Zone::render() {
     }
     for (auto& spritePair : sprites) {
         spritePair.second->render();
+    }
+}
+
+void Zone::renderTiles() {
+    // Simple tile rendering - render colored quads for each tile
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int tileId = tileMap[y][x];
+            if (tileId == 0) continue; // Skip empty tiles
+
+            // Calculate world position
+            glm::vec2 worldPos = tileToWorld(y, x);
+
+            // Simple color based on tile ID
+            float r = (tileId * 37) % 255 / 255.0f;
+            float g = (tileId * 71) % 255 / 255.0f;
+            float b = (tileId * 113) % 255 / 255.0f;
+
+            // TODO: Use proper shader and texture rendering
+            glColor3f(r, g, b);
+            glBegin(GL_QUADS);
+            glVertex2f(worldPos.x, worldPos.y);
+            glVertex2f(worldPos.x + tileSize, worldPos.y);
+            glVertex2f(worldPos.x + tileSize, worldPos.y + tileSize);
+            glVertex2f(worldPos.x, worldPos.y + tileSize);
+            glEnd();
+        }
     }
 }
 

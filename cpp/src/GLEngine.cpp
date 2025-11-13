@@ -11,8 +11,7 @@ GLEngine::GLEngine()
 }
 
 GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
-    : window(nullptr), initialized(false) {
-    // TODO: Initialize with gamePath and manifest
+    : window(nullptr), initialized(false), gamePath(gamePath), manifest(manifest) {
 }
 
 GLEngine::~GLEngine() {
@@ -57,6 +56,11 @@ bool GLEngine::init(int width, int height, const std::string& title) {
     inputManager = std::make_unique<InputManager>(this);
     modeManager = std::make_unique<ModeManager>(this);
     world = std::make_unique<World>(this);
+
+    // Initialize world if manifest is available
+    if (!manifest.empty()) {
+        world->init(gamePath, manifest);
+    }
 
     initialized = true;
     return true;

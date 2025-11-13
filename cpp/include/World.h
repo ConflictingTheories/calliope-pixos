@@ -56,6 +56,7 @@ private:
     std::vector<std::shared_ptr<Event>> eventList;
 
     void loadZone(const std::string& zoneId);
+    void createTestZone();
     void sortZones();
     bool canWalk(const std::vector<float>& neighbour, const std::string& jsonNeighbour, const std::vector<std::string>& visited) const;
     std::vector<std::vector<float>> getNeighbours(float x, float y) const;
