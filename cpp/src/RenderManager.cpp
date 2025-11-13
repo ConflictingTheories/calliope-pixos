@@ -33,6 +33,9 @@ void RenderManager::render() {
 
     // Ensure rendering is complete
     glFlush();
+
+    // Debug output
+    std::cout << "RenderManager::render() called" << std::endl;
 }
 
 void RenderManager::setProjectionMatrix(const glm::mat4& proj) {

@@ -32,6 +32,30 @@ int main(int argc, char* argv[]) {
     std::ifstream manifestFile(gamePath + "/manifest.json");
     if (!manifestFile.is_open()) {
         std::cout << "No game package found at: " << gamePath << std::endl;
+        std::cout << "Checking for Archive.zip..." << std::endl;
+        // Check for Archive.zip in the gamePath
+        std::string archivePath = gamePath + "/Archive.zip";
+        std::ifstream archiveFile(archivePath);
+        if (archiveFile.is_open()) {
+            std::cout << "Found Archive.zip, extracting..." << std::endl;
+            // Extract Archive.zip to gamePath
+            std::string extractCmd = "unzip -q \"" + archivePath + "\" -d \"" + gamePath + "\"";
+            int result = system(extractCmd.c_str());
+            if (result == 0) {
+                std::cout << "Archive.zip extracted successfully." << std::endl;
+                // Try loading manifest again
+                manifestFile.open(gamePath + "/manifest.json");
+                if (manifestFile.is_open()) {
+                    std::cout << "Manifest loaded after extraction." << std::endl;
+                } else {
+                    std::cout << "Manifest not found after extraction." << std::endl;
+                }
+            } else {
+                std::cout << "Failed to extract Archive.zip." << std::endl;
+            }
+        } else {
+            std::cout << "Archive.zip not found." << std::endl;
+        }
         if (!zipPath.empty()) {
             std::cout << "Attempting to load ZIP file: " << zipPath << std::endl;
             // Extract ZIP file to temporary directory

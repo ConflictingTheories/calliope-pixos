@@ -2,6 +2,7 @@
 #include "GLEngine.h"
 #include "Shader.h"
 #include <GL/glew.h>
+#include <iostream>
 
 Sprite::Sprite(GLEngine* engine) : engine(engine), pos(0.0f), scale(1.0f), rotation(0.0f), animFrame(0), animTimer(0.0f), fixed(false), objId(0), speechTimer(0.0f), isLit(false), lightIndex(0), lightColor(1.0f), density(1.0f), isSelected(false) {}
 
@@ -58,6 +59,8 @@ void Sprite::render() {
     glDeleteBuffers(1, &spriteVBO);
     glDisableVertexAttribArray(0);
     glUseProgram(0);
+
+    std::cout << "Sprite::render() called at (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
 }
 
 void Sprite::addAction(std::shared_ptr<Action> action) {

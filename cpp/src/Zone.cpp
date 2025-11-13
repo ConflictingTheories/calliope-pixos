@@ -96,6 +96,8 @@ void Zone::renderTiles() {
 
     glDisableVertexAttribArray(0);
     glUseProgram(0);
+
+    std::cout << "Zone::renderTiles() called for " << width << "x" << height << " tiles" << std::endl;
 }
 
 bool Zone::isInZone(float x, float y) const {
