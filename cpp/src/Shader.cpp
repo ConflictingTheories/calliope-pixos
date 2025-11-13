@@ -24,6 +24,10 @@ void Shader::init(const std::string& vertexSource, const std::string& fragmentSo
     std::string vertexCode = loadShaderSource(vertexSource);
     std::string fragmentCode = loadShaderSource(fragmentSource);
 
+    if (vertexCode.empty() || fragmentCode.empty()) {
+        throw std::runtime_error("Shader source is empty");
+    }
+
     unsigned int vertexShader = compileShader(vertexCode, GL_VERTEX_SHADER);
     unsigned int fragmentShader = compileShader(fragmentCode, GL_FRAGMENT_SHADER);
 

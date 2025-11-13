@@ -26,16 +26,13 @@ void RenderManager::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    // Use default shader
-    if (defaultShader) {
-        defaultShader->use();
-        defaultShader->setMat4("projection", projectionMatrix);
-    }
-
     // Render world
-    if (engine->getWorld()) {
+    if (engine && engine->getWorld()) {
         engine->getWorld()->render();
     }
+
+    // Ensure rendering is complete
+    glFlush();
 }
 
 void RenderManager::setProjectionMatrix(const glm::mat4& proj) {
@@ -43,7 +40,62 @@ void RenderManager::setProjectionMatrix(const glm::mat4& proj) {
 }
 
 void RenderManager::initShaders() {
-    defaultShader = std::make_unique<Shader>("shaders/vertex.glsl", "shaders/fragment.glsl");
+    try {
+        defaultShader = std::make_unique<Shader>("../shaders/vertex.glsl", "../shaders/fragment.glsl");
+        std::cout << "Shaders loaded successfully" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to load shaders: " << e.what() << std::endl;
+        // Create fallback shader
+        createFallbackShader();
+    }
+}
+
+void RenderManager::createFallbackShader() {
+    const char* vertexSource = R"(
+        #version 330 core
+        layout(location = 0) in vec3 aPosition;
+        uniform mat4 uProj;
+        void main() {
+            gl_Position = uProj * vec4(aPosition, 1.0);
+        }
+    )";
+
+    const char* fragmentSource = R"(
+        #version 330 core
+        out vec4 FragColor;
+        uniform vec3 uColor;
+        uniform vec3 uLightDir;
+        void main() {
+            FragColor = vec4(uColor, 1.0);
+        }
+    )";
+
+    defaultShader = std::make_unique<Shader>();
+    defaultShader->compileShaders(vertexSource, fragmentSource);
+    std::cout << "Fallback shader created" << std::endl;
+}
+
+void Shader::compileShaders(const char* vertexSource, const char* fragmentSource) {
+    unsigned int vertexShader = compileShader(std::string(vertexSource), GL_VERTEX_SHADER);
+    unsigned int fragmentShader = compileShader(std::string(fragmentSource), GL_FRAGMENT_SHADER);
+
+    id = glCreateProgram();
+    glAttachShader(id, vertexShader);
+    glAttachShader(id, fragmentShader);
+    glLinkProgram(id);
+
+    GLint success;
+    glGetProgramiv(id, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        char infoLog[512];
+        glGetProgramInfoLog(id, 512, nullptr, infoLog);
+        std::cerr << "Shader program linking failed: " << infoLog << std::endl;
+        throw std::runtime_error("Shader linking failed");
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 }
 
 void RenderManager::initBuffers() {

@@ -25,8 +25,13 @@ public:
 
     // Shader management
     Shader* getDefaultShader() { return defaultShader.get(); }
+    Shader* getShader() { return defaultShader.get(); }
+
+    // Get projection matrix
+    const glm::mat4& getProjectionMatrix() const { return projectionMatrix; }
 
 private:
     void initShaders();
+    void createFallbackShader();
     void initBuffers();
 };

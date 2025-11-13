@@ -5,10 +5,12 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include "Action.h"
 
 class Zone;
 class GLEngine;
-#include "Action.h"
+class RenderManager;
+
 
 class Sprite {
 public:

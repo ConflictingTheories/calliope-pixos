@@ -11,6 +11,7 @@ public:
     ~Shader();
 
     void init(const std::string& vertexSource, const std::string& fragmentSource);
+    void compileShaders(const char* vertexSource, const char* fragmentSource);
     void use() const;
     void unuse() const;
 

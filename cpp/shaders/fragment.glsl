@@ -10,7 +10,7 @@ uniform vec3 uLightDir;
 out vec4 outColor;
 
 void main(){
-    float N=max(dot(normalize(vNormal),normalize(uLightDir)),.1);
-    vec3 col=uColor*(.4+.6*N);
-    outColor=vec4(col,1.);
+    float N = max(dot(normalize(vNormal), normalize(uLightDir)), 0.1);
+    vec3 col = uColor * (0.4 + 0.6 * N);
+    outColor = vec4(col, 1.0);
 }

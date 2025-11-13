@@ -1,6 +1,7 @@
 #include "Zone.h"
 #include "World.h"
 #include "GLEngine.h"
+#include "Shader.h"
 #include <algorithm>
 #include <iostream>
 #include <GL/glew.h>
@@ -38,7 +39,19 @@ void Zone::render() {
 }
 
 void Zone::renderTiles() {
-    // Simple tile rendering - render colored quads for each tile
+    // Get the shader from render manager
+    auto shader = engine->getRenderManager()->getShader();
+    if (!shader) return;
+
+    shader->use();
+
+    // Set projection matrix
+    auto renderManager = engine->getRenderManager();
+    shader->setMat4("uProj", renderManager->getProjectionMatrix());
+
+    // Enable vertex attributes
+    glEnableVertexAttribArray(0);
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int tileId = tileMap[y][x];
@@ -52,16 +65,37 @@ void Zone::renderTiles() {
             float g = (tileId * 71) % 255 / 255.0f;
             float b = (tileId * 113) % 255 / 255.0f;
 
-            // TODO: Use proper shader and texture rendering
-            glColor3f(r, g, b);
-            glBegin(GL_QUADS);
-            glVertex2f(worldPos.x, worldPos.y);
-            glVertex2f(worldPos.x + tileSize, worldPos.y);
-            glVertex2f(worldPos.x + tileSize, worldPos.y + tileSize);
-            glVertex2f(worldPos.x, worldPos.y + tileSize);
-            glEnd();
+            // Set color uniform
+            shader->setVec3("uColor", glm::vec3(r, g, b));
+
+            // Create quad vertices for this tile
+            float vertices[] = {
+                worldPos.x, worldPos.y, 0.0f,
+                worldPos.x + tileSize, worldPos.y, 0.0f,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,
+                worldPos.x, worldPos.y, 0.0f,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,
+                worldPos.x, worldPos.y + tileSize, 0.0f
+            };
+
+            // Create VBO for this tile
+            GLuint tileVBO;
+            glGenBuffers(1, &tileVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+            // Draw the tile
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            // Clean up
+            glDeleteBuffers(1, &tileVBO);
         }
     }
+
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
 }
 
 bool Zone::isInZone(float x, float y) const {

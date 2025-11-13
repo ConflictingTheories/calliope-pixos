@@ -57,6 +57,9 @@ bool GLEngine::init(int width, int height, const std::string& title) {
     modeManager = std::make_unique<ModeManager>(this);
     world = std::make_unique<World>(this);
 
+    // Initialize render manager
+    renderManager->init();
+
     // Initialize world if manifest is available
     if (!manifest.empty()) {
         world->init(gamePath, manifest);
