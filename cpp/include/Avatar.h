@@ -9,6 +9,7 @@
 #include "Sprite.h"
 #include "Action.h"
 #include "Direction.h"
+#include <GL/glew.h>
 
 class GLEngine;
 class Zone;
@@ -57,6 +58,23 @@ public:
     std::string portrait;
     bool blocking;
     bool override;
+
+    // Rendering / template fields (copied from local avatar templates)
+    std::string src;
+    std::string portraitSrc;
+    glm::ivec2 sheetSize;
+    int tileSize;
+    int frames;
+    glm::vec2 hotspotOffset;
+    glm::vec2 drawOffset;
+    bool enableSpeech;
+    // GL resources for rendering
+    GLuint texture;
+    GLuint vertexTexBuf;
+    GLuint vertexPosBuf;
+    GLuint speechTexBuf;
+    bool loaded;
+    bool templateLoaded;
 
     // Lighting
     bool isLit;

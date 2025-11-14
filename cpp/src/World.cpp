@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <nlohmann/json.hpp>
 
 World::World(GLEngine* eng) : engine(eng) {}
@@ -14,19 +15,48 @@ World::~World() {}
 void World::init(const std::string& gamePath, const nlohmann::json& manifest) {
     this->gamePath = gamePath;
     this->manifest = manifest;
+    // Try to load zones specified by manifest (initialZones or maps)
+    bool loadedAny = false;
+    if (manifest.contains("initialZones") && manifest["initialZones"].is_array()) {
+        for (const auto& zoneId : manifest["initialZones"]) {
+            if (zoneId.is_string()) {
+                loadZone(zoneId.get<std::string>());
+                loadedAny = true;
+            }
+        }
+    }
+    // Older manifests may list maps instead
+    if (!loadedAny && manifest.contains("maps") && manifest["maps"].is_array()) {
+        for (const auto& m : manifest["maps"]) {
+            if (m.is_string()) {
+                loadZone(m.get<std::string>());
+                loadedAny = true;
+            }
+        }
+    }
 
-    // Always create test zone for now to avoid JSON parsing issues
-    createTestZone();
+    // Fallback to create a test zone if nothing loaded
+    if (!loadedAny) {
+        createTestZone();
+    }
 
     // Create and add avatar if zones exist
     if (!zones.empty()) {
         auto avatar = std::make_shared<Avatar>(engine);
         avatar->id = "avatar";
-        avatar->pos = glm::vec3(256.0f, 256.0f, 0.0f); // Center of zone (16*32/2)
+        // Place avatar at center of first zone
+        auto firstZone = zoneList.front();
+        avatar->pos = glm::vec3((firstZone->width * firstZone->tileSize) / 2.0f,
+                                (firstZone->height * firstZone->tileSize) / 2.0f,
+                                0.0f);
         addAvatar(avatar);
     }
 
     std::cout << "World initialized with " << zones.size() << " zones" << std::endl;
+}
+
+void World::loadZonePublic(const std::string& zoneId) {
+    loadZone(zoneId);
 }
 
 void World::loadZone(const std::string& zoneId) {
@@ -36,6 +66,14 @@ void World::loadZone(const std::string& zoneId) {
         std::cerr << "Failed to load map: " << mapPath << std::endl;
         return;
     }
+    // Diagnostic: read and print raw JSON contents for debugging
+    std::stringstream ss;
+    ss << mapFile.rdbuf();
+    std::string raw = ss.str();
+    std::cout << "World::loadZone reading map file: " << mapPath << " (size=" << raw.size() << ")" << std::endl;
+    std::cout << "----- map.json begin -----\n" << raw << "\n----- map.json end -----\n";
+    mapFile.clear();
+    mapFile.seekg(0);
 
     nlohmann::json mapData;
     mapFile >> mapData;
@@ -133,6 +171,15 @@ std::shared_ptr<Zone> World::getZoneById(const std::string& id) const {
     return it != zones.end() ? it->second : nullptr;
 }
 
+std::shared_ptr<Sprite> World::getSpriteById(const std::string& id) const {
+    for (const auto& zp : zoneList) {
+        if (!zp) continue;
+        auto sp = zp->getSpriteById(id);
+        if (sp) return sp;
+    }
+    return nullptr;
+}
+
 std::shared_ptr<Zone> World::zoneContaining(float x, float y) const {
     for (auto& zone : zoneList) {
         if (zone->isInZone(x, y)) {
@@ -168,7 +215,7 @@ std::shared_ptr<Avatar> World::getAvatar() const {
     return nullptr;
 }
 
-void World::addRemoteAvatar(int clientId, const std::unordered_map<std::string, float>& avatarData) {
+void World::addRemoteAvatar(int clientId, const nlohmann::json& avatarData) {
     if (remoteAvatars.find(clientId) != remoteAvatars.end()) {
         // Update existing
         updateRemoteAvatar(clientId, avatarData);
@@ -176,9 +223,31 @@ void World::addRemoteAvatar(int clientId, const std::unordered_map<std::string, 
     }
 
     auto avatar = std::make_shared<Avatar>(engine);
-    avatar->id = "remote_" + std::to_string(clientId);
-    avatar->pos = glm::vec3(avatarData.at("x"), avatarData.at("y"), avatarData.at("z"));
-    avatar->facing = static_cast<Direction>(avatarData.at("facing"));
+    avatar->id = avatarData.value("id", std::string("remote_" + std::to_string(clientId)));
+    avatar->pos = glm::vec3(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f), avatarData.value("z", 0.0f));
+    if (avatarData.contains("facing")) avatar->facing = static_cast<Direction>(avatarData["facing"].get<int>());
+
+    // Try to copy a local avatar template so remote avatars render similarly
+    auto localTemplate = getAvatar();
+    if (localTemplate) {
+        try {
+            avatar->src = localTemplate->src;
+            avatar->portraitSrc = localTemplate->portraitSrc;
+            avatar->sheetSize = localTemplate->sheetSize;
+            avatar->tileSize = localTemplate->tileSize;
+            avatar->frames = localTemplate->frames;
+            avatar->hotspotOffset = localTemplate->hotspotOffset;
+            avatar->drawOffset = localTemplate->drawOffset;
+            avatar->enableSpeech = localTemplate->enableSpeech;
+            // copy GL resources where present
+            avatar->texture = localTemplate->texture;
+            avatar->vertexTexBuf = localTemplate->vertexTexBuf;
+            avatar->vertexPosBuf = localTemplate->vertexPosBuf;
+            avatar->speechTexBuf = localTemplate->speechTexBuf;
+            avatar->loaded = true;
+            avatar->templateLoaded = true;
+        } catch (...) {}
+    }
 
     auto zone = zoneContaining(avatar->pos.x, avatar->pos.y);
     if (zone) {
@@ -199,15 +268,16 @@ void World::removeRemoteAvatar(int clientId) {
         remoteAvatars.erase(it);
     }
 }
-
-void World::updateRemoteAvatar(int clientId, const std::unordered_map<std::string, float>& avatarData) {
+void World::updateRemoteAvatar(int clientId, const nlohmann::json& avatarData) {
     auto it = remoteAvatars.find(clientId);
     if (it != remoteAvatars.end()) {
         auto avatar = it->second;
-        avatar->pos.x = avatarData.at("x");
-        avatar->pos.y = avatarData.at("y");
-        avatar->pos.z = avatarData.at("z");
-        avatar->facing = static_cast<Direction>(avatarData.at("facing"));
+        if (avatarData.contains("x")) avatar->pos.x = avatarData["x"].get<float>();
+        if (avatarData.contains("y")) avatar->pos.y = avatarData["y"].get<float>();
+        if (avatarData.contains("z")) avatar->pos.z = avatarData["z"].get<float>();
+        if (avatarData.contains("facing")) avatar->facing = static_cast<Direction>(avatarData["facing"].get<int>());
+        // update other render properties if present
+        if (avatarData.contains("animFrame")) avatar->animFrame = avatarData["animFrame"].get<int>();
     }
 }
 
@@ -223,6 +293,13 @@ void World::removeEvent(const std::string& eventId) {
     if (it != events.end()) {
         eventList.erase(std::remove(eventList.begin(), eventList.end(), it->second), eventList.end());
         events.erase(it);
+    }
+}
+
+void World::runScripts(const std::string& trigger, const std::unordered_map<std::string, std::string>& params) {
+    // Run zone scripts matching trigger
+    for (auto& z : zoneList) {
+        if (z) z->runScripts(trigger, params);
     }
 }
 

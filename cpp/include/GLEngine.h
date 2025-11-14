@@ -11,6 +11,10 @@
 #include "RenderManager.h"
 #include "ModeManager.h"
 #include "World.h"
+#include "ScriptInterpreter.h"
+#include "CutsceneManager.h"
+
+class Camera;
 
 class GLEngine {
 private:
@@ -19,6 +23,10 @@ private:
     std::unique_ptr<InputManager> inputManager;
     std::unique_ptr<ModeManager> modeManager;
     std::unique_ptr<World> world;
+    std::unique_ptr<ScriptInterpreter> scriptInterpreter;
+    std::unique_ptr<CutsceneManager> cutsceneManager;
+    // Engine-level camera accessible to scripts/events
+    std::unique_ptr<Camera> camera;
 
     std::string gamePath;
     nlohmann::json manifest;
@@ -29,6 +37,9 @@ public:
     InputManager* getInputManager() { return inputManager.get(); }
     ModeManager* getModeManager() { return modeManager.get(); }
     World* getWorld() { return world.get(); }
+    ScriptInterpreter* getScriptInterpreter() { return scriptInterpreter.get(); }
+    CutsceneManager* getCutsceneManager() { return cutsceneManager.get(); }
+    Camera* getCamera() { return camera.get(); }
 
     GLFWwindow* getWindow() { return window; }
 

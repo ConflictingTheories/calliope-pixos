@@ -27,8 +27,10 @@ void Event::trigger() {
 }
 
 bool Event::tick(double dt) {
+    // Advance and return true if the event has completed and should be removed
     update(dt);
-    return !active;
+    if (!repeating && !active) return true;
+    return false;
 }
 
 void Event::reset() {

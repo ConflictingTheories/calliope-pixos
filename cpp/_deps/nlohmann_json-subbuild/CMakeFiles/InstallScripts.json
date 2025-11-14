@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/kderbyma/Git/calliope-pixos/cpp/_deps/nlohmann_json-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -7,6 +7,8 @@
 #include <nlohmann/json.hpp>
 #include "Action.h"
 
+#include <GL/glew.h>
+
 class Zone;
 class GLEngine;
 class RenderManager;
@@ -34,6 +36,26 @@ public:
     // Identification
     std::string id;
     int objId;
+
+    // Rendering/template fields (may be present for characters/avatars)
+    std::string src;
+    std::string portraitSrc;
+    glm::ivec2 sheetSize;
+    int tileSize;
+    int frames;
+    glm::vec2 hotspotOffset;
+    glm::vec2 drawOffset;
+    bool enableSpeech;
+    // GL resources
+    GLuint texture;
+    GLuint vertexTexBuf;
+    GLuint vertexPosBuf;
+    GLuint speechTexBuf;
+    bool loaded;
+    bool templateLoaded;
+
+    // Load a texture from disk into sprite->texture
+    void loadTexture(const std::string& path);
 
     // Zone relationship
     std::weak_ptr<Zone> zone;

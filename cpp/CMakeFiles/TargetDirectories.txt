@@ -1,0 +1,5 @@
+/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles/PixospritzOpenGL.dir
+/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles/edit_cache.dir
+/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles/rebuild_cache.dir
+/Users/kderbyma/Git/calliope-pixos/cpp/_deps/nlohmann_json-build/CMakeFiles/edit_cache.dir
+/Users/kderbyma/Git/calliope-pixos/cpp/_deps/nlohmann_json-build/CMakeFiles/rebuild_cache.dir

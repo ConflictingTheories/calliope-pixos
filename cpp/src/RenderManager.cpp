@@ -58,8 +58,9 @@ void RenderManager::createFallbackShader() {
         #version 330 core
         layout(location = 0) in vec3 aPosition;
         uniform mat4 uProj;
+        uniform mat4 uModel;
         void main() {
-            gl_Position = uProj * vec4(aPosition, 1.0);
+            gl_Position = uProj * uModel * vec4(aPosition, 1.0);
         }
     )";
 
@@ -67,7 +68,6 @@ void RenderManager::createFallbackShader() {
         #version 330 core
         out vec4 FragColor;
         uniform vec3 uColor;
-        uniform vec3 uLightDir;
         void main() {
             FragColor = vec4(uColor, 1.0);
         }

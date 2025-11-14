@@ -1,25 +1,9 @@
+
 cmake_minimum_required(VERSION 3.16)
 project(PixospritzOpenGL)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
-# Find packages
-find_package(OpenGL REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLFW3 REQUIRED glfw3)
-pkg_check_modules(GLEW REQUIRED glew)
-pkg_check_modules(SDL2 REQUIRED sdl2)
-pkg_check_modules(LUA REQUIRED lua)
-
-# Define GLEW_STATIC before including GLEW
-add_definitions(-DGLEW_STATIC)
-
-# GLM
-find_package(GLM REQUIRED)
-include_directories(${GLM_INCLUDE_DIRS} /opt/homebrew/include)
 
 # Ensure OpenGL is included before GLEW
 find_package(OpenGL REQUIRED)
@@ -40,7 +24,23 @@ FetchContent_MakeAvailable(nlohmann_json)
 link_directories(/opt/homebrew/lib)
 
 # Include directories
-include_directories(include imgui ${GLEW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
+include_directories(
+  include
+  imgui
+  imgui/backends
+  /opt/homebrew/include
+  /usr/local/include
+  /opt/homebrew/opt/glfw/include
+  /opt/homebrew/opt/glew/include
+  /opt/homebrew/opt/sdl2/include
+  /opt/homebrew/opt/lua/include
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
+  ${GLEW_INCLUDE_DIRS}
+  ${OPENGL_INCLUDE_DIRS}
+  ${GLFW3_INCLUDE_DIRS}
+  ${SDL2_INCLUDE_DIRS}
+  ${LUA_INCLUDE_DIRS}
+)
 
 # Source files
 file(GLOB SOURCES "src/*.cpp")
@@ -55,11 +55,39 @@ set(IMGUI_SOURCES
     imgui/imgui_impl_opengl3.cpp
 )
 
+
+
+
 # Executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES})
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLFW3_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${LUA_LIBRARIES} nlohmann_json::nlohmann_json "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" m)
+
+# Link libraries after target is created
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  ${OPENGL_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${GLFW3_LIBRARIES}
+  ${SDL2_LIBRARIES}
+  ${LUA_LIBRARIES}
+  nlohmann_json::nlohmann_json
+  "-framework Cocoa"
+  "-framework IOKit"
+  "-framework CoreFoundation"
+  m
+)
+
+# ImGui include directories
+target_include_directories(${PROJECT_NAME} PRIVATE imgui imgui/backends)
+
+# ImGui backend sources
+target_sources(${PROJECT_NAME} PRIVATE
+  imgui/imgui_impl_glfw.cpp
+  imgui/imgui_impl_opengl3.cpp
+  imgui/imgui.cpp
+  imgui/imgui_draw.cpp
+  imgui/imgui_tables.cpp
+  imgui/imgui_widgets.cpp
+)
 
 # Copy shaders to build directory
 configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/vertex.glsl COPYONLY)

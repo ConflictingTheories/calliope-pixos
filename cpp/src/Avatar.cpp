@@ -99,13 +99,55 @@ void Avatar::clearActions() {
 
 void Avatar::performAction(const std::string& action, const std::vector<std::string>& params) {
     currentActions.push_back(action);
-    // TODO: Implement action execution based on action type
     std::cout << "Performing action: " << action << std::endl;
+    if (action == "move") {
+        if (params.size() >= 3) {
+            glm::vec3 target(std::stof(params[0]), std::stof(params[1]), std::stof(params[2]));
+            float dur = params.size() >= 4 ? std::stof(params[3]) : 0.5f;
+            std::vector<std::string> args = {params[0], params[1], params[2], std::to_string(dur)};
+            auto act = std::make_shared<Action>(engine, ActionType::Move, args, this);
+            addAction(act);
+        }
+    } else if (action == "face") {
+        if (!params.empty()) {
+            std::vector<std::string> args = {params[0]};
+            auto act = std::make_shared<Action>(engine, ActionType::Face, args, this);
+            addAction(act);
+        }
+    } else if (action == "dialogue" || action == "say") {
+        std::vector<std::string> args;
+        if (!params.empty()) args.push_back(params[0]);
+        float dur = params.size() >= 2 ? std::stof(params[1]) : 3.0f;
+        args.push_back(std::to_string(dur));
+        auto act = std::make_shared<Action>(engine, ActionType::Dialogue, args, this);
+        addAction(act);
+    } else if (action == "script") {
+        if (!params.empty()) {
+            std::vector<std::string> args = {params[0]};
+            auto act = std::make_shared<Action>(engine, ActionType::Script, args, this);
+            addAction(act);
+        }
+    } else {
+        // Unknown action: push a wait to avoid no-op issues
+        auto act = std::make_shared<Action>(engine, ActionType::Wait, std::vector<std::string>{"0.01"}, this);
+        addAction(act);
+    }
 }
 
 void Avatar::openMenu(const std::unordered_map<std::string, std::string>& menuConfig, const std::vector<std::string>& defaultMenus) {
-    // TODO: Implement menu opening
-    std::cout << "Opening menu" << std::endl;
+    // Attempt to trigger a menu script on the current zone
+    auto z = zone.lock();
+    if (z) {
+        // Convert menuConfig into string-string map for script params
+        std::unordered_map<std::string, std::string> params;
+        for (const auto& kv : menuConfig) params[kv.first] = kv.second;
+        z->runScripts("menu_open", params);
+        return;
+    }
+    // Fallback to world-level scripts
+    if (engine && engine->getWorld()) {
+        engine->getWorld()->runScripts("menu_open", {});
+    }
 }
 
 void Avatar::showDialogue(const std::string& text, const std::unordered_map<std::string, std::string>& options) {

@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
         if (archiveFile.is_open()) {
             std::cout << "Found Archive.zip, extracting..." << std::endl;
             // Extract Archive.zip to gamePath
-            std::string extractCmd = "unzip -q \"" + archivePath + "\" -d \"" + gamePath + "\"";
+            std::string extractCmd = "unzip -o -q \"" + archivePath + "\" -d \"" + gamePath + "\"";
             int result = system(extractCmd.c_str());
             if (result == 0) {
                 std::cout << "Archive.zip extracted successfully." << std::endl;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
         if (!zipPath.empty()) {
             std::cout << "Attempting to load ZIP file: " << zipPath << std::endl;
             // Extract ZIP file to temporary directory
-            std::string extractCmd = "unzip -q \"" + zipPath + "\" -d \"" + gamePath + "/temp_extracted\"";
+            std::string extractCmd = "unzip -o -q \"" + zipPath + "\" -d \"" + gamePath + "/temp_extracted\"";
             int result = system(extractCmd.c_str());
             if (result == 0) {
                 std::cout << "ZIP file extracted successfully." << std::endl;
@@ -74,16 +74,9 @@ int main(int argc, char* argv[]) {
             std::cout << "Please select a .zip game file..." << std::endl;
         }
 
-        // For now, create a basic manifest for testing
-        nlohmann::json manifest = {
-            {"name", "Test Game"},
-            {"version", "1.0"},
-            {"initialZones", nlohmann::json::array()},
-            {"network", nullptr}
-        };
-
+        // Start with empty manifest and gamePath so ImGui picker is shown
         try {
-            GLEngine engine(gamePath, manifest);
+            GLEngine engine;
             engine.init(1280, 720, "Pixospritz OpenGL");
             engine.run();
             engine.shutdown();

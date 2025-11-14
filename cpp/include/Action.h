@@ -41,6 +41,8 @@ public:
     bool completed;
     float duration;
     float elapsedTime;
+    // Movement start position (for Move actions)
+    glm::vec3 startPos;
 
     // Callbacks
     std::function<void()> onComplete;

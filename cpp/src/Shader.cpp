@@ -156,7 +156,19 @@ std::string Shader::loadShaderSource(const std::string& path) const
     }
     catch (std::ifstream::failure& e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+        // Try fallback: attempt to open just the filename in the current directory
+        std::string fallback = path;
+        auto pos = path.find_last_of("/");
+        if (pos != std::string::npos) fallback = path.substr(pos + 1);
+        try {
+            file.open(fallback);
+            std::stringstream stream;
+            stream << file.rdbuf();
+            file.close();
+            code = stream.str();
+        } catch (std::ifstream::failure& e2) {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << " / fallback: " << e2.what() << std::endl;
+        }
     }
     return code;
 }

@@ -37,3 +37,44 @@ glm::mat4 Camera::getProjectionMatrix(float aspect) const
 {
     return glm::perspective(glm::radians(zoomLevel), aspect, nearPlane, farPlane);
 }
+
+void Camera::setPosition(const glm::vec3& pos) {
+    position = pos;
+}
+
+void Camera::setTarget(const glm::vec3& t) {
+    target = t;
+    // recompute front vector relative to target
+    front = glm::normalize(target - position);
+}
+
+void Camera::setUp(const glm::vec3& u) {
+    up = u;
+}
+
+void Camera::move(const glm::vec3& delta) {
+    position += delta;
+    target += delta;
+}
+
+void Camera::rotate(float dyaw, float dpitch) {
+    yaw += dyaw;
+    pitch += dpitch;
+    updateVectors();
+}
+
+void Camera::zoom(float factor) {
+    zoomLevel = std::max(1.0f, std::min(90.0f, zoomLevel + factor));
+}
+
+void Camera::bindToSprite(std::shared_ptr<Sprite> sprite) {
+    boundSprite = sprite;
+    bound = true;
+}
+
+void Camera::unbind() {
+    boundSprite.reset();
+    bound = false;
+}
+
+bool Camera::isBound() const { return bound; }

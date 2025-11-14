@@ -17,7 +17,7 @@ class GLEngine;
 #include "Object.h"
 #include "Tileset.h"
 
-class Zone {
+class Zone : public std::enable_shared_from_this<Zone> {
 public:
     Zone(const std::string& id, World* world);
     ~Zone();
@@ -25,6 +25,7 @@ public:
     void init();
     void update(double dt);
     void render();
+    void renderGrid();
 
     // Loading
     void loadFromJson(const nlohmann::json& data, const std::string& gamePath);

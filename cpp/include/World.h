@@ -18,12 +18,15 @@ public:
     ~World();
 
     void init(const std::string& gamePath, const nlohmann::json& manifest);
+    // Public wrapper for script bindings to load zones
+    void loadZonePublic(const std::string& zoneId);
     void update(double dt);
     void render();
 
     void addZone(std::shared_ptr<Zone> zone);
     void removeZone(const std::string& zoneId);
     std::shared_ptr<Zone> getZoneById(const std::string& id) const;
+    std::shared_ptr<Sprite> getSpriteById(const std::string& id) const;
     std::shared_ptr<Zone> zoneContaining(float x, float y) const;
 
     // Avatar management
@@ -32,13 +35,16 @@ public:
     std::shared_ptr<Avatar> getAvatar() const;
 
     // Remote avatars for networking
-    void addRemoteAvatar(int clientId, const std::unordered_map<std::string, float>& avatarData);
+    void addRemoteAvatar(int clientId, const nlohmann::json& avatarData);
     void removeRemoteAvatar(int clientId);
-    void updateRemoteAvatar(int clientId, const std::unordered_map<std::string, float>& avatarData);
+    void updateRemoteAvatar(int clientId, const nlohmann::json& avatarData);
 
     // Event management
     void addEvent(std::shared_ptr<Event> event);
     void removeEvent(const std::string& eventId);
+
+    // Scripting - run world-level or zone-level triggers
+    void runScripts(const std::string& trigger, const std::unordered_map<std::string, std::string>& params = {});
 
     // Pathfinding
     std::vector<std::vector<float>> pathFind(const std::vector<float>& from, const std::vector<float>& to) const;

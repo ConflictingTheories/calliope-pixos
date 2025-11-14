@@ -1,18 +1,125 @@
+// ...existing code...
+// ...existing code...
+#include "GLEngine.h"
+#include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
+#include <fstream>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+// ...existing code...
+void GLEngine::run() {
+    bool packageSelected = !(gamePath.empty() || manifest.empty());
+    std::string selectedZip;
+    char zipPathBuffer[1024] = "";
+    double lastTime = glfwGetTime();
+    while (!glfwWindowShouldClose(window)) {
+        double currentTime = glfwGetTime();
+        float deltaTime = static_cast<float>(currentTime - lastTime);
+        lastTime = currentTime;
+        glfwPollEvents();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        if (!packageSelected) {
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            ImGui::Begin("Select Game Package");
+            ImGui::Text("Enter the full path to a .zip game package, or paste it here:");
+            ImGui::InputText(".zip file path", zipPathBuffer, sizeof(zipPathBuffer));
+            if (ImGui::Button("Load Package")) {
+                selectedZip = std::string(zipPathBuffer);
+                if (!selectedZip.empty() && std::filesystem::exists(selectedZip)) {
+                    // Extract and load selected package
+                    std::string tempExtracted = std::filesystem::temp_directory_path().string() + "/pixospritz_temp_extracted";
+                    std::string extractCmd = "unzip -o -q \"" + selectedZip + "\" -d \"" + tempExtracted + "\"";
+                    int result = system(extractCmd.c_str());
+                    if (result == 0) {
+                        std::string manifestPath = tempExtracted + "/manifest.json";
+                        if (std::filesystem::exists(manifestPath)) {
+                            std::ifstream manifestFile(manifestPath);
+                            nlohmann::json manifestJson;
+                            if (manifestFile.is_open()) {
+                                manifestFile >> manifestJson;
+                                manifestFile.close();
+                                gamePath = tempExtracted;
+                                manifest = manifestJson;
+                                // Now create managers and world
+                                renderManager = std::make_unique<RenderManager>(this);
+                                inputManager = std::make_unique<InputManager>(this);
+                                modeManager = std::make_unique<ModeManager>(this);
+                                scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
+                                scriptInterpreter->init();
+                                cutsceneManager = std::make_unique<CutsceneManager>(this);
+                                world = std::make_unique<World>(this);
+                                renderManager->init();
+                                world->init(gamePath, manifest);
+                                packageSelected = true;
+                            }
+                        }
+                    }
+                }
+            }
+            ImGui::End();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        } else {
+            // Only update and render game after package is selected
+            update(deltaTime);
+            render();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+        glfwSwapBuffers(window);
+    }
+}
+
+void GLEngine::shutdown() {
+    // Shutdown ImGui (only once)
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    if (scriptInterpreter) {
+        scriptInterpreter->shutdown();
+        scriptInterpreter.reset();
+    }
+    if (window) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+}
+
+glm::vec2 GLEngine::screenSize() const {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    return glm::vec2(width, height);
+}
+
 #include "GLEngine.h"
 #include "RenderManager.h"
 #include "InputManager.h"
 #include "ModeManager.h"
 #include "World.h"
+#include "Camera.h"
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <filesystem>
 #include <nlohmann/json.hpp>
+#include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
-GLEngine::GLEngine()
-    : window(nullptr), initialized(false) {
-}
+GLEngine::GLEngine() : window(nullptr), initialized(false) {}
 
 GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
-    : window(nullptr), initialized(false), gamePath(gamePath), manifest(manifest) {
-}
+    : window(nullptr), initialized(false), gamePath(gamePath), manifest(manifest) {}
 
 GLEngine::~GLEngine() {
     if (window) {
@@ -51,19 +158,15 @@ bool GLEngine::init(int width, int height, const std::string& title) {
         return false;
     }
 
-    // Initialize managers
-    renderManager = std::make_unique<RenderManager>(this);
-    inputManager = std::make_unique<InputManager>(this);
-    modeManager = std::make_unique<ModeManager>(this);
-    world = std::make_unique<World>(this);
+    // Managers and world will be created after package selection in run()
 
-    // Initialize render manager
-    renderManager->init();
-
-    // Initialize world if manifest is available
-    if (!manifest.empty()) {
-        world->init(gamePath, manifest);
-    }
+    // Setup ImGui context and backends (only once, after OpenGL context is current)
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     initialized = true;
     return true;
@@ -76,53 +179,90 @@ void GLEngine::render() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderManager->render();
+    if (renderManager) {
+        renderManager->render();
+    }
     glfwSwapBuffers(window);
 }
 
 void GLEngine::update(float dt) {
-    if (!initialized) return;
-
-    inputManager->update(dt);
-    modeManager->update(dt);
-    world->update(dt);
-}
-
-void GLEngine::setGreeting(const std::string& text) {
-    greeting = text;
-    std::cout << "Setting GREETING: " << text << std::endl;
-}
-
-void GLEngine::speechSynthesis(const std::string& text, const std::string* voice,
-                              const std::string* lang, float* rate,
-                              float* volume, float* pitch) {
-    // Placeholder - implement speech synthesis if needed
-    std::cout << "Speech synthesis: " << text << std::endl;
-}
-
-glm::vec2 GLEngine::screenSize() const {
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    return glm::vec2(width, height);
-}
-
-void GLEngine::run() {
-    double lastTime = glfwGetTime();
-    while (!glfwWindowShouldClose(window)) {
-        double currentTime = glfwGetTime();
-        float deltaTime = static_cast<float>(currentTime - lastTime);
-        lastTime = currentTime;
-
-        update(deltaTime);
-        render();
-
-        glfwPollEvents();
+    if (inputManager) {
+        inputManager->update(dt);
+    }
+    if (modeManager) {
+        modeManager->update(dt);
+    }
+    if (world) {
+        world->update(dt);
     }
 }
 
-void GLEngine::shutdown() {
-    if (window) {
-        glfwDestroyWindow(window);
-        glfwTerminate();
+void GLEngine::setGreeting(const std::string& text) {
+    bool packageSelected = false;
+    std::string selectedZip;
+    char zipPathBuffer[1024] = "";
+    while (!packageSelected && !glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::Begin("Select Game Package");
+        ImGui::Text("Enter the full path to a .zip game package, or paste it here:");
+        ImGui::InputText(".zip file path", zipPathBuffer, sizeof(zipPathBuffer));
+        if (ImGui::Button("Load Package")) {
+            selectedZip = std::string(zipPathBuffer);
+            if (!selectedZip.empty() && std::filesystem::exists(selectedZip)) {
+                packageSelected = true;
+            }
+        }
+        ImGui::End();
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+    }
+    // Removed ImGui::EndFrame();
+    // Extract and load selected package
+    if (packageSelected) {
+        std::string tempExtracted = std::filesystem::temp_directory_path().string() + "/pixospritz_temp_extracted";
+        std::string extractCmd = "unzip -q \"" + selectedZip + "\" -d \"" + tempExtracted + "\"";
+        int result = system(extractCmd.c_str());
+        if (result == 0) {
+            std::string manifestPath = tempExtracted + "/manifest.json";
+            if (!std::filesystem::exists(manifestPath)) {
+                std::cerr << "Manifest not found in extracted package: " << manifestPath << std::endl;
+            } else {
+                std::ifstream manifestFile(manifestPath);
+                nlohmann::json manifestJson;
+                if (manifestFile.is_open()) {
+                    manifestFile >> manifestJson;
+                    manifestFile.close();
+                    // Assign to engine state
+                    gamePath = tempExtracted;
+                    manifest = manifestJson;
+                    // Ensure managers and interpreter exist
+                                renderManager = std::make_unique<RenderManager>(this);
+                                inputManager = std::make_unique<InputManager>(this);
+                                modeManager = std::make_unique<ModeManager>(this);
+                                scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
+                                scriptInterpreter->init();
+                                cutsceneManager = std::make_unique<CutsceneManager>(this);
+                                world = std::make_unique<World>(this);
+                                // create engine camera
+                                camera = std::make_unique<Camera>();
+                                camera->init();
+                    renderManager->init();
+                    world->init(gamePath, manifest);
+                } else {
+                    std::cerr << "Failed to open manifest file: " << manifestPath << std::endl;
+                }
+            }
+        } else {
+            std::cerr << "Failed to extract selected ZIP file: " << selectedZip << std::endl;
+        }
     }
 }

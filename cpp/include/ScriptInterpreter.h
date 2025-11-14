@@ -38,6 +38,9 @@ public:
 
     GLEngine* engine;
 
+    // Simple flags store exposed to scripts
+    std::unordered_map<std::string, std::string> flags;
+
 private:
     lua_State* luaState;
 
