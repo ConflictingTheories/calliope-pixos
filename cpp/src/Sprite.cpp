@@ -60,11 +60,36 @@ void Sprite::render() {
     // Create VBO for sprite
     GLuint spriteVBO;
     glGenBuffers(1, &spriteVBO);
+    // Core profile requires a VAO to be bound when setting vertex attrib pointers.
+    GLuint spriteVAO = 0;
+    glGenVertexArrays(1, &spriteVAO);
+    glBindVertexArray(spriteVAO);
+
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // Diagnostic: dump GL state before draw
+    GLint currentProgram = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+    GLint activeTex = 0;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTex);
+    GLint arrayBuf = 0;
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBuf);
+    GLint attrib0_enabled = 0, attrib1_enabled = 0;
+    glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib0_enabled);
+    glGetVertexAttribiv(1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib1_enabled);
+    std::cout << "Sprite::render DEBUG glState currentProgram=" << currentProgram
+              << " activeTex=" << activeTex << " arrayBuffer=" << arrayBuf
+              << " attrib0_enabled=" << attrib0_enabled << " attrib1_enabled=" << attrib1_enabled
+              << std::endl;
+    std::cout << "Sprite::render DEBUG firstVerts: ";
+    for (int i = 0; i < 10; ++i) std::cout << vertices[i] << ",";
+    std::cout << std::endl;
 
     // Draw the sprite
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -74,9 +99,13 @@ void Sprite::render() {
     }
 
     // Clean up
+    // Delete VBO and VAO created for this sprite draw
+    glBindVertexArray(0);
+    if (spriteVAO) {
+        glDeleteVertexArrays(1, &spriteVAO);
+    }
     glDeleteBuffers(1, &spriteVBO);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    // Disable program usage
     glUseProgram(0);
 
     // Intentionally quiet: per-frame logging was too verbose for normal runs

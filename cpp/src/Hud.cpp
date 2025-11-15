@@ -15,7 +15,7 @@ Hud::~Hud() {
 
 void Hud::init() {
     // Setup text rendering
-    textShader = std::make_shared<Shader>("text_vertex.glsl", "text_fragment.glsl");
+    textShader = std::make_shared<Shader>("shaders/text_vertex.glsl", "shaders/text_fragment.glsl");
     // Setup VAO/VBO for text rendering
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);
@@ -78,4 +78,38 @@ void Hud::scrollText(const std::string& text, bool scrolling, const ActionOption
 void Hud::hideDialogue() {
     currentDialogue.clear();
     dialogueTimer = 0.0f;
+}
+
+void Hud::writeText(const std::string& text, float x, float y, const std::string* src) {
+    // Apply style
+    // Placeholder: use drawText
+    drawText(text, glm::vec2(x, y));
+}
+
+void Hud::drawModeLabel() {
+    // Draw active mode name in top-left
+    if (engine && engine->getModeManager()) {
+        std::string mode = engine->getModeManager()->getCurrentMode();
+        if (!mode.empty()) {
+            drawText("MODE: " + mode, glm::vec2(12.0f, 12.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        }
+    }
+}
+
+void Hud::clearHud() {
+    // Clear the HUD canvas
+    // Placeholder
+}
+
+void Hud::setBackdrop(const std::string& image) {
+    backdropImage = image;
+}
+
+void Hud::setCutouts(const std::vector<std::string>& cutouts) {
+    cutoutImages = cutouts;
+}
+
+void Hud::drawCutsceneElements() {
+    // Draw backdrop and cutouts for cutscenes
+    // Placeholder
 }

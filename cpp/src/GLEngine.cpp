@@ -156,9 +156,9 @@ void GLEngine::render() {
     // }
 
     // Clear canvases
-    // hud->clearHud();
+    if (hud) hud->clearHud();
     // Draw active mode label (if any)
-    // if (hud->drawModeLabel) hud->drawModeLabel();
+    if (hud) hud->drawModeLabel();
     // renderManager->clearScreen();
 
     double timestamp = glfwGetTime() * 1000.0; // Convert to milliseconds
@@ -232,75 +232,7 @@ void GLEngine::update(float dt) {
     }
 }
 
-void GLEngine::setGreeting(const std::string& text) {
-    bool packageSelected = false;
-    std::string selectedZip;
-    char zipPathBuffer[1024] = "";
-    while (!packageSelected && !glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::Begin("Select Game Package");
-        ImGui::Text("Enter the full path to a .zip game package, or paste it here:");
-        ImGui::InputText(".zip file path", zipPathBuffer, sizeof(zipPathBuffer));
-        if (ImGui::Button("Load Package")) {
-            selectedZip = std::string(zipPathBuffer);
-            if (!selectedZip.empty() && std::filesystem::exists(selectedZip)) {
-                packageSelected = true;
-            }
-        }
-        ImGui::End();
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
-    }
-    // Removed ImGui::EndFrame();
-    // Extract and load selected package
-    if (packageSelected) {
-        std::string tempExtracted = std::filesystem::temp_directory_path().string() + "/pixospritz_temp_extracted";
-        std::string extractCmd = "unzip -q \"" + selectedZip + "\" -d \"" + tempExtracted + "\"";
-        int result = system(extractCmd.c_str());
-        if (result == 0) {
-            std::string manifestPath = tempExtracted + "/manifest.json";
-            if (!std::filesystem::exists(manifestPath)) {
-                std::cerr << "Manifest not found in extracted package: " << manifestPath << std::endl;
-            } else {
-                std::ifstream manifestFile(manifestPath);
-                nlohmann::json manifestJson;
-                if (manifestFile.is_open()) {
-                    manifestFile >> manifestJson;
-                    manifestFile.close();
-                    // Assign to engine state
-                    gamePath = tempExtracted;
-                    manifest = manifestJson;
-                    // Ensure managers and interpreter exist
-                                renderManager = std::make_unique<RenderManager>(this);
-                                inputManager = std::make_unique<InputManager>(this);
-                                spritz = std::make_unique<Spritz>(this); // Create spritz instead of world
-                                modeManager = std::make_unique<ModeManager>(spritz->world.get());
-                                scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
-                                scriptInterpreter->init();
-                                cutsceneManager = std::make_unique<CutsceneManager>(this);
-                                // create engine camera
-                                camera = std::make_unique<Camera>();
-                                camera->init();
-                    renderManager->init();
-                    spritz->init(gamePath, manifest);
-                } else {
-                    std::cerr << "Failed to open manifest file: " << manifestPath << std::endl;
-                }
-            }
-        } else {
-            std::cerr << "Failed to extract selected ZIP file: " << selectedZip << std::endl;
-        }
-    }
-}
+
 
 World* GLEngine::getWorld() {
     return spritz ? spritz->world.get() : nullptr;
@@ -459,16 +391,16 @@ glm::vec2 GLEngine::screenSize() const {
 void GLEngine::toggleFullscreen() {
     static bool fullscreen = false;
     static int windowed_x, windowed_y, windowed_width, windowed_height;
-    
+
     if (!fullscreen) {
         // Save windowed position and size
         glfwGetWindowPos(window, &windowed_x, &windowed_y);
         glfwGetWindowSize(window, &windowed_width, &windowed_height);
-        
+
         // Get monitor
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        
+
         // Set fullscreen
         glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
         fullscreen = true;
@@ -477,4 +409,8 @@ void GLEngine::toggleFullscreen() {
         glfwSetWindowMonitor(window, nullptr, windowed_x, windowed_y, windowed_width, windowed_height, 0);
         fullscreen = false;
     }
+}
+
+void GLEngine::setGreeting(const std::string& text) {
+    greeting = text;
 }

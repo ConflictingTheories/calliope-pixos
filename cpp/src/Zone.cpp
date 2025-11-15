@@ -126,6 +126,8 @@ void Zone::renderTiles() {
     shader->setMat4("uModel", glm::mat4(1.0f));
     // Ensure sampler uses texture unit 0
     shader->setInt("uTexture", 0);
+    // Ensure color multiplier is neutral so textures draw with their original colors
+    shader->setVec3("uColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Build per-tileset vertex lists so we can upload and draw each tileset once.
     std::map<std::shared_ptr<Tileset>, std::vector<float>> perTilesetVerts;
@@ -186,7 +188,32 @@ void Zone::renderTiles() {
         auto &verts = entry.second;
         if (verts.empty()) continue;
 
-        tileset->bindTexture();
+    tileset->bindTexture();
+
+    // Diagnostic: print texture binding and uniform location to debug sampling issues
+    GLint boundTex = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &boundTex);
+    GLint uTexLoc = -1;
+    if (shader->id) uTexLoc = glGetUniformLocation(shader->id, "uTexture");
+        std::cout << "Zone::renderTiles DEBUG drawing tileset id='" << tileset->id << "' textureId=" << tileset->textureId
+                  << " boundTex=" << boundTex << " uTextureLoc=" << uTexLoc << std::endl;
+
+        // Diagnostic: query texture level size to ensure texture data uploaded
+        GLint texW = 0, texH = 0;
+        glBindTexture(GL_TEXTURE_2D, tileset->textureId);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+        std::cout << "Zone::renderTiles DEBUG tileset texture size=" << texW << "x" << texH << std::endl;
+
+        // Diagnostic: read back current uColor uniform if available
+        if (uTexLoc >= 0 && shader->id) {
+            GLint uColorLoc = glGetUniformLocation(shader->id, "uColor");
+            if (uColorLoc >= 0) {
+                GLfloat color[4] = {0,0,0,0};
+                glGetUniformfv(shader->id, uColorLoc, color);
+                std::cout << "Zone::renderTiles DEBUG current uColor=(" << color[0] << "," << color[1] << "," << color[2] << "," << color[3] << ")" << std::endl;
+            }
+        }
 
         GLuint tileVAO = 0, tileVBO = 0;
         glGenVertexArrays(1, &tileVAO);
@@ -201,6 +228,26 @@ void Zone::renderTiles() {
         glEnableVertexAttribArray(1);
 
         // Draw all vertices as triangles
+        // Diagnostic: dump GL state and first vertex data to debug attribute/uv issues
+        GLint currentProgram = 0;
+        glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+        GLint activeTex = 0;
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTex);
+        GLint arrayBuf = 0;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBuf);
+        GLint attrib0_enabled = 0, attrib1_enabled = 0;
+        glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib0_enabled);
+        glGetVertexAttribiv(1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &attrib1_enabled);
+        std::cout << "Zone::renderTiles DEBUG glState currentProgram=" << currentProgram
+                  << " activeTex=" << activeTex << " arrayBuffer=" << arrayBuf
+                  << " attrib0_enabled=" << attrib0_enabled << " attrib1_enabled=" << attrib1_enabled
+                  << std::endl;
+        // Print first two vertices' data (pos.xyz uv.xy) for quick inspection
+        if (verts.size() >= 10) {
+            std::cout << "Zone::renderTiles DEBUG firstVerts: ";
+            for (size_t i = 0; i < std::min<size_t>(10, verts.size()); ++i) std::cout << verts[i] << ",";
+            std::cout << std::endl;
+        }
         GLsizei vertCount = (GLsizei)(verts.size() / 5);
         glDrawArrays(GL_TRIANGLES, 0, vertCount);
 

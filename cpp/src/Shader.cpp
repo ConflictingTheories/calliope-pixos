@@ -53,6 +53,16 @@ void Shader::init(const std::string& vertexSource, const std::string& fragmentSo
 void Shader::use() const
 {
     glUseProgram(id);
+
+    // Defensive defaults: many draw paths assume these uniforms exist and have sensible defaults.
+    // Ensure the sampler uses texture unit 0 and the color multiplier is neutral so leftover state
+    // from other draw calls can't tint or unbind textures unexpectedly.
+    if (id != 0) {
+        GLint loc = getUniformLocation("uTexture");
+        if (loc >= 0) glUniform1i(loc, 0);
+        GLint colLoc = getUniformLocation("uColor");
+        if (colLoc >= 0) glUniform3f(colLoc, 1.0f, 1.0f, 1.0f);
+    }
 }
 
 void Shader::unuse() const
@@ -159,21 +169,23 @@ std::string Shader::loadShaderSource(const std::string& path) const
     }
     catch (std::ifstream::failure& e)
     {
-        // Try fallback: attempt to open just the filename in the current directory
-        std::string fallback = path;
+        // Enforce using the repo shaders/ directory for shader sources.
+        // If caller passed a bare filename (no '/'), try shaders/<basename> next.
+        std::string basename = path;
         auto pos = path.find_last_of("/");
-        if (pos != std::string::npos) fallback = path.substr(pos + 1);
+        if (pos != std::string::npos) basename = path.substr(pos + 1);
+        std::string shadersPath = std::string("shaders/") + basename;
         try {
-            file.open(fallback);
+            file.open(shadersPath);
             if (!file.is_open()) {
-                throw std::ifstream::failure("Fallback file not found: " + fallback);
+                throw std::ifstream::failure("Shaders path not found: " + shadersPath);
             }
             std::stringstream stream;
             stream << file.rdbuf();
             file.close();
             code = stream.str();
         } catch (std::ifstream::failure& e2) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << " / fallback: " << e2.what() << std::endl;
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << " / shaders fallback: " << e2.what() << std::endl;
         }
     }
     return code;

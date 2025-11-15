@@ -23,6 +23,7 @@ public:
 
     // Text rendering
     void drawText(const std::string& text, const glm::vec2& position, const glm::vec4& color = glm::vec4(1.0f));
+    void writeText(const std::string& text, float x, float y, const std::string* src = nullptr);
     void setGreeting(const std::string& text);
 
     // UI elements
@@ -34,10 +35,23 @@ public:
     void scrollText(const std::string& text, bool scrolling, const ActionOptions& options);
     void hideDialogue();
 
+    // Mode label
+    void drawModeLabel();
+
+    // HUD canvas
+    void clearHud();
+
+    // Cutscene elements
+    void setBackdrop(const std::string& image);
+    void setCutouts(const std::vector<std::string>& cutouts);
+    void drawCutsceneElements();
+
     // Properties
     std::string greeting;
     std::string currentDialogue;
     float dialogueTimer;
+    std::string backdropImage;
+    std::vector<std::string> cutoutImages;
 
     GLEngine* engine;
 

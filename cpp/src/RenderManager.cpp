@@ -31,6 +31,11 @@ void RenderManager::render() {
         engine->getWorld()->render();
     }
 
+    // Render HUD
+    if (engine && engine->getHud()) {
+        engine->getHud()->render();
+    }
+
     // Ensure rendering is complete
     glFlush();
 
@@ -44,11 +49,12 @@ void RenderManager::setProjectionMatrix(const glm::mat4& proj) {
 
 void RenderManager::initShaders() {
     try {
-        defaultShader = std::make_unique<Shader>("vertex.glsl", "fragment.glsl");
-        std::cout << "Shaders loaded successfully" << std::endl;
+        // Strictly load shader sources from the repository `shaders/` folder.
+        defaultShader = std::make_unique<Shader>("shaders/vertex.glsl", "shaders/fragment.glsl");
+        std::cout << "Shaders loaded successfully from shaders/" << std::endl;
     } catch (const std::exception& e) {
-        std::cerr << "Failed to load shaders: " << e.what() << std::endl;
-        // Create fallback shader
+        std::cerr << "Failed to load shaders from shaders/: " << e.what() << std::endl;
+        // Create fallback shader (GL-only color shader) so the engine can still run.
         createFallbackShader();
     }
 }
