@@ -78,6 +78,8 @@ public:
 
     // Scripts
     std::vector<nlohmann::json> scripts;
+    // If zone was loaded from a package directory, this points to that extracted package path
+    std::string packagePath;
     // Audio placeholder
     class AudioManager* audio = nullptr;
     // Audio helpers

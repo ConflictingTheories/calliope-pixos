@@ -57,7 +57,59 @@ void Tileset::loadFromJson(const nlohmann::json& data, const std::string& gamePa
         std::cout << "Tileset::resolved image candidates for '" << id << "' -> raw='" << rawImage << "' selected='" << imagePath << "'\n";
 
         // If nothing found, fall back to rawImage as-is (maybe working directory will resolve it)
-        if (imagePath.empty()) imagePath = rawImage;
+        if (imagePath.empty()) {
+            // Try to find a suitable image under the package tileset dir or textures dir
+            std::vector<std::string> exts = {".png", ".gif", ".jpg", ".jpeg", ".bmp"};
+            // Search tilesets/<id>/ for an image
+            try {
+                std::string tilesetDir = gamePath + "/tilesets/" + id + "/";
+                if (std::filesystem::exists(tilesetDir) && std::filesystem::is_directory(tilesetDir)) {
+                    for (const auto& entry : std::filesystem::directory_iterator(tilesetDir)) {
+                        if (!entry.is_regular_file()) continue;
+                        std::string fn = entry.path().filename().string();
+                        for (const auto& e : exts) {
+                            if (fn.size() > e.size() && fn.substr(fn.size() - e.size()) == e) {
+                                // prefer files named 'tileset' or containing 'tile'
+                                if (fn.find("tileset") != std::string::npos || fn.find("tile") != std::string::npos) {
+                                    imagePath = entry.path().string();
+                                    break;
+                                }
+                                if (imagePath.empty()) imagePath = entry.path().string();
+                            }
+                        }
+                        if (!imagePath.empty()) break;
+                    }
+                }
+            } catch (...) {}
+
+            // Fallback: scan textures directory for a likely tileset image
+            if (imagePath.empty()) {
+                try {
+                    std::string texturesDir = gamePath + "/textures/";
+                    if (std::filesystem::exists(texturesDir) && std::filesystem::is_directory(texturesDir)) {
+                        for (const auto& entry : std::filesystem::directory_iterator(texturesDir)) {
+                            if (!entry.is_regular_file()) continue;
+                            std::string fn = entry.path().filename().string();
+                            for (const auto& e : exts) {
+                                if (fn.size() > e.size() && fn.substr(fn.size() - e.size()) == e) {
+                                    // pick a file that looks like a tilesheet (bigger than small thumbnails)
+                                    try {
+                                        auto fsz = std::filesystem::file_size(entry.path());
+                                        if (fsz > 1024) { imagePath = entry.path().string(); break; }
+                                    } catch (...) {
+                                        if (imagePath.empty()) imagePath = entry.path().string();
+                                    }
+                                }
+                            }
+                            if (!imagePath.empty()) break;
+                        }
+                    }
+                } catch (...) {}
+            }
+
+            // Last resort: use rawImage as given
+            if (imagePath.empty()) imagePath = rawImage;
+        }
     } else {
         imagePath = ""; // will use placeholder texture
     }
@@ -116,6 +168,28 @@ void Tileset::loadFromJson(const nlohmann::json& data, const std::string& gamePa
     if (imageHeight <= 0) imageHeight = std::max(1, rows * tileHeight);
 
     generateTiles();
+
+    // If the tileset JSON provided a 'textures' mapping (e.g. "FLOOR": [x,y]),
+    // convert those coordinates into global tile IDs and store them in
+    // textureMap so Zone::loadTileMap can resolve string tokens to numeric GIDs.
+    try {
+        if (data.contains("textures") && data["textures"].is_object()) {
+            for (auto it = data["textures"].begin(); it != data["textures"].end(); ++it) {
+                const std::string texName = it.key();
+                const auto &val = it.value();
+                if (val.is_array() && val.size() >= 2) {
+                    int col = val[0].get<int>();
+                    int row = val[1].get<int>();
+                    // guard against zero columns
+                    int localIndex = 0;
+                    if (columns > 0) localIndex = row * columns + col;
+                    int gid = firstGid + localIndex;
+                    textureMap[texName] = gid;
+                }
+            }
+            std::cout << "Tileset::loaded textures mapping entries=" << textureMap.size() << std::endl;
+        }
+    } catch (...) {}
 }
 
 void Tileset::bindTexture() {
@@ -220,4 +294,20 @@ void Tileset::generateTiles() {
 
         tiles.push_back(tile);
     }
+
+    // If JSON provided a 'textures' mapping file (stored in properties) attempt to fill textureMap
+    // Note: loadFromJson should populate tileset->tiles and may set any properties; for now, look for tiles by name
+    // We will attempt to map common texture names to tile ids based on geometry or textures data stored elsewhere.
+    // This is a heuristic: if tile names are numeric, skip.
+    textureMap.clear();
+    for (const auto& t : tiles) {
+        // naive: create a texture name like "TILE_<id>" for lookup if needed
+        textureMap["TILE_" + std::to_string(t.id)] = t.id;
+    }
+}
+
+int Tileset::getTextureId(const std::string& name) const {
+    auto it = textureMap.find(name);
+    if (it != textureMap.end()) return it->second;
+    return 0;
 }

@@ -1,6 +1,7 @@
 // ...existing code...
 // ...existing code...
 #include "GLEngine.h"
+#include "Camera.h"
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <fstream>
@@ -13,6 +14,34 @@ void GLEngine::run() {
     std::string selectedZip;
     char zipPathBuffer[1024] = "";
     double lastTime = glfwGetTime();
+    // If the engine was started with a package already provided, create managers and initialize world
+    if (packageSelected) {
+        renderManager = std::make_unique<RenderManager>(this);
+        inputManager = std::make_unique<InputManager>(this);
+        world = std::make_unique<World>(nullptr, "world");
+        world->engine = this;
+        modeManager = std::make_unique<ModeManager>(world.get());
+        scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
+        scriptInterpreter->init();
+        cutsceneManager = std::make_unique<CutsceneManager>(this);
+        camera = std::make_unique<Camera>();
+        camera->init();
+        renderManager->init();
+        world->init(gamePath, manifest);
+    } else {
+        // Initialize managers even if no package is selected yet, to avoid null pointer dereference
+        renderManager = std::make_unique<RenderManager>(this);
+        inputManager = std::make_unique<InputManager>(this);
+        world = std::make_unique<World>(nullptr, "world");
+        world->engine = this;
+        modeManager = std::make_unique<ModeManager>(world.get());
+        scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
+        scriptInterpreter->init();
+        cutsceneManager = std::make_unique<CutsceneManager>(this);
+        camera = std::make_unique<Camera>();
+        camera->init();
+        renderManager->init();
+    }
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         float deltaTime = static_cast<float>(currentTime - lastTime);

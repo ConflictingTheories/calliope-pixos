@@ -150,15 +150,44 @@ void World::loadZoneFromZip(const std::string& zoneId, const std::string& zipPat
             return;
         }
 
+        std::string effectivePath = zipPath;
+        bool createdTemp = false;
+        // If the path looks like a .zip file, extract it to a temporary directory using the system unzip
+        if (fs::is_regular_file(zipPath) && zipPath.size() > 4 && zipPath.substr(zipPath.size() - 4) == ".zip") {
+            // Create unique temporary directory
+            auto tmpBase = fs::temp_directory_path();
+            std::string tmpName = "pixos_unpack_" + zoneId + "_" + std::to_string(std::rand());
+            fs::path tmpPath = tmpBase / tmpName;
+            try {
+                fs::create_directory(tmpPath);
+            } catch (const std::exception& e) {
+                std::cerr << "Failed to create temp dir for zip extraction: " << e.what() << std::endl;
+                return;
+            }
+            // Use system unzip to extract quietly to tmpPath
+            std::string cmd = "unzip -q \"" + zipPath + "\" -d \"" + tmpPath.string() + "\"";
+            int rc = std::system(cmd.c_str());
+            if (rc != 0) {
+                std::cerr << "Failed to extract zip archive using unzip (rc=" << rc << "): " << zipPath << std::endl;
+                return;
+            }
+            effectivePath = tmpPath.string();
+            createdTemp = true;
+        }
+
         // If caller passed a real directory containing a 'maps' folder, use that.
-        std::string mapsBase = zipPath + "/maps/" + zoneId;
+        std::string mapsBase = effectivePath + "/maps/" + zoneId;
         std::string mapFilePath = mapsBase + "/map.json";
         std::string cellFilePath = mapsBase + "/cells.json";
 
-        if (fs::is_directory(zipPath) && fs::exists(mapFilePath)) {
+        if (fs::is_directory(effectivePath) && fs::exists(mapFilePath)) {
             std::ifstream mapFile(mapFilePath);
             if (!mapFile.is_open()) {
                 std::cerr << "Failed to open map.json at: " << mapFilePath << std::endl;
+                // cleanup if we created a temp dir
+                if (createdTemp) {
+                    try { fs::remove_all(effectivePath); } catch (...) {}
+                }
                 return;
             }
             nlohmann::json mapData;
@@ -175,9 +204,13 @@ void World::loadZoneFromZip(const std::string& zoneId, const std::string& zipPat
             }
 
             auto z = std::make_shared<Zone>(zoneId, this);
+            if (createdTemp) z->packagePath = effectivePath;
             try {
                 // Prefer a loader that accepts both map and cell data if available; fall back to map-only.
-                z->loadFromJson(mapData, gamePath);
+                // If we extracted a zip to a temp directory, prefer to pass that as the gamePath so
+                // asset lookups (textures, tilesets, triggers) resolve from the extracted package.
+                std::string zoneGamePath = (createdTemp ? effectivePath : gamePath);
+                z->loadFromJson(mapData, zoneGamePath);
 
                     // audio: pause audio on existing zones, play on the new one (if supported)
                     for (auto& existing : zoneList) {
@@ -190,9 +223,12 @@ void World::loadZoneFromZip(const std::string& zoneId, const std::string& zipPat
                 zoneDict[zoneId] = z;
 
                 std::cout << "Loaded zone from package: " << zoneId << " (from " << zipPath << ")" << std::endl;
+                // Note: Do not remove the extracted temp dir here; caller may want assets to remain available
+                // for the duration of the running process. We leave it to the OS or caller to cleanup.
                 return;
             } catch (const std::exception& e) {
                 std::cerr << "Error loading zone from package: " << e.what() << std::endl;
+                if (createdTemp) { try { fs::remove_all(effectivePath); } catch (...) {} }
                 return;
             }
         }

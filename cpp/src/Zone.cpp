@@ -127,17 +127,27 @@ void Zone::renderTiles() {
     // Ensure sampler uses texture unit 0
     shader->setInt("uTexture", 0);
 
-    // Enable vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    // Build per-tileset vertex lists so we can upload and draw each tileset once.
+    std::map<std::shared_ptr<Tileset>, std::vector<float>> perTilesetVerts;
+    bool firstTileLogged = false;
+    bool debugLogged = false;
 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int tileId = tileMap[y][x];
-            if (tileId == 0) continue; // Skip empty tiles
+            if (tileId == 0) continue;
 
-            // Debug: print the first non-zero tileId and its location
-            static bool firstTileLogged = false;
+            // find tileset containing this tile
+            std::shared_ptr<Tileset> tileset = nullptr;
+            for (const auto& kv : tilesets) {
+                if (kv.second && kv.second->getTile(tileId)) { tileset = kv.second; break; }
+            }
+            if (!tileset && !tilesets.empty()) tileset = tilesets.begin()->second;
+            if (!tileset) continue;
+
+            const Tile* tile = tileset->getTile(tileId);
+            if (!tile) continue;
+
             if (!firstTileLogged) {
                 glm::vec2 wp = tileToWorld(y, x);
                 std::cout << "Zone::renderTiles INFO first non-zero tileId=" << tileId
@@ -146,77 +156,64 @@ void Zone::renderTiles() {
                 firstTileLogged = true;
             }
 
-            // Get tileset for this tile by searching the loaded tilesets for one that contains the tileId
-            std::shared_ptr<Tileset> tileset = nullptr;
-            for (const auto& kv : tilesets) {
-                if (kv.second && kv.second->getTile(tileId)) { tileset = kv.second; break; }
-            }
-            // Fallback: use the first tileset if no specific match found
-            if (!tileset && !tilesets.empty()) tileset = tilesets.begin()->second;
-            if (!tileset) continue;
-
-            // Bind tileset texture
-            tileset->bindTexture();
-
-            // Calculate world position
-            glm::vec2 worldPos = tileToWorld(y, x);
-
-            // Get tile UV coordinates
-            const Tile* tile = tileset->getTile(tileId);
-            if (!tile) {
-                static bool missingLogged = false;
-                if (!missingLogged) {
-                    std::cout << "Zone::renderTiles DEBUG - tileset->getTile(" << tileId << ") returned null\n";
-                    missingLogged = true;
-                }
-                continue;
-            }
-
-            // DEBUG: Force tile color to bright red so we can verify geometry is on-screen
-            shader->setVec3("uColor", glm::vec3(1.0f, 0.0f, 0.0f));
-
-            // Log the world position and UVs for the first visible tile to help debug
-            static bool debugLogged = false;
             if (!debugLogged) {
+                glm::vec2 worldPosDbg = tileToWorld(y, x);
                 std::cout << "Zone::renderTiles DEBUG tileId=" << tileId
-                          << " worldPos=(" << worldPos.x << "," << worldPos.y << ")"
+                          << " worldPos=(" << worldPosDbg.x << "," << worldPosDbg.y << ")"
                           << " uvMin=(" << tile->uvMin.x << "," << tile->uvMin.y << ")"
                           << " uvMax=(" << tile->uvMax.x << "," << tile->uvMax.y << ")"
                           << std::endl;
                 debugLogged = true;
             }
 
-            // Create quad vertices with texture coordinates
-            float vertices[] = {
-                // positions          // texture coords
-                worldPos.x, worldPos.y, 0.0f,                          tile->uvMin.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y, 0.0f,               tile->uvMax.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,   tile->uvMax.x, tile->uvMin.y,
-                worldPos.x, worldPos.y, 0.0f,                          tile->uvMin.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,   tile->uvMax.x, tile->uvMin.y,
-                worldPos.x, worldPos.y + tileSize, 0.0f,              tile->uvMin.x, tile->uvMin.y
-            };
-
-            // Create VBO for this tile
-            GLuint tileVBO;
-            glGenBuffers(1, &tileVBO);
-            glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-            // Draw the tile
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            // Clean up
-            glDeleteBuffers(1, &tileVBO);
-            tileset->unbindTexture();
+            glm::vec2 worldPos = tileToWorld(y, x);
+            // positions (x,y,0) and texcoords (u,v) per vertex for two triangles
+            std::vector<float>& verts = perTilesetVerts[tileset];
+            verts.insert(verts.end(), {
+                worldPos.x, worldPos.y, 0.0f,                     tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y, 0.0f,          tile->uvMax.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y, 0.0f,                     tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y + tileSize, 0.0f,         tile->uvMin.x, tile->uvMin.y
+            });
         }
     }
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    // For each tileset, upload its vertex data once and draw
+    for (auto &entry : perTilesetVerts) {
+        auto tileset = entry.first;
+        auto &verts = entry.second;
+        if (verts.empty()) continue;
+
+        tileset->bindTexture();
+
+        GLuint tileVAO = 0, tileVBO = 0;
+        glGenVertexArrays(1, &tileVAO);
+        glGenBuffers(1, &tileVBO);
+        glBindVertexArray(tileVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
+        glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(float), verts.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        // Draw all vertices as triangles
+        GLsizei vertCount = (GLsizei)(verts.size() / 5);
+        glDrawArrays(GL_TRIANGLES, 0, vertCount);
+
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        glDeleteBuffers(1, &tileVBO);
+        glDeleteVertexArrays(1, &tileVAO);
+
+        tileset->unbindTexture();
+    }
+
     glUseProgram(0);
 
     std::cout << "Zone::renderTiles() called for " << width << "x" << height << " tiles" << std::endl;
@@ -313,10 +310,15 @@ void Zone::loadFromJson(const nlohmann::json& data, const std::string& gamePath)
     bounds = glm::vec4(0, 0, width * tileSize, height * tileSize);
 
     // Load tilesets first so we can correctly interpret layer GIDs
+    // If this Zone was loaded from a package directory, prefer packagePath for asset lookups
+    std::string assetBase = world->gamePath;
+    if (!packagePath.empty()) assetBase = packagePath;
+    std::cout << "Zone::loadFromJson(" << id << ") assetBase='" << assetBase << "' tileset=" << data.value("tileset", "(none)") << std::endl;
     loadTilesets(data);
 
     // Load tile map (tileset info needed for GID mapping)
     loadTileMap(data);
+    std::cout << "Zone::loadFromJson(" << id << ") tileMap size=" << tileMap.size() << "x" << (tileMap.empty() ? 0 : tileMap[0].size()) << std::endl;
 
     // Load objects
     loadObjects(data);
@@ -339,6 +341,8 @@ void Zone::loadFromJson(const nlohmann::json& data, const std::string& gamePath)
 
 void Zone::loadTileMap(const nlohmann::json& data) {
     tileMap.assign(height, std::vector<int>(width, 0));
+    std::string assetBase = world->gamePath;
+    if (!packagePath.empty()) assetBase = packagePath;
     // We'll support multiple map schemas: Tiled 'layers' with tilelayer.data, or package-specific 'cells',
     // and maps that 'extend' other maps. Build a final cells array by merging parents then overlaying local cells.
 
@@ -351,6 +355,7 @@ void Zone::loadTileMap(const nlohmann::json& data) {
             std::ifstream f(path);
             if (!f.is_open()) return nlohmann::json();
             nlohmann::json j; f >> j; f.close();
+            if (j.is_array()) return j; // cells.json in the example is an array of rows
             if (j.contains("cells") && j["cells"].is_array()) return j["cells"];
             // Some maps may have layers; prefer tilelayer data if present
             if (j.contains("layers") && j["layers"].is_array()) {
@@ -432,18 +437,88 @@ void Zone::loadTileMap(const nlohmann::json& data) {
                 int idx = y * width + x;
                 if (idx < (int)finalCells.size()) {
                     const auto &c = finalCells[idx];
-                    if (c.is_array() && c.size() >= 1) {
-                        tileMap[y][x] = c[0].get<int>();
-                    } else if (c.is_number_integer()) {
-                        tileMap[y][x] = c.get<int>();
-                    } else {
-                        tileMap[y][x] = 0;
-                    }
+                        if (c.is_array() && c.size() >= 1) {
+                            if (c[0].is_string()) {
+                                std::string name = c[0].get<std::string>();
+                                int resolved = 0;
+                                for (const auto& kv : tilesets) {
+                                    if (!kv.second) continue;
+                                    int tid = kv.second->getTextureId(name);
+                                    if (tid != 0) { resolved = tid; break; }
+                                }
+                                tileMap[y][x] = resolved;
+                            } else if (c[0].is_number_integer()) {
+                                tileMap[y][x] = c[0].get<int>();
+                            } else tileMap[y][x] = 0;
+                        } else if (c.is_string()) {
+                            std::string name = c.get<std::string>();
+                            int resolved = 0;
+                            for (const auto& kv : tilesets) {
+                                if (!kv.second) continue;
+                                int tid = kv.second->getTextureId(name);
+                                if (tid != 0) { resolved = tid; break; }
+                            }
+                            tileMap[y][x] = resolved;
+                        } else if (c.is_number_integer()) {
+                            tileMap[y][x] = c.get<int>();
+                        } else {
+                            tileMap[y][x] = 0;
+                        }
                 } else {
                     tileMap[y][x] = 0;
                 }
             }
         }
+    }
+
+    // If no finalCells found yet, attempt to load a sidecar cells.json in the package for this zone
+    if ((finalCells.is_null() || finalCells.empty())) {
+        std::string cellsPath = assetBase + "/maps/" + id + "/cells.json";
+        try {
+            nlohmann::json adj = loadCellsFromMapFile(cellsPath);
+            if (adj.is_array() && !adj.empty()) {
+                finalCells = adj;
+                std::cout << "Zone::loadTileMap loaded adjacent cells.json: " << cellsPath << " (size=" << finalCells.size() << ")" << std::endl;
+                // populate tileMap from finalCells (repeat logic)
+                for (int y = 0; y < height; ++y) {
+                    for (int x = 0; x < width; ++x) {
+                        int idx = y * width + x;
+                        if (idx < (int)finalCells.size()) {
+                            const auto &c = finalCells[idx];
+                            if (c.is_array() && c.size() >= 1) {
+                                if (c[0].is_string()) {
+                                    std::string name = c[0].get<std::string>();
+                                    int resolved = 0;
+                                    for (const auto& kv : tilesets) {
+                                        if (!kv.second) continue;
+                                        int tid = kv.second->getTextureId(name);
+                                        if (tid != 0) { resolved = tid; break; }
+                                    }
+                                    tileMap[y][x] = resolved;
+                                } else if (c[0].is_number_integer()) {
+                                    tileMap[y][x] = c[0].get<int>();
+                                } else tileMap[y][x] = 0;
+                            } else if (c.is_string()) {
+                                std::string name = c.get<std::string>();
+                                int resolved = 0;
+                                for (const auto& kv : tilesets) {
+                                    if (!kv.second) continue;
+                                    int tid = kv.second->getTextureId(name);
+                                    if (tid != 0) { resolved = tid; break; }
+                                }
+                                tileMap[y][x] = resolved;
+                            } else if (c.is_number_integer()) {
+                                tileMap[y][x] = c.get<int>();
+                            } else {
+                                tileMap[y][x] = 0;
+                            }
+                        } else {
+                            tileMap[y][x] = 0;
+                        }
+                    }
+                }
+            }
+        } catch (...) {}
     }
 
     // If tilesets provide firstGid values, ensure mapping stays as global IDs which Tileset::getTile expects
@@ -517,13 +592,15 @@ void Zone::loadTileMap(const nlohmann::json& data) {
 void Zone::loadTilesets(const nlohmann::json& data) {
     // The map can reference tilesets in multiple ways. It may include a "tilesets" array
     // or a simple "tileset" string referencing a tileset directory under the package.
+    std::string assetBase = world->gamePath;
+    if (!packagePath.empty()) assetBase = packagePath;
     if (data.contains("tilesets") && data["tilesets"].is_array()) {
         for (const auto& tilesetData : data["tilesets"]) {
             // If element is an object, load directly
             if (tilesetData.is_object()) {
                 std::string tid = tilesetData.value("name", "default");
                 auto tileset = std::make_shared<Tileset>(engine, tid);
-                tileset->loadFromJson(tilesetData, world->gamePath);
+                tileset->loadFromJson(tilesetData, assetBase);
                 tilesets[tileset->id] = tileset;
             }
         }
@@ -532,8 +609,8 @@ void Zone::loadTilesets(const nlohmann::json& data) {
     // If map specifies a single tileset name, try to load tileset JSON from package
     if (data.contains("tileset") && data["tileset"].is_string()) {
         std::string tsName = data["tileset"].get<std::string>();
-        // Look for tileset JSON under <gamePath>/tilesets/<tsName>/tileset.json or tiles.json
-        std::string basePath = world->gamePath + "/tilesets/" + tsName + "/";
+        // Look for tileset JSON under <assetBase>/tilesets/<tsName>/tileset.json or tiles.json
+        std::string basePath = assetBase + "/tilesets/" + tsName + "/";
         std::vector<std::string> candidates = {"tileset.json", "tiles.json", tsName + ".json"};
         for (const auto& cand : candidates) {
             std::string full = basePath + cand;
@@ -546,12 +623,12 @@ void Zone::loadTilesets(const nlohmann::json& data) {
                     if (j.contains("extends") && j["extends"].is_array()) {
                         for (const auto& ext : j["extends"]) {
                             if (ext.is_string()) {
-                                std::string extPath = world->gamePath + "/tilesets/" + ext.get<std::string>() + "/tileset.json";
+                                std::string extPath = assetBase + "/tilesets/" + ext.get<std::string>() + "/tileset.json";
                                 if (std::filesystem::exists(extPath)) {
                                     std::ifstream ef(extPath);
                                     nlohmann::json ej; ef >> ej; ef.close();
                                     auto baseTileset = std::make_shared<Tileset>(engine, ext.get<std::string>());
-                                    baseTileset->loadFromJson(ej, world->gamePath);
+                                    baseTileset->loadFromJson(ej, assetBase);
                                     tilesets[baseTileset->id] = baseTileset;
                                 }
                             }
@@ -559,7 +636,7 @@ void Zone::loadTilesets(const nlohmann::json& data) {
                     }
                     std::string tid = j.value("name", tsName);
                     auto tileset = std::make_shared<Tileset>(engine, tid);
-                    tileset->loadFromJson(j, world->gamePath);
+                    tileset->loadFromJson(j, assetBase);
                     tilesets[tileset->id] = tileset;
                     break;
                 } catch (const std::exception& e) {

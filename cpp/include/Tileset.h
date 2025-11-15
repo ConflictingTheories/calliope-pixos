@@ -50,11 +50,13 @@ public:
     // OpenGL
     GLuint textureId;
     std::vector<Tile> tiles;
+    std::unordered_map<std::string, int> textureMap; // named textures -> global tile id
 
     GLEngine* engine;
 
 public:
     void generateTiles();
+    int getTextureId(const std::string& name) const;
 
 private:
     void loadTexture(const std::string& path);
