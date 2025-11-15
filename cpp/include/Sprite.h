@@ -33,6 +33,9 @@ public:
     float animTimer;
     bool fixed;
 
+    int getAnimFrame() const { return animFrame; }
+    void setFrame(int frame) { animFrame = frame; }
+
     // Identification
     std::string id;
     int objId;

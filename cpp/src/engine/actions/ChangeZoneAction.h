@@ -9,8 +9,8 @@ public:
     ChangeZoneAction(GLEngine* engine, Sprite* sprite);
     virtual ~ChangeZoneAction();
 
-    void init(const std::string& fromZoneId, const glm::vec3& from, const std::string& toZoneId, const glm::vec3& to, double length) override;
-    bool tick(double time) override;
+    void init(const std::string& fromZoneId, const glm::vec3& from, const std::string& toZoneId, const glm::vec3& to, double length);
+    bool tick(double time);
 
 private:
     // stored data
@@ -21,4 +21,6 @@ private:
     double length = 0;
     std::shared_ptr<Zone> fromZone;
     std::shared_ptr<Zone> toZone;
+    double startTime;
+    bool loaded;
 };

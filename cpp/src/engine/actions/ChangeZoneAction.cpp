@@ -6,44 +6,43 @@
 #include <iostream>
 
 ChangeZoneAction::ChangeZoneAction(GLEngine* engine, Sprite* sprite)
-    : Action(engine, ActionType::ChangeZone, {}, sprite) {
+    : Action(engine, ActionType::ChangeZone, {}, sprite), startTime(0), loaded(false) {
 }
 
 ChangeZoneAction::~ChangeZoneAction() {}
 
 void ChangeZoneAction::init(const std::string& fromZoneId, const glm::vec3& from, const std::string& toZoneId, const glm::vec3& to, double length) {
-    auto engine = sprite->getZone()->getWorld()->getEngine();
-
-    // Fade out
-    if (engine->getRenderManager()) {
-        engine->getRenderManager()->startTransition("cross", "out", 500);
-    }
-
-    this->fromZone = sprite->getZone()->getWorld()->loadZone(fromZoneId);
-    this->toZone = sprite->getZone()->getWorld()->loadZone(toZoneId);
+    // TODO: Implement fade out/in logic
+    this->fromZoneId = fromZoneId;
+    this->toZoneId = toZoneId;
     this->from = from;
     this->to = to;
     this->length = length;
+    this->startTime = 0; // TODO: Set to current time
+    this->loaded = true;
 
-    // Fade in
-    if (engine->getRenderManager()) {
-        engine->getRenderManager()->startTransition("cross", "in", 500);
+    // Load zones
+    if (sprite && sprite->zone.lock()) {
+        auto world = sprite->zone.lock()->world;
+        this->fromZone = world->loadZone(fromZoneId);
+        this->toZone = world->loadZone(toZoneId);
     }
 }
 
 bool ChangeZoneAction::tick(double time) {
-    if (!toZone || !fromZone) return false;
+    if (!loaded || !toZone || !fromZone) return false;
 
-    if (!toZone->isLoaded() || !fromZone->isLoaded()) return false;
-
+    // TODO: Implement zone loading check, facing, position interpolation, zone switching
     double endTime = startTime + length;
     double frac = (time - startTime) / length;
     if (time >= endTime) {
-        sprite->setPosition(to);
-        frac = 1.0;
-    } else {
-        sprite->setPosition(lerp(from, to, frac));
+        // Set final position
+        sprite->pos = to;
+        return true;
     }
 
-    return time >= endTime;
+    // Interpolate position
+    sprite->pos = glm::mix(from, to, static_cast<float>(frac));
+
+    return false;
 }

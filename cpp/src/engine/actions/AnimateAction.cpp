@@ -1,7 +1,7 @@
 #include "AnimateAction.h"
 
 AnimateAction::AnimateAction(GLEngine* engine, Sprite* sprite)
-    : Action(engine, ActionType::Animation, {}, sprite), length(0), untilFrame(0) {}
+    : Action(engine, ActionType::Animation, {}, sprite), length(0), untilFrame(0), startTime(0), loaded(false) {}
 
 AnimateAction::~AnimateAction() {}
 
@@ -9,6 +9,8 @@ void AnimateAction::init(double length, int untilFrame, std::function<void(bool)
     this->length = length;
     this->untilFrame = untilFrame;
     this->finish = finish;
+    this->startTime = 0; // TODO: Set to current time
+    this->loaded = true;
 }
 
 bool AnimateAction::tick(double time) {

@@ -24,6 +24,7 @@ public:
     void init(const std::string& gamePath, const nlohmann::json& manifest);
     // Public wrapper for script bindings to load zones
     void loadZonePublic(const std::string& zoneId);
+    std::shared_ptr<Zone> loadZone(const std::string& zoneId);
     void update(double dt);
     void render();
 
@@ -44,7 +45,7 @@ public:
     void addRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData);
     void removeRemoteAvatar(const std::string& clientId);
     void updateRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData);
-    void applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const std::string& spriteId);
+    void applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const nlohmann::json& spriteId);
 
     // Event management
     void addEvent(std::shared_ptr<Event> event);
@@ -111,7 +112,6 @@ public:
     nlohmann::json menuConfig;
 
 private:
-    void loadZone(const std::string& zoneId);
     void loadZoneFromZip(const std::string& zoneId, const std::string& zipPath, bool skipCache = false, const nlohmann::json& transitionParams = {});
     void createTestZone();
     void sortZones();

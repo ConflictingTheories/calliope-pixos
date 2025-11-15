@@ -73,3 +73,5 @@ struct MenuSection {
 };
 
 using Menu = std::unordered_map<std::string, MenuSection>;
+
+#include "Sprite.h"

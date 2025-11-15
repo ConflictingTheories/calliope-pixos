@@ -73,12 +73,12 @@ void World::loadZonePublic(const std::string& zoneId) {
     loadZone(zoneId);
 }
 
-void World::loadZone(const std::string& zoneId) {
+std::shared_ptr<Zone> World::loadZone(const std::string& zoneId) {
     std::string mapPath = gamePath + "/maps/" + zoneId + "/map.json";
     std::ifstream mapFile(mapPath);
     if (!mapFile.is_open()) {
         std::cerr << "Failed to load map: " << mapPath << std::endl;
-        return;
+        return nullptr;
     }
     // Diagnostic: read and print raw JSON contents for debugging
     std::stringstream ss;
@@ -139,6 +139,7 @@ void World::loadZone(const std::string& zoneId) {
         // Create test zone as fallback
         createTestZone();
     }
+    return zone;
 }
 
 void World::loadZoneFromZip(const std::string& zoneId, const std::string& zipPath, bool skipCache, const nlohmann::json& transitionParams) {
