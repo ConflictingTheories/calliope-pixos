@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Skybox.h"
 #include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -63,12 +64,13 @@ CubeGeometry::~CubeGeometry()
     glDeleteVertexArrays(1, &vao);
 }
 
-Renderer::Renderer() : shader(nullptr), cube(nullptr) {}
+Renderer::Renderer() : shader(nullptr), cube(nullptr), skybox(nullptr) {}
 
 Renderer::~Renderer()
 {
     delete shader;
     delete cube;
+    delete skybox;
 }
 
 void Renderer::init(GLFWwindow *window)
@@ -77,7 +79,16 @@ void Renderer::init(GLFWwindow *window)
     shader->init("shaders/vertex.glsl", "shaders/fragment.glsl");
     cube = new CubeGeometry();
 
-    // ...existing code...
+    skybox = new Skybox();
+    skybox->init();
+    skybox->loadCubemap({
+        "textures/skybox/right.jpg",
+        "textures/skybox/left.jpg",
+        "textures/skybox/top.jpg",
+        "textures/skybox/bottom.jpg",
+        "textures/skybox/front.jpg",
+        "textures/skybox/back.jpg"
+    });
 }
 
 void Renderer::render(const Camera &camera, const std::vector<Unit> &units, const Grid &grid, const Unit *selectedUnit, int width, int height)
@@ -87,6 +98,9 @@ void Renderer::render(const Camera &camera, const std::vector<Unit> &units, cons
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.047f, 0.047f, 0.063f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render the skybox
+    skybox->render(camera.getViewMatrix(), camera.getProjectionMatrix((float)width / height));
 
     shader->use();
     shader->setMat4("uView", camera.getViewMatrix());

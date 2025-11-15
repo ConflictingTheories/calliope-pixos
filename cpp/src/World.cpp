@@ -287,29 +287,32 @@ void World::tick(double time) {
 
 void World::tickOuter(double time) {
     checkInput(time);
-    std::sort(eventList.begin(), eventList.end(), [](const std::shared_ptr<Event>& a, const std::shared_ptr<Event>& b) {
-        double dt = a->timer - b->timer;
-        if (dt == 0.0) return a->id > b->id;
-        return dt < 0.0;
+
+    std::sort(eventList.begin(), eventList.end(), [](const auto& a, const auto& b) {
+        return a->getStartTime() < b->getStartTime();
     });
+
     std::vector<std::shared_ptr<Event>> toRemove;
-    for (auto& event : eventList) {
-        if (!event->active || event->timer > time || (event->pausable && isPaused)) continue;
+    for (const auto& event : eventList) {
+        if (!event->isLoaded() || event->getStartTime() > time || (event->isPausable() && isPaused)) {
+            continue;
+        }
         if (event->tick(time)) {
             toRemove.push_back(event);
             event->onComplete();
         }
     }
-    for (auto& event : toRemove) {
-        removeEvent(event->id);
+
+    for (const auto& event : toRemove) {
+        removeAction(event->getId());
     }
-    if (!isPaused) tick(time);
+
+    if (tick && !isPaused) {
+        tick(time);
+    }
+
     if (!isPaused && modeManager) {
-        try {
-            modeManager->update(time);
-        } catch (const std::exception& e) {
-            std::cerr << "mode update error: " << e.what() << std::endl;
-        }
+        modeManager->update(time);
     }
 }
 
@@ -317,59 +320,24 @@ void World::checkInput(double time) {
     if (time > lastKey + 200) {
         lastKey = time;
 
-        if (modeManager) {
-            try {
-                if (modeManager->handleInput(time)) return;
-            } catch (const std::exception& e) {
-                std::cerr << "mode input handler error: " << e.what() << std::endl;
-            }
+        if (modeManager && modeManager->handleInput(time)) {
+            return;
         }
-        // Try to mirror the JS behavior: allow a 'start' button to open the start menu
-        if (!engine) return;
-        auto im = engine->getInputManager();
-        if (im) {
-            // Map SPACE -> start menu (best-effort mapping for desktop)
-            if (im->isKeyPressed("SPACE")) {
-                try {
-                    startMenu(menuConfig);
-                } catch (...) {
-                }
-            }
 
-            // Map TAB -> toggle fullscreen (best-effort)
-            if (im->isKeyPressed("TAB")) {
-                GLFWwindow* w = engine->getWindow();
-                if (w) {
-                    GLFWmonitor* mon = glfwGetWindowMonitor(w);
-                    if (mon) {
-                        // switch to windowed mode with a sane default size
-                        glfwSetWindowMonitor(w, nullptr, 100, 100, 1024, 768, GLFW_DONT_CARE);
-                    } else {
-                        GLFWmonitor* primary = glfwGetPrimaryMonitor();
-                        if (primary) {
-                            const GLFWvidmode* mode = glfwGetVideoMode(primary);
-                            if (mode) glfwSetWindowMonitor(w, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
-                        }
-                    }
-                }
-            }
+        auto touchmap = engine->getGamepad()->checkInput();
+        if (engine->getGamepad()->keyPressed("start")) {
+            touchmap["start"] = 0;
+        }
+        if (engine->getGamepad()->keyPressed("select")) {
+            touchmap["select"] = 0;
+            engine->toggleFullscreen();
         }
     }
 }
 
-void World::startMenu(const nlohmann::json& menuConfig, const std::vector<std::string>& defaultMenus) {
-    // Use EventLoader to create menu event, matching JS logic
-    nlohmann::json args = nlohmann::json::array({menuConfig.is_null() ? menuConfig : menuConfig, defaultMenus, false, {{"autoclose", false}, {"closeOnEnter", true}}});
-    EventLoader loader(engine, "menu", args, this, nullptr);
-    auto ev = loader.getEvent();
-    ev->callback = [this]() {
-        // nothing special for now
-    };
-    addEvent(ev);
-}
-
-void World::runAfterTick(const std::function<void()>& action) {
-    afterTickActions->add(action);
+void World::startMenu(const MenuConfig& menuConfig, const std::vector<std::string>& defaultMenus) {
+    auto event = std::make_shared<EventLoader>(engine, "menu", menuConfig, defaultMenus, false);
+    addEvent(event);
 }
 
 void World::draw() {
@@ -495,100 +463,26 @@ std::shared_ptr<Avatar> World::getAvatar() const {
     return nullptr;
 }
 
-void World::addRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData) {
-    // If we already have this remote avatar, update and return it
-    if (remoteAvatars.find(clientId) != remoteAvatars.end()) {
-        std::cout << "Remote avatar for " << clientId << " already exists, updating instead" << std::endl;
-        updateRemoteAvatar(clientId, avatarData);
+void World::addRemoteAvatar(const std::string& clientId, const AvatarData& avatarData) {
+    auto it = remoteAvatars.find(clientId);
+    if (it != remoteAvatars.end()) {
+        auto& existing = it->second;
+        if (avatarData.x) existing->pos.x = avatarData.x.value();
+        if (avatarData.y) existing->pos.y = avatarData.y.value();
+        if (avatarData.z) existing->pos.z = avatarData.z.value();
+        if (avatarData.facing) existing->facing = avatarData.facing.value();
         return;
     }
 
-    // Instantiate Avatar and try to copy template properties from the local player avatar
     auto avatar = std::make_shared<Avatar>(engine);
+    avatar->id = clientId;
+    if (avatarData.x) avatar->pos.x = avatarData.x.value();
+    if (avatarData.y) avatar->pos.y = avatarData.y.value();
+    if (avatarData.z) avatar->pos.z = avatarData.z.value();
+    if (avatarData.facing) avatar->facing = avatarData.facing.value();
 
-    // Try to find a local avatar template to copy necessary rendering/template fields
-    auto localTemplate = getAvatar();
-    if (localTemplate) {
-        // Copy minimal template fields required by Sprite
-        avatar->src = localTemplate->src;
-        avatar->portraitSrc = localTemplate->portraitSrc;
-        avatar->sheetSize = localTemplate->sheetSize;
-        avatar->tileSize = localTemplate->tileSize;
-        avatar->frames = localTemplate->frames;
-        avatar->hotspotOffset = localTemplate->hotspotOffset;
-        avatar->drawOffset = localTemplate->drawOffset;
-        avatar->enableSpeech = localTemplate->enableSpeech;
-        avatar->bindCamera = false; // remote avatars shouldn't bind camera
-        // Copy runtime resources so remote avatar can render immediately
-        if (localTemplate->texture) avatar->texture = localTemplate->texture;
-        if (localTemplate->vertexTexBuf) avatar->vertexTexBuf = localTemplate->vertexTexBuf;
-        if (localTemplate->vertexPosBuf) avatar->vertexPosBuf = localTemplate->vertexPosBuf;
-        if (!localTemplate->speech.empty() && localTemplate->speechTexBuf != 0) avatar->speechTexBuf = localTemplate->speechTexBuf;
-        // mark as loaded so draw will render without waiting for async onLoad
-        avatar->loaded = true;
-        avatar->templateLoaded = true;
-    } else {
-        std::cerr << "No local avatar template found; remote avatar may not render correctly" << std::endl;
-    }
-
-    // Ensure unique sprite id to avoid collisions with local 'avatar' id
-    std::string baseId = avatarData.value("id", "player");
-    std::string spriteId = baseId + "-" + clientId;
-
-    // Set properties and create buffers synchronously
-    auto zone = getZoneById(avatarData.value("zone", ""));
-    if (!zone) {
-        zone = zoneContaining(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f));
-    }
-    avatar->zone = zone;
-    avatar->id = spriteId;
-    avatar->pos = glm::vec3(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f), avatarData.value("z", 0.0f));
-    avatar->facing = static_cast<Direction>(avatarData.value("facing", 0));
-    avatar->isSelected = false; // remote avatars not selected
-
-    // Create buffers synchronously with fallback tile size
-    float tileSize = (zone && zone->tileset && zone->tileset->tileWidth) ? zone->tileset->tileWidth : 32.0f;
-    glm::vec2 normTile = glm::vec2(avatar->tileSize.x / tileSize, avatar->tileSize.y / tileSize);
-    // Create vertex positions for the sprite quad
-    std::vector<float> verts = {
-        0.0f, 0.0f, 0.0f,
-        normTile.x, 0.0f, 0.0f,
-        normTile.x, 0.0f, normTile.y,
-        0.0f, 0.0f, normTile.y
-    };
-    std::vector<unsigned int> poly = {
-        2, 3, 0,
-        2, 0, 1
-    };
-    std::vector<float> flatPoly;
-    for (auto idx : poly) {
-        flatPoly.push_back(verts[idx * 3]);
-        flatPoly.push_back(verts[idx * 3 + 1]);
-        flatPoly.push_back(verts[idx * 3 + 2]);
-    }
-    avatar->vertexPosBuf = engine->getRenderManager()->createBuffer(flatPoly, GL_STATIC_DRAW, 3);
-    auto texCoords = avatar->getTexCoords();
-    avatar->vertexTexBuf = engine->getRenderManager()->createBuffer(texCoords, GL_DYNAMIC_DRAW, 2);
-    if (avatar->enableSpeech) {
-        auto speechVerts = avatar->getSpeechBubbleVertices();
-        avatar->speechVerBuf = engine->getRenderManager()->createBuffer(speechVerts, GL_STATIC_DRAW, 3);
-        auto speechTex = avatar->getSpeechBubbleTexture();
-        avatar->speechTexBuf = engine->getRenderManager()->createBuffer(speechTex, GL_DYNAMIC_DRAW, 2);
-    }
-
-    // Add to the zone if available. Ensure id/zone registration happens *before* we store
-    // this.remoteAvatars to avoid updates arriving before registration completes.
-    if (zone) {
-        // register in dictionaries and lists synchronously
-        spriteDict[avatar->id] = avatar;
-        zone->spriteDict[avatar->id] = avatar;
-        zone->spriteList.push_back(avatar);
-        spriteList.push_back(avatar);
-        std::cout << "Added remote avatar for client " << clientId << " as sprite '" << avatar->id << "' to zone " << zone->id << " at (" << avatar->pos.x << "," << avatar->pos.y << "," << avatar->pos.z << ")" << std::endl;
-    }
-
-    // store mapping after registration
     remoteAvatars[clientId] = avatar;
+    addAvatar(avatar);
 }
 
 void World::removeRemoteAvatar(const std::string& clientId) {

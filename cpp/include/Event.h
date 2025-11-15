@@ -45,6 +45,8 @@ public:
 
     // Callbacks
     std::function<void()> onTrigger;
+    // JS compatibility: afterLoad callback
+    std::function<void(std::shared_ptr<Event>)> afterLoad;
 
     virtual void trigger() {}
     virtual bool tick(double dt);

@@ -52,3 +52,24 @@ public:
 protected:
     virtual void execute();
 };
+
+// Options used by various actions (e.g., Dialogue/Chat/Prompt)
+struct ActionOptions {
+    bool autoclose = false;
+    double duration = 0.0; // seconds
+    std::function<void()> onClose;
+    std::unordered_map<std::string, std::string> extras;
+};
+
+// Menu section used by PromptAction; mirrors JS 'menu' structure
+struct MenuSection {
+    std::string text;
+    int x = 0;
+    int y = 0;
+    int w = 0;
+    int h = 0;
+    bool active = false;
+    std::unordered_map<std::string, std::string> colours;
+};
+
+using Menu = std::unordered_map<std::string, MenuSection>;

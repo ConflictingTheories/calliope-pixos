@@ -633,6 +633,30 @@ src/ModeManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.s
 .PHONY : src/ModeManager.cpp.s
 
+src/NetworkManager.o: src/NetworkManager.cpp.o
+.PHONY : src/NetworkManager.o
+
+# target to build an object file
+src/NetworkManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/NetworkManager.cpp.o
+.PHONY : src/NetworkManager.cpp.o
+
+src/NetworkManager.i: src/NetworkManager.cpp.i
+.PHONY : src/NetworkManager.i
+
+# target to preprocess a source file
+src/NetworkManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/NetworkManager.cpp.i
+.PHONY : src/NetworkManager.cpp.i
+
+src/NetworkManager.s: src/NetworkManager.cpp.s
+.PHONY : src/NetworkManager.s
+
+# target to generate assembly for a file
+src/NetworkManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/NetworkManager.cpp.s
+.PHONY : src/NetworkManager.cpp.s
+
 src/Object.o: src/Object.cpp.o
 .PHONY : src/Object.o
 
@@ -1017,6 +1041,9 @@ help:
 	@echo "... src/ModeManager.o"
 	@echo "... src/ModeManager.i"
 	@echo "... src/ModeManager.s"
+	@echo "... src/NetworkManager.o"
+	@echo "... src/NetworkManager.i"
+	@echo "... src/NetworkManager.s"
 	@echo "... src/Object.o"
 	@echo "... src/Object.i"
 	@echo "... src/Object.s"

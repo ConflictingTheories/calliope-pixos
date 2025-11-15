@@ -10,4 +10,36 @@ FIX THE ENTIRE CODE BASE - MAKE IT FULLY IMPLEMENTED - FULLY FUNCTIONAL - NOTHIN
 THEN AND ONLY THEN WHEN YOU HAVE IT FULLY CLONED - SHOULD YOU TRY TO COMPILE IT..... FLESH IT OUT COMPLETELY FIRST - NO MORE ITERATIONS UNTIL YOU HAVE CLONED IT FULLY - THEN WE CAN POLISH IT.
 
 
-THERE IS ALREADY A FULLY WORKING EXAMPLE in the webgl code FOR YOU TO CLONE IN C++ - I DO NOT NEED YOU TO DO ANYTHING ELSE RIGHT NOW except for make the C++ version work exactly as the webgl version does. JUST CLONE EVERY LINE OF logic INTO THE C++ - ALL FUNCTIONALITY MUST BE THE SAME @/cpp/ @/example/spritz/ @/pixospritz/src/ 
+THERE IS ALREADY A FULLY WORKING EXAMPLE in the webgl code FOR YOU TO CLONE IN C++ - I DO NOT NEED YOU TO DO ANYTHING ELSE RIGHT NOW except for make the C++ version work exactly as the webgl version does. JUST CLONE EVERY LINE OF logic INTO THE C++ - ALL FUNCTIONALITY MUST BE THE SAME @/cpp/ @/example/spritz/ @/pixospritz/src/
+
+# TODO: Complete C++ Engine to Match WebGL Version
+
+## Rendering Pipeline
+- [ ] Implement `SkyboxManager` for shader effects.
+- [ ] Add depth buffer management for tiles/objects/sprites.
+- [ ] Develop scene transition logic.
+
+## Scripting
+- [ ] Integrate Lua scripting engine.
+- [ ] Implement zone/manifest configuration for rendering and gameplay.
+
+## Actions and Events
+- [ ] Complete all actions (e.g., ChatAction, MoveAction) to match WebGL logic.
+- [ ] Implement all events (e.g., MenuEvent, CameraEvent).
+
+## Multiplayer
+- [ ] Add network layer for real-time multiplayer.
+- [ ] Implement latency management and distributed state.
+
+## Editor Integration
+- [ ] Develop tools for editor integration.
+- [ ] Ensure compatibility with WebGL editor features.
+
+## Package-Based Design
+- [ ] Implement content distribution logic.
+- [ ] Support decentralized distribution (e.g., IPFS, torrents).
+
+## General Tasks
+- [ ] Ensure identical naming, properties, and methods.
+- [ ] Resolve build errors and dependency issues.
+- [ ] Verify functionality matches WebGL version.
