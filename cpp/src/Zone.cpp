@@ -206,6 +206,16 @@ void Zone::renderTiles() {
             }
 
             glm::vec2 worldPos = tileToWorld(y, x);
+            if (firstTileLogged) {
+                // Compute clip-space position for diagnostic purposes.
+                glm::mat4 proj = renderManager->getProjectionMatrix();
+                glm::mat4 modelMat = glm::mat4(1.0f);
+                glm::mat4 vp = proj * viewMatrix * modelMat;
+                glm::vec4 clip = vp * glm::vec4(worldPos.x, worldPos.y, 0.0f, 1.0f);
+                glm::vec3 ndc = glm::vec3(clip) / clip.w;
+                std::cout << "Zone::renderTiles DX DEBUG clip= (" << clip.x << "," << clip.y << "," << clip.z << "," << clip.w << ") ndc=(" << ndc.x << "," << ndc.y << "," << ndc.z << ")" << std::endl;
+                firstTileLogged = false; // only print once
+            }
             std::vector<float>& verts = perTilesetVerts[tileset];
             glm::vec3 normal(0.0f, 0.0f, 1.0f);
             verts.insert(verts.end(), {

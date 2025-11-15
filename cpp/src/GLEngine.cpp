@@ -102,6 +102,7 @@ bool GLEngine::init(int width, int height, const std::string& title) {
     resourceManager = std::make_unique<ResourceManager>(this);
     camera = std::make_unique<Camera>();
     camera->init();
+    std::cout << "GLEngine::init camera position=" << camera->getPosition().x << "," << camera->getPosition().y << "," << camera->getPosition().z << "\n";
 
     renderManager = std::make_unique<RenderManager>(this);
     inputManager = std::make_unique<InputManager>(this);
@@ -257,6 +258,7 @@ void GLEngine::run() {
         cutsceneManager = std::make_unique<CutsceneManager>(this);
         camera = std::make_unique<Camera>();
         camera->init();
+        std::cout << "GLEngine::run camera position=" << camera->getPosition().x << "," << camera->getPosition().y << "," << camera->getPosition().z << "\n";
         renderManager->init();
         spritz->init(gamePath, manifest);
     } else {

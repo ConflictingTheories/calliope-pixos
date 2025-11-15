@@ -8,6 +8,7 @@
 #include "MenuEvent.h"
 #include "Direction.h"
 #include "EventLoader.h"
+#include "Camera.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -372,6 +373,36 @@ void World::addZone(std::shared_ptr<Zone> zone) {
     zoneDict[zone->id] = zone;
     zoneList.push_back(zone);
     sortZones();
+
+    if (engine && engine->getCamera() && !engine->getCamera()->isBound()) {
+        auto* camera = engine->getCamera();
+        const float worldWidth = zone->bounds[2];
+        const float worldHeight = zone->bounds[3];
+        glm::vec3 center(
+            zone->bounds[0] + worldWidth * 0.5f,
+            zone->bounds[1] + worldHeight * 0.5f,
+            0.0f
+        );
+
+        float extent = std::max(worldWidth, worldHeight);
+        if (extent <= 0.0f) {
+            extent = zone->tileSize * static_cast<float>(std::max(zone->width, zone->height));
+        }
+        if (extent <= 0.0f) {
+            extent = 128.0f;
+        }
+
+        const float lateralOffset = std::clamp(extent * 0.35f, 48.0f, 220.0f);
+        glm::vec3 camPos(
+            center.x - lateralOffset,
+            center.y - lateralOffset,
+            lateralOffset * 1.25f
+        );
+
+        camera->setPosition(camPos);
+        camera->setTarget(center);
+        std::cout << "World::addZone SET CAMERA pos=(" << camera->getPosition().x << "," << camera->getPosition().y << "," << camera->getPosition().z << ") target=(" << camera->getTarget().x << "," << camera->getTarget().y << "," << camera->getTarget().z << ")" << std::endl;
+    }
 }
 
 void World::removeZone(const std::string& zoneId) {

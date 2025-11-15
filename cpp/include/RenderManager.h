@@ -12,7 +12,9 @@ class RenderManager {
 private:
     GLEngine* engine;
     std::unique_ptr<Shader> defaultShader;
+    std::unique_ptr<Shader> debugShader;
     GLuint VAO, VBO;
+    GLuint debugVAO, debugVBO;
     glm::mat4 projectionMatrix;
 
 public:

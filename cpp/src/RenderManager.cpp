@@ -14,6 +14,8 @@ RenderManager::RenderManager(GLEngine* engine)
 RenderManager::~RenderManager() {
     if (VAO) glDeleteVertexArrays(1, &VAO);
     if (VBO) glDeleteBuffers(1, &VBO);
+    if (debugVAO) glDeleteVertexArrays(1, &debugVAO);
+    if (debugVBO) glDeleteBuffers(1, &debugVBO);
 }
 
 void RenderManager::init() {
@@ -27,6 +29,15 @@ void RenderManager::init() {
     if (engine && engine->getCamera()) {
         float aspect = screenSize.x / screenSize.y;
         projectionMatrix = engine->getCamera()->getProjectionMatrix(aspect);
+        // WebGL uses a Y-inverted projection for its clip-space (pMatrix[5] *= -1 in JS).
+        // Try matching that behavior to ensure visible geometry while debugging
+        // WebGL -> OpenGL projection differences (toggleable for testing).
+        // NOTE: this flip is a temporary diagnostic hack; it should be conditionally
+        // enabled/removed later once parity is confirmed.
+        float before = projectionMatrix[1][1];
+        projectionMatrix[1][1] *= -1.0f;
+        float after = projectionMatrix[1][1];
+        std::cout << "RenderManager::init() projection[1][1] before=" << before << " after=" << after << std::endl;
     } else {
         // Fallback to an orthographic projection for 2D/HUD rendering
         projectionMatrix = glm::ortho(0.0f, screenSize.x, screenSize.y, 0.0f, -1.0f, 1.0f);
@@ -37,8 +48,12 @@ void RenderManager::init() {
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // WebGL code sometimes toggles face culling; to match behavior and avoid
+    // accidentally culling quads due to different coordinate system winding
+    // between WebGL and native OpenGL, disable back-face culling by default
+    // to ensure tiles/sprites remain visible while we align the pipeline.
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
 
     glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 }
@@ -60,6 +75,18 @@ void RenderManager::render() {
     // Ensure rendering is complete
     glFlush();
 
+    // Debug overlay draw: draw a full-screen red quad so we can verify the pipeline
+    if (debugShader && debugVAO) {
+        GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
+        if (depthEnabled) glDisable(GL_DEPTH_TEST);
+        debugShader->use();
+        glBindVertexArray(debugVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+        debugShader->unuse();
+        if (depthEnabled) glEnable(GL_DEPTH_TEST);
+    }
+
     // Debug output
     std::cout << "RenderManager::render() called" << std::endl;
 }
@@ -74,6 +101,19 @@ void RenderManager::initShaders() {
         defaultShader = std::make_unique<Shader>("shaders/vertex.glsl", "shaders/fragment.glsl");
         std::cout << "Shaders loaded successfully from shaders/" << std::endl;
         applySceneDefaults(defaultShader.get());
+        // also create a small debug shader that draws a flat color
+        const char* dbgVS = R"(
+            #version 330 core
+            layout(location = 0) in vec3 aPos;
+            void main() { gl_Position = vec4(aPos, 1.0); }
+        )";
+        const char* dbgFS = R"(
+            #version 330 core
+            out vec4 FragColor;
+            void main() { FragColor = vec4(1.0, 0.0, 0.0, 1.0); }
+        )";
+        debugShader = std::make_unique<Shader>();
+        debugShader->compileShaders(dbgVS, dbgFS);
     } catch (const std::exception& e) {
         std::cerr << "Failed to load shaders from shaders/: " << e.what() << std::endl;
         // Create fallback shader (GL-only color shader) so the engine can still run.
@@ -170,6 +210,26 @@ void RenderManager::initBuffers() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // Create a small debug fullscreen quad in clip-space to exercise the pipeline
+    float debugVerts[] = {
+        // positions
+        -1.0f, -1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f
+    };
+    glGenVertexArrays(1, &debugVAO);
+    glGenBuffers(1, &debugVBO);
+    glBindVertexArray(debugVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(debugVerts), debugVerts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
