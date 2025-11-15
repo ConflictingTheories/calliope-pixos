@@ -1,4 +1,6 @@
 #include "engine/events/CameraEvent.h"
+#include "GLEngine.h"
+#include "World.h"
 #include "RenderManager.h"
 #include "Camera.h"
 #include <iostream>
@@ -14,7 +16,7 @@ void CameraEvent::init() {
 }
 
 void CameraEvent::init(const std::string& cameraAction, const CameraEventOptions& options) {
-    this->engine = world->getEngine();
+    this->engine = world->engine;
     this->cameraAction = cameraAction;
     this->options = options;
     this->completed = false;
@@ -24,7 +26,7 @@ void CameraEvent::init(const std::string& cameraAction, const CameraEventOptions
 bool CameraEvent::tick(double time) {
     if (!loaded) return false;
 
-    auto camera = engine->getRenderManager()->getCamera();
+    auto camera = engine->getCamera();
     double progress = 0.0;
     if (options.duration) {
         auto now = std::chrono::system_clock::now();

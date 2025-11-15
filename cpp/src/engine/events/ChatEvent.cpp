@@ -1,4 +1,6 @@
 #include "engine/events/ChatEvent.h"
+#include "GLEngine.h"
+#include "World.h"
 #include "Hud.h"
 #include <iostream>
 #include <chrono>
@@ -13,7 +15,7 @@ void ChatEvent::init() {
 }
 
 void ChatEvent::init(const std::string& prompt, bool scrolling, const EventOptions& options) {
-    this->engine = world->getEngine();
+    this->engine = world->engine;
     this->text = "";
     this->prompt = prompt;
     this->scrolling = scrolling;
@@ -36,7 +38,7 @@ bool ChatEvent::tick(double time) {
     }
 
     checkInput(time);
-    engine->getHud()->scrollText(prompt + text, scrolling, options);
+    engine->getHud()->scrollText(prompt + text, scrolling, ActionOptions{options.autoclose, options.duration, options.onClose, {}});
     return completed;
 }
 

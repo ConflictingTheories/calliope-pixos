@@ -8,7 +8,6 @@ PromptAction::PromptAction(GLEngine* engine, Sprite* sprite)
 PromptAction::~PromptAction() {}
 
 void PromptAction::init(const Menu& menu, const std::vector<std::string>& activeMenus, bool scrolling, const ActionOptions& options) {
-    this->engine = sprite->getEngine();
     this->text = "";
     this->scrolling = scrolling;
     this->options = options;
@@ -16,6 +15,7 @@ void PromptAction::init(const Menu& menu, const std::vector<std::string>& active
     this->lastKey = 0;
     this->menuDict = menu;
     this->activeMenus = activeMenus;
+    this->loaded = true;
 }
 
 bool PromptAction::tick(double time) {
@@ -40,7 +40,8 @@ bool PromptAction::tick(double time) {
             if (section.active) {
                 colors["background"] = "#555";
             }
-            engine->getHud()->drawButton(section.text, section.x, section.y, section.w, section.h, colors);
+            glm::vec4 bounds(section.x, section.y, section.w, section.h);
+            engine->getHud()->drawButton(section.text, bounds, section.active);
         }
     }
 

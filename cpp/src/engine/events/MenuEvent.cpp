@@ -1,4 +1,6 @@
 #include "engine/events/MenuEvent.h"
+#include "GLEngine.h"
+#include "World.h"
 #include <iostream>
 #include <chrono>
 
@@ -12,7 +14,7 @@ void MenuEvent::init() {
 }
 
 void MenuEvent::init(const Menu& menu, const std::vector<std::string>& activeMenus, bool scrolling, const EventOptions& options) {
-    this->engine = world->getEngine();
+    this->engine = world->engine;
     this->menuDict = menu;
     this->activeMenus = activeMenus;
     this->scrolling = scrolling;

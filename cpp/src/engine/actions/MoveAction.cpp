@@ -35,8 +35,8 @@ bool MoveAction::tick(double time) {
 }
 
 void MoveAction::onStep() {
-    for (auto& s : spriteList) {
-        if (s->onStep) s->onStep();
-    }
-    completed = true;
+    // for (auto& s : spriteList) {
+    //     if (s->onStep) s->onStep();
+    // }
+    // completed = true;
 }

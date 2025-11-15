@@ -27,6 +27,7 @@ link_directories(/opt/homebrew/lib)
 # Include directories
 include_directories(
   include
+  src
   imgui
   imgui/backends
   /opt/homebrew/include
@@ -80,7 +81,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 # Fallback explicit libs for systems where the find_package variables are empty
-target_link_libraries(${PROJECT_NAME} PRIVATE -lglfw -lGLEW -lSDL2 -llua)
+target_link_libraries(${PROJECT_NAME} PRIVATE -lGLEW -lglfw -lSDL2 -llua -framework OpenGL)
 
 # ImGui include directories
 target_include_directories(${PROJECT_NAME} PRIVATE imgui imgui/backends)

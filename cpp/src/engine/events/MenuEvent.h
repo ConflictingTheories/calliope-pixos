@@ -1,15 +1,11 @@
 #pragma once
 
 #include "Event.h"
+#include "Action.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <chrono>
-
-struct MenuSection {
-    std::string title;
-    std::vector<std::string> items;
-};
 
 using Menu = std::unordered_map<std::string, MenuSection>;
 
