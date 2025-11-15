@@ -1,9 +1,12 @@
 #include "Sprite.h"
 #include "GLEngine.h"
+#include "Camera.h"
 #include "Shader.h"
 #include <GL/glew.h>
 #include "../third_party/stb_image.h"
 #include <iostream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 Sprite::Sprite(GLEngine* engine) : engine(engine), pos(0.0f), scale(1.0f), rotation(0.0f), animFrame(0), animTimer(0.0f), fixed(false), objId(0), speechTimer(0.0f), isLit(false), lightIndex(0), lightColor(1.0f), density(1.0f), isSelected(false) {}
 
@@ -19,48 +22,58 @@ void Sprite::update(double dt) {
 
 void Sprite::render() {
     // Get the shader from render manager
-    auto shader = engine->getRenderManager()->getShader();
+    auto renderManager = engine ? engine->getRenderManager() : nullptr;
+    if (!renderManager) return;
+
+    Shader* shader = renderManager->getShader();
     if (!shader) return;
 
+    renderManager->applySceneDefaults(shader);
     shader->use();
 
-    // Set projection matrix
-    auto renderManager = engine->getRenderManager();
-    shader->setMat4("uProj", renderManager->getProjectionMatrix());
-    // Set model matrix for this sprite
+    shader->setMat4("uProjectionMatrix", renderManager->getProjectionMatrix());
+
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::vec3 cameraPosition(0.0f, 0.0f, 10.0f);
+    if (engine && engine->getCamera()) {
+        viewMatrix = engine->getCamera()->getViewMatrix();
+        cameraPosition = engine->getCamera()->getPosition();
+    }
+    shader->setMat4("uViewMatrix", viewMatrix);
+    shader->setVec3("uCameraPosition", cameraPosition);
+
     glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("uModel", model);
+    model = glm::translate(model, pos);
+    model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(scale.x, scale.y, 1.0f));
+    shader->setMat4("uModelMatrix", model);
+    shader->setMat3("uNormalMatrix", glm::mat3(glm::inverseTranspose(model)));
 
-    // Enable vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    shader->setFloat("useSampler", texture != 0 ? 1.0f : 0.0f);
+    shader->setFloat("useDiffuse", 0.0f);
+    shader->setVec4("uColorMultiplier", isSelected ? glm::vec4(1.0f, 0.8f, 0.2f, 1.0f) : glm::vec4(1.0f));
+    shader->setFloat("isSelected", isSelected ? 1.0f : 0.0f);
 
-    // If we have a texture, bind and set color white; otherwise color yellow
     if (texture != 0) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        shader->setInt("uTexture", 0);
-        shader->setVec3("uColor", glm::vec3(1.0f));
-    } else {
-        shader->setVec3("uColor", glm::vec3(1.0f, 1.0f, 0.0f));
+        shader->setInt("uSampler", 0);
     }
 
-    // Create quad vertices for sprite with texture coordinates
-    float halfSize = 16.0f; // 32/2 pixels
+    constexpr float halfSize = 16.0f;
+    const glm::vec3 normal(0.0f, 0.0f, 1.0f);
     float vertices[] = {
-        // positions          // texture coords
-        pos.x - halfSize, pos.y - halfSize, pos.z,    0.0f, 1.0f,
-        pos.x + halfSize, pos.y - halfSize, pos.z,    1.0f, 1.0f,
-        pos.x + halfSize, pos.y + halfSize, pos.z,    1.0f, 0.0f,
-        pos.x - halfSize, pos.y - halfSize, pos.z,    0.0f, 1.0f,
-        pos.x + halfSize, pos.y + halfSize, pos.z,    1.0f, 0.0f,
-        pos.x - halfSize, pos.y + halfSize, pos.z,    0.0f, 0.0f
+        // positions                   // normals             // texcoords
+        -halfSize, -halfSize, 0.0f,     normal.x, normal.y, normal.z, 0.0f, 1.0f,
+         halfSize, -halfSize, 0.0f,     normal.x, normal.y, normal.z, 1.0f, 1.0f,
+         halfSize,  halfSize, 0.0f,     normal.x, normal.y, normal.z, 1.0f, 0.0f,
+        -halfSize, -halfSize, 0.0f,     normal.x, normal.y, normal.z, 0.0f, 1.0f,
+         halfSize,  halfSize, 0.0f,     normal.x, normal.y, normal.z, 1.0f, 0.0f,
+        -halfSize,  halfSize, 0.0f,     normal.x, normal.y, normal.z, 0.0f, 0.0f
     };
 
-    // Create VBO for sprite
-    GLuint spriteVBO;
+    GLuint spriteVBO = 0;
     glGenBuffers(1, &spriteVBO);
-    // Core profile requires a VAO to be bound when setting vertex attrib pointers.
     GLuint spriteVAO = 0;
     glGenVertexArrays(1, &spriteVAO);
     glBindVertexArray(spriteVAO);
@@ -68,10 +81,12 @@ void Sprite::render() {
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Diagnostic: dump GL state before draw
     GLint currentProgram = 0;
@@ -94,21 +109,17 @@ void Sprite::render() {
     // Draw the sprite
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    if (texture != 0) {
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
     // Clean up
-    // Delete VBO and VAO created for this sprite draw
     glBindVertexArray(0);
     if (spriteVAO) {
         glDeleteVertexArrays(1, &spriteVAO);
     }
     glDeleteBuffers(1, &spriteVBO);
-    // Disable program usage
-    glUseProgram(0);
+    if (texture != 0) {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
-    // Intentionally quiet: per-frame logging was too verbose for normal runs
+    shader->unuse();
 }
 
 void Sprite::loadTexture(const std::string& path) {

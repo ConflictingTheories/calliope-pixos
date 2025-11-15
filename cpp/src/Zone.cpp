@@ -3,12 +3,14 @@
 #include "GLEngine.h"
 #include "Shader.h"
 #include "AudioManager.h"
+#include "Camera.h"
 #include <algorithm>
 #include <iostream>
 #include <GL/glew.h>
 #include <fstream>
 #include <filesystem>
 #include <sstream>
+#include <glm/gtc/matrix_inverse.hpp>
 
 Zone::Zone(const std::string& zoneId, World* w) : id(zoneId), world(w), engine(w->engine) {}
 
@@ -59,57 +61,84 @@ void Zone::render() {
 }
 
 void Zone::renderGrid() {
-    // Draw grid lines over the tile area using GL_LINES
-    auto shader = engine->getRenderManager()->getShader();
-    if (!shader) return;
-    shader->use();
-    shader->setMat4("uProj", engine->getRenderManager()->getProjectionMatrix());
-    shader->setMat4("uModel", glm::mat4(1.0f));
-    shader->setInt("uTexture", 0);
+    auto renderManager = engine ? engine->getRenderManager() : nullptr;
+    if (!renderManager) return;
 
-    // Set color to light gray
-    shader->setVec3("uColor", glm::vec3(0.7f, 0.7f, 0.7f));
+    Shader* shader = renderManager->getShader();
+    if (!shader) return;
+
+    renderManager->applySceneDefaults(shader);
+
+    shader->use();
+
+    shader->setMat4("uProjectionMatrix", renderManager->getProjectionMatrix());
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::vec3 cameraPosition(0.0f, 0.0f, 10.0f);
+    if (engine && engine->getCamera()) {
+        viewMatrix = engine->getCamera()->getViewMatrix();
+        cameraPosition = engine->getCamera()->getPosition();
+    }
+    shader->setMat4("uViewMatrix", viewMatrix);
+    shader->setVec3("uCameraPosition", cameraPosition);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    shader->setMat4("uModelMatrix", model);
+    shader->setMat3("uNormalMatrix", glm::mat3(glm::inverseTranspose(model)));
+
+    shader->setFloat("useSampler", 0.0f);
+    shader->setFloat("useDiffuse", 0.0f);
+    shader->setVec3("uDiffuse", glm::vec3(0.7f));
+    shader->setVec4("uColorMultiplier", glm::vec4(1.0f));
 
     std::vector<float> lines;
-    // Vertical lines
+    lines.reserve((width + height + 2) * 2 * 8);
+
+    auto appendVertex = [&lines](float x, float y) {
+        lines.push_back(x);
+        lines.push_back(y);
+        lines.push_back(0.0f);
+        lines.push_back(0.0f);
+        lines.push_back(0.0f);
+        lines.push_back(1.0f);
+        lines.push_back(0.0f);
+        lines.push_back(0.0f);
+    };
+
     for (int x = 0; x <= width; ++x) {
         float wx = bounds[0] + x * tileSize;
-        lines.push_back(wx);
-        lines.push_back(bounds[1]);
-        lines.push_back(0.0f);
-        lines.push_back(wx);
-        lines.push_back(bounds[1] + height * tileSize);
-        lines.push_back(0.0f);
+        appendVertex(wx, bounds[1]);
+        appendVertex(wx, bounds[1] + height * tileSize);
     }
-    // Horizontal lines
+
     for (int y = 0; y <= height; ++y) {
         float wy = bounds[1] + y * tileSize;
-        lines.push_back(bounds[0]);
-        lines.push_back(wy);
-        lines.push_back(0.0f);
-        lines.push_back(bounds[0] + width * tileSize);
-        lines.push_back(wy);
-        lines.push_back(0.0f);
+        appendVertex(bounds[0], wy);
+        appendVertex(bounds[0] + width * tileSize, wy);
     }
 
     if (lines.empty()) return;
 
-    GLuint vbo;
+    GLuint vbo = 0;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, lines.size() * sizeof(float), lines.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-    glDrawArrays(GL_LINES, 0, (GLsizei)(lines.size() / 3));
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(lines.size() / 8));
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &vbo);
 
-    // Reset color to white
-    shader->setVec3("uColor", glm::vec3(1.0f));
+    renderManager->applySceneDefaults(shader);
 }
 
 void Zone::renderTiles() {
