@@ -45,7 +45,7 @@ public:
     void addRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData);
     void removeRemoteAvatar(const std::string& clientId);
     void updateRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData);
-    void applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const nlohmann::json& spriteId);
+    void applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const std::string& spriteId);
 
     // Event management
     void addEvent(std::shared_ptr<Event> event);

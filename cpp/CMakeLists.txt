@@ -7,8 +7,8 @@ add_definitions(-DGLEW_STATIC)
 
 
 # Ensure OpenGL is included before GLEW
-# find_package(OpenGL REQUIRED)
-# include_directories(${OPENGL_INCLUDE_DIR} BEFORE)
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIR} BEFORE)
 
 # Add nlohmann/json
 include(FetchContent)
@@ -46,6 +46,7 @@ include_directories(
 
 # Source files (recursively include new additions)
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
+list(REMOVE_ITEM SOURCES "src/CameraEvent.cpp" "src/MenuEvent.cpp")
 list(APPEND SOURCES "src/EventLoader.cpp")
 
 
@@ -77,11 +78,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   "-framework Cocoa"
   "-framework IOKit"
   "-framework CoreFoundation"
+  "-framework OpenGL"
   m
 )
 
 # Fallback explicit libs for systems where the find_package variables are empty
-target_link_libraries(${PROJECT_NAME} PRIVATE -lGLEW -lglfw -lSDL2 -llua -framework OpenGL)
+target_link_libraries(${PROJECT_NAME} PRIVATE -lGLEW -lglfw -lSDL2 -llua)
 
 # ImGui include directories
 target_include_directories(${PROJECT_NAME} PRIVATE imgui imgui/backends)
@@ -97,9 +99,9 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 # Copy shaders to build directory
-configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/vertex.glsl COPYONLY)
-configure_file(shaders/fragment.glsl ${CMAKE_BINARY_DIR}/fragment.glsl COPYONLY)
-configure_file(shaders/picker_vertex.glsl ${CMAKE_BINARY_DIR}/picker_vertex.glsl COPYONLY)
-configure_file(shaders/picker_fragment.glsl ${CMAKE_BINARY_DIR}/picker_fragment.glsl COPYONLY)
-configure_file(shaders/skybox_vertex.glsl ${CMAKE_BINARY_DIR}/skybox_vertex.glsl COPYONLY)
-configure_file(shaders/skybox_fragment.glsl ${CMAKE_BINARY_DIR}/skybox_fragment.glsl COPYONLY)
+configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/shaders/vertex.glsl COPYONLY)
+configure_file(shaders/fragment.glsl ${CMAKE_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
+configure_file(shaders/picker_vertex.glsl ${CMAKE_BINARY_DIR}/shaders/picker_vertex.glsl COPYONLY)
+configure_file(shaders/picker_fragment.glsl ${CMAKE_BINARY_DIR}/shaders/picker_fragment.glsl COPYONLY)
+configure_file(shaders/skybox_vertex.glsl ${CMAKE_BINARY_DIR}/shaders/skybox_vertex.glsl COPYONLY)
+configure_file(shaders/skybox_fragment.glsl ${CMAKE_BINARY_DIR}/shaders/skybox_fragment.glsl COPYONLY)

@@ -44,7 +44,7 @@ void RenderManager::setProjectionMatrix(const glm::mat4& proj) {
 
 void RenderManager::initShaders() {
     try {
-        defaultShader = std::make_unique<Shader>("../shaders/vertex.glsl", "../shaders/fragment.glsl");
+        defaultShader = std::make_unique<Shader>("shaders/vertex.glsl", "shaders/fragment.glsl");
         std::cout << "Shaders loaded successfully" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Failed to load shaders: " << e.what() << std::endl;

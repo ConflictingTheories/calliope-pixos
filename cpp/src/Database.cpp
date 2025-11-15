@@ -16,6 +16,10 @@ Database::Database(GLEngine* engine) : engine(engine) {
     };
 }
 
+Database::~Database() {
+    // Stub
+}
+
 void Database::init() {
     std::cout << "Database initialized" << std::endl;
 }

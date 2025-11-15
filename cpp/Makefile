@@ -393,30 +393,6 @@ src/Camera.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.s
 .PHONY : src/Camera.cpp.s
 
-src/CameraEvent.o: src/CameraEvent.cpp.o
-.PHONY : src/CameraEvent.o
-
-# target to build an object file
-src/CameraEvent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o
-.PHONY : src/CameraEvent.cpp.o
-
-src/CameraEvent.i: src/CameraEvent.cpp.i
-.PHONY : src/CameraEvent.i
-
-# target to preprocess a source file
-src/CameraEvent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.i
-.PHONY : src/CameraEvent.cpp.i
-
-src/CameraEvent.s: src/CameraEvent.cpp.s
-.PHONY : src/CameraEvent.s
-
-# target to generate assembly for a file
-src/CameraEvent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.s
-.PHONY : src/CameraEvent.cpp.s
-
 src/CutsceneManager.o: src/CutsceneManager.cpp.o
 .PHONY : src/CutsceneManager.o
 
@@ -632,30 +608,6 @@ src/InputManager.s: src/InputManager.cpp.s
 src/InputManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.s
 .PHONY : src/InputManager.cpp.s
-
-src/MenuEvent.o: src/MenuEvent.cpp.o
-.PHONY : src/MenuEvent.o
-
-# target to build an object file
-src/MenuEvent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.o
-.PHONY : src/MenuEvent.cpp.o
-
-src/MenuEvent.i: src/MenuEvent.cpp.i
-.PHONY : src/MenuEvent.i
-
-# target to preprocess a source file
-src/MenuEvent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.i
-.PHONY : src/MenuEvent.cpp.i
-
-src/MenuEvent.s: src/MenuEvent.cpp.s
-.PHONY : src/MenuEvent.s
-
-# target to generate assembly for a file
-src/MenuEvent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.s
-.PHONY : src/MenuEvent.cpp.s
 
 src/ModeManager.o: src/ModeManager.cpp.o
 .PHONY : src/ModeManager.o
@@ -873,6 +825,30 @@ src/Skybox.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Skybox.cpp.s
 .PHONY : src/Skybox.cpp.s
 
+src/Sound.o: src/Sound.cpp.o
+.PHONY : src/Sound.o
+
+# target to build an object file
+src/Sound.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Sound.cpp.o
+.PHONY : src/Sound.cpp.o
+
+src/Sound.i: src/Sound.cpp.i
+.PHONY : src/Sound.i
+
+# target to preprocess a source file
+src/Sound.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Sound.cpp.i
+.PHONY : src/Sound.cpp.i
+
+src/Sound.s: src/Sound.cpp.s
+.PHONY : src/Sound.s
+
+# target to generate assembly for a file
+src/Sound.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Sound.cpp.s
+.PHONY : src/Sound.cpp.s
+
 src/Sprite.o: src/Sprite.cpp.o
 .PHONY : src/Sprite.o
 
@@ -944,6 +920,30 @@ src/Store.s: src/Store.cpp.s
 src/Store.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Store.cpp.s
 .PHONY : src/Store.cpp.s
+
+src/Texture.o: src/Texture.cpp.o
+.PHONY : src/Texture.o
+
+# target to build an object file
+src/Texture.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Texture.cpp.o
+.PHONY : src/Texture.cpp.o
+
+src/Texture.i: src/Texture.cpp.i
+.PHONY : src/Texture.i
+
+# target to preprocess a source file
+src/Texture.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Texture.cpp.i
+.PHONY : src/Texture.cpp.i
+
+src/Texture.s: src/Texture.cpp.s
+.PHONY : src/Texture.s
+
+# target to generate assembly for a file
+src/Texture.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Texture.cpp.s
+.PHONY : src/Texture.cpp.s
 
 src/Tileset.o: src/Tileset.cpp.o
 .PHONY : src/Tileset.o
@@ -1395,9 +1395,6 @@ help:
 	@echo "... src/Camera.o"
 	@echo "... src/Camera.i"
 	@echo "... src/Camera.s"
-	@echo "... src/CameraEvent.o"
-	@echo "... src/CameraEvent.i"
-	@echo "... src/CameraEvent.s"
 	@echo "... src/CutsceneManager.o"
 	@echo "... src/CutsceneManager.i"
 	@echo "... src/CutsceneManager.s"
@@ -1425,9 +1422,6 @@ help:
 	@echo "... src/InputManager.o"
 	@echo "... src/InputManager.i"
 	@echo "... src/InputManager.s"
-	@echo "... src/MenuEvent.o"
-	@echo "... src/MenuEvent.i"
-	@echo "... src/MenuEvent.s"
 	@echo "... src/ModeManager.o"
 	@echo "... src/ModeManager.i"
 	@echo "... src/ModeManager.s"
@@ -1455,6 +1449,9 @@ help:
 	@echo "... src/Skybox.o"
 	@echo "... src/Skybox.i"
 	@echo "... src/Skybox.s"
+	@echo "... src/Sound.o"
+	@echo "... src/Sound.i"
+	@echo "... src/Sound.s"
 	@echo "... src/Sprite.o"
 	@echo "... src/Sprite.i"
 	@echo "... src/Sprite.s"
@@ -1464,6 +1461,9 @@ help:
 	@echo "... src/Store.o"
 	@echo "... src/Store.i"
 	@echo "... src/Store.s"
+	@echo "... src/Texture.o"
+	@echo "... src/Texture.i"
+	@echo "... src/Texture.s"
 	@echo "... src/Tileset.o"
 	@echo "... src/Tileset.i"
 	@echo "... src/Tileset.s"

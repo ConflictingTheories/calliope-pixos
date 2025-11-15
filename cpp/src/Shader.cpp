@@ -145,10 +145,13 @@ std::string Shader::loadShaderSource(const std::string& path) const
 {
     std::string code;
     std::ifstream file;
-    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    // file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
         file.open(path);
+        if (!file.is_open()) {
+            throw std::ifstream::failure("File not found: " + path);
+        }
         std::stringstream stream;
         stream << file.rdbuf();
         file.close();
@@ -162,6 +165,9 @@ std::string Shader::loadShaderSource(const std::string& path) const
         if (pos != std::string::npos) fallback = path.substr(pos + 1);
         try {
             file.open(fallback);
+            if (!file.is_open()) {
+                throw std::ifstream::failure("Fallback file not found: " + fallback);
+            }
             std::stringstream stream;
             stream << file.rdbuf();
             file.close();

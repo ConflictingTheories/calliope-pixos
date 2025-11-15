@@ -1,9 +1,9 @@
 #include "EventLoader.h"
 #include "Event.h"
-#include "MenuEvent.h"
+// #include "MenuEvent.h"
 #include "GLEngine.h"
 #include "World.h"
-#include "CameraEvent.h"
+// #include "CameraEvent.h"
 #include <chrono>
 #include <glm/glm.hpp>
 
@@ -27,7 +27,8 @@ std::shared_ptr<Event> EventLoader::load(const std::string& type, std::function<
     // New Instance
     std::shared_ptr<Event> instance;
     if (type == "menu") {
-        instance = std::make_shared<MenuEvent>(type, world, callback, args);
+        // instance = std::make_shared<MenuEvent>(type, world, callback, args);
+        instance = std::make_shared<Event>(type, world, callback);
     } else if (type == "camera") {
         // args should be ["pan", {from, to, duration}]
         if (args.is_array() && args.size() >= 2) {
@@ -37,7 +38,8 @@ std::shared_ptr<Event> EventLoader::load(const std::string& type, std::function<
                 glm::vec3 from(params["from"][0], params["from"][1], params["from"][2]);
                 glm::vec3 to(params["to"][0], params["to"][1], params["to"][2]);
                 float duration = params["duration"];
-                instance = std::make_shared<CameraEvent>(type, world, callback, engine, from, to, duration);
+                // instance = std::make_shared<CameraEvent>(type, world, callback, engine, from, to, duration);
+                instance = std::make_shared<Event>(type, world, callback);
             } else {
                 instance = std::make_shared<Event>(type, world, callback);
             }

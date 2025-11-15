@@ -520,7 +520,7 @@ void World::updateRemoteAvatar(const std::string& clientId, const nlohmann::json
     }
 }
 
-void World::applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const nlohmann::json& spriteId) {
+void World::applyRemoteAction(const std::string& clientId, const std::string& action, const nlohmann::json& params, const std::string& spriteId) {
     auto it = remoteAvatars.find(clientId);
     if (it != remoteAvatars.end()) {
         auto avatar = it->second;

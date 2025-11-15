@@ -140,6 +140,10 @@ bool InputManager::isActionPressed(const std::string& action) const {
     return it != actionPressed.end() && it->second;
 }
 
+bool InputManager::isKeyHeld(const std::string& key) const {
+    return isKeyPressed(key);
+}
+
 std::string InputManager::getActionInput(const std::string& action) const {
     const auto& modeMappings = mappings.at(currentMode);
     const auto& mapping = modeMappings.actions.at(action);
