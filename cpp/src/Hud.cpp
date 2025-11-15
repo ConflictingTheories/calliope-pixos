@@ -15,7 +15,7 @@ Hud::~Hud() {
 
 void Hud::init() {
     // Setup text rendering
-    textShader = std::make_shared<Shader>("shaders/text_vertex.glsl", "shaders/text_fragment.glsl");
+    textShader = std::make_shared<Shader>("text_vertex.glsl", "text_fragment.glsl");
     // Setup VAO/VBO for text rendering
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);

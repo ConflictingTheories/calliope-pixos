@@ -99,9 +99,11 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 # Copy shaders to build directory
-configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/shaders/vertex.glsl COPYONLY)
-configure_file(shaders/fragment.glsl ${CMAKE_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
-configure_file(shaders/picker_vertex.glsl ${CMAKE_BINARY_DIR}/shaders/picker_vertex.glsl COPYONLY)
-configure_file(shaders/picker_fragment.glsl ${CMAKE_BINARY_DIR}/shaders/picker_fragment.glsl COPYONLY)
-configure_file(shaders/skybox_vertex.glsl ${CMAKE_BINARY_DIR}/shaders/skybox_vertex.glsl COPYONLY)
-configure_file(shaders/skybox_fragment.glsl ${CMAKE_BINARY_DIR}/shaders/skybox_fragment.glsl COPYONLY)
+configure_file(shaders/vertex.glsl ${CMAKE_BINARY_DIR}/vertex.glsl COPYONLY)
+configure_file(shaders/fragment.glsl ${CMAKE_BINARY_DIR}/fragment.glsl COPYONLY)
+configure_file(shaders/text_vertex.glsl ${CMAKE_BINARY_DIR}/text_vertex.glsl COPYONLY)
+configure_file(shaders/text_fragment.glsl ${CMAKE_BINARY_DIR}/text_fragment.glsl COPYONLY)
+configure_file(shaders/picker_vertex.glsl ${CMAKE_BINARY_DIR}/picker_vertex.glsl COPYONLY)
+configure_file(shaders/picker_fragment.glsl ${CMAKE_BINARY_DIR}/picker_fragment.glsl COPYONLY)
+configure_file(shaders/skybox_vertex.glsl ${CMAKE_BINARY_DIR}/skybox_vertex.glsl COPYONLY)
+configure_file(shaders/skybox_fragment.glsl ${CMAKE_BINARY_DIR}/skybox_fragment.glsl COPYONLY)
