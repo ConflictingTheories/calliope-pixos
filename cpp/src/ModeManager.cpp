@@ -1,9 +1,9 @@
 #include "ModeManager.h"
-#include "GLEngine.h"
+#include "World.h"
 #include <iostream>
 
-ModeManager::ModeManager(GLEngine* engine)
-    : engine(engine), currentMode("default") {
+ModeManager::ModeManager(World* world)
+    : world(world), currentMode("default") {
 }
 
 ModeManager::~ModeManager() {
@@ -16,13 +16,24 @@ void ModeManager::setMode(const std::string& mode) {
     }
 }
 
-void ModeManager::update(float dt) {
+void ModeManager::update(double time) {
     auto it = modeUpdateHandlers.find(currentMode);
     if (it != modeUpdateHandlers.end()) {
-        it->second(dt);
+        it->second(time);
     }
 }
 
-void ModeManager::registerMode(const std::string& mode, std::function<void(float)> updateHandler) {
+bool ModeManager::handleInput(double time) {
+    auto it = inputHandlers.find(currentMode);
+    if (it != inputHandlers.end()) {
+        return it->second(time);
+    }
+    return false;
+}
+
+void ModeManager::registerMode(const std::string& mode, std::function<void(double)> updateHandler, std::function<bool(double)> inputHandler) {
     modeUpdateHandlers[mode] = updateHandler;
+    if (inputHandler) {
+        inputHandlers[mode] = inputHandler;
+    }
 }

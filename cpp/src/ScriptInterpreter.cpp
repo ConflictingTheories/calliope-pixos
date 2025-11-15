@@ -5,6 +5,7 @@
 #include "Avatar.h"
 #include "CameraEvent.h"
 #include <glm/glm.hpp>
+#include "Camera.h"
 #include <iostream>
 #include <sstream>
 #include <filesystem>
@@ -63,8 +64,14 @@ bool ScriptInterpreter::executePixoScript(const std::string& script, const std::
         lua_setglobal(luaState, name.c_str());
     }
 
-    // Execute the .pxs script directly (they are Lua syntax expecting pixos.* API)
-    return executeLua(script);
+    // Diagnostic: log length and first line to help debugging
+    std::string firstLine;
+    std::istringstream iss(script);
+    std::getline(iss, firstLine);
+    std::cout << "[ScriptInterpreter] executing pixo script (first line): " << firstLine << " (len=" << script.size() << ")" << std::endl;
+    bool ok = executeLua(script);
+    if (!ok) std::cerr << "[ScriptInterpreter] executePixoScript failed for script (first line): " << firstLine << std::endl;
+    return ok;
 }
 
 void ScriptInterpreter::registerFunction(const std::string& name, lua_CFunction func) {
@@ -512,12 +519,199 @@ void ScriptInterpreter::bindEngineFunctions() {
     }, 1);
     lua_settable(luaState, -3);
 
+    // pixos.set_camera()
+    lua_pushstring(luaState, "set_camera");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) return 0;
+        if (interp->engine->getCamera()) {
+            interp->engine->getCamera()->updateVectors();
+        }
+        return 0;
+    }, 1);
+    lua_settable(luaState, -3);
+
+    // pixos.get_camera_vector() -> returns table {x,y,z}
+    lua_pushstring(luaState, "get_camera_vector");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) { lua_pushnil(L); return 1; }
+        Camera* cam = interp->engine->getCamera();
+        if (!cam) { lua_pushnil(L); return 1; }
+        lua_newtable(L);
+        lua_pushnumber(L, cam->target.x); lua_rawseti(L, -2, 1);
+        lua_pushnumber(L, cam->target.y); lua_rawseti(L, -2, 2);
+        lua_pushnumber(L, cam->target.z); lua_rawseti(L, -2, 3);
+        return 1;
+    }, 1);
+    lua_settable(luaState, -3);
+
+    // pixos.look_at(pos, target, up)
+    lua_pushstring(luaState, "look_at");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) return 0;
+        if (!lua_istable(L,1) || !lua_istable(L,2) || !lua_istable(L,3)) return 0;
+        glm::vec3 pos(0.0f), tgt(0.0f), up(0.0f);
+        lua_rawgeti(L,1,1); pos.x = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,1,2); pos.y = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,1,3); pos.z = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,2,1); tgt.x = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,2,2); tgt.y = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,2,3); tgt.z = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,3,1); up.x = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,3,2); up.y = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        lua_rawgeti(L,3,3); up.z = static_cast<float>(lua_tonumber(L,-1)); lua_pop(L,1);
+        Camera* cam = interp->engine->getCamera();
+        if (cam) {
+            cam->setPosition(pos);
+            cam->setTarget(tgt);
+            cam->setUp(up);
+            cam->updateVectors();
+        }
+        return 0;
+    }, 1);
+    lua_settable(luaState, -3);
+
+    // pixos.vector(tbl or numbers...) -> returns table {x,y,z}
+    lua_pushstring(luaState, "vector");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        // Accept either a table or individual numbers
+        if (lua_istable(L, 1)) {
+            lua_pushvalue(L, 1);
+            return 1;
+        }
+        // build a table from numeric args
+        int n = lua_gettop(L);
+        lua_newtable(L);
+        for (int i = 1; i <= n; ++i) {
+            if (lua_isnumber(L, i)) lua_pushnumber(L, lua_tonumber(L, i));
+            else lua_pushnumber(L, 0);
+            lua_rawseti(L, -2, i);
+        }
+        return 1;
+    }, 1);
+    lua_settable(luaState, -3);
+
+    // pixos.vec_sub(a, b) -> returns table a - b elementwise
+    lua_pushstring(luaState, "vec_sub");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        // expects two tables or vectors
+        glm::vec3 A(0.0f), B(0.0f);
+        if (lua_istable(L, 1)) {
+            lua_rawgeti(L, 1, 1); A.x = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 1, 2); A.y = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 1, 3); A.z = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+        } else {
+            A.x = static_cast<float>(lua_tonumber(L, 1));
+            A.y = static_cast<float>(lua_tonumber(L, 2));
+            A.z = static_cast<float>(lua_tonumber(L, 3));
+        }
+        if (lua_istable(L, 2)) {
+            lua_rawgeti(L, 2, 1); B.x = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 2, 2); B.y = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 2, 3); B.z = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+        } else {
+            B.x = static_cast<float>(lua_tonumber(L, 2));
+            B.y = static_cast<float>(lua_tonumber(L, 3));
+            B.z = static_cast<float>(lua_tonumber(L, 4));
+        }
+        glm::vec3 C = A - B;
+        lua_newtable(L);
+        lua_pushnumber(L, C.x); lua_rawseti(L, -2, 1);
+        lua_pushnumber(L, C.y); lua_rawseti(L, -2, 2);
+        lua_pushnumber(L, C.z); lua_rawseti(L, -2, 3);
+        return 1;
+    }, 1);
+    lua_settable(luaState, -3);
+
     // helpers: as_obj, as_array - passthroughs
     lua_pushstring(luaState, "as_obj");
     lua_pushcfunction(luaState, [](lua_State* L) -> int { lua_pushvalue(L, 1); return 1; });
     lua_settable(luaState, -3);
+
+    // pixos.set_skybox_shader(name)
+    lua_pushstring(luaState, "set_skybox_shader");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) return 0;
+        if (!lua_isstring(L, 1)) return 0;
+        const char* name = lua_tostring(L, 1);
+        // Render skybox switching is not implemented in the C++ runtime yet.
+        // Avoid calling non-existent RenderManager methods (they exist in the JS engine).
+        if (interp->engine->getRenderManager()) {
+            std::cout << "pixos.set_skybox_shader: not implemented in C++ runtime (no skybox manager) - requested: " << name << std::endl;
+        } else {
+            std::cout << "pixos.set_skybox_shader: no RenderManager available" << std::endl;
+        }
+        return 0;
+    }, 1);
+    lua_settable(luaState, -3);
+
+    // pixos.emit_particles(posTbl, cfgTbl)
+    lua_pushstring(luaState, "emit_particles");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) return 0;
+        // read position table or numbers
+        glm::vec3 pos(0.0f);
+        if (lua_istable(L, 1)) {
+            lua_rawgeti(L, 1, 1); pos.x = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 1, 2); pos.y = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+            lua_rawgeti(L, 1, 3); pos.z = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L,1);
+        } else {
+            pos.x = static_cast<float>(lua_tonumber(L, 1));
+            pos.y = static_cast<float>(lua_tonumber(L, 2));
+            pos.z = static_cast<float>(lua_tonumber(L, 3));
+        }
+        // read cfg table into a simple map
+        std::unordered_map<std::string, std::string> cfg;
+        if (lua_istable(L, 2)) {
+            lua_pushnil(L);
+            while (lua_next(L, 2) != 0) {
+                if (lua_isstring(L, -2) && lua_isstring(L, -1)) {
+                    cfg[lua_tostring(L, -2)] = lua_tostring(L, -1);
+                }
+                lua_pop(L, 1);
+            }
+        }
+        // Particle emission is not implemented in the C++ runtime yet.
+        // Log the request instead of calling into non-existent particle manager APIs.
+        if (interp->engine->getRenderManager()) {
+            std::cout << "pixos.emit_particles: not implemented in C++ runtime (particle manager missing). Requested pos=("
+                      << pos.x << "," << pos.y << "," << pos.z << ") cfg.size=" << cfg.size() << std::endl;
+        } else {
+            std::cout << "pixos.emit_particles: no RenderManager available" << std::endl;
+        }
+        return 0;
+    }, 1);
+    lua_settable(luaState, -3);
     lua_pushstring(luaState, "as_array");
     lua_pushcfunction(luaState, [](lua_State* L) -> int { lua_pushvalue(L, 1); return 1; });
+    lua_settable(luaState, -3);
+
+    // pixos.set_backdrop(name)
+    lua_pushstring(luaState, "set_backdrop");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, [](lua_State* L) -> int {
+        ScriptInterpreter* interp = static_cast<ScriptInterpreter*>(lua_touserdata(L, lua_upvalueindex(1)));
+        if (!interp || !interp->engine) return 0;
+        if (!lua_isstring(L, 1)) return 0;
+        const char* name = lua_tostring(L, 1);
+        if (interp->engine->getCutsceneManager()) {
+            interp->engine->getCutsceneManager()->setBackdrop(std::string(name));
+        } else {
+            std::cout << "pixos.set_backdrop: no CutsceneManager available" << std::endl;
+        }
+        return 0;
+    }, 1);
     lua_settable(luaState, -3);
 
     // Set pixos global

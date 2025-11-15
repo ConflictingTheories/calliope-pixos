@@ -297,6 +297,30 @@ src/Action.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.s
 .PHONY : src/Action.cpp.s
 
+src/ActionQueue.o: src/ActionQueue.cpp.o
+.PHONY : src/ActionQueue.o
+
+# target to build an object file
+src/ActionQueue.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o
+.PHONY : src/ActionQueue.cpp.o
+
+src/ActionQueue.i: src/ActionQueue.cpp.i
+.PHONY : src/ActionQueue.i
+
+# target to preprocess a source file
+src/ActionQueue.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.i
+.PHONY : src/ActionQueue.cpp.i
+
+src/ActionQueue.s: src/ActionQueue.cpp.s
+.PHONY : src/ActionQueue.s
+
+# target to generate assembly for a file
+src/ActionQueue.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.s
+.PHONY : src/ActionQueue.cpp.s
+
 src/Avatar.o: src/Avatar.cpp.o
 .PHONY : src/Avatar.o
 
@@ -681,6 +705,30 @@ src/Sprite.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.s
 .PHONY : src/Sprite.cpp.s
 
+src/Spritz.o: src/Spritz.cpp.o
+.PHONY : src/Spritz.o
+
+# target to build an object file
+src/Spritz.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o
+.PHONY : src/Spritz.cpp.o
+
+src/Spritz.i: src/Spritz.cpp.i
+.PHONY : src/Spritz.i
+
+# target to preprocess a source file
+src/Spritz.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.i
+.PHONY : src/Spritz.cpp.i
+
+src/Spritz.s: src/Spritz.cpp.s
+.PHONY : src/Spritz.s
+
+# target to generate assembly for a file
+src/Spritz.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.s
+.PHONY : src/Spritz.cpp.s
+
 src/Tileset.o: src/Tileset.cpp.o
 .PHONY : src/Tileset.o
 
@@ -855,6 +903,9 @@ help:
 	@echo "... src/Action.o"
 	@echo "... src/Action.i"
 	@echo "... src/Action.s"
+	@echo "... src/ActionQueue.o"
+	@echo "... src/ActionQueue.i"
+	@echo "... src/ActionQueue.s"
 	@echo "... src/Avatar.o"
 	@echo "... src/Avatar.i"
 	@echo "... src/Avatar.s"
@@ -903,6 +954,9 @@ help:
 	@echo "... src/Sprite.o"
 	@echo "... src/Sprite.i"
 	@echo "... src/Sprite.s"
+	@echo "... src/Spritz.o"
+	@echo "... src/Spritz.i"
+	@echo "... src/Spritz.s"
 	@echo "... src/Tileset.o"
 	@echo "... src/Tileset.i"
 	@echo "... src/Tileset.s"

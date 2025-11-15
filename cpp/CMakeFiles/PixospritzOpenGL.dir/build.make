@@ -86,10 +86,24 @@ CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/kderbyma/Git/calliope-pixos/cpp/src/Action.cpp -o CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.s
 
+CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
+CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o: src/ActionQueue.cpp
+CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/ActionQueue.cpp
+
+CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/kderbyma/Git/calliope-pixos/cpp/src/ActionQueue.cpp > CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.i
+
+CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/kderbyma/Git/calliope-pixos/cpp/src/ActionQueue.cpp -o CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.s
+
 CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o: src/Avatar.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Avatar.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.i: cmake_force
@@ -103,7 +117,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o: src/Camera.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Camera.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.i: cmake_force
@@ -117,7 +131,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o: src/CameraEvent.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/CameraEvent.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.i: cmake_force
@@ -131,7 +145,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o: src/CutsceneManager.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/CutsceneManager.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.i: cmake_force
@@ -145,7 +159,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o: src/Event.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Event.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.i: cmake_force
@@ -159,7 +173,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: src/GLEngine.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/GLEngine.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.i: cmake_force
@@ -173,7 +187,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o: src/Game.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Game.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.i: cmake_force
@@ -187,7 +201,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o: src/InputHandler.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/InputHandler.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.i: cmake_force
@@ -201,7 +215,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/InputHandler.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o: src/InputManager.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/InputManager.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.i: cmake_force
@@ -215,7 +229,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o: src/ModeManager.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/ModeManager.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.i: cmake_force
@@ -229,7 +243,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/ModeManager.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o: src/Object.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Object.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.i: cmake_force
@@ -243,7 +257,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Object.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o: src/RenderManager.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/RenderManager.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.i: cmake_force
@@ -257,7 +271,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/RenderManager.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o: src/Renderer.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Renderer.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.i: cmake_force
@@ -271,7 +285,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o: src/ScriptInterpreter.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/ScriptInterpreter.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.i: cmake_force
@@ -285,7 +299,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o: src/Shader.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Shader.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.i: cmake_force
@@ -299,7 +313,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o: src/Sprite.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Sprite.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.i: cmake_force
@@ -310,10 +324,24 @@ CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/kderbyma/Git/calliope-pixos/cpp/src/Sprite.cpp -o CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.s
 
+CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
+CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o: src/Spritz.cpp
+CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Spritz.cpp
+
+CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/kderbyma/Git/calliope-pixos/cpp/src/Spritz.cpp > CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.i
+
+CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/kderbyma/Git/calliope-pixos/cpp/src/Spritz.cpp -o CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.s
+
 CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o: src/Tileset.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Tileset.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.i: cmake_force
@@ -327,7 +355,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o: src/Unit.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Unit.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.i: cmake_force
@@ -341,7 +369,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o: src/World.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/World.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.i: cmake_force
@@ -355,7 +383,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o: src/Zone.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/Zone.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.i: cmake_force
@@ -369,7 +397,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o: src/main.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/main.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.i: cmake_force
@@ -383,7 +411,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/main.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o: src/stb_stub.cpp
 CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/src/stb_stub.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.i: cmake_force
@@ -397,7 +425,7 @@ CMakeFiles/PixospritzOpenGL.dir/src/stb_stub.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o: imgui/imgui.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.i: cmake_force
@@ -411,7 +439,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o: imgui/imgui_draw.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_draw.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.i: cmake_force
@@ -425,7 +453,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_draw.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o: imgui/imgui_tables.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_tables.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.i: cmake_force
@@ -439,7 +467,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_tables.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o: imgui/imgui_widgets.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_widgets.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.i: cmake_force
@@ -453,7 +481,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_widgets.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o: imgui/imgui_impl_glfw.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_impl_glfw.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.i: cmake_force
@@ -467,7 +495,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.s: cmake_force
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o: CMakeFiles/PixospritzOpenGL.dir/flags.make
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o: imgui/imgui_impl_opengl3.cpp
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o: CMakeFiles/PixospritzOpenGL.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o -MF CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o.d -o CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o -c /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_impl_opengl3.cpp
 
 CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.i: cmake_force
@@ -481,6 +509,7 @@ CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.s: cmake_force
 # Object files for target PixospritzOpenGL
 PixospritzOpenGL_OBJECTS = \
 "CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.o" \
+"CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o" \
@@ -497,6 +526,7 @@ PixospritzOpenGL_OBJECTS = \
 "CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o" \
+"CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o" \
 "CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o" \
@@ -514,6 +544,7 @@ PixospritzOpenGL_OBJECTS = \
 PixospritzOpenGL_EXTERNAL_OBJECTS =
 
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Action.cpp.o
+PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Camera.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/CameraEvent.cpp.o
@@ -530,6 +561,7 @@ PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/ScriptInterpreter.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Sprite.cpp.o
+PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Tileset.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/Unit.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o
@@ -544,7 +576,7 @@ PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_glfw.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/imgui/imgui_impl_opengl3.cpp.o
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/build.make
 PixospritzOpenGL: CMakeFiles/PixospritzOpenGL.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Linking CXX executable PixospritzOpenGL"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/kderbyma/Git/calliope-pixos/cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Linking CXX executable PixospritzOpenGL"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/PixospritzOpenGL.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

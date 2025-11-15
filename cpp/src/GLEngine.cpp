@@ -50,11 +50,11 @@ void GLEngine::run() {
                                 // Now create managers and world
                                 renderManager = std::make_unique<RenderManager>(this);
                                 inputManager = std::make_unique<InputManager>(this);
-                                modeManager = std::make_unique<ModeManager>(this);
+                                world = std::make_unique<World>(nullptr, "world"); // Create world first
+                                modeManager = std::make_unique<ModeManager>(world.get());
                                 scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
                                 scriptInterpreter->init();
                                 cutsceneManager = std::make_unique<CutsceneManager>(this);
-                                world = std::make_unique<World>(this);
                                 renderManager->init();
                                 world->init(gamePath, manifest);
                                 packageSelected = true;
@@ -247,11 +247,11 @@ void GLEngine::setGreeting(const std::string& text) {
                     // Ensure managers and interpreter exist
                                 renderManager = std::make_unique<RenderManager>(this);
                                 inputManager = std::make_unique<InputManager>(this);
-                                modeManager = std::make_unique<ModeManager>(this);
+                                world = std::make_unique<World>(nullptr, "world"); // Create world first
+                                modeManager = std::make_unique<ModeManager>(world.get());
                                 scriptInterpreter = std::make_unique<ScriptInterpreter>(this);
                                 scriptInterpreter->init();
                                 cutsceneManager = std::make_unique<CutsceneManager>(this);
-                                world = std::make_unique<World>(this);
                                 // create engine camera
                                 camera = std::make_unique<Camera>();
                                 camera->init();

@@ -1,47 +1,13 @@
-# C++ Pixospritz Port TODO
+I AM TRYING TO CLONE MY WEBGL GAME ENGBINE INTO A COMPLETE C++ CLONE.
 
-## Core Engine Fixes
-- [ ] Fix blank window: Implement proper rendering in RenderManager for zones, sprites, tiles
-- [ ] Initialize world and avatar when manifest is loaded
-- [ ] Add virtual console UI system for file selection and game rendering
-- [ ] Implement multiple canvases (game, HUD, gamepad) like JS version
+I WANT YOU TO MAKE IT WORK. THE C++ IS NOT MATCHING THE FUNCTIONALITY OF THE WEBGL GAME ENGINE. IT MUST BE IDENTICAL IN FUNCTION. The WEBGL version is working. MAKE THE C++ Match the functionality perfectly.
 
-## Avatar Implementation
-- [ ] Complete Avatar movement logic with zone walking checks
-- [ ] Implement action queue processing and execution
-- [ ] Add input handling for movement and actions
-- [ ] Fix zone change logic and pathfinding integration
+EVERYTHING MUST BE TRANSLATED OVER - FUNCTIONS SHOULD REMAIN THE SAME WHERE POSSIBLE - NAMES, PROPERTIES, AND METHODS SHOULD MIRROR.
 
-## Rendering System
-- [x] Port WebGL shaders to OpenGL GLSL
-- [x] Implement tile and sprite rendering in Zone::render()
-- [ ] Add camera system and projection matrices
-- [ ] Implement lighting and effects
+FIX THE ENTIRE CODE BASE - MAKE IT FULLY IMPLEMENTED - FULLY FUNCTIONAL - NOTHING MISSING - NO SHORTCUTS - A COMPLETE CLONE OF THE WEBGL GAME ENGINE CONSOLE....
 
-## UI and File Selection
-- [ ] Create virtual console interface for ZIP file selection
-- [ ] Implement start menu and game initialization
-- [ ] Add HUD canvas for UI elements
-- [ ] Add gamepad canvas for mobile controls
 
-## World and Zone Loading
-- [ ] Complete Zone::loadFromJson() for objects and sprites
-- [ ] Implement tileset loading and rendering
-- [ ] Add event system integration
-- [ ] Fix pathfinding and zone transitions
+THEN AND ONLY THEN WHEN YOU HAVE IT FULLY CLONED - SHOULD YOU TRY TO COMPILE IT..... FLESH IT OUT COMPLETELY FIRST - NO MORE ITERATIONS UNTIL YOU HAVE CLONED IT FULLY - THEN WE CAN POLISH IT.
 
-## Input and Controls
-- [ ] Complete InputManager with mode-specific mappings
-- [ ] Add touch and gamepad support
-- [ ] Implement action binding system
 
-## Networking and Scripting
-- [ ] Add basic networking support
-- [ ] Integrate Lua scripting
-- [ ] Implement PixoScript interpreter
-
-## Testing and Integration
-- [ ] Test with example game package
-- [ ] Verify avatar movement and interactions
-- [ ] Ensure rendering matches JS version behavior
-- [ ] Add error handling and logging
+THERE IS ALREADY A FULLY WORKING EXAMPLE in the webgl code FOR YOU TO CLONE IN C++ - I DO NOT NEED YOU TO DO ANYTHING ELSE RIGHT NOW except for make the C++ version work exactly as the webgl version does. JUST CLONE EVERY LINE OF logic INTO THE C++ - ALL FUNCTIONALITY MUST BE THE SAME @/cpp/ @/example/spritz/ @/pixospritz/src/ 

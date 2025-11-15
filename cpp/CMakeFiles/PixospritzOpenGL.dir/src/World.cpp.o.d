@@ -1088,6 +1088,8 @@ CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o: \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Sprite.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Action.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Direction.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ActionQueue.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/GLEngine.h \
   /opt/homebrew/include/GLFW/glfw3.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/InputManager.h \
@@ -1152,12 +1154,12 @@ CMakeFiles/PixospritzOpenGL.dir/src/World.cpp.o: \
   /opt/homebrew/include/SDL2/SDL_locale.h \
   /opt/homebrew/include/SDL2/SDL_misc.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/RenderManager.h \
-  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/ScriptInterpreter.h \
   /opt/homebrew/include/lua/lua.hpp /opt/homebrew/include/lua/lua.h \
   /opt/homebrew/include/lua/luaconf.h /opt/homebrew/include/lua/lualib.h \
   /opt/homebrew/include/lua/lauxlib.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/CutsceneManager.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/Spritz.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/fstream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/sstream

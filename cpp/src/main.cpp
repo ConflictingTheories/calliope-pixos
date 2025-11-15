@@ -9,7 +9,7 @@
 int main(int argc, char* argv[]) {
     // Check for game package argument
     std::string gamePath = "example/spritz"; // Default path
-    std::string zipPath = "";
+    std::string zipPath = "/Users/kderbyma/Git/calliope-pixos/example/spritz/Archive.zip"; // Auto-load this ZIP
 
     if (argc > 1) {
         std::string arg = argv[1];

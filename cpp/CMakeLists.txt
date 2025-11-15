@@ -43,7 +43,7 @@ include_directories(
 )
 
 # Source files
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/*.cpp" "src/*.h")
 
 # ImGui sources
 set(IMGUI_SOURCES

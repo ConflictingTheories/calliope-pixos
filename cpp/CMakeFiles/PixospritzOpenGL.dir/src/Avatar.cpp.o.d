@@ -1147,12 +1147,13 @@ CMakeFiles/PixospritzOpenGL.dir/src/Avatar.cpp.o: \
   /opt/homebrew/include/SDL2/SDL_locale.h \
   /opt/homebrew/include/SDL2/SDL_misc.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/RenderManager.h \
-  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/World.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Zone.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Object.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Tileset.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Event.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ActionQueue.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/ScriptInterpreter.h \
   /opt/homebrew/include/lua/lua.hpp /opt/homebrew/include/lua/lua.h \
   /opt/homebrew/include/lua/luaconf.h /opt/homebrew/include/lua/lualib.h \

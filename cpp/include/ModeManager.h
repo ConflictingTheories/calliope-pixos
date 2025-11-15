@@ -4,21 +4,23 @@
 #include <string>
 #include <functional>
 
-class GLEngine;
+class World;
 
 class ModeManager {
 private:
-    GLEngine* engine;
+    World* world;
     std::string currentMode;
-    std::unordered_map<std::string, std::function<void(float)>> modeUpdateHandlers;
+    std::unordered_map<std::string, std::function<void(double)>> modeUpdateHandlers;
+    std::unordered_map<std::string, std::function<bool(double)>> inputHandlers;
 
 public:
-    ModeManager(GLEngine* engine);
+    ModeManager(World* world);
     ~ModeManager();
 
     void setMode(const std::string& mode);
     std::string getCurrentMode() const { return currentMode; }
-    void update(float dt);
+    void update(double time);
+    bool handleInput(double time);
 
-    void registerMode(const std::string& mode, std::function<void(float)> updateHandler);
+    void registerMode(const std::string& mode, std::function<void(double)> updateHandler, std::function<bool(double)> inputHandler = nullptr);
 };

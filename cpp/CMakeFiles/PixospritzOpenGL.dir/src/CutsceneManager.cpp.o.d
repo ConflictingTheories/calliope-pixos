@@ -1143,7 +1143,6 @@ CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/OpenGLAvailability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/os/availability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
-  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/World.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Zone.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Object.h \
@@ -1153,6 +1152,8 @@ CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.o: \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Sprite.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Action.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Direction.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ActionQueue.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/ScriptInterpreter.h \
   /opt/homebrew/include/lua/lua.hpp /opt/homebrew/include/lua/lua.h \
   /opt/homebrew/include/lua/luaconf.h /opt/homebrew/include/lua/lualib.h \

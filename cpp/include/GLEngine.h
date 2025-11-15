@@ -9,8 +9,8 @@
 
 #include "InputManager.h"
 #include "RenderManager.h"
-#include "ModeManager.h"
 #include "World.h"
+#include "ModeManager.h"
 #include "ScriptInterpreter.h"
 #include "CutsceneManager.h"
 

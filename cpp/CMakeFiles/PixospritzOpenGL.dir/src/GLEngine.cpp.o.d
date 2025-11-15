@@ -1044,7 +1044,6 @@ CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/OpenGLAvailability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/os/availability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
-  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/World.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/_deps/nlohmann_json-src/include/nlohmann/json.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/numeric \
@@ -1153,6 +1152,8 @@ CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Sprite.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Action.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/Direction.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ModeManager.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/ActionQueue.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/include/ScriptInterpreter.h \
   /opt/homebrew/include/lua/lua.hpp /opt/homebrew/include/lua/lua.h \
   /opt/homebrew/include/lua/luaconf.h /opt/homebrew/include/lua/lualib.h \
@@ -1163,4 +1164,29 @@ CMakeFiles/PixospritzOpenGL.dir/src/GLEngine.cpp.o: \
   /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imconfig.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_impl_glfw.h \
   /Users/kderbyma/Git/calliope-pixos/cpp/imgui/imgui_impl_opengl3.h \
+  /Users/kderbyma/Git/calliope-pixos/cpp/include/Camera.h \
+  /opt/homebrew/include/glm/gtc/matrix_transform.hpp \
+  /opt/homebrew/include/glm/gtc/../mat4x4.hpp \
+  /opt/homebrew/include/glm/gtc/../vec2.hpp \
+  /opt/homebrew/include/glm/gtc/../vec3.hpp \
+  /opt/homebrew/include/glm/gtc/../vec4.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_projection.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../gtc/constants.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../gtc/../ext/scalar_constants.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../gtc/../ext/../detail/setup.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../gtc/../ext/scalar_constants.inl \
+  /opt/homebrew/include/glm/gtc/../ext/../gtc/constants.inl \
+  /opt/homebrew/include/glm/gtc/../ext/../geometric.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../trigonometric.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../matrix.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_projection.inl \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_clip_space.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/../ext/scalar_constants.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_clip_space.inl \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_transform.hpp \
+  /opt/homebrew/include/glm/gtc/../ext/matrix_transform.inl \
+  /opt/homebrew/include/glm/gtc/matrix_transform.inl \
+  /opt/homebrew/include/glm/gtc/../geometric.hpp \
+  /opt/homebrew/include/glm/gtc/../trigonometric.hpp \
+  /opt/homebrew/include/glm/gtc/../matrix.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream

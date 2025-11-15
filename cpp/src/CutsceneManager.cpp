@@ -125,3 +125,8 @@ void CutsceneManager::executeAction(const CutsceneAction& action) {
         }
     }
 }
+
+void CutsceneManager::setBackdrop(const std::string& backdrop) {
+    currentBackdrop = backdrop;
+    std::cout << "CutsceneManager: setBackdrop -> " << backdrop << std::endl;
+}
