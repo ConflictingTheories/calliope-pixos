@@ -251,6 +251,8 @@ glm::vec2 Zone::tileToWorld(int row, int col) const {
 
 void Zone::addSprite(std::shared_ptr<Sprite> sprite) {
     sprites[sprite->id] = sprite;
+    spriteDict[sprite->id] = sprite;
+    spriteList.push_back(sprite);
     // Set the sprite's zone weak_ptr so it can query zone information
     try {
         sprite->zone = shared_from_this();
@@ -264,11 +266,19 @@ void Zone::removeSprite(const std::string& id) {
     if (it != sprites.end()) {
         sprites.erase(it);
     }
+    auto it2 = spriteDict.find(id);
+    if (it2 != spriteDict.end()) {
+        spriteDict.erase(it2);
+    }
+    spriteList.erase(std::remove_if(spriteList.begin(), spriteList.end(), [&](const std::shared_ptr<Sprite>& s) {
+        return s->id == id;
+    }), spriteList.end());
 }
 
-std::shared_ptr<Sprite> Zone::getSpriteById(const std::string& id) const {
-    auto it = sprites.find(id);
-    return it != sprites.end() ? it->second : nullptr;
+void Zone::removeAllSprites() {
+    sprites.clear();
+    spriteDict.clear();
+    spriteList.clear();
 }
 
 void Zone::addObject(std::shared_ptr<Object> object) {
@@ -809,4 +819,8 @@ void Zone::runScripts(const std::string& trigger, const std::unordered_map<std::
             }
         }
     }
+}
+
+void Zone::runWhenDeleted() {
+    // Placeholder for deletion callbacks
 }

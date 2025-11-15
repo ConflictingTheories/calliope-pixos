@@ -293,7 +293,7 @@ void World::tickOuter(double time) {
     });
     std::vector<std::shared_ptr<Event>> toRemove;
     for (auto& event : eventList) {
-        if (!event->active || event->timer > time) continue;
+        if (!event->active || event->timer > time || (event->pausable && isPaused)) continue;
         if (event->tick(time)) {
             toRemove.push_back(event);
             event->onComplete();
@@ -409,16 +409,24 @@ void World::addZone(std::shared_ptr<Zone> zone) {
 void World::removeZone(const std::string& zoneId) {
     auto it = zoneDict.find(zoneId);
     if (it != zoneDict.end()) {
-        zoneList.erase(std::remove(zoneList.begin(), zoneList.end(), it->second), zoneList.end());
+        auto zone = it->second;
+        if (zone->audio) {
+            zone->pauseAudio();
+        }
+        zone->removeAllSprites();
+        zone->runWhenDeleted();
+        zoneList.erase(std::remove(zoneList.begin(), zoneList.end(), zone), zoneList.end());
         zoneDict.erase(it);
     }
 }
 
 void World::removeAllZones() {
     for (auto& z : zoneList) {
-        // TODO: if (z->audio) pause audio
-        // z->removeAllSprites();
-        // z->runWhenDeleted();
+        if (z->audio) {
+            z->pauseAudio();
+        }
+        z->removeAllSprites();
+        z->runWhenDeleted();
     }
     zoneList.clear();
     zoneDict.clear();
@@ -486,22 +494,20 @@ std::shared_ptr<Avatar> World::getAvatar() const {
 }
 
 void World::addRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData) {
+    // If we already have this remote avatar, update and return it
     if (remoteAvatars.find(clientId) != remoteAvatars.end()) {
+        std::cout << "Remote avatar for " << clientId << " already exists, updating instead" << std::endl;
         updateRemoteAvatar(clientId, avatarData);
         return;
     }
 
+    // Instantiate Avatar and try to copy template properties from the local player avatar
     auto avatar = std::make_shared<Avatar>(engine);
-    std::string baseId = avatarData.value("id", "player");
-    std::string spriteId = baseId + "-" + clientId;
-    avatar->id = spriteId;
-    avatar->pos = glm::vec3(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f), avatarData.value("z", 0.0f));
-    avatar->facing = static_cast<Direction>(avatarData.value("facing", 0));
-    avatar->isSelected = false;
 
-    // Copy template from local avatar
+    // Try to find a local avatar template to copy necessary rendering/template fields
     auto localTemplate = getAvatar();
     if (localTemplate) {
+        // Copy minimal template fields required by Sprite
         avatar->src = localTemplate->src;
         avatar->portraitSrc = localTemplate->portraitSrc;
         avatar->sheetSize = localTemplate->sheetSize;
@@ -510,24 +516,76 @@ void World::addRemoteAvatar(const std::string& clientId, const nlohmann::json& a
         avatar->hotspotOffset = localTemplate->hotspotOffset;
         avatar->drawOffset = localTemplate->drawOffset;
         avatar->enableSpeech = localTemplate->enableSpeech;
-        avatar->texture = localTemplate->texture;
-        avatar->vertexTexBuf = localTemplate->vertexTexBuf;
-        avatar->vertexPosBuf = localTemplate->vertexPosBuf;
-        avatar->speechTexBuf = localTemplate->speechTexBuf;
+        avatar->bindCamera = false; // remote avatars shouldn't bind camera
+        // Copy runtime resources so remote avatar can render immediately
+        if (localTemplate->texture) avatar->texture = localTemplate->texture;
+        if (localTemplate->vertexTexBuf) avatar->vertexTexBuf = localTemplate->vertexTexBuf;
+        if (localTemplate->vertexPosBuf) avatar->vertexPosBuf = localTemplate->vertexPosBuf;
+        if (!localTemplate->speech.empty() && localTemplate->speechTexBuf != 0) avatar->speechTexBuf = localTemplate->speechTexBuf;
+        // mark as loaded so draw will render without waiting for async onLoad
         avatar->loaded = true;
         avatar->templateLoaded = true;
     } else {
         std::cerr << "No local avatar template found; remote avatar may not render correctly" << std::endl;
     }
 
-    auto zone = zoneContaining(avatar->pos.x, avatar->pos.y);
-    if (zone) {
-        zone->addSprite(avatar);
-        spriteDict[avatar->id] = avatar;
-        spriteList.push_back(avatar);
-        std::cout << "Added remote avatar for client " << clientId << " as sprite '" << avatar->id << "' to zone " << zone->id << std::endl;
+    // Ensure unique sprite id to avoid collisions with local 'avatar' id
+    std::string baseId = avatarData.value("id", "player");
+    std::string spriteId = baseId + "-" + clientId;
+
+    // Set properties and create buffers synchronously
+    auto zone = getZoneById(avatarData.value("zone", ""));
+    if (!zone) {
+        zone = zoneContaining(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f));
+    }
+    avatar->zone = zone;
+    avatar->id = spriteId;
+    avatar->pos = glm::vec3(avatarData.value("x", 0.0f), avatarData.value("y", 0.0f), avatarData.value("z", 0.0f));
+    avatar->facing = static_cast<Direction>(avatarData.value("facing", 0));
+    avatar->isSelected = false; // remote avatars not selected
+
+    // Create buffers synchronously with fallback tile size
+    float tileSize = (zone && zone->tileset && zone->tileset->tileWidth) ? zone->tileset->tileWidth : 32.0f;
+    glm::vec2 normTile = glm::vec2(avatar->tileSize.x / tileSize, avatar->tileSize.y / tileSize);
+    // Create vertex positions for the sprite quad
+    std::vector<float> verts = {
+        0.0f, 0.0f, 0.0f,
+        normTile.x, 0.0f, 0.0f,
+        normTile.x, 0.0f, normTile.y,
+        0.0f, 0.0f, normTile.y
+    };
+    std::vector<unsigned int> poly = {
+        2, 3, 0,
+        2, 0, 1
+    };
+    std::vector<float> flatPoly;
+    for (auto idx : poly) {
+        flatPoly.push_back(verts[idx * 3]);
+        flatPoly.push_back(verts[idx * 3 + 1]);
+        flatPoly.push_back(verts[idx * 3 + 2]);
+    }
+    avatar->vertexPosBuf = engine->getRenderManager()->createBuffer(flatPoly, GL_STATIC_DRAW, 3);
+    auto texCoords = avatar->getTexCoords();
+    avatar->vertexTexBuf = engine->getRenderManager()->createBuffer(texCoords, GL_DYNAMIC_DRAW, 2);
+    if (avatar->enableSpeech) {
+        auto speechVerts = avatar->getSpeechBubbleVertices();
+        avatar->speechVerBuf = engine->getRenderManager()->createBuffer(speechVerts, GL_STATIC_DRAW, 3);
+        auto speechTex = avatar->getSpeechBubbleTexture();
+        avatar->speechTexBuf = engine->getRenderManager()->createBuffer(speechTex, GL_DYNAMIC_DRAW, 2);
     }
 
+    // Add to the zone if available. Ensure id/zone registration happens *before* we store
+    // this.remoteAvatars to avoid updates arriving before registration completes.
+    if (zone) {
+        // register in dictionaries and lists synchronously
+        spriteDict[avatar->id] = avatar;
+        zone->spriteDict[avatar->id] = avatar;
+        zone->spriteList.push_back(avatar);
+        spriteList.push_back(avatar);
+        std::cout << "Added remote avatar for client " << clientId << " as sprite '" << avatar->id << "' to zone " << zone->id << " at (" << avatar->pos.x << "," << avatar->pos.y << "," << avatar->pos.z << ")" << std::endl;
+    }
+
+    // store mapping after registration
     remoteAvatars[clientId] = avatar;
 }
 
@@ -549,15 +607,22 @@ void World::updateRemoteAvatar(const std::string& clientId, const nlohmann::json
     auto it = remoteAvatars.find(clientId);
     if (it != remoteAvatars.end()) {
         auto avatar = it->second;
+        std::cout << "updateRemoteAvatar: client=" << clientId << " pre pos=" << avatar->pos.x << "," << avatar->pos.y << "," << avatar->pos.z << " loaded=" << avatar->loaded << " id=" << avatar->id << " zone=" << (avatar->zone.lock() ? avatar->zone.lock()->id : "null") << std::endl;
         if (avatarData.contains("x")) avatar->pos.x = avatarData["x"];
         if (avatarData.contains("y")) avatar->pos.y = avatarData["y"];
         if (avatarData.contains("z")) avatar->pos.z = avatarData["z"];
         if (avatarData.contains("facing")) avatar->facing = static_cast<Direction>(avatarData["facing"].get<int>());
         if (avatarData.contains("animFrame")) avatar->animFrame = avatarData["animFrame"];
+        // Defensive: ensure sprite is marked loaded so draw will execute
         if (!avatar->loaded) {
+            std::cerr << "Remote avatar " << clientId << " was not loaded; forcing loaded=true so renderer will attempt to draw." << std::endl;
             avatar->loaded = true;
             avatar->templateLoaded = true;
+            if (!avatar->texture) {
+                // Create a dummy texture or something
+            }
         }
+        std::cout << "updateRemoteAvatar: client=" << clientId << " post pos=" << avatar->pos.x << "," << avatar->pos.y << "," << avatar->pos.z << " loaded=" << avatar->loaded << " id=" << avatar->id << " zone=" << (avatar->zone.lock() ? avatar->zone.lock()->id : "null") << std::endl;
     }
 }
 
@@ -601,33 +666,57 @@ std::vector<std::vector<float>> World::pathFind(const std::vector<float>& from, 
     std::vector<std::vector<float>> steps;
     std::vector<std::string> visited;
     bool found = false;
+    const World* world = this;
+    float x = from[0];
+    float y = from[1];
 
     std::function<void(const std::vector<float>&, const std::vector<std::vector<float>>&)> buildPath =
         [&](const std::vector<float>& neighbour, const std::vector<std::vector<float>>& path) {
-            if (found) return;
             std::string jsonNeighbour = std::to_string(neighbour[0]) + "," + std::to_string(neighbour[1]);
-            if (std::find(visited.begin(), visited.end(), jsonNeighbour) != visited.end()) return;
+            if (found) return; // ignore anything further
             if (neighbour[0] == to[0] && neighbour[1] == to[1]) {
-                found = true;
+                // found it
+                // if final location is blocked, stop in front
+                if (!world->canWalk(neighbour, jsonNeighbour, visited)) {
+                    steps = path;
+                    return;
+                }
+                // otherwise return whole path
                 steps = path;
                 steps.push_back(to);
                 return;
             }
-            if (!canWalk(neighbour, jsonNeighbour, visited)) return;
+            // Check walkability
+            if (!world->canWalk(neighbour, jsonNeighbour, visited)) return;
+            // Visit Node & continue Search
             visited.push_back(jsonNeighbour);
-            auto neighbours = getNeighbours(neighbour[0], neighbour[1]);
-            for (auto& n : neighbours) {
+            auto neighbours = world->getNeighbours(neighbour[0], neighbour[1]);
+            // Sort by distance to target
+            std::sort(neighbours.begin(), neighbours.end(), [&](const std::vector<float>& a, const std::vector<float>& b) {
+                float distA = std::abs(to[0] - a[0]) + std::abs(to[1] - a[1]);
+                float distB = std::abs(to[0] - b[0]) + std::abs(to[1] - b[1]);
+                return distA < distB;
+            });
+            for (auto& neigh : neighbours) {
                 std::vector<std::vector<float>> newPath = path;
                 newPath.push_back({neighbour[0], neighbour[1], 600.0f});
-                buildPath(n, newPath);
+                buildPath(neigh, newPath);
             }
         };
 
-    auto initialNeighbours = getNeighbours(from[0], from[1]);
+    // Fetch Steps
+    auto initialNeighbours = getNeighbours(x, y);
+    // Sort by distance to target
+    std::sort(initialNeighbours.begin(), initialNeighbours.end(), [&](const std::vector<float>& a, const std::vector<float>& b) {
+        float distA = std::abs(to[0] - a[0]) + std::abs(to[1] - a[1]);
+        float distB = std::abs(to[0] - b[0]) + std::abs(to[1] - b[1]);
+        return distA < distB;
+    });
     for (auto& neighbour : initialNeighbours) {
         buildPath(neighbour, {{from[0], from[1], 600.0f}});
     }
 
+    // Flatten Path from Segments
     return steps;
 }
 
@@ -639,15 +728,19 @@ void World::sortZones() {
 
 bool World::canWalk(const std::vector<float>& neighbour, const std::string& jsonNeighbour, const std::vector<std::string>& visited) const {
     auto zone = zoneContaining(neighbour[0], neighbour[1]);
-    if (!zone || std::find(visited.begin(), visited.end(), jsonNeighbour) != visited.end()) return false;
-    return zone->isWalkable(neighbour[0], neighbour[1], 0); // Simplified, no direction check
+    if (std::find(visited.begin(), visited.end(), jsonNeighbour) != visited.end() ||
+        !zone ||
+        !zone->isWalkable(neighbour[0], neighbour[1]) ||
+        !zone->isWalkable(neighbour[0], neighbour[1], static_cast<int>(DirectionUtils::reverse(static_cast<Direction>(neighbour[2]))))) {
+        return false;
+    }
+    return true;
 }
 
 std::vector<std::vector<float>> World::getNeighbours(float x, float y) const {
-    return {
-        {x, y + 1, 0}, // up
-        {x, y - 1, 2}, // down
-        {x - 1, y, 3}, // left
-        {x + 1, y, 1}  // right
-    };
+    std::vector<float> top = {x, y + 1, static_cast<float>(Direction::Up)};
+    std::vector<float> bottom = {x, y - 1, static_cast<float>(Direction::Down)};
+    std::vector<float> left = {x - 1, y, static_cast<float>(Direction::Left)};
+    std::vector<float> right = {x + 1, y, static_cast<float>(Direction::Right)};
+    return {top, left, right, bottom};
 }

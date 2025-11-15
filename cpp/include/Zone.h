@@ -39,6 +39,7 @@ public:
     // Sprite management
     void addSprite(std::shared_ptr<Sprite> sprite);
     void removeSprite(const std::string& id);
+    void removeAllSprites();
     std::shared_ptr<Sprite> getSpriteById(const std::string& id) const;
     std::vector<std::shared_ptr<Sprite>> getSpritesAt(float x, float y) const;
 
@@ -72,7 +73,10 @@ public:
     std::vector<std::vector<int>> tileMap;
     std::vector<std::vector<int>> objectMap;
     std::unordered_map<std::string, std::shared_ptr<Sprite>> sprites;
+    std::unordered_map<std::string, std::shared_ptr<Sprite>> spriteDict;
+    std::vector<std::shared_ptr<Sprite>> spriteList;
     std::unordered_map<std::string, std::shared_ptr<Object>> objects;
+    std::shared_ptr<Tileset> tileset; // Primary tileset
     std::unordered_map<std::string, std::shared_ptr<Tileset>> tilesets;
     std::unordered_map<std::string, std::shared_ptr<Event>> events;
 
@@ -85,6 +89,9 @@ public:
     // Audio helpers
     void playAudio();
     void pauseAudio();
+
+    // Deletion callback
+    void runWhenDeleted();
 
 private:
     void loadTileMap(const nlohmann::json& data);

@@ -28,6 +28,7 @@ public:
     int objId;
     bool active;
     bool repeating;
+    bool pausable;
     float duration;
     float timer;
 

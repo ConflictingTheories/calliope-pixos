@@ -27,6 +27,9 @@ public:
     Shader* getDefaultShader() { return defaultShader.get(); }
     Shader* getShader() { return defaultShader.get(); }
 
+    // Buffer creation
+    GLuint createBuffer(const std::vector<float>& data, GLenum usage, int components);
+
     // Get projection matrix
     const glm::mat4& getProjectionMatrix() const { return projectionMatrix; }
 

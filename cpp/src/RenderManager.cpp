@@ -132,3 +132,12 @@ void RenderManager::initBuffers() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+
+GLuint RenderManager::createBuffer(const std::vector<float>& data, GLenum usage, int components) {
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), usage);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return buffer;
+}

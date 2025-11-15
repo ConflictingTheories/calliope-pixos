@@ -233,3 +233,33 @@ void Avatar::speak(const std::string& text, float duration) {
     speech = text;
     speechTimer = duration;
 }
+
+std::vector<float> Avatar::getTexCoords() {
+    // Simple texture coordinates for a quad
+    return {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+        0.0f, 1.0f
+    };
+}
+
+std::vector<float> Avatar::getSpeechBubbleVertices() {
+    // Placeholder for speech bubble vertices
+    return {
+        0.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f
+    };
+}
+
+std::vector<float> Avatar::getSpeechBubbleTexture() {
+    // Placeholder for speech bubble texture coords
+    return {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+        0.0f, 1.0f
+    };
+}

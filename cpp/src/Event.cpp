@@ -1,6 +1,6 @@
 #include "Event.h"
 
-Event::Event(GLEngine* engine, const std::string& id) : engine(engine), id(id), objId(0), active(false), repeating(false), duration(0.0f), timer(0.0f), elapsedTime(0.0f) {}
+Event::Event(GLEngine* engine, const std::string& id) : engine(engine), id(id), objId(0), active(false), repeating(false), pausable(false), duration(0.0f), timer(0.0f), elapsedTime(0.0f) {}
 
 Event::~Event() {}
 

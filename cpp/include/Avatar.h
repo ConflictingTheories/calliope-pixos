@@ -63,18 +63,26 @@ public:
     std::string src;
     std::string portraitSrc;
     glm::ivec2 sheetSize;
-    int tileSize;
+    glm::vec2 tileSize;
     int frames;
     glm::vec2 hotspotOffset;
     glm::vec2 drawOffset;
     bool enableSpeech;
+    bool bindCamera;
+    std::string speech;
     // GL resources for rendering
     GLuint texture;
     GLuint vertexTexBuf;
     GLuint vertexPosBuf;
     GLuint speechTexBuf;
+    GLuint speechVerBuf;
     bool loaded;
     bool templateLoaded;
+
+    // Methods for buffer creation
+    std::vector<float> getTexCoords();
+    std::vector<float> getSpeechBubbleVertices();
+    std::vector<float> getSpeechBubbleTexture();
 
     // Lighting
     bool isLit;
