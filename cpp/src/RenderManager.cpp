@@ -1,5 +1,6 @@
 #include "RenderManager.h"
 #include "GLEngine.h"
+#include "Camera.h"
 #include "Shader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
@@ -19,7 +20,21 @@ void RenderManager::init() {
 
     // Set up projection matrix
     glm::vec2 screenSize = engine->screenSize();
-    projectionMatrix = glm::ortho(0.0f, screenSize.x, screenSize.y, 0.0f, -1.0f, 1.0f);
+    // Prefer the engine camera's perspective projection when available so
+    // the native C++ renderer matches the WebGL renderer (3D perspective).
+    if (engine && engine->getCamera()) {
+        float aspect = screenSize.x / screenSize.y;
+        projectionMatrix = engine->getCamera()->getProjectionMatrix(aspect);
+    } else {
+        // Fallback to an orthographic projection for 2D/HUD rendering
+        projectionMatrix = glm::ortho(0.0f, screenSize.x, screenSize.y, 0.0f, -1.0f, 1.0f);
+    }
+
+    // Enable depth testing and alpha blending (match typical WebGL defaults)
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void RenderManager::render() {
