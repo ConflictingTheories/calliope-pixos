@@ -1,8 +1,25 @@
 #include "Spritz.h"
 #include "World.h"
 #include <iostream>
+#include <nlohmann/json.hpp>
+
+Spritz* Spritz::_instance = nullptr;
+
+Spritz* Spritz::getInstance() {
+    return _instance;
+}
+
+void Spritz::destroyInstance() {
+    if (_instance) {
+        delete _instance;
+        _instance = nullptr;
+    }
+}
 
 Spritz::Spritz(GLEngine* eng) : engine(eng) {
+    if (!_instance) {
+        _instance = this;
+    }
     // Load shaders
     vertexShader = R"(
 #version 330 core
@@ -39,11 +56,30 @@ void main(){
 
 Spritz::~Spritz() {}
 
-void Spritz::init() {
+void Spritz::init(const std::string& gamePath, const nlohmann::json& manifest) {
     // Init Game Engine Components
-    world = std::make_unique<World>(this, "world");
-    // Load Zones - TODO - Add injection / Props to make more Dynamic
-    // For now, assume world init handles it
+    world = std::make_unique<World>(this, "spritz");
+    world->init(gamePath, manifest);
+    // show start menu
+    nlohmann::json colours = nlohmann::json::object();
+    colours["top"] = "#333";
+    colours["bottom"] = "#777";
+    colours["background"] = "#999";
+
+    nlohmann::json startMenu = nlohmann::json::object();
+    startMenu["text"] = "Start Game";
+    startMenu["prompt"] = "Please press the button to start...";
+    startMenu["x"] = engine->screenSize().x / 2 - 75;
+    startMenu["y"] = engine->screenSize().y / 2 - 50;
+    startMenu["w"] = 150;
+    startMenu["h"] = 75;
+    startMenu["quittable"] = false;
+    startMenu["colours"] = colours;
+
+    nlohmann::json menuConfig = nlohmann::json::object();
+    menuConfig["start"] = startMenu;
+
+    world->startMenu(menuConfig);
 }
 
 void Spritz::update(double now) {

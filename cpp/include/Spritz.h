@@ -10,10 +10,13 @@ class World;
 
 class Spritz {
 public:
+    static Spritz* getInstance();
+    static void destroyInstance();
+
     Spritz(GLEngine* engine);
     virtual ~Spritz();
 
-    virtual void init();
+    void init(const std::string& gamePath, const nlohmann::json& manifest);
     void update(double now);
     void render();
     void onKeyEvent(int key, int scancode, int action, int mods);
@@ -28,7 +31,8 @@ public:
     // Effects (placeholder)
     // std::map<std::string, std::string> effects;
 
-protected:
+private:
+    static Spritz* _instance;
     GLEngine* engine;
 
 public:

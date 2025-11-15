@@ -27,6 +27,7 @@ private:
     std::unique_ptr<CutsceneManager> cutsceneManager;
     // Engine-level camera accessible to scripts/events
     std::unique_ptr<Camera> camera;
+    std::unique_ptr<Spritz> spritz;
 
     std::string gamePath;
     nlohmann::json manifest;
@@ -36,7 +37,7 @@ public:
     RenderManager* getRenderManager() { return renderManager.get(); }
     InputManager* getInputManager() { return inputManager.get(); }
     ModeManager* getModeManager() { return modeManager.get(); }
-    World* getWorld() { return world.get(); }
+    World* getWorld();
     ScriptInterpreter* getScriptInterpreter() { return scriptInterpreter.get(); }
     CutsceneManager* getCutsceneManager() { return cutsceneManager.get(); }
     Camera* getCamera() { return camera.get(); }
