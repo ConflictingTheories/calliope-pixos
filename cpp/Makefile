@@ -465,6 +465,30 @@ src/Event.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Event.cpp.s
 .PHONY : src/Event.cpp.s
 
+src/EventLoader.o: src/EventLoader.cpp.o
+.PHONY : src/EventLoader.o
+
+# target to build an object file
+src/EventLoader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/EventLoader.cpp.o
+.PHONY : src/EventLoader.cpp.o
+
+src/EventLoader.i: src/EventLoader.cpp.i
+.PHONY : src/EventLoader.i
+
+# target to preprocess a source file
+src/EventLoader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/EventLoader.cpp.i
+.PHONY : src/EventLoader.cpp.i
+
+src/EventLoader.s: src/EventLoader.cpp.s
+.PHONY : src/EventLoader.s
+
+# target to generate assembly for a file
+src/EventLoader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/EventLoader.cpp.s
+.PHONY : src/EventLoader.cpp.s
+
 src/GLEngine.o: src/GLEngine.cpp.o
 .PHONY : src/GLEngine.o
 
@@ -972,6 +996,9 @@ help:
 	@echo "... src/Event.o"
 	@echo "... src/Event.i"
 	@echo "... src/Event.s"
+	@echo "... src/EventLoader.o"
+	@echo "... src/EventLoader.i"
+	@echo "... src/EventLoader.s"
 	@echo "... src/GLEngine.o"
 	@echo "... src/GLEngine.i"
 	@echo "... src/GLEngine.s"

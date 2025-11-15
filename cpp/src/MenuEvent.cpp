@@ -4,8 +4,8 @@
 #include "Avatar.h"
 #include <iostream>
 
-MenuEvent::MenuEvent(GLEngine* engine, const std::string& id, const nlohmann::json& config, World* world)
-    : Event(engine, id), config(config), world(world) {
+MenuEvent::MenuEvent(const std::string& type, World* world, std::function<void()> callback, const nlohmann::json& config)
+    : Event(type, world, callback), config(config) {
     active = true;
     repeating = false;
     duration = 0.0f;
@@ -44,5 +44,5 @@ void MenuEvent::trigger() {
     }
     // mark complete
     active = false;
-    if (onComplete) onComplete();
+    onComplete();
 }

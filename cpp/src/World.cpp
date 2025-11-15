@@ -7,6 +7,7 @@
 #include "ActionQueue.h"
 #include "MenuEvent.h"
 #include "Direction.h"
+#include "EventLoader.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -357,10 +358,11 @@ void World::checkInput(double time) {
 }
 
 void World::startMenu(const nlohmann::json& menuConfig, const std::vector<std::string>& defaultMenus) {
-    // Create a MenuEvent and add it to the world event queue so it follows the same lifecycle
-    std::string evId = "menu-" + std::to_string(objId++);
-    auto ev = std::make_shared<MenuEvent>(engine, evId, menuConfig, this);
-    ev->onComplete = [this]() {
+    // Use EventLoader to create menu event, matching JS logic
+    nlohmann::json args = nlohmann::json::array({menuConfig.is_null() ? menuConfig : menuConfig, defaultMenus, false, {{"autoclose", false}, {"closeOnEnter", true}}});
+    EventLoader loader(engine, "menu", args, this, nullptr);
+    auto ev = loader.getEvent();
+    ev->callback = [this]() {
         // nothing special for now
     };
     addEvent(ev);

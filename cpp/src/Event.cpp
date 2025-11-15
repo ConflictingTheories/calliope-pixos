@@ -1,39 +1,56 @@
 #include "Event.h"
+#include "World.h"
+#include <chrono>
 
-Event::Event(GLEngine* engine, const std::string& id) : engine(engine), id(id), objId(0), active(false), repeating(false), pausable(false), duration(0.0f), timer(0.0f), elapsedTime(0.0f) {}
+Event::Event(GLEngine* engine, const std::string& id)
+    : type("event"), world(nullptr), callback(nullptr), loaded(false), pausable(false), templateLoaded(false),
+      active(false), repeating(false), duration(0.0f), timer(0.0f), engine(engine) {
+    this->id = id;
+    auto now = std::chrono::system_clock::now();
+    time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
+
+Event::Event(const std::string& type, World* world, std::function<void()> callback)
+    : type(type), world(world), callback(callback), loaded(false), pausable(false), templateLoaded(false),
+      active(false), repeating(false), duration(0.0f), timer(0.0f), engine(nullptr) {
+    auto now = std::chrono::system_clock::now();
+    time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    id = world ? world->id + "-" + type + "-" + std::to_string(time) : type + "-" + std::to_string(time);
+}
 
 Event::~Event() {}
 
-void Event::init() {
-    // Default implementation
+void Event::configure(const std::string& type, World* world, const std::string& id, long time, const nlohmann::json& args) {
+    this->world = world;
+    this->id = id;
+    this->type = type;
+    this->startTime = time;
+    this->creationArgs = args;
 }
 
-void Event::update(double dt) {
-    elapsedTime += dt;
-    if (elapsedTime >= duration) {
-        trigger();
-        if (!repeating) {
-            active = false;
-        } else {
-            elapsedTime = 0.0f;
-        }
-    }
+void Event::onLoad(const nlohmann::json& args) {
+    init(); // Assuming init is synchronous for now
+    loaded = true;
 }
 
-void Event::trigger() {
-    if (onTrigger) {
-        onTrigger();
+std::string Event::serialize() const {
+    nlohmann::json j;
+    j["id"] = id;
+    j["time"] = startTime;
+    j["world"] = world ? world->id : "";
+    j["type"] = type;
+    j["args"] = creationArgs;
+    return j.dump();
+}
+
+void Event::onComplete() {
+    if (callback) {
+        callback();
     }
 }
 
 bool Event::tick(double dt) {
-    // Advance and return true if the event has completed and should be removed
     update(dt);
     if (!repeating && !active) return true;
     return false;
-}
-
-void Event::reset() {
-    elapsedTime = 0.0f;
-    active = true;
 }

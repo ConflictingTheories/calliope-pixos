@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.16)
 project(PixospritzOpenGL)
 set(CMAKE_CXX_STANDARD 17)
@@ -44,6 +43,8 @@ include_directories(
 
 # Source files (recursively include new additions)
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
+list(APPEND SOURCES "src/EventLoader.cpp")
+
 
 # ImGui sources
 set(IMGUI_SOURCES

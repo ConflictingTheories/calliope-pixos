@@ -3,10 +3,11 @@
 #include "Camera.h"
 #include <iostream>
 
-CameraEvent::CameraEvent(GLEngine* engine, const glm::vec3& from, const glm::vec3& to, float duration)
-    : Event(engine, "camera"), start(from), end(to), totalDuration(duration), t(0.0f), initialized(false) {
+CameraEvent::CameraEvent(const std::string& type, World* world, std::function<void()> callback, GLEngine* engine, const glm::vec3& from, const glm::vec3& to, float duration)
+    : Event(type, world, callback), start(from), end(to), totalDuration(duration), t(0.0f), initialized(false) {
+    this->engine = engine;
     active = true;
-    duration = totalDuration;
+    this->duration = totalDuration;
 }
 
 CameraEvent::~CameraEvent() {}

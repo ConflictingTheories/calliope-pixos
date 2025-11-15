@@ -8,7 +8,7 @@ class World;
 
 class MenuEvent : public Event {
 public:
-    MenuEvent(GLEngine* engine, const std::string& id, const nlohmann::json& config, World* world);
+    MenuEvent(const std::string& type, World* world, std::function<void()> callback, const nlohmann::json& config);
     virtual ~MenuEvent();
 
     void init() override;
@@ -16,5 +16,4 @@ public:
     void trigger() override;
 
     nlohmann::json config;
-    World* world;
 };
