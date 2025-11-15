@@ -78,6 +78,11 @@ public:
 
     // Scripts
     std::vector<nlohmann::json> scripts;
+    // Audio placeholder
+    class AudioManager* audio = nullptr;
+    // Audio helpers
+    void playAudio();
+    void pauseAudio();
 
 private:
     void loadTileMap(const nlohmann::json& data);

@@ -321,6 +321,30 @@ src/ActionQueue.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ActionQueue.cpp.s
 .PHONY : src/ActionQueue.cpp.s
 
+src/AudioManager.o: src/AudioManager.cpp.o
+.PHONY : src/AudioManager.o
+
+# target to build an object file
+src/AudioManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/AudioManager.cpp.o
+.PHONY : src/AudioManager.cpp.o
+
+src/AudioManager.i: src/AudioManager.cpp.i
+.PHONY : src/AudioManager.i
+
+# target to preprocess a source file
+src/AudioManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/AudioManager.cpp.i
+.PHONY : src/AudioManager.cpp.i
+
+src/AudioManager.s: src/AudioManager.cpp.s
+.PHONY : src/AudioManager.s
+
+# target to generate assembly for a file
+src/AudioManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/AudioManager.cpp.s
+.PHONY : src/AudioManager.cpp.s
+
 src/Avatar.o: src/Avatar.cpp.o
 .PHONY : src/Avatar.o
 
@@ -536,6 +560,30 @@ src/InputManager.s: src/InputManager.cpp.s
 src/InputManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/InputManager.cpp.s
 .PHONY : src/InputManager.cpp.s
+
+src/MenuEvent.o: src/MenuEvent.cpp.o
+.PHONY : src/MenuEvent.o
+
+# target to build an object file
+src/MenuEvent.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.o
+.PHONY : src/MenuEvent.cpp.o
+
+src/MenuEvent.i: src/MenuEvent.cpp.i
+.PHONY : src/MenuEvent.i
+
+# target to preprocess a source file
+src/MenuEvent.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.i
+.PHONY : src/MenuEvent.cpp.i
+
+src/MenuEvent.s: src/MenuEvent.cpp.s
+.PHONY : src/MenuEvent.s
+
+# target to generate assembly for a file
+src/MenuEvent.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/MenuEvent.cpp.s
+.PHONY : src/MenuEvent.cpp.s
 
 src/ModeManager.o: src/ModeManager.cpp.o
 .PHONY : src/ModeManager.o
@@ -906,6 +954,9 @@ help:
 	@echo "... src/ActionQueue.o"
 	@echo "... src/ActionQueue.i"
 	@echo "... src/ActionQueue.s"
+	@echo "... src/AudioManager.o"
+	@echo "... src/AudioManager.i"
+	@echo "... src/AudioManager.s"
 	@echo "... src/Avatar.o"
 	@echo "... src/Avatar.i"
 	@echo "... src/Avatar.s"
@@ -933,6 +984,9 @@ help:
 	@echo "... src/InputManager.o"
 	@echo "... src/InputManager.i"
 	@echo "... src/InputManager.s"
+	@echo "... src/MenuEvent.o"
+	@echo "... src/MenuEvent.i"
+	@echo "... src/MenuEvent.s"
 	@echo "... src/ModeManager.o"
 	@echo "... src/ModeManager.i"
 	@echo "... src/ModeManager.s"

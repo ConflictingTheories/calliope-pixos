@@ -5,12 +5,15 @@
 #include "Event.h"
 #include "ModeManager.h"
 #include "ActionQueue.h"
+#include "MenuEvent.h"
+#include "Direction.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <nlohmann/json.hpp>
 #include <chrono>
+#include <filesystem>
 
 World::World(Spritz* spritz, const std::string& id)
     : spritz(spritz), engine(spritz ? spritz->getEngine() : nullptr), id(id), objId(rand() % 1000 + 1),
@@ -138,8 +141,67 @@ void World::loadZone(const std::string& zoneId) {
 }
 
 void World::loadZoneFromZip(const std::string& zoneId, const std::string& zipPath, bool skipCache, const nlohmann::json& transitionParams) {
-    // TODO: Implement zip loading
-    std::cerr << "loadZoneFromZip not implemented yet" << std::endl;
+    // Support a directory-based package as a pragmatic fallback for ZIP archives.
+    // If `zipPath` is a directory containing maps/{zoneId}/map.json this will load it.
+    namespace fs = std::filesystem;
+    try {
+        if (!fs::exists(zipPath)) {
+            std::cerr << "loadZoneFromZip: package path does not exist: " << zipPath << std::endl;
+            return;
+        }
+
+        // If caller passed a real directory containing a 'maps' folder, use that.
+        std::string mapsBase = zipPath + "/maps/" + zoneId;
+        std::string mapFilePath = mapsBase + "/map.json";
+        std::string cellFilePath = mapsBase + "/cells.json";
+
+        if (fs::is_directory(zipPath) && fs::exists(mapFilePath)) {
+            std::ifstream mapFile(mapFilePath);
+            if (!mapFile.is_open()) {
+                std::cerr << "Failed to open map.json at: " << mapFilePath << std::endl;
+                return;
+            }
+            nlohmann::json mapData;
+            mapFile >> mapData;
+            mapFile.close();
+
+            nlohmann::json cellData = nlohmann::json::object();
+            if (fs::exists(cellFilePath)) {
+                std::ifstream cf(cellFilePath);
+                if (cf.is_open()) {
+                    try { cf >> cellData; } catch (...) { cellData = nlohmann::json::object(); }
+                    cf.close();
+                }
+            }
+
+            auto z = std::make_shared<Zone>(zoneId, this);
+            try {
+                // Prefer a loader that accepts both map and cell data if available; fall back to map-only.
+                z->loadFromJson(mapData, gamePath);
+
+                    // audio: pause audio on existing zones, play on the new one (if supported)
+                    for (auto& existing : zoneList) {
+                        if (existing && existing->audio) existing->pauseAudio();
+                    }
+                    if (z->audio) z->playAudio();
+
+                // Register zone
+                addZone(z);
+                zoneDict[zoneId] = z;
+
+                std::cout << "Loaded zone from package: " << zoneId << " (from " << zipPath << ")" << std::endl;
+                return;
+            } catch (const std::exception& e) {
+                std::cerr << "Error loading zone from package: " << e.what() << std::endl;
+                return;
+            }
+        }
+
+        // Not a directory with map.json; full ZIP archives are not implemented yet.
+        std::cerr << "loadZoneFromZip: zip archive support not implemented; pass an extracted directory instead: " << zipPath << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "loadZoneFromZip exception: " << e.what() << std::endl;
+    }
 }
 
 void World::createTestZone() {
@@ -225,19 +287,47 @@ void World::checkInput(double time) {
                 std::cerr << "mode input handler error: " << e.what() << std::endl;
             }
         }
-        // TODO: Implement input checking similar to JS version
-        // auto touchmap = engine->gamepad->checkInput();
-        // if (engine->gamepad->keyPressed('start')) touchmap['start'] = 0;
-        // if (engine->gamepad->keyPressed('select')) {
-        //     touchmap['select'] = 0;
-        //     engine->toggleFullscreen();
-        // }
+        // Try to mirror the JS behavior: allow a 'start' button to open the start menu
+        if (!engine) return;
+        auto im = engine->getInputManager();
+        if (im) {
+            // Map SPACE -> start menu (best-effort mapping for desktop)
+            if (im->isKeyPressed("SPACE")) {
+                try {
+                    startMenu(menuConfig);
+                } catch (...) {
+                }
+            }
+
+            // Map TAB -> toggle fullscreen (best-effort)
+            if (im->isKeyPressed("TAB")) {
+                GLFWwindow* w = engine->getWindow();
+                if (w) {
+                    GLFWmonitor* mon = glfwGetWindowMonitor(w);
+                    if (mon) {
+                        // switch to windowed mode with a sane default size
+                        glfwSetWindowMonitor(w, nullptr, 100, 100, 1024, 768, GLFW_DONT_CARE);
+                    } else {
+                        GLFWmonitor* primary = glfwGetPrimaryMonitor();
+                        if (primary) {
+                            const GLFWvidmode* mode = glfwGetVideoMode(primary);
+                            if (mode) glfwSetWindowMonitor(w, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 void World::startMenu(const nlohmann::json& menuConfig, const std::vector<std::string>& defaultMenus) {
-    // TODO: Implement menu starting
-    std::cerr << "startMenu not implemented yet" << std::endl;
+    // Create a MenuEvent and add it to the world event queue so it follows the same lifecycle
+    std::string evId = "menu-" + std::to_string(objId++);
+    auto ev = std::make_shared<MenuEvent>(engine, evId, menuConfig, this);
+    ev->onComplete = [this]() {
+        // nothing special for now
+    };
+    addEvent(ev);
 }
 
 void World::runAfterTick(const std::function<void()>& action) {

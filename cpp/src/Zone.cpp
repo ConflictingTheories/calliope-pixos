@@ -2,6 +2,7 @@
 #include "World.h"
 #include "GLEngine.h"
 #include "Shader.h"
+#include "AudioManager.h"
 #include <algorithm>
 #include <iostream>
 #include <GL/glew.h>
@@ -12,6 +13,19 @@
 Zone::Zone(const std::string& zoneId, World* w) : id(zoneId), world(w), engine(w->engine) {}
 
 Zone::~Zone() {}
+
+// Basic audio helpers
+void Zone::playAudio() {
+    if (audio && engine) {
+        audio->playMusic(id, 1.0f, true);
+    }
+}
+
+void Zone::pauseAudio() {
+    if (audio && engine) {
+        audio->pauseMusic();
+    }
+}
 
 void Zone::init() {
     // Load zone data, tileset, etc.

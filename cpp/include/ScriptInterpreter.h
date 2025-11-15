@@ -1,6 +1,22 @@
 #pragma once
 
-#include <lua.hpp>
+#ifdef __has_include
+#  if __has_include(<lua.hpp>)
+#    include <lua.hpp>
+#    define PIXO_HAS_LUA 1
+#  else
+#    define PIXO_HAS_LUA 0
+#  endif
+#else
+#  include <lua.hpp>
+#  define PIXO_HAS_LUA 1
+#endif
+#if !PIXO_HAS_LUA
+// Provide minimal fallback types so header compiles without Lua development headers
+struct lua_State; // opaque
+using lua_CFunction = int(*)(void*);
+struct luaL_Reg { const char* name; lua_CFunction func; };
+#endif
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -42,6 +58,7 @@ public:
     std::unordered_map<std::string, std::string> flags;
 
 private:
+    // Lua state pointer
     lua_State* luaState;
 
     // PixoScript parsing

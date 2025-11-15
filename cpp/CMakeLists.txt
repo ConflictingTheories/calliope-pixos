@@ -42,8 +42,8 @@ include_directories(
   ${LUA_INCLUDE_DIRS}
 )
 
-# Source files
-file(GLOB SOURCES "src/*.cpp" "src/*.h")
+# Source files (recursively include new additions)
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 # ImGui sources
 set(IMGUI_SOURCES
@@ -75,6 +75,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   "-framework CoreFoundation"
   m
 )
+
+# Fallback explicit libs for systems where the find_package variables are empty
+target_link_libraries(${PROJECT_NAME} PRIVATE -lglfw -lGLEW -lSDL2 -llua)
 
 # ImGui include directories
 target_include_directories(${PROJECT_NAME} PRIVATE imgui imgui/backends)
