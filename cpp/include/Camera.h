@@ -33,6 +33,10 @@ public:
     glm::mat4 getViewMatrix() const;
     glm::mat4 getProjectionMatrix(float aspectRatio) const;
 
+    const glm::vec3& getPosition() const { return position; }
+    const glm::vec3& getTarget() const { return target; }
+    const glm::vec3& getUpVector() const { return up; }
+
     // Properties
     glm::vec3 position;
     glm::vec3 target;

@@ -2,8 +2,10 @@
 #include "GLEngine.h"
 #include "Camera.h"
 #include "Shader.h"
+#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
+#include <string>
 
 RenderManager::RenderManager(GLEngine* engine)
     : engine(engine), VAO(0), VBO(0) {
@@ -35,6 +37,10 @@ void RenderManager::init() {
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 void RenderManager::render() {
@@ -67,6 +73,7 @@ void RenderManager::initShaders() {
         // Strictly load shader sources from the repository `shaders/` folder.
         defaultShader = std::make_unique<Shader>("shaders/vertex.glsl", "shaders/fragment.glsl");
         std::cout << "Shaders loaded successfully from shaders/" << std::endl;
+        applySceneDefaults(defaultShader.get());
     } catch (const std::exception& e) {
         std::cerr << "Failed to load shaders from shaders/: " << e.what() << std::endl;
         // Create fallback shader (GL-only color shader) so the engine can still run.
@@ -77,26 +84,35 @@ void RenderManager::initShaders() {
 void RenderManager::createFallbackShader() {
     const char* vertexSource = R"(
         #version 330 core
-        layout(location = 0) in vec3 aPosition;
-        uniform mat4 uProj;
-        uniform mat4 uModel;
+        layout(location = 0) in vec3 aVertexPosition;
+        layout(location = 1) in vec3 aVertexNormal;
+        layout(location = 2) in vec2 aTextureCoord;
+        uniform mat4 uModelMatrix;
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+        out vec2 vTextureCoord;
         void main() {
-            gl_Position = uProj * uModel * vec4(aPosition, 1.0);
+            vTextureCoord = aTextureCoord;
+            gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
         }
     )";
 
     const char* fragmentSource = R"(
         #version 330 core
-        out vec4 FragColor;
+        in vec2 vTextureCoord;
+        uniform sampler2D uSampler;
         uniform vec3 uColor;
+        out vec4 FragColor;
         void main() {
-            FragColor = vec4(uColor, 1.0);
+            vec4 tex = texture(uSampler, vTextureCoord);
+            FragColor = tex * vec4(uColor, 1.0);
         }
     )";
 
     defaultShader = std::make_unique<Shader>();
     defaultShader->compileShaders(vertexSource, fragmentSource);
     std::cout << "Fallback shader created" << std::endl;
+    applySceneDefaults(defaultShader.get());
 }
 
 void Shader::compileShaders(const char* vertexSource, const char* fragmentSource) {
@@ -125,14 +141,14 @@ void Shader::compileShaders(const char* vertexSource, const char* fragmentSource
 void RenderManager::initBuffers() {
     // Create a simple quad for rendering with texture coordinates
     float vertices[] = {
-        // positions          // texture coords
-        0.0f, 1.0f, 0.0f,    0.0f, 1.0f,  // bottom-left
-        1.0f, 0.0f, 0.0f,    1.0f, 0.0f,  // top-right
-        0.0f, 0.0f, 0.0f,    0.0f, 0.0f,  // top-left
+        // positions         // normals         // texture coords
+         0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+         1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
 
-        0.0f, 1.0f, 0.0f,    0.0f, 1.0f,  // bottom-left
-        1.0f, 1.0f, 0.0f,    1.0f, 1.0f,  // bottom-right
-        1.0f, 0.0f, 0.0f,    1.0f, 0.0f   // top-right
+         0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+         1.0f, 1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,
+         1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f
     };
 
     glGenVertexArrays(1, &VAO);
@@ -143,15 +159,57 @@ void RenderManager::initBuffers() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void RenderManager::applySceneDefaults(Shader* shader) {
+    if (!shader) return;
+
+    Camera* cam = engine ? engine->getCamera() : nullptr;
+    glm::vec3 camPos = cam ? cam->getPosition() : glm::vec3(0.0f, 0.0f, 10.0f);
+    glm::vec3 camDir = cam ? glm::normalize(cam->getTarget() - camPos) : glm::normalize(glm::vec3(0.0f, 0.0f, -1.0f));
+
+    shader->use();
+    shader->setInt("uSampler", 0);
+    shader->setInt("uDiffuseMap", 1);
+    shader->setFloat("useSampler", 1.0f);
+    shader->setFloat("useDiffuse", 0.0f);
+    shader->setFloat("runTransition", 0.0f);
+    shader->setFloat("isSelected", 0.0f);
+    shader->setVec4("uColorMultiplier", glm::vec4(1.0f));
+    shader->setVec3("uDiffuse", glm::vec3(0.9f));
+    shader->setVec3("uSpecular", glm::vec3(0.2f));
+    shader->setFloat("uSpecularExponent", 16.0f);
+    shader->setVec3("uLightColor", glm::vec3(1.0f));
+    shader->setVec3("uLightDirection", camDir);
+    shader->setVec3("u_scale", glm::vec3(1.0f));
+
+    shader->setVec3("uCameraPosition", camPos);
+    shader->setVec3("uLights[0].color", glm::vec3(1.0f));
+    shader->setVec3("uLights[0].position", camPos);
+    shader->setVec3("uLights[0].direction", camDir);
+    shader->setVec3("uLights[0].attenuation", glm::vec3(1.0f, 0.045f, 0.0075f));
+    shader->setVec3("uLights[0].scatteringCoefficients", glm::vec3(0.05f));
+    shader->setFloat("uLights[0].density", 0.02f);
+    shader->setFloat("uLights[0].enabled", 1.0f);
+
+    for (int i = 1; i < 32; ++i) {
+        shader->setFloat("uLights[" + std::to_string(i) + "].enabled", 0.0f);
+    }
+
+    shader->unuse();
 }
 
 GLuint RenderManager::createBuffer(const std::vector<float>& data, GLenum usage, int components) {

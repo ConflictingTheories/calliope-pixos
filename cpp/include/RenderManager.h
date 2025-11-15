@@ -26,6 +26,7 @@ public:
     // Shader management
     Shader* getDefaultShader() { return defaultShader.get(); }
     Shader* getShader() { return defaultShader.get(); }
+    void applySceneDefaults(Shader* shader);
 
     // Buffer creation
     GLuint createBuffer(const std::vector<float>& data, GLenum usage, int components);

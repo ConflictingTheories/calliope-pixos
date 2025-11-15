@@ -117,17 +117,25 @@ void Zone::renderTiles() {
     auto shader = engine->getRenderManager()->getShader();
     if (!shader) return;
 
+    auto renderManager = engine->getRenderManager();
+    renderManager->applySceneDefaults(shader);
+
     shader->use();
 
-    // Set projection matrix
-    auto renderManager = engine->getRenderManager();
-    shader->setMat4("uProj", renderManager->getProjectionMatrix());
-    // Ensure model is identity unless otherwise set
-    shader->setMat4("uModel", glm::mat4(1.0f));
-    // Ensure sampler uses texture unit 0
-    shader->setInt("uTexture", 0);
-    // Ensure color multiplier is neutral so textures draw with their original colors
-    shader->setVec3("uColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    shader->setMat4("uProjectionMatrix", renderManager->getProjectionMatrix());
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::vec3 cameraPosition(0.0f, 0.0f, 10.0f);
+    if (engine && engine->getCamera()) {
+        viewMatrix = engine->getCamera()->getViewMatrix();
+        cameraPosition = engine->getCamera()->getPosition();
+    }
+    shader->setMat4("uViewMatrix", viewMatrix);
+    shader->setVec3("uCameraPosition", cameraPosition);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    shader->setMat4("uModelMatrix", model);
+    shader->setMat3("uNormalMatrix", glm::mat3(glm::inverseTranspose(model)));
+    shader->setVec4("uColorMultiplier", glm::vec4(1.0f));
 
     // Build per-tileset vertex lists so we can upload and draw each tileset once.
     std::map<std::shared_ptr<Tileset>, std::vector<float>> perTilesetVerts;
@@ -169,15 +177,15 @@ void Zone::renderTiles() {
             }
 
             glm::vec2 worldPos = tileToWorld(y, x);
-            // positions (x,y,0) and texcoords (u,v) per vertex for two triangles
             std::vector<float>& verts = perTilesetVerts[tileset];
+            glm::vec3 normal(0.0f, 0.0f, 1.0f);
             verts.insert(verts.end(), {
-                worldPos.x, worldPos.y, 0.0f,                     tile->uvMin.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y, 0.0f,          tile->uvMax.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  tile->uvMax.x, tile->uvMin.y,
-                worldPos.x, worldPos.y, 0.0f,                     tile->uvMin.x, tile->uvMax.y,
-                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  tile->uvMax.x, tile->uvMin.y,
-                worldPos.x, worldPos.y + tileSize, 0.0f,         tile->uvMin.x, tile->uvMin.y
+                worldPos.x, worldPos.y, 0.0f,                     normal.x, normal.y, normal.z, tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y, 0.0f,          normal.x, normal.y, normal.z, tile->uvMax.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  normal.x, normal.y, normal.z, tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y, 0.0f,                     normal.x, normal.y, normal.z, tile->uvMin.x, tile->uvMax.y,
+                worldPos.x + tileSize, worldPos.y + tileSize, 0.0f,  normal.x, normal.y, normal.z, tile->uvMax.x, tile->uvMin.y,
+                worldPos.x, worldPos.y + tileSize, 0.0f,         normal.x, normal.y, normal.z, tile->uvMin.x, tile->uvMin.y
             });
         }
     }
@@ -188,13 +196,13 @@ void Zone::renderTiles() {
         auto &verts = entry.second;
         if (verts.empty()) continue;
 
-    tileset->bindTexture();
+        tileset->bindTexture();
 
     // Diagnostic: print texture binding and uniform location to debug sampling issues
     GLint boundTex = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &boundTex);
     GLint uTexLoc = -1;
-    if (shader->id) uTexLoc = glGetUniformLocation(shader->id, "uTexture");
+        if (shader->id) uTexLoc = glGetUniformLocation(shader->id, "uSampler");
         std::cout << "Zone::renderTiles DEBUG drawing tileset id='" << tileset->id << "' textureId=" << tileset->textureId
                   << " boundTex=" << boundTex << " uTextureLoc=" << uTexLoc << std::endl;
 
@@ -207,11 +215,11 @@ void Zone::renderTiles() {
 
         // Diagnostic: read back current uColor uniform if available
         if (uTexLoc >= 0 && shader->id) {
-            GLint uColorLoc = glGetUniformLocation(shader->id, "uColor");
+            GLint uColorLoc = glGetUniformLocation(shader->id, "uColorMultiplier");
             if (uColorLoc >= 0) {
                 GLfloat color[4] = {0,0,0,0};
                 glGetUniformfv(shader->id, uColorLoc, color);
-                std::cout << "Zone::renderTiles DEBUG current uColor=(" << color[0] << "," << color[1] << "," << color[2] << "," << color[3] << ")" << std::endl;
+                std::cout << "Zone::renderTiles DEBUG current uColorMultiplier=(" << color[0] << "," << color[1] << "," << color[2] << "," << color[3] << ")" << std::endl;
             }
         }
 
@@ -222,10 +230,12 @@ void Zone::renderTiles() {
         glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
         glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(float), verts.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
         // Draw all vertices as triangles
         // Diagnostic: dump GL state and first vertex data to debug attribute/uv issues
@@ -248,11 +258,12 @@ void Zone::renderTiles() {
             for (size_t i = 0; i < std::min<size_t>(10, verts.size()); ++i) std::cout << verts[i] << ",";
             std::cout << std::endl;
         }
-        GLsizei vertCount = (GLsizei)(verts.size() / 5);
+        GLsizei vertCount = (GLsizei)(verts.size() / 8);
         glDrawArrays(GL_TRIANGLES, 0, vertCount);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         glDeleteBuffers(1, &tileVBO);

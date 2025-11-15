@@ -100,6 +100,9 @@ bool GLEngine::init(int width, int height, const std::string& title) {
     // Initialize managers
     networkManager = std::make_unique<NetworkManager>(this);
     resourceManager = std::make_unique<ResourceManager>(this);
+    camera = std::make_unique<Camera>();
+    camera->init();
+
     renderManager = std::make_unique<RenderManager>(this);
     inputManager = std::make_unique<InputManager>(this);
     hud = std::make_unique<Hud>(this);

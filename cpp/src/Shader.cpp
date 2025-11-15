@@ -58,10 +58,17 @@ void Shader::use() const
     // Ensure the sampler uses texture unit 0 and the color multiplier is neutral so leftover state
     // from other draw calls can't tint or unbind textures unexpectedly.
     if (id != 0) {
-        GLint loc = getUniformLocation("uTexture");
-        if (loc >= 0) glUniform1i(loc, 0);
-        GLint colLoc = getUniformLocation("uColor");
-        if (colLoc >= 0) glUniform3f(colLoc, 1.0f, 1.0f, 1.0f);
+        setInt("uSampler", 0);
+        setInt("uDiffuseMap", 1);
+        setFloat("useSampler", 1.0f);
+        setFloat("useDiffuse", 0.0f);
+        setFloat("runTransition", 0.0f);
+        setFloat("isSelected", 0.0f);
+        setVec4("uColorMultiplier", glm::vec4(1.0f));
+        setVec3("uDiffuse", glm::vec3(0.9f));
+        setVec3("uSpecular", glm::vec3(0.2f));
+        setFloat("uSpecularExponent", 16.0f);
+        setVec3("u_scale", glm::vec3(1.0f));
     }
 }
 
