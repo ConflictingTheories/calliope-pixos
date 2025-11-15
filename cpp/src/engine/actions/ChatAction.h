@@ -18,6 +18,7 @@ private:
     std::string text;
     bool scrolling;
     ActionOptions options;
-    double endTime = 0;
+    bool loaded = false;
     double lastKey = 0;
+    double endTime = 0;
 };

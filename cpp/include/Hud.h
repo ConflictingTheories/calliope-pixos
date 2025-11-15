@@ -4,7 +4,10 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+#include "Action.h"
 
 class GLEngine;
 class Shader;
@@ -28,6 +31,7 @@ public:
 
     // Dialogue
     void showDialogue(const std::string& text, float duration = 3.0f);
+    void scrollText(const std::string& text, bool scrolling, const ActionOptions& options);
     void hideDialogue();
 
     // Properties

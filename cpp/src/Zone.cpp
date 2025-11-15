@@ -824,3 +824,23 @@ void Zone::runScripts(const std::string& trigger, const std::unordered_map<std::
 void Zone::runWhenDeleted() {
     // Placeholder for deletion callbacks
 }
+
+std::vector<std::shared_ptr<Sprite>> Zone::getSpritesAt(float x, float y) const {
+    std::vector<std::shared_ptr<Sprite>> result;
+    for (const auto& pair : sprites) {
+        if (pair.second->pos.x == x && pair.second->pos.y == y) {
+            result.push_back(pair.second);
+        }
+    }
+    return result;
+}
+
+std::vector<std::shared_ptr<Object>> Zone::getObjectsAt(float x, float y) const {
+    std::vector<std::shared_ptr<Object>> result;
+    for (const auto& pair : objects) {
+        if (pair.second->pos.x == x && pair.second->pos.y == y) {
+            result.push_back(pair.second);
+        }
+    }
+    return result;
+}

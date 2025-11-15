@@ -12,13 +12,14 @@ void InteractAction::init(const glm::vec3& from, Direction facing, World* world)
     this->world = world;
     this->from = from;
     this->facing = facing;
-    this->offset = Direction::toOffset(facing);
+    this->offset = DirectionUtils::toOffset(facing);
     this->to = from + offset;
-    this->zone = world->zoneContaining(to.x, to.y);
-    this->spriteList = zone->getSpritesAt(to);
-    this->objectList = zone->getObjectsAt(to);
+    this->zone = world->zoneContaining(to.x, to.y).get();
+    this->spriteList = zone->getSpritesAt(to.x, to.y);
+    this->objectList = zone->getObjectsAt(to.x, to.y);
     this->completed = false;
     this->lastKey = 0;
+    this->loaded = true;
     interact();
 }
 
@@ -29,12 +30,11 @@ void InteractAction::interact() {
     }
 
     for (auto& object : objectList) {
-        object->faceDir(Direction::reverse(facing));
+        object->faceDir(DirectionUtils::reverse(facing));
         object->interact(sprite, [this]() { finish(); });
     }
-
     for (auto& s : spriteList) {
-        s->faceDir(Direction::reverse(facing));
+        s->faceDir(DirectionUtils::reverse(facing));
         s->interact(sprite, [this]() { finish(); });
     }
 }

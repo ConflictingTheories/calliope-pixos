@@ -5,13 +5,12 @@
 #include <iostream>
 
 ChatAction::ChatAction(GLEngine* engine, Sprite* sprite)
-    : Action(engine, ActionType::Chat, {}, sprite) {
+    : Action(engine, ActionType::Dialogue, {}, sprite) {
 }
 
 ChatAction::~ChatAction() {}
 
 void ChatAction::init(const std::string &prompt, bool scrolling, const ActionOptions& options) {
-    this->engine = sprite->getEngine();
     this->text = "";
     this->prompt = prompt;
     this->scrolling = scrolling;

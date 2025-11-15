@@ -18,4 +18,5 @@ private:
     ActionOptions options;
     double lastKey = 0;
     double endTime = 0;
+    bool loaded = false;
 };

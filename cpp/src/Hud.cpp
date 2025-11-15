@@ -70,6 +70,11 @@ void Hud::showDialogue(const std::string& text, float duration) {
     dialogueTimer = duration;
 }
 
+void Hud::scrollText(const std::string& text, bool scrolling, const ActionOptions& options) {
+    // Placeholder: for now, just show as dialogue
+    showDialogue(text, options.duration > 0 ? options.duration : 3.0f);
+}
+
 void Hud::hideDialogue() {
     currentDialogue.clear();
     dialogueTimer = 0.0f;

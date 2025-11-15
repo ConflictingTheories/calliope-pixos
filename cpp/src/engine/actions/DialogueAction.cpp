@@ -8,7 +8,6 @@ DialogueAction::DialogueAction(GLEngine* engine, Sprite* sprite)
 DialogueAction::~DialogueAction() {}
 
 void DialogueAction::init(const std::string& text, bool scrolling, const ActionOptions& options) {
-    this->engine = sprite->getEngine();
     this->text = text;
     this->displayText = text;
     this->scrolling = scrolling;
@@ -22,7 +21,7 @@ bool DialogueAction::tick(double time) {
     if (!loaded) return false;
 
     if (options.autoclose) {
-        if (!endTime) {
+        if (endTime == 0) {
             endTime = time + (options.duration * 1000);
         }
         if (time > endTime) {
@@ -34,7 +33,7 @@ bool DialogueAction::tick(double time) {
     sprite->speak(displayText, false, this);
 
     if (completed && options.onClose) {
-        if (sprite->getSpeech() && sprite->getSpeech()->clearHud) {
+        if (sprite->getSpeech()) {
             sprite->getSpeech()->clearHud();
         }
         options.onClose();

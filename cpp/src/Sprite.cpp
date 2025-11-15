@@ -108,3 +108,30 @@ void Sprite::addAction(std::shared_ptr<Action> action) {
 void Sprite::clearActions() {
     actionQueue.clear();
 }
+
+void Sprite::setGreeting(const std::string& text) {
+    speech = text;
+}
+
+Speech* Sprite::getSpeech() {
+    return speechBubble;
+}
+
+void Sprite::speak(const std::string& text, bool something, Action* action) {
+    speech = text;
+}
+
+void Sprite::faceDir(Direction dir) {
+    // Set rotation based on direction
+    switch (dir) {
+        case Direction::Up: rotation = 0.0f; break;
+        case Direction::Down: rotation = 180.0f; break;
+        case Direction::Right: rotation = 90.0f; break;
+        case Direction::Left: rotation = 270.0f; break;
+    }
+}
+
+void Sprite::interact(Sprite* other, std::function<void()> callback) {
+    // Default interaction
+    if (callback) callback();
+}

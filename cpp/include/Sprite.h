@@ -9,6 +9,15 @@
 
 #include <GL/glew.h>
 
+#include "Direction.h"
+
+class Speech {
+public:
+    void clearHud() {
+        // Placeholder: clear speech
+    }
+};
+
 class Zone;
 class GLEngine;
 class RenderManager;
@@ -74,6 +83,12 @@ public:
     // Speech
     std::string speech;
     float speechTimer;
+    Speech* speechBubble = nullptr;
+    void setGreeting(const std::string& text);
+    Speech* getSpeech();
+    void speak(const std::string& text, bool something, Action* action);
+    void faceDir(Direction dir);
+    void interact(Sprite* other, std::function<void()> callback);
 
     // Lighting
     bool isLit;

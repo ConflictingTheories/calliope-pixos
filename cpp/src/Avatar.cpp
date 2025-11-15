@@ -17,7 +17,7 @@ void Avatar::update(double dt) {
 
     // Update action queue
     for (auto it = actionQueue.begin(); it != actionQueue.end(); ) {
-        if ((*it)->update(dt)) {
+        if ((*it)->tick(dt)) {
             it = actionQueue.erase(it);
         } else {
             ++it;

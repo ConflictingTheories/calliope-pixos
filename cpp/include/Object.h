@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 
+#include "Avatar.h"
+
 class GLEngine;
 class Zone;
 class Sprite;
@@ -23,6 +25,8 @@ public:
     virtual void onInteract(Sprite* interactor);
     virtual void onSelect();
     virtual void onDeselect();
+    void faceDir(Direction dir);
+    void interact(Sprite* interactor, std::function<void()> callback);
 
     // Properties
     std::string id;

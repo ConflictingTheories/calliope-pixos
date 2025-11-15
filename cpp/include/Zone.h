@@ -47,6 +47,7 @@ public:
     void addObject(std::shared_ptr<Object> object);
     void removeObject(const std::string& id);
     std::shared_ptr<Object> getObjectById(const std::string& id) const;
+    std::vector<std::shared_ptr<Object>> getObjectsAt(float x, float y) const;
 
     // Tileset management
     void addTileset(std::shared_ptr<Tileset> tileset);

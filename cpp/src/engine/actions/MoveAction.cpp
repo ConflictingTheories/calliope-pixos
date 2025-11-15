@@ -13,23 +13,25 @@ void MoveAction::init(const glm::vec3& from, const glm::vec3& to, double length,
     this->from = from;
     this->to = to;
     this->length = length;
-    this->spriteList = zone->getSpritesAt(to);
+    this->spriteList = zone->getSpritesAt(to.x, to.y);
+    this->loaded = true;
+    this->startTime = 0;
 }
 
 bool MoveAction::tick(double time) {
     if (!loaded) return false;
 
+    if (startTime == 0) startTime = time;
     double endTime = startTime + length;
     double frac = (time - startTime) / length;
-    if (time >= endTime) {
-        sprite->setPosition(to);
-        frac = 1.0;
-        onStep();
+    if (frac >= 1.0) {
+        if (sprite) sprite->pos = to;
+        completed = true;
     } else {
-        sprite->setPosition(lerp(from, to, frac));
+        if (sprite) sprite->pos = glm::mix(from, to, frac);
     }
 
-    return time >= endTime;
+    return completed;
 }
 
 void MoveAction::onStep() {

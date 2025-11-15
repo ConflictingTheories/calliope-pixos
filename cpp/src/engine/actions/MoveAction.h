@@ -8,7 +8,7 @@ public:
     MoveAction(GLEngine* engine, Sprite* sprite);
     virtual ~MoveAction();
 
-    void init(const glm::vec3& from, const glm::vec3& to, double length, Zone* zone) override;
+    void init(const glm::vec3& from, const glm::vec3& to, double length, Zone* zone);
     bool tick(double time) override;
     void onStep();
 
@@ -18,4 +18,6 @@ private:
     glm::vec3 to;
     double length;
     std::vector<std::shared_ptr<Sprite>> spriteList;
+    bool loaded = false;
+    double startTime = 0;
 };

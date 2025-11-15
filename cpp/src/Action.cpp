@@ -15,9 +15,8 @@ Action::Action(GLEngine* engine, ActionType type, const std::vector<std::string>
 
 Action::~Action() {}
 
-void Action::init() {
-    // Default initialization
-    execute();
+void Action::init(const std::string &prompt, bool scrolling, const ActionOptions& options) {
+    // Default initialization - subclasses override
 }
 
 // (detailed update implementation is defined later in this file)
@@ -27,6 +26,10 @@ void Action::complete() {
     if (onComplete) {
         onComplete();
     }
+}
+
+void Action::checkInput(double time) {
+    // Default - subclasses override
 }
 
 void Action::execute() {
@@ -157,7 +160,7 @@ void Action::execute() {
     }
 }
 
-bool Action::update(double dt) {
+bool Action::tick(double dt) {
     // dt is in seconds from callers
     if (completed) return true;
     // handle Move specially by interpolating
@@ -190,7 +193,6 @@ bool Action::update(double dt) {
 
 // ChatAction implemented in engine/actions/ChatAction.cpp
 // ChatAction is implemented in engine/actions/ChatAction.cpp
-// ...existing code...
 
 // ChangeZoneAction is implemented in engine/actions/ChangeZoneAction.cpp
 

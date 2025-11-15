@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Action.h"
+#include "Avatar.h"
+#include "World.h"
+#include "Object.h"
 #include <vector>
 
 class InteractAction : public Action {
@@ -8,7 +11,7 @@ public:
     InteractAction(GLEngine* engine, Sprite* sprite);
     virtual ~InteractAction();
 
-    void init(const glm::vec3& from, Direction facing, World* world) override;
+    void init(const glm::vec3& from, Direction facing, World* world);
     void interact();
     void finish();
     bool tick(double time) override;
@@ -23,5 +26,6 @@ private:
     Direction facing;
     std::vector<std::shared_ptr<Sprite>> spriteList;
     std::vector<std::shared_ptr<Object>> objectList;
+    bool loaded = false;
     double lastKey = 0;
 };
