@@ -43,24 +43,24 @@ void Avatar::handleInput() {
     if (!engine->getInputManager()) return;
 
     // Movement
-    if (engine->getInputManager()->isActionPressed(InputAction::MoveUp)) {
+    if (engine->getInputManager()->isActionPressed("move_up")) {
         handleWalk("w", {});
     }
-    if (engine->getInputManager()->isActionPressed(InputAction::MoveDown)) {
+    if (engine->getInputManager()->isActionPressed("move_down")) {
         handleWalk("s", {});
     }
-    if (engine->getInputManager()->isActionPressed(InputAction::MoveLeft)) {
+    if (engine->getInputManager()->isActionPressed("move_left")) {
         handleWalk("a", {});
     }
-    if (engine->getInputManager()->isActionPressed(InputAction::MoveRight)) {
+    if (engine->getInputManager()->isActionPressed("move_right")) {
         handleWalk("d", {});
     }
 
     // Actions
-    if (engine->getInputManager()->isActionPressed(InputAction::Interact)) {
+    if (engine->getInputManager()->isActionPressed("interact")) {
         performAction("interact", {});
     }
-    if (engine->getInputManager()->isActionPressed(InputAction::Dance)) {
+    if (engine->getInputManager()->isActionPressed("dance")) {
         handleWalk("u", {});
     }
 }

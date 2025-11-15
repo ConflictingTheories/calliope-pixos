@@ -6,6 +6,7 @@
 #include <vector>
 
 class GLEngine;
+class Sound;
 
 class AudioManager {
 public:
@@ -33,7 +34,7 @@ public:
     void speak(const std::string& text, const std::string& voice = "default", float rate = 1.0f, float volume = 1.0f);
 
     // Resource management
-    void loadSound(const std::string& id, const std::string& path);
+    std::shared_ptr<Sound> loadSound(const std::string& id, const std::string& path);
     void loadMusic(const std::string& id, const std::string& path);
     void unloadSound(const std::string& id);
     void unloadMusic(const std::string& id);

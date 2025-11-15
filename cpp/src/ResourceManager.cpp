@@ -1,6 +1,6 @@
 #include "ResourceManager.h"
 #include "Shader.h"
-#include "Tileset.h"
+#include "Texture.h"
 #include "GLEngine.h"
 #include "AudioManager.h"
 
@@ -33,15 +33,15 @@ std::shared_ptr<Shader> ResourceManager::getShader(const std::string& name) cons
     return nullptr;
 }
 
-std::shared_ptr<Tileset> ResourceManager::loadTexture(const std::string& name, const std::string& path) {
+std::shared_ptr<Texture> ResourceManager::loadTexture(const std::string& name, const std::string& path) {
     if (textures.find(name) != textures.end()) return textures.at(name);
-    auto t = std::make_shared<Tileset>(engine, name);
-    // try loading as a tileset manifest
+    auto t = std::make_shared<Texture>(engine, name);
+    // try loading as a texture
     textures[name] = t;
     return t;
 }
 
-std::shared_ptr<Tileset> ResourceManager::getTexture(const std::string& name) const {
+std::shared_ptr<Texture> ResourceManager::getTexture(const std::string& name) const {
     if (textures.find(name) != textures.end()) return textures.at(name);
     return nullptr;
 }
@@ -85,7 +85,7 @@ void ResourceManager::loadFromManifest(const nlohmann::json& manifest, const std
         }
     }
 
-    // Load tilesets
+    // Load textures
     if (manifest.contains("tilesets")) {
         for (auto& t : manifest["tilesets"]) {
             if (t.contains("id") && t.contains("path")) {

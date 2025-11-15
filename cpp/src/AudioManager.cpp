@@ -1,4 +1,5 @@
 #include "AudioManager.h"
+#include "Sound.h"
 #include <iostream>
 
 AudioManager::AudioManager(GLEngine* engine) : engine(engine), musicVolume(1.0f) {}
@@ -32,7 +33,10 @@ void AudioManager::speak(const std::string& text, const std::string& voice, floa
     std::cout << "AudioManager::speak(\"" << text << "\")" << std::endl;
 }
 
-void AudioManager::loadSound(const std::string& id, const std::string& path) { soundPaths[id] = path; }
+std::shared_ptr<Sound> AudioManager::loadSound(const std::string& id, const std::string& path) {
+    soundPaths[id] = path;
+    return std::make_shared<Sound>(id, path);
+}
 void AudioManager::loadMusic(const std::string& id, const std::string& path) { musicPaths[id] = path; }
 void AudioManager::unloadSound(const std::string& id) { soundPaths.erase(id); }
 void AudioManager::unloadMusic(const std::string& id) { musicPaths.erase(id); }

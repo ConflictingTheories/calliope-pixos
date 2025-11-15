@@ -1,30 +1,76 @@
 #include "Hud.h"
 #include "GLEngine.h"
+#include "Shader.h"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <iostream>
 
-Hud* Hud::_instance = nullptr;
-
-Hud::Hud(GLEngine* engine) {
-    if (!_instance) {
-        this->engine = engine;
-        this->backdropImage = nullptr;
-        _instance = this;
-    }
+Hud::Hud(GLEngine* engine) : engine(engine), dialogueTimer(0.0f) {
+    // Initialize text shader or other resources if needed
 }
 
-Hud* Hud::getInstance(GLEngine* engine) {
-    if (!_instance) {
-        _instance = new Hud(engine);
-    }
-    return _instance;
+Hud::~Hud() {
+    // Cleanup
 }
 
 void Hud::init() {
-    // Setup anything needed at the start (run once)
-    this->ctx = engine->getContext();
+    // Setup text rendering
+    textShader = std::make_shared<Shader>("shaders/text_vertex.glsl", "shaders/text_fragment.glsl");
+    // Setup VAO/VBO for text rendering
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
 }
 
-void Hud::drawButton(const std::string& text, int x, int y, int w, int h, const std::map<std::string, std::string>& colours) {
-    // Drawing logic for the button
-    std::cout << "Drawing button: " << text << " at (" << x << ", " << y << ") with dimensions (" << w << ", " << h << ")" << std::endl;
+void Hud::update(double dt) {
+    if (dialogueTimer > 0.0f) {
+        dialogueTimer -= dt;
+        if (dialogueTimer <= 0.0f) {
+            hideDialogue();
+        }
+    }
+}
+
+void Hud::render() {
+    // Render UI elements
+    if (!currentDialogue.empty()) {
+        drawText(currentDialogue, glm::vec2(10.0f, 10.0f));
+    }
+    // Render other UI
+}
+
+void Hud::drawText(const std::string& text, const glm::vec2& position, const glm::vec4& color) {
+    // Simple text rendering using shader
+    textShader->use();
+    textShader->setVec4("uColor", color);
+    // Bind VAO and draw text quads
+    // This is a placeholder; full implementation would require font atlas
+    glBindVertexArray(textVAO);
+    // For each character, draw quad
+    // ...
+    glBindVertexArray(0);
+}
+
+void Hud::setGreeting(const std::string& text) {
+    greeting = text;
+}
+
+void Hud::drawButton(const std::string& text, const glm::vec4& bounds, bool pressed) {
+    // Draw button using ImGui or custom rendering
+    // Placeholder
+    std::cout << "Drawing button: " << text << std::endl;
+}
+
+void Hud::drawProgressBar(float progress, const glm::vec4& bounds, const glm::vec4& fillColor) {
+    // Draw progress bar
+    // Placeholder
+}
+
+void Hud::showDialogue(const std::string& text, float duration) {
+    currentDialogue = text;
+    dialogueTimer = duration;
+}
+
+void Hud::hideDialogue() {
+    currentDialogue.clear();
+    dialogueTimer = 0.0f;
 }

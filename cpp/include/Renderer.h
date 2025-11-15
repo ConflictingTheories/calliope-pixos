@@ -1,7 +1,6 @@
 #pragma once
 #include "Shader.h"
 #include "Camera.h"
-#include "Skybox.h"
 #include "Unit.h"
 #include "Grid.h"
 #include <vector>
@@ -31,7 +30,6 @@ public:
 private:
     Shader *shader;
     CubeGeometry *cube;
-    Skybox *skybox;
 
     void drawCube(const Mat4 &model, const Vec3 &color);
 };

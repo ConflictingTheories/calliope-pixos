@@ -3,5 +3,4 @@
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
-#include "../third_party/stb_image.h
-"
+#include "../third_party/stb_image.h"

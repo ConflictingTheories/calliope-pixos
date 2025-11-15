@@ -441,6 +441,30 @@ src/CutsceneManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/CutsceneManager.cpp.s
 .PHONY : src/CutsceneManager.cpp.s
 
+src/Database.o: src/Database.cpp.o
+.PHONY : src/Database.o
+
+# target to build an object file
+src/Database.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Database.cpp.o
+.PHONY : src/Database.cpp.o
+
+src/Database.i: src/Database.cpp.i
+.PHONY : src/Database.i
+
+# target to preprocess a source file
+src/Database.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Database.cpp.i
+.PHONY : src/Database.cpp.i
+
+src/Database.s: src/Database.cpp.s
+.PHONY : src/Database.s
+
+# target to generate assembly for a file
+src/Database.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Database.cpp.s
+.PHONY : src/Database.cpp.s
+
 src/Event.o: src/Event.cpp.o
 .PHONY : src/Event.o
 
@@ -536,6 +560,30 @@ src/Game.s: src/Game.cpp.s
 src/Game.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Game.cpp.s
 .PHONY : src/Game.cpp.s
+
+src/Hud.o: src/Hud.cpp.o
+.PHONY : src/Hud.o
+
+# target to build an object file
+src/Hud.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Hud.cpp.o
+.PHONY : src/Hud.cpp.o
+
+src/Hud.i: src/Hud.cpp.i
+.PHONY : src/Hud.i
+
+# target to preprocess a source file
+src/Hud.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Hud.cpp.i
+.PHONY : src/Hud.cpp.i
+
+src/Hud.s: src/Hud.cpp.s
+.PHONY : src/Hud.s
+
+# target to generate assembly for a file
+src/Hud.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Hud.cpp.s
+.PHONY : src/Hud.cpp.s
 
 src/InputHandler.o: src/InputHandler.cpp.o
 .PHONY : src/InputHandler.o
@@ -729,6 +777,30 @@ src/Renderer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Renderer.cpp.s
 .PHONY : src/Renderer.cpp.s
 
+src/ResourceManager.o: src/ResourceManager.cpp.o
+.PHONY : src/ResourceManager.o
+
+# target to build an object file
+src/ResourceManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ResourceManager.cpp.o
+.PHONY : src/ResourceManager.cpp.o
+
+src/ResourceManager.i: src/ResourceManager.cpp.i
+.PHONY : src/ResourceManager.i
+
+# target to preprocess a source file
+src/ResourceManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ResourceManager.cpp.i
+.PHONY : src/ResourceManager.cpp.i
+
+src/ResourceManager.s: src/ResourceManager.cpp.s
+.PHONY : src/ResourceManager.s
+
+# target to generate assembly for a file
+src/ResourceManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/ResourceManager.cpp.s
+.PHONY : src/ResourceManager.cpp.s
+
 src/ScriptInterpreter.o: src/ScriptInterpreter.cpp.o
 .PHONY : src/ScriptInterpreter.o
 
@@ -777,6 +849,30 @@ src/Shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Shader.cpp.s
 .PHONY : src/Shader.cpp.s
 
+src/Skybox.o: src/Skybox.cpp.o
+.PHONY : src/Skybox.o
+
+# target to build an object file
+src/Skybox.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Skybox.cpp.o
+.PHONY : src/Skybox.cpp.o
+
+src/Skybox.i: src/Skybox.cpp.i
+.PHONY : src/Skybox.i
+
+# target to preprocess a source file
+src/Skybox.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Skybox.cpp.i
+.PHONY : src/Skybox.cpp.i
+
+src/Skybox.s: src/Skybox.cpp.s
+.PHONY : src/Skybox.s
+
+# target to generate assembly for a file
+src/Skybox.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Skybox.cpp.s
+.PHONY : src/Skybox.cpp.s
+
 src/Sprite.o: src/Sprite.cpp.o
 .PHONY : src/Sprite.o
 
@@ -824,6 +920,30 @@ src/Spritz.s: src/Spritz.cpp.s
 src/Spritz.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Spritz.cpp.s
 .PHONY : src/Spritz.cpp.s
+
+src/Store.o: src/Store.cpp.o
+.PHONY : src/Store.o
+
+# target to build an object file
+src/Store.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Store.cpp.o
+.PHONY : src/Store.cpp.o
+
+src/Store.i: src/Store.cpp.i
+.PHONY : src/Store.i
+
+# target to preprocess a source file
+src/Store.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Store.cpp.i
+.PHONY : src/Store.cpp.i
+
+src/Store.s: src/Store.cpp.s
+.PHONY : src/Store.s
+
+# target to generate assembly for a file
+src/Store.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Store.cpp.s
+.PHONY : src/Store.cpp.s
 
 src/Tileset.o: src/Tileset.cpp.o
 .PHONY : src/Tileset.o
@@ -921,6 +1041,270 @@ src/Zone.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/Zone.cpp.s
 .PHONY : src/Zone.cpp.s
 
+src/engine/actions/AnimateAction.o: src/engine/actions/AnimateAction.cpp.o
+.PHONY : src/engine/actions/AnimateAction.o
+
+# target to build an object file
+src/engine/actions/AnimateAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/AnimateAction.cpp.o
+.PHONY : src/engine/actions/AnimateAction.cpp.o
+
+src/engine/actions/AnimateAction.i: src/engine/actions/AnimateAction.cpp.i
+.PHONY : src/engine/actions/AnimateAction.i
+
+# target to preprocess a source file
+src/engine/actions/AnimateAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/AnimateAction.cpp.i
+.PHONY : src/engine/actions/AnimateAction.cpp.i
+
+src/engine/actions/AnimateAction.s: src/engine/actions/AnimateAction.cpp.s
+.PHONY : src/engine/actions/AnimateAction.s
+
+# target to generate assembly for a file
+src/engine/actions/AnimateAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/AnimateAction.cpp.s
+.PHONY : src/engine/actions/AnimateAction.cpp.s
+
+src/engine/actions/ChangeZoneAction.o: src/engine/actions/ChangeZoneAction.cpp.o
+.PHONY : src/engine/actions/ChangeZoneAction.o
+
+# target to build an object file
+src/engine/actions/ChangeZoneAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChangeZoneAction.cpp.o
+.PHONY : src/engine/actions/ChangeZoneAction.cpp.o
+
+src/engine/actions/ChangeZoneAction.i: src/engine/actions/ChangeZoneAction.cpp.i
+.PHONY : src/engine/actions/ChangeZoneAction.i
+
+# target to preprocess a source file
+src/engine/actions/ChangeZoneAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChangeZoneAction.cpp.i
+.PHONY : src/engine/actions/ChangeZoneAction.cpp.i
+
+src/engine/actions/ChangeZoneAction.s: src/engine/actions/ChangeZoneAction.cpp.s
+.PHONY : src/engine/actions/ChangeZoneAction.s
+
+# target to generate assembly for a file
+src/engine/actions/ChangeZoneAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChangeZoneAction.cpp.s
+.PHONY : src/engine/actions/ChangeZoneAction.cpp.s
+
+src/engine/actions/ChatAction.o: src/engine/actions/ChatAction.cpp.o
+.PHONY : src/engine/actions/ChatAction.o
+
+# target to build an object file
+src/engine/actions/ChatAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChatAction.cpp.o
+.PHONY : src/engine/actions/ChatAction.cpp.o
+
+src/engine/actions/ChatAction.i: src/engine/actions/ChatAction.cpp.i
+.PHONY : src/engine/actions/ChatAction.i
+
+# target to preprocess a source file
+src/engine/actions/ChatAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChatAction.cpp.i
+.PHONY : src/engine/actions/ChatAction.cpp.i
+
+src/engine/actions/ChatAction.s: src/engine/actions/ChatAction.cpp.s
+.PHONY : src/engine/actions/ChatAction.s
+
+# target to generate assembly for a file
+src/engine/actions/ChatAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ChatAction.cpp.s
+.PHONY : src/engine/actions/ChatAction.cpp.s
+
+src/engine/actions/DialogueAction.o: src/engine/actions/DialogueAction.cpp.o
+.PHONY : src/engine/actions/DialogueAction.o
+
+# target to build an object file
+src/engine/actions/DialogueAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/DialogueAction.cpp.o
+.PHONY : src/engine/actions/DialogueAction.cpp.o
+
+src/engine/actions/DialogueAction.i: src/engine/actions/DialogueAction.cpp.i
+.PHONY : src/engine/actions/DialogueAction.i
+
+# target to preprocess a source file
+src/engine/actions/DialogueAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/DialogueAction.cpp.i
+.PHONY : src/engine/actions/DialogueAction.cpp.i
+
+src/engine/actions/DialogueAction.s: src/engine/actions/DialogueAction.cpp.s
+.PHONY : src/engine/actions/DialogueAction.s
+
+# target to generate assembly for a file
+src/engine/actions/DialogueAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/DialogueAction.cpp.s
+.PHONY : src/engine/actions/DialogueAction.cpp.s
+
+src/engine/actions/InteractAction.o: src/engine/actions/InteractAction.cpp.o
+.PHONY : src/engine/actions/InteractAction.o
+
+# target to build an object file
+src/engine/actions/InteractAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/InteractAction.cpp.o
+.PHONY : src/engine/actions/InteractAction.cpp.o
+
+src/engine/actions/InteractAction.i: src/engine/actions/InteractAction.cpp.i
+.PHONY : src/engine/actions/InteractAction.i
+
+# target to preprocess a source file
+src/engine/actions/InteractAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/InteractAction.cpp.i
+.PHONY : src/engine/actions/InteractAction.cpp.i
+
+src/engine/actions/InteractAction.s: src/engine/actions/InteractAction.cpp.s
+.PHONY : src/engine/actions/InteractAction.s
+
+# target to generate assembly for a file
+src/engine/actions/InteractAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/InteractAction.cpp.s
+.PHONY : src/engine/actions/InteractAction.cpp.s
+
+src/engine/actions/MoveAction.o: src/engine/actions/MoveAction.cpp.o
+.PHONY : src/engine/actions/MoveAction.o
+
+# target to build an object file
+src/engine/actions/MoveAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/MoveAction.cpp.o
+.PHONY : src/engine/actions/MoveAction.cpp.o
+
+src/engine/actions/MoveAction.i: src/engine/actions/MoveAction.cpp.i
+.PHONY : src/engine/actions/MoveAction.i
+
+# target to preprocess a source file
+src/engine/actions/MoveAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/MoveAction.cpp.i
+.PHONY : src/engine/actions/MoveAction.cpp.i
+
+src/engine/actions/MoveAction.s: src/engine/actions/MoveAction.cpp.s
+.PHONY : src/engine/actions/MoveAction.s
+
+# target to generate assembly for a file
+src/engine/actions/MoveAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/MoveAction.cpp.s
+.PHONY : src/engine/actions/MoveAction.cpp.s
+
+src/engine/actions/PromptAction.o: src/engine/actions/PromptAction.cpp.o
+.PHONY : src/engine/actions/PromptAction.o
+
+# target to build an object file
+src/engine/actions/PromptAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/PromptAction.cpp.o
+.PHONY : src/engine/actions/PromptAction.cpp.o
+
+src/engine/actions/PromptAction.i: src/engine/actions/PromptAction.cpp.i
+.PHONY : src/engine/actions/PromptAction.i
+
+# target to preprocess a source file
+src/engine/actions/PromptAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/PromptAction.cpp.i
+.PHONY : src/engine/actions/PromptAction.cpp.i
+
+src/engine/actions/PromptAction.s: src/engine/actions/PromptAction.cpp.s
+.PHONY : src/engine/actions/PromptAction.s
+
+# target to generate assembly for a file
+src/engine/actions/PromptAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/PromptAction.cpp.s
+.PHONY : src/engine/actions/PromptAction.cpp.s
+
+src/engine/actions/ScriptAction.o: src/engine/actions/ScriptAction.cpp.o
+.PHONY : src/engine/actions/ScriptAction.o
+
+# target to build an object file
+src/engine/actions/ScriptAction.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ScriptAction.cpp.o
+.PHONY : src/engine/actions/ScriptAction.cpp.o
+
+src/engine/actions/ScriptAction.i: src/engine/actions/ScriptAction.cpp.i
+.PHONY : src/engine/actions/ScriptAction.i
+
+# target to preprocess a source file
+src/engine/actions/ScriptAction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ScriptAction.cpp.i
+.PHONY : src/engine/actions/ScriptAction.cpp.i
+
+src/engine/actions/ScriptAction.s: src/engine/actions/ScriptAction.cpp.s
+.PHONY : src/engine/actions/ScriptAction.s
+
+# target to generate assembly for a file
+src/engine/actions/ScriptAction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/actions/ScriptAction.cpp.s
+.PHONY : src/engine/actions/ScriptAction.cpp.s
+
+src/engine/events/CameraEvent.o: src/engine/events/CameraEvent.cpp.o
+.PHONY : src/engine/events/CameraEvent.o
+
+# target to build an object file
+src/engine/events/CameraEvent.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/CameraEvent.cpp.o
+.PHONY : src/engine/events/CameraEvent.cpp.o
+
+src/engine/events/CameraEvent.i: src/engine/events/CameraEvent.cpp.i
+.PHONY : src/engine/events/CameraEvent.i
+
+# target to preprocess a source file
+src/engine/events/CameraEvent.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/CameraEvent.cpp.i
+.PHONY : src/engine/events/CameraEvent.cpp.i
+
+src/engine/events/CameraEvent.s: src/engine/events/CameraEvent.cpp.s
+.PHONY : src/engine/events/CameraEvent.s
+
+# target to generate assembly for a file
+src/engine/events/CameraEvent.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/CameraEvent.cpp.s
+.PHONY : src/engine/events/CameraEvent.cpp.s
+
+src/engine/events/ChatEvent.o: src/engine/events/ChatEvent.cpp.o
+.PHONY : src/engine/events/ChatEvent.o
+
+# target to build an object file
+src/engine/events/ChatEvent.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/ChatEvent.cpp.o
+.PHONY : src/engine/events/ChatEvent.cpp.o
+
+src/engine/events/ChatEvent.i: src/engine/events/ChatEvent.cpp.i
+.PHONY : src/engine/events/ChatEvent.i
+
+# target to preprocess a source file
+src/engine/events/ChatEvent.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/ChatEvent.cpp.i
+.PHONY : src/engine/events/ChatEvent.cpp.i
+
+src/engine/events/ChatEvent.s: src/engine/events/ChatEvent.cpp.s
+.PHONY : src/engine/events/ChatEvent.s
+
+# target to generate assembly for a file
+src/engine/events/ChatEvent.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/ChatEvent.cpp.s
+.PHONY : src/engine/events/ChatEvent.cpp.s
+
+src/engine/events/MenuEvent.o: src/engine/events/MenuEvent.cpp.o
+.PHONY : src/engine/events/MenuEvent.o
+
+# target to build an object file
+src/engine/events/MenuEvent.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/MenuEvent.cpp.o
+.PHONY : src/engine/events/MenuEvent.cpp.o
+
+src/engine/events/MenuEvent.i: src/engine/events/MenuEvent.cpp.i
+.PHONY : src/engine/events/MenuEvent.i
+
+# target to preprocess a source file
+src/engine/events/MenuEvent.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/MenuEvent.cpp.i
+.PHONY : src/engine/events/MenuEvent.cpp.i
+
+src/engine/events/MenuEvent.s: src/engine/events/MenuEvent.cpp.s
+.PHONY : src/engine/events/MenuEvent.s
+
+# target to generate assembly for a file
+src/engine/events/MenuEvent.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PixospritzOpenGL.dir/build.make CMakeFiles/PixospritzOpenGL.dir/src/engine/events/MenuEvent.cpp.s
+.PHONY : src/engine/events/MenuEvent.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -1017,6 +1401,9 @@ help:
 	@echo "... src/CutsceneManager.o"
 	@echo "... src/CutsceneManager.i"
 	@echo "... src/CutsceneManager.s"
+	@echo "... src/Database.o"
+	@echo "... src/Database.i"
+	@echo "... src/Database.s"
 	@echo "... src/Event.o"
 	@echo "... src/Event.i"
 	@echo "... src/Event.s"
@@ -1029,6 +1416,9 @@ help:
 	@echo "... src/Game.o"
 	@echo "... src/Game.i"
 	@echo "... src/Game.s"
+	@echo "... src/Hud.o"
+	@echo "... src/Hud.i"
+	@echo "... src/Hud.s"
 	@echo "... src/InputHandler.o"
 	@echo "... src/InputHandler.i"
 	@echo "... src/InputHandler.s"
@@ -1053,18 +1443,27 @@ help:
 	@echo "... src/Renderer.o"
 	@echo "... src/Renderer.i"
 	@echo "... src/Renderer.s"
+	@echo "... src/ResourceManager.o"
+	@echo "... src/ResourceManager.i"
+	@echo "... src/ResourceManager.s"
 	@echo "... src/ScriptInterpreter.o"
 	@echo "... src/ScriptInterpreter.i"
 	@echo "... src/ScriptInterpreter.s"
 	@echo "... src/Shader.o"
 	@echo "... src/Shader.i"
 	@echo "... src/Shader.s"
+	@echo "... src/Skybox.o"
+	@echo "... src/Skybox.i"
+	@echo "... src/Skybox.s"
 	@echo "... src/Sprite.o"
 	@echo "... src/Sprite.i"
 	@echo "... src/Sprite.s"
 	@echo "... src/Spritz.o"
 	@echo "... src/Spritz.i"
 	@echo "... src/Spritz.s"
+	@echo "... src/Store.o"
+	@echo "... src/Store.i"
+	@echo "... src/Store.s"
 	@echo "... src/Tileset.o"
 	@echo "... src/Tileset.i"
 	@echo "... src/Tileset.s"
@@ -1077,6 +1476,39 @@ help:
 	@echo "... src/Zone.o"
 	@echo "... src/Zone.i"
 	@echo "... src/Zone.s"
+	@echo "... src/engine/actions/AnimateAction.o"
+	@echo "... src/engine/actions/AnimateAction.i"
+	@echo "... src/engine/actions/AnimateAction.s"
+	@echo "... src/engine/actions/ChangeZoneAction.o"
+	@echo "... src/engine/actions/ChangeZoneAction.i"
+	@echo "... src/engine/actions/ChangeZoneAction.s"
+	@echo "... src/engine/actions/ChatAction.o"
+	@echo "... src/engine/actions/ChatAction.i"
+	@echo "... src/engine/actions/ChatAction.s"
+	@echo "... src/engine/actions/DialogueAction.o"
+	@echo "... src/engine/actions/DialogueAction.i"
+	@echo "... src/engine/actions/DialogueAction.s"
+	@echo "... src/engine/actions/InteractAction.o"
+	@echo "... src/engine/actions/InteractAction.i"
+	@echo "... src/engine/actions/InteractAction.s"
+	@echo "... src/engine/actions/MoveAction.o"
+	@echo "... src/engine/actions/MoveAction.i"
+	@echo "... src/engine/actions/MoveAction.s"
+	@echo "... src/engine/actions/PromptAction.o"
+	@echo "... src/engine/actions/PromptAction.i"
+	@echo "... src/engine/actions/PromptAction.s"
+	@echo "... src/engine/actions/ScriptAction.o"
+	@echo "... src/engine/actions/ScriptAction.i"
+	@echo "... src/engine/actions/ScriptAction.s"
+	@echo "... src/engine/events/CameraEvent.o"
+	@echo "... src/engine/events/CameraEvent.i"
+	@echo "... src/engine/events/CameraEvent.s"
+	@echo "... src/engine/events/ChatEvent.o"
+	@echo "... src/engine/events/ChatEvent.i"
+	@echo "... src/engine/events/ChatEvent.s"
+	@echo "... src/engine/events/MenuEvent.o"
+	@echo "... src/engine/events/MenuEvent.i"
+	@echo "... src/engine/events/MenuEvent.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

@@ -5,6 +5,12 @@
 #include "World.h"
 #include "Spritz.h"
 #include "Camera.h"
+#include "Hud.h"
+#include "Database.h"
+#include "Store.h"
+#include "NetworkManager.h"
+#include "ResourceManager.h"
+#include "AudioManager.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -17,10 +23,10 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-GLEngine::GLEngine() : window(nullptr), initialized(false) {}
+GLEngine::GLEngine() : window(nullptr), initialized(false), running(false), frameCount(0), time(0.0), fullscreen(false), width(800), height(600) {}
 
 GLEngine::GLEngine(const std::string& gamePath, const nlohmann::json& manifest)
-    : window(nullptr), initialized(false), gamePath(gamePath), manifest(manifest) {}
+    : window(nullptr), initialized(false), running(false), frameCount(0), time(0.0), fullscreen(false), gamePath(gamePath), manifest(manifest), width(800), height(600) {}
 
 GLEngine::~GLEngine() {
     if (window) {
@@ -91,7 +97,41 @@ bool GLEngine::init(int width, int height, const std::string& title) {
         return false;
     }
 
-    // Managers and world will be created after package selection in run()
+    // Initialize managers
+    networkManager = std::make_unique<NetworkManager>(this);
+    resourceManager = std::make_unique<ResourceManager>(this);
+    renderManager = std::make_unique<RenderManager>(this);
+    inputManager = std::make_unique<InputManager>(this);
+    hud = std::make_unique<Hud>(this);
+    database = std::make_unique<Database>(this);
+    store = std::make_unique<Store>(this);
+    audioManager = std::make_unique<AudioManager>(this);
+
+    // Initialize input manager
+    inputManager->init();
+
+    // Initialize HUD
+    hud->init();
+
+    // Initialize render manager
+    renderManager->init();
+
+    // Deprecated pointers
+    keyboard = inputManager.get();
+    mouse = inputManager.get();
+    touch = inputManager.get();
+
+    // Initialize network if enabled
+    if (manifest.contains("network") && manifest["network"]["enabled"]) {
+        // networkManager->connect(manifest["network"]["url"], 8080); // TODO: Parse URL
+        if (manifest["network"].contains("authority")) {
+            // networkManager->setAuthority(manifest["network"]["authority"]);
+        }
+    }
+
+    // Initialize Spritz
+    spritz = std::make_unique<Spritz>(this);
+    spritz->init(gamePath, manifest);
 
     // Setup ImGui context and backends (only once, after OpenGL context is current)
     IMGUI_CHECKVERSION();
@@ -108,13 +148,75 @@ bool GLEngine::init(int width, int height, const std::string& title) {
 void GLEngine::render() {
     if (!initialized) return;
 
-    // Clear the screen
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    frameCount++;
 
-    if (renderManager) {
-        renderManager->render();
+    // Reset debug counters at the start of each frame
+    // if (renderManager && renderManager->resetDebugCounters) {
+    //     renderManager->resetDebugCounters();
+    // }
+
+    // Clear canvases
+    // hud->clearHud();
+    // Draw active mode label (if any)
+    // if (hud->drawModeLabel) hud->drawModeLabel();
+    // renderManager->clearScreen();
+
+    double timestamp = glfwGetTime() * 1000.0; // Convert to milliseconds
+
+    // Update Input Manager
+    inputManager->update(timestamp);
+
+    // Object picking pass (for selection) - only if mode has picker enabled
+    // if (modeManager->hasPicker()) {
+    //     // Enable picker shader
+    //     renderManager->activatePickerShaderProgram(false);
+    //     spritz->render(this, timestamp); // Render scene for picking pass
+    // }
+
+    // Update and render based on the active game mode
+    if (!inputManager->handleInput(timestamp)) {
+        // If mode doesn't handle input, do default update
+        spritz->update(timestamp);
     }
+
+    // Sync input mode with game mode
+    // const std::string currentMode = modeManager->getMode();
+    // if (currentMode != inputManager->getMode()) {
+    //     inputManager->setMode(currentMode);
+    // }
+
+    // Core render loop (actually render scene to screen)
+    // renderManager->clearScreen();
+    // Draw skybox first, with depth writes disabled
+    glDepthMask(false);
+    // renderManager->renderSkybox();
+    glDepthMask(true);
+    // Now draw world tiles/objects, then sprites
+    // renderManager->activateShaderProgram();
+
+    // modeManager->update(timestamp); // Update active mode
+
+    // Allow particle system to update physics with a stable timestamp
+    // if (renderManager->updateParticles) {
+    //     try { renderManager->updateParticles(timestamp); } catch (const std::exception& e) { std::cerr << "updateParticles failed: " << e.what() << std::endl; }
+    // }
+
+    spritz->render(); // Render scene (might be overridden by mode)
+
+    // cutsceneManager->update(); // Update cutscene (if applicable)
+    // renderManager->updateTransition(); // Update transitions
+
+    // Render particles after main scene but before HUD/gamepad
+    // if (renderManager->renderParticles) {
+    //     try { renderManager->renderParticles(); } catch (const std::exception& e) { std::cerr << "renderParticles failed: " << e.what() << std::endl; }
+    // }
+
+    // Render gamepad (may be optimizable?)
+    inputManager->renderGamepad();
+
+    // Update debug overlay if enabled
+    // TODO: Implement debug overlays
+
     glfwSwapBuffers(window);
 }
 
@@ -299,6 +401,13 @@ void GLEngine::run() {
     }
 }
 
+void GLEngine::close() {
+    running = false;
+    if (window) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+}
+
 void GLEngine::shutdown() {
     // Shutdown ImGui (only once)
     ImGui_ImplOpenGL3_Shutdown();
@@ -312,6 +421,33 @@ void GLEngine::shutdown() {
         glfwDestroyWindow(window);
         glfwTerminate();
     }
+}
+
+int GLEngine::getSelectedObject(const std::string& type, bool useFrustum) {
+    // When FreeCam is active, suppress picking
+    // TODO: Implement freecam check
+    if (false) return -1; // Placeholder
+    if (!spritz || !spritz->world || (spritz->world->spriteList.empty() && spritz->world->objectList.empty() && spritz->world->zoneList.empty())) {
+        return -1; // No pickable objects
+    }
+
+    // TODO: Implement object picking logic using color picking
+    // For now, return -1
+    return -1;
+}
+
+void GLEngine::speechSynthesis(const std::string& text, const std::string* voice, const std::string* lang, float* rate, float* volume, float* pitch) {
+    // Placeholder for speech synthesis
+    // In WebGL, this uses SpeechSynthesis API
+    // In C++, could use a library like espeak or TTS
+    voiceText = text;
+    if (voice) this->voice = *voice;
+    if (lang) voiceLang = *lang;
+    if (rate) voiceRate = *rate;
+    if (volume) voiceVolume = *volume;
+    if (pitch) voicePitch = *pitch;
+    // TODO: Implement actual TTS
+    std::cout << "Speech: " << text << std::endl;
 }
 
 glm::vec2 GLEngine::screenSize() const {

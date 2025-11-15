@@ -3,10 +3,12 @@ project(PixospritzOpenGL)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_definitions(-DGLEW_STATIC)
+
 
 # Ensure OpenGL is included before GLEW
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR} BEFORE)
+# find_package(OpenGL REQUIRED)
+# include_directories(${OPENGL_INCLUDE_DIR} BEFORE)
 
 # Add nlohmann/json
 include(FetchContent)
