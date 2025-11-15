@@ -113,3 +113,12 @@ void InputManager::handleGamepad() {
     // Update gamepad state if needed
     SDL_GameControllerUpdate();
 }
+
+std::unordered_map<std::string, bool> InputManager::checkInput() {
+    std::unordered_map<std::string, bool> inputMap;
+    // Populate with current input state
+    inputMap["start"] = isKeyPressed("ENTER") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START));
+    inputMap["select"] = isKeyPressed("TAB") || (gamepad && SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_BACK));
+    // Add more as needed
+    return inputMap;
+}

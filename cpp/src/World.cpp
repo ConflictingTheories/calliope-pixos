@@ -304,11 +304,7 @@ void World::tickOuter(double time) {
     }
 
     for (const auto& event : toRemove) {
-        removeAction(event->getId());
-    }
-
-    if (tick && !isPaused) {
-        tick(time);
+        removeEvent(event->getId());
     }
 
     if (!isPaused && modeManager) {
@@ -325,10 +321,10 @@ void World::checkInput(double time) {
         }
 
         auto touchmap = engine->getGamepad()->checkInput();
-        if (engine->getGamepad()->keyPressed("start")) {
+        if (engine->getGamepad()->isKeyPressed("start")) {
             touchmap["start"] = 0;
         }
-        if (engine->getGamepad()->keyPressed("select")) {
+        if (engine->getGamepad()->isKeyPressed("select")) {
             touchmap["select"] = 0;
             engine->toggleFullscreen();
         }
@@ -336,8 +332,9 @@ void World::checkInput(double time) {
 }
 
 void World::startMenu(const nlohmann::json& menuConfig, const std::vector<std::string>& defaultMenus) {
-    auto event = std::make_shared<EventLoader>(engine, "menu", menuConfig, defaultMenus, false);
-    addEvent(event);
+    // auto event = std::make_shared<EventLoader>(engine, "menu", menuConfig, defaultMenus, false);
+    // addEvent(event);
+    // TODO: Implement menu event creation
 }
 
 void World::draw() {
@@ -467,19 +464,19 @@ void World::addRemoteAvatar(const std::string& clientId, const nlohmann::json& a
     auto it = remoteAvatars.find(clientId);
     if (it != remoteAvatars.end()) {
         auto& existing = it->second;
-        if (avatarData.x) existing->pos.x = avatarData.x.value();
-        if (avatarData.y) existing->pos.y = avatarData.y.value();
-        if (avatarData.z) existing->pos.z = avatarData.z.value();
-        if (avatarData.facing) existing->facing = avatarData.facing.value();
+        if (avatarData.contains("x")) existing->pos.x = avatarData["x"];
+        if (avatarData.contains("y")) existing->pos.y = avatarData["y"];
+        if (avatarData.contains("z")) existing->pos.z = avatarData["z"];
+        if (avatarData.contains("facing")) existing->facing = avatarData["facing"];
         return;
     }
 
     auto avatar = std::make_shared<Avatar>(engine);
     avatar->id = clientId;
-    if (avatarData.x) avatar->pos.x = avatarData.x.value();
-    if (avatarData.y) avatar->pos.y = avatarData.y.value();
-    if (avatarData.z) avatar->pos.z = avatarData.z.value();
-    if (avatarData.facing) avatar->facing = avatarData.facing.value();
+    if (avatarData.contains("x")) avatar->pos.x = avatarData["x"];
+    if (avatarData.contains("y")) avatar->pos.y = avatarData["y"];
+    if (avatarData.contains("z")) avatar->pos.z = avatarData["z"];
+    if (avatarData.contains("facing")) avatar->facing = avatarData["facing"];
 
     remoteAvatars[clientId] = avatar;
     addAvatar(avatar);
