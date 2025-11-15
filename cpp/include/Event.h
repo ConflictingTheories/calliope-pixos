@@ -10,6 +10,18 @@
 class GLEngine;
 class World;
 
+struct EventOptions {
+    bool autoclose = false;
+    float duration = 0.0f;
+    std::function<void()> onClose;
+};
+
+struct CameraEventOptions {
+    bool autoclose = false;
+    float duration = 0.0f;
+    std::function<void()> onClose;
+};
+
 class Event {
 public:
     Event(const std::string& type, World* world, std::function<void()> callback = nullptr);
@@ -52,4 +64,10 @@ public:
     virtual bool tick(double dt);
 
     GLEngine* engine;
+
+    // Getters
+    bool isLoaded() const { return loaded; }
+    long getStartTime() const { return startTime; }
+    bool isPausable() const { return pausable; }
+    std::string getId() const { return id; }
 };

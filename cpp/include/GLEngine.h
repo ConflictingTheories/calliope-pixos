@@ -44,6 +44,10 @@ public:
 
     GLFWwindow* getWindow() { return window; }
 
+    InputManager* getGamepad() { return inputManager.get(); }
+
+    void toggleFullscreen();
+
     std::string greeting;
 
     // Speech synthesis voice - placeholder

@@ -319,3 +319,26 @@ glm::vec2 GLEngine::screenSize() const {
     glfwGetWindowSize(window, &width, &height);
     return glm::vec2(width, height);
 }
+
+void GLEngine::toggleFullscreen() {
+    static bool fullscreen = false;
+    static int windowed_x, windowed_y, windowed_width, windowed_height;
+    
+    if (!fullscreen) {
+        // Save windowed position and size
+        glfwGetWindowPos(window, &windowed_x, &windowed_y);
+        glfwGetWindowSize(window, &windowed_width, &windowed_height);
+        
+        // Get monitor
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        
+        // Set fullscreen
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        fullscreen = true;
+    } else {
+        // Restore windowed
+        glfwSetWindowMonitor(window, nullptr, windowed_x, windowed_y, windowed_width, windowed_height, 0);
+        fullscreen = false;
+    }
+}

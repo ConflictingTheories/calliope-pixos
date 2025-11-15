@@ -41,6 +41,8 @@ public:
     bool isKeyHeld(const std::string& key);
     bool isMouseButtonPressed(int button);
 
+    std::unordered_map<std::string, bool> checkInput();
+
     // Getters
     double getMouseX() const { return mouseX; }
     double getMouseY() const { return mouseY; }

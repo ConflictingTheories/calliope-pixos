@@ -60,7 +60,7 @@ private:
     std::unordered_map<int, int> clientSockets; // clientId -> socket
 
     std::queue<NetworkMessage> messageQueue;
-    std::mutex queueMutex;
+    mutable std::mutex queueMutex;
 
     std::thread networkThreadHandle;
     bool running;

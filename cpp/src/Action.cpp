@@ -188,41 +188,7 @@ bool Action::update(double dt) {
     return false;
 }
 
-// ChatAction Implementation
-void ChatAction::init(const std::string& prompt, bool scrolling, const ActionOptions& options) {
-    this->engine = sprite->getEngine();
-    this->text = "";
-    this->prompt = prompt;
-    this->scrolling = scrolling;
-    this->line = 0;
-    this->options = options;
-    this->completed = false;
-    this->lastKey = std::chrono::system_clock::now();
-}
-
-bool ChatAction::tick(double time) {
-    if (!loaded) return false;
-
-    if (options.autoclose) {
-        if (!endTime) {
-            endTime = time + 10000; // Default to 10 seconds
-        }
-        if (time > endTime) {
-            completed = true;
-        }
-    }
-
-    checkInput(time);
-    engine->getHud()->scrollText(prompt + text, scrolling, options);
-    return completed;
-}
-
-void ChatAction::checkInput(double time) {
-    if (time > lastKey + 100) {
-        lastKey = time;
-        // Handle input logic here
-    }
-}
+// ChatAction implemented in engine/actions/ChatAction.cpp
 // ChatAction is implemented in engine/actions/ChatAction.cpp
 // ...existing code...
 

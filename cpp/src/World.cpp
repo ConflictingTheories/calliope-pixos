@@ -335,7 +335,7 @@ void World::checkInput(double time) {
     }
 }
 
-void World::startMenu(const MenuConfig& menuConfig, const std::vector<std::string>& defaultMenus) {
+void World::startMenu(const nlohmann::json& menuConfig, const std::vector<std::string>& defaultMenus) {
     auto event = std::make_shared<EventLoader>(engine, "menu", menuConfig, defaultMenus, false);
     addEvent(event);
 }
@@ -463,7 +463,7 @@ std::shared_ptr<Avatar> World::getAvatar() const {
     return nullptr;
 }
 
-void World::addRemoteAvatar(const std::string& clientId, const AvatarData& avatarData) {
+void World::addRemoteAvatar(const std::string& clientId, const nlohmann::json& avatarData) {
     auto it = remoteAvatars.find(clientId);
     if (it != remoteAvatars.end()) {
         auto& existing = it->second;
