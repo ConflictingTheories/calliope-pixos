@@ -361,17 +361,21 @@ export default class InputManager {
           case 'clear_speech':
             return avatar.speech.clearHud();
           case 'move_up':
-            avatar.faceDir(Direction.adjustCameraDirection(this.engine.renderManager.camera.cameraVector))
-            return avatar.handleWalk('w', {});
+            // Get the direction the camera is facing and move forward relative to it
+            const upDir = Direction.getCameraRelativeDirection('forward', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('w', {}, upDir);
           case 'move_down':
-            avatar.faceDir(Direction.reverse(Direction.adjustCameraDirection(this.engine.renderManager.camera.cameraVector)))
-            return avatar.handleWalk('s', {});
+            // Move backward relative to camera
+            const downDir = Direction.getCameraRelativeDirection('backward', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('s', {}, downDir);
           case 'move_left':
-            avatar.faceDir(Direction.rotate(Direction.adjustCameraDirection(this.engine.renderManager.camera.cameraVector), true))
-            return avatar.handleWalk('a', {});
+            // Move left relative to camera
+            const leftDir = Direction.getCameraRelativeDirection('left', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('a', {}, leftDir);
           case 'move_right':
-            avatar.faceDir(Direction.rotate(Direction.adjustCameraDirection(this.engine.renderManager.camera.cameraVector), false))
-            return avatar.handleWalk('d', {});
+            // Move right relative to camera
+            const rightDir = Direction.getCameraRelativeDirection('right', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('d', {}, rightDir);
           case 'face_up':
             return avatar.faceDir("N"); // Assuming Direction.Up = 0
           case 'face_down':

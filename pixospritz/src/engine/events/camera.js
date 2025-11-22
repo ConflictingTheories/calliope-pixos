@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { lerp } from '@Engine/utils/math/vector.js';
+import { lerp, Vector } from '@Engine/utils/math/vector.js';
 import { Camera } from '@Engine/core/render/camera.js'; // Import Camera class for JSDoc
 import { Direction } from '@Engine/utils/enums.js';
 
@@ -78,9 +78,13 @@ export default {
         if (this.options.from && this.options.to) {
           const from = this.options.from;
           const to = this.options.to;
-          // Interpolate camera target position
-          const newTarget = lerp(from, to, progress);
-          camera.setTarget(newTarget);
+          // Interpolate cameraVector for legacy camera system
+          const newVector = lerp(from, to, progress, new Vector(0, 0, 0));
+          camera.cameraVector.x = newVector.x;
+          camera.cameraVector.y = newVector.y;
+          camera.cameraVector.z = newVector.z;
+          // Update cameraDir based on cameraVector.z for sprite rendering
+          camera.cameraDir = Direction.adjustCameraDirection(camera.cameraVector);
         }
         break;
       case 'zoom':

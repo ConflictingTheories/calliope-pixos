@@ -13,6 +13,7 @@
 
 import { create, normalize, rotate, translate, set } from '../../utils/math/matrix4.js';
 import { Vector, negate, degToRad } from '../../utils/math/vector.js';
+import { Direction } from '../../utils/enums.js';
 import RenderManager from './manager.js';
 import { subtractVectors } from '../../utils/math/matrix4.js';
 
@@ -84,6 +85,9 @@ export class Camera {
     rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.z), [0, 0, 1]);
     negate(this.cameraPosition, this.cameraOffset);
     translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
+    
+    // Update cameraDir based on cameraVector.z for sprite rendering
+    this.cameraDir = Direction.adjustCameraDirection(this.cameraVector);
   }
 
   /**
@@ -179,6 +183,23 @@ export class Camera {
   // world up (Z-up coordinate system)
   const up = new Vector(0, 0, 1);
   this.lookAt(pos, target, up);
+  
+  // Update cameraDir and cameraVector for sprite rendering
+  // Convert yaw (radians) to 8-directional facing
+  // yaw = 0 is East (+X), increases counter-clockwise
+  let yawDeg = (this.yaw * 180 / Math.PI) % 360;
+  if (yawDeg < 0) yawDeg += 360;
+  
+  // Map yaw to 8 directions (N, NE, E, SE, S, SW, W, NW)
+  // Adjust so 0° = North, 90° = West, 180° = South, 270° = East
+  let adjustedYaw = (90 - yawDeg + 360) % 360;
+  let octant = Math.round(adjustedYaw / 45) % 8;
+  
+  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  this.cameraDir = directions[octant];
+  
+  // Update cameraVector for legacy compatibility
+  this.cameraVector.z = octant;
   }
 
   /**
