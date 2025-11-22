@@ -512,25 +512,110 @@
     </div>
 
     <!-- Geometry Editor Dialog -->
-    <div id="geometryEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+    <div id="geometryEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
         <h2 style="margin-bottom: 15px;">Geometry Editor</h2>
-        <div class="form-group">
-            <label>Geometry Name:</label>
-            <input type="text" id="geometryName" placeholder="e.g., FLAT_ALL, WALL_T">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Left Panel: 3D Preview -->
+            <div>
+                <h3 style="margin-bottom: 10px;">3D Preview</h3>
+                <div style="background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 3px; position: relative;">
+                    <canvas id="geometryPreviewCanvas" width="500" height="500" style="width: 500px; height: 500px; display: block;"></canvas>
+                    <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 3px; font-size: 10px;">
+                        Drag to rotate | Scroll to zoom
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 12px;">
+                        <input type="checkbox" id="showWireframe" onchange="updateGeometryPreview()" checked> Show Wireframe
+                    </label>
+                    <label style="font-size: 12px; margin-left: 15px;">
+                        <input type="checkbox" id="showVertexNumbers" onchange="updateGeometryPreview()"> Show Vertex Numbers
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Properties -->
+            <div>
+                <div class="form-group">
+                    <label>Geometry Name:</label>
+                    <input type="text" id="geometryName" placeholder="e.g., FLAT_ALL, WALL_T">
+                </div>
+                <div class="form-group">
+                    <label>Type (bitmask for collision):</label>
+                    <input type="number" id="geometryType" value="15" min="0" max="255">
+                    <div class="info-text">15 = all sides solid, 0 = passthrough</div>
+                </div>
+                
+                <h3 style="margin: 15px 0 10px;">Triangles</h3>
+                <div id="trianglesList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 300px; overflow-y: auto;"></div>
+                <button class="secondary" onclick="addTriangle()">+ Add Triangle</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Type (bitmask for collision):</label>
-            <input type="number" id="geometryType" value="15" min="0" max="255">
-            <div class="info-text">15 = all sides solid, 0 = passthrough</div>
-        </div>
-        <div class="form-group">
-            <label>Triangles:</label>
-            <div id="trianglesList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 250px; overflow-y: auto;"></div>
-            <button class="secondary" onclick="addTriangle()">+ Add Triangle</button>
-        </div>
-        <div class="btn-group">
+        
+        <div class="btn-group" style="margin-top: 20px;">
             <button onclick="saveGeometry()">Save Geometry</button>
             <button class="secondary" onclick="closeGeometryEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Tile Visual Editor Dialog -->
+    <div id="tileVisualEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Visual Tile Editor</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Left Panel: 3D Preview -->
+            <div>
+                <h3 style="margin-bottom: 10px;">Tile Preview</h3>
+                <div style="background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 3px; position: relative;">
+                    <canvas id="tilePreviewCanvas" width="500" height="500" style="width: 500px; height: 500px; display: block;"></canvas>
+                    <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 3px; font-size: 10px;">
+                        Click component to select | Drag to rotate
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 12px;">
+                        <input type="checkbox" id="showComponentBounds" onchange="updateTilePreview()" checked> Highlight Components
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Component List -->
+            <div>
+                <div class="form-group">
+                    <label>Tile Name:</label>
+                    <input type="text" id="tileName" placeholder="e.g., FLOOR, N_WALL">
+                </div>
+                
+                <h3 style="margin: 15px 0 10px;">Components</h3>
+                <div id="tileComponentsList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 350px; overflow-y: auto;"></div>
+                <button class="secondary" onclick="addTileComponent()">+ Add Component</button>
+            </div>
+        </div>
+        
+        <div class="btn-group" style="margin-top: 20px;">
+            <button onclick="saveTile()">Save Tile</button>
+            <button class="secondary" onclick="closeTileEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Texture Picker Dialog -->
+    <div id="texturePickerDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2001; max-width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Pick Texture from Atlas</h2>
+        <div style="background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 3px; overflow: auto; max-height: 500px; position: relative;">
+            <canvas id="texturePickerCanvas" style="cursor: crosshair; image-rendering: pixelated;"></canvas>
+        </div>
+        <div class="info-text" style="margin-top: 10px;">
+            Click on a tile in the texture atlas to select it. Tile size: <span id="pickerTileSize">16</span>px
+        </div>
+        <div style="margin-top: 10px; padding: 10px; background: #1e1e1e; border-radius: 3px;">
+            Selected: <strong id="pickerSelectedCoords">None</strong>
+        </div>
+        <div class="btn-group" style="margin-top: 15px;">
+            <button onclick="applyTexturePick()">Apply</button>
+            <button class="secondary" onclick="closeDialog('texturePickerDialog')">Cancel</button>
         </div>
     </div>
 
@@ -761,6 +846,20 @@
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
                 console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
                 gl.deleteShader(shader);
+                return null;
+            }
+            
+            return shader;
+        }
+        
+        function compileShaderForContext(glContext, type, source) {
+            const shader = glContext.createShader(type);
+            glContext.shaderSource(shader, source);
+            glContext.compileShader(shader);
+            
+            if (!glContext.getShaderParameter(shader, glContext.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', glContext.getShaderInfoLog(shader));
+                glContext.deleteShader(shader);
                 return null;
             }
             
@@ -1909,17 +2008,28 @@
         let currentTriangles = [];
         let editingTileName = null;
         let editingGeometryName = null;
+        let selectedTriangleIndex = -1;
+        let selectedComponentIndex = -1;
+        let geometryPreviewGL = null;
+        let tilePreviewGL = null;
+        let geometryPreviewCamera = { distance: 3, angleX: -0.5, angleY: 0.5 };
+        let tilePreviewCamera = { distance: 3, angleX: -0.5, angleY: 0.5 };
+        let texturePickerCallback = null;
+        let texturePickerContext = null;
         
         function showAddTileDialog() {
             editingTileName = null;
             currentTileComponents = [];
+            selectedComponentIndex = -1;
             document.getElementById('tileName').value = '';
             updateTileComponentsList();
-            showDialog('tileEditorDialog');
+            initTilePreview();
+            showDialog('tileVisualEditorDialog');
         }
 
         function editTile(tileName) {
             editingTileName = tileName;
+            selectedComponentIndex = -1;
             const tileData = state.tiles[tileName];
             
             document.getElementById('tileName').value = tileName;
@@ -1935,13 +2045,17 @@
             }
             
             updateTileComponentsList();
-            showDialog('tileEditorDialog');
+            initTilePreview();
+            showDialog('tileVisualEditorDialog');
         }
 
         function addTileComponent() {
+            const geometryNames = Object.keys(state.geometry);
+            const textureNames = state.tileset && state.tileset.textures ? Object.keys(state.tileset.textures) : [];
+            
             currentTileComponents.push({
-                geometry: 'FLAT_ALL',
-                texture: 'FLOOR',
+                geometry: geometryNames.length > 0 ? geometryNames[0] : 'FLAT_ALL',
+                texture: textureNames.length > 0 ? textureNames[0] : 'FLOOR',
                 height: 0
             });
             updateTileComponentsList();
@@ -1969,36 +2083,40 @@
             
             let html = '';
             currentTileComponents.forEach((comp, i) => {
+                const isSelected = i === selectedComponentIndex;
                 html += `
-                    <div style="background: #2d2d30; padding: 10px; margin-bottom: 8px; border-radius: 3px;">
+                    <div style="background: ${isSelected ? '#0e639c' : '#2d2d30'}; padding: 10px; margin-bottom: 8px; border-radius: 3px; cursor: pointer; border: 2px solid ${isSelected ? '#1177bb' : 'transparent'};" onclick="selectComponent(${i})">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <strong>Component ${i + 1}</strong>
-                            <button class="secondary" onclick="removeTileComponent(${i})" style="padding: 4px 8px;">Remove</button>
+                            <button class="secondary" onclick="event.stopPropagation(); removeTileComponent(${i})" style="padding: 4px 8px;">Remove</button>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                             <div>
                                 <label style="font-size: 11px;">Geometry:</label>
-                                <select onchange="updateTileComponent(${i}, 'geometry', this.value)" style="width: 100%; font-size: 12px;">
+                                <select onchange="updateTileComponent(${i}, 'geometry', this.value); updateTilePreview();" style="width: 100%; font-size: 12px;">
                                     ${geometryNames.map(g => 
                                         `<option value="${g}" ${comp.geometry === g ? 'selected' : ''}>${g}</option>`
                                     ).join('')}
                                 </select>
                             </div>
-                            <div>
+                            <div style="display: flex; flex-direction: column;">
                                 <label style="font-size: 11px;">Texture:</label>
-                                <select onchange="updateTileComponent(${i}, 'texture', this.value)" style="width: 100%; font-size: 12px;">
-                                    ${textureNames.length > 0 ? 
-                                        textureNames.map(t => 
-                                            `<option value="${t}" ${comp.texture === t ? 'selected' : ''}>${t}</option>`
-                                        ).join('') : 
-                                        `<option value="${comp.texture}">${comp.texture}</option>`
-                                    }
-                                </select>
+                                <div style="display: flex; gap: 4px;">
+                                    <select onchange="updateTileComponent(${i}, 'texture', this.value); updateTilePreview();" style="flex: 1; font-size: 12px;">
+                                        ${textureNames.length > 0 ? 
+                                            textureNames.map(t => 
+                                                `<option value="${t}" ${comp.texture === t ? 'selected' : ''}>${t}</option>`
+                                            ).join('') : 
+                                            `<option value="${comp.texture}">${comp.texture}</option>`
+                                        }
+                                    </select>
+                                    <button class="secondary" onclick="event.stopPropagation(); openTexturePicker(${i})" style="padding: 4px 8px; font-size: 11px;">Pick</button>
+                                </div>
                             </div>
                             <div>
                                 <label style="font-size: 11px;">Height:</label>
                                 <input type="number" value="${comp.height}" step="0.1" 
-                                    onchange="updateTileComponent(${i}, 'height', parseFloat(this.value))" 
+                                    onchange="updateTileComponent(${i}, 'height', parseFloat(this.value)); updateTilePreview();" 
                                     style="width: 100%; font-size: 12px;">
                             </div>
                         </div>
@@ -2006,6 +2124,12 @@
                 `;
             });
             container.innerHTML = html;
+            updateTilePreview();
+        }
+
+        function selectComponent(index) {
+            selectedComponentIndex = index;
+            updateTileComponentsList();
         }
 
         function updateTileComponent(index, field, value) {
@@ -2037,11 +2161,12 @@
         }
 
         function closeTileEditor() {
-            closeDialog('tileEditorDialog');
+            closeDialog('tileVisualEditorDialog');
         }
 
         function showAddGeometryDialog() {
             editingGeometryName = null;
+            selectedTriangleIndex = -1;
             currentTriangles = [
                 {
                     vertices: [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
@@ -2055,11 +2180,13 @@
             document.getElementById('geometryName').value = '';
             document.getElementById('geometryType').value = '15';
             updateTrianglesList();
+            initGeometryPreview();
             showDialog('geometryEditorDialog');
         }
 
         function editGeometry(geomName) {
             editingGeometryName = geomName;
+            selectedTriangleIndex = -1;
             const geom = state.geometry[geomName];
             
             document.getElementById('geometryName').value = geomName;
@@ -2079,6 +2206,7 @@
             }
             
             updateTrianglesList();
+            initGeometryPreview();
             showDialog('geometryEditorDialog');
         }
 
@@ -2104,24 +2232,25 @@
             
             let html = '';
             currentTriangles.forEach((tri, i) => {
+                const isSelected = i === selectedTriangleIndex;
                 html += `
-                    <div style="background: #2d2d30; padding: 10px; margin-bottom: 8px; border-radius: 3px;">
+                    <div style="background: ${isSelected ? '#0e639c' : '#2d2d30'}; padding: 10px; margin-bottom: 8px; border-radius: 3px; cursor: pointer; border: 2px solid ${isSelected ? '#1177bb' : 'transparent'};" onclick="selectTriangle(${i})">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <strong>Triangle ${i + 1}</strong>
-                            <button class="secondary" onclick="removeTriangle(${i})" style="padding: 4px 8px;">Remove</button>
+                            <button class="secondary" onclick="event.stopPropagation(); removeTriangle(${i})" style="padding: 4px 8px;">Remove</button>
                         </div>
                         <div style="font-size: 11px;">
                             <div style="margin-bottom: 4px;"><strong>Vertices (x,y,z):</strong></div>
                             ${tri.vertices.map((v, vi) => `
                                 <div style="display: flex; gap: 4px; margin-bottom: 4px;">
                                     <input type="number" value="${v[0]}" step="0.1" 
-                                        onchange="updateTriangleVertex(${i}, ${vi}, 0, parseFloat(this.value))"
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 0, parseFloat(this.value)); updateGeometryPreview();"
                                         style="width: 60px; font-size: 11px;" placeholder="x">
                                     <input type="number" value="${v[1]}" step="0.1" 
-                                        onchange="updateTriangleVertex(${i}, ${vi}, 1, parseFloat(this.value))"
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 1, parseFloat(this.value)); updateGeometryPreview();"
                                         style="width: 60px; font-size: 11px;" placeholder="y">
                                     <input type="number" value="${v[2]}" step="0.1" 
-                                        onchange="updateTriangleVertex(${i}, ${vi}, 2, parseFloat(this.value))"
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 2, parseFloat(this.value)); updateGeometryPreview();"
                                         style="width: 60px; font-size: 11px;" placeholder="z">
                                 </div>
                             `).join('')}
@@ -2141,6 +2270,12 @@
                 `;
             });
             container.innerHTML = html;
+            updateGeometryPreview();
+        }
+
+        function selectTriangle(index) {
+            selectedTriangleIndex = index;
+            updateTrianglesList();
         }
 
         function updateTriangleVertex(triIndex, vertIndex, coord, value) {
@@ -2307,6 +2442,548 @@
             const arrow = header.querySelector('span:last-child');
             content.classList.toggle('collapsed');
             arrow.textContent = content.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        // ============================================
+        // Visual Geometry Preview
+        // ============================================
+        function initGeometryPreview() {
+            const canvas = document.getElementById('geometryPreviewCanvas');
+            if (!canvas) {
+                console.error('geometryPreviewCanvas not found');
+                return;
+            }
+            
+            geometryPreviewGL = canvas.getContext('webgl2');
+            if (!geometryPreviewGL) {
+                console.error('Failed to get WebGL2 context for geometry preview');
+                return;
+            }
+            
+            console.log('Initializing geometry preview...');
+            
+            // Set canvas size and viewport
+            canvas.width = 500;
+            canvas.height = 500;
+            geometryPreviewGL.viewport(0, 0, 500, 500);
+            
+            const vShader = compileShaderForContext(geometryPreviewGL, geometryPreviewGL.VERTEX_SHADER, vertexShaderSource);
+            const fShader = compileShaderForContext(geometryPreviewGL, geometryPreviewGL.FRAGMENT_SHADER, fragmentShaderSource);
+            if (!vShader || !fShader) {
+                console.error('Failed to compile shaders for geometry preview');
+                return;
+            }
+            
+            const program = geometryPreviewGL.createProgram();
+            geometryPreviewGL.attachShader(program, vShader);
+            geometryPreviewGL.attachShader(program, fShader);
+            geometryPreviewGL.linkProgram(program);
+            
+            if (!geometryPreviewGL.getProgramParameter(program, geometryPreviewGL.LINK_STATUS)) {
+                console.error('Program link error:', geometryPreviewGL.getProgramInfoLog(program));
+                return;
+            }
+            
+            console.log('Geometry preview initialized successfully');
+            canvas.geomProgram = program;
+            
+            let isDragging = false;
+            let lastX = 0, lastY = 0;
+            
+            canvas.onmousedown = (e) => {
+                if (e.button === 0 && !e.shiftKey) {
+                    isDragging = true;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                } else if (e.button === 0 && e.shiftKey) {
+                    // Shift+Click to cycle through triangles
+                    if (currentTriangles.length > 0) {
+                        selectedTriangleIndex = (selectedTriangleIndex + 1) % currentTriangles.length;
+                        updateTrianglesList();
+                    }
+                }
+            };
+            
+            canvas.onmousemove = (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+                geometryPreviewCamera.angleY -= dx * 0.01;
+                geometryPreviewCamera.angleX += dy * 0.01;
+                geometryPreviewCamera.angleX = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, geometryPreviewCamera.angleX));
+                lastX = e.clientX;
+                lastY = e.clientY;
+                updateGeometryPreview();
+            };
+            
+            canvas.onmouseup = () => isDragging = false;
+            canvas.onmouseleave = () => isDragging = false;
+            
+            canvas.onwheel = (e) => {
+                e.preventDefault();
+                geometryPreviewCamera.distance *= e.deltaY > 0 ? 1.1 : 0.9;
+                geometryPreviewCamera.distance = Math.max(1, Math.min(10, geometryPreviewCamera.distance));
+                updateGeometryPreview();
+            };
+            
+            updateGeometryPreview();
+        }
+        
+        function updateGeometryPreview() {
+            const canvas = document.getElementById('geometryPreviewCanvas');
+            if (!canvas || !geometryPreviewGL || !canvas.geomProgram) {
+                console.log('Preview not ready:', {canvas: !!canvas, gl: !!geometryPreviewGL, program: !!canvas?.geomProgram});
+                return;
+            }
+            
+            console.log('Updating geometry preview with', currentTriangles.length, 'triangles');
+            
+            const gl = geometryPreviewGL;
+            gl.clearColor(0.12, 0.12, 0.12, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            
+            gl.useProgram(canvas.geomProgram);
+            
+            const projMatrix = createMat4();
+            perspective(projMatrix, Math.PI / 4, 1, 0.1, 100);
+            
+            const camX = geometryPreviewCamera.distance * Math.cos(geometryPreviewCamera.angleX) * Math.cos(geometryPreviewCamera.angleY);
+            const camY = geometryPreviewCamera.distance * Math.cos(geometryPreviewCamera.angleX) * Math.sin(geometryPreviewCamera.angleY);
+            const camZ = geometryPreviewCamera.distance * Math.sin(geometryPreviewCamera.angleX);
+            
+            const viewMatrix = createMat4();
+            lookAt(viewMatrix, [camX, camY, camZ], [0.5, 0.5, 0], [0, 0, 1]);
+            
+            const modelViewMatrix = createMat4();
+            identity(modelViewMatrix);
+            const combined = createMat4();
+            multiplyMatrices(combined, viewMatrix, modelViewMatrix);
+            
+            const uProjectionMatrix = gl.getUniformLocation(canvas.geomProgram, 'uProjectionMatrix');
+            const uModelViewMatrix = gl.getUniformLocation(canvas.geomProgram, 'uModelViewMatrix');
+            const uUseTexture = gl.getUniformLocation(canvas.geomProgram, 'uUseTexture');
+            const uColor = gl.getUniformLocation(canvas.geomProgram, 'uColor');
+            const uShowGrid = gl.getUniformLocation(canvas.geomProgram, 'uShowGrid');
+            const uIsHovered = gl.getUniformLocation(canvas.geomProgram, 'uIsHovered');
+            
+            gl.uniformMatrix4fv(uProjectionMatrix, false, projMatrix);
+            gl.uniformMatrix4fv(uModelViewMatrix, false, combined);
+            gl.uniform1i(uShowGrid, false);
+            gl.uniform1i(uUseTexture, 0);
+            
+            const showWireframe = document.getElementById('showWireframe')?.checked;
+            const showVertexNumbers = document.getElementById('showVertexNumbers')?.checked;
+            
+            // Render triangles
+            currentTriangles.forEach((tri, idx) => {
+                const isSelected = idx === selectedTriangleIndex;
+                gl.uniform1i(uIsHovered, isSelected);
+                gl.uniform3f(uColor, isSelected ? 1.0 : 0.6, isSelected ? 0.8 : 0.6, isSelected ? 0.3 : 0.6);
+                
+                const vertices = [];
+                const normals = [];
+                
+                tri.vertices.forEach((v, i) => {
+                    vertices.push(v[0], v[1], v[2]);
+                });
+                
+                // Calculate normal
+                const v1 = [
+                    tri.vertices[1][0] - tri.vertices[0][0],
+                    tri.vertices[1][1] - tri.vertices[0][1],
+                    tri.vertices[1][2] - tri.vertices[0][2]
+                ];
+                const v2 = [
+                    tri.vertices[2][0] - tri.vertices[0][0],
+                    tri.vertices[2][1] - tri.vertices[0][1],
+                    tri.vertices[2][2] - tri.vertices[0][2]
+                ];
+                const normal = [
+                    v1[1] * v2[2] - v1[2] * v2[1],
+                    v1[2] * v2[0] - v1[0] * v2[2],
+                    v1[0] * v2[1] - v1[1] * v2[0]
+                ];
+                const len = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2);
+                if (len > 0) {
+                    normal[0] /= len; normal[1] /= len; normal[2] /= len;
+                }
+                normals.push(...normal, ...normal, ...normal);
+                
+                const posBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                const aPosition = gl.getAttribLocation(canvas.geomProgram, 'aPosition');
+                gl.enableVertexAttribArray(aPosition);
+                gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+                
+                const texBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1]), gl.STATIC_DRAW);
+                const aTexCoord = gl.getAttribLocation(canvas.geomProgram, 'aTexCoord');
+                gl.enableVertexAttribArray(aTexCoord);
+                gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
+                
+                const normBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, normBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+                const aNormal = gl.getAttribLocation(canvas.geomProgram, 'aNormal');
+                gl.enableVertexAttribArray(aNormal);
+                gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+                
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+                
+                // Draw wireframe
+                if (showWireframe) {
+                    gl.uniform3f(uColor, 0, 1, 0);
+                    gl.drawArrays(gl.LINE_LOOP, 0, 3);
+                }
+                
+                gl.deleteBuffer(posBuffer);
+                gl.deleteBuffer(texBuffer);
+                gl.deleteBuffer(normBuffer);
+            });
+        }
+
+        // ============================================
+        // Visual Tile Preview
+        // ============================================
+        function initTilePreview() {
+            const canvas = document.getElementById('tilePreviewCanvas');
+            if (!canvas) {
+                console.error('tilePreviewCanvas not found');
+                return;
+            }
+            
+            tilePreviewGL = canvas.getContext('webgl2');
+            if (!tilePreviewGL) {
+                console.error('Failed to get WebGL2 context for tile preview');
+                return;
+            }
+            
+            console.log('Initializing tile preview...');
+            console.log('Current tile components:', currentTileComponents);
+            console.log('Available geometry:', Object.keys(state.geometry));
+            
+            // Set canvas size and viewport
+            canvas.width = 500;
+            canvas.height = 500;
+            tilePreviewGL.viewport(0, 0, 500, 500);
+            
+            // Compile shaders for preview
+            const vShader = compileShaderForContext(tilePreviewGL, tilePreviewGL.VERTEX_SHADER, vertexShaderSource);
+            const fShader = compileShaderForContext(tilePreviewGL, tilePreviewGL.FRAGMENT_SHADER, fragmentShaderSource);
+            if (!vShader || !fShader) {
+                console.error('Failed to compile shaders for tile preview');
+                return;
+            }
+            
+            const program = tilePreviewGL.createProgram();
+            tilePreviewGL.attachShader(program, vShader);
+            tilePreviewGL.attachShader(program, fShader);
+            tilePreviewGL.linkProgram(program);
+            
+            if (!tilePreviewGL.getProgramParameter(program, tilePreviewGL.LINK_STATUS)) {
+                console.error('Program link error:', tilePreviewGL.getProgramInfoLog(program));
+                return;
+            }
+            
+            console.log('Tile preview initialized successfully');
+            canvas.tileProgram = program;
+            
+            // Setup mouse controls
+            let isDragging = false;
+            let lastX = 0, lastY = 0;
+            
+            canvas.onmousedown = (e) => {
+                if (e.button === 0 && !e.shiftKey) {
+                    isDragging = true;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                } else if (e.button === 0 && e.shiftKey) {
+                    // Shift+Click to cycle through components
+                    if (currentTileComponents.length > 0) {
+                        selectedComponentIndex = (selectedComponentIndex + 1) % currentTileComponents.length;
+                        updateTileComponentsList();
+                    }
+                }
+            };
+            
+            canvas.onmousemove = (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+                tilePreviewCamera.angleY -= dx * 0.01;
+                tilePreviewCamera.angleX += dy * 0.01;
+                tilePreviewCamera.angleX = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, tilePreviewCamera.angleX));
+                lastX = e.clientX;
+                lastY = e.clientY;
+                updateTilePreview();
+            };
+            
+            canvas.onmouseup = () => isDragging = false;
+            canvas.onmouseleave = () => isDragging = false;
+            
+            canvas.onwheel = (e) => {
+                e.preventDefault();
+                tilePreviewCamera.distance *= e.deltaY > 0 ? 1.1 : 0.9;
+                tilePreviewCamera.distance = Math.max(1, Math.min(10, tilePreviewCamera.distance));
+                updateTilePreview();
+            };
+            
+            updateTilePreview();
+        }
+        
+        function updateTilePreview() {
+            const canvas = document.getElementById('tilePreviewCanvas');
+            if (!canvas || !tilePreviewGL || !canvas.tileProgram) {
+                console.log('Tile preview not ready:', {canvas: !!canvas, gl: !!tilePreviewGL, program: !!canvas?.tileProgram});
+                return;
+            }
+            
+            console.log('Updating tile preview with', currentTileComponents.length, 'components');
+            
+            const gl = tilePreviewGL;
+            gl.clearColor(0.12, 0.12, 0.12, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
+            
+            gl.useProgram(canvas.tileProgram);
+            
+            // Setup camera
+            const projMatrix = createMat4();
+            perspective(projMatrix, Math.PI / 4, 1, 0.1, 100);
+            
+            const camX = tilePreviewCamera.distance * Math.cos(tilePreviewCamera.angleX) * Math.cos(tilePreviewCamera.angleY);
+            const camY = tilePreviewCamera.distance * Math.cos(tilePreviewCamera.angleX) * Math.sin(tilePreviewCamera.angleY);
+            const camZ = tilePreviewCamera.distance * Math.sin(tilePreviewCamera.angleX);
+            
+            const viewMatrix = createMat4();
+            lookAt(viewMatrix, [camX, camY, camZ], [0.5, 0.5, 0], [0, 0, 1]);
+            
+            const uProjectionMatrix = gl.getUniformLocation(canvas.tileProgram, 'uProjectionMatrix');
+            const uModelViewMatrix = gl.getUniformLocation(canvas.tileProgram, 'uModelViewMatrix');
+            const uUseTexture = gl.getUniformLocation(canvas.tileProgram, 'uUseTexture');
+            const uColor = gl.getUniformLocation(canvas.tileProgram, 'uColor');
+            const uShowGrid = gl.getUniformLocation(canvas.tileProgram, 'uShowGrid');
+            const uIsHovered = gl.getUniformLocation(canvas.tileProgram, 'uIsHovered');
+            const uTexture = gl.getUniformLocation(canvas.tileProgram, 'uTexture');
+            
+            gl.uniformMatrix4fv(uProjectionMatrix, false, projMatrix);
+            gl.uniform1i(uShowGrid, false);
+            
+            // Render each component
+            currentTileComponents.forEach((comp, idx) => {
+                const isSelected = idx === selectedComponentIndex;
+                gl.uniform1i(uIsHovered, isSelected);
+                
+                const geom = state.geometry[comp.geometry];
+                if (!geom) return;
+                
+                const modelViewMatrix = createMat4();
+                identity(modelViewMatrix);
+                const combined = createMat4();
+                multiplyMatrices(combined, viewMatrix, modelViewMatrix);
+                gl.uniformMatrix4fv(uModelViewMatrix, false, combined);
+                
+                renderGeometryPreview(gl, geom, comp.texture, comp.height, uUseTexture, uColor, uTexture, canvas.tileProgram);
+            });
+        }
+        
+        function renderGeometryPreview(gl, geom, textureName, heightOffset, uUseTexture, uColor, uTexture, program) {
+            if (!geom.vertices || geom.vertices.length === 0) return;
+            
+            const vertices = [];
+            const texCoords = [];
+            const normals = [];
+            
+            for (let i = 0; i < geom.vertices.length; i++) {
+                const tri = geom.vertices[i];
+                const texTri = geom.surfaces && geom.surfaces[i] ? geom.surfaces[i] : [[0,0],[1,0],[1,1]];
+                
+                for (let j = 0; j < 3; j++) {
+                    vertices.push(tri[j][0], tri[j][1], tri[j][2] + heightOffset);
+                    
+                    if (textureName && state.tileset && state.tileset.textures[textureName]) {
+                        const texPos = state.tileset.textures[textureName];
+                        const tileSize = state.tileset.tileSize || 16;
+                        const sheetSize = state.tileset.sheetSize || [512, 512];
+                        const u = (texPos[0] * tileSize + texTri[j][0] * tileSize) / sheetSize[0];
+                        const v = (texPos[1] * tileSize + texTri[j][1] * tileSize) / sheetSize[1];
+                        texCoords.push(u, v);
+                    } else {
+                        texCoords.push(texTri[j][0], texTri[j][1]);
+                    }
+                    
+                    if (j === 0 && tri.length === 3) {
+                        const v1 = [tri[1][0] - tri[0][0], tri[1][1] - tri[0][1], tri[1][2] - tri[0][2]];
+                        const v2 = [tri[2][0] - tri[0][0], tri[2][1] - tri[0][1], tri[2][2] - tri[0][2]];
+                        const normal = [
+                            v1[1] * v2[2] - v1[2] * v2[1],
+                            v1[2] * v2[0] - v1[0] * v2[2],
+                            v1[0] * v2[1] - v1[1] * v2[0]
+                        ];
+                        const len = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2);
+                        if (len > 0) {
+                            normal[0] /= len; normal[1] /= len; normal[2] /= len;
+                        }
+                        normals.push(...normal, ...normal, ...normal);
+                    }
+                }
+            }
+            
+            const posBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+            const aPosition = gl.getAttribLocation(program, 'aPosition');
+            gl.enableVertexAttribArray(aPosition);
+            gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+            
+            const texBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+            const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
+            gl.enableVertexAttribArray(aTexCoord);
+            gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
+            
+            const normBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, normBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+            const aNormal = gl.getAttribLocation(program, 'aNormal');
+            gl.enableVertexAttribArray(aNormal);
+            gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+            
+            if (textureName && state.texture) {
+                gl.uniform1i(uUseTexture, 1);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, state.texture);
+                gl.uniform1i(uTexture, 0);
+            } else {
+                gl.uniform1i(uUseTexture, 0);
+                gl.uniform3f(uColor, 0.7, 0.7, 0.7);
+            }
+            
+            gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+            
+            gl.deleteBuffer(posBuffer);
+            gl.deleteBuffer(texBuffer);
+            gl.deleteBuffer(normBuffer);
+        }
+        
+        // ============================================
+        // Texture Picker
+        // ============================================
+        function openTexturePicker(componentIndex) {
+            if (!state.textureImage) {
+                alert('No texture atlas loaded');
+                return;
+            }
+            
+            texturePickerContext = { componentIndex };
+            texturePickerCallback = (x, y) => {
+                // Find or create texture name
+                let textureName = `TEX_${x}_${y}`;
+                
+                // Check if this coordinate already has a name
+                for (const name in state.tileset.textures) {
+                    const coords = state.tileset.textures[name];
+                    if (coords[0] === x && coords[1] === y) {
+                        textureName = name;
+                        break;
+                    }
+                }
+                
+                // Add if not exists
+                if (!state.tileset.textures[textureName]) {
+                    state.tileset.textures[textureName] = [x, y];
+                }
+                
+                currentTileComponents[componentIndex].texture = textureName;
+                updateTileComponentsList();
+            };
+            
+            showTexturePicker();
+        }
+        
+        function showTexturePicker() {
+            const canvas = document.getElementById('texturePickerCanvas');
+            const ctx = canvas.getContext('2d');
+            const tileSize = state.tileset.tileSize || 16;
+            
+            document.getElementById('pickerTileSize').textContent = tileSize;
+            
+            canvas.width = state.textureImage.width;
+            canvas.height = state.textureImage.height;
+            canvas.style.width = state.textureImage.width + 'px';
+            canvas.style.height = state.textureImage.height + 'px';
+            
+            // Draw texture
+            ctx.drawImage(state.textureImage, 0, 0);
+            
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= canvas.width; x += tileSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += tileSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Click handler
+            canvas.onclick = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / tileSize);
+                const y = Math.floor((e.clientY - rect.top) / tileSize);
+                document.getElementById('pickerSelectedCoords').textContent = `[${x}, ${y}]`;
+                
+                // Highlight selection
+                ctx.drawImage(state.textureImage, 0, 0);
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                for (let gx = 0; gx <= canvas.width; gx += tileSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(gx, 0);
+                    ctx.lineTo(gx, canvas.height);
+                    ctx.stroke();
+                }
+                for (let gy = 0; gy <= canvas.height; gy += tileSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, gy);
+                    ctx.lineTo(canvas.width, gy);
+                    ctx.stroke();
+                }
+                
+                ctx.strokeStyle = 'rgb(0, 255, 0)';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+            };
+            
+            showDialog('texturePickerDialog');
+        }
+        
+        function applyTexturePick() {
+            const coordsText = document.getElementById('pickerSelectedCoords').textContent;
+            if (coordsText === 'None') {
+                alert('Please select a tile first');
+                return;
+            }
+            
+            const match = coordsText.match(/\[(\d+), (\d+)\]/);
+            if (match && texturePickerCallback) {
+                const x = parseInt(match[1]);
+                const y = parseInt(match[2]);
+                texturePickerCallback(x, y);
+            }
+            
+            closeDialog('texturePickerDialog');
         }
 
         // ============================================
