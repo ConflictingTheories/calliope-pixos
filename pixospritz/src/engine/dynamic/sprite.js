@@ -203,6 +203,7 @@ export default class DynamicSprite extends Sprite {
     try {
       console.log({ trigger: this.selectTrigger });
       let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
@@ -234,6 +235,7 @@ export default class DynamicSprite extends Sprite {
     try {
       console.log({ trigger: this.stepTrigger });
       let file = this.zip.file(`triggers/${this.stepTrigger}.lua`);
+      if (!file) file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');

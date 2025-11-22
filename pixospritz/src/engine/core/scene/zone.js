@@ -264,6 +264,22 @@ export default class Zone extends Loadable {
       if (this.engine?.debug) console.warn('Lua trigger load failed', e);
     }
 
+    // Try .pxs extension (PixoScript/Lua)
+    try {
+      const pxsFile = await zip.file(`triggers/${trigger}.pxs`);
+      if (pxsFile) {
+        const luaScript = await pxsFile.async('string');
+        return (_this, subject) => {
+          const interpreter = new PixoScriptInterpreter(_this.engine);
+          interpreter.setScope({ _this, zone: this, subject });
+          interpreter.initLibrary();
+          return interpreter.run(luaScript);
+        };
+      }
+    } catch (e) {
+      if (this.engine?.debug) console.warn('PixoScript trigger load failed', e);
+    }
+
     // JS fallback (sandboxed) — no global eval
     const jsFile = await zip.file(`triggers/${trigger}.js`);
     if (jsFile) {
@@ -899,7 +915,8 @@ export default class Zone extends Loadable {
 
     // Lua trigger from spritz zip
     try {
-      const file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
       const interpreter = new PixoScriptInterpreter(this.engine);

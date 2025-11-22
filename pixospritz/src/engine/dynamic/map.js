@@ -62,7 +62,9 @@ export async function loadMap(json, cells, zip) {
     json.scripts.map(async (script) => {
       // Lua Scripting
       try {
-        let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
+        let file = zip.file(`triggers/${script.trigger}.lua`);
+        if (!file) file = zip.file(`triggers/${script.trigger}.pxs`);
+        let luaScript = await file.async('string');
         console.log({ msg: 'lua script', luaScript });
 
         // defer execution of lua until trigger is called
