@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+        #toolbar { background: #f0f0f0; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        #canvas { flex: 1; background: #333; }
+        #sidebar { width: 300px; background: #eee; padding: 10px; overflow-y: auto; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        button { padding: 5px 10px; }
+        select { padding: 5px; }
+        input { margin: 5px 0; }
+        .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, 50px); gap: 5px; }
+        .tile-item { width: 50px; height: 50px; border: 1px solid #ccc; cursor: pointer; }
+        .selected { border: 2px solid red; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <label for="tilesetFile">Tileset JSON:</label>
+        <input type="file" id="tilesetFile" accept=".json">
+        <label for="mapFile">Map JSON:</label>
+        <input type="file" id="mapFile" accept=".json">
+        <label for="cellsFile">Cells JSON:</label>
+        <input type="file" id="cellsFile" accept=".json">
+        <label for="textureFile">Texture Image:</label>
+        <input type="file" id="textureFile" accept="image/*">
+        <button id="loadBtn">Load Files</button>
+        <label for="tileSelect">Selected Tile:</label>
+        <select id="tileSelect"></select>
+        <button id="saveBtn">Save Cells</button>
+        <button id="newTileBtn">Add New Tile</button>
+        <button id="newGeomBtn">Add New Geometry</button>
+    </div>
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Welcome to Tile Editor</h2>
+            <p>Select files to load or create a new project.</p>
+            <button id="loadExistingBtn">Load Existing Files</button>
+            <button id="createNewBtn">Create New Project</button>
+        </div>
+    </div>
+    <div class="flex">
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div id="sidebar">
+            <h3>Tiles</h3>
+            <div id="tileList" class="tile-grid"></div>
+            <h3>New Tile</h3>
+            <input type="text" id="newTileName" placeholder="Tile Name">
+            <textarea id="newTileDef" placeholder="Geometry list, e.g., FLAT_ALL FLOOR 0"></textarea>
+            <button id="addTileBtn">Add Tile</button>
+            <h3>New Geometry</h3>
+            <input type="text" id="newGeomName" placeholder="Geometry Name">
+            <textarea id="newGeomDef" placeholder="Vertices and surfaces JSON"></textarea>
+            <button id="addGeomBtn">Add Geometry</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl2');
+        if (!gl) alert('WebGL 2.0 not supported');
+
+        let tileset = null;
+        let map = null;
+        let cells = null;
+        let texture = null;
+        let program = null;
+        let selectedTile = 'FLOOR';
+        let camera = { x: 0, y: 0, z: -10 };
+
+        // Show load modal on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loadModal').style.display = 'block';
+        });
+
+        // Modal buttons
+        document.getElementById('loadExistingBtn').onclick = () => {
+            document.getElementById('loadModal').style.display = 'none';
+        };
+
+        document.getElementById('createNewBtn').onclick = () => {
+            // Create blank project
+            tileset = {
+                name: "new",
+                src: "",
+                sheetSize: [512, 512],
+                sheetOffsetX: 0,
+                sheetOffsetY: 0,
+                tileSize: 16,
+                bgColor: [32, 62, 88],
+                textures: {
+                    "DEFAULT": [0, 0]
+                },
+                geometry: {
+                    "FLAT_ALL": {
+                        "vertices": [
+                            [[0, 0, 0], [1, 0, 0], [1, 0, 1]],
+                            [[0, 0, 0], [1, 0, 1], [0, 0, 1]]
+                        ],
+                        "surfaces": [
+                            [[0, 0], [1, 0], [1, 1]],
+                            [[0, 0], [1, 1], [0, 1]]
+                        ],
+                        "type": 15
+                    }
+                },
+                tiles: {
+                    "FLOOR": ["FLAT_ALL", "DEFAULT", 0]
+                }
+            };
+            map = { bounds: [0, 0, 10, 10], tileset: "new" };
+            cells = Array(10).fill().map(() => Array(10).fill('FLOOR'));
+            updateUI();
+            render();
+            document.getElementById('loadModal').style.display = 'none';
+        };
+
+        document.getElementById('closeModal').onclick = () => {
+            document.getElementById('loadModal').style.display = 'none';
+        };
+
+        // Load files
+        document.getElementById('loadBtn').onclick = async () => {
+            const tilesetFile = document.getElementById('tilesetFile').files[0];
+            const mapFile = document.getElementById('mapFile').files[0];
+            const cellsFile = document.getElementById('cellsFile').files[0];
+            const textureFile = document.getElementById('textureFile').files[0];
+
+            if (tilesetFile) tileset = JSON.parse(await tilesetFile.text());
+            if (mapFile) map = JSON.parse(await mapFile.text());
+            if (cellsFile) cells = JSON.parse(await cellsFile.text());
+            if (textureFile) {
+                const img = new Image();
+                img.onload = () => {
+                    texture = gl.createTexture();
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    render();
+                };
+                img.src = URL.createObjectURL(textureFile);
+            }
+            updateUI();
+            render();
+        };
+
+        // Update UI
+        function updateUI() {
+            const tileSelect = document.getElementById('tileSelect');
+            const tileList = document.getElementById('tileList');
+            tileSelect.innerHTML = '';
+            tileList.innerHTML = '';
+            if (tileset && tileset.tiles) {
+                Object.keys(tileset.tiles).forEach(tile => {
+                    const option = document.createElement('option');
+                    option.value = tile;
+                    option.textContent = tile;
+                    tileSelect.appendChild(option);
+
+                    const div = document.createElement('div');
+                    div.className = 'tile-item';
+                    div.textContent = tile;
+                    div.onclick = () => {
+                        selectedTile = tile;
+                        document.querySelectorAll('.tile-item').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                    };
+                    tileList.appendChild(div);
+                });
+            }
+        }
+
+        // WebGL setup
+        function initGL() {
+            const vertexShaderSource = `
+                attribute vec3 aPosition;
+                attribute vec2 aTexCoord;
+                uniform mat4 uModelView;
+                uniform mat4 uProjection;
+                varying vec2 vTexCoord;
+                void main() {
+                    gl_Position = uProjection * uModelView * vec4(aPosition, 1.0);
+                    vTexCoord = aTexCoord;
+                }
+            `;
+            const fragmentShaderSource = `
+                precision mediump float;
+                uniform sampler2D uTexture;
+                varying vec2 vTexCoord;
+                void main() {
+                    gl_FragColor = texture2D(uTexture, vTexCoord);
+                }
+            `;
+
+            const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertexShader, vertexShaderSource);
+            gl.compileShader(vertexShader);
+
+            const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragmentShader, fragmentShaderSource);
+            gl.compileShader(fragmentShader);
+
+            program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+        }
+
+        initGL();
+
+        // Render
+        function render() {
+            gl.clearColor(0.2, 0.3, 0.3, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
+
+            if (!tileset || !cells || !texture) return;
+
+            const projection = mat4.perspective(mat4.create(), Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
+            const modelView = mat4.create();
+            mat4.translate(modelView, modelView, [camera.x, camera.y, camera.z]);
+
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uProjection'), false, projection);
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uModelView'), false, modelView);
+            gl.uniform1i(gl.getUniformLocation(program, 'uTexture'), 0);
+
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            for (let y = 0; y < cells.length; y++) {
+                for (let x = 0; x < cells[y].length; x++) {
+                    const tileName = cells[y][x];
+                    if (tileName === 'EMPTY') continue;
+                    const tileDef = tileset.tiles[tileName];
+                    if (!tileDef) continue;
+
+                    for (let i = 0; i < tileDef.length; i += 3) {
+                        const geomName = tileDef[i];
+                        const texName = tileDef[i + 1];
+                        const offset = tileDef[i + 2];
+                        const geom = tileset.geometry[geomName];
+                        if (!geom) continue;
+
+                        const texPos = tileset.textures[texName];
+                        if (!texPos) continue;
+
+                        // Render geometry with texture coords
+                        const vertices = [];
+                        const texCoords = [];
+
+                        geom.vertices.forEach((tri, idx) => {
+                            tri.forEach(v => {
+                                vertices.push(v[0] + x, v[1] + offset, v[2] + y);
+                            });
+                            const surf = geom.surfaces[idx];
+                            surf.forEach(uv => {
+                                texCoords.push(uv[0], uv[1]);
+                            });
+                        });
+
+                        const vbo = gl.createBuffer();
+                        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                        const posLoc = gl.getAttribLocation(program, 'aPosition');
+                        gl.enableVertexAttribArray(posLoc);
+                        gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
+
+                        const tbo = gl.createBuffer();
+                        gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+                        const texLoc = gl.getAttribLocation(program, 'aTexCoord');
+                        gl.enableVertexAttribArray(texLoc);
+                        gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
+
+                        gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+                    }
+                }
+            }
+        }
+
+        // Mouse interaction
+        canvas.onclick = (e) => {
+            if (!cells) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / 50);
+            const y = Math.floor((e.clientY - rect.top) / 50);
+            if (x >= 0 && x < cells[0].length && y >= 0 && y < cells.length) {
+                cells[y][x] = selectedTile;
+                render();
+            }
+        };
+
+        // Save
+        document.getElementById('saveBtn').onclick = () => {
+            if (!cells) {
+                alert('No cells loaded to save.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(cells, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cells.json';
+            a.click();
+        };
+
+        // New tile
+        document.getElementById('addTileBtn').onclick = () => {
+            if (!tileset) {
+                alert('Load tileset first.');
+                return;
+            }
+            const name = document.getElementById('newTileName').value.trim();
+            const defStr = document.getElementById('newTileDef').value.trim();
+            if (!name || !defStr) {
+                alert('Enter tile name and definition.');
+                return;
+            }
+            const def = defStr.split(/\s+/);
+            if (def.length % 3 !== 0) {
+                alert('Definition must be groups of 3 (geom tex offset).');
+                return;
+            }
+            tileset.tiles[name] = def.map(d => isNaN(d) ? d : parseFloat(d));
+            updateUI();
+            document.getElementById('newTileName').value = '';
+            document.getElementById('newTileDef').value = '';
+        };
+
+        // New geometry
+        document.getElementById('addGeomBtn').onclick = () => {
+            if (!tileset) {
+                alert('Load tileset first.');
+                return;
+            }
+            const name = document.getElementById('newGeomName').value.trim();
+            const defStr = document.getElementById('newGeomDef').value.trim();
+            if (!name || !defStr) {
+                alert('Enter geometry name and JSON definition.');
+                return;
+            }
+            try {
+                const def = JSON.parse(defStr);
+                tileset.geometry[name] = def;
+                document.getElementById('newGeomName').value = '';
+                document.getElementById('newGeomDef').value = '';
+            } catch (e) {
+                alert('Invalid JSON for geometry.');
+            }
+        };
+
+        // Mat4 library (simple implementation)
+        const mat4 = {
+            create: () => new Float32Array(16),
+            perspective: (out, fovy, aspect, near, far) => {
+                const f = 1.0 / Math.tan(fovy / 2);
+                out[0] = f / aspect;
+                out[1] = 0;
+                out[2] = 0;
+                out[3] = 0;
+                out[4] = 0;
+                out[5] = f;
+                out[6] = 0;
+                out[7] = 0;
+                out[8] = 0;
+                out[9] = 0;
+                out[10] = (far + near) / (near - far);
+                out[11] = -1;
+                out[12] = 0;
+                out[13] = 0;
+                out[14] = (2 * far * near) / (near - far);
+                out[15] = 0;
+                return out;
+            },
+            translate: (out, a, v) => {
+                const x = v[0], y = v[1], z = v[2];
+                if (a === out) {
+                    out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+                    out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+                    out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+                    out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+                } else {
+                    out[0] = a[0]; out[1] = a[1]; out[2] = a[2]; out[3] = a[3];
+                    out[4] = a[4]; out[5] = a[5]; out[6] = a[6]; out[7] = a[7];
+                    out[8] = a[8]; out[9] = a[9]; out[10] = a[10]; out[11] = a[11];
+                    out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+                    out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+                    out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+                    out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+                }
+                return out;
+            }
+        };
+    </script>
+</body>
+</html>
