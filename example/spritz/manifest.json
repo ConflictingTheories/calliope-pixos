@@ -1,7 +1,7 @@
 {
-  "initialZones": ["base"],
+  "initialZones": ["hallway"],
   "modes": ["explore", "fight", "debug", "tactics"],
-  "maps": ["room", "dungeon-top", "dungeon-bottom"],
+  "maps": ["room", "dungeon-top", "dungeon-bottom", "hallway", "base"],
   "tilesets": ["common", "sewer"],
   "network": {
     "enabled": true,

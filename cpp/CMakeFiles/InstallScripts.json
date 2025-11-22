@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/Users/kderbyma/Git/calliope-pixos/cpp/cmake_install.cmake",
-		"/Users/kderbyma/Git/calliope-pixos/cpp/_deps/nlohmann_json-build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
