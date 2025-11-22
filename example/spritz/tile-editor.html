@@ -479,6 +479,7 @@
                     <span id="heightDisplay" style="display: inline-block; width: 50px; text-align: center; font-weight: bold;">0.0</span>
                     <button onclick="adjustHeight(1)" style="padding: 4px 12px; font-size: 12px;">+</button>
                     <button onclick="state.currentHeight = 0; updateHeightDisplay(); render()" style="padding: 4px 12px; font-size: 11px; margin-left: 8px;">Reset</button>
+                    <button onclick="debugHeights()" style="padding: 4px 12px; font-size: 11px; margin-left: 8px; background: #555;">Debug</button>
                 </div>
             </div>
             <div id="canvas-container">
@@ -1031,6 +1032,11 @@
                     // Get height offset for this cell
                     const cellHeight = state.heights[y] && state.heights[y][x] !== undefined ? state.heights[y][x] : 0;
                     
+                    // Debug log non-zero heights
+                    if (cellHeight !== 0) {
+                        console.log(`Cell (${x}, ${y}): tile=${tileType}, height=${cellHeight}`);
+                    }
+                    
                     renderTile(x, y, tileType, cellHeight, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture);
                 }
             }
@@ -1041,6 +1047,11 @@
         function renderTile(x, y, tileType, cellHeight, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture) {
             const tileData = state.tiles[tileType];
             if (!tileData) return;
+            
+            // Debug: Log height being applied
+            if (cellHeight !== 0) {
+                console.log(`Rendering tile at (${x}, ${y}) with cellHeight: ${cellHeight}`);
+            }
             
             // Model matrix for this tile (with cell height offset)
             const modelViewMatrix = createMat4();
@@ -1228,12 +1239,15 @@
                     if (e.button === 2) { // Right click with shift = erase
                         if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
                             state.cells[cell.y][cell.x] = 'EMPTY';
+                            if (state.heights[cell.y]) state.heights[cell.y][cell.x] = 0;
                             updateStatus(`Erased cell at (${cell.x}, ${cell.y})`);
                         }
                     } else if (e.button === 0) { // Left click with shift = paint
                         if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
                             state.cells[cell.y][cell.x] = state.selectedTile;
-                            updateStatus(`Painted ${state.selectedTile} at (${cell.x}, ${cell.y})`);
+                            if (!state.heights[cell.y]) state.heights[cell.y] = [];
+                            state.heights[cell.y][cell.x] = state.currentHeight;
+                            updateStatus(`Painted ${state.selectedTile} at (${cell.x}, ${cell.y}) height ${state.currentHeight.toFixed(1)}`);
                         }
                     }
                     lastPaintedCell = cell;
@@ -1264,10 +1278,13 @@
                     if (e.buttons === 2) { // Right mouse button
                         if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
                             state.cells[cell.y][cell.x] = 'EMPTY';
+                            if (state.heights[cell.y]) state.heights[cell.y][cell.x] = 0;
                         }
                     } else if (e.buttons === 1) { // Left mouse button
                         if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
                             state.cells[cell.y][cell.x] = state.selectedTile;
+                            if (!state.heights[cell.y]) state.heights[cell.y] = [];
+                            state.heights[cell.y][cell.x] = state.currentHeight;
                         }
                     }
                     lastPaintedCell = cell;
@@ -1986,6 +2003,24 @@
         
         function updateHeightDisplay() {
             document.getElementById('heightDisplay').textContent = state.currentHeight.toFixed(1);
+        }
+        
+        function debugHeights() {
+            console.log('=== Height Map Debug ===');
+            console.log('Current height:', state.currentHeight);
+            console.log('Heights array:', state.heights);
+            let nonZeroCount = 0;
+            for (let y = 0; y < state.heights.length; y++) {
+                if (state.heights[y]) {
+                    for (let x = 0; x < state.heights[y].length; x++) {
+                        if (state.heights[y][x] !== 0) {
+                            console.log(`  Cell (${x}, ${y}): ${state.heights[y][x]}, tile: ${state.cells[y][x]}`);
+                            nonZeroCount++;
+                        }
+                    }
+                }
+            }
+            console.log(`Total non-zero heights: ${nonZeroCount}`);
         }
 
         // ============================================
