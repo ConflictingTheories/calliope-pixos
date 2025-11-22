@@ -184,6 +184,23 @@
             color: white;
             padding: 4px 10px;
             font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         .grid-controls {
@@ -290,6 +307,12 @@
                     <span>▼</span>
                 </div>
                 <div class="section-content">
+                    <div class="form-group">
+                        <label>Load from ZIP:</label>
+                        <input type="file" id="zipFile" accept=".zip">
+                        <button onclick="loadZipFile()" style="margin-top: 8px; width: 100%;">Parse ZIP</button>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #3e3e42; margin: 15px 0;">
                     <div class="form-group">
                         <label>Map JSON:</label>
                         <input type="file" id="mapFile" accept=".json">
@@ -409,6 +432,12 @@
                 </div>
                 <div class="section-content collapsed">
                     <div style="font-size: 11px; line-height: 1.6;">
+                        <strong>Loading Files:</strong><br>
+                        • <strong>ZIP File</strong> - Load entire project at once<br>
+                        • Auto-detects maps and tilesets<br>
+                        • Handles tileset extensions<br>
+                        • Loads all dependencies automatically<br>
+                        <br>
                         <strong>Keyboard Shortcuts:</strong><br>
                         <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">P</code> - Paint tool<br>
                         <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">E</code> - Erase tool<br>
@@ -530,6 +559,46 @@
     <!-- Overlay for dialogs -->
     <div id="dialogOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1999;"></div>
 
+    <!-- ZIP File Selection Dialog -->
+    <div id="zipSelectionDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Select Map and Tileset</h2>
+        
+        <div class="form-group">
+            <label>Available Maps:</label>
+            <select id="zipMapSelect" size="8" style="width: 100%; height: 150px;">
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Available Tilesets:</label>
+            <select id="zipTilesetSelect" size="6" style="width: 100%; height: 120px;">
+            </select>
+        </div>
+        
+        <div class="info-text" style="margin: 10px 0;">
+            The selected map's tileset will be automatically loaded. Dependencies (tiles, geometry, textures) will be loaded automatically.
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="loadSelectedFromZip()">Load Selected</button>
+            <button class="secondary" onclick="closeDialog('zipSelectionDialog')">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // Check if JSZip loaded
+        if (typeof JSZip === 'undefined') {
+            console.warn('JSZip failed to load from CDN, loading from unpkg...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';
+            script.onerror = () => {
+                console.error('Failed to load JSZip. ZIP functionality will not be available.');
+                alert('Warning: Could not load ZIP library. ZIP file loading will not work. Please check your internet connection.');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <script>
         // ============================================
         // Global State
@@ -1276,6 +1345,314 @@
         // ============================================
         // File Loading
         // ============================================
+        let zipData = null; // Store parsed ZIP contents
+        
+        async function loadZipFile() {
+            if (typeof JSZip === 'undefined') {
+                alert('ZIP library not loaded. Please refresh the page and try again.');
+                return;
+            }
+            
+            const file = document.getElementById('zipFile').files[0];
+            if (!file) {
+                alert('Please select a ZIP file');
+                return;
+            }
+            
+            try {
+                updateStatus('Parsing ZIP file...', true);
+                const zip = await JSZip.loadAsync(file);
+                
+                // Parse ZIP structure
+                zipData = {
+                    maps: {},
+                    tilesets: {},
+                    textures: {},
+                    files: zip
+                };
+                
+                // Find all maps
+                const mapFolders = new Set();
+                const tilesetFolders = new Set();
+                
+                for (const filename in zip.files) {
+                    const file = zip.files[filename];
+                    if (file.dir) continue;
+                    
+                    // Parse maps
+                    if (filename.match(/maps\/([^\/]+)\/map\.json$/)) {
+                        const mapName = filename.match(/maps\/([^\/]+)\//)[1];
+                        mapFolders.add(mapName);
+                    }
+                    
+                    // Parse tilesets
+                    if (filename.match(/tilesets\/([^\/]+)\/tileset\.json$/)) {
+                        const tilesetName = filename.match(/tilesets\/([^\/]+)\//)[1];
+                        tilesetFolders.add(tilesetName);
+                    }
+                }
+                
+                // Load map metadata
+                for (const mapName of mapFolders) {
+                    try {
+                        const mapJson = await zip.file(`maps/${mapName}/map.json`).async('string');
+                        zipData.maps[mapName] = {
+                            data: JSON.parse(mapJson),
+                            path: `maps/${mapName}/`
+                        };
+                    } catch (e) {
+                        console.warn(`Failed to load map ${mapName}:`, e);
+                    }
+                }
+                
+                // Load tileset metadata
+                for (const tilesetName of tilesetFolders) {
+                    try {
+                        const tilesetJson = await zip.file(`tilesets/${tilesetName}/tileset.json`).async('string');
+                        zipData.tilesets[tilesetName] = {
+                            data: JSON.parse(tilesetJson),
+                            path: `tilesets/${tilesetName}/`
+                        };
+                    } catch (e) {
+                        console.warn(`Failed to load tileset ${tilesetName}:`, e);
+                    }
+                }
+                
+                // Load textures
+                for (const filename in zip.files) {
+                    if (filename.match(/\.(png|jpg|jpeg|gif)$/i) && !zip.files[filename].dir) {
+                        zipData.textures[filename] = filename;
+                    }
+                }
+                
+                // Show selection dialog
+                showZipSelectionDialog();
+                
+            } catch (error) {
+                console.error('Error loading ZIP:', error);
+                alert('Error loading ZIP file: ' + error.message);
+                updateStatus('Error loading ZIP file');
+            }
+        }
+        
+        function showZipSelectionDialog() {
+            const mapSelect = document.getElementById('zipMapSelect');
+            const tilesetSelect = document.getElementById('zipTilesetSelect');
+            
+            mapSelect.innerHTML = '';
+            tilesetSelect.innerHTML = '';
+            
+            // Populate maps
+            for (const mapName in zipData.maps) {
+                const option = document.createElement('option');
+                option.value = mapName;
+                const mapData = zipData.maps[mapName].data;
+                const tileset = mapData.tileset || 'unknown';
+                option.textContent = `${mapName} (tileset: ${tileset})`;
+                mapSelect.appendChild(option);
+            }
+            
+            // Populate tilesets
+            for (const tilesetName in zipData.tilesets) {
+                const option = document.createElement('option');
+                option.value = tilesetName;
+                const tilesetData = zipData.tilesets[tilesetName].data;
+                const ext = tilesetData.extends ? ` (extends: ${tilesetData.extends})` : '';
+                option.textContent = `${tilesetName}${ext}`;
+                tilesetSelect.appendChild(option);
+            }
+            
+            if (mapSelect.options.length > 0) {
+                mapSelect.selectedIndex = 0;
+                // Auto-select corresponding tileset
+                const selectedMap = zipData.maps[mapSelect.value];
+                if (selectedMap && selectedMap.data.tileset) {
+                    for (let i = 0; i < tilesetSelect.options.length; i++) {
+                        if (tilesetSelect.options[i].value === selectedMap.data.tileset) {
+                            tilesetSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Auto-select tileset when map changes
+            mapSelect.onchange = () => {
+                const selectedMap = zipData.maps[mapSelect.value];
+                if (selectedMap && selectedMap.data.tileset) {
+                    for (let i = 0; i < tilesetSelect.options.length; i++) {
+                        if (tilesetSelect.options[i].value === selectedMap.data.tileset) {
+                            tilesetSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            };
+            
+            showDialog('zipSelectionDialog');
+            updateStatus(`Found ${Object.keys(zipData.maps).length} maps and ${Object.keys(zipData.tilesets).length} tilesets`);
+        }
+        
+        async function loadSelectedFromZip() {
+            const mapSelect = document.getElementById('zipMapSelect');
+            const tilesetSelect = document.getElementById('zipTilesetSelect');
+            
+            const selectedMap = mapSelect.value;
+            const selectedTileset = tilesetSelect.value;
+            
+            if (!selectedMap) {
+                alert('Please select a map');
+                return;
+            }
+            
+            try {
+                closeDialog('zipSelectionDialog');
+                updateStatus('Loading map and dependencies...', true);
+                
+                // Load map
+                const mapData = zipData.maps[selectedMap];
+                state.map = mapData.data;
+                
+                // Load cells
+                const cellsJson = await zipData.files.file(`${mapData.path}cells.json`).async('string');
+                state.cells = JSON.parse(cellsJson);
+                
+                // Load tileset (with extension support)
+                const tilesetName = selectedTileset || state.map.tileset;
+                if (tilesetName && zipData.tilesets[tilesetName]) {
+                    await loadTilesetFromZip(tilesetName);
+                }
+                
+                // Update UI
+                updateUI();
+                resetCamera();
+                updateStatus(`Loaded map: ${selectedMap}, tileset: ${tilesetName}`);
+                
+            } catch (error) {
+                console.error('Error loading from ZIP:', error);
+                alert('Error loading files: ' + error.message);
+                updateStatus('Error loading files');
+            }
+        }
+        
+        async function loadTilesetFromZip(tilesetName, loadedTilesets = new Set()) {
+            if (loadedTilesets.has(tilesetName)) {
+                return; // Prevent circular dependencies
+            }
+            loadedTilesets.add(tilesetName);
+            
+            const tilesetInfo = zipData.tilesets[tilesetName];
+            if (!tilesetInfo) {
+                console.warn(`Tileset ${tilesetName} not found in ZIP`);
+                return;
+            }
+            
+            const tilesetData = tilesetInfo.data;
+            
+            // Handle extension - load parent first
+            if (tilesetData.extends) {
+                await loadTilesetFromZip(tilesetData.extends, loadedTilesets);
+            }
+            
+            // Merge or initialize tileset
+            if (!state.tileset) {
+                state.tileset = {
+                    name: tilesetData.name || tilesetName,
+                    src: tilesetData.src,
+                    sheetSize: tilesetData.sheetSize || [512, 512],
+                    tileSize: tilesetData.tileSize || 16,
+                    sheetOffsetX: tilesetData.sheetOffsetX || 0,
+                    sheetOffsetY: tilesetData.sheetOffsetY || 0,
+                    bgColor: tilesetData.bgColor || [32, 62, 88],
+                    textures: {}
+                };
+            }
+            
+            // Merge textures (child overrides parent)
+            if (tilesetData.textures) {
+                state.tileset.textures = {
+                    ...state.tileset.textures,
+                    ...tilesetData.textures
+                };
+            }
+            
+            // Load tiles.json (merge with existing)
+            try {
+                const tilesJson = await zipData.files.file(`${tilesetInfo.path}tiles.json`).async('string');
+                const tiles = JSON.parse(tilesJson);
+                state.tiles = {
+                    ...state.tiles,
+                    ...tiles
+                };
+            } catch (e) {
+                console.warn(`No tiles.json for ${tilesetName}`);
+            }
+            
+            // Load geometry.json (merge with existing)
+            try {
+                const geometryJson = await zipData.files.file(`${tilesetInfo.path}geometry.json`).async('string');
+                const geometry = JSON.parse(geometryJson);
+                state.geometry = {
+                    ...state.geometry,
+                    ...geometry
+                };
+            } catch (e) {
+                console.warn(`No geometry.json for ${tilesetName}`);
+            }
+            
+            // Load texture atlas
+            if (tilesetData.src) {
+                // Try multiple possible locations
+                const possiblePaths = [
+                    `tilesets/${tilesetName}/${tilesetData.src}`,
+                    `textures/${tilesetData.src}`,
+                    tilesetData.src
+                ];
+                
+                for (const path of possiblePaths) {
+                    if (zipData.textures[path]) {
+                        try {
+                            const imgBlob = await zipData.files.file(path).async('blob');
+                            await loadTextureFromBlob(imgBlob);
+                            break;
+                        } catch (e) {
+                            console.warn(`Failed to load texture from ${path}`);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function loadTextureFromBlob(blob) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(blob);
+                const img = new Image();
+                img.onload = () => {
+                    state.textureImage = img;
+                    
+                    // Create WebGL texture
+                    const texture = gl.createTexture();
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    
+                    state.texture = texture;
+                    updateTexturePreview();
+                    
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('Failed to load texture image'));
+                };
+                img.src = url;
+            });
+        }
+        
         function loadAllFiles() {
             const files = {
                 map: document.getElementById('mapFile').files[0],
@@ -1360,8 +1737,13 @@
             updateGeometryList();
             updateTextureList();
             if (state.map && state.map.bounds) {
-                document.getElementById('mapWidth').value = state.map.bounds[2];
-                document.getElementById('mapHeight').value = state.map.bounds[3];
+                document.getElementById('mapWidth').value = state.map.bounds[2] - state.map.bounds[0];
+                document.getElementById('mapHeight').value = state.map.bounds[3] - state.map.bounds[1];
+            }
+            if (state.cells && state.cells.length > 0) {
+                // Update camera to center on loaded map
+                camera.centerX = state.cells[0].length / 2;
+                camera.centerY = state.cells.length / 2;
             }
         }
 
@@ -1438,8 +1820,13 @@
             ctx.drawImage(state.textureImage, 0, 0);
         }
 
-        function updateStatus(message) {
-            document.getElementById('statusBar').textContent = message;
+        function updateStatus(message, showSpinner = false) {
+            const statusBar = document.getElementById('statusBar');
+            if (showSpinner) {
+                statusBar.innerHTML = `<span>${message}</span><span class="loading-spinner"></span>`;
+            } else {
+                statusBar.textContent = message;
+            }
         }
 
         // ============================================
@@ -1572,6 +1959,14 @@
                 return;
             }
             
+            const geometryNames = Object.keys(state.geometry);
+            const textureNames = state.tileset && state.tileset.textures ? Object.keys(state.tileset.textures) : [];
+            
+            if (geometryNames.length === 0) {
+                container.innerHTML = '<div class="info-text" style="color: #f48771;">No geometry loaded. Please load a tileset first.</div>';
+                return;
+            }
+            
             let html = '';
             currentTileComponents.forEach((comp, i) => {
                 html += `
@@ -1584,7 +1979,7 @@
                             <div>
                                 <label style="font-size: 11px;">Geometry:</label>
                                 <select onchange="updateTileComponent(${i}, 'geometry', this.value)" style="width: 100%; font-size: 12px;">
-                                    ${Object.keys(state.geometry).map(g => 
+                                    ${geometryNames.map(g => 
                                         `<option value="${g}" ${comp.geometry === g ? 'selected' : ''}>${g}</option>`
                                     ).join('')}
                                 </select>
@@ -1592,8 +1987,8 @@
                             <div>
                                 <label style="font-size: 11px;">Texture:</label>
                                 <select onchange="updateTileComponent(${i}, 'texture', this.value)" style="width: 100%; font-size: 12px;">
-                                    ${state.tileset && state.tileset.textures ? 
-                                        Object.keys(state.tileset.textures).map(t => 
+                                    ${textureNames.length > 0 ? 
+                                        textureNames.map(t => 
                                             `<option value="${t}" ${comp.texture === t ? 'selected' : ''}>${t}</option>`
                                         ).join('') : 
                                         `<option value="${comp.texture}">${comp.texture}</option>`
