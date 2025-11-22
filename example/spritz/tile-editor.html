@@ -494,23 +494,6 @@
     </div>
 
     <!-- Tile Editor Dialog -->
-    <div id="tileEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
-        <h2 style="margin-bottom: 15px;">Tile Editor</h2>
-        <div class="form-group">
-            <label>Tile Name:</label>
-            <input type="text" id="tileName" placeholder="e.g., FLOOR, N_WALL">
-        </div>
-        <div class="form-group">
-            <label>Tile Definition (Geometry Components):</label>
-            <div id="tileComponentsList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 200px; overflow-y: auto;"></div>
-            <button class="secondary" onclick="addTileComponent()">+ Add Component</button>
-        </div>
-        <div class="btn-group">
-            <button onclick="saveTile()">Save Tile</button>
-            <button class="secondary" onclick="closeTileEditor()">Cancel</button>
-        </div>
-    </div>
-
     <!-- Geometry Editor Dialog -->
     <div id="geometryEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
         <h2 style="margin-bottom: 15px;">Geometry Editor</h2>
@@ -2012,6 +1995,8 @@
         let selectedComponentIndex = -1;
         let geometryPreviewGL = null;
         let tilePreviewGL = null;
+        let geometryPreviewTexture = null;
+        let tilePreviewTexture = null;
         let geometryPreviewCamera = { distance: 3, angleX: -0.5, angleY: 0.5 };
         let tilePreviewCamera = { distance: 3, angleX: -0.5, angleY: 0.5 };
         let texturePickerCallback = null;
@@ -2068,6 +2053,13 @@
 
         function updateTileComponentsList() {
             const container = document.getElementById('tileComponentsList');
+            console.log('updateTileComponentsList called, container:', container, 'components:', currentTileComponents.length);
+            
+            if (!container) {
+                console.error('tileComponentsList container not found!');
+                return;
+            }
+            
             if (currentTileComponents.length === 0) {
                 container.innerHTML = '<div class="info-text">No components. Add components to define this tile.</div>';
                 return;
@@ -2487,6 +2479,17 @@
             console.log('Geometry preview initialized successfully');
             canvas.geomProgram = program;
             
+            // Create texture for this context if we have a texture image
+            if (state.textureImage) {
+                geometryPreviewTexture = geometryPreviewGL.createTexture();
+                geometryPreviewGL.bindTexture(geometryPreviewGL.TEXTURE_2D, geometryPreviewTexture);
+                geometryPreviewGL.texImage2D(geometryPreviewGL.TEXTURE_2D, 0, geometryPreviewGL.RGBA, geometryPreviewGL.RGBA, geometryPreviewGL.UNSIGNED_BYTE, state.textureImage);
+                geometryPreviewGL.texParameteri(geometryPreviewGL.TEXTURE_2D, geometryPreviewGL.TEXTURE_MIN_FILTER, geometryPreviewGL.NEAREST);
+                geometryPreviewGL.texParameteri(geometryPreviewGL.TEXTURE_2D, geometryPreviewGL.TEXTURE_MAG_FILTER, geometryPreviewGL.NEAREST);
+                geometryPreviewGL.texParameteri(geometryPreviewGL.TEXTURE_2D, geometryPreviewGL.TEXTURE_WRAP_S, geometryPreviewGL.CLAMP_TO_EDGE);
+                geometryPreviewGL.texParameteri(geometryPreviewGL.TEXTURE_2D, geometryPreviewGL.TEXTURE_WRAP_T, geometryPreviewGL.CLAMP_TO_EDGE);
+            }
+            
             let isDragging = false;
             let lastX = 0, lastY = 0;
             
@@ -2693,6 +2696,17 @@
             console.log('Tile preview initialized successfully');
             canvas.tileProgram = program;
             
+            // Create texture for this context if we have a texture image
+            if (state.textureImage) {
+                tilePreviewTexture = tilePreviewGL.createTexture();
+                tilePreviewGL.bindTexture(tilePreviewGL.TEXTURE_2D, tilePreviewTexture);
+                tilePreviewGL.texImage2D(tilePreviewGL.TEXTURE_2D, 0, tilePreviewGL.RGBA, tilePreviewGL.RGBA, tilePreviewGL.UNSIGNED_BYTE, state.textureImage);
+                tilePreviewGL.texParameteri(tilePreviewGL.TEXTURE_2D, tilePreviewGL.TEXTURE_MIN_FILTER, tilePreviewGL.NEAREST);
+                tilePreviewGL.texParameteri(tilePreviewGL.TEXTURE_2D, tilePreviewGL.TEXTURE_MAG_FILTER, tilePreviewGL.NEAREST);
+                tilePreviewGL.texParameteri(tilePreviewGL.TEXTURE_2D, tilePreviewGL.TEXTURE_WRAP_S, tilePreviewGL.CLAMP_TO_EDGE);
+                tilePreviewGL.texParameteri(tilePreviewGL.TEXTURE_2D, tilePreviewGL.TEXTURE_WRAP_T, tilePreviewGL.CLAMP_TO_EDGE);
+            }
+            
             // Setup mouse controls
             let isDragging = false;
             let lastX = 0, lastY = 0;
@@ -2777,10 +2791,16 @@
             // Render each component
             currentTileComponents.forEach((comp, idx) => {
                 const isSelected = idx === selectedComponentIndex;
+                console.log('Rendering component', idx, ':', comp, 'selected:', isSelected);
                 gl.uniform1i(uIsHovered, isSelected);
                 
                 const geom = state.geometry[comp.geometry];
-                if (!geom) return;
+                if (!geom) {
+                    console.warn('Geometry not found:', comp.geometry);
+                    return;
+                }
+                
+                console.log('Found geometry:', comp.geometry, 'with', geom.vertices?.length, 'triangles');
                 
                 const modelViewMatrix = createMat4();
                 identity(modelViewMatrix);
@@ -2788,12 +2808,17 @@
                 multiplyMatrices(combined, viewMatrix, modelViewMatrix);
                 gl.uniformMatrix4fv(uModelViewMatrix, false, combined);
                 
-                renderGeometryPreview(gl, geom, comp.texture, comp.height, uUseTexture, uColor, uTexture, canvas.tileProgram);
+                renderGeometryPreview(gl, geom, comp.texture, comp.height, uUseTexture, uColor, uTexture, canvas.tileProgram, tilePreviewTexture);
             });
         }
         
-        function renderGeometryPreview(gl, geom, textureName, heightOffset, uUseTexture, uColor, uTexture, program) {
-            if (!geom.vertices || geom.vertices.length === 0) return;
+        function renderGeometryPreview(gl, geom, textureName, heightOffset, uUseTexture, uColor, uTexture, program, textureObject) {
+            if (!geom.vertices || geom.vertices.length === 0) {
+                console.log('No geometry vertices to render');
+                return;
+            }
+            
+            console.log('Rendering geometry with', geom.vertices.length, 'triangles, heightOffset:', heightOffset);
             
             const vertices = [];
             const texCoords = [];
@@ -2803,10 +2828,24 @@
                 const tri = geom.vertices[i];
                 const texTri = geom.surfaces && geom.surfaces[i] ? geom.surfaces[i] : [[0,0],[1,0],[1,1]];
                 
+                // Calculate normal for this triangle
+                const v1 = [tri[1][0] - tri[0][0], tri[1][1] - tri[0][1], tri[1][2] - tri[0][2]];
+                const v2 = [tri[2][0] - tri[0][0], tri[2][1] - tri[0][1], tri[2][2] - tri[0][2]];
+                const normal = [
+                    v1[1] * v2[2] - v1[2] * v2[1],
+                    v1[2] * v2[0] - v1[0] * v2[2],
+                    v1[0] * v2[1] - v1[1] * v2[0]
+                ];
+                const len = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2);
+                if (len > 0) {
+                    normal[0] /= len; normal[1] /= len; normal[2] /= len;
+                }
+                
                 for (let j = 0; j < 3; j++) {
                     vertices.push(tri[j][0], tri[j][1], tri[j][2] + heightOffset);
+                    normals.push(normal[0], normal[1], normal[2]);
                     
-                    if (textureName && state.tileset && state.tileset.textures[textureName]) {
+                    if (textureName && state.tileset && state.tileset.textures && state.tileset.textures[textureName]) {
                         const texPos = state.tileset.textures[textureName];
                         const tileSize = state.tileset.tileSize || 16;
                         const sheetSize = state.tileset.sheetSize || [512, 512];
@@ -2814,22 +2853,10 @@
                         const v = (texPos[1] * tileSize + texTri[j][1] * tileSize) / sheetSize[1];
                         texCoords.push(u, v);
                     } else {
-                        texCoords.push(texTri[j][0], texTri[j][1]);
-                    }
-                    
-                    if (j === 0 && tri.length === 3) {
-                        const v1 = [tri[1][0] - tri[0][0], tri[1][1] - tri[0][1], tri[1][2] - tri[0][2]];
-                        const v2 = [tri[2][0] - tri[0][0], tri[2][1] - tri[0][1], tri[2][2] - tri[0][2]];
-                        const normal = [
-                            v1[1] * v2[2] - v1[2] * v2[1],
-                            v1[2] * v2[0] - v1[0] * v2[2],
-                            v1[0] * v2[1] - v1[1] * v2[0]
-                        ];
-                        const len = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2);
-                        if (len > 0) {
-                            normal[0] /= len; normal[1] /= len; normal[2] /= len;
+                        if (textureName && (!state.tileset || !state.tileset.textures || !state.tileset.textures[textureName])) {
+                            console.warn('Texture not found in tileset:', textureName, 'Available:', state.tileset?.textures ? Object.keys(state.tileset.textures) : 'none');
                         }
-                        normals.push(...normal, ...normal, ...normal);
+                        texCoords.push(texTri[j][0], texTri[j][1]);
                     }
                 }
             }
@@ -2855,10 +2882,10 @@
             gl.enableVertexAttribArray(aNormal);
             gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
             
-            if (textureName && state.texture) {
+            if (textureName && textureObject && state.tileset && state.tileset.textures[textureName]) {
                 gl.uniform1i(uUseTexture, 1);
                 gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, state.texture);
+                gl.bindTexture(gl.TEXTURE_2D, textureObject);
                 gl.uniform1i(uTexture, 0);
             } else {
                 gl.uniform1i(uUseTexture, 0);
