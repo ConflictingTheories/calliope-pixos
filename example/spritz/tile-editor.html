@@ -401,6 +401,37 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>❓ Help</span>
+                    <span>▶</span>
+                </div>
+                <div class="section-content collapsed">
+                    <div style="font-size: 11px; line-height: 1.6;">
+                        <strong>Keyboard Shortcuts:</strong><br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">P</code> - Paint tool<br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">E</code> - Erase tool<br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">I</code> - Pick tool<br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">G</code> - Toggle grid<br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">R</code> - Reset camera<br>
+                        <code style="background: #1e1e1e; padding: 2px 4px; border-radius: 2px;">ESC</code> - Close dialogs<br>
+                        <br>
+                        <strong>Camera Controls:</strong><br>
+                        • Drag to rotate camera<br>
+                        • Middle mouse to pan<br>
+                        • Scroll to zoom<br>
+                        <br>
+                        <strong>Editing:</strong><br>
+                        • <strong>Shift + Left Click</strong> - Paint selected tile<br>
+                        • <strong>Shift + Right Click</strong> - Erase tile<br>
+                        • <strong>Shift + Drag</strong> - Paint/erase multiple cells<br>
+                        • Regular click (Pick tool) - Sample tile<br>
+                        • Hover shows cell coordinates<br>
+                        • Use Edit buttons on tiles/geometry
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div id="main-content">
@@ -433,6 +464,72 @@
         </div>
     </div>
 
+    <!-- Tile Editor Dialog -->
+    <div id="tileEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Tile Editor</h2>
+        <div class="form-group">
+            <label>Tile Name:</label>
+            <input type="text" id="tileName" placeholder="e.g., FLOOR, N_WALL">
+        </div>
+        <div class="form-group">
+            <label>Tile Definition (Geometry Components):</label>
+            <div id="tileComponentsList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 200px; overflow-y: auto;"></div>
+            <button class="secondary" onclick="addTileComponent()">+ Add Component</button>
+        </div>
+        <div class="btn-group">
+            <button onclick="saveTile()">Save Tile</button>
+            <button class="secondary" onclick="closeTileEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Geometry Editor Dialog -->
+    <div id="geometryEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Geometry Editor</h2>
+        <div class="form-group">
+            <label>Geometry Name:</label>
+            <input type="text" id="geometryName" placeholder="e.g., FLAT_ALL, WALL_T">
+        </div>
+        <div class="form-group">
+            <label>Type (bitmask for collision):</label>
+            <input type="number" id="geometryType" value="15" min="0" max="255">
+            <div class="info-text">15 = all sides solid, 0 = passthrough</div>
+        </div>
+        <div class="form-group">
+            <label>Triangles:</label>
+            <div id="trianglesList" style="background: #1e1e1e; padding: 10px; border-radius: 3px; margin-bottom: 10px; max-height: 250px; overflow-y: auto;"></div>
+            <button class="secondary" onclick="addTriangle()">+ Add Triangle</button>
+        </div>
+        <div class="btn-group">
+            <button onclick="saveGeometry()">Save Geometry</button>
+            <button class="secondary" onclick="closeGeometryEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Texture Editor Dialog -->
+    <div id="textureEditorDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d30; border: 1px solid #3e3e42; padding: 20px; border-radius: 4px; z-index: 2000; max-width: 500px; box-shadow: 0 8px 16px rgba(0,0,0,0.7);">
+        <h2 style="margin-bottom: 15px;">Texture Coordinate Editor</h2>
+        <div class="form-group">
+            <label>Texture Name:</label>
+            <input type="text" id="textureName" placeholder="e.g., FLOOR, WALL">
+        </div>
+        <div class="form-group">
+            <label>X Coordinate (tile index):</label>
+            <input type="number" id="textureX" value="0" min="0">
+        </div>
+        <div class="form-group">
+            <label>Y Coordinate (tile index):</label>
+            <input type="number" id="textureY" value="0" min="0">
+        </div>
+        <div class="info-text">Coordinates are in tile units. Each tile is 16x16 pixels by default.</div>
+        <div class="btn-group">
+            <button onclick="saveTexture()">Save Texture</button>
+            <button class="secondary" onclick="closeTextureEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Overlay for dialogs -->
+    <div id="dialogOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1999;"></div>
+
     <script>
         // ============================================
         // Global State
@@ -458,13 +555,18 @@
         let gl, canvas;
         let shaderProgram;
         let camera = {
-            position: [8, 15, 20],
-            rotation: [-0.5, 0, 0],
-            zoom: 1.0
+            distance: 25,
+            angleX: -0.6,
+            angleY: 0.5,
+            centerX: 8.5,
+            centerY: 9.5,
+            centerZ: 0
         };
         let isDragging = false;
+        let isPanning = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
+        let hoveredCell = null;
         
         const vertexShaderSource = `#version 300 es
             precision highp float;
@@ -499,6 +601,7 @@
             uniform bool uUseTexture;
             uniform vec3 uColor;
             uniform bool uShowGrid;
+            uniform bool uIsHovered;
             
             out vec4 fragColor;
             
@@ -512,16 +615,28 @@
                     color = vec4(uColor, 1.0);
                 }
                 
-                // Simple lighting
-                vec3 lightDir = normalize(vec3(1.0, 2.0, 3.0));
-                float diff = max(dot(normalize(vNormal), lightDir), 0.3);
-                color.rgb *= diff;
+                // Enhanced lighting - much brighter
+                vec3 lightDir1 = normalize(vec3(1.0, 1.0, 2.0));
+                vec3 lightDir2 = normalize(vec3(-1.0, -1.0, 1.0));
+                vec3 norm = normalize(vNormal);
+                
+                float diff1 = max(dot(norm, lightDir1), 0.0);
+                float diff2 = max(dot(norm, lightDir2), 0.0);
+                float ambient = 0.6;
+                
+                float lighting = ambient + diff1 * 0.6 + diff2 * 0.3;
+                color.rgb *= min(lighting, 1.2);
+                
+                // Hover highlight
+                if (uIsHovered) {
+                    color.rgb = mix(color.rgb, vec3(1.0, 1.0, 0.5), 0.3);
+                }
                 
                 // Grid lines
                 if (uShowGrid) {
                     vec2 grid = fract(vPosition.xy);
                     if (grid.x < 0.02 || grid.x > 0.98 || grid.y < 0.02 || grid.y > 0.98) {
-                        color.rgb = mix(color.rgb, vec3(0.0), 0.3);
+                        color.rgb = mix(color.rgb, vec3(0.2), 0.4);
                     }
                 }
                 
@@ -723,10 +838,14 @@
             const aspect = canvas.width / canvas.height;
             perspective(projectionMatrix, Math.PI / 4, aspect, 0.1, 1000.0);
             
+            // Calculate camera position from spherical coordinates
+            const camX = camera.centerX + camera.distance * Math.cos(camera.angleX) * Math.cos(camera.angleY);
+            const camY = camera.centerY + camera.distance * Math.cos(camera.angleX) * Math.sin(camera.angleY);
+            const camZ = camera.centerZ + camera.distance * Math.sin(camera.angleX);
+            
             // Set up view matrix
             const viewMatrix = createMat4();
-            const cameraTarget = [state.cells[0].length / 2, state.cells.length / 2, 0];
-            lookAt(viewMatrix, camera.position, cameraTarget, [0, 0, 1]);
+            lookAt(viewMatrix, [camX, camY, camZ], [camera.centerX, camera.centerY, camera.centerZ], [0, 0, 1]);
             
             // Get uniform locations
             const uModelViewMatrix = gl.getUniformLocation(shaderProgram, 'uModelViewMatrix');
@@ -735,6 +854,7 @@
             const uColor = gl.getUniformLocation(shaderProgram, 'uColor');
             const uShowGrid = gl.getUniformLocation(shaderProgram, 'uShowGrid');
             const uTexture = gl.getUniformLocation(shaderProgram, 'uTexture');
+            const uIsHovered = gl.getUniformLocation(shaderProgram, 'uIsHovered');
             
             gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
             gl.uniform1i(uShowGrid, state.showGrid);
@@ -744,6 +864,9 @@
                 for (let x = 0; x < state.cells[y].length; x++) {
                     const tileType = state.cells[y][x];
                     if (!tileType || tileType === 'EMPTY') continue;
+                    
+                    const isHovered = hoveredCell && hoveredCell.x === x && hoveredCell.y === y;
+                    gl.uniform1i(uIsHovered, isHovered);
                     
                     renderTile(x, y, tileType, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture);
                 }
@@ -915,41 +1038,97 @@
             canvas.addEventListener('mousedown', onMouseDown);
             canvas.addEventListener('mousemove', onMouseMove);
             canvas.addEventListener('mouseup', onMouseUp);
+            canvas.addEventListener('mouseleave', onMouseLeave);
             canvas.addEventListener('wheel', onWheel);
             canvas.addEventListener('click', onCanvasClick);
+            canvas.addEventListener('contextmenu', (e) => {
+                if (e.shiftKey) {
+                    e.preventDefault(); // Prevent context menu when shift+right-click
+                }
+            });
         }
 
         function onMouseDown(e) {
             isDragging = true;
+            isPanning = e.button === 1; // Only middle mouse for panning
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
+            
+            // Handle painting/erasing on mouse down if shift is held
+            if (e.shiftKey) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const cell = screenToCell(x, y);
+                
+                if (cell) {
+                    if (e.button === 2) { // Right click with shift = erase
+                        if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
+                            state.cells[cell.y][cell.x] = 'EMPTY';
+                            updateStatus(`Erased cell at (${cell.x}, ${cell.y})`);
+                        }
+                    } else if (e.button === 0) { // Left click with shift = paint
+                        if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
+                            state.cells[cell.y][cell.x] = state.selectedTile;
+                            updateStatus(`Painted ${state.selectedTile} at (${cell.x}, ${cell.y})`);
+                        }
+                    }
+                    lastPaintedCell = cell;
+                }
+                e.preventDefault();
+            }
         }
 
         function onMouseMove(e) {
+            // Update hover state
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cell = screenToCell(x, y);
+            hoveredCell = cell;
+            
+            // Update status bar with position info
+            if (cell && !isDragging) {
+                const tileType = state.cells[cell.y] ? state.cells[cell.y][cell.x] : 'EMPTY';
+                updateStatus(`Cell: (${cell.x}, ${cell.y}) | Current: ${tileType} | Selected: ${state.selectedTile}`);
+            }
+            
             if (!isDragging) return;
+            
+            // Paint/erase while dragging with shift held
+            if (e.shiftKey && !isPanning && cell) {
+                if (!lastPaintedCell || lastPaintedCell.x !== cell.x || lastPaintedCell.y !== cell.y) {
+                    if (e.buttons === 2) { // Right mouse button
+                        if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
+                            state.cells[cell.y][cell.x] = 'EMPTY';
+                        }
+                    } else if (e.buttons === 1) { // Left mouse button
+                        if (state.cells[cell.y] && state.cells[cell.y][cell.x] !== undefined) {
+                            state.cells[cell.y][cell.x] = state.selectedTile;
+                        }
+                    }
+                    lastPaintedCell = cell;
+                }
+            }
             
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
             
-            if (e.shiftKey) {
-                // Pan
-                camera.position[0] -= deltaX * 0.02;
-                camera.position[1] += deltaY * 0.02;
+            if (isPanning) {
+                // Pan camera
+                const panSpeed = 0.02;
+                const right = Math.cos(camera.angleY + Math.PI / 2);
+                const forward = Math.sin(camera.angleY + Math.PI / 2);
+                
+                camera.centerX -= (right * deltaX + forward * deltaY) * panSpeed;
+                camera.centerY -= (forward * deltaX - right * deltaY) * panSpeed;
             } else {
-                // Rotate
-                camera.rotation[1] += deltaX * 0.01;
-                camera.rotation[0] += deltaY * 0.01;
+                // Rotate camera
+                camera.angleY -= deltaX * 0.005;
+                camera.angleX += deltaY * 0.005;
                 
-                // Update camera position based on rotation
-                const dist = Math.sqrt(
-                    camera.position[0] * camera.position[0] + 
-                    camera.position[1] * camera.position[1] + 
-                    camera.position[2] * camera.position[2]
-                );
-                
-                camera.position[0] = Math.sin(camera.rotation[1]) * Math.cos(camera.rotation[0]) * dist;
-                camera.position[1] = Math.cos(camera.rotation[1]) * Math.cos(camera.rotation[0]) * dist;
-                camera.position[2] = Math.sin(camera.rotation[0]) * dist;
+                // Clamp vertical angle
+                camera.angleX = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, camera.angleX));
             }
             
             lastMouseX = e.clientX;
@@ -958,6 +1137,14 @@
 
         function onMouseUp(e) {
             isDragging = false;
+            isPanning = false;
+            lastPaintedCell = null;
+        }
+
+        function onMouseLeave(e) {
+            isDragging = false;
+            isPanning = false;
+            hoveredCell = null;
         }
 
         function onWheel(e) {
@@ -965,34 +1152,93 @@
             const zoomSpeed = 0.1;
             const delta = e.deltaY > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
             
-            camera.position[0] *= delta;
-            camera.position[1] *= delta;
-            camera.position[2] *= delta;
+            camera.distance *= delta;
+            camera.distance = Math.max(5, Math.min(100, camera.distance));
         }
 
         function onCanvasClick(e) {
-            if (isDragging) return;
+            if (Math.abs(e.clientX - lastMouseX) > 5 || Math.abs(e.clientY - lastMouseY) > 5) {
+                return; // Was dragging, not a click
+            }
             
-            // Get click coordinates
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Raycast to find clicked cell
-            const cellCoords = screenToCell(x, y);
-            if (cellCoords) {
-                handleCellClick(cellCoords.x, cellCoords.y);
+            // Only handle pick tool on regular click (shift+click is handled in mousedown)
+            if (!e.shiftKey && state.currentTool === 'pick') {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const cellCoords = screenToCell(x, y);
+                if (cellCoords) {
+                    handleCellClick(cellCoords.x, cellCoords.y);
+                }
             }
         }
 
         function screenToCell(screenX, screenY) {
-            // Simple projection - would need proper ray casting for accuracy
-            const normX = (screenX / canvas.width) * 2 - 1;
-            const normY = 1 - (screenY / canvas.height) * 2;
+            if (!state.cells || state.cells.length === 0) return null;
             
-            // Approximate cell position
-            const cellX = Math.floor(state.cells[0].length / 2 + normX * 10);
-            const cellY = Math.floor(state.cells.length / 2 - normY * 10);
+            // Convert screen coordinates to normalized device coordinates (NDC)
+            const normX = (screenX / canvas.width) * 2 - 1;
+            const normY = -((screenY / canvas.height) * 2 - 1); // Flip Y
+            
+            // Calculate camera position
+            const camX = camera.centerX + camera.distance * Math.cos(camera.angleX) * Math.cos(camera.angleY);
+            const camY = camera.centerY + camera.distance * Math.cos(camera.angleX) * Math.sin(camera.angleY);
+            const camZ = camera.centerZ + camera.distance * Math.sin(camera.angleX);
+            
+            // Create view direction from camera to center
+            const viewDirX = camera.centerX - camX;
+            const viewDirY = camera.centerY - camY;
+            const viewDirZ = camera.centerZ - camZ;
+            const viewLen = Math.sqrt(viewDirX * viewDirX + viewDirY * viewDirY + viewDirZ * viewDirZ);
+            const viewNormX = viewDirX / viewLen;
+            const viewNormY = viewDirY / viewLen;
+            const viewNormZ = viewDirZ / viewLen;
+            
+            // Calculate right vector (cross product of view and up)
+            const upX = 0, upY = 0, upZ = 1;
+            let rightX = viewNormY * upZ - viewNormZ * upY;
+            let rightY = viewNormZ * upX - viewNormX * upZ;
+            let rightZ = viewNormX * upY - viewNormY * upX;
+            const rightLen = Math.sqrt(rightX * rightX + rightY * rightY + rightZ * rightZ);
+            rightX /= rightLen;
+            rightY /= rightLen;
+            rightZ /= rightLen;
+            
+            // Calculate actual up vector (cross product of right and view)
+            let actualUpX = rightY * viewNormZ - rightZ * viewNormY;
+            let actualUpY = rightZ * viewNormX - rightX * viewNormZ;
+            let actualUpZ = rightX * viewNormY - rightY * viewNormX;
+            
+            // Calculate ray direction
+            const aspect = canvas.width / canvas.height;
+            const fov = Math.PI / 4;
+            const tanFov = Math.tan(fov / 2);
+            
+            const rayDirX = viewNormX + rightX * normX * tanFov * aspect + actualUpX * normY * tanFov;
+            const rayDirY = viewNormY + rightY * normX * tanFov * aspect + actualUpY * normY * tanFov;
+            const rayDirZ = viewNormZ + rightZ * normX * tanFov * aspect + actualUpZ * normY * tanFov;
+            
+            // Normalize ray direction
+            const rayLen = Math.sqrt(rayDirX * rayDirX + rayDirY * rayDirY + rayDirZ * rayDirZ);
+            const rayNormX = rayDirX / rayLen;
+            const rayNormY = rayDirY / rayLen;
+            const rayNormZ = rayDirZ / rayLen;
+            
+            // Intersect with z=0 plane
+            // Ray: P = camPos + t * rayDir
+            // Plane: z = 0
+            // Solve: camZ + t * rayNormZ = 0
+            if (Math.abs(rayNormZ) < 0.0001) return null; // Ray parallel to plane
+            
+            const t = -camZ / rayNormZ;
+            if (t < 0) return null; // Intersection behind camera
+            
+            const hitX = camX + t * rayNormX;
+            const hitY = camY + t * rayNormY;
+            
+            const cellX = Math.floor(hitX);
+            const cellY = Math.floor(hitY);
             
             if (cellX >= 0 && cellX < state.cells[0].length && 
                 cellY >= 0 && cellY < state.cells.length) {
@@ -1002,17 +1248,28 @@
             return null;
         }
 
+        let lastPaintedCell = null;
+
         function handleCellClick(x, y) {
             if (state.currentTool === 'paint') {
-                state.cells[y][x] = state.selectedTile;
-                updateStatus(`Painted ${state.selectedTile} at (${x}, ${y})`);
+                if (state.cells[y] && state.cells[y][x] !== undefined) {
+                    state.cells[y][x] = state.selectedTile;
+                    updateStatus(`Painted ${state.selectedTile} at (${x}, ${y})`);
+                }
             } else if (state.currentTool === 'erase') {
-                state.cells[y][x] = 'EMPTY';
-                updateStatus(`Erased cell at (${x}, ${y})`);
+                if (state.cells[y] && state.cells[y][x] !== undefined) {
+                    state.cells[y][x] = 'EMPTY';
+                    updateStatus(`Erased cell at (${x}, ${y})`);
+                }
             } else if (state.currentTool === 'pick') {
-                state.selectedTile = state.cells[y][x];
-                updateTileSelection();
-                updateStatus(`Picked ${state.selectedTile}`);
+                if (state.cells[y] && state.cells[y][x]) {
+                    const pickedTile = state.cells[y][x];
+                    if (pickedTile && pickedTile !== 'EMPTY') {
+                        state.selectedTile = pickedTile;
+                        updateTileSelection();
+                        updateStatus(`Picked ${state.selectedTile}`);
+                    }
+                }
             }
         }
 
@@ -1118,7 +1375,13 @@
                 if (tileName === state.selectedTile) {
                     div.classList.add('selected');
                 }
-                div.textContent = tileName;
+                
+                div.innerHTML = `
+                    <div style="margin-bottom: 4px;">${tileName}</div>
+                    <button class="secondary" onclick="event.stopPropagation(); editTile('${tileName}')" 
+                        style="padding: 2px 6px; font-size: 10px;">Edit</button>
+                `;
+                
                 div.onclick = () => {
                     state.selectedTile = tileName;
                     updateTileSelection();
@@ -1192,9 +1455,18 @@
         }
 
         function resetCamera() {
-            camera.position = [8, 15, 20];
-            camera.rotation = [-0.5, 0, 0];
-            camera.zoom = 1.0;
+            if (state.cells && state.cells.length > 0) {
+                camera.centerX = state.cells[0].length / 2;
+                camera.centerY = state.cells.length / 2;
+                camera.centerZ = 0;
+            } else {
+                camera.centerX = 8.5;
+                camera.centerY = 9.5;
+                camera.centerZ = 0;
+            }
+            camera.distance = 25;
+            camera.angleX = -0.6;
+            camera.angleY = 0.5;
         }
 
         function toggleGrid() {
@@ -1246,43 +1518,289 @@
         // ============================================
         // Dialogs
         // ============================================
+        let currentTileComponents = [];
+        let currentTriangles = [];
+        let editingTileName = null;
+        let editingGeometryName = null;
+        
         function showAddTileDialog() {
-            const name = prompt('Enter tile name:');
-            if (!name) return;
+            editingTileName = null;
+            currentTileComponents = [];
+            document.getElementById('tileName').value = '';
+            updateTileComponentsList();
+            showDialog('tileEditorDialog');
+        }
+
+        function editTile(tileName) {
+            editingTileName = tileName;
+            const tileData = state.tiles[tileName];
             
-            const definition = prompt('Enter tile definition (e.g., FLAT_ALL,FLOOR,0):');
-            if (!definition) return;
+            document.getElementById('tileName').value = tileName;
             
-            state.tiles[name] = definition.split(',');
+            // Parse tile components
+            currentTileComponents = [];
+            for (let i = 0; i < tileData.length; i += 3) {
+                currentTileComponents.push({
+                    geometry: tileData[i] || '',
+                    texture: tileData[i + 1] || '',
+                    height: tileData[i + 2] || 0
+                });
+            }
+            
+            updateTileComponentsList();
+            showDialog('tileEditorDialog');
+        }
+
+        function addTileComponent() {
+            currentTileComponents.push({
+                geometry: 'FLAT_ALL',
+                texture: 'FLOOR',
+                height: 0
+            });
+            updateTileComponentsList();
+        }
+
+        function removeTileComponent(index) {
+            currentTileComponents.splice(index, 1);
+            updateTileComponentsList();
+        }
+
+        function updateTileComponentsList() {
+            const container = document.getElementById('tileComponentsList');
+            if (currentTileComponents.length === 0) {
+                container.innerHTML = '<div class="info-text">No components. Add components to define this tile.</div>';
+                return;
+            }
+            
+            let html = '';
+            currentTileComponents.forEach((comp, i) => {
+                html += `
+                    <div style="background: #2d2d30; padding: 10px; margin-bottom: 8px; border-radius: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong>Component ${i + 1}</strong>
+                            <button class="secondary" onclick="removeTileComponent(${i})" style="padding: 4px 8px;">Remove</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                            <div>
+                                <label style="font-size: 11px;">Geometry:</label>
+                                <select onchange="updateTileComponent(${i}, 'geometry', this.value)" style="width: 100%; font-size: 12px;">
+                                    ${Object.keys(state.geometry).map(g => 
+                                        `<option value="${g}" ${comp.geometry === g ? 'selected' : ''}>${g}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px;">Texture:</label>
+                                <select onchange="updateTileComponent(${i}, 'texture', this.value)" style="width: 100%; font-size: 12px;">
+                                    ${state.tileset && state.tileset.textures ? 
+                                        Object.keys(state.tileset.textures).map(t => 
+                                            `<option value="${t}" ${comp.texture === t ? 'selected' : ''}>${t}</option>`
+                                        ).join('') : 
+                                        `<option value="${comp.texture}">${comp.texture}</option>`
+                                    }
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px;">Height:</label>
+                                <input type="number" value="${comp.height}" step="0.1" 
+                                    onchange="updateTileComponent(${i}, 'height', parseFloat(this.value))" 
+                                    style="width: 100%; font-size: 12px;">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateTileComponent(index, field, value) {
+            currentTileComponents[index][field] = value;
+        }
+
+        function saveTile() {
+            const name = document.getElementById('tileName').value.trim();
+            if (!name) {
+                alert('Please enter a tile name');
+                return;
+            }
+            
+            if (currentTileComponents.length === 0) {
+                alert('Please add at least one component');
+                return;
+            }
+            
+            // Convert to flat array format
+            const tileData = [];
+            currentTileComponents.forEach(comp => {
+                tileData.push(comp.geometry, comp.texture, comp.height);
+            });
+            
+            state.tiles[name] = tileData;
             updateTileList();
-            updateStatus(`Added tile: ${name}`);
+            closeDialog('tileEditorDialog');
+            updateStatus(`Saved tile: ${name}`);
+        }
+
+        function closeTileEditor() {
+            closeDialog('tileEditorDialog');
         }
 
         function showAddGeometryDialog() {
-            const name = prompt('Enter geometry name:');
-            if (!name) return;
+            editingGeometryName = null;
+            currentTriangles = [
+                {
+                    vertices: [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
+                    uvs: [[0, 1], [1, 1], [1, 0]]
+                },
+                {
+                    vertices: [[0, 1, 0], [1, 0, 0], [0, 0, 0]],
+                    uvs: [[0, 1], [1, 0], [0, 0]]
+                }
+            ];
+            document.getElementById('geometryName').value = '';
+            document.getElementById('geometryType').value = '15';
+            updateTrianglesList();
+            showDialog('geometryEditorDialog');
+        }
+
+        function editGeometry(geomName) {
+            editingGeometryName = geomName;
+            const geom = state.geometry[geomName];
+            
+            document.getElementById('geometryName').value = geomName;
+            document.getElementById('geometryType').value = geom.type || 15;
+            
+            // Parse triangles
+            currentTriangles = [];
+            if (geom.vertices) {
+                geom.vertices.forEach((verts, i) => {
+                    currentTriangles.push({
+                        vertices: JSON.parse(JSON.stringify(verts)),
+                        uvs: geom.surfaces && geom.surfaces[i] ? 
+                            JSON.parse(JSON.stringify(geom.surfaces[i])) : 
+                            [[0, 0], [1, 0], [1, 1]]
+                    });
+                });
+            }
+            
+            updateTrianglesList();
+            showDialog('geometryEditorDialog');
+        }
+
+        function addTriangle() {
+            currentTriangles.push({
+                vertices: [[0, 0, 0], [1, 0, 0], [0.5, 1, 0]],
+                uvs: [[0, 0], [1, 0], [0.5, 1]]
+            });
+            updateTrianglesList();
+        }
+
+        function removeTriangle(index) {
+            currentTriangles.splice(index, 1);
+            updateTrianglesList();
+        }
+
+        function updateTrianglesList() {
+            const container = document.getElementById('trianglesList');
+            if (currentTriangles.length === 0) {
+                container.innerHTML = '<div class="info-text">No triangles. Add triangles to define geometry.</div>';
+                return;
+            }
+            
+            let html = '';
+            currentTriangles.forEach((tri, i) => {
+                html += `
+                    <div style="background: #2d2d30; padding: 10px; margin-bottom: 8px; border-radius: 3px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong>Triangle ${i + 1}</strong>
+                            <button class="secondary" onclick="removeTriangle(${i})" style="padding: 4px 8px;">Remove</button>
+                        </div>
+                        <div style="font-size: 11px;">
+                            <div style="margin-bottom: 4px;"><strong>Vertices (x,y,z):</strong></div>
+                            ${tri.vertices.map((v, vi) => `
+                                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                                    <input type="number" value="${v[0]}" step="0.1" 
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 0, parseFloat(this.value))"
+                                        style="width: 60px; font-size: 11px;" placeholder="x">
+                                    <input type="number" value="${v[1]}" step="0.1" 
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 1, parseFloat(this.value))"
+                                        style="width: 60px; font-size: 11px;" placeholder="y">
+                                    <input type="number" value="${v[2]}" step="0.1" 
+                                        onchange="updateTriangleVertex(${i}, ${vi}, 2, parseFloat(this.value))"
+                                        style="width: 60px; font-size: 11px;" placeholder="z">
+                                </div>
+                            `).join('')}
+                            <div style="margin: 8px 0 4px;"><strong>UVs (u,v):</strong></div>
+                            ${tri.uvs.map((uv, uvi) => `
+                                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                                    <input type="number" value="${uv[0]}" step="0.1" 
+                                        onchange="updateTriangleUV(${i}, ${uvi}, 0, parseFloat(this.value))"
+                                        style="width: 90px; font-size: 11px;" placeholder="u">
+                                    <input type="number" value="${uv[1]}" step="0.1" 
+                                        onchange="updateTriangleUV(${i}, ${uvi}, 1, parseFloat(this.value))"
+                                        style="width: 90px; font-size: 11px;" placeholder="v">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateTriangleVertex(triIndex, vertIndex, coord, value) {
+            currentTriangles[triIndex].vertices[vertIndex][coord] = value;
+        }
+
+        function updateTriangleUV(triIndex, uvIndex, coord, value) {
+            currentTriangles[triIndex].uvs[uvIndex][coord] = value;
+        }
+
+        function saveGeometry() {
+            const name = document.getElementById('geometryName').value.trim();
+            if (!name) {
+                alert('Please enter a geometry name');
+                return;
+            }
+            
+            if (currentTriangles.length === 0) {
+                alert('Please add at least one triangle');
+                return;
+            }
+            
+            const type = parseInt(document.getElementById('geometryType').value);
             
             state.geometry[name] = {
-                vertices: [
-                    [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
-                    [[0, 1, 0], [1, 0, 0], [0, 0, 0]]
-                ],
-                surfaces: [
-                    [[0, 1], [1, 1], [1, 0]],
-                    [[0, 1], [1, 0], [0, 0]]
-                ],
-                type: 15
+                vertices: currentTriangles.map(t => t.vertices),
+                surfaces: currentTriangles.map(t => t.uvs),
+                type: type
             };
+            
             updateGeometryList();
-            updateStatus(`Added geometry: ${name}`);
+            closeDialog('geometryEditorDialog');
+            updateStatus(`Saved geometry: ${name}`);
+        }
+
+        function closeGeometryEditor() {
+            closeDialog('geometryEditorDialog');
         }
 
         function showAddTextureDialog() {
-            const name = prompt('Enter texture name:');
-            if (!name) return;
+            document.getElementById('textureName').value = '';
+            document.getElementById('textureX').value = '0';
+            document.getElementById('textureY').value = '0';
+            showDialog('textureEditorDialog');
+        }
+
+        function saveTexture() {
+            const name = document.getElementById('textureName').value.trim();
+            if (!name) {
+                alert('Please enter a texture name');
+                return;
+            }
             
-            const x = parseInt(prompt('Enter X coordinate:') || '0');
-            const y = parseInt(prompt('Enter Y coordinate:') || '0');
+            const x = parseInt(document.getElementById('textureX').value);
+            const y = parseInt(document.getElementById('textureY').value);
             
             if (!state.tileset) {
                 state.tileset = { textures: {} };
@@ -1293,11 +1811,22 @@
             
             state.tileset.textures[name] = [x, y];
             updateTextureList();
-            updateStatus(`Added texture: ${name}`);
+            closeDialog('textureEditorDialog');
+            updateStatus(`Saved texture: ${name}`);
         }
 
-        function editGeometry(name) {
-            alert('Geometry editor coming soon!\n\nCurrent geometry: ' + name);
+        function closeTextureEditor() {
+            closeDialog('textureEditorDialog');
+        }
+
+        function showDialog(dialogId) {
+            document.getElementById(dialogId).style.display = 'block';
+            document.getElementById('dialogOverlay').style.display = 'block';
+        }
+
+        function closeDialog(dialogId) {
+            document.getElementById(dialogId).style.display = 'none';
+            document.getElementById('dialogOverlay').style.display = 'none';
         }
 
         function closeCellEditor() {
@@ -1401,7 +1930,50 @@
                 state.cells.push(row);
             }
             
-            updateStatus('Ready - Load files to begin editing');
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    return; // Don't handle shortcuts in input fields
+                }
+                
+                switch(e.key) {
+                    case 'p':
+                    case 'P':
+                        selectTool('paint');
+                        break;
+                    case 'e':
+                    case 'E':
+                        selectTool('erase');
+                        break;
+                    case 'i':
+                    case 'I':
+                        selectTool('pick');
+                        break;
+                    case 'g':
+                    case 'G':
+                        toggleGrid();
+                        break;
+                    case 'r':
+                    case 'R':
+                        resetCamera();
+                        break;
+                    case 'Escape':
+                        closeDialog('tileEditorDialog');
+                        closeDialog('geometryEditorDialog');
+                        closeDialog('textureEditorDialog');
+                        closeCellEditor();
+                        break;
+                }
+            });
+            
+            // Close dialogs when clicking overlay
+            document.getElementById('dialogOverlay').addEventListener('click', () => {
+                closeDialog('tileEditorDialog');
+                closeDialog('geometryEditorDialog');
+                closeDialog('textureEditorDialog');
+            });
+            
+            updateStatus('Ready - Load files to begin editing | Shift+Click to paint, Shift+Right-Click to erase | Drag to rotate camera');
         });
     </script>
 </body>
