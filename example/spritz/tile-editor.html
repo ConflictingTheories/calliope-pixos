@@ -473,6 +473,13 @@
                 <label style="margin-left: auto; margin-bottom: 0;">
                     <input type="checkbox" id="show3D" onchange="toggle3DView()" checked> 3D View
                 </label>
+                <div style="margin-left: 25px; padding-left: 25px; border-left: 1px solid #3e3e42; display: flex; align-items: center;">
+                    <label style="font-size: 13px; margin-right: 8px;">Height Layer:</label>
+                    <button onclick="adjustHeight(-1)" style="padding: 4px 12px; font-size: 12px;">−</button>
+                    <span id="heightDisplay" style="display: inline-block; width: 50px; text-align: center; font-weight: bold;">0.0</span>
+                    <button onclick="adjustHeight(1)" style="padding: 4px 12px; font-size: 12px;">+</button>
+                    <button onclick="state.currentHeight = 0; updateHeightDisplay(); render()" style="padding: 4px 12px; font-size: 11px; margin-left: 8px;">Reset</button>
+                </div>
             </div>
             <div id="canvas-container">
                 <canvas id="glCanvas"></canvas>
@@ -674,6 +681,7 @@
         const state = {
             map: null,
             cells: [],
+            heights: [],  // Height offset for each cell
             tileset: null,
             tiles: {},
             geometry: {},
@@ -681,6 +689,7 @@
             textureImage: null,
             selectedTile: 'FLOOR',
             currentTool: 'paint',
+            currentHeight: 0,  // Current height layer for painting
             showGrid: true,
             show3D: true,
             editingCell: null
@@ -1019,21 +1028,24 @@
                     const isHovered = hoveredCell && hoveredCell.x === x && hoveredCell.y === y;
                     gl.uniform1i(uIsHovered, isHovered);
                     
-                    renderTile(x, y, tileType, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture);
+                    // Get height offset for this cell
+                    const cellHeight = state.heights[y] && state.heights[y][x] !== undefined ? state.heights[y][x] : 0;
+                    
+                    renderTile(x, y, tileType, cellHeight, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture);
                 }
             }
             
             requestAnimationFrame(render);
         }
 
-        function renderTile(x, y, tileType, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture) {
+        function renderTile(x, y, tileType, cellHeight, viewMatrix, uModelViewMatrix, uUseTexture, uColor, uTexture) {
             const tileData = state.tiles[tileType];
             if (!tileData) return;
             
-            // Model matrix for this tile
+            // Model matrix for this tile (with cell height offset)
             const modelViewMatrix = createMat4();
             identity(modelViewMatrix);
-            translate(modelViewMatrix, modelViewMatrix, [x, y, 0]);
+            translate(modelViewMatrix, modelViewMatrix, [x, y, cellHeight]);
             
             // Combine with view matrix
             const combined = createMat4();
@@ -1405,11 +1417,14 @@
             if (state.currentTool === 'paint') {
                 if (state.cells[y] && state.cells[y][x] !== undefined) {
                     state.cells[y][x] = state.selectedTile;
-                    updateStatus(`Painted ${state.selectedTile} at (${x}, ${y})`);
+                    if (!state.heights[y]) state.heights[y] = [];
+                    state.heights[y][x] = state.currentHeight;
+                    updateStatus(`Painted ${state.selectedTile} at (${x}, ${y}) height ${state.currentHeight.toFixed(1)}`);
                 }
             } else if (state.currentTool === 'erase') {
                 if (state.cells[y] && state.cells[y][x] !== undefined) {
                     state.cells[y][x] = 'EMPTY';
+                    if (state.heights[y]) state.heights[y][x] = 0;
                     updateStatus(`Erased cell at (${x}, ${y})`);
                 }
             } else if (state.currentTool === 'pick') {
@@ -1599,6 +1614,21 @@
                 const cellsJson = await zipData.files.file(`${mapData.path}cells.json`).async('string');
                 state.cells = JSON.parse(cellsJson);
                 
+                // Initialize or load heights
+                if (state.map.heights) {
+                    state.heights = state.map.heights;
+                } else {
+                    // Initialize heights array if not present
+                    state.heights = [];
+                    for (let y = 0; y < state.cells.length; y++) {
+                        const heightRow = [];
+                        for (let x = 0; x < state.cells[y].length; x++) {
+                            heightRow.push(0);
+                        }
+                        state.heights.push(heightRow);
+                    }
+                }
+                
                 // Load tileset (with extension support)
                 const tilesetName = selectedTileset || state.map.tileset;
                 if (tilesetName && zipData.tilesets[tilesetName]) {
@@ -1608,6 +1638,7 @@
                 // Update UI
                 updateUI();
                 resetCamera();
+                updateHeightDisplay();
                 updateStatus(`Loaded map: ${selectedMap}, tileset: ${tilesetName}`);
                 
             } catch (error) {
@@ -1946,6 +1977,17 @@
             state.show3D = document.getElementById('show3D').checked;
         }
 
+        function adjustHeight(delta) {
+            state.currentHeight += delta * 0.5;
+            state.currentHeight = Math.round(state.currentHeight * 2) / 2; // Round to 0.5
+            updateHeightDisplay();
+            render();
+        }
+        
+        function updateHeightDisplay() {
+            document.getElementById('heightDisplay').textContent = state.currentHeight.toFixed(1);
+        }
+
         // ============================================
         // Map Editing
         // ============================================
@@ -1979,8 +2021,12 @@
             for (let y = 0; y < state.cells.length; y++) {
                 for (let x = 0; x < state.cells[y].length; x++) {
                     state.cells[y][x] = 'EMPTY';
+                    if (state.heights[y]) state.heights[y][x] = 0;
                 }
             }
+            state.currentHeight = 0;
+            updateHeightDisplay();
+            render();
             updateStatus('Map cleared');
         }
 
@@ -2371,7 +2417,9 @@
                 alert('No map data to export');
                 return;
             }
-            downloadJSON(state.map, 'map.json');
+            // Add heights to map data before export
+            const mapDataWithHeights = { ...state.map, heights: state.heights };
+            downloadJSON(mapDataWithHeights, 'map.json');
         }
 
         function exportCells() {
@@ -3021,13 +3069,18 @@
             
             // Initialize with empty map
             state.cells = [];
+            state.heights = [];
             for (let y = 0; y < 19; y++) {
-                const row = [];
+                const cellRow = [];
+                const heightRow = [];
                 for (let x = 0; x < 17; x++) {
-                    row.push('EMPTY');
+                    cellRow.push('EMPTY');
+                    heightRow.push(0);
                 }
-                state.cells.push(row);
+                state.cells.push(cellRow);
+                state.heights.push(heightRow);
             }
+            updateHeightDisplay();
             
             // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
@@ -3055,6 +3108,19 @@
                     case 'r':
                     case 'R':
                         resetCamera();
+                        break;
+                    case '[':
+                    case '{':
+                        adjustHeight(-1);
+                        break;
+                    case ']':
+                    case '}':
+                        adjustHeight(1);
+                        break;
+                    case '0':
+                        state.currentHeight = 0;
+                        updateHeightDisplay();
+                        render();
                         break;
                     case 'Escape':
                         closeDialog('tileEditorDialog');
