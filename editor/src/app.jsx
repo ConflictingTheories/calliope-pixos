@@ -418,6 +418,25 @@ const App = () => {
     console.log('Zip type:', typeof zip);
     console.log('Zip methods:', zip ? Object.keys(zip) : 'no zip');
     
+    // Helper to get full path of an entry
+    const getEntryFullPath = (ent) => {
+      // If entry already has fullName, use it
+      if (ent.fullName) return ent.fullName;
+      
+      // Otherwise, traverse up the parent chain to build the path
+      const pathParts = [];
+      let current = ent;
+      while (current) {
+        if (current.name) {
+          pathParts.unshift(current.name);
+        }
+        current = current.parent;
+      }
+      return pathParts.join('/');
+    };
+    
+    const entryFullPath = getEntryFullPath(entry);
+    
     // Get all entries from zip filesystem - try multiple approaches
     let allEntries = [];
     if (zip) {
@@ -480,7 +499,6 @@ const App = () => {
     if (allEntries.length > 0) {
       try {
         // Extract the directory from the map file path
-        const entryFullPath = entry.fullName || entry.name;
         const mapDir = entryFullPath.substring(0, entryFullPath.lastIndexOf('/') + 1);
         const cellsFileName = 'cells.json';
         const heightsFileName = 'heights.json';
