@@ -557,7 +557,10 @@ const App = () => {
     if (tilesetName && allEntries.length > 0) {
       try {
         console.log('Loading tileset:', tilesetName);
-        console.log('All zip files:', allEntries.map(e => e.fullName || e.name));
+        console.log('Available tileset files:', allEntries
+          .filter(e => (e.fullName || e.name).includes('tileset'))
+          .map(e => e.fullName || e.name)
+        );
         
         // Use extends-aware tileset loader
         try {
@@ -573,14 +576,21 @@ const App = () => {
             console.log('Loading texture:', resolvedTileset.src);
             const textureName = resolvedTileset.src;
             
-            // Search for texture file - check both tilesets and textures directories
-            const textureFile = allEntries.find(e => {
+            // Search for texture file - check multiple locations
+            let textureFile = allEntries.find(e => {
               const fullPath = e.fullName || e.name;
-              return (fullPath.includes(`tilesets/${tilesetName}`) || 
-                      fullPath.includes('tilesets/common') || 
-                      fullPath.includes('textures/')) && 
-                     fullPath.endsWith(textureName);
+              // Try exact match first
+              return fullPath.endsWith(textureName);
             });
+            
+            // If not found, try broader search
+            if (!textureFile) {
+              const baseName = textureName.split('/').pop(); // Get just the filename
+              textureFile = allEntries.find(e => {
+                const fullPath = e.fullName || e.name;
+                return fullPath.endsWith(baseName) && fullPath.match(/\.(png|jpg|jpeg|gif)$/i);
+              });
+            }
             
             if (textureFile) {
               console.log('Found texture at:', textureFile.fullName || textureFile.name);
@@ -589,10 +599,13 @@ const App = () => {
                 const ext = resolvedTileset.src.split('.').pop().toLowerCase();
                 const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
                 textureAtlas = toDataUri(textureBytes, mime);
-                console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
+                console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes', 'mime:', mime);
+              } else {
+                console.error('Failed to get texture bytes for:', textureFile.fullName || textureFile.name);
               }
             } else {
               console.warn('Texture not found:', textureName);
+              console.warn('Searched for basename:', textureName.split('/').pop());
               console.warn('Available texture files:', allEntries.filter(e => {
                 const fullPath = e.fullName || e.name;
                 return fullPath.match(/\.(png|jpg|jpeg|gif)$/i);
@@ -601,13 +614,25 @@ const App = () => {
           }
         } catch (extendsErr) {
           console.error('Failed to load tileset with extends:', extendsErr);
+          console.error('Error details:', extendsErr.message);
+          
           // Fallback: try loading without extends support
-          const tilesetFile = allEntries.find(e => {
+          // Search more broadly for the tileset file
+          let tilesetFile = allEntries.find(e => {
             const fullPath = e.fullName || e.name;
             return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
           });
           
+          // Try fuzzy match if exact not found
+          if (!tilesetFile) {
+            tilesetFile = allEntries.find(e => {
+              const fullPath = e.fullName || e.name;
+              return fullPath.includes(tilesetName) && fullPath.endsWith('tileset.json');
+            });
+          }
+          
           if (tilesetFile) {
+            console.log('Found tileset (fallback):', tilesetFile.fullName || tilesetFile.name);
             const tilesetContent = await getData(tilesetFile, true);
             if (tilesetContent && typeof tilesetContent === 'string') {
               const tilesetData = JSON.parse(tilesetContent);
@@ -762,8 +787,10 @@ const App = () => {
     // Asset loader function that loads from ZIP with proper MIME types
     const assetLoader = async (path) => {
       try {
+        console.log('[assetLoader] Loading asset:', path);
         // Clean the path
         let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
+        console.log('[assetLoader] Clean path:', cleanPath);
         
         // Helper to find asset by name in ZIP recursively
         const findAsset = (node, targetName) => {
@@ -790,17 +817,20 @@ const App = () => {
           if (cleanPath.startsWith('characters/') || cleanPath.startsWith('npc/') || cleanPath.startsWith('sprites/')) {
             // Try prefixing with "sprites/" or various extensions
             const trialPaths = [
-              'sprites/' + cleanPath,
-              'sprites/' + cleanPath + '.json',
-              'sprites/' + cleanPath + '.gif',
-              'sprites/' + cleanPath + '.png',
+              cleanPath.startsWith('sprites/') ? cleanPath : 'sprites/' + cleanPath,
+              cleanPath.startsWith('sprites/') ? cleanPath + '.json' : 'sprites/' + cleanPath + '.json',
+              cleanPath.startsWith('sprites/') ? cleanPath + '.gif' : 'sprites/' + cleanPath + '.gif',
+              cleanPath.startsWith('sprites/') ? cleanPath + '.png' : 'sprites/' + cleanPath + '.png',
               cleanPath + '.json',
               cleanPath + '.gif',
               cleanPath + '.png'
             ];
             for (const trial of trialPaths) {
               assetEntry = findAsset(zip, trial);
-              if (assetEntry) break;
+              if (assetEntry) {
+                console.log('[assetLoader] Found sprite at:', trial);
+                break;
+              }
             }
           }
           
@@ -846,7 +876,11 @@ const App = () => {
         }
         
         if (!assetEntry) {
-          console.warn(`Asset not found in ZIP: ${path}`);
+          // Only warn if it's not an intermediate search path
+          // (e.g., don't warn for .json when looking for .gif)
+          if (!path.match(/\.(json|gif|png)$/)) {
+            console.warn(`Asset not found in ZIP: ${path}`);
+          }
           return null;
         }
         
@@ -866,6 +900,7 @@ const App = () => {
           'json': 'application/json',
         };
         const mimeType = mimeMap[ext] || 'application/octet-stream';
+        console.log('[assetLoader] Returning data URI with MIME type:', mimeType);
         return toDataUri(data, mimeType);
       } catch (err) {
         console.error(`Failed to load asset ${path}:`, err);

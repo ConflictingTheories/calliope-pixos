@@ -32,11 +32,15 @@ import {
 /**
  * Enhanced MapEditor with 3D rendering
  */
-function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) {
+function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zip }) {
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
   const [heights, setHeights] = useState([]);
+  
+  // Available sprite/object types from package
+  const [availableSprites, setAvailableSprites] = useState([]);
+  const [availableObjects, setAvailableObjects] = useState([]);
   
   // New: Sprites, Objects, Triggers state
   const [sprites, setSprites] = useState([]);
@@ -83,6 +87,67 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
   const textureRef = useRef(null);
   const [hoveredCell, setHoveredCell] = useState(null);
 
+  // Discover available sprite and object types from the package
+  useEffect(() => {
+    if (!zip) return;
+    
+    const spriteTypes = new Set();
+    const objectTypes = new Set();
+    
+    try {
+      // Get all entries from zip
+      let entries = [];
+      if (typeof zip.entries === 'function') {
+        entries = Array.from(zip.entries());
+      } else if (zip.root) {
+        // Build entry list from root
+        const buildList = (node, path = '', list = []) => {
+          if (node.children) {
+            node.children.forEach(child => {
+              const fullPath = path ? `${path}/${child.name}` : child.name;
+              if (!child.directory) {
+                list.push({ name: child.name, fullName: fullPath });
+              }
+              buildList(child, fullPath, list);
+            });
+          }
+          return list;
+        };
+        entries = buildList(zip.root);
+      }
+      
+      // Filter sprite and object JSON files
+      entries.forEach(entry => {
+        const fullPath = entry.fullName || entry.name;
+        
+        // Skip macOS metadata
+        if (fullPath.includes('__MACOSX') || fullPath.includes('/.')) return;
+        
+        if (fullPath.startsWith('sprites/') && fullPath.endsWith('.json')) {
+          // Extract type path (e.g., "sprites/characters/male.json" -> "characters/male")
+          const typePath = fullPath
+            .replace('sprites/', '')
+            .replace('.json', '');
+          
+          // Categorize as object or sprite based on path
+          if (typePath.startsWith('objects/') || typePath.startsWith('furniture/')) {
+            objectTypes.add(typePath);
+          } else {
+            spriteTypes.add(typePath);
+          }
+        }
+      });
+      
+      setAvailableSprites(Array.from(spriteTypes).sort());
+      setAvailableObjects(Array.from(objectTypes).sort());
+      
+      console.log('[MapEditor3D] Discovered sprite types:', spriteTypes.size);
+      console.log('[MapEditor3D] Discovered object types:', objectTypes.size);
+    } catch (err) {
+      console.error('[MapEditor3D] Failed to discover sprite/object types:', err);
+    }
+  }, [zip]);
+  
   // Parse incoming map data
   useEffect(() => {
     if (!content) return;
@@ -212,7 +277,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       console.error('[MapEditor3D] Failed to load texture image:', e);
     };
     img.src = textureAtlas;
-  }, [textureAtlas, glRef.current]);
+  }, [textureAtlas]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -352,8 +417,56 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
           );
         }
       }
+      
+      // Render sprites as visual markers
+      sprites.forEach((sprite, idx) => {
+        renderMarker(
+          gl,
+          program,
+          sprite.pos[0],
+          sprite.pos[1],
+          sprite.pos[2],
+          viewMatrix,
+          uModelViewMatrix,
+          uUseTexture,
+          uColor,
+          [0.2, 0.8, 0.2] // Green for sprites
+        );
+      });
+      
+      // Render objects as visual markers
+      objects.forEach((obj, idx) => {
+        renderMarker(
+          gl,
+          program,
+          obj.pos[0],
+          obj.pos[1],
+          obj.pos[2],
+          viewMatrix,
+          uModelViewMatrix,
+          uUseTexture,
+          uColor,
+          [0.2, 0.2, 0.8] // Blue for objects
+        );
+      });
+      
+      // Render animated tiles as visual markers
+      animatedTiles.forEach((tile, idx) => {
+        renderMarker(
+          gl,
+          program,
+          tile.pos[0],
+          tile.pos[1],
+          tile.pos[2],
+          viewMatrix,
+          uModelViewMatrix,
+          uUseTexture,
+          uColor,
+          [0.8, 0.8, 0.2] // Yellow for animated tiles
+        );
+      });
     },
-    [cells, heights, hoveredCell, tiles, geometry, tileset, textureRef.current]
+    [cells, heights, hoveredCell, tiles, geometry, tileset, textureRef.current, sprites, objects, animatedTiles]
   );
 
   // Render a tile at given position
@@ -527,6 +640,122 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
     gl.deleteBuffer(normalBuffer);
   }
 
+  // Render a marker (cube) for sprites, objects, or animated tiles
+  function renderMarker(
+    gl,
+    program,
+    x,
+    y,
+    z,
+    viewMatrix,
+    uModelViewMatrix,
+    uUseTexture,
+    uColor,
+    color
+  ) {
+    const size = 0.3; // Marker size
+    const height = 0.6; // Marker height
+    
+    // Model matrix for marker
+    const modelMatrix = createMat4();
+    identity(modelMatrix);
+    translate(modelMatrix, modelMatrix, [x + 0.5, y + 0.5, z + height / 2]);
+
+    // Combine with view matrix
+    const modelViewMatrix = createMat4();
+    multiply(modelViewMatrix, viewMatrix, modelMatrix);
+    gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
+
+    // Create a simple cube
+    const vertices = [
+      // Front face
+      -size, -size,  size,
+       size, -size,  size,
+       size,  size,  size,
+      -size, -size,  size,
+       size,  size,  size,
+      -size,  size,  size,
+      // Back face
+      -size, -size, -size,
+      -size,  size, -size,
+       size,  size, -size,
+      -size, -size, -size,
+       size,  size, -size,
+       size, -size, -size,
+      // Top face
+      -size,  size, -size,
+      -size,  size,  size,
+       size,  size,  size,
+      -size,  size, -size,
+       size,  size,  size,
+       size,  size, -size,
+      // Bottom face
+      -size, -size, -size,
+       size, -size, -size,
+       size, -size,  size,
+      -size, -size, -size,
+       size, -size,  size,
+      -size, -size,  size,
+      // Right face
+       size, -size, -size,
+       size,  size, -size,
+       size,  size,  size,
+       size, -size, -size,
+       size,  size,  size,
+       size, -size,  size,
+      // Left face
+      -size, -size, -size,
+      -size, -size,  size,
+      -size,  size,  size,
+      -size, -size, -size,
+      -size,  size,  size,
+      -size,  size, -size,
+    ];
+
+    const normals = [];
+    for (let i = 0; i < vertices.length / 3; i++) {
+      normals.push(0, 0, 1); // Simple normals
+    }
+
+    const texCoords = [];
+    for (let i = 0; i < vertices.length / 3; i++) {
+      texCoords.push(0, 0); // Dummy tex coords
+    }
+
+    // Create buffers
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    const aPosition = gl.getAttribLocation(program, 'aPosition');
+    gl.enableVertexAttribArray(aPosition);
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+    const texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+    const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
+    gl.enableVertexAttribArray(aTexCoord);
+    gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    const normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    const aNormal = gl.getAttribLocation(program, 'aNormal');
+    gl.enableVertexAttribArray(aNormal);
+    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+
+    // Use solid color for marker
+    gl.uniform1i(uUseTexture, 0);
+    gl.uniform3f(uColor, color[0], color[1], color[2]);
+
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+
+    // Cleanup
+    gl.deleteBuffer(positionBuffer);
+    gl.deleteBuffer(texCoordBuffer);
+    gl.deleteBuffer(normalBuffer);
+  }
+
   // Handle cell hover for highlighting
   const handleCellHover = useCallback(
     (screenX, screenY, camera, event) => {
@@ -575,22 +804,26 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       }
 
       const { x, y } = cellCoords;
-      console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x]);
+      console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x], 'editorMode:', editorMode);
 
-      // Handle different editor modes
-      if (editorMode === 'sprites' && event.type === 'click' && !event.shiftKey) {
+      // Handle different editor modes - check these FIRST before tile painting
+      if (editorMode === 'sprites' && event.type === 'click') {
+        console.log('[MapEditor3D] Placing sprite at:', x, y);
         addSprite(x, y);
         return;
-      } else if (editorMode === 'objects' && event.type === 'click' && !event.shiftKey) {
+      } else if (editorMode === 'objects' && event.type === 'click') {
+        console.log('[MapEditor3D] Placing object at:', x, y);
         addObject(x, y);
         return;
-      } else if (editorMode === 'animatedTiles' && event.type === 'click' && !event.shiftKey) {
+      } else if (editorMode === 'animatedTiles' && event.type === 'click') {
+        console.log('[MapEditor3D] Placing animated tile at:', x, y);
         addAnimatedTile(x, y);
         return;
       }
 
       // Original tile editing behavior: Shift+Click = paint/erase while dragging
-      if (event.shiftKey || editorMode === 'tiles') {
+      // Only do this in tiles mode or with shift key
+      if (event.shiftKey || (editorMode === 'tiles' && !event.shiftKey)) {
         // Start painting on shift+mousedown
         if (event.type === 'mousedown' || event.type === 'click') {
           if (event.button === 0) {
@@ -1346,21 +1579,47 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
               
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Type:</label>
-                <input
-                  type="text"
-                  value={spriteTypeInput}
-                  onChange={(e) => setSpriteTypeInput(e.target.value)}
-                  placeholder="e.g., characters/male, furniture/chest"
-                  style={{
-                    width: '100%',
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '12px'
-                  }}
-                />
+                {availableSprites.length > 0 || editorMode === 'objects' && availableObjects.length > 0 ? (
+                  <select
+                    value={spriteTypeInput}
+                    onChange={(e) => setSpriteTypeInput(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: '#3c3c3c',
+                      color: '#d4d4d4',
+                      border: '1px solid #3e3e42',
+                      padding: '6px 8px',
+                      borderRadius: '3px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="">-- Select Type --</option>
+                    {(editorMode === 'sprites' ? availableSprites : availableObjects).map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={spriteTypeInput}
+                      onChange={(e) => setSpriteTypeInput(e.target.value)}
+                      placeholder="e.g., characters/male, furniture/chest"
+                      style={{
+                        width: '100%',
+                        background: '#3c3c3c',
+                        color: '#d4d4d4',
+                        border: '1px solid #3e3e42',
+                        padding: '6px 8px',
+                        borderRadius: '3px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                      No {editorMode === 'sprites' ? 'sprites' : 'objects'} found in package. Enter manually.
+                    </div>
+                  </>
+                )}
               </div>
               
               <div style={{ marginBottom: '10px' }}>
@@ -1454,21 +1713,47 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
               
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Sprite Type:</label>
-                <input
-                  type="text"
-                  value={spriteTypeInput}
-                  onChange={(e) => setSpriteTypeInput(e.target.value)}
-                  placeholder="e.g., effects/spurt, effects/fire"
-                  style={{
-                    width: '100%',
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '12px'
-                  }}
-                />
+                {availableSprites.length > 0 ? (
+                  <select
+                    value={spriteTypeInput}
+                    onChange={(e) => setSpriteTypeInput(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: '#3c3c3c',
+                      color: '#d4d4d4',
+                      border: '1px solid #3e3e42',
+                      padding: '6px 8px',
+                      borderRadius: '3px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="">-- Select Sprite Type --</option>
+                    {availableSprites.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={spriteTypeInput}
+                      onChange={(e) => setSpriteTypeInput(e.target.value)}
+                      placeholder="e.g., effects/spurt, effects/fire"
+                      style={{
+                        width: '100%',
+                        background: '#3c3c3c',
+                        color: '#d4d4d4',
+                        border: '1px solid #3e3e42',
+                        padding: '6px 8px',
+                        borderRadius: '3px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                      No sprites found in package. Enter manually.
+                    </div>
+                  </>
+                )}
               </div>
               
               <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
@@ -1972,6 +2257,11 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
             <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>E</code> - Erase tool<br />
             <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>I</code> - Pick tool<br />
             <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>R</code> - Reset camera<br />
+            <br />
+            <strong>Visual Markers:</strong><br />
+            <span style={{ color: '#4fc14f' }}>🟢 Green cube</span> - Sprite<br />
+            <span style={{ color: '#4f9fcf' }}>🔵 Blue cube</span> - Object<br />
+            <span style={{ color: '#e5c14f' }}>🟡 Yellow cube</span> - Animated Tile<br />
             <br />
             <strong>Editing:</strong><br />
             • <strong>Shift+Click</strong> - Paint<br />

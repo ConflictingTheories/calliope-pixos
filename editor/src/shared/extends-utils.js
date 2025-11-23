@@ -90,47 +90,114 @@ export async function resolveExtends(config, loader) {
  * @returns {Promise<Object>} Resolved tileset configuration
  */
 export async function loadTilesetWithExtends(zip, tilesetName, getData) {
-  // Find tileset.json file
-  const tilesetPath = `tilesets/${tilesetName}/tileset.json`;
+  console.log('[extends-utils] Loading tileset:', tilesetName);
+  
+  // Find tileset.json file - try multiple path patterns
+  const possiblePaths = [
+    `tilesets/${tilesetName}/tileset.json`,
+    `${tilesetName}/tileset.json`,
+    `tilesets/${tilesetName}.json`,
+  ];
   
   let tilesetEntry = null;
+  let allEntries = [];
+  
   if (zip.files) {
     // JSZip format
-    tilesetEntry = zip.files[tilesetPath];
+    for (const path of possiblePaths) {
+      if (zip.files[path]) {
+        tilesetEntry = zip.files[path];
+        console.log('[extends-utils] Found tileset at:', path);
+        break;
+      }
+    }
   } else {
-    // zip.js filesystem format
-    for (const entry of zip.entries()) {
-      if (entry.name === tilesetPath || entry.fullName === tilesetPath) {
+    // zip.js filesystem format - collect all entries
+    const entries = Array.isArray(zip.entries) ? zip.entries : [];
+    for (const entry of entries) {
+      const entryPath = entry.fullName || entry.name;
+      allEntries.push(entryPath);
+      
+      // Try exact matches first
+      for (const path of possiblePaths) {
+        if (entryPath === path) {
+          tilesetEntry = entry;
+          console.log('[extends-utils] Found tileset at:', entryPath);
+          break;
+        }
+      }
+      
+      if (tilesetEntry) break;
+      
+      // Try fuzzy match: ends with the tileset name and tileset.json
+      if (entryPath.includes(`${tilesetName}/tileset.json`) || 
+          entryPath.endsWith(`/${tilesetName}/tileset.json`)) {
         tilesetEntry = entry;
+        console.log('[extends-utils] Found tileset (fuzzy match) at:', entryPath);
         break;
       }
     }
   }
   
   if (!tilesetEntry) {
-    throw new Error(`Tileset not found: ${tilesetPath}`);
+    console.error('[extends-utils] Tileset not found. Tried paths:', possiblePaths);
+    console.error('[extends-utils] Available entries:', allEntries.filter(p => p.includes('tileset')));
+    throw new Error(`Tileset not found: ${tilesetName}`);
   }
   
   const tilesetJson = JSON.parse(await getData(tilesetEntry, true));
+  console.log('[extends-utils] Tileset JSON loaded, extends:', tilesetJson.extends);
   
   // Loader function for extends
   const loader = async (extendName) => {
-    const extendPath = `tilesets/${extendName}/tileset.json`;
+    console.log('[extends-utils] Loading extended tileset:', extendName);
+    
+    const possibleExtendPaths = [
+      `tilesets/${extendName}/tileset.json`,
+      `${extendName}/tileset.json`,
+      `tilesets/${extendName}.json`,
+    ];
+    
     let extendEntry = null;
     
     if (zip.files) {
-      extendEntry = zip.files[extendPath];
+      for (const path of possibleExtendPaths) {
+        if (zip.files[path]) {
+          extendEntry = zip.files[path];
+          console.log('[extends-utils] Found extended tileset at:', path);
+          break;
+        }
+      }
     } else {
-      for (const entry of zip.entries()) {
-        if (entry.name === extendPath || entry.fullName === extendPath) {
+      const entries = Array.isArray(zip.entries) ? zip.entries : [];
+      for (const entry of entries) {
+        const entryPath = entry.fullName || entry.name;
+        
+        // Try exact matches
+        for (const path of possibleExtendPaths) {
+          if (entryPath === path) {
+            extendEntry = entry;
+            console.log('[extends-utils] Found extended tileset at:', entryPath);
+            break;
+          }
+        }
+        
+        if (extendEntry) break;
+        
+        // Try fuzzy match
+        if (entryPath.includes(`${extendName}/tileset.json`) ||
+            entryPath.endsWith(`/${extendName}/tileset.json`)) {
           extendEntry = entry;
+          console.log('[extends-utils] Found extended tileset (fuzzy) at:', entryPath);
           break;
         }
       }
     }
     
     if (!extendEntry) {
-      throw new Error(`Extended tileset not found: ${extendPath}`);
+      console.error('[extends-utils] Extended tileset not found:', extendName);
+      console.error('[extends-utils] Tried paths:', possibleExtendPaths);
+      throw new Error(`Extended tileset not found: ${extendName}`);
     }
     
     return JSON.parse(await getData(extendEntry, true));
@@ -155,7 +222,8 @@ export async function loadSpriteWithExtends(zip, spritePath, getData) {
   if (zip.files) {
     spriteEntry = zip.files[fullPath];
   } else {
-    for (const entry of zip.entries()) {
+    const entries = Array.isArray(zip.entries) ? zip.entries : [];
+    for (const entry of entries) {
       if (entry.name === fullPath || entry.fullName === fullPath) {
         spriteEntry = entry;
         break;
@@ -179,7 +247,8 @@ export async function loadSpriteWithExtends(zip, spritePath, getData) {
     if (zip.files) {
       extendEntry = zip.files[extendFullPath];
     } else {
-      for (const entry of zip.entries()) {
+      const entries = Array.isArray(zip.entries) ? zip.entries : [];
+      for (const entry of entries) {
         if (entry.name === extendFullPath || entry.fullName === extendFullPath) {
           extendEntry = entry;
           break;

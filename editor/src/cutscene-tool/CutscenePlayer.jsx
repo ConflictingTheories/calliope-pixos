@@ -30,6 +30,7 @@ function parseBracket(s) {
   const out = {};
   if (!s) return out;
   s = s.trim();
+  console.log('[parseBracket] Input:', s);
   if (!s.startsWith('[')) return out;
   s = s.slice(1, -1).trim();
   if (!s) return out;
@@ -44,6 +45,7 @@ function parseBracket(s) {
       else out[k] = val;
     } else out[p] = true;
   });
+  console.log('[parseBracket] Output:', out);
   return out;
 }
 
@@ -167,6 +169,7 @@ function parseScript(text) {
         const parts = rest.match(/(?:[^\s\[]+|\[[^\]]*\])/g) || [];
         const hook = parts[0];
         const args = parseBracket(parts.slice(1).join('') || '');
+        console.log('[parseScript] @do command:', { cmd, rest, parts, hook, args });
         scene.events.push({
           type: 'hook',
           payload: { hook, args },
@@ -383,8 +386,9 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
         spriteUrl = await loadAsset(sprite, false);
       } else {
         // No extension, might be a sprite reference, try common extensions
-        // Check if it's a direct portrait reference (contains _portrait)
-        const isPortraitRef = sprite.includes('_portrait');
+        // Check if it's a direct portrait reference or texture reference
+        const isPortraitRef = sprite.includes('_portrait') || sprite.includes('portrait');
+        const isSpriteRef = sprite.includes('characters/') || sprite.includes('npc/') || sprite.includes('monsters/');
         
         const tryPaths = isPortraitRef ? [
           // For direct portraits, try .gif first (most common)
@@ -393,12 +397,19 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           'textures/' + sprite + '.png',
           sprite + '.png',
           sprite
-        ] : [
+        ] : isSpriteRef ? [
           // For sprite references, try .json first
           sprite + '.json',
+          'sprites/' + sprite + '.json',
           sprite + '.gif', 
           sprite + '.png',
+          sprite
+        ] : [
+          // Unknown type, try image formats first
+          sprite + '.gif',
+          sprite + '.png',
           'textures/' + sprite + '.gif',
+          sprite + '.json',
           sprite
         ];
         
@@ -493,43 +504,64 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   const audioRef = useRef(null);
 
   function doHook(ev) {
+    console.log('[CutscenePlayer] doHook called with event:', JSON.stringify(ev, null, 2));
     if (ev.payload.hook === 'playSfx') {
-      const soundName = ev.payload.args.name;
+      const soundName = ev.payload.args?.name;
+      console.log('[CutscenePlayer] Audio hook triggered:', soundName);
+      console.log('[CutscenePlayer] Event payload:', ev.payload);
+      console.log('[CutscenePlayer] Event payload.args:', ev.payload.args);
       if (!soundName) {
+        console.warn('[CutscenePlayer] No sound name provided');
         return Promise.resolve();
       }
 
-      return new Promise(async (resolve) => {
+      // Play audio asynchronously without blocking
+      (async () => {
         try {
+          console.log('[CutscenePlayer] Loading audio:', soundName);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(soundName);
+            console.log('[CutscenePlayer] Audio loaded:', soundUrl ? 'success' : 'failed');
           }
           if (!soundUrl) {
-            // Fallback, assume direct path works
-            soundUrl = soundName;
+            console.warn('[CutscenePlayer] Could not load audio:', soundName);
+            return;
           }
 
+          // Stop any currently playing audio
           if (audioRef.current) {
             audioRef.current.pause();
-            audioRef.current = null;
+            audioRef.current.currentTime = 0;
           }
+          
+          console.log('[CutscenePlayer] Creating audio element for:', soundName);
           const audio = new Audio(soundUrl);
           audioRef.current = audio;
-          audio.play();
+          
+          // Try to play, catch autoplay restrictions
+          console.log('[CutscenePlayer] Attempting to play audio...');
+          audio.play().then(() => {
+            console.log('[CutscenePlayer] Audio playing successfully:', soundName);
+          }).catch(err => {
+            console.warn('[CutscenePlayer] Audio playback prevented (user interaction may be required):', soundName, err.message);
+          });
+          
           audio.onended = () => {
+            console.log('[CutscenePlayer] Audio ended:', soundName);
             audioRef.current = null;
-            resolve();
           };
-          audio.onerror = () => {
+          audio.onerror = (err) => {
+            console.warn('[CutscenePlayer] Audio error:', soundName, err);
             audioRef.current = null;
-            resolve();
           };
         } catch (err) {
-          console.warn('Failed to play sound effect:', soundName, err);
-          resolve();
+          console.warn('[CutscenePlayer] Failed to play sound effect:', soundName, err);
         }
-      });
+      })();
+      
+      // Don't block cutscene progression
+      return Promise.resolve();
     }
     return Promise.resolve();
   }
