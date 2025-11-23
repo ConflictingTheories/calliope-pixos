@@ -323,7 +323,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
     const tileData = tiles[tileType];
     
-    // Model matrix for this tile
+    // Model matrix for this tile - use cellHeight as Z offset
     const modelMatrix = createMat4();
     identity(modelMatrix);
     translate(modelMatrix, modelMatrix, [x, y, cellHeight]);
@@ -337,7 +337,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
     for (let i = 0; i < tileData.length; i += 3) {
       const geometryName = tileData[i];
       const textureName = tileData[i + 1];
-      const heightOffset = tileData[i + 2] || 0;
+      // Ignore heightOffset from tile definition - cellHeight overrides it
+      const heightOffset = 0; // Always 0 because we're using cellHeight in the model matrix
 
       if (!geometry || !geometry[geometryName]) continue;
 

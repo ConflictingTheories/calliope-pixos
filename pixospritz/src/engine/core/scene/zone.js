@@ -406,6 +406,23 @@ export default class Zone extends Loadable {
         cellJson = cells.concat(cellJson.cells || []);
       }
 
+      // Load heights.json if it exists
+      let heightsJson = null;
+      try {
+        const heightsFile = zip.file('maps/' + this.id + '/heights.json');
+        if (heightsFile) {
+          const heightsStr = await heightsFile.async('string');
+          heightsJson = JSON.parse(heightsStr);
+          console.log(`[Zone] Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
+          console.log(`[Zone] First row heights:`, heightsJson?.[0]);
+          console.log(`[Zone] Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
+        } else {
+          console.log(`[Zone] No heights.json found for ${this.id}, using default geometry heights`);
+        }
+      } catch (e) {
+        console.warn(`[Zone] Failed to load heights.json for ${this.id}:`, e.message);
+      }
+
       // Menus
       if (zoneJson.menu) {
         const menus = {};
@@ -422,7 +439,7 @@ export default class Zone extends Loadable {
       // Tileset / map / cells
       const tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.spritzName);
       const cells = dynamicCells(cellJson, tileset.tiles);
-      const map = await loadMap.call(this, zoneJson, cells, zip);
+      const map = await loadMap.call(this, zoneJson, cells, zip, heightsJson);
       Object.assign(this, map);
 
       // Cells generator (string -> function)
@@ -526,13 +543,27 @@ export default class Zone extends Loadable {
         let cellTex = [];
         let walk = Direction.All;
 
+        // Get height override for this cell if heights data exists
+        const heightOverride = this.heights && this.heights[j] && typeof this.heights[j][i] === 'number' 
+          ? this.heights[j][i] 
+          : null;
+
+        // Debug first few cells
+        if (k < 5 && heightOverride !== null) {
+          console.log(`[Zone.finalize] Cell [${j},${i}] heightOverride:`, heightOverride);
+        }
+
         for (let l = 0; l < layers; l++) {
           const tileId = cell[3 * l];
           const tileVariant = cell[3 * l + 1];
           const z = cell[3 * l + 2];
           const tilePos = [this.bounds[0] + i, this.bounds[1] + j, z];
           walk &= this.tileset.getWalkability(tileId);
-          cellVertices = cellVertices.concat(this.tileset.getTileVertices(tileId, tilePos));
+          
+          // Pass height override to getTileVertices
+          cellVertices = cellVertices.concat(
+            this.tileset.getTileVertices(tileId, tilePos, heightOverride)
+          );
           cellTex = cellTex.concat(this.tileset.getTileTexCoords(tileId, tileVariant));
         }
 

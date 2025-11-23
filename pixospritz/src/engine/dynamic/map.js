@@ -20,10 +20,14 @@ import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
  * @param {Object} json - The JSON configuration.
  * @param {Array|string} cells - The cells data.
  * @param {Object} zip - The zip file data.
+ * @param {Array} heights - Optional heights data for tile elevation.
  * @returns {Promise<Object>} The loaded map data.
  */
-export async function loadMap(json, cells, zip) {
+export async function loadMap(json, cells, zip, heights = null) {
   console.log('loading map....');
+  if (heights) {
+    console.log('[loadMap] Using heights data:', heights.length, 'rows');
+  }
 
   // read sprites & handle functions
   let $sprites =
@@ -121,6 +125,8 @@ export async function loadMap(json, cells, zip) {
     tileset: json.tileset,
     // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
     cells: cells,
+    // Heights data for each cell (optional)
+    heights: heights,
     // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
     sprites: $sprites,
     // Scenes + Scenarios
