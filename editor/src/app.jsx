@@ -20,10 +20,11 @@ import ScriptEditor from './script-editor/index.jsx';
 import ImagePreview from './image-preview/index.jsx';
 import AudioPreview from './audio-preview/index.jsx';
 import ModelPreview from './model-preview/index.jsx';
-import MapEditor from './map-editor/index.jsx';
+import MapEditor3D from './map-editor/MapEditor3D.jsx';
 import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
+import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
 
 /**
@@ -271,24 +272,202 @@ const App = () => {
   }, [getData, toDataUri]);
 
   const renderMapEditor = useCallback(async (entry) => {
+    console.log('Loading map editor for:', entry.name);
+    console.log('Zip object:', zip);
+    console.log('Zip type:', typeof zip);
+    console.log('Zip methods:', zip ? Object.keys(zip) : 'no zip');
+    
+    // Get all entries from zip filesystem - try multiple approaches
+    let allEntries = [];
+    if (zip) {
+      if (typeof zip.entries === 'function') {
+        allEntries = Array.from(zip.entries());
+        console.log('Got entries from zip.entries():', allEntries.length);
+      } else if (zip.children) {
+        // Try to get children recursively
+        const getChildren = (node) => {
+          let results = [];
+          if (node.children) {
+            node.children.forEach(child => {
+              if (!child.directory) {
+                results.push(child);
+              }
+              results = results.concat(getChildren(child));
+            });
+          }
+          return results;
+        };
+        allEntries = getChildren(zip);
+        console.log('Got entries from children:', allEntries.length);
+      } else if (zip.root && zip.root.children) {
+        const getChildren = (node) => {
+          let results = [];
+          if (node.children) {
+            node.children.forEach(child => {
+              if (!child.directory) {
+                results.push(child);
+              }
+              results = results.concat(getChildren(child));
+            });
+          }
+          return results;
+        };
+        allEntries = getChildren(zip.root);
+        console.log('Got entries from root.children:', allEntries.length);
+      }
+    }
+    console.log('Available files in zip:', allEntries.map(e => e.name));
+    
+    // Load map.json
     const mapContent = await getData(entry, true);
+    let mapData = null;
+    let cellsData = null;
+    let tilesetName = null;
+    
+    try {
+      mapData = JSON.parse(mapContent);
+      tilesetName = mapData.tileset;
+      console.log('Map data loaded, tileset:', tilesetName);
+      console.log('Full map data:', mapData);
+    } catch (err) {
+      console.error('Failed to parse map.json:', err);
+    }
+    
+    // Load cells.json from the same directory
+    if (allEntries.length > 0) {
+      try {
+        // Extract the directory from the map file path
+        const mapDir = entry.name.substring(0, entry.name.lastIndexOf('/') + 1);
+        const cellsFileName = 'cells.json';
+        
+        console.log('Searching for cells.json in directory:', mapDir);
+        
+        // Find cells.json in the same directory as map.json
+        const cellsFile = allEntries.find(e => 
+          e.name === `${mapDir}${cellsFileName}` || 
+          e.name.endsWith(`/${cellsFileName}`) && e.name.includes(mapDir.split('/').filter(Boolean)[0])
+        );
+        
+        if (cellsFile) {
+          console.log('Found cells.json at:', cellsFile.name);
+          const cellsContent = await getData(cellsFile, true);
+          cellsData = JSON.parse(cellsContent);
+          console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+        } else {
+          console.warn('cells.json not found in directory:', mapDir);
+          console.warn('Available files:', allEntries.map(e => e.name));
+        }
+      } catch (err) {
+        console.error('Failed to load cells.json:', err);
+      }
+    }
+    
+    // Combine map and cells data
+    const combinedContent = {
+      ...mapData,
+      cells: cellsData || mapData?.cells || []
+    };
+    
+    // Load tileset and its dependencies
+    let tileset = null;
+    let geometry = null;
+    let tiles = null;
+    let textureAtlas = null;
+    
+    if (tilesetName && allEntries.length > 0) {
+      try {
+        console.log('Loading tileset:', tilesetName);
+        console.log('All zip files:', allEntries.map(e => e.name));
+        
+        // Find tileset.json - search for file in tilesets directory
+        const tilesetFile = allEntries.find(e => 
+          e.name.includes(`tilesets/${tilesetName}`) && e.name.endsWith('tileset.json')
+        );
+        
+        if (tilesetFile) {
+          console.log('Found tileset at:', tilesetFile.name);
+          const tilesetContent = await getData(tilesetFile, true);
+          const tilesetData = JSON.parse(tilesetContent);
+          console.log('Tileset data:', tilesetData);
+          tileset = tilesetData;
+          geometry = tilesetData.geometry || {};
+          tiles = tilesetData.tiles || {};
+          console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
+          
+          // Load texture atlas
+          if (tilesetData.src) {
+            console.log('Loading texture:', tilesetData.src);
+            const textureName = tilesetData.src;
+            
+            // Search for texture file - check both tilesets and textures directories
+            const textureFile = allEntries.find(e => 
+              (e.name.includes(`tilesets/${tilesetName}`) || e.name.includes('textures/')) && 
+              e.name.endsWith(textureName)
+            );
+            
+            if (textureFile) {
+              console.log('Found texture at:', textureFile.name);
+              const textureBytes = await getData(textureFile, false);
+              const ext = tilesetData.src.split('.').pop().toLowerCase();
+              const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+              textureAtlas = toDataUri(textureBytes, mime);
+              console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
+            } else {
+              console.warn('Texture not found:', textureName);
+              console.warn('Available image files:', allEntries.filter(e => 
+                e.name.endsWith('.png') || e.name.endsWith('.jpg') || e.name.endsWith('.jpeg')
+              ).map(e => e.name));
+            }
+          }
+        } else {
+          console.warn('Tileset not found for:', tilesetName);
+          console.warn('Available tileset files:', allEntries.filter(e => 
+            e.name.includes('tileset') && e.name.endsWith('.json')
+          ).map(e => e.name));
+        }
+      } catch (err) {
+        console.error('Failed to load tileset dependencies:', err);
+      }
+    }
+    
+    console.log('Rendering MapEditor3D with:', {
+      hasTileset: !!tileset,
+      hasGeometry: !!geometry,
+      hasTiles: !!tiles,
+      hasTexture: !!textureAtlas,
+      cellsSize: combinedContent.cells?.length
+    });
+    
     setContents([
-      <MapEditor
+      <MapEditor3D
         key={Date.now()}
-        content={mapContent}
+        content={combinedContent}
+        tileset={tileset}
+        geometry={geometry}
+        tiles={tiles}
+        textureAtlas={textureAtlas}
         onSave={async (obj) => {
           if (zip && typeof zip.write === 'function') {
             try {
-              const data = JSON.stringify(obj, null, 2);
-              await zip.write(entry.name, data);
+              // Save map.json (without cells)
+              const { cells, ...mapOnlyData } = obj;
+              const mapJsonData = JSON.stringify(mapOnlyData, null, 2);
+              const cellsJsonData = JSON.stringify(cells, null, 2);
+              
+              // Write both files
+              await zip.write(entry.name, mapJsonData);
+              const cellsPath = entry.name.replace('map.json', 'cells.json');
+              await zip.write(cellsPath, cellsJsonData);
+              
+              console.log('Map saved successfully');
             } catch (err) {
-              console.warn('Failed to serialise map', err);
+              console.error('Failed to save map:', err);
             }
           }
         }}
       />
     ]);
-  }, [getData, zip]);
+  }, [getData, zip, toDataUri]);
 
   const renderTilesetEditor = useCallback(async (entry) => {
     const tilesetContent = await getData(entry, true);
@@ -314,8 +493,30 @@ const App = () => {
 
   const renderGeometryEditor = useCallback(async (entry) => {
     const geoContent = await getData(entry, true);
+    
+    // Try to parse to determine if it has the new format (with vertices/surfaces)
+    let useEnhanced = false;
+    try {
+      const parsed = JSON.parse(geoContent);
+      const geomObj = parsed.geometry || parsed;
+      
+      // Check if any geometry has vertices (new format)
+      if (typeof geomObj === 'object') {
+        for (const key in geomObj) {
+          if (geomObj[key].vertices && Array.isArray(geomObj[key].vertices)) {
+            useEnhanced = true;
+            break;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to parse geometry', err);
+    }
+    
+    const EditorComponent = useEnhanced ? GeometryEditor3D : GeometryEditor;
+    
     setContents([
-      <GeometryEditor
+      <EditorComponent
         key={Date.now()}
         content={geoContent}
         onSave={async (obj) => {
