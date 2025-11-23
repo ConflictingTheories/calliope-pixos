@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PixoSpritz - A modular game engine and storytelling platform built in JavaScript/WebGL with Lua scripting support.">
+    <meta name="keywords" content="game engine, pixospritz, webgl, lua scripting, javascript, retro games, indie games">
+    <meta name="author" content="PixoSpritz">
+    
+    <title>PixoSpritz - Retro Game Engine & Storytelling Platform</title>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="css/styles.css" as="style">
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Favicon placeholder -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="logo">🎮</span>
+                <span class="brand-name">PixoSpritz</span>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#demo" class="nav-link">Demo</a></li>
+                <li><a href="#games" class="nav-link">Games</a></li>
+                <li><a href="#docs" class="nav-link">Docs</a></li>
+                <li><a href="#support" class="nav-link">Support</a></li>
+                <li><a href="https://github.com/ConflictingTheories/calliope-pixos" target="_blank" class="nav-link nav-link-github">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="glitch" data-text="PixoSpritz">PixoSpritz</span>
+            </h1>
+            <p class="hero-subtitle">A Modular Game Engine & Storytelling Platform</p>
+            <p class="hero-description">
+                Build retro-style games with WebGL, Lua scripting, and package-based content distribution.
+            </p>
+            <div class="hero-buttons">
+                <a href="#demo" class="btn btn-primary">Try Demo</a>
+                <a href="#docs" class="btn btn-secondary">Get Started</a>
+                <a href="https://github.com/ConflictingTheories/calliope-pixos" target="_blank" class="btn btn-outline">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="pixel-grid"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="container">
+            <h2 class="section-title">About PixoSpritz</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="lead">
+                        PixoSpritz is a powerful, modular game engine built with JavaScript and WebGL, 
+                        designed for creating retro-style games and interactive storytelling experiences.
+                    </p>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📦</div>
+                            <h3>Package-Based Design</h3>
+                            <p>Games are distributed as "spritz" packages containing assets, configs, and scripts. Easy to share and deploy.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔧</div>
+                            <h3>Lua Scripting</h3>
+                            <p>Full engine API access for custom logic, triggers, callbacks, and events. Powerful and flexible.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎨</div>
+                            <h3>WebGL Rendering</h3>
+                            <p>Modern rendering pipeline with skybox shaders, tiles, sprites, 3D models, and smooth transitions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🗺️</div>
+                            <h3>Modes & Maps</h3>
+                            <p>Define gameplay modes, spatial layouts, zones, and interactive elements with ease.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔌</div>
+                            <h3>Extensible</h3>
+                            <p>Supports multiplayer, editor integration, and runtime customization for advanced users.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🚀</div>
+                            <h3>Performant</h3>
+                            <p>Optimized for web deployment with fast loading and smooth gameplay on modern browsers.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-video">
+                    <div class="video-placeholder">
+                        <div class="video-icon">▶️</div>
+                        <p>Demo Video Coming Soon</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="section demo">
+        <div class="container">
+            <h2 class="section-title">Try It Out</h2>
+            <p class="section-subtitle">Experience PixoSpritz in your browser</p>
+            <div class="demo-container">
+                <div class="demo-links">
+                    <a href="../example/build/index.html" target="_blank" class="demo-link">
+                        <span class="demo-icon">🎮</span>
+                        <span class="demo-text">Launch Online Player</span>
+                    </a>
+                    <a href="../editor/build/index.html" target="_blank" class="demo-link">
+                        <span class="demo-icon">🛠️</span>
+                        <span class="demo-text">Open Editor</span>
+                    </a>
+                    <a href="https://github.com/ConflictingTheories/calliope-pixos/releases" target="_blank" class="demo-link">
+                        <span class="demo-icon">⬇️</span>
+                        <span class="demo-text">Download Desktop Version</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section id="games" class="section games">
+        <div class="container">
+            <h2 class="section-title">Game Catalog</h2>
+            <p class="section-subtitle">Explore games built with PixoSpritz</p>
+            <div id="gamesGrid" class="games-grid">
+                <!-- Games will be loaded dynamically via JavaScript -->
+                <div class="loading">Loading games...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="section docs">
+        <div class="container">
+            <h2 class="section-title">Documentation & Resources</h2>
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <h3>📚 Getting Started</h3>
+                    <p>Learn the basics of PixoSpritz, set up your development environment, and create your first game.</p>
+                    <a href="../README.md" class="doc-link">Read Tutorial →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>📖 API Reference</h3>
+                    <p>Comprehensive documentation of the PixoSpritz API, Lua scripting interfaces, and engine functions.</p>
+                    <a href="../pixospritz/documentation/readme.md" class="doc-link">View API Docs →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🎓 Tutorials</h3>
+                    <p>Step-by-step guides for building spritz packages, creating maps, sprites, and implementing game logic.</p>
+                    <a href="#" class="doc-link">Browse Tutorials →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>❓ FAQ</h3>
+                    <p>Common questions about installation, development, deployment, and troubleshooting issues.</p>
+                    <a href="#faq" class="doc-link">See FAQ →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🔧 Editor Guide</h3>
+                    <p>Learn how to use the visual editor for creating tilesets, sprites, maps, and cutscenes.</p>
+                    <a href="../editor/README.md" class="doc-link">Editor Docs →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>💬 Community</h3>
+                    <p>Join discussions, share your projects, get help from other developers, and contribute.</p>
+                    <a href="https://github.com/ConflictingTheories/calliope-pixos/discussions" target="_blank" class="doc-link">Join Community →</a>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div id="faq" class="faq-section">
+                <h3 class="faq-title">Frequently Asked Questions</h3>
+                <div class="faq-list">
+                    <details class="faq-item">
+                        <summary>What is PixoSpritz?</summary>
+                        <p>PixoSpritz is a modular game engine and storytelling platform built in JavaScript/WebGL with Lua scripting support. It's designed for creating retro-style games with modern web technologies.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Is it free to use?</summary>
+                        <p>Yes! PixoSpritz is open-source and free to use for both personal and commercial projects. Check the LICENSE file for details.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What platforms does it support?</summary>
+                        <p>PixoSpritz runs in any modern web browser and can be packaged for desktop (Windows, macOS, Linux) using Electron or similar tools.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Do I need to know programming?</summary>
+                        <p>Basic knowledge of JSON configuration is helpful, but you can create simple games using the visual editor. Lua scripting knowledge unlocks advanced features.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Can I use my own assets?</summary>
+                        <p>Absolutely! PixoSpritz supports custom sprites, 3D models (OBJ format), textures, audio files, and more. The editor makes it easy to import and configure assets.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Is multiplayer supported?</summary>
+                        <p>Yes, PixoSpritz has built-in multiplayer support with client-server architecture. Check the server documentation for setup instructions.</p>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support/Donation Section -->
+    <section id="support" class="section support">
+        <div class="container">
+            <h2 class="section-title">Support Development</h2>
+            <div class="support-content">
+                <div class="support-text">
+                    <p class="lead">
+                        PixoSpritz is a solo passion project created with love and dedication. 
+                        As an independent developer from Canada, I pour my heart into building 
+                        tools that empower creators and bring retro gaming experiences to life.
+                    </p>
+                    <p>
+                        This project is entirely free and open-source, but development takes time and resources. 
+                        Your support helps me dedicate more time to adding features, fixing bugs, improving 
+                        documentation, and building a stronger community around PixoSpritz.
+                    </p>
+                    <p>
+                        <strong>Every contribution, no matter how small, makes a huge difference!</strong> 
+                        Your support helps keep this project alive and growing.
+                    </p>
+                </div>
+                <div class="support-options">
+                    <h3>Ways to Support</h3>
+                    <div class="support-links">
+                        <a href="https://github.com/sponsors/ConflictingTheories" target="_blank" class="support-link" rel="noopener noreferrer">
+                            <span class="support-icon">❤️</span>
+                            <span>GitHub Sponsors</span>
+                        </a>
+                        <a href="https://patreon.com/kderbyma" target="_blank" class="support-link" rel="noopener noreferrer">
+                            <span class="support-icon">🎨</span>
+                            <span>Patreon</span>
+                        </a>
+                        <a href="https://ko-fi.com/kderbyma" target="_blank" class="support-link" rel="noopener noreferrer">
+                            <span class="support-icon">☕</span>
+                            <span>Ko-fi</span>
+                        </a>
+                        <a href="https://buymeacoffee.com/kderbyma" target="_blank" class="support-link" rel="noopener noreferrer">
+                            <span class="support-icon">☕</span>
+                            <span>Buy Me a Coffee</span>
+                        </a>
+                    </div>
+                    <div class="support-other">
+                        <h4>Other Ways to Help</h4>
+                        <ul>
+                            <li>⭐ Star the project on GitHub</li>
+                            <li>🐛 Report bugs and issues</li>
+                            <li>💡 Suggest features and improvements</li>
+                            <li>📝 Contribute code or documentation</li>
+                            <li>📢 Share PixoSpritz with others</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PixoSpritz</h4>
+                    <p>A modular game engine for retro-style games and interactive storytelling.</p>
+                    <p class="footer-copyright">© 2025 PixoSpritz. Open Source.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#games">Games</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="../README.md">Getting Started</a></li>
+                        <li><a href="https://github.com/ConflictingTheories/calliope-pixos" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/ConflictingTheories/calliope-pixos/issues" target="_blank">Report Issue</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <ul class="footer-links">
+                        <li><a href="#support">Support Development</a></li>
+                        <li><a href="https://github.com/ConflictingTheories/calliope-pixos/discussions" target="_blank">Community</a></li>
+                        <li><a href="https://github.com/ConflictingTheories" target="_blank">Developer</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "example-game",
+    "title": "Example Game",
+    "description": "Try the example game included with PixoSpritz. Explore zones, interact with NPCs, and experience the engine's capabilities firsthand.",
+    "image": "assets/games/example-game.png",
+    "links": [
+      {
+        "label": "Play Now",
+        "url": "../example/build/index.html",
+        "icon": "▶️",
+        "external": false
+      },
+      {
+        "label": "View Source",
+        "url": "https://github.com/ConflictingTheories/calliope-pixos/tree/main/example",
+        "icon": "📂",
+        "external": true
+      }
+    ]
+  }
+]
