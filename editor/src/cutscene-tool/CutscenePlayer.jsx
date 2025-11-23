@@ -517,64 +517,6 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           {dialogueText}
         </div>
       </div>
-      <div
-        className="stageControls"
-        style={{
-          position: 'absolute',
-          right: 18,
-          bottom: 14,
-          display: 'flex',
-          gap: 8,
-        }}
-      >
-        <button
-          type="button"
-          className="btn"
-          onClick={() => internalPlay()}
-          disabled={playing}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.06)',
-            color: '#7dd3fc',
-            padding: '8px 10px',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Play
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => internalStop()}
-          disabled={!playing}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.06)',
-            color: '#7dd3fc',
-            padding: '8px 10px',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Stop
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => internalSkip()}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.06)',
-            color: '#7dd3fc',
-            padding: '8px 10px',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Skip
-        </button>
-      </div>
     </div>
   );
 });

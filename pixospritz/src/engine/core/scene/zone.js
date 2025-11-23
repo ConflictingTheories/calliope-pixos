@@ -548,8 +548,8 @@ export default class Zone extends Loadable {
           ? this.heights[j][i] 
           : null;
 
-        // Debug first few cells
-        if (k < 5 && heightOverride !== null) {
+        // Debug first few cells - show null/number for diagnostics
+        if (k < 5) {
           console.log(`[Zone.finalize] Cell [${j},${i}] heightOverride:`, heightOverride);
         }
 

@@ -95,19 +95,28 @@ export default class Tileset extends Loadable {
    * @returns {Array} Flattened array of vertices
    */
   getTileVertices = (id, offset, heightOverride = null) => {
-    // Use heightOverride to replace the Y offset if provided, otherwise use default offset[1]
-    const yOffset = heightOverride !== null ? heightOverride : offset[1];
-    
+    // The tile 'offset' is [x, y, z]. Height override refers to the vertical
+    // elevation of the tile (z-offset). We must not override the Y grid offset.
+    const xOffset = offset[0];
+    const yOffset = offset[1];
+    const zOffset = heightOverride !== null ? heightOverride : offset[2];
+
     // Debug logging for first few calls with height override
-    if (heightOverride !== null && id === 0) {
-      console.log(`[Tileset.getTileVertices] tile=${id}, offset=[${offset}], heightOverride=${heightOverride}, yOffset=${yOffset}`);
+    if (heightOverride !== null) {
+      console.log(`[Tileset.getTileVertices] tile=${id}, offset=[${offset}], heightOverride=${heightOverride}, zOffset=${zOffset}`);
     }
-    
+
+    if (!this.geometry[id] || !this.geometry[id].vertices) {
+      // If geometry is missing for a tile, log a warning and return empty vertices
+      console.warn(`[Tileset.getTileVertices] Missing geometry for tile id ${id}`);
+      return [];
+    }
+
     return this.geometry[id].vertices
       .map((poly) => poly.map((vertex) => [
-        vertex[0] + offset[0],
+        vertex[0] + xOffset,
         vertex[1] + yOffset,
-        vertex[2] + offset[2]
+        vertex[2] + zOffset,
       ]))
       .flat(3);
   }

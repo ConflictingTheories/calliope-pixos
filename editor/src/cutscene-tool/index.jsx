@@ -12,7 +12,7 @@
  * in a Pixospritz package.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collect } from 'react-recollect';
 import {
   Container,
@@ -85,6 +85,9 @@ function CutsceneTool({ content, onSave, assets = [] }) {
   const [speed, setSpeed] = useState(60);
   // Auto advance state for player
   const [autoAdvance, setAutoAdvance] = useState(false);
+
+  // Ref to CutscenePlayer for imperative control
+  const cutscenePlayerRef = useRef(null);
 
   // Push snapshot into history; ensures future redo states are discarded
   function pushHistorySnapshot(nextEvents) {
@@ -332,71 +335,97 @@ function CutsceneTool({ content, onSave, assets = [] }) {
         </Col>
         <Col sm={24} md={12} lg={12} style={{ height: '100%' }}>
           <Panel bordered header={<strong>Cutscene Playback Preview</strong>} style={{ height: '100%', padding: '0', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flexGrow: 1, padding: '1rem 1rem 0 1rem' }}>
-              <CutscenePlayer
-                scriptText={scriptText}
-                speed={speed}
-                autoAdvance={autoAdvance}
-              />
+            <div style={{ flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '100%', maxWidth: '960px', aspectRatio: '16 / 9' }}>
+                <CutscenePlayer
+                  ref={cutscenePlayerRef}
+                  scriptText={scriptText}
+                  speed={speed}
+                  autoAdvance={autoAdvance}
+                />
+              </div>
             </div>
           <div style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px 18px',
+            flexDirection: 'column',
+            gap: '10px',
+            padding: '12px 16px',
             background: 'linear-gradient(180deg, rgba(6,10,16,0.72), rgba(4,8,14,0.72))',
             borderRadius: '0 0 10px 10px',
             boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <label htmlFor="speedRange" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)' }}>Speed (ms / char)</label>
-              <input
-                id="speedRange"
-                type="range"
-                min="8"
-                max="200"
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
-                style={{ verticalAlign: 'middle' }}
-              />
-              <div style={{ width: 44, textAlign: 'right', fontSize: '13px', color: 'rgba(255,255,255,0.85)', fontVariantNumeric: 'tabular-nums' }}>{speed}</div>
-              <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginLeft: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                <label htmlFor="speedRange" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>Speed (ms / char)</label>
+                <input
+                  id="speedRange"
+                  type="range"
+                  min="8"
+                  max="200"
+                  value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  style={{ flex: 1, verticalAlign: 'middle' }}
+                />
+                <div style={{ width: 44, textAlign: 'right', fontSize: '13px', color: 'rgba(255,255,255,0.85)', fontVariantNumeric: 'tabular-nums' }}>{speed}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <input
                   type="checkbox"
                   checked={autoAdvance}
                   onChange={(e) => setAutoAdvance(e.target.checked)}
-                  style={{ verticalAlign: 'middle', marginRight: 5 }}
+                  style={{ margin: 0 }}
                 />
                 Auto-advance
               </label>
-            </div>
-            <div>
-              <button
-                id="playBtn"
-                type="button"
-                className="btn"
-                style={{ marginRight: 8 }}
-                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.play()}
-              >
-                Play
-              </button>
-              <button
-                id="stopBtn"
-                type="button"
-                className="btn"
-                style={{ marginRight: 8 }}
-                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.stop()}
-              >
-                Stop
-              </button>
-              <button
-                id="skipBtn"
-                type="button"
-                className="btn"
-                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.skip()}
-              >
-                Skip
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    color: '#7dd3fc',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                  onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.play()}
+                >
+                  Play
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    color: '#7dd3fc',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                  onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.stop()}
+                >
+                  Stop
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    color: '#7dd3fc',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                  onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.skip()}
+                >
+                  Skip
+                </button>
+              </div>
             </div>
           </div>
           </Panel>
