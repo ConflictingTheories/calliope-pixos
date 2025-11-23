@@ -521,9 +521,60 @@ const App = () => {
           try {
             const cellsContent = await getData(cellsFile, true);
             console.log('Cells content type:', typeof cellsContent, 'length:', cellsContent?.length);
+            console.log('Cells content preview:', cellsContent?.substring(0, 100));
             if (cellsContent) {
-              cellsData = JSON.parse(cellsContent);
-              console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+              const parsedCells = JSON.parse(cellsContent);
+              console.log('Parsed cells data type:', Array.isArray(parsedCells) ? 'array' : typeof parsedCells);
+              console.log('Cells data:', parsedCells);
+              
+              // Check if cells.json has extends
+              if (parsedCells.extends && Array.isArray(parsedCells.extends)) {
+                console.log('[Cells] Found extends:', parsedCells.extends);
+                
+                // Load and merge extended cells
+                let mergedCells = parsedCells.cells || [];
+                
+                for (const extendMapName of parsedCells.extends) {
+                  try {
+                    console.log('[Cells] Loading extended map:', extendMapName);
+                    const extendCellsPath = `maps/${extendMapName}/cells.json`;
+                    const extendCellsFile = allEntries.find(e => (e.fullName || e.name) === extendCellsPath);
+                    
+                    if (extendCellsFile) {
+                      const extendCellsContent = await getData(extendCellsFile, true);
+                      const extendCellsData = JSON.parse(extendCellsContent);
+                      
+                      // Get the cells array (handle both array format and object format)
+                      const extendCells = Array.isArray(extendCellsData) ? extendCellsData : extendCellsData.cells;
+                      
+                      if (extendCells && Array.isArray(extendCells)) {
+                        console.log('[Cells] Extending with cells from', extendMapName, ':', extendCells.length, 'rows');
+                        
+                        // Append extended cells (note: this is append-style like you mentioned)
+                        mergedCells = [...mergedCells, ...extendCells];
+                      }
+                    } else {
+                      console.warn('[Cells] Extended map cells not found:', extendCellsPath);
+                    }
+                  } catch (extErr) {
+                    console.error('[Cells] Failed to load extended map:', extendMapName, extErr);
+                  }
+                }
+                
+                cellsData = mergedCells;
+                console.log('[Cells] Final merged cells:', cellsData.length, 'rows');
+              } else if (Array.isArray(parsedCells)) {
+                // Simple array format
+                cellsData = parsedCells;
+                console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+              } else if (parsedCells.cells && Array.isArray(parsedCells.cells)) {
+                // Object format with cells property
+                cellsData = parsedCells.cells;
+                console.log('Cells data loaded from .cells property:', cellsData.length, 'x', cellsData[0]?.length);
+              } else {
+                console.error('ERROR: cells.json format not recognized!', parsedCells);
+                cellsData = null;
+              }
             } else {
               console.error('cells.json getData returned null');
             }
@@ -570,6 +621,9 @@ const App = () => {
       cells: cellsData || mapData?.cells || [],
       heights: heightsData || mapData?.heights || null
     };
+    
+    console.log('Combined content - cells:', Array.isArray(combinedContent.cells) ? `${combinedContent.cells.length} rows` : typeof combinedContent.cells, 'heights:', combinedContent.heights ? 'present' : 'none');
+    console.log('Final cells dimensions:', combinedContent.cells?.length, 'x', combinedContent.cells?.[0]?.length);
     
     // Load tileset and its dependencies
     let tileset = null;
