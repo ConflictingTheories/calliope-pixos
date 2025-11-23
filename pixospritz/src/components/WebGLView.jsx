@@ -31,9 +31,21 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   const previewRef = useRef();
   const previewBoxRef = useRef();
 
-  // keyboard & touch
-  let onKeyEvent = SpritzProvider.onKeyEvent;
-  let onTouchEvent = SpritzProvider.onTouchEvent;
+  // keyboard & touch - use wrapper functions to guard against uninitialized engine
+  const onKeyEvent = (e) => {
+    try {
+      if (SpritzProvider && SpritzProvider.onKeyEvent) SpritzProvider.onKeyEvent(e);
+    } catch (err) {
+      // swallow until engine initialized
+    }
+  };
+  const onTouchEvent = (e) => {
+    try {
+      if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(e);
+    } catch (err) {
+      // swallow until engine initialized
+    }
+  };
   let engine = null;
 
   // recording stream & media tracks

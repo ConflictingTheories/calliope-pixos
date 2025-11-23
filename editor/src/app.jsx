@@ -826,6 +826,10 @@ const App = () => {
       renderScriptEditor(entry, 'pixoscript');
       return;
     }
+    if (name.endsWith('.pxc')) {
+      renderCutsceneTool(entry);
+      return;
+    }
     if (name.endsWith('.txt')) {
       renderScriptEditor(entry, 'plaintext');
       return;

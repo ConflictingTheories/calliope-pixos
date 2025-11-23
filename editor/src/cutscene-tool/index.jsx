@@ -12,7 +12,7 @@
  * in a Pixospritz package.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collect } from 'react-recollect';
 import {
   Container,
@@ -24,7 +24,9 @@ import {
   Button,
   ButtonGroup,
   Message,
+  Checkbox,
 } from 'rsuite';
+import CutscenePlayer from './CutscenePlayer';
 
 // Available event types for cutscenes
 const EVENT_TYPES = [
@@ -33,16 +35,56 @@ const EVENT_TYPES = [
   { label: 'Action', value: 'action' },
 ];
 
+// Serialize events to SpritzCut DSL script string
+function serializeEvents(events) {
+  function serializeBracket(meta) {
+    const parts = [];
+    for (const key in meta) {
+      const val = meta[key];
+      if (val === true) parts.push(key);
+      else parts.push(`${key}=${val}`);
+    }
+    return parts.length ? `[${parts.join(',')}]` : '';
+  }
+
+  let script = '';
+  events.forEach((ev) => {
+    if (ev.type === 'dialogue' || ev.type === 'cutin') {
+      const bracket = serializeBracket(ev.meta || {});
+      const header = `${ev.type === 'cutin' ? '*' : ''}${ev.speaker || ev.actor || 'UNKNOWN'}: ${bracket}${ev.content || ''}\n`;
+      if (ev.content && ev.content.includes('\n')) {
+        script += header.trimEnd() + '\n"""\n' + ev.content + '\n"""\n';
+      } else {
+        script += header;
+      }
+    } else if (ev.type === 'wait') {
+      const dur = ev.duration || 1;
+      script += `wait ${dur * 1000}\n`;
+    } else if (ev.type === 'action') {
+      script += `@action ${ev.command || ''}\n`;
+    } else {
+      // Fallback raw or unknown events 
+      if (ev.raw) script += ev.raw + '\n';
+    }
+  });
+  return script;
+}
+
 function CutsceneTool({ content, onSave, assets = [] }) {
   // Maintain events state; parse input content in an effect
   const [events, setEvents] = useState([
-    { type: 'dialogue', content: '', speaker: '', portrait: '' },
+    { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} },
   ]);
   const [error, setError] = useState(null);
 
   // History for undo/redo
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Speed state for player
+  const [speed, setSpeed] = useState(60);
+  // Auto advance state for player
+  const [autoAdvance, setAutoAdvance] = useState(false);
 
   // Push snapshot into history; ensures future redo states are discarded
   function pushHistorySnapshot(nextEvents) {
@@ -81,9 +123,11 @@ function CutsceneTool({ content, onSave, assets = [] }) {
         let parsed;
         if (Array.isArray(obj)) {
           parsed = obj;
+        } else if (obj.events && Array.isArray(obj.events)) {
+          parsed = obj.events;
         } else {
           parsed = [
-            { type: 'dialogue', content: '', speaker: '', portrait: '' },
+            { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} },
           ];
         }
         setEvents(parsed);
@@ -96,7 +140,7 @@ function CutsceneTool({ content, onSave, assets = [] }) {
         setError('Invalid cutscene JSON');
         // Reset events to a default single dialogue event
         const defaultEvents = [
-          { type: 'dialogue', content: '', speaker: '', portrait: '' },
+          { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} },
         ];
         setEvents(defaultEvents);
         setHistory([JSON.parse(JSON.stringify(defaultEvents))]);
@@ -110,14 +154,22 @@ function CutsceneTool({ content, onSave, assets = [] }) {
 
   // Update an event field
   function updateEvent(index, prop, value) {
-    const next = events.map((ev, i) => (i === index ? { ...ev, [prop]: value } : ev));
+    const next = events.map((ev, i) => {
+      if (i === index) {
+        if (prop === 'meta' && typeof value === 'object') {
+          return { ...ev, meta: { ...ev.meta, ...value } };
+        }
+        return { ...ev, [prop]: value };
+      }
+      return ev;
+    });
     setEvents(next);
     pushHistorySnapshot(next);
   }
 
   // Add a new event to the end
   function addEvent() {
-    const next = [...events, { type: 'dialogue', content: '', speaker: '', portrait: '' }];
+    const next = [...events, { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} }];
     setEvents(next);
     pushHistorySnapshot(next);
   }
@@ -141,6 +193,9 @@ function CutsceneTool({ content, onSave, assets = [] }) {
     pushHistorySnapshot(next);
   }
 
+  // Serialize events into script text passed to player for playback
+  const scriptText = useMemo(() => serializeEvents(events), [events]);
+
   function handleSave() {
     if (onSave) {
       onSave(events);
@@ -150,18 +205,18 @@ function CutsceneTool({ content, onSave, assets = [] }) {
   }
 
   return (
-    <Container style={{ padding: '1rem' }}>
+    <Container style={{ display: 'flex', padding: '1rem', gap: '1rem', height: '100%' }}>
       {error && (
-        <Row style={{ marginBottom: '0.5rem' }}>
+        <Row style={{ marginBottom: '0.5rem', width: '100%' }}>
           <Col sm={24} md={24} lg={24}>
             <Message type='error' description={error} />
           </Col>
         </Row>
       )}
-      <Row>
-        <Col sm={24} md={24} lg={24}>
-          <Panel bordered header={<strong>Cutscene Tool</strong>}>
-            <div style={{ maxHeight: '60vh', overflow: 'auto' }}>
+      <Row style={{ flexGrow: 1, overflow: 'hidden' }}>
+        <Col sm={24} md={12} lg={12} style={{ height: '100%', overflowY: 'auto' }}>
+          <Panel bordered header={<strong>Cutscene Events Editor</strong>} style={{ height: '100%' }}>
+            <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', paddingRight: '8px' }}>
               {events.map((ev, idx) => (
                 <Panel
                   key={idx}
@@ -180,7 +235,6 @@ function CutsceneTool({ content, onSave, assets = [] }) {
                       />
                     </Col>
                     <Col sm={16} md={18} lg={18}>
-                      {/* Fields vary based on event type */}
                       {ev.type === 'dialogue' && (
                         <div>
                           <Row style={{ marginBottom: '0.5rem' }}>
@@ -274,6 +328,77 @@ function CutsceneTool({ content, onSave, assets = [] }) {
                 Redo
               </Button>
             </Row>
+          </Panel>
+        </Col>
+        <Col sm={24} md={12} lg={12} style={{ height: '100%' }}>
+          <Panel bordered header={<strong>Cutscene Playback Preview</strong>} style={{ height: '100%', padding: '0', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flexGrow: 1, padding: '1rem 1rem 0 1rem' }}>
+              <CutscenePlayer
+                scriptText={scriptText}
+                speed={speed}
+                autoAdvance={autoAdvance}
+              />
+            </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 18px',
+            background: 'linear-gradient(180deg, rgba(6,10,16,0.72), rgba(4,8,14,0.72))',
+            borderRadius: '0 0 10px 10px',
+            boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <label htmlFor="speedRange" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)' }}>Speed (ms / char)</label>
+              <input
+                id="speedRange"
+                type="range"
+                min="8"
+                max="200"
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                style={{ verticalAlign: 'middle' }}
+              />
+              <div style={{ width: 44, textAlign: 'right', fontSize: '13px', color: 'rgba(255,255,255,0.85)', fontVariantNumeric: 'tabular-nums' }}>{speed}</div>
+              <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginLeft: 20 }}>
+                <input
+                  type="checkbox"
+                  checked={autoAdvance}
+                  onChange={(e) => setAutoAdvance(e.target.checked)}
+                  style={{ verticalAlign: 'middle', marginRight: 5 }}
+                />
+                Auto-advance
+              </label>
+            </div>
+            <div>
+              <button
+                id="playBtn"
+                type="button"
+                className="btn"
+                style={{ marginRight: 8 }}
+                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.play()}
+              >
+                Play
+              </button>
+              <button
+                id="stopBtn"
+                type="button"
+                className="btn"
+                style={{ marginRight: 8 }}
+                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.stop()}
+              >
+                Stop
+              </button>
+              <button
+                id="skipBtn"
+                type="button"
+                className="btn"
+                onClick={() => cutscenePlayerRef.current && cutscenePlayerRef.current.skip()}
+              >
+                Skip
+              </button>
+            </div>
+          </div>
           </Panel>
         </Col>
       </Row>

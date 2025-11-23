@@ -7,10 +7,14 @@ const config = {
   entry: './pixospritz/src/index.jsx',
   // Output
   output: {
-    library: 'calliope-pixos',
-    libraryTarget: 'commonjs2',
+    library: {
+      name: 'calliope-pixos',
+      type: 'umd',
+      export: 'default',
+    },
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    globalObject: 'this',
   },
   resolve: {
     alias: {
