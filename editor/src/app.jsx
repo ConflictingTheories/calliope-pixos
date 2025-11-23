@@ -32,7 +32,7 @@ import { Reader, Writer } from '@zip.js/zip.js';
  */
 const App = () => {
   const [contents, setContents] = useState([]);
-  // Keep track of the loaded zip filesystem and the selected entry
+  // Keep track of the loaded package filesystem and the selected entry
   const [zip, setZip] = useState(null);
   const [selectedEntry, setSelectedEntry] = useState(null);
   // Keep a list of image assets (name and data URI) for use in the tileset editor
@@ -42,7 +42,7 @@ const App = () => {
   const [validationReport, setValidationReport] = useState(null);
 
   /**
-   * Read a file entry from the zip filesystem and return its text
+   * Read a file entry from the package filesystem and return its text
    * representation.  For binary assets this will still return a
    * string containing the raw bytes which can later be converted
    * into a data URI.
@@ -51,9 +51,20 @@ const App = () => {
   const getData = useCallback(async (entry, asText = false) => {
     if (!entry) return null;
     
-    // Check if entry has the data.getData method (zip.js filesystem structure)
+    // Handle newly created files that have Blob data directly
+    if (entry.data instanceof Blob) {
+      console.log('[getData] Entry has Blob data directly, reading...');
+      if (asText) {
+        return await entry.data.text();
+      } else {
+        const arrayBuffer = await entry.data.arrayBuffer();
+        return new Uint8Array(arrayBuffer);
+      }
+    }
+    
+    // Check if entry has the data.getData method (zip.js filesystem structure for original files)
     if (!entry.data || typeof entry.data.getData !== 'function') {
-      console.error('Entry missing data.getData:', entry);
+      console.error('[getData] Entry missing data.getData and is not a Blob:', entry);
       return null;
     }
     
@@ -86,12 +97,126 @@ const App = () => {
   }, []);
 
   /**
-   * Build a list of image assets from the loaded zip.  Each asset
+   * Write a text file to the package filesystem. This finds the existing file
+   * by its full path, removes it, and re-adds it. If file doesn't exist, creates it.
+   */
+  const writeFile = useCallback(async (filePath, textContent) => {
+    if (!zip) {
+      throw new Error('Package filesystem not available');
+    }
+    
+    console.log('[writeFile] Saving file:', filePath);
+    
+    // Helper to find a file in the tree
+    const findFile = (node, path = '', targetPath) => {
+      if (node.children) {
+        for (const child of node.children) {
+          const fullPath = path ? `${path}/${child.name}` : child.name;
+          if (!child.directory && fullPath === targetPath) {
+            return child;
+          }
+          if (child.directory) {
+            const found = findFile(child, fullPath, targetPath);
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    };
+    
+    // Helper to find a directory in the tree
+    const findDirectory = (node, path = '', targetPath) => {
+      const currentPath = path || (node === zip.root ? '' : node.name);
+      if (currentPath === targetPath) {
+        return node;
+      }
+      if (node.children) {
+        for (const child of node.children) {
+          if (child.directory) {
+            const childPath = path ? `${path}/${child.name}` : child.name;
+            const found = findDirectory(child, childPath, targetPath);
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    };
+    
+    const existingFile = findFile(zip.root, '', filePath);
+    const fileName = filePath.split('/').pop();
+    const dirPath = filePath.substring(0, filePath.lastIndexOf('/'));
+    
+    console.log('[writeFile] File name:', fileName);
+    console.log('[writeFile] Directory path:', dirPath);
+    console.log('[writeFile] Existing file:', existingFile ? 'found' : 'not found');
+    
+    let parentFolder;
+    
+    if (existingFile) {
+      // File exists - update it
+      console.log('[writeFile] Found existing file:', existingFile.name);
+      parentFolder = existingFile.parent;
+      
+      if (!parentFolder) {
+        throw new Error(`Cannot find parent folder for: ${filePath}`);
+      }
+      
+      console.log('[writeFile] Removing old file...');
+      await zip.remove(existingFile);
+      console.log('[writeFile] Old file removed');
+    } else {
+      // File doesn't exist - create it in the appropriate directory
+      console.log('[writeFile] File does not exist, creating new file:', fileName, 'in directory:', dirPath);
+      
+      // Find the parent directory
+      parentFolder = dirPath ? findDirectory(zip.root, '', dirPath) : zip.root;
+      
+      if (!parentFolder) {
+        throw new Error(`Cannot find directory: ${dirPath}`);
+      }
+      
+      console.log('[writeFile] Creating new file in:', parentFolder.name || 'root');
+    }
+    
+    // Add the file with content
+    console.log('[writeFile] Adding file:', fileName, 'to', parentFolder.name || 'root');
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    await parentFolder.addBlob(fileName, blob);
+    console.log('[writeFile] File saved successfully');
+  }, [zip]);
+
+  /**
+   * Get the full path of an entry by traversing up to root
+   */
+  const getEntryFullPath = useCallback((entry) => {
+    if (entry.fullName) {
+      console.log('[getEntryFullPath] Using entry.fullName:', entry.fullName);
+      return entry.fullName;
+    }
+    
+    const parts = [];
+    let current = entry;
+    while (current && current.name) {
+      parts.unshift(current.name);
+      current = current.parent;
+      // Safety check to avoid infinite loop
+      if (parts.length > 20) {
+        console.error('[getEntryFullPath] Loop detected, breaking');
+        break;
+      }
+    }
+    const fullPath = parts.join('/');
+    console.log('[getEntryFullPath] Constructed path:', fullPath, 'from parts:', parts);
+    return fullPath;
+  }, []);
+
+  /**
+   * Build a list of image assets from the loaded package.  Each asset
    * includes its filename and a data URI for previewing in the
    * tileset editor.  Supported image types are png, jpg/jpeg, gif
    * and bmp.
    */
-  // Build asset list (images) from zip
+  // Build asset list (images) from package
   const buildAssetList = useCallback(async (zipFs) => {
     if (!zipFs || typeof zipFs.entries !== 'function') {
       setAssets([]);
@@ -236,7 +361,15 @@ const App = () => {
         type="script-only"
         content={script}
         onSave={async (newContent) => {
-          if (zip && typeof zip.write === 'function') await zip.write(entry.name, newContent);
+          try {
+            const fullPath = getEntryFullPath(entry);
+            await writeFile(fullPath, newContent);
+            console.log('[ScriptEditor] File saved:', fullPath);
+            alert('File saved successfully!');
+          } catch (err) {
+            console.error('[ScriptEditor] Save failed:', err);
+            alert('Failed to save: ' + err.message);
+          }
         }}
       />
     ]);
@@ -317,7 +450,7 @@ const App = () => {
         console.log('Got entries from root:', allEntries.length);
       }
     }
-    console.log('Available files in zip:', allEntries.map(e => e.fullName || e.name));
+    console.log('Available files in package:', allEntries.map(e => e.fullName || e.name));
     
     // Filter out macOS metadata files
     allEntries = allEntries.filter(e => {
@@ -479,23 +612,45 @@ const App = () => {
         geometry={geometry}
         tiles={tiles}
         textureAtlas={textureAtlas}
+        zip={zip}
+        entryName={entry.name}
         onSave={async (obj) => {
-          if (zip && typeof zip.write === 'function') {
-            try {
-              // Save map.json (without cells)
-              const { cells, ...mapOnlyData } = obj;
-              const mapJsonData = JSON.stringify(mapOnlyData, null, 2);
-              const cellsJsonData = JSON.stringify(cells, null, 2);
-              
-              // Write both files
-              await zip.write(entry.name, mapJsonData);
-              const cellsPath = entry.name.replace('map.json', 'cells.json');
-              await zip.write(cellsPath, cellsJsonData);
-              
-              console.log('Map saved successfully');
-            } catch (err) {
-              console.error('Failed to save map:', err);
+          try {
+            console.log('[MapEditor] Saving map data:', obj);
+            console.log('[MapEditor] Entry:', entry);
+            
+            // Get full path of the entry
+            const fullPath = getEntryFullPath(entry);
+            console.log('[MapEditor] Full path:', fullPath);
+            
+            // Extract cells and heights from the saved data
+            const { cells, heights, ...mapOnlyData } = obj;
+            
+            // Save map.json (metadata only, no cells/heights)
+            const mapJsonData = JSON.stringify(mapOnlyData, null, 2);
+            await writeFile(fullPath, mapJsonData);
+            console.log('[MapEditor] Saved map.json:', fullPath);
+            
+            // Save cells.json
+            const cellsPath = fullPath.replace('map.json', 'cells.json');
+            const cellsJsonData = JSON.stringify(cells, null, 2);
+            await writeFile(cellsPath, cellsJsonData);
+            console.log('[MapEditor] Saved cells.json:', cellsPath);
+            
+            // Save heights.json if it exists
+            if (heights && heights.length > 0) {
+              const heightsPath = fullPath.replace('map.json', 'heights.json');
+              const heightsJsonData = JSON.stringify(heights, null, 2);
+              await writeFile(heightsPath, heightsJsonData);
+              console.log('[MapEditor] Saved heights.json:', heightsPath);
             }
+            
+            console.log('[MapEditor] All map files saved successfully');
+            alert('Map saved successfully! Note: You may need to close and reopen the map to see the changes reflected in the editor.');
+          } catch (err) {
+            console.error('[MapEditor] Save failed:', err);
+            console.error('[MapEditor] Error stack:', err.stack);
+            alert('Failed to save map: ' + err.message);
           }
         }}
       />
@@ -510,13 +665,15 @@ const App = () => {
         key={Date.now()}
         content={tilesetContent}
         onSave={async (obj) => {
-          if (zip && typeof zip.write === 'function') {
-            try {
-              const data = JSON.stringify(obj, null, 2);
-              await zip.write(entry.name, data);
-            } catch (err) {
-              console.warn('Failed to serialise tileset', err);
-            }
+          try {
+            const fullPath = getEntryFullPath(entry);
+            const data = JSON.stringify(obj, null, 2);
+            await writeFile(fullPath, data);
+            console.log('[TilesetEditor] Saved:', fullPath);
+            alert('Tileset saved successfully!');
+          } catch (err) {
+            console.error('[TilesetEditor] Save failed:', err);
+            alert('Failed to save tileset: ' + err.message);
           }
         }}
         assets={assets}
@@ -553,13 +710,15 @@ const App = () => {
         key={Date.now()}
         content={geoContent}
         onSave={async (obj) => {
-          if (zip && typeof zip.write === 'function') {
-            try {
-              const data = JSON.stringify(obj, null, 2);
-              await zip.write(entry.name, data);
-            } catch (err) {
-              console.warn('Failed to serialise geometry', err);
-            }
+          try {
+            const fullPath = getEntryFullPath(entry);
+            const data = JSON.stringify(obj, null, 2);
+            await writeFile(fullPath, data);
+            console.log('[GeometryEditor] Saved:', fullPath);
+            alert('Geometry saved successfully!');
+          } catch (err) {
+            console.error('[GeometryEditor] Save failed:', err);
+            alert('Failed to save geometry: ' + err.message);
           }
         }}
       />
@@ -573,13 +732,15 @@ const App = () => {
         key={Date.now()}
         content={cutsceneContent}
         onSave={async (events) => {
-          if (zip && typeof zip.write === 'function') {
-            try {
-              const data = JSON.stringify(events, null, 2);
-              await zip.write(entry.name, data);
-            } catch (err) {
-              console.warn('Failed to serialise cutscene', err);
-            }
+          try {
+            const fullPath = getEntryFullPath(entry);
+            const data = JSON.stringify({ events }, null, 2);
+            await writeFile(fullPath, data);
+            console.log('[CutsceneTool] Saved:', fullPath);
+            alert('Cutscene saved successfully!');
+          } catch (err) {
+            console.error('[CutsceneTool] Save failed:', err);
+            alert('Failed to save cutscene: ' + err.message);
           }
         }}
         assets={assets}
@@ -588,8 +749,46 @@ const App = () => {
   }, [getData, zip, assets]);
 
   // Open file and route to correct editor/viewer
-  const openFile = useCallback((entry) => {
+  const openFile = useCallback(async (entry) => {
     if (!entry) return;
+    
+    // If it's a directory, check if it's a map directory and auto-load map.json
+    if (entry.directory) {
+      console.log('[App] Directory selected:', entry.name);
+      
+      // Check if this looks like a map directory (maps/* pattern)
+      const isMapDir = entry.name.includes('/maps/') || entry.name.endsWith('/maps');
+      
+      if (isMapDir && zip) {
+        try {
+          // Try to find map.json in this directory
+          const allEntries = await zip.entries();
+          const mapJsonPath = entry.name.endsWith('/') ? `${entry.name}map.json` : `${entry.name}/map.json`;
+          
+          const mapJsonEntry = allEntries.find(e => {
+            const fullPath = e.fullName || e.name;
+            return fullPath === mapJsonPath;
+          });
+          
+          if (mapJsonEntry) {
+            console.log('[App] Auto-loading map.json from directory:', mapJsonPath);
+            renderMapEditor(mapJsonEntry);
+            return;
+          } else {
+            console.warn('[App] No map.json found in directory:', entry.name);
+            setContents([<div key="nomap" style={{padding: '2rem', color: '#d4d4d4'}}>No map.json found in this directory</div>]);
+            return;
+          }
+        } catch (err) {
+          console.error('[App] Failed to auto-load map from directory:', err);
+        }
+      }
+      
+      // Not a map directory or failed to load - show message
+      setContents([<div key="dir" style={{padding: '2rem', color: '#d4d4d4'}}>Directory selected. Double-click to enter or select a file.</div>]);
+      return;
+    }
+    
     const name = entry.name.toLowerCase();
     setSelectedEntry(entry);
     if (name.endsWith('.pxs')) {
@@ -634,7 +833,7 @@ const App = () => {
     }
     // Unknown file types fallback
     setContents([<div key="unknown">No registered viewer for {name}</div>]);
-  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview]);
+  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
 
   return (
     <Container style={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>

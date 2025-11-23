@@ -1,6 +1,6 @@
 const PARENT_FOLDER_LABEL = '..';
 const ROOT_FOLDER_LABEL = '<raíz>';
-const ROOT_ZIP_FILENAME = 'Descarga.zip';
+const ROOT_ZIP_FILENAME = 'Descarga.pxz';
 const KEYS_SEPARATOR_LABEL = ', ';
 const PARENT_FOLDER_TOOLTIP = 'Directorio padre';
 
@@ -72,7 +72,7 @@ const RESET_DIALOG_BUTTON_LABEL = 'Reiniciar';
 const DELETE_ENTRIES_TITLE = 'Eliminar entradas';
 const DELETE_ENTRIES_MESSAGE = 'Por favor, confirme la eliminación de las entradas resaltadas.';
 const DELETE_ENTRIES_DIALOG_BUTTON_LABEL = 'Eliminar';
-const ZIP_FILE_DESCRIPTION_LABEL = 'Archivo zip';
+const ZIP_FILE_DESCRIPTION_LABEL = 'Paquete PXZ';
 const IMPORT_PASSWORD_TITLE = 'Introducir contraseña';
 const IMPORT_PASSWORD_LABEL = 'Contraseña:';
 const OPTIONS_DIALOG_BUTTON_LABEL = 'Guardar';

@@ -1,6 +1,6 @@
 const PARENT_FOLDER_LABEL = '..';
 const ROOT_FOLDER_LABEL = '<root>';
-const ROOT_ZIP_FILENAME = 'Download.zip';
+const ROOT_ZIP_FILENAME = 'Download.pxz';
 const KEYS_SEPARATOR_LABEL = ', ';
 const PARENT_FOLDER_TOOLTIP = 'Parent directory';
 
@@ -32,7 +32,7 @@ const FORWARD_BUTTON_TOOLTIP = SHORTCUT_LABEL + ALT_KEY_LABEL + ARROW_RIGHT_KEY_
 const CREATE_FOLDER_BUTTON_LABEL = 'Create directory';
 const ADD_FILES_BUTTON_LABEL = 'Add files';
 const IMPORT_ZIP_BUTTON_LABEL = 'Import zip';
-const EXPORT_ZIP_BUTTON_LABEL = 'Export zip';
+const EXPORT_ZIP_BUTTON_LABEL = 'Export package';
 const RESET_BUTTON_LABEL = 'Reset';
 const OPTIONS_BUTTON_LABEL = 'Options';
 const BACK_BUTTON_LABEL = '<';
@@ -53,7 +53,7 @@ const DIALOG_CANCEL_BUTTON_LABEL = 'Cancel';
 const DIALOG_OK_BUTTON_LABEL = 'OK';
 const ERROR_TITLE = 'Error';
 
-const EXPORT_ZIP_TITLE = 'Export zip file';
+const EXPORT_ZIP_TITLE = 'Export PXZ package';
 const EXPORT_ZIP_FILENAME_LABEL = 'Filename:';
 const EXPORT_ZIP_PASSWORD_LABEL = 'Password:';
 const EXPORT_ZIP_DIALOG_BUTTON_LABEL = 'Export';
@@ -72,7 +72,7 @@ const RESET_DIALOG_BUTTON_LABEL = 'Reset';
 const DELETE_ENTRIES_TITLE = 'Delete entries';
 const DELETE_ENTRIES_MESSAGE = 'Please confirm the deletion of the highlighted entries.';
 const DELETE_ENTRIES_DIALOG_BUTTON_LABEL = 'Delete';
-const ZIP_FILE_DESCRIPTION_LABEL = 'Zip file';
+const ZIP_FILE_DESCRIPTION_LABEL = 'PXZ package';
 const IMPORT_PASSWORD_TITLE = 'Enter password';
 const IMPORT_PASSWORD_LABEL = 'Password:';
 const OPTIONS_DIALOG_BUTTON_LABEL = 'Save';

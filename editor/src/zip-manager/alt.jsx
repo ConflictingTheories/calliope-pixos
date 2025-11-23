@@ -130,13 +130,13 @@ function ZipManager({ openFile, onZipLoaded }) {
       <Uploader
         autoUpload={false}
         multiple={false}
-        accept='.zip'
+        accept='.pxz,.zip'
         onChange={handleFileChange}
         style={{ marginBottom: '1rem' }}
       >
         <button type='button'>Select Zip</button>
       </Uploader>
-      {loading && <Loader center content='Loading zip…' />}
+      {loading && <Loader center content='Loading package…' />}
       {error && <Message type='error'>{error}</Message>}
       {entries.length > 0 ? (
         <List hover bordered style={{ maxHeight: '60vh', overflow: 'auto' }}>
@@ -161,7 +161,7 @@ function ZipManager({ openFile, onZipLoaded }) {
               const url = URL.createObjectURL(blob);
               const link = document.createElement('a');
               link.href = url;
-              link.download = 'pixospritz-package.zip';
+              link.download = 'pixospritz-package.pxz';
               link.click();
               setTimeout(() => URL.revokeObjectURL(url), 10000);
             } catch (err) {
