@@ -16,19 +16,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
-import {
-  Panel,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Button,
-  Message,
-  Input,
-  Checkbox,
-  SelectPicker,
-  InputNumber,
-} from 'rsuite';
 
 import WebGL3DCanvas from '../shared/WebGL3DCanvas.jsx';
 import {
@@ -124,11 +111,17 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
   useEffect(() => {
     if (!textureAtlas || !glRef.current) return;
     
+    console.log('[MapEditor3D] Loading texture atlas:', textureAtlas.substring(0, 50) + '...');
     const img = new Image();
     img.onload = () => {
+      console.log('[MapEditor3D] Texture image loaded:', img.width, 'x', img.height);
       if (glRef.current) {
         textureRef.current = createTextureFromImage(glRef.current, img);
+        console.log('[MapEditor3D] WebGL texture created:', textureRef.current);
       }
+    };
+    img.onerror = (e) => {
+      console.error('[MapEditor3D] Failed to load texture:', e);
     };
     img.src = textureAtlas;
   }, [textureAtlas]);
@@ -163,6 +156,12 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
       gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
       gl.uniform1i(uShowGrid, showGridFlag);
+
+      // Debug: Log texture state once
+      if (!window._textureDebugLogged && textureRef.current) {
+        console.log('[MapEditor3D] Rendering with texture:', textureRef.current);
+        window._textureDebugLogged = true;
+      }
 
       // Render each cell
       for (let y = 0; y < cells.length; y++) {
@@ -347,9 +346,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
     gl.deleteBuffer(normalBuffer);
   }
 
+  // Handle cell hover for highlighting
+  const handleCellHover = useCallback(
+    (screenX, screenY, camera) => {
+      if (!cells.length) return;
+
+      const cellCoords = screenToCell(screenX, screenY, camera, glRef.current?.canvas);
+      setHoveredCell(cellCoords);
+    },
+    [cells]
+  );
+
   // Handle cell click for editing
   const handleCellClick = useCallback(
-    (screenX, screenY, camera) => {
+    (screenX, screenY, camera, event) => {
       if (!cells.length) return;
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
@@ -357,11 +367,17 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
       const { x, y } = cellCoords;
 
-      if (currentTool === 'paint') {
-        paintCell(x, y);
-      } else if (currentTool === 'erase') {
-        eraseCell(x, y);
+      // Original behavior: Shift+Left-Click = paint, Shift+Right-Click = erase, Click (no shift) = pick
+      if (event.shiftKey) {
+        if (event.button === 0 || event.type === 'click') {
+          // Shift+Left-Click: Paint
+          paintCell(x, y);
+        } else if (event.button === 2 || event.type === 'contextmenu') {
+          // Shift+Right-Click: Erase
+          eraseCell(x, y);
+        }
       } else if (currentTool === 'pick') {
+        // Regular click with pick tool active
         pickCell(x, y);
       }
     },
@@ -532,130 +548,337 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
   // Show loading/error states
   if (!cells.length) {
     return (
-      <Container style={{ padding: '1rem' }}>
-        <Message type="info" description="No map data loaded. Please load a map from the package." />
-      </Container>
+      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
+        <div style={{
+          background: '#1a3a52',
+          border: '1px solid #4fc1ff',
+          borderRadius: '3px',
+          padding: '10px',
+          fontSize: '13px',
+          color: '#4fc1ff'
+        }}>
+          ℹ️ No map data loaded. Please load a map from the package.
+        </div>
+      </div>
     );
   }
 
   if (!tiles || Object.keys(tiles).length === 0) {
     return (
-      <Container style={{ padding: '1rem' }}>
-        <Message 
-          type="warning" 
-          description="Map loaded but tileset data is missing. Please ensure the tileset file exists and is properly referenced in the map." 
-        />
-        <div style={{ marginTop: '1rem' }}>
-          <p>Map file loaded successfully, but cannot render 3D view without tileset data.</p>
-          <p>Expected tileset: <strong>{map?.tileset || 'unknown'}</strong></p>
-          <p>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
+      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
+        <div style={{
+          background: '#4d3319',
+          border: '1px solid #ce9178',
+          borderRadius: '3px',
+          padding: '10px',
+          fontSize: '13px',
+          color: '#ce9178',
+          marginBottom: '1rem'
+        }}>
+          ⚠️ Map loaded but tileset data is missing. Please ensure the tileset file exists and is properly referenced in the map.
         </div>
-      </Container>
+        <div style={{ fontSize: '13px' }}>
+          <p style={{ margin: '5px 0' }}>Map file loaded successfully, but cannot render 3D view without tileset data.</p>
+          <p style={{ margin: '5px 0' }}>Expected tileset: <strong>{map?.tileset || 'unknown'}</strong></p>
+          <p style={{ margin: '5px 0' }}>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
+        </div>
+      </div>
     );
   }
 
   if (!geometry || Object.keys(geometry).length === 0) {
     return (
-      <Container style={{ padding: '1rem' }}>
-        <Message 
-          type="warning" 
-          description="Tileset loaded but geometry definitions are missing. Cannot render 3D view." 
-        />
-      </Container>
+      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
+        <div style={{
+          background: '#4d3319',
+          border: '1px solid #ce9178',
+          borderRadius: '3px',
+          padding: '10px',
+          fontSize: '13px',
+          color: '#ce9178'
+        }}>
+          ⚠️ Tileset loaded but geometry definitions are missing. Cannot render 3D view.
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container style={{ padding: '1rem' }}>
-      {error && (
-        <Row style={{ marginBottom: '0.5rem' }}>
-          <Col sm={24}>
-            <Message type="error" description={error} />
-          </Col>
-        </Row>
-      )}
-      
-      <Row>
-        <Col sm={18}>
-          <Panel bordered header={<strong>3D Map View</strong>}>
-            <div style={{ height: '70vh', position: 'relative' }}>
-              <WebGL3DCanvas
-                onRender={handleRender}
-                onInit={handleWebGLInit}
-                onCellClick={handleCellClick}
-                initialCamera={{
-                  distance: 25,
-                  angleX: -0.6,
-                  angleY: 0.5,
-                  centerX: (cells[0]?.length || 0) / 2,
-                  centerY: cells.length / 2,
-                  centerZ: 0,
+    <div style={{ 
+      display: 'flex', 
+      height: '100vh', 
+      background: '#1e1e1e',
+      color: '#d4d4d4',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    }}>
+      {/* Sidebar */}
+      <div style={{
+        width: '320px',
+        background: '#252526',
+        borderRight: '1px solid #3e3e42',
+        overflowY: 'auto',
+        padding: '10px'
+      }}>
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            Tools
+          </div>
+          <div style={{ padding: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}>
+              <button
+                style={{
+                  background: currentTool === 'paint' ? '#1177bb' : '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '13px'
+                }}
+                onClick={() => setCurrentTool('paint')}
+                onMouseOver={(e) => e.target.style.background = '#1177bb'}
+                onMouseOut={(e) => e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c'}
+              >
+                🖌️ Paint (Shift+Click)
+              </button>
+              <button
+                style={{
+                  background: currentTool === 'erase' ? '#1177bb' : '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '13px'
+                }}
+                onClick={() => setCurrentTool('erase')}
+                onMouseOver={(e) => e.target.style.background = '#1177bb'}
+                onMouseOut={(e) => e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c'}
+              >
+                🗑️ Erase (Shift+Right-Click)
+              </button>
+              <button
+                style={{
+                  background: currentTool === 'pick' ? '#1177bb' : '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '13px'
+                }}
+                onClick={() => setCurrentTool('pick')}
+                onMouseOver={(e) => e.target.style.background = '#1177bb'}
+                onMouseOut={(e) => e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c'}
+              >
+                🔍 Pick
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Selected Tile:
+              </label>
+              <select
+                value={selectedTile}
+                onChange={(e) => setSelectedTile(e.target.value)}
+                style={{
+                  background: '#3c3c3c',
+                  color: '#d4d4d4',
+                  border: '1px solid #3e3e42',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '13px',
+                  width: '100%'
+                }}
+              >
+                {tileOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Height:
+              </label>
+              <input
+                type="number"
+                value={currentHeight}
+                onChange={(e) => setCurrentHeight(parseFloat(e.target.value) || 0)}
+                step={0.5}
+                style={{
+                  background: '#3c3c3c',
+                  color: '#d4d4d4',
+                  border: '1px solid #3e3e42',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '13px',
+                  width: '100%'
                 }}
               />
             </div>
-          </Panel>
-        </Col>
 
-        <Col sm={6}>
-          <Panel bordered header={<strong>Tools</strong>}>
-            <ButtonGroup vertical style={{ width: '100%', marginBottom: '1rem' }}>
-              <Button
-                appearance={currentTool === 'paint' ? 'primary' : 'default'}
-                onClick={() => setCurrentTool('paint')}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <button
+                onClick={handleSave}
+                style={{
+                  background: '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '13px'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#1177bb'}
+                onMouseOut={(e) => e.target.style.background = '#0e639c'}
               >
-                🖌️ Paint
-              </Button>
-              <Button
-                appearance={currentTool === 'erase' ? 'primary' : 'default'}
-                onClick={() => setCurrentTool('erase')}
-              >
-                🗑️ Erase
-              </Button>
-              <Button
-                appearance={currentTool === 'pick' ? 'primary' : 'default'}
-                onClick={() => setCurrentTool('pick')}
-              >
-                🔍 Pick
-              </Button>
-            </ButtonGroup>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Selected Tile:</label>
-              <SelectPicker
-                data={tileOptions}
-                value={selectedTile}
-                onChange={setSelectedTile}
-                style={{ width: '100%' }}
-                searchable
-                placeholder="Select tile"
-              />
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Height:</label>
-              <InputNumber
-                value={currentHeight}
-                onChange={setCurrentHeight}
-                step={0.5}
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <ButtonGroup vertical style={{ width: '100%' }}>
-              <Button onClick={handleSave} appearance="primary">
                 💾 Save Changes
-              </Button>
-              <Button onClick={undo} disabled={historyIndex <= 0}>
+              </button>
+              <button
+                onClick={undo}
+                disabled={historyIndex <= 0}
+                style={{
+                  background: historyIndex <= 0 ? '#3e3e42' : '#0e639c',
+                  color: historyIndex <= 0 ? '#888' : 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer',
+                  fontSize: '13px'
+                }}
+                onMouseOver={(e) => { if (historyIndex > 0) e.target.style.background = '#1177bb'; }}
+                onMouseOut={(e) => { if (historyIndex > 0) e.target.style.background = '#0e639c'; }}
+              >
                 ↶ Undo
-              </Button>
-              <Button onClick={redo} disabled={historyIndex >= history.length - 1}>
+              </button>
+              <button
+                onClick={redo}
+                disabled={historyIndex >= history.length - 1}
+                style={{
+                  background: historyIndex >= history.length - 1 ? '#3e3e42' : '#0e639c',
+                  color: historyIndex >= history.length - 1 ? '#888' : 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '13px'
+                }}
+                onMouseOver={(e) => { if (historyIndex < history.length - 1) e.target.style.background = '#1177bb'; }}
+                onMouseOut={(e) => { if (historyIndex < history.length - 1) e.target.style.background = '#0e639c'; }}
+              >
                 ↷ Redo
-              </Button>
-            </ButtonGroup>
-          </Panel>
-        </Col>
-      </Row>
-    </Container>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Map Info */}
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            Map Info
+          </div>
+          <div style={{ padding: '10px', fontSize: '11px', color: '#cccccc' }}>
+            <p style={{ margin: '5px 0' }}>Expected tileset: <strong style={{ color: '#d4d4d4' }}>{map?.tileset || 'unknown'}</strong></p>
+            <p style={{ margin: '5px 0' }}>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Toolbar */}
+        <div style={{
+          background: '#2d2d30',
+          borderBottom: '1px solid #3e3e42',
+          padding: '10px',
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center'
+        }}>
+          <span style={{ fontSize: '13px', color: '#cccccc' }}>
+            Drag to rotate • Middle mouse to pan • Scroll to zoom
+          </span>
+        </div>
+
+        {/* Canvas */}
+        <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
+          {error && (
+            <div style={{
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              right: 10,
+              background: '#5a1d1d',
+              border: '1px solid #be1100',
+              borderRadius: '3px',
+              padding: '10px',
+              zIndex: 100,
+              fontSize: '13px',
+              color: '#f48771'
+            }}>
+              {error}
+            </div>
+          )}
+          <WebGL3DCanvas
+            onRender={handleRender}
+            onInit={handleWebGLInit}
+            onCellClick={handleCellClick}
+            onCellHover={handleCellHover}
+            showControls={false}
+            initialCamera={{
+              distance: 25,
+              angleX: -0.6,
+              angleY: 0.5,
+              centerX: (cells[0]?.length || 0) / 2,
+              centerY: cells.length / 2,
+              centerZ: 0,
+            }}
+          />
+        </div>
+
+        {/* Status bar */}
+        <div style={{
+          background: '#007acc',
+          color: 'white',
+          padding: '4px 10px',
+          fontSize: '12px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>
+            Tool: {currentTool} | Tile: {selectedTile} | Height: {currentHeight.toFixed(1)}
+          </span>
+          <span>
+            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 

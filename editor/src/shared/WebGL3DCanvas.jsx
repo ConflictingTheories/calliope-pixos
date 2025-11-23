@@ -34,6 +34,7 @@ export default function WebGL3DCanvas({
   onInit,
   initialCamera = {},
   onCellClick,
+  onCellHover,
   style = {},
   showControls = true,
 }) {
@@ -137,14 +138,30 @@ export default function WebGL3DCanvas({
   }, [render]);
 
   // Mouse event handlers
-  const handleMouseDown = useCallback((e) => {
-    setIsDragging(true);
-    setIsPanning(e.shiftKey || e.button === 1);
-    setLastMousePos({ x: e.clientX, y: e.clientY });
-  }, []);
+  const handleMouseDown = useCallback(
+    (e) => {
+      // Don't interfere with Shift+Click (painting) or Shift+Right-Click (erasing)
+      if (e.shiftKey) {
+        return;
+      }
+      
+      setIsDragging(true);
+      setIsPanning(e.button === 1); // Middle mouse for panning
+      setLastMousePos({ x: e.clientX, y: e.clientY });
+    },
+    []
+  );
 
   const handleMouseMove = useCallback(
     (e) => {
+      // Always notify hover for cell highlighting
+      if (onCellHover && !isDragging) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        onCellHover(x, y, camera);
+      }
+
       if (!isDragging) return;
 
       const deltaX = e.clientX - lastMousePos.x;
@@ -174,7 +191,7 @@ export default function WebGL3DCanvas({
         }));
       }
     },
-    [isDragging, isPanning, lastMousePos, camera.distance, camera.angleY]
+    [isDragging, isPanning, lastMousePos, camera, onCellHover]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -195,8 +212,13 @@ export default function WebGL3DCanvas({
 
   const handleClick = useCallback(
     (e) => {
-      // Only trigger click if not dragging
+      // Only trigger click if not dragging and not shift-clicking
       if (Math.abs(e.clientX - lastMousePos.x) > 5 || Math.abs(e.clientY - lastMousePos.y) > 5) {
+        return;
+      }
+
+      // Don't handle regular clicks - painting is done via Shift+Click
+      if (!e.shiftKey) {
         return;
       }
 
@@ -204,7 +226,7 @@ export default function WebGL3DCanvas({
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        onCellClick(x, y, camera);
+        onCellClick(x, y, camera, e);
       }
     },
     [lastMousePos, onCellClick, camera]
@@ -241,6 +263,17 @@ export default function WebGL3DCanvas({
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
         onClick={handleClick}
+        onContextMenu={(e) => {
+          if (e.shiftKey) {
+            e.preventDefault(); // Prevent context menu for Shift+Right-Click (erase)
+            if (onCellClick) {
+              const rect = canvasRef.current.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              onCellClick(x, y, camera, e);
+            }
+          }
+        }}
       />
       {showControls && (
         <div
