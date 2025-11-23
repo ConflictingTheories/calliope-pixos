@@ -85,17 +85,27 @@ function downloadMtlTextures(gl, mtl, root) {
             mapData.texture = image;
             var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
             mapData.glTexture = texture;
-            // Set the parameters so we can render any size image.
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
-            // Upload the image into the texture.
+            
+            // Upload the image into the texture with proper settings
             image.onload = function () {
               gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
               gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
+              
+              // Check if power of 2 for mipmap support (like the demo viewer)
+              var isPowerOf2 = function(value) {
+                return (value & (value - 1)) === 0 && value > 0;
+              };
+              
+              if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+              } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+              }
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             };
             return new Promise(function (resolve) {
               return (image.onload = function () {
@@ -161,17 +171,27 @@ function downloadMtlTexturesFromZip(gl, mtl, root, zip) {
             mapData.texture = image;
             var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
             mapData.glTexture = texture;
-            // Set the parameters so we can render any size image.
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
-            // Upload the image into the texture.
+            
+            // Upload the image into the texture with proper settings
             image.onload = function () {
               gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
               gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
+              
+              // Check if power of 2 for mipmap support (like the demo viewer)
+              var isPowerOf2 = function(value) {
+                return (value & (value - 1)) === 0 && value > 0;
+              };
+              
+              if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+              } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+              }
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             };
             return new Promise(function (resolve) {
               return (image.onload = function () {

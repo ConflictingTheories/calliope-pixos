@@ -200,22 +200,16 @@ export default class Mesh {
         // if this is a vertex normal
         vertNormals.push(...elements);
       } else if (TEXTURE_RE.test(line)) {
-        let coords = elements;
-        // by default, the loader will only look at the U and V
-        // coordinates of the vt declaration. So, this truncates the
-        // elements to only those 2 values. If W texture coordinate
-        // support is enabled, then the texture coordinate is
-        // expected to have three values in it.
-        if (elements.length > 2 && !options.enableWTextureCoord) {
-          coords = elements.slice(0, 2);
-        } else if (elements.length === 2 && options.enableWTextureCoord) {
-          // If for some reason W texture coordinate support is enabled
-          // and only the U and V coordinates are given, then we supply
-          // the default value of 0 so that the stride length is correct
-          // when the textures are unpacked below.
-          coords.push("0");
+        // Parse UV coordinates and flip V for WebGL (like the demo viewer)
+        const u = parseFloat(elements[0]);
+        const v = elements.length > 1 ? 1.0 - parseFloat(elements[1]) : 0.0; // Flip V coordinate for WebGL
+        
+        if (options.enableWTextureCoord) {
+          const w = elements.length > 2 ? parseFloat(elements[2]) : 0.0;
+          textures.push(u.toString(), v.toString(), w.toString());
+        } else {
+          textures.push(u.toString(), v.toString());
         }
-        textures.push(...coords);
       } else if (USE_MATERIAL_RE.test(line)) {
         const materialName = elements[0];
 
@@ -295,12 +289,32 @@ export default class Mesh {
               unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
               unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
               // Vertex textures
-              if (textures.length) {
+              if (textures.length && vertex[1] && vertex[1] !== "") {
                 const stride = options.enableWTextureCoord ? 3 : 2;
-                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);
-                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);
+                const texIndex = +vertex[1] - 1;
+                // Bounds check and clamp UV coordinates to 0-1 range
+                if (texIndex >= 0 && texIndex < textures.length / stride) {
+                  const u = Math.max(0, Math.min(1, +textures[texIndex * stride + 0]));
+                  const v = Math.max(0, Math.min(1, +textures[texIndex * stride + 1]));
+                  unpacked.textures.push(u);
+                  unpacked.textures.push(v);
+                  if (options.enableWTextureCoord) {
+                    unpacked.textures.push(+textures[texIndex * stride + 2]);
+                  }
+                } else {
+                  // Default UV coordinates if index is out of bounds
+                  unpacked.textures.push(0);
+                  unpacked.textures.push(0);
+                  if (options.enableWTextureCoord) {
+                    unpacked.textures.push(0);
+                  }
+                }
+              } else if (textures.length) {
+                // No texture index specified, use default
+                unpacked.textures.push(0);
+                unpacked.textures.push(0);
                 if (options.enableWTextureCoord) {
-                  unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);
+                  unpacked.textures.push(0);
                 }
               }
               // Vertex normals
