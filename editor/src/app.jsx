@@ -49,19 +49,26 @@ const App = () => {
    */
   // Helper to get file data from zip.js FS entry
   const getData = useCallback(async (entry, asText = false) => {
-    if (!entry || typeof entry.getData !== 'function') return null;
+    if (!entry) return null;
+    
+    // Check if entry has the data.getData method (zip.js filesystem structure)
+    if (!entry.data || typeof entry.data.getData !== 'function') {
+      console.error('Entry missing data.getData:', entry);
+      return null;
+    }
+    
     if (asText) {
       let stream = new TransformStream();
-      let data = new Response(stream.readable).text();
+      let dataPromise = new Response(stream.readable).text();
       await entry.data.getData(stream.writable);
-      return await data;
+      return await dataPromise;
     }
-    // For binary data, use a different approach since text-based streams won't work directly
-    let arrayBuffer = [];
+    // For binary data
     let stream = new TransformStream();
-    let data = new Response(stream.readable).bytes();
+    let dataPromise = new Response(stream.readable).arrayBuffer();
     await entry.data.getData(stream.writable);
-    return await data; // Convert the ArrayBuffer to a Uint8Array for binary data handling
+    const arrayBuffer = await dataPromise;
+    return new Uint8Array(arrayBuffer);
   }, []);
 
   /**
@@ -283,40 +290,41 @@ const App = () => {
       if (typeof zip.entries === 'function') {
         allEntries = Array.from(zip.entries());
         console.log('Got entries from zip.entries():', allEntries.length);
-      } else if (zip.children) {
-        // Try to get children recursively
-        const getChildren = (node) => {
-          let results = [];
+      } else if (zip.root) {
+        // Build a map of full paths to actual entry objects
+        const buildEntryMap = (node, path = '', map = new Map()) => {
           if (node.children) {
             node.children.forEach(child => {
-              if (!child.directory) {
-                results.push(child);
+              const fullPath = path ? `${path}/${child.name}` : child.name;
+              // Skip macOS metadata
+              if (fullPath.includes('__MACOSX') || child.name.startsWith('._')) {
+                return;
               }
-              results = results.concat(getChildren(child));
+              if (!child.directory) {
+                map.set(fullPath, child); // Store actual entry object
+              }
+              buildEntryMap(child, fullPath, map);
             });
           }
-          return results;
+          return map;
         };
-        allEntries = getChildren(zip);
-        console.log('Got entries from children:', allEntries.length);
-      } else if (zip.root && zip.root.children) {
-        const getChildren = (node) => {
-          let results = [];
-          if (node.children) {
-            node.children.forEach(child => {
-              if (!child.directory) {
-                results.push(child);
-              }
-              results = results.concat(getChildren(child));
-            });
-          }
-          return results;
-        };
-        allEntries = getChildren(zip.root);
-        console.log('Got entries from root.children:', allEntries.length);
+        
+        const entryMap = buildEntryMap(zip.root);
+        allEntries = Array.from(entryMap.entries()).map(([fullPath, entry]) => ({
+          ...entry,
+          fullName: fullPath
+        }));
+        console.log('Got entries from root:', allEntries.length);
       }
     }
-    console.log('Available files in zip:', allEntries.map(e => e.name));
+    console.log('Available files in zip:', allEntries.map(e => e.fullName || e.name));
+    
+    // Filter out macOS metadata files
+    allEntries = allEntries.filter(e => {
+      const fullPath = e.fullName || e.name;
+      return !fullPath.includes('__MACOSX') && !fullPath.split('/').some(part => part.startsWith('._'));
+    });
+    console.log('Filtered files (no macOS junk):', allEntries.length);
     
     // Load map.json
     const mapContent = await getData(entry, true);
@@ -343,19 +351,29 @@ const App = () => {
         console.log('Searching for cells.json in directory:', mapDir);
         
         // Find cells.json in the same directory as map.json
-        const cellsFile = allEntries.find(e => 
-          e.name === `${mapDir}${cellsFileName}` || 
-          e.name.endsWith(`/${cellsFileName}`) && e.name.includes(mapDir.split('/').filter(Boolean)[0])
-        );
+        const cellsFile = allEntries.find(e => {
+          const fullPath = e.fullName || e.name;
+          return fullPath === `${mapDir}${cellsFileName}` || 
+                 (fullPath.endsWith(cellsFileName) && fullPath.includes(mapDir));
+        });
         
         if (cellsFile) {
-          console.log('Found cells.json at:', cellsFile.name);
-          const cellsContent = await getData(cellsFile, true);
-          cellsData = JSON.parse(cellsContent);
-          console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+          console.log('Found cells.json at:', cellsFile.fullName || cellsFile.name);
+          try {
+            const cellsContent = await getData(cellsFile, true);
+            console.log('Cells content type:', typeof cellsContent, 'length:', cellsContent?.length);
+            if (cellsContent) {
+              cellsData = JSON.parse(cellsContent);
+              console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+            } else {
+              console.error('cells.json getData returned null');
+            }
+          } catch (parseErr) {
+            console.error('Failed to parse cells.json:', parseErr);
+          }
         } else {
           console.warn('cells.json not found in directory:', mapDir);
-          console.warn('Available files:', allEntries.map(e => e.name));
+          console.warn('Available files:', allEntries.map(e => e.fullName || e.name));
         }
       } catch (err) {
         console.error('Failed to load cells.json:', err);
@@ -377,53 +395,68 @@ const App = () => {
     if (tilesetName && allEntries.length > 0) {
       try {
         console.log('Loading tileset:', tilesetName);
-        console.log('All zip files:', allEntries.map(e => e.name));
+        console.log('All zip files:', allEntries.map(e => e.fullName || e.name));
         
         // Find tileset.json - search for file in tilesets directory
-        const tilesetFile = allEntries.find(e => 
-          e.name.includes(`tilesets/${tilesetName}`) && e.name.endsWith('tileset.json')
-        );
+        const tilesetFile = allEntries.find(e => {
+          const fullPath = e.fullName || e.name;
+          return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
+        });
         
         if (tilesetFile) {
-          console.log('Found tileset at:', tilesetFile.name);
-          const tilesetContent = await getData(tilesetFile, true);
-          const tilesetData = JSON.parse(tilesetContent);
-          console.log('Tileset data:', tilesetData);
-          tileset = tilesetData;
-          geometry = tilesetData.geometry || {};
-          tiles = tilesetData.tiles || {};
-          console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
+          console.log('Found tileset at:', tilesetFile.fullName || tilesetFile.name);
+          console.log('Tileset file object:', tilesetFile);
+          console.log('Has getData?', typeof tilesetFile.getData);
+          console.log('Has data.getData?', tilesetFile.data && typeof tilesetFile.data.getData);
           
-          // Load texture atlas
-          if (tilesetData.src) {
-            console.log('Loading texture:', tilesetData.src);
-            const textureName = tilesetData.src;
-            
-            // Search for texture file - check both tilesets and textures directories
-            const textureFile = allEntries.find(e => 
-              (e.name.includes(`tilesets/${tilesetName}`) || e.name.includes('textures/')) && 
-              e.name.endsWith(textureName)
-            );
-            
-            if (textureFile) {
-              console.log('Found texture at:', textureFile.name);
-              const textureBytes = await getData(textureFile, false);
-              const ext = tilesetData.src.split('.').pop().toLowerCase();
-              const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-              textureAtlas = toDataUri(textureBytes, mime);
-              console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
+          try {
+            const tilesetContent = await getData(tilesetFile, true);
+            console.log('Tileset content type:', typeof tilesetContent, 'length:', tilesetContent?.length);
+            if (tilesetContent && typeof tilesetContent === 'string') {
+              const tilesetData = JSON.parse(tilesetContent);
+              console.log('Tileset data parsed successfully');
+              tileset = tilesetData;
+              geometry = tilesetData.geometry || {};
+              tiles = tilesetData.tiles || {};
+              console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
+              
+              // Load texture atlas
+              if (tilesetData.src) {
+                console.log('Loading texture:', tilesetData.src);
+                const textureName = tilesetData.src;
+                
+                // Search for texture file - check both tilesets and textures directories
+                const textureFile = allEntries.find(e => {
+                  const fullPath = e.fullName || e.name;
+                  return (fullPath.includes(`tilesets/${tilesetName}`) || fullPath.includes('textures/')) && 
+                         fullPath.endsWith(textureName);
+                });
+                
+                if (textureFile) {
+                  console.log('Found texture at:', textureFile.fullName || textureFile.name);
+                  const textureBytes = await getData(textureFile, false);
+                  if (textureBytes) {
+                    const ext = tilesetData.src.split('.').pop().toLowerCase();
+                    const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+                    textureAtlas = toDataUri(textureBytes, mime);
+                    console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
+                  }
+                } else {
+                  console.warn('Texture not found:', textureName);
+                }
+              }
             } else {
-              console.warn('Texture not found:', textureName);
-              console.warn('Available image files:', allEntries.filter(e => 
-                e.name.endsWith('.png') || e.name.endsWith('.jpg') || e.name.endsWith('.jpeg')
-              ).map(e => e.name));
+              console.error('tileset.json getData returned invalid type:', typeof tilesetContent);
             }
+          } catch (parseErr) {
+            console.error('Failed to parse tileset.json:', parseErr);
           }
         } else {
           console.warn('Tileset not found for:', tilesetName);
-          console.warn('Available tileset files:', allEntries.filter(e => 
-            e.name.includes('tileset') && e.name.endsWith('.json')
-          ).map(e => e.name));
+          console.warn('Available tileset files:', allEntries.filter(e => {
+            const fullPath = e.fullName || e.name;
+            return fullPath.includes('tileset') && fullPath.endsWith('.json');
+          }).map(e => e.fullName || e.name));
         }
       } catch (err) {
         console.error('Failed to load tileset dependencies:', err);
