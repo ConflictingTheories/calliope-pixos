@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { EventLoader } from '@Engine/utils/loaders/index.js';
+import PxcPlayer from '@Engine/core/cutscene/PxcPlayer.js';
 
 export default class PixoScriptLibrary {
   /**
@@ -294,6 +295,101 @@ export default class PixoScriptLibrary {
       load_scripts: (scripts) => {
         console.log({ msg: 'loading scripts via lua', scripts, envScope });
         return envScope.zone.loadScripts(scripts);
+      },
+
+      /**
+       * Play a .pxc cutscene file
+       * Returns a function that resolves when cutscene completes
+       * 
+       * Example:
+       *   pixos.sync({ pixos.play_pxc_cutscene('cutscenes/intro.pxc') })
+       */
+      play_pxc_cutscene: (filePath, options = {}) => {
+        return () =>
+          new Promise(async (resolve) => {
+            try {
+              console.log('[PixoScript] Loading .pxc cutscene:', filePath);
+              
+              // Load the .pxc file from asset loader
+              const scriptText = await engine.assetLoader.load(filePath);
+              
+              if (!scriptText) {
+                console.error('[PixoScript] Failed to load cutscene:', filePath);
+                resolve();
+                return;
+              }
+
+              // Create PxcPlayer instance with callbacks
+              const callbacks = {
+                onDialogueShow: options.onDialogueShow || ((data) => {
+                  console.log('[PxcPlayer] Dialogue:', data.actor, data.text);
+                }),
+                onBackdropChange: options.onBackdropChange || ((url, opts) => {
+                  console.log('[PxcPlayer] Backdrop:', url);
+                }),
+                onEnd: () => {
+                  console.log('[PxcPlayer] Cutscene ended');
+                  if (options.onEnd) options.onEnd();
+                  resolve();
+                }
+              };
+
+              const player = new PxcPlayer(engine, callbacks);
+              
+              // Play the cutscene
+              await player.playCutscene(scriptText);
+              
+            } catch (e) {
+              console.error('[PixoScript] Error playing .pxc cutscene:', e);
+              resolve();
+            }
+          });
+      },
+
+      /**
+       * Play inline .pxc cutscene script
+       * Returns a function that resolves when cutscene completes
+       * 
+       * Example:
+       *   local script = [[
+       *     @backdrop textures/room.gif
+       *     HERO: [expression=smile] Hello!
+       *     waitInput
+       *     @end
+       *   ]]
+       *   pixos.sync({ pixos.play_pxc_script(script) })
+       */
+      play_pxc_script: (scriptText, options = {}) => {
+        return () =>
+          new Promise(async (resolve) => {
+            try {
+              console.log('[PixoScript] Playing inline .pxc script');
+
+              // Create PxcPlayer instance with callbacks
+              const callbacks = {
+                onDialogueShow: options.onDialogueShow || ((data) => {
+                  console.log('[PxcPlayer] Dialogue:', data.actor, data.text);
+                }),
+                onBackdropChange: options.onBackdropChange || ((url, opts) => {
+                  console.log('[PxcPlayer] Backdrop:', url);
+                }),
+                onEnd: () => {
+                  console.log('[PxcPlayer] Cutscene ended');
+                  if (options.onEnd) options.onEnd();
+                  resolve();
+                }
+              };
+
+              const player = new PxcPlayer(engine, callbacks);
+              
+              // Play the cutscene
+              await player.playCutscene(scriptText);
+              
+            } catch (e) {
+              console.error('[PixoScript] Error playing inline .pxc script:', e);
+              resolve();
+            }
+          });
       },
 
       // camera functions

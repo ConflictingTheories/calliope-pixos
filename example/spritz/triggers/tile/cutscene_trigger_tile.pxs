@@ -1,0 +1,40 @@
+-- Tile-based Cutscene Trigger
+-- This script plays a cutscene when the player steps on a specific tile
+-- Useful for ambushes, discoveries, or location-based story moments
+
+local tile = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Tile Cutscene Trigger', 
+    tile = tile,
+    player = player 
+}));
+
+-- Get tile metadata to determine which cutscene to play
+local cutscene_file = pixos.from(tile, 'cutscene') or 'cutscenes/voice-demo.pxc';
+local one_time = pixos.from(tile, 'one_time') or true;
+
+-- Generate unique flag for this tile
+local tile_flag = 'tile_cutscene_' .. pixos.from(tile, 'id') .. '_played';
+
+-- Check if this is a one-time trigger that already played
+if one_time and pixos.has_flag(tile_flag) then
+    pixos.log('Tile cutscene already played - skipping');
+    return;
+end
+
+pixos.log('Playing tile cutscene: ' .. cutscene_file);
+
+-- Play the cutscene
+pixos.sync({
+    pixos.play_pxc_cutscene(cutscene_file)
+});
+
+-- Mark as played if one-time
+if one_time then
+    pixos.set_flag(tile_flag, true);
+    pixos.log('Tile cutscene marked as played');
+end
+
+return nil;

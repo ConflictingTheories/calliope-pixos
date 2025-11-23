@@ -22,6 +22,17 @@
       "facing": "Down",
       "zones": ["room"]
     },
+    {
+      "id": "demo-portal",
+      "type": "furniture/portal",
+      "pos": [14, 4, 0],
+      "facing": "Left",
+      "zones": ["cutscene-demo"],
+      "metadata": {
+        "name": "Cutscene Demo",
+        "description": "Portal to the Cutscene Demo Zone"
+      }
+    },
 
     { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up", "isLit": true},
     { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true},

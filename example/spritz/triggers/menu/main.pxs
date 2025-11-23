@@ -13,3 +13,12 @@ pixos.to( world, {
 });
 
 pixos.load_scripts(true);
+
+-- After menu closes, trigger the cutscene demo
+pixos.log('Menu closed - triggering cutscene showcase');
+
+-- Load and run the menu close handler
+local close_handler = require('triggers/menu/on_close');
+if type(close_handler) == 'function' then
+    close_handler(_this);
+end
