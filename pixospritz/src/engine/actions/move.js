@@ -21,7 +21,6 @@ export default {
     this.to = new Vector(...to);
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
     this.length = length;
-    // interactions
     this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y);
   },
   // move
@@ -36,16 +35,21 @@ export default {
       set(this.to, this.sprite.pos);
       frac = 1;
       this.onStep();
-    } else lerp(this.from, this.to, frac, this.sprite.pos);
-    // Get next frame
-    let newFrame = Math.floor(frac * 4);
-    if (newFrame != this.sprite.animFrame) this.sprite.setFrame(newFrame);
-    // Determine height
-    let hx = this.sprite.pos.x + this.sprite.hotspotOffset.x;
-    let hy = this.sprite.pos.y + this.sprite.hotspotOffset.y;
-    this.sprite.pos.z = this.sprite.zone.getHeight(hx, hy);
-
-    return time >= endTime;
+      // Get next frame
+      let newFrame = Math.floor(frac * 4);
+      if (newFrame != this.sprite.animFrame) this.sprite.setFrame(newFrame);
+      return time >= endTime;
+    } else {
+      this.sprite.pos.x = this.from.x + frac * (this.to.x - this.from.x);
+      this.sprite.pos.y = this.from.y + frac * (this.to.y - this.from.y);
+      let hx = this.sprite.pos.x + this.sprite.hotspotOffset.x;
+      let hy = this.sprite.pos.y + this.sprite.hotspotOffset.y;
+      this.sprite.pos.z = this.sprite.zone.getHeight(hx, hy);
+      // Get next frame
+      let newFrame = Math.floor(frac * 4);
+      if (newFrame != this.sprite.animFrame) this.sprite.setFrame(newFrame);
+    }
+    return false;
   },
   // Trigger interactions in sprite when finished moving
   onStep: async function () {

@@ -556,7 +556,8 @@ export default class Zone extends Loadable {
         for (let l = 0; l < layers; l++) {
           const tileId = cell[3 * l];
           const tileVariant = cell[3 * l + 1];
-          const z = cell[3 * l + 2];
+          let z = cell[3 * l + 2];
+          if (typeof z !== 'number') z = 0;
           const tilePos = [this.bounds[0] + i, this.bounds[1] + j, z];
           walk &= this.tileset.getWalkability(tileId);
           
@@ -736,6 +737,11 @@ export default class Zone extends Loadable {
     const cell = this.cells[idx];
     const n = Math.floor(cell.length / 3);
 
+    // Get height override from heights.json if it exists for this cell
+    const heightOverride = this.heights && this.heights[j - this.bounds[1]] && typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number' 
+      ? this.heights[j - this.bounds[1]][i - this.bounds[0]] 
+      : null;
+
     // local helper without allocations
     const triUV = (t) => {
       const ux = t[1][0] - t[0][0];
@@ -752,18 +758,44 @@ export default class Zone extends Loadable {
     for (let l = 0; l < n; l++) {
       const poly = this.tileset.getTileWalkPoly(cell[3 * l]);
       if (!poly) continue;
-      const baseZ = cell[3 * l + 2];
+      const baseZ = (typeof cell[3 * l + 2] === 'number') ? cell[3 * l + 2] : 0;
+      // Add heightOverride to baseZ (heights.json is an offset, not a replacement)
+      const heightOffset = heightOverride !== null ? heightOverride : 0;
+      
       for (let p = 0; p < poly.length; p++) {
         const uv = triUV(poly[p]);
         const w = uv[0] + uv[1];
-        if (w <= 1) {
+        if (uv[0] >= 0 && uv[1] >= 0 && w <= 1) {
           const t = poly[p];
-          return baseZ + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
+          const computed = baseZ + heightOffset + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
+          if (this.engine?.debug) {
+            this.__getHeightLogCount = (this.__getHeightLogCount || 0) + 1;
+            if (this.__getHeightLogCount < 4) console.log(`[Zone.getHeight] sample (x=${x},y=${y}) -> i=${i}, j=${j}, baseZ=${baseZ}, heightOffset=${heightOffset}, uv=[${uv[0].toFixed(2)},${uv[1].toFixed(2)}], w=${w.toFixed(2)}, computed=${computed.toFixed(2)}`);
+          }
+          return computed;
         }
       }
     }
 
-    return cell[2];
+    // No polygon matches - this shouldn't happen if walkPoly is properly defined
+    // Use the walkPoly itself for fallback by finding closest triangle
+    if (n > 0) {
+      const poly = this.tileset.getTileWalkPoly(cell[0]);
+      if (poly && poly.length > 0) {
+        const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+        const heightOffset = heightOverride !== null ? heightOverride : 0;
+        // Use first triangle's average as fallback
+        const t = poly[0];
+        const avgZ = baseZ + heightOffset + (t[0][2] + t[1][2] + t[2][2]) / 3;
+        if (this.engine?.debug) console.log(`[Zone.getHeight] walkPoly fallback for (${x},${y}), using avg of first tri = ${avgZ.toFixed(2)}`);
+        return avgZ;
+      }
+    }
+    
+    // Final fallback: add heightOffset to cell base z
+    const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+    const heightOffset = heightOverride !== null ? heightOverride : 0;
+    return baseZ + heightOffset;
   };
 
   /**

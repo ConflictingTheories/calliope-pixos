@@ -380,6 +380,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
   return (
     <div 
+      className="cutscene-tool"
       style={{ 
         display: 'flex', 
         gap: '18px', 
@@ -414,6 +415,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
       {/* Editor Panel */}
       <div 
+        className="editor-panel"
         style={{
           width: '400px',
           flexShrink: 0,

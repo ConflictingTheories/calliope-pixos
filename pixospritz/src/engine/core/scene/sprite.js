@@ -68,7 +68,21 @@ export default class Sprite extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.pos) {
+      this.pos = instanceData.pos;
+      // If z is not defined, compute from zone tile height
+      if (this.pos && (this.pos.z === null || this.pos.z === undefined)) {
+        try {
+          const hx = this.pos.x + (this.hotspotOffset?.x ?? 0);
+          const hy = this.pos.y + (this.hotspotOffset?.y ?? 0);
+          const z = this.zone.getHeight(hx, hy);
+          this.pos.z = typeof z === 'number' ? z : 0;
+        } catch (err) {
+          console.warn('Error computing sprite height from zone', err);
+          this.pos.z = 0;
+        }
+      }
+    }
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
     if (instanceData.direction) this.direction = instanceData.direction;
@@ -153,7 +167,20 @@ export default class Sprite extends Loadable {
     if (instanceData.direction) this.direction = instanceData.direction;
     if (instanceData.scatteringCoefficients) this.scatteringCoefficients = instanceData.scatteringCoefficients;
     if (instanceData.fixed) this.fixed = instanceData.fixed;
-    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.pos) {
+      this.pos = instanceData.pos;
+      if (this.pos && (this.pos.z === null || this.pos.z === undefined)) {
+        try {
+          const hx = this.pos.x + (this.hotspotOffset?.x ?? 0);
+          const hy = this.pos.y + (this.hotspotOffset?.y ?? 0);
+          const z = this.zone.getHeight(hx, hy);
+          this.pos.z = typeof z === 'number' ? z : 0;
+        } catch (err) {
+          console.warn('Error computing sprite height from zone', err);
+          this.pos.z = 0;
+        }
+      }
+    }
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     if (instanceData.onStep && typeof instanceData.onStep == 'function') {

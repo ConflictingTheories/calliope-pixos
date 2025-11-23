@@ -101,6 +101,12 @@ export default class GLEngine {
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
 
+    // Debug flags
+    /** @type {boolean} */
+    this.debug = false; // General debug mode (enables console logs)
+    /** @type {boolean} */
+    this.debugHeightOverlay = false; // Height debug overlay (shows z values on screen)
+
     // Game Loop
     /** @type {boolean} */
     this.running = false;
@@ -291,6 +297,11 @@ export default class GLEngine {
       try { this.renderManager.renderParticles(); } catch (e) { console.warn('renderParticles failed', e); }
     }
     this.gamepad.render(); // Render gamepad (may be optimizable?)
+
+    // Draw height debug overlay if enabled (shows tile/sprite/object z values on screen)
+    if (this.debugHeightOverlay && this.hud.drawHeightDebugOverlay) {
+      try { this.hud.drawHeightDebugOverlay(); } catch (e) { console.warn('drawHeightDebugOverlay failed', e); }
+    }
 
     // Update debug overlay if enabled
     updateDebugInformation(this);

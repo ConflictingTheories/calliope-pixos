@@ -25,6 +25,7 @@ export default class Tileset extends Loadable {
     this.sheetSize = [0, 0];
     this.tileSize = 0;
     this.tiles = {};
+    this.tileMetadata = {}; // Metadata per tile (e.g., preserveHeightOnWalk)
     this.loaded = false;
     this.onLoadActions = new ActionQueue();
     this.onDefinitionLoadActions = new ActionQueue();
@@ -107,9 +108,21 @@ export default class Tileset extends Loadable {
     }
 
     if (!this.geometry[id] || !this.geometry[id].vertices) {
-      // If geometry is missing for a tile, log a warning and return empty vertices
-      console.warn(`[Tileset.getTileVertices] Missing geometry for tile id ${id}`);
-      return [];
+      // If geometry is missing for a tile, log a warning and fallback to either
+      // geometry[0] or a simple flat quad to avoid blank spaces in the map.
+      console.warn(`[Tileset.getTileVertices] Missing geometry for tile id ${id}. Attempting fallback.`);
+      if (this.geometry[0] && this.geometry[0].vertices) {
+        id = 0; // fallback to first geometry definition
+      } else {
+        // Simple fallback quad: [0,0,0], [1,0,0], [1,0,1], [0,0,1]
+        const quad = [
+          [[0, 0, 0], [1, 0, 0], [1, 0, 1]],
+          [[0, 0, 0], [1, 0, 1], [0, 0, 1]],
+        ];
+        return quad
+          .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + yOffset, vertex[2] + zOffset]))
+          .flat(3);
+      }
     }
 
     return this.geometry[id].vertices
@@ -151,5 +164,14 @@ export default class Tileset extends Loadable {
    */
   getTileWalkPoly = (tileId) => {
     return this.geometry[tileId].walkPoly;
+  }
+
+  /**
+   * Get metadata for a tile (e.g., preserveHeightOnWalk)
+   * @param {string} tileName
+   * @returns {object}
+   */
+  getTileMetadata = (tileName) => {
+    return this.tileMetadata[tileName] || {};
   }
 }

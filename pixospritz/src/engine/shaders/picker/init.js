@@ -15,7 +15,13 @@ export default function init(shaderProgram) {
   const { gl } = this.engine;
   const self = this;
 
-  // Vertices
+  // Get attribute locations - CRITICAL for picking to work!
+  shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+  gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
+
+  shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
+  gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
+
   shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
   gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
 

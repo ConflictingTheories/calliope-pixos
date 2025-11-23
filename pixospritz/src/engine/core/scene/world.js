@@ -137,7 +137,13 @@ export default class World {
       const zone = this.getZoneById(avatarData.zone || avatarData.zoneId) || this.zoneContaining(avatarData.x || 0, avatarData.y || 0);
       avatar.zone = zone;
       avatar.id = spriteId;
-      avatar.pos = new Vector(avatarData.x || (avatarData.pos && avatarData.pos.x) || 0, avatarData.y || (avatarData.pos && avatarData.pos.y) || 0, avatarData.z || (avatarData.pos && avatarData.pos.z) || 0);
+      // compute z if not provided. Use hotspot offset so we sample tile height for avatar foot position.
+      const rawX = avatarData.x ?? (avatarData.pos && avatarData.pos.x) ?? 0;
+      const rawY = avatarData.y ?? (avatarData.pos && avatarData.pos.y) ?? 0;
+      const hx = rawX + (avatar.hotspotOffset?.x ?? 0);
+      const hy = rawY + (avatar.hotspotOffset?.y ?? 0);
+      const zVal = (typeof avatarData.z === 'number') ? avatarData.z : (avatarData.pos && typeof avatarData.pos.z === 'number') ? avatarData.pos.z : (zone ? zone.getHeight(hx, hy) : 0);
+      avatar.pos = new Vector(rawX, rawY, zVal);
       avatar.facing = avatarData.facing || 0;
       avatar.isSelected = false; // remote avatars not selected
 
@@ -250,10 +256,11 @@ export default class World {
     const zone = this.zoneContaining(avatarData.x, avatarData.y);
     if (zone) {
       const avatar = new Avatar(this.engine);
+      // leave z undefined so Avatar.onLoad will compute using hotspotOffset
       avatar.onLoad({
         zone: zone,
         id: avatarData.id,
-        pos: new Vector(avatarData.x, avatarData.y, avatarData.z || 0),
+        pos: new Vector(avatarData.x, avatarData.y),
         ...avatarData
       });
       zone.addSprite(avatar);
