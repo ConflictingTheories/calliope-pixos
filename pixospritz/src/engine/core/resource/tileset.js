@@ -89,13 +89,26 @@ export default class Tileset extends Loadable {
 
   /**
    * Get vertices for tile
-   * @param {*} id
-   * @param {*} offset
-   * @returns
+   * @param {*} id - Tile geometry ID
+   * @param {*} offset - Position offset [x, y, z]
+   * @param {number} heightOverride - Optional height override for the tile
+   * @returns {Array} Flattened array of vertices
    */
-  getTileVertices = (id, offset) => {
+  getTileVertices = (id, offset, heightOverride = null) => {
+    // Use heightOverride to replace the Y offset if provided, otherwise use default offset[1]
+    const yOffset = heightOverride !== null ? heightOverride : offset[1];
+    
+    // Debug logging for first few calls with height override
+    if (heightOverride !== null && id === 0) {
+      console.log(`[Tileset.getTileVertices] tile=${id}, offset=[${offset}], heightOverride=${heightOverride}, yOffset=${yOffset}`);
+    }
+    
     return this.geometry[id].vertices
-      .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + offset[1], vertex[2] + offset[2]]))
+      .map((poly) => poly.map((vertex) => [
+        vertex[0] + offset[0],
+        vertex[1] + yOffset,
+        vertex[2] + offset[2]
+      ]))
       .flat(3);
   }
 

@@ -474,14 +474,16 @@ const App = () => {
       console.error('Failed to parse map.json:', err);
     }
     
-    // Load cells.json from the same directory
+    // Load cells.json and heights.json from the same directory
+    let heightsData = null;
     if (allEntries.length > 0) {
       try {
         // Extract the directory from the map file path
         const mapDir = entry.name.substring(0, entry.name.lastIndexOf('/') + 1);
         const cellsFileName = 'cells.json';
+        const heightsFileName = 'heights.json';
         
-        console.log('Searching for cells.json in directory:', mapDir);
+        console.log('Searching for cells.json and heights.json in directory:', mapDir);
         
         // Find cells.json in the same directory as map.json
         const cellsFile = allEntries.find(e => {
@@ -508,15 +510,41 @@ const App = () => {
           console.warn('cells.json not found in directory:', mapDir);
           console.warn('Available files:', allEntries.map(e => e.fullName || e.name));
         }
+        
+        // Find heights.json in the same directory as map.json
+        const heightsFile = allEntries.find(e => {
+          const fullPath = e.fullName || e.name;
+          return fullPath === `${mapDir}${heightsFileName}` || 
+                 (fullPath.endsWith(heightsFileName) && fullPath.includes(mapDir));
+        });
+        
+        if (heightsFile) {
+          console.log('Found heights.json at:', heightsFile.fullName || heightsFile.name);
+          try {
+            const heightsContent = await getData(heightsFile, true);
+            console.log('Heights content type:', typeof heightsContent, 'length:', heightsContent?.length);
+            if (heightsContent) {
+              heightsData = JSON.parse(heightsContent);
+              console.log('Heights data loaded:', heightsData.length, 'x', heightsData[0]?.length);
+            } else {
+              console.warn('heights.json getData returned null');
+            }
+          } catch (parseErr) {
+            console.error('Failed to parse heights.json:', parseErr);
+          }
+        } else {
+          console.log('heights.json not found in directory:', mapDir, '(this is OK for maps without custom heights)');
+        }
       } catch (err) {
-        console.error('Failed to load cells.json:', err);
+        console.error('Failed to load cells.json/heights.json:', err);
       }
     }
     
-    // Combine map and cells data
+    // Combine map, cells, and heights data
     const combinedContent = {
       ...mapData,
-      cells: cellsData || mapData?.cells || []
+      cells: cellsData || mapData?.cells || [],
+      heights: heightsData || mapData?.heights || null
     };
     
     // Load tileset and its dependencies
@@ -638,11 +666,14 @@ const App = () => {
             console.log('[MapEditor] Saved cells.json:', cellsPath);
             
             // Save heights.json if it exists
+            console.log('[MapEditor] Heights data:', heights ? `${heights.length} rows` : 'null', heights);
             if (heights && heights.length > 0) {
               const heightsPath = fullPath.replace('map.json', 'heights.json');
               const heightsJsonData = JSON.stringify(heights, null, 2);
               await writeFile(heightsPath, heightsJsonData);
-              console.log('[MapEditor] Saved heights.json:', heightsPath);
+              console.log('[MapEditor] Saved heights.json:', heightsPath, 'with', heights.length, 'rows');
+            } else {
+              console.warn('[MapEditor] No heights data to save');
             }
             
             console.log('[MapEditor] All map files saved successfully');
