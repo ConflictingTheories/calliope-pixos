@@ -32,7 +32,11 @@ export default {
     let endTime = this.startTime + this.length;
     let frac = (time - this.startTime) / this.length;
     if (time >= endTime) {
-      set(this.to, this.sprite.pos);
+      this.sprite.pos.x = this.to.x;
+      this.sprite.pos.y = this.to.y;
+      let hx = this.sprite.pos.x + this.sprite.hotspotOffset.x;
+      let hy = this.sprite.pos.y + this.sprite.hotspotOffset.y;
+      this.sprite.pos.z = this.sprite.zone.getHeight(hx, hy);
       frac = 1;
       this.onStep();
       // Get next frame
