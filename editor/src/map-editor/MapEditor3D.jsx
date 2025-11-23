@@ -128,22 +128,40 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
   // Load texture atlas
   useEffect(() => {
-    if (!textureAtlas || !glRef.current) return;
+    if (!textureAtlas) {
+      console.log('[MapEditor3D] No texture atlas provided');
+      return;
+    }
+    
+    if (!glRef.current) {
+      console.log('[MapEditor3D] GL context not ready, waiting...');
+      return;
+    }
     
     console.log('[MapEditor3D] Loading texture atlas:', textureAtlas.substring(0, 50) + '...');
     const img = new Image();
     img.onload = () => {
       console.log('[MapEditor3D] Texture image loaded:', img.width, 'x', img.height);
       if (glRef.current) {
-        textureRef.current = createTextureFromImage(glRef.current, img);
-        console.log('[MapEditor3D] WebGL texture created:', textureRef.current);
+        const texture = createTextureFromImage(glRef.current, img);
+        textureRef.current = texture;
+        console.log('[MapEditor3D] WebGL texture created:', texture);
+        
+        // Verify texture was created successfully
+        if (!texture) {
+          console.error('[MapEditor3D] Failed to create WebGL texture object!');
+        } else {
+          console.log('[MapEditor3D] Texture successfully bound to textureRef');
+        }
+      } else {
+        console.error('[MapEditor3D] GL context lost after image load!');
       }
     };
     img.onerror = (e) => {
-      console.error('[MapEditor3D] Failed to load texture:', e);
+      console.error('[MapEditor3D] Failed to load texture image:', e);
     };
     img.src = textureAtlas;
-  }, [textureAtlas]);
+  }, [textureAtlas, glRef.current]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -183,14 +201,34 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
   // Initialize WebGL program
   const handleWebGLInit = useCallback((gl) => {
+    console.log('[MapEditor3D] WebGL initialized');
     glRef.current = gl;
     
     // Create shader program
     const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
     if (program) {
       shaderProgramRef.current = program;
+      console.log('[MapEditor3D] Shader program created');
+      
+      // If we already have a texture atlas, load it now
+      if (textureAtlas && !textureRef.current) {
+        console.log('[MapEditor3D] Texture atlas available, loading now...');
+        const img = new Image();
+        img.onload = () => {
+          console.log('[MapEditor3D] Texture image loaded in init:', img.width, 'x', img.height);
+          const texture = createTextureFromImage(gl, img);
+          textureRef.current = texture;
+          console.log('[MapEditor3D] WebGL texture created in init:', texture);
+        };
+        img.onerror = (e) => {
+          console.error('[MapEditor3D] Failed to load texture in init:', e);
+        };
+        img.src = textureAtlas;
+      }
+    } else {
+      console.error('[MapEditor3D] Failed to create shader program');
     }
-  }, []);
+  }, [textureAtlas]);
 
   // Render callback for WebGL3DCanvas
   const handleRender = useCallback(
@@ -212,10 +250,29 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
       gl.uniform1i(uShowGrid, showGridFlag);
 
-      // Debug: Log texture state once
-      if (!window._textureDebugLogged && textureRef.current) {
-        console.log('[MapEditor3D] Rendering with texture:', textureRef.current);
-        window._textureDebugLogged = true;
+      // Debug: Log texture and uniform state once
+      if (!window._renderDebugLogged) {
+        console.log('[MapEditor3D] Render state:', {
+          hasTexture: !!textureRef.current,
+          textureObject: textureRef.current,
+          uniformLocations: {
+            uModelViewMatrix,
+            uProjectionMatrix,
+            uUseTexture,
+            uColor,
+            uShowGrid,
+            uTexture,
+            uIsHovered
+          },
+          tilesetInfo: {
+            hasTileset: !!tileset,
+            hasTextures: !!tileset?.textures,
+            textureCount: Object.keys(tileset?.textures || {}).length,
+            tileSize: tileset?.tileSize,
+            sheetSize: tileset?.sheetSize
+          }
+        });
+        window._renderDebugLogged = true;
       }
 
       // Render each cell
@@ -245,7 +302,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
         }
       }
     },
-    [cells, heights, hoveredCell, tiles, geometry, tileset]
+    [cells, heights, hoveredCell, tiles, geometry, tileset, textureRef.current]
   );
 
   // Render a tile at given position
@@ -384,7 +441,19 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
     // Set texture or color
     if (textureName && textureRef.current) {
-      console.log('[MapEditor3D] Using texture for:', textureName, 'Texture object:', textureRef.current);
+      // Debug: log texture usage once per texture name
+      if (!window._textureDebugNames) window._textureDebugNames = new Set();
+      if (!window._textureDebugNames.has(textureName)) {
+        console.log('[MapEditor3D] Using texture:', textureName, {
+          textureObject: textureRef.current,
+          tilesetHasTexture: !!tileset?.textures?.[textureName],
+          texturePos: tileset?.textures?.[textureName],
+          tileSize: tileset?.tileSize,
+          sheetSize: tileset?.sheetSize,
+          firstTexCoords: texCoords.slice(0, 6)
+        });
+        window._textureDebugNames.add(textureName);
+      }
       gl.uniform1i(uUseTexture, 1);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
@@ -992,13 +1061,14 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
                   style={{
                     background: selectedTile === tileName ? '#0e639c' : '#3c3c3c',
                     border: `2px solid ${selectedTile === tileName ? '#1177bb' : '#3e3e42'}`,
-                    padding: '8px',
+                    padding: '6px',
                     textAlign: 'center',
                     cursor: 'pointer',
                     borderRadius: '3px',
-                    fontSize: '10px',
+                    fontSize: '9px',
                     wordWrap: 'break-word',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    position: 'relative'
                   }}
                   onMouseOver={(e) => {
                     if (selectedTile !== tileName) {
@@ -1011,12 +1081,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
                     }
                   }}
                 >
-                  {tileName}
+                  <div>{tileName}</div>
+                  <div style={{ 
+                    fontSize: '8px', 
+                    color: '#888', 
+                    marginTop: '2px'
+                  }}>
+                    {Math.floor(tiles[tileName].length / 3)} parts
+                  </div>
                 </div>
               ))}
             </div>
             <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>
-              Click a tile to select it for painting
+              Click a tile to select it for painting.<br/>
+              <em style={{ color: '#ce9178' }}>Note: Tile editor coming soon - edit tiles.json manually for now</em>
             </div>
           </div>
         </div>
@@ -1059,6 +1137,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
                   </span>
                 </div>
               ))}
+            </div>
+            <div style={{ fontSize: '10px', color: '#ce9178', fontStyle: 'italic' }}>
+              Geometry editor coming soon - edit geometry.json manually for now
             </div>
           </div>
         </div>
