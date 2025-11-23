@@ -361,56 +361,58 @@ function ObjModelViewer() {
     img.src = url;
   }
 
-  function processFiles(files) {
-    const gl = glRef.current;
-    if (!gl) return;
+function processFiles(files) {
+  const gl = glRef.current;
+  if (!gl) return;
 
-    const objFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.obj'));
-    if (!objFile) {
-      setError('No .obj file found in selection.');
-      return;
-    }
-    const mtlFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.mtl'));
-    const imageFiles = Array.from(files).filter(f => /\.(png|jpg|jpeg)$/i.test(f.name));
+  const objFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.obj'));
+  if (!objFile) {
+    setError('No .obj file found in selection.');
+    return;
+  }
+  const mtlFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.mtl'));
+  const imageFiles = Array.from(files).filter(f => /\.(png|jpg|jpeg)$/i.test(f.name));
 
-    setError(null);
+  setError(null);
 
-    const loadedTextures = {};
-    let loadedCount = 0;
-    if (imageFiles.length === 0) {
-      finalizeLoad(null);
-    } else {
-      imageFiles.forEach(imageFile => {
-        loadTexture(gl, imageFile, (tex) => {
-          if (tex) loadedTextures[imageFile.name] = tex;
-          loadedCount++;
-          if (loadedCount === imageFiles.length) {
-            finalizeLoad(loadedTextures);
-          }
-        });
-      });
-    }
-
-    function finalizeLoad(textures) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const objText = e.target.result;
-        const parsedMeshes = parseOBJ(objText);
-
-        if (mtlFile) {
-          const mtlReader = new FileReader();
-          mtlReader.onload = me => {
-            const mtlText = me.target.result;
-            const parsedMaterials = parseMTL(mtlText);
-            assignMaterials(parsedMeshes, parsedMaterials, textures);
-          };
-          mtlReader.readAsText(mtlFile);
-        } else {
-          assignMaterials(parsedMeshes, {}, textures);
+  const loadedTextures = {};
+  let loadedCount = 0;
+  if (imageFiles.length === 0) {
+    finalizeLoad(null);
+  } else {
+    imageFiles.forEach(imageFile => {
+      loadTexture(gl, imageFile, (tex) => {
+        if (tex) loadedTextures[imageFile.name] = tex;
+        loadedCount++;
+        if (loadedCount === imageFiles.length) {
+          finalizeLoad(loadedTextures);
         }
-      };
-      reader.readAsText(objFile);
-    }
+      });
+    });
+  }
+
+  function finalizeLoad(textures) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const objText = e.target.result;
+      // Fix: prevent JSON parsing on MTL load, use plain text parsing
+      const parsedMeshes = parseOBJ(objText);
+
+      if (mtlFile) {
+        const mtlReader = new FileReader();
+        mtlReader.onload = me => {
+          const mtlText = me.target.result;
+          // Ensure parseMTL is not called with JSON.parse anywhere
+          const parsedMaterials = parseMTL(mtlText);
+          assignMaterials(parsedMeshes, parsedMaterials, textures);
+        };
+        mtlReader.readAsText(mtlFile);
+      } else {
+        assignMaterials(parsedMeshes, {}, textures);
+      }
+    };
+    reader.readAsText(objFile);
+  }
 
     function assignMaterials(parsedMeshes, parsedMaterials, textures) {
       parsedMeshes.forEach(mesh => {

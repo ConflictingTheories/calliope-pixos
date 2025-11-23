@@ -38,16 +38,31 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
   const [cells, setCells] = useState([]);
   const [heights, setHeights] = useState([]);
   
+  // New: Sprites, Objects, Triggers state
+  const [sprites, setSprites] = useState([]);
+  const [objects, setObjects] = useState([]);
+  const [triggers, setTriggers] = useState({ selectTrigger: '', scripts: [] });
+  const [lights, setLights] = useState([]);
+  const [animatedTiles, setAnimatedTiles] = useState([]);
+  
   // UI state
   const [selectedTile, setSelectedTile] = useState('FLOOR');
-  const [currentTool, setCurrentTool] = useState('paint'); // 'paint', 'erase', 'pick'
+  const [currentTool, setCurrentTool] = useState('paint'); // 'paint', 'erase', 'pick', 'sprite', 'object', 'animatedTile'
   const [currentHeight, setCurrentHeight] = useState(0);
   const [showGrid, setShowGrid] = useState(true);
   const [error, setError] = useState(null);
+  const [editorMode, setEditorMode] = useState('tiles'); // 'tiles', 'sprites', 'objects', 'triggers', 'lights', 'animatedTiles'
   
   // Painting state
   const [isPainting, setIsPainting] = useState(false);
   const [lastPaintedCell, setLastPaintedCell] = useState(null);
+  
+  // Sprite/Object editing state
+  const [selectedSprite, setSelectedSprite] = useState(null);
+  const [spriteTypeInput, setSpriteTypeInput] = useState('');
+  const [spriteIdInput, setSpriteIdInput] = useState('');
+  const [spriteFacing, setSpriteFacing] = useState('Down');
+  const [selectedObject, setSelectedObject] = useState(null);
   
   // Dialog state
   const [showTileEditor, setShowTileEditor] = useState(false);
@@ -94,6 +109,42 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
       setMap(parsedMap);
       setCells(parsedCells || []);
+      
+      // Load sprites if present
+      if (parsedMap?.sprites && Array.isArray(parsedMap.sprites)) {
+        setSprites(parsedMap.sprites);
+      } else {
+        setSprites([]);
+      }
+      
+      // Load objects if present
+      if (parsedMap?.objects && Array.isArray(parsedMap.objects)) {
+        setObjects(parsedMap.objects);
+      } else {
+        setObjects([]);
+      }
+      
+      // Load triggers if present
+      if (parsedMap) {
+        setTriggers({
+          selectTrigger: parsedMap.selectTrigger || '',
+          scripts: parsedMap.scripts || []
+        });
+      }
+      
+      // Load lights if present
+      if (parsedMap?.lights && Array.isArray(parsedMap.lights)) {
+        setLights(parsedMap.lights);
+      } else {
+        setLights([]);
+      }
+      
+      // Load animated tiles if present
+      if (parsedMap?.animatedTiles && Array.isArray(parsedMap.animatedTiles)) {
+        setAnimatedTiles(parsedMap.animatedTiles);
+      } else {
+        setAnimatedTiles([]);
+      }
       
       // Set map dimensions for resize dialog
       if (parsedCells && parsedCells.length > 0) {
@@ -513,7 +564,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
         shiftKey: event.shiftKey,
         button: event.button,
         type: event.type,
-        currentTool
+        currentTool,
+        editorMode
       });
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
@@ -525,8 +577,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       const { x, y } = cellCoords;
       console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x]);
 
-      // Original behavior: Shift+Click = paint/erase while dragging
-      if (event.shiftKey) {
+      // Handle different editor modes
+      if (editorMode === 'sprites' && event.type === 'click' && !event.shiftKey) {
+        addSprite(x, y);
+        return;
+      } else if (editorMode === 'objects' && event.type === 'click' && !event.shiftKey) {
+        addObject(x, y);
+        return;
+      } else if (editorMode === 'animatedTiles' && event.type === 'click' && !event.shiftKey) {
+        addAnimatedTile(x, y);
+        return;
+      }
+
+      // Original tile editing behavior: Shift+Click = paint/erase while dragging
+      if (event.shiftKey || editorMode === 'tiles') {
         // Start painting on shift+mousedown
         if (event.type === 'mousedown' || event.type === 'click') {
           if (event.button === 0) {
@@ -549,7 +613,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
         pickCell(x, y);
       }
     },
-    [cells, currentTool, selectedTile, currentHeight]
+    [cells, currentTool, selectedTile, currentHeight, editorMode, spriteTypeInput, spriteIdInput, spriteFacing]
   );
 
   // Convert screen coordinates to cell coordinates
@@ -742,10 +806,108 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       ...map,
       cells,
       heights,
+      sprites,
+      objects,
+      lights,
+      animatedTiles,
+      selectTrigger: triggers.selectTrigger || undefined,
+      scripts: triggers.scripts.length > 0 ? triggers.scripts : undefined,
     };
+    
+    // Clean up undefined values
+    Object.keys(mapData).forEach(key => {
+      if (mapData[key] === undefined) {
+        delete mapData[key];
+      }
+    });
+    
     if (onSave) {
       onSave(mapData);
     }
+  }
+  
+  // Add sprite to map
+  function addSprite(x, y) {
+    if (!spriteTypeInput || !spriteIdInput) {
+      alert('Please enter both Sprite ID and Type');
+      return;
+    }
+    
+    const newSprite = {
+      id: spriteIdInput,
+      type: spriteTypeInput,
+      pos: [x, y, currentHeight],
+      facing: spriteFacing
+    };
+    
+    setSprites([...sprites, newSprite]);
+    alert(`Sprite "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
+  }
+  
+  // Remove sprite
+  function removeSprite(index) {
+    const newSprites = sprites.filter((_, i) => i !== index);
+    setSprites(newSprites);
+  }
+  
+  // Update sprite
+  function updateSprite(index, updates) {
+    const newSprites = [...sprites];
+    newSprites[index] = { ...newSprites[index], ...updates };
+    setSprites(newSprites);
+  }
+  
+  // Add object to map
+  function addObject(x, y) {
+    if (!spriteTypeInput || !spriteIdInput) {
+      alert('Please enter both Object ID and Type');
+      return;
+    }
+    
+    const newObject = {
+      id: spriteIdInput,
+      type: spriteTypeInput,
+      pos: [x, y, currentHeight],
+      facing: spriteFacing
+    };
+    
+    setObjects([...objects, newObject]);
+    alert(`Object "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
+  }
+  
+  // Remove object
+  function removeObject(index) {
+    const newObjects = objects.filter((_, i) => i !== index);
+    setObjects(newObjects);
+  }
+  
+  // Update object
+  function updateObject(index, updates) {
+    const newObjects = [...objects];
+    newObjects[index] = { ...newObjects[index], ...updates };
+    setObjects(newObjects);
+  }
+  
+  // Add animated tile
+  function addAnimatedTile(x, y) {
+    if (!spriteTypeInput) {
+      alert('Please enter the Sprite Type for the animated tile');
+      return;
+    }
+    
+    const newAnimatedTile = {
+      type: spriteTypeInput,
+      pos: [x, y, currentHeight]
+    };
+    
+    setAnimatedTiles([...animatedTiles, newAnimatedTile]);
+    alert(`Animated tile added at [${x}, ${y}, ${currentHeight}]`);
+  }
+  
+  // Remove animated tile
+  function removeAnimatedTile(index) {
+    const newTiles = animatedTiles.filter((_, i) => i !== index);
+    setAnimatedTiles(newTiles);
   }
 
   // Get available tiles
@@ -1030,6 +1192,474 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
             </div>
           </div>
         </div>
+
+        {/* Mode Selector */}
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            🎯 Editor Mode
+          </div>
+          <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <button
+              style={{
+                background: editorMode === 'tiles' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('tiles')}
+            >
+              🟦 Tiles ({cells.length} x {cells[0]?.length || 0})
+            </button>
+            <button
+              style={{
+                background: editorMode === 'sprites' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('sprites')}
+            >
+              🎭 Sprites ({sprites.length})
+            </button>
+            <button
+              style={{
+                background: editorMode === 'objects' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('objects')}
+            >
+              📦 Objects ({objects.length})
+            </button>
+            <button
+              style={{
+                background: editorMode === 'animatedTiles' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('animatedTiles')}
+            >
+              ✨ Animated Tiles ({animatedTiles.length})
+            </button>
+            <button
+              style={{
+                background: editorMode === 'triggers' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('triggers')}
+            >
+              ⚡ Triggers & Scripts
+            </button>
+            <button
+              style={{
+                background: editorMode === 'lights' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('lights')}
+            >
+              💡 Lights ({lights.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Sprites/Objects Editor */}
+        {(editorMode === 'sprites' || editorMode === 'objects') && (
+          <div style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42'
+            }}>
+              {editorMode === 'sprites' ? '🎭 Sprite Placement' : '📦 Object Placement'}
+            </div>
+            <div style={{ padding: '10px' }}>
+              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#888' }}>
+                Click on the map to place {editorMode === 'sprites' ? 'sprites' : 'objects'}
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>ID:</label>
+                <input
+                  type="text"
+                  value={spriteIdInput}
+                  onChange={(e) => setSpriteIdInput(e.target.value)}
+                  placeholder="e.g., avatar, chest1"
+                  style={{
+                    width: '100%',
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '12px'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Type:</label>
+                <input
+                  type="text"
+                  value={spriteTypeInput}
+                  onChange={(e) => setSpriteTypeInput(e.target.value)}
+                  placeholder="e.g., characters/male, furniture/chest"
+                  style={{
+                    width: '100%',
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '12px'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Facing:</label>
+                <select
+                  value={spriteFacing}
+                  onChange={(e) => setSpriteFacing(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '12px'
+                  }}
+                >
+                  <option value="Down">Down</option>
+                  <option value="Up">Up</option>
+                  <option value="Left">Left</option>
+                  <option value="Right">Right</option>
+                </select>
+              </div>
+              
+              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
+                  Placed {editorMode === 'sprites' ? 'Sprites' : 'Objects'}:
+                </div>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {(editorMode === 'sprites' ? sprites : objects).map((item, idx) => (
+                    <div key={idx} style={{
+                      background: '#1e1e1e',
+                      padding: '8px',
+                      marginBottom: '5px',
+                      borderRadius: '3px',
+                      fontSize: '11px'
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>{item.id}</div>
+                      <div style={{ color: '#888' }}>Type: {item.type}</div>
+                      <div style={{ color: '#888' }}>Pos: [{item.pos.join(', ')}]</div>
+                      <div style={{ color: '#888' }}>Facing: {item.facing}</div>
+                      <button
+                        onClick={() => editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)}
+                        style={{
+                          marginTop: '5px',
+                          background: '#5a1d1d',
+                          color: '#f48771',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          fontSize: '10px'
+                        }}
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                  ))}
+                  {(editorMode === 'sprites' ? sprites : objects).length === 0 && (
+                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                      No {editorMode === 'sprites' ? 'sprites' : 'objects'} placed yet
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Animated Tiles Editor */}
+        {editorMode === 'animatedTiles' && (
+          <div style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42'
+            }}>
+              ✨ Animated Tile Placement
+            </div>
+            <div style={{ padding: '10px' }}>
+              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#888' }}>
+                Click on the map to place animated tiles (sprite-based animations on tiles)
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Sprite Type:</label>
+                <input
+                  type="text"
+                  value={spriteTypeInput}
+                  onChange={(e) => setSpriteTypeInput(e.target.value)}
+                  placeholder="e.g., effects/spurt, effects/fire"
+                  style={{
+                    width: '100%',
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '12px'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
+                  Placed Animated Tiles:
+                </div>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {animatedTiles.map((tile, idx) => (
+                    <div key={idx} style={{
+                      background: '#1e1e1e',
+                      padding: '8px',
+                      marginBottom: '5px',
+                      borderRadius: '3px',
+                      fontSize: '11px'
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Tile #{idx + 1}</div>
+                      <div style={{ color: '#888' }}>Type: {tile.type}</div>
+                      <div style={{ color: '#888' }}>Pos: [{tile.pos.join(', ')}]</div>
+                      <button
+                        onClick={() => removeAnimatedTile(idx)}
+                        style={{
+                          marginTop: '5px',
+                          background: '#5a1d1d',
+                          color: '#f48771',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          fontSize: '10px'
+                        }}
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                  ))}
+                  {animatedTiles.length === 0 && (
+                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                      No animated tiles placed yet
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Triggers Editor */}
+        {editorMode === 'triggers' && (
+          <div style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42'
+            }}>
+              ⚡ Triggers & Scripts
+            </div>
+            <div style={{ padding: '10px' }}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                  Select Trigger (tile click):
+                </label>
+                <input
+                  type="text"
+                  value={triggers.selectTrigger}
+                  onChange={(e) => setTriggers({ ...triggers, selectTrigger: e.target.value })}
+                  placeholder="e.g., tile/select_test"
+                  style={{
+                    width: '100%',
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '12px'
+                  }}
+                />
+                <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                  Lua script path (relative to triggers/)
+                </div>
+              </div>
+              
+              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Scripts (on load):</div>
+                  <button
+                    onClick={() => {
+                      const newScript = { id: `script-${Date.now()}`, trigger: '' };
+                      setTriggers({ ...triggers, scripts: [...triggers.scripts, newScript] });
+                    }}
+                    style={{
+                      background: '#0e639c',
+                      color: 'white',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '2px',
+                      cursor: 'pointer',
+                      fontSize: '10px'
+                    }}
+                  >
+                    + Add
+                  </button>
+                </div>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {triggers.scripts.map((script, idx) => (
+                    <div key={idx} style={{
+                      background: '#1e1e1e',
+                      padding: '8px',
+                      marginBottom: '5px',
+                      borderRadius: '3px'
+                    }}>
+                      <div style={{ marginBottom: '5px' }}>
+                        <label style={{ fontSize: '10px', color: '#888' }}>ID:</label>
+                        <input
+                          type="text"
+                          value={script.id}
+                          onChange={(e) => {
+                            const newScripts = [...triggers.scripts];
+                            newScripts[idx].id = e.target.value;
+                            setTriggers({ ...triggers, scripts: newScripts });
+                          }}
+                          style={{
+                            width: '100%',
+                            background: '#3c3c3c',
+                            color: '#d4d4d4',
+                            border: '1px solid #3e3e42',
+                            padding: '4px 6px',
+                            borderRadius: '2px',
+                            fontSize: '11px',
+                            marginTop: '2px'
+                          }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '5px' }}>
+                        <label style={{ fontSize: '10px', color: '#888' }}>Trigger:</label>
+                        <input
+                          type="text"
+                          value={script.trigger}
+                          onChange={(e) => {
+                            const newScripts = [...triggers.scripts];
+                            newScripts[idx].trigger = e.target.value;
+                            setTriggers({ ...triggers, scripts: newScripts });
+                          }}
+                          placeholder="e.g., zone/room_clear_path"
+                          style={{
+                            width: '100%',
+                            background: '#3c3c3c',
+                            color: '#d4d4d4',
+                            border: '1px solid #3e3e42',
+                            padding: '4px 6px',
+                            borderRadius: '2px',
+                            fontSize: '11px',
+                            marginTop: '2px'
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newScripts = triggers.scripts.filter((_, i) => i !== idx);
+                          setTriggers({ ...triggers, scripts: newScripts });
+                        }}
+                        style={{
+                          background: '#5a1d1d',
+                          color: '#f48771',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          fontSize: '10px'
+                        }}
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                  ))}
+                  {triggers.scripts.length === 0 && (
+                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                      No scripts configured
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tiles Section */}
         <div style={{
@@ -1416,10 +2046,11 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
           alignItems: 'center'
         }}>
           <span>
-            Tool: {currentTool} | Tile: {selectedTile} | Height: {currentHeight.toFixed(1)}
+            Mode: {editorMode} | Tool: {currentTool} | Tile: {selectedTile} | Height: {currentHeight.toFixed(1)}
           </span>
           <span>
-            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'}
+            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'} | 
+            Sprites: {sprites.length} | Objects: {objects.length} | Animated: {animatedTiles.length}
           </span>
         </div>
       </div>

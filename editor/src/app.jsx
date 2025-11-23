@@ -26,6 +26,7 @@ import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
+import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
 
 /**
  * Primary React component that drives the editor UI.
@@ -558,66 +559,64 @@ const App = () => {
         console.log('Loading tileset:', tilesetName);
         console.log('All zip files:', allEntries.map(e => e.fullName || e.name));
         
-        // Find tileset.json - search for file in tilesets directory
-        const tilesetFile = allEntries.find(e => {
-          const fullPath = e.fullName || e.name;
-          return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
-        });
-        
-        if (tilesetFile) {
-          console.log('Found tileset at:', tilesetFile.fullName || tilesetFile.name);
-          console.log('Tileset file object:', tilesetFile);
-          console.log('Has getData?', typeof tilesetFile.getData);
-          console.log('Has data.getData?', tilesetFile.data && typeof tilesetFile.data.getData);
+        // Use extends-aware tileset loader
+        try {
+          const resolvedTileset = await loadTilesetWithExtends(zip, tilesetName, getData);
+          console.log('Tileset loaded with extends support:', resolvedTileset);
+          tileset = resolvedTileset;
+          geometry = resolvedTileset.geometry || {};
+          tiles = resolvedTileset.tiles || {};
+          console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
           
-          try {
+          // Load texture atlas
+          if (resolvedTileset.src) {
+            console.log('Loading texture:', resolvedTileset.src);
+            const textureName = resolvedTileset.src;
+            
+            // Search for texture file - check both tilesets and textures directories
+            const textureFile = allEntries.find(e => {
+              const fullPath = e.fullName || e.name;
+              return (fullPath.includes(`tilesets/${tilesetName}`) || 
+                      fullPath.includes('tilesets/common') || 
+                      fullPath.includes('textures/')) && 
+                     fullPath.endsWith(textureName);
+            });
+            
+            if (textureFile) {
+              console.log('Found texture at:', textureFile.fullName || textureFile.name);
+              const textureBytes = await getData(textureFile, false);
+              if (textureBytes) {
+                const ext = resolvedTileset.src.split('.').pop().toLowerCase();
+                const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+                textureAtlas = toDataUri(textureBytes, mime);
+                console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
+              }
+            } else {
+              console.warn('Texture not found:', textureName);
+              console.warn('Available texture files:', allEntries.filter(e => {
+                const fullPath = e.fullName || e.name;
+                return fullPath.match(/\.(png|jpg|jpeg|gif)$/i);
+              }).map(e => e.fullName || e.name));
+            }
+          }
+        } catch (extendsErr) {
+          console.error('Failed to load tileset with extends:', extendsErr);
+          // Fallback: try loading without extends support
+          const tilesetFile = allEntries.find(e => {
+            const fullPath = e.fullName || e.name;
+            return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
+          });
+          
+          if (tilesetFile) {
             const tilesetContent = await getData(tilesetFile, true);
-            console.log('Tileset content type:', typeof tilesetContent, 'length:', tilesetContent?.length);
             if (tilesetContent && typeof tilesetContent === 'string') {
               const tilesetData = JSON.parse(tilesetContent);
-              console.log('Tileset data parsed successfully');
+              console.log('Tileset loaded (fallback without extends)');
               tileset = tilesetData;
               geometry = tilesetData.geometry || {};
               tiles = tilesetData.tiles || {};
-              console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
-              
-              // Load texture atlas
-              if (tilesetData.src) {
-                console.log('Loading texture:', tilesetData.src);
-                const textureName = tilesetData.src;
-                
-                // Search for texture file - check both tilesets and textures directories
-                const textureFile = allEntries.find(e => {
-                  const fullPath = e.fullName || e.name;
-                  return (fullPath.includes(`tilesets/${tilesetName}`) || fullPath.includes('textures/')) && 
-                         fullPath.endsWith(textureName);
-                });
-                
-                if (textureFile) {
-                  console.log('Found texture at:', textureFile.fullName || textureFile.name);
-                  const textureBytes = await getData(textureFile, false);
-                  if (textureBytes) {
-                    const ext = tilesetData.src.split('.').pop().toLowerCase();
-                    const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-                    textureAtlas = toDataUri(textureBytes, mime);
-                    console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes');
-                  }
-                } else {
-                  console.warn('Texture not found:', textureName);
-                }
-              }
-            } else {
-              console.error('tileset.json getData returned invalid type:', typeof tilesetContent);
             }
-          } catch (parseErr) {
-            console.error('Failed to parse tileset.json:', parseErr);
           }
-        } else {
-          console.warn('Tileset not found for:', tilesetName);
-          console.warn('Available tileset files:', allEntries.filter(e => {
-            const fullPath = e.fullName || e.name;
-            return fullPath.includes('tileset') && fullPath.endsWith('.json');
-          }).map(e => e.fullName || e.name));
         }
       } catch (err) {
         console.error('Failed to load tileset dependencies:', err);
@@ -764,9 +763,9 @@ const App = () => {
     const assetLoader = async (path) => {
       try {
         // Clean the path
-        const cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
+        let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
         
-        // Find the asset in the ZIP
+        // Helper to find asset by name in ZIP recursively
         const findAsset = (node, targetName) => {
           if (node.children) {
             for (const child of node.children) {
@@ -782,7 +781,70 @@ const App = () => {
           return null;
         };
         
-        const assetEntry = findAsset(zip, cleanPath);
+        // First try direct match
+        let assetEntry = findAsset(zip, cleanPath);
+        
+        // If not found, try common prefix and extension fixes for sprites and audio
+        if (!assetEntry) {
+          // For sprite assets like "characters/male"
+          if (cleanPath.startsWith('characters/') || cleanPath.startsWith('npc/') || cleanPath.startsWith('sprites/')) {
+            // Try prefixing with "sprites/" or various extensions
+            const trialPaths = [
+              'sprites/' + cleanPath,
+              'sprites/' + cleanPath + '.json',
+              'sprites/' + cleanPath + '.gif',
+              'sprites/' + cleanPath + '.png',
+              cleanPath + '.json',
+              cleanPath + '.gif',
+              cleanPath + '.png'
+            ];
+            for (const trial of trialPaths) {
+              assetEntry = findAsset(zip, trial);
+              if (assetEntry) break;
+            }
+          }
+          
+          // For texture/backdrop files
+          if (!assetEntry && cleanPath.startsWith('textures/')) {
+            const trialTexturePaths = [
+              cleanPath,
+              cleanPath + '.png',
+              cleanPath + '.gif',
+              cleanPath + '.jpg',
+              cleanPath + '.jpeg'
+            ];
+            for (const trial of trialTexturePaths) {
+              assetEntry = findAsset(zip, trial);
+              if (assetEntry) break;
+            }
+          }
+          
+          // For audio files, try prefixing with "audio/"
+          if (!assetEntry && cleanPath.match(/\.mp3$|\.wav$|\.ogg$/)) {
+            const trialAudioPath = 'audio/' + cleanPath.replace(/^audio\//, '');
+            assetEntry = findAsset(zip, trialAudioPath);
+          }
+          
+          // For direct portrait references (like fire_portrait, water_portrait)
+          if (!assetEntry && cleanPath.match(/_portrait$/)) {
+            const trialPortraitPaths = [
+              'textures/' + cleanPath + '.gif',
+              'textures/' + cleanPath + '.png',
+              cleanPath + '.gif',
+              cleanPath + '.png'
+            ];
+            for (const trial of trialPortraitPaths) {
+              assetEntry = findAsset(zip, trial);
+              if (assetEntry) break;
+            }
+          }
+          
+          // Last resort: try without any prefix if it has an extension
+          if (!assetEntry && cleanPath.match(/\.\w+$/)) {
+            assetEntry = findAsset(zip, cleanPath.split('/').pop());
+          }
+        }
+        
         if (!assetEntry) {
           console.warn(`Asset not found in ZIP: ${path}`);
           return null;
@@ -798,8 +860,12 @@ const App = () => {
           'gif': 'image/gif',
           'webp': 'image/webp',
           'svg': 'image/svg+xml',
+          'mp3': 'audio/mpeg',
+          'wav': 'audio/wav',
+          'ogg': 'audio/ogg',
+          'json': 'application/json',
         };
-        const mimeType = mimeMap[ext] || 'image/png';
+        const mimeType = mimeMap[ext] || 'application/octet-stream';
         return toDataUri(data, mimeType);
       } catch (err) {
         console.error(`Failed to load asset ${path}:`, err);

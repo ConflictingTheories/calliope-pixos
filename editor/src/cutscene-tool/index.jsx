@@ -313,6 +313,28 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
   // Build portrait options from available assets
   const portraitOptions = assets.map((a) => ({ label: a.name, value: a.name }));
+  
+  // Quick insert templates for common commands
+  const insertTemplate = (template) => {
+    if (editorMode === 'text') {
+      const cursorPos = textContent.length;
+      const newText = textContent + (textContent.endsWith('\n') ? '' : '\n') + template + '\n';
+      setTextContent(newText);
+      try {
+        const parsed = parseDSLToEvents(newText);
+        setEvents(parsed);
+        pushHistorySnapshot(parsed);
+      } catch (err) {
+        console.warn('Parse error:', err);
+      }
+    } else {
+      // In visual mode, add an action event with the template
+      const next = [...events, { type: 'action', command: template, speaker: '', content: '' }];
+      setEvents(next);
+      setTextContent(serializeEvents(next));
+      pushHistorySnapshot(next);
+    }
+  };
 
   // Update an event field
   function updateEvent(index, prop, value) {
@@ -448,6 +470,162 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             <Nav.Item eventKey="visual" style={{ fontSize: '12px', padding: '4px 8px' }}>Visual</Nav.Item>
           </Nav>
         </div>
+        
+        {/* Quick Insert Commands Panel */}
+        <details style={{ 
+          marginBottom: '8px',
+          background: 'rgba(125,211,252,0.05)',
+          border: '1px solid rgba(125,211,252,0.15)',
+          borderRadius: '6px',
+          padding: '6px'
+        }}>
+          <summary style={{ 
+            color: '#7dd3fc',
+            fontSize: '11px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            userSelect: 'none',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            Quick Insert Commands
+          </summary>
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '4px',
+            marginTop: '6px'
+          }}>
+            <button
+              onClick={() => insertTemplate('@backdrop textures/room.gif [fadeIn=800]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert backdrop command"
+            >
+              🖼️ Backdrop
+            </button>
+            <button
+              onClick={() => insertTemplate('@char HERO sprite=characters/male')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert character definition"
+            >
+              👤 Character
+            </button>
+            <button
+              onClick={() => insertTemplate('@do playSfx [name=audio/brass-loop.mp3]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert sound effect"
+            >
+              🔊 Sound FX
+            </button>
+            <button
+              onClick={() => insertTemplate('wait 1000')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert wait command"
+            >
+              ⏱️ Wait
+            </button>
+            <button
+              onClick={() => insertTemplate('waitInput')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert wait for input"
+            >
+              ⌨️ Wait Input
+            </button>
+            <button
+              onClick={() => insertTemplate('@transition fadeOutBackdrop [duration=600]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert transition"
+            >
+              🌀 Transition
+            </button>
+            <button
+              onClick={() => insertTemplate('@action HERO moveTo [x=40,duration=600]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert action"
+            >
+              ⚡ Action
+            </button>
+            <button
+              onClick={() => insertTemplate('# Comment or scene header')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert comment"
+            >
+              💬 Comment
+            </button>
+          </div>
+        </details>
         
         {/* Text Editor Mode */}
         {editorMode === 'text' && (

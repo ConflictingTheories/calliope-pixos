@@ -352,10 +352,88 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     const sprite = (payload.meta && payload.meta.sprite) || (scene.chars[actor] && scene.chars[actor].sprite) || null;
     const expression = payload.meta && payload.meta.expression;
     
-    // Load sprite with fallback
+    // Load sprite with fallback - handle JSON sprite files
     let spriteUrl = null;
     if (sprite) {
-      spriteUrl = await loadAsset(sprite, false);
+      // If sprite path points to a JSON file, load it and extract the portraitSrc
+      if (sprite.endsWith('.json')) {
+        try {
+          const jsonUrl = await loadAsset(sprite, false);
+          if (jsonUrl && assetLoader) {
+            // Fetch the JSON content
+            const response = await fetch(jsonUrl);
+            const spriteData = await response.json();
+            // Extract portraitSrc from the sprite data
+            if (spriteData.portraitSrc) {
+              // Load the actual portrait image
+              const portraitPath = sprite.replace(/[^/]+$/, spriteData.portraitSrc);
+              spriteUrl = await loadAsset(portraitPath, false);
+            } else if (spriteData.src) {
+              // Fallback to main sprite src
+              const srcPath = sprite.replace(/[^/]+$/, spriteData.src);
+              spriteUrl = await loadAsset(srcPath, false);
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to load sprite JSON:', sprite, err);
+          spriteUrl = await loadAsset(sprite, false);
+        }
+      } else if (sprite.match(/\.(gif|png|jpg|jpeg|webp)$/i)) {
+        // Direct image reference
+        spriteUrl = await loadAsset(sprite, false);
+      } else {
+        // No extension, might be a sprite reference, try common extensions
+        // Check if it's a direct portrait reference (contains _portrait)
+        const isPortraitRef = sprite.includes('_portrait');
+        
+        const tryPaths = isPortraitRef ? [
+          // For direct portraits, try .gif first (most common)
+          'textures/' + sprite + '.gif',
+          sprite + '.gif',
+          'textures/' + sprite + '.png',
+          sprite + '.png',
+          sprite
+        ] : [
+          // For sprite references, try .json first
+          sprite + '.json',
+          sprite + '.gif', 
+          sprite + '.png',
+          'textures/' + sprite + '.gif',
+          sprite
+        ];
+        
+        for (const tryPath of tryPaths) {
+          try {
+            const result = await loadAsset(tryPath, false);
+            if (result && !result.includes('SPRITE') && !result.includes('BACKDROP')) {
+              // Check if it's a JSON by trying to fetch and parse
+              if (tryPath.endsWith('.json')) {
+                try {
+                  const response = await fetch(result);
+                  const spriteData = await response.json();
+                  if (spriteData.portraitSrc) {
+                    const portraitPath = tryPath.replace(/[^/]+$/, spriteData.portraitSrc);
+                    spriteUrl = await loadAsset(portraitPath, false);
+                    break;
+                  }
+                } catch {
+                  // Not valid JSON, continue
+                }
+              } else {
+                spriteUrl = result;
+                break;
+              }
+            }
+          } catch {
+            continue;
+          }
+        }
+        
+        // If still no sprite, use as-is for placeholder
+        if (!spriteUrl) {
+          spriteUrl = await loadAsset(sprite, false);
+        }
+      }
     }
     
     if (ev.type === 'dialogue') {
@@ -411,10 +489,47 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     });
   }
 
+  // Ref to hold currently playing audio instance
+  const audioRef = useRef(null);
+
   function doHook(ev) {
     if (ev.payload.hook === 'playSfx') {
-      // Could add sound effect playback here
-      return Promise.resolve();
+      const soundName = ev.payload.args.name;
+      if (!soundName) {
+        return Promise.resolve();
+      }
+
+      return new Promise(async (resolve) => {
+        try {
+          let soundUrl = null;
+          if (assetLoader && typeof assetLoader === 'function') {
+            soundUrl = await assetLoader(soundName);
+          }
+          if (!soundUrl) {
+            // Fallback, assume direct path works
+            soundUrl = soundName;
+          }
+
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+          }
+          const audio = new Audio(soundUrl);
+          audioRef.current = audio;
+          audio.play();
+          audio.onended = () => {
+            audioRef.current = null;
+            resolve();
+          };
+          audio.onerror = () => {
+            audioRef.current = null;
+            resolve();
+          };
+        } catch (err) {
+          console.warn('Failed to play sound effect:', soundName, err);
+          resolve();
+        }
+      });
     }
     return Promise.resolve();
   }

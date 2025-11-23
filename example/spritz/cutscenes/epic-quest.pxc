@@ -1,0 +1,250 @@
+# Epic Quest - The Elemental Challenge
+# A showcase of the Cutscene Editor's full capabilities
+# Featuring backdrops, portraits, cutins, sound effects, and animations
+
+@backdrop textures/room.gif [fadeIn=800]
+@char HERO sprite=characters/male
+@char WITCH sprite=characters/female
+@char AIR_KNIGHT sprite=npc/air-knight
+
+@do playSfx [name=audio/opening.mp3]
+
+wait 1200
+
+# Scene 1: The Hero's Chamber
+
+HERO: [expression=neutral,position=left]
+"""
+Another peaceful morning in the kingdom...
+Or so I thought.
+"""
+
+wait 800
+
+@do playSfx [name=audio/organ.mp3]
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+What was that sound?!
+Something feels wrong...
+"""
+
+wait 1000
+
+@transition fadeOutBackdrop [duration=600]
+
+wait 800
+
+# Scene 2: Meeting the Witch
+
+@backdrop textures/sewer.gif [fadeIn=700]
+@do playSfx [name=audio/distorted-communication.mp3]
+
+WITCH: [expression=worried,position=right]
+"""
+Hero! I've been searching for you.
+Dark forces are gathering...
+"""
+
+HERO: [expression=shocked,position=left]
+"""
+What do you mean?
+What's happening to our land?
+"""
+
+*WITCH: [cutin=size=large,expression=annoyed]
+"""
+The ancient elementals have awakened!
+They're testing mortals who dare enter their domains.
+We need your courage!
+"""
+
+wait 500
+
+HERO: [expression=smile,position=left] I'm ready. Tell me what must be done.
+
+@do playSfx [name=audio/calm-escape.mp3]
+
+WITCH: [expression=neutral,position=right]
+"""
+You must face the trial of the Air Knight.
+He guards the Path of Winds in the northern dungeon.
+"""
+
+wait 1500
+
+@transition wipe [duration=500]
+
+wait 600
+
+# Scene 3: The Air Temple
+
+@backdrop textures/room.png [fadeIn=900]
+@do playSfx [name=audio/icy-passage.mp3]
+
+wait 800
+
+AIR_KNIGHT: [expression=neutral,position=right]
+"""
+Mortal... you have entered the Chamber of Storms.
+Few dare to challenge me.
+"""
+
+HERO: [expression=worried,position=left]
+"""
+I seek to prove my worth!
+The kingdom needs protection from the darkness.
+"""
+
+@do playSfx [name=audio/brass-loop.mp3]
+
+*AIR_KNIGHT: [cutin=size=large,expression=neutral]
+"""
+Brave words! But bravery alone won't save you.
+Show me your resolve in combat!
+"""
+
+wait 1000
+
+@action HERO moveTo [x=40,duration=600]
+
+HERO: [expression=smile,position=left] Then let the trial begin!
+
+wait 800
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+AIR_KNIGHT: [expression=neutral,position=right]
+"""
+Come forth, warrior!
+The winds shall test your spirit!
+"""
+
+wait 1200
+
+# Scene 4: The Battle
+
+@backdrop textures/sewer-lava.gif [fadeIn=500]
+
+wait 800
+
+*HERO: [cutin=size=large,expression=shocked]
+"""
+The power... it's overwhelming!
+But I cannot give up now!
+"""
+
+@do playSfx [name=audio/deep-unknown-beat.mp3]
+
+wait 1500
+
+HERO: [expression=tired,position=left]
+"""
+I... must... keep... fighting...
+For everyone depending on me!
+"""
+
+wait 1000
+
+@do playSfx [name=audio/calm-escape.mp3]
+
+AIR_KNIGHT: [expression=neutral,position=right]
+"""
+Enough! You have proven yourself.
+Your determination burns brighter than any flame.
+"""
+
+wait 800
+
+@transition fadeOutBackdrop [duration=800]
+
+wait 1000
+
+# Scene 5: Victory and Wisdom
+
+@backdrop textures/room.gif [fadeIn=700]
+@do playSfx [name=audio/dawns-peak.mp3]
+
+*AIR_KNIGHT: [cutin=size=large,expression=neutral]
+"""
+You've passed the trial, brave one.
+Take this blessing of the winds.
+"""
+
+wait 500
+
+HERO: [expression=smile,position=left] Thank you, guardian. What lies ahead?
+
+AIR_KNIGHT: [expression=neutral,position=right]
+"""
+Three more trials await you:
+Fire, Water, and Earth.
+"""
+
+wait 800
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+If this was just the first trial...
+How much harder will the others be?
+"""
+
+wait 600
+
+AIR_KNIGHT: [expression=neutral,position=right]
+"""
+Trust in yourself, warrior.
+You have the strength within you.
+"""
+
+wait 1200
+
+@do playSfx [name=audio/ocean-waves.mp3]
+
+WITCH: [expression=smile,position=left]
+"""
+Well done, hero!
+I knew you could do it.
+"""
+
+HERO: [expression=smile,position=right]
+"""
+Thank you for believing in me.
+Now, where do we go next?
+"""
+
+*WITCH: [cutin=size=large,expression=neutral]
+"""
+Rest for now. Tomorrow, we journey to the
+Temple of Flames in the volcanic south.
+"""
+
+wait 1000
+
+HERO: [expression=neutral,position=right]
+"""
+I'll be ready.
+Whatever it takes to protect our home.
+"""
+
+wait 1500
+
+@backdrop textures/darkness.gif [fadeIn=1200]
+
+wait 800
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+This is just the beginning of an epic quest...
+And I won't face it alone.
+"""
+
+@do playSfx [name=audio/lonely-mountain.mp3]
+
+wait 2000
+
+@transition wipe [duration=800]
+
+waitInput
+
+@end
