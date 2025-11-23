@@ -480,17 +480,22 @@ const App = () => {
     if (allEntries.length > 0) {
       try {
         // Extract the directory from the map file path
-        const mapDir = entry.name.substring(0, entry.name.lastIndexOf('/') + 1);
+        const entryFullPath = entry.fullName || entry.name;
+        const mapDir = entryFullPath.substring(0, entryFullPath.lastIndexOf('/') + 1);
         const cellsFileName = 'cells.json';
         const heightsFileName = 'heights.json';
         
+        console.log('Map file path:', entryFullPath);
         console.log('Searching for cells.json and heights.json in directory:', mapDir);
         
         // Find cells.json in the same directory as map.json
         const cellsFile = allEntries.find(e => {
           const fullPath = e.fullName || e.name;
-          return fullPath === `${mapDir}${cellsFileName}` || 
-                 (fullPath.endsWith(cellsFileName) && fullPath.includes(mapDir));
+          const exactMatch = fullPath === `${mapDir}${cellsFileName}`;
+          if (exactMatch) {
+            console.log('Found exact match for cells.json:', fullPath);
+          }
+          return exactMatch;
         });
         
         if (cellsFile) {
@@ -515,8 +520,8 @@ const App = () => {
         // Find heights.json in the same directory as map.json
         const heightsFile = allEntries.find(e => {
           const fullPath = e.fullName || e.name;
-          return fullPath === `${mapDir}${heightsFileName}` || 
-                 (fullPath.endsWith(heightsFileName) && fullPath.includes(mapDir));
+          const exactMatch = fullPath === `${mapDir}${heightsFileName}`;
+          return exactMatch;
         });
         
         if (heightsFile) {

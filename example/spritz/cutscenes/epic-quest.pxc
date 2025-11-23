@@ -7,7 +7,8 @@
 @char WITCH sprite=characters/female
 @char AIR_KNIGHT sprite=npc/air-knight
 
-@do playSfx [name=audio/opening.mp3]
+# Start with dramatic opening music (looping BGM)
+@do playBgm [name=audio/opening.mp3]
 
 wait 1200
 
@@ -21,6 +22,7 @@ Or so I thought.
 
 wait 800
 
+# Dramatic organ sound effect (one-shot)
 @do playSfx [name=audio/organ.mp3]
 
 *HERO: [cutin=size=large,expression=worried]
@@ -38,7 +40,8 @@ wait 800
 # Scene 2: Meeting the Witch
 
 @backdrop textures/sewer.gif [fadeIn=700]
-@do playSfx [name=audio/distorted-communication.mp3]
+# Change BGM for sewer atmosphere
+@do playBgm [name=audio/distorted-communication.mp3]
 
 WITCH: [expression=worried,position=right]
 """
@@ -63,7 +66,8 @@ wait 500
 
 HERO: [expression=smile,position=left] I'm ready. Tell me what must be done.
 
-@do playSfx [name=audio/calm-escape.mp3]
+# Calm music as the witch explains
+@do playBgm [name=audio/calm-escape.mp3]
 
 WITCH: [expression=neutral,position=right]
 """
@@ -80,7 +84,8 @@ wait 600
 # Scene 3: The Air Temple
 
 @backdrop textures/room.png [fadeIn=900]
-@do playSfx [name=audio/icy-passage.mp3]
+# Mysterious ambient BGM for the temple
+@do playBgm [name=audio/icy-passage.mp3]
 
 wait 800
 
@@ -96,7 +101,8 @@ I seek to prove my worth!
 The kingdom needs protection from the darkness.
 """
 
-@do playSfx [name=audio/brass-loop.mp3]
+# Battle music starts looping
+@do playBgm [name=audio/brass-loop.mp3]
 
 *AIR_KNIGHT: [cutin=size=large,expression=neutral]
 """
@@ -112,6 +118,7 @@ HERO: [expression=smile,position=left] Then let the trial begin!
 
 wait 800
 
+# Dramatic battle sound effect
 @do playSfx [name=audio/dungeon-beat.mp3]
 
 AIR_KNIGHT: [expression=neutral,position=right]
@@ -134,6 +141,7 @@ The power... it's overwhelming!
 But I cannot give up now!
 """
 
+# Intense battle sound effect
 @do playSfx [name=audio/deep-unknown-beat.mp3]
 
 wait 1500
@@ -146,7 +154,8 @@ For everyone depending on me!
 
 wait 1000
 
-@do playSfx [name=audio/calm-escape.mp3]
+# Calm victory music (BGM loops)
+@do playBgm [name=audio/calm-escape.mp3]
 
 AIR_KNIGHT: [expression=neutral,position=right]
 """
@@ -163,7 +172,8 @@ wait 1000
 # Scene 5: Victory and Wisdom
 
 @backdrop textures/room.gif [fadeIn=700]
-@do playSfx [name=audio/dawns-peak.mp3]
+# Triumphant music
+@do playBgm [name=audio/dawns-peak.mp3]
 
 *AIR_KNIGHT: [cutin=size=large,expression=neutral]
 """
@@ -199,7 +209,8 @@ You have the strength within you.
 
 wait 1200
 
-@do playSfx [name=audio/ocean-waves.mp3]
+# Peaceful ocean ambience (BGM)
+@do playBgm [name=audio/ocean-waves.mp3]
 
 WITCH: [expression=smile,position=left]
 """
@@ -239,7 +250,8 @@ This is just the beginning of an epic quest...
 And I won't face it alone.
 """
 
-@do playSfx [name=audio/lonely-mountain.mp3]
+# Ending theme music (BGM)
+@do playBgm [name=audio/lonely-mountain.mp3]
 
 wait 2000
 

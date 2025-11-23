@@ -529,7 +529,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
               👤 Character
             </button>
             <button
-              onClick={() => insertTemplate('@do playSfx [name=audio/brass-loop.mp3]')}
+              onClick={() => insertTemplate('@do playBgm [name=audio/brass-loop.mp3]')}
               style={{
                 background: 'rgba(125,211,252,0.1)',
                 border: '1px solid rgba(125,211,252,0.2)',
@@ -540,9 +540,73 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 fontSize: '10px',
                 fontWeight: 500,
               }}
-              title="Insert sound effect"
+              title="Insert looping background music"
             >
-              🔊 Sound FX
+              🎵 BGM (Loop)
+            </button>
+            <button
+              onClick={() => insertTemplate('@do playSfx [name=audio/organ.mp3]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert one-shot sound effect"
+            >
+              🔊 SFX
+            </button>
+            <button
+              onClick={() => insertTemplate('@do playVoice [name=audio/opening.mp3]')}
+              style={{
+                background: 'rgba(125,211,252,0.1)',
+                border: '1px solid rgba(125,211,252,0.2)',
+                color: '#7dd3fc',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Insert blocking voice-over"
+            >
+              🎙️ Voice-over
+            </button>
+            <button
+              onClick={() => insertTemplate('@do stopBgm')}
+              style={{
+                background: 'rgba(239,68,68,0.1)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                color: '#ef4444',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Stop background music"
+            >
+              🔇 Stop BGM
+            </button>
+            <button
+              onClick={() => insertTemplate('@do stopAll')}
+              style={{
+                background: 'rgba(239,68,68,0.1)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                color: '#ef4444',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 500,
+              }}
+              title="Stop all audio"
+            >
+              🔇 Stop All
             </button>
             <button
               onClick={() => insertTemplate('wait 1000')}

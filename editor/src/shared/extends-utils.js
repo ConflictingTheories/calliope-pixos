@@ -112,17 +112,43 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
       }
     }
   } else {
-    // zip.js filesystem format - collect all entries
-    const entries = Array.isArray(zip.entries) ? zip.entries : [];
-    for (const entry of entries) {
-      const entryPath = entry.fullName || entry.name;
-      allEntries.push(entryPath);
+    // zip.js filesystem format - collect all entries by traversing the tree
+    const entries = [];
+    
+    if (zip.root) {
+      // Build entry list with full paths from the directory tree
+      const buildEntryList = (node, path = '', list = []) => {
+        if (node.children) {
+          node.children.forEach(child => {
+            const fullPath = path ? `${path}/${child.name}` : child.name;
+            if (!child.directory) {
+              list.push({ entry: child, fullPath });
+            }
+            buildEntryList(child, fullPath, list);
+          });
+        }
+        return list;
+      };
+      
+      entries.push(...buildEntryList(zip.root));
+    } else if (Array.isArray(zip.entries)) {
+      // Fallback: try using entries array directly
+      zip.entries.forEach(entry => {
+        const fullPath = entry.fullName || entry.name;
+        if (fullPath) {
+          entries.push({ entry, fullPath });
+        }
+      });
+    }
+    
+    for (const { entry, fullPath } of entries) {
+      allEntries.push(fullPath);
       
       // Try exact matches first
       for (const path of possiblePaths) {
-        if (entryPath === path) {
+        if (fullPath === path) {
           tilesetEntry = entry;
-          console.log('[extends-utils] Found tileset at:', entryPath);
+          console.log('[extends-utils] Found tileset at:', fullPath);
           break;
         }
       }
@@ -130,10 +156,10 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
       if (tilesetEntry) break;
       
       // Try fuzzy match: ends with the tileset name and tileset.json
-      if (entryPath.includes(`${tilesetName}/tileset.json`) || 
-          entryPath.endsWith(`/${tilesetName}/tileset.json`)) {
+      if (fullPath.includes(`${tilesetName}/tileset.json`) || 
+          fullPath.endsWith(`/${tilesetName}/tileset.json`)) {
         tilesetEntry = entry;
-        console.log('[extends-utils] Found tileset (fuzzy match) at:', entryPath);
+        console.log('[extends-utils] Found tileset (fuzzy match) at:', fullPath);
         break;
       }
     }
@@ -169,15 +195,38 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
         }
       }
     } else {
-      const entries = Array.isArray(zip.entries) ? zip.entries : [];
-      for (const entry of entries) {
-        const entryPath = entry.fullName || entry.name;
-        
+      // zip.js filesystem format - build entry list with full paths
+      const entries = [];
+      
+      if (zip.root) {
+        const buildEntryList = (node, path = '', list = []) => {
+          if (node.children) {
+            node.children.forEach(child => {
+              const fullPath = path ? `${path}/${child.name}` : child.name;
+              if (!child.directory) {
+                list.push({ entry: child, fullPath });
+              }
+              buildEntryList(child, fullPath, list);
+            });
+          }
+          return list;
+        };
+        entries.push(...buildEntryList(zip.root));
+      } else if (Array.isArray(zip.entries)) {
+        zip.entries.forEach(entry => {
+          const fullPath = entry.fullName || entry.name;
+          if (fullPath) {
+            entries.push({ entry, fullPath });
+          }
+        });
+      }
+      
+      for (const { entry, fullPath } of entries) {
         // Try exact matches
         for (const path of possibleExtendPaths) {
-          if (entryPath === path) {
+          if (fullPath === path) {
             extendEntry = entry;
-            console.log('[extends-utils] Found extended tileset at:', entryPath);
+            console.log('[extends-utils] Found extended tileset at:', fullPath);
             break;
           }
         }
@@ -185,10 +234,10 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
         if (extendEntry) break;
         
         // Try fuzzy match
-        if (entryPath.includes(`${extendName}/tileset.json`) ||
-            entryPath.endsWith(`/${extendName}/tileset.json`)) {
+        if (fullPath.includes(`${extendName}/tileset.json`) ||
+            fullPath.endsWith(`/${extendName}/tileset.json`)) {
           extendEntry = entry;
-          console.log('[extends-utils] Found extended tileset (fuzzy) at:', entryPath);
+          console.log('[extends-utils] Found extended tileset (fuzzy) at:', fullPath);
           break;
         }
       }
@@ -222,9 +271,26 @@ export async function loadSpriteWithExtends(zip, spritePath, getData) {
   if (zip.files) {
     spriteEntry = zip.files[fullPath];
   } else {
-    const entries = Array.isArray(zip.entries) ? zip.entries : [];
-    for (const entry of entries) {
-      if (entry.name === fullPath || entry.fullName === fullPath) {
+    // Build entry list with full paths
+    const entries = [];
+    if (zip.root) {
+      const buildEntryList = (node, path = '', list = []) => {
+        if (node.children) {
+          node.children.forEach(child => {
+            const fp = path ? `${path}/${child.name}` : child.name;
+            if (!child.directory) {
+              list.push({ entry: child, fullPath: fp });
+            }
+            buildEntryList(child, fp, list);
+          });
+        }
+        return list;
+      };
+      entries.push(...buildEntryList(zip.root));
+    }
+    
+    for (const { entry, fullPath: fp } of entries) {
+      if (fp === fullPath) {
         spriteEntry = entry;
         break;
       }
@@ -247,9 +313,26 @@ export async function loadSpriteWithExtends(zip, spritePath, getData) {
     if (zip.files) {
       extendEntry = zip.files[extendFullPath];
     } else {
-      const entries = Array.isArray(zip.entries) ? zip.entries : [];
-      for (const entry of entries) {
-        if (entry.name === extendFullPath || entry.fullName === extendFullPath) {
+      // Build entry list with full paths
+      const entries = [];
+      if (zip.root) {
+        const buildEntryList = (node, path = '', list = []) => {
+          if (node.children) {
+            node.children.forEach(child => {
+              const fp = path ? `${path}/${child.name}` : child.name;
+              if (!child.directory) {
+                list.push({ entry: child, fullPath: fp });
+              }
+              buildEntryList(child, fp, list);
+            });
+          }
+          return list;
+        };
+        entries.push(...buildEntryList(zip.root));
+      }
+      
+      for (const { entry, fullPath: fp } of entries) {
+        if (fp === extendFullPath) {
           extendEntry = entry;
           break;
         }

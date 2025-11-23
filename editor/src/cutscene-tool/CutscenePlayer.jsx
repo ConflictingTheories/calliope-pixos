@@ -166,10 +166,9 @@ function parseScript(text) {
           blocking: !!args.blocking,
         });
       } else if (cmd === 'do') {
-        const parts = rest.match(/(?:[^\s\[]+|\[[^\]]*\])/g) || [];
-        const hook = parts[0];
-        const args = parseBracket(parts.slice(1).join('') || '');
-        console.log('[parseScript] @do command:', { cmd, rest, parts, hook, args });
+        const hook = rest.trim();
+        const args = bracket || {};
+        console.log('[parseScript] @do command:', { cmd, rest, hook, args, bracket });
         scene.events.push({
           type: 'hook',
           payload: { hook, args },
@@ -316,6 +315,19 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   function internalStop() {
     stopFlag.current = true;
     setPlaying(false);
+    // Stop all audio
+    if (sfxRef.current) {
+      sfxRef.current.pause();
+      sfxRef.current = null;
+    }
+    if (bgmRef.current) {
+      bgmRef.current.pause();
+      bgmRef.current = null;
+    }
+    if (voiceRef.current) {
+      voiceRef.current.pause();
+      voiceRef.current = null;
+    }
   }
 
   function internalSkip() {
@@ -327,6 +339,19 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     setPortraitVisible(false);
     setCutinVisible(false);
     setBackdropSrc(null);
+    // Stop all audio
+    if (sfxRef.current) {
+      sfxRef.current.pause();
+      sfxRef.current = null;
+    }
+    if (bgmRef.current) {
+      bgmRef.current.pause();
+      bgmRef.current = null;
+    }
+    if (voiceRef.current) {
+      voiceRef.current.pause();
+      voiceRef.current = null;
+    }
   }
 
   async function handleEvent(ev) {
@@ -352,8 +377,59 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   async function showDialogue(ev) {
     const { actor, payload } = ev;
     const text = payload.text || '';
-    const sprite = (payload.meta && payload.meta.sprite) || (scene.chars[actor] && scene.chars[actor].sprite) || null;
-    const expression = payload.meta && payload.meta.expression;
+    const meta = payload.meta || {};
+    const sprite = meta.sprite || (scene.chars[actor] && scene.chars[actor].sprite) || null;
+    const expression = meta.expression;
+    const voiceFile = meta.voice;  // Check for voice-over in dialogue metadata
+    
+    // Start playing voice-over if specified
+    let voicePromise = null;
+    if (voiceFile) {
+      voicePromise = (async () => {
+        try {
+          console.log('[CutscenePlayer] Loading dialogue voice-over:', voiceFile);
+          let soundUrl = null;
+          if (assetLoader && typeof assetLoader === 'function') {
+            soundUrl = await assetLoader(voiceFile);
+          }
+          if (!soundUrl) {
+            console.warn('[CutscenePlayer] Could not load dialogue voice-over:', voiceFile);
+            return;
+          }
+
+          if (voiceRef.current) {
+            voiceRef.current.pause();
+            voiceRef.current.currentTime = 0;
+          }
+          
+          const audio = new Audio(soundUrl);
+          voiceRef.current = audio;
+          
+          return new Promise((resolve) => {
+            audio.onended = () => {
+              console.log('[CutscenePlayer] Dialogue voice-over ended:', voiceFile);
+              voiceRef.current = null;
+              resolve();
+            };
+            
+            audio.onerror = (err) => {
+              console.warn('[CutscenePlayer] Dialogue voice-over error:', voiceFile, err);
+              voiceRef.current = null;
+              resolve();
+            };
+            
+            audio.play().then(() => {
+              console.log('[CutscenePlayer] Dialogue voice-over playing:', voiceFile);
+            }).catch(err => {
+              console.warn('[CutscenePlayer] Dialogue voice-over playback prevented:', voiceFile, err.message);
+              resolve();
+            });
+          });
+        } catch (err) {
+          console.warn('[CutscenePlayer] Failed to play dialogue voice-over:', voiceFile, err);
+        }
+      })();
+    }
     
     // Load sprite with fallback - handle JSON sprite files
     let spriteUrl = null;
@@ -479,8 +555,14 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           }
           setTimeout(typeStep, delay);
         } else {
-          if (autoAdvance) setTimeout(resolve, 400);
-          else resolve();
+          // Text typing complete, now wait for voice-over if playing
+          (async () => {
+            if (voicePromise) {
+              await voicePromise;
+            }
+            if (autoAdvance) setTimeout(resolve, 400);
+            else resolve();
+          })();
         }
       }
       typeStep();
@@ -500,69 +582,184 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     });
   }
 
-  // Ref to hold currently playing audio instance
-  const audioRef = useRef(null);
+  // Refs to hold currently playing audio instances
+  const sfxRef = useRef(null);     // One-shot sound effects
+  const bgmRef = useRef(null);     // Looping background music
+  const voiceRef = useRef(null);   // Blocking voice-overs
 
   function doHook(ev) {
     console.log('[CutscenePlayer] doHook called with event:', JSON.stringify(ev, null, 2));
-    if (ev.payload.hook === 'playSfx') {
-      const soundName = ev.payload.args?.name;
-      console.log('[CutscenePlayer] Audio hook triggered:', soundName);
-      console.log('[CutscenePlayer] Event payload:', ev.payload);
-      console.log('[CutscenePlayer] Event payload.args:', ev.payload.args);
-      if (!soundName) {
-        console.warn('[CutscenePlayer] No sound name provided');
-        return Promise.resolve();
-      }
+    const hookType = ev.payload.hook;
+    const soundName = ev.payload.args?.name;
+    
+    if (!soundName) {
+      console.warn('[CutscenePlayer] No sound name provided for hook:', hookType);
+      return Promise.resolve();
+    }
 
-      // Play audio asynchronously without blocking
+    // playBgm - Looping background music
+    if (hookType === 'playBgm') {
       (async () => {
         try {
-          console.log('[CutscenePlayer] Loading audio:', soundName);
+          console.log('[CutscenePlayer] Loading BGM:', soundName);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(soundName);
-            console.log('[CutscenePlayer] Audio loaded:', soundUrl ? 'success' : 'failed');
           }
           if (!soundUrl) {
-            console.warn('[CutscenePlayer] Could not load audio:', soundName);
+            console.warn('[CutscenePlayer] Could not load BGM:', soundName);
             return;
           }
 
-          // Stop any currently playing audio
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
+          // Stop any currently playing BGM
+          if (bgmRef.current) {
+            bgmRef.current.pause();
+            bgmRef.current.currentTime = 0;
           }
           
-          console.log('[CutscenePlayer] Creating audio element for:', soundName);
           const audio = new Audio(soundUrl);
-          audioRef.current = audio;
+          audio.loop = true;  // Loop background music
+          bgmRef.current = audio;
           
-          // Try to play, catch autoplay restrictions
-          console.log('[CutscenePlayer] Attempting to play audio...');
           audio.play().then(() => {
-            console.log('[CutscenePlayer] Audio playing successfully:', soundName);
+            console.log('[CutscenePlayer] BGM playing (looping):', soundName);
           }).catch(err => {
-            console.warn('[CutscenePlayer] Audio playback prevented (user interaction may be required):', soundName, err.message);
+            console.warn('[CutscenePlayer] BGM playback prevented:', soundName, err.message);
+          });
+          
+          audio.onerror = (err) => {
+            console.warn('[CutscenePlayer] BGM error:', soundName, err);
+            bgmRef.current = null;
+          };
+        } catch (err) {
+          console.warn('[CutscenePlayer] Failed to play BGM:', soundName, err);
+        }
+      })();
+      return Promise.resolve();  // Non-blocking
+    }
+
+    // playSfx - One-shot sound effect (non-blocking)
+    if (hookType === 'playSfx') {
+      (async () => {
+        try {
+          console.log('[CutscenePlayer] Loading SFX:', soundName);
+          let soundUrl = null;
+          if (assetLoader && typeof assetLoader === 'function') {
+            soundUrl = await assetLoader(soundName);
+          }
+          if (!soundUrl) {
+            console.warn('[CutscenePlayer] Could not load SFX:', soundName);
+            return;
+          }
+
+          // Stop any currently playing SFX
+          if (sfxRef.current) {
+            sfxRef.current.pause();
+            sfxRef.current.currentTime = 0;
+          }
+          
+          const audio = new Audio(soundUrl);
+          sfxRef.current = audio;
+          
+          audio.play().then(() => {
+            console.log('[CutscenePlayer] SFX playing:', soundName);
+          }).catch(err => {
+            console.warn('[CutscenePlayer] SFX playback prevented:', soundName, err.message);
           });
           
           audio.onended = () => {
-            console.log('[CutscenePlayer] Audio ended:', soundName);
-            audioRef.current = null;
+            console.log('[CutscenePlayer] SFX ended:', soundName);
+            sfxRef.current = null;
           };
           audio.onerror = (err) => {
-            console.warn('[CutscenePlayer] Audio error:', soundName, err);
-            audioRef.current = null;
+            console.warn('[CutscenePlayer] SFX error:', soundName, err);
+            sfxRef.current = null;
           };
         } catch (err) {
-          console.warn('[CutscenePlayer] Failed to play sound effect:', soundName, err);
+          console.warn('[CutscenePlayer] Failed to play SFX:', soundName, err);
         }
       })();
-      
-      // Don't block cutscene progression
+      return Promise.resolve();  // Non-blocking
+    }
+
+    // playVoice - Voice-over (blocking, waits for completion)
+    if (hookType === 'playVoice') {
+      return new Promise(async (resolve) => {
+        try {
+          console.log('[CutscenePlayer] Loading voice-over:', soundName);
+          let soundUrl = null;
+          if (assetLoader && typeof assetLoader === 'function') {
+            soundUrl = await assetLoader(soundName);
+          }
+          if (!soundUrl) {
+            console.warn('[CutscenePlayer] Could not load voice-over:', soundName);
+            resolve();
+            return;
+          }
+
+          // Stop any currently playing voice-over
+          if (voiceRef.current) {
+            voiceRef.current.pause();
+            voiceRef.current.currentTime = 0;
+          }
+          
+          const audio = new Audio(soundUrl);
+          voiceRef.current = audio;
+          
+          // Resolve promise when audio ends (blocking)
+          audio.onended = () => {
+            console.log('[CutscenePlayer] Voice-over ended:', soundName);
+            voiceRef.current = null;
+            resolve();
+          };
+          
+          audio.onerror = (err) => {
+            console.warn('[CutscenePlayer] Voice-over error:', soundName, err);
+            voiceRef.current = null;
+            resolve();
+          };
+          
+          audio.play().then(() => {
+            console.log('[CutscenePlayer] Voice-over playing (blocking):', soundName);
+          }).catch(err => {
+            console.warn('[CutscenePlayer] Voice-over playback prevented:', soundName, err.message);
+            resolve();
+          });
+        } catch (err) {
+          console.warn('[CutscenePlayer] Failed to play voice-over:', soundName, err);
+          resolve();
+        }
+      });
+    }
+
+    // stopBgm - Stop background music
+    if (hookType === 'stopBgm') {
+      console.log('[CutscenePlayer] Stopping BGM');
+      if (bgmRef.current) {
+        bgmRef.current.pause();
+        bgmRef.current = null;
+      }
       return Promise.resolve();
     }
+
+    // stopAll - Stop all audio
+    if (hookType === 'stopAll') {
+      console.log('[CutscenePlayer] Stopping all audio');
+      if (sfxRef.current) {
+        sfxRef.current.pause();
+        sfxRef.current = null;
+      }
+      if (bgmRef.current) {
+        bgmRef.current.pause();
+        bgmRef.current = null;
+      }
+      if (voiceRef.current) {
+        voiceRef.current.pause();
+        voiceRef.current = null;
+      }
+      return Promise.resolve();
+    }
+
     return Promise.resolve();
   }
 

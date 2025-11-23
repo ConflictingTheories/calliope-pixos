@@ -764,24 +764,24 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current?.canvas);
       setHoveredCell(cellCoords);
       
-      // Drag painting: if shift is held and mouse is down, paint/erase as we hover
-      if (event?.shiftKey && isPainting && cellCoords) {
+      // Drag painting: only works in tile mode with shift key held and mouse down
+      if (editorMode === 'tiles' && event?.shiftKey && isPainting && cellCoords) {
         const { x, y } = cellCoords;
         // Only paint if we moved to a different cell
         if (!lastPaintedCell || lastPaintedCell.x !== x || lastPaintedCell.y !== y) {
-          if (event.buttons === 1) {
+          if (event.buttons === 1 && currentTool === 'paint') {
             // Left button - paint
             paintCell(x, y);
             setLastPaintedCell({ x, y });
-          } else if (event.buttons === 2) {
-            // Right button - erase
+          } else if (event.buttons === 2 || (event.buttons === 1 && currentTool === 'erase')) {
+            // Right button or left button with erase tool - erase
             eraseCell(x, y);
             setLastPaintedCell({ x, y });
           }
         }
       }
     },
-    [cells, isPainting, lastPaintedCell, selectedTile, currentHeight]
+    [cells, isPainting, lastPaintedCell, selectedTile, currentHeight, editorMode, currentTool]
   );
 
   // Handle cell click for editing
@@ -806,44 +806,56 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       const { x, y } = cellCoords;
       console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x], 'editorMode:', editorMode);
 
-      // Handle different editor modes - check these FIRST before tile painting
-      if (editorMode === 'sprites' && event.type === 'click') {
-        console.log('[MapEditor3D] Placing sprite at:', x, y);
-        addSprite(x, y);
-        return;
-      } else if (editorMode === 'objects' && event.type === 'click') {
-        console.log('[MapEditor3D] Placing object at:', x, y);
-        addObject(x, y);
-        return;
-      } else if (editorMode === 'animatedTiles' && event.type === 'click') {
-        console.log('[MapEditor3D] Placing animated tile at:', x, y);
-        addAnimatedTile(x, y);
-        return;
+      // Handle different editor modes - each mode is completely separate
+      if (editorMode === 'sprites') {
+        if (event.type === 'click' && event.button === 0) {
+          console.log('[MapEditor3D] Placing sprite at:', x, y);
+          addSprite(x, y);
+        }
+        return; // Don't process any other actions in sprite mode
+      } 
+      
+      if (editorMode === 'objects') {
+        if (event.type === 'click' && event.button === 0) {
+          console.log('[MapEditor3D] Placing object at:', x, y);
+          addObject(x, y);
+        }
+        return; // Don't process any other actions in object mode
+      } 
+      
+      if (editorMode === 'animatedTiles') {
+        if (event.type === 'click' && event.button === 0) {
+          console.log('[MapEditor3D] Placing animated tile at:', x, y);
+          addAnimatedTile(x, y);
+        }
+        return; // Don't process any other actions in animated tile mode
       }
 
-      // Original tile editing behavior: Shift+Click = paint/erase while dragging
-      // Only do this in tiles mode or with shift key
-      if (event.shiftKey || (editorMode === 'tiles' && !event.shiftKey)) {
-        // Start painting on shift+mousedown
-        if (event.type === 'mousedown' || event.type === 'click') {
-          if (event.button === 0) {
-            // Shift+Left-Click: Paint
+      // Tile mode - handle paint/erase/pick tools
+      if (editorMode === 'tiles') {
+        if (currentTool === 'paint') {
+          // Left-Click or Shift+Left-Click: Paint
+          if ((event.type === 'click' || event.type === 'mousedown') && event.button === 0) {
             console.log('[MapEditor3D] Painting cell:', x, y, 'with', selectedTile);
             paintCell(x, y);
             setIsPainting(true);
             setLastPaintedCell({ x, y });
           }
-        } else if (event.type === 'contextmenu') {
-          // Shift+Right-Click: Erase
-          console.log('[MapEditor3D] Erasing cell:', x, y);
-          eraseCell(x, y);
-          setIsPainting(true);
-          setLastPaintedCell({ x, y });
+        } else if (currentTool === 'erase') {
+          // Left-Click or Right-Click: Erase
+          if ((event.type === 'click' && event.button === 0) || event.type === 'contextmenu') {
+            console.log('[MapEditor3D] Erasing cell:', x, y);
+            eraseCell(x, y);
+            setIsPainting(true);
+            setLastPaintedCell({ x, y });
+          }
+        } else if (currentTool === 'pick') {
+          // Click: Pick tile
+          if (event.type === 'click') {
+            console.log('[MapEditor3D] Picking cell:', x, y);
+            pickCell(x, y);
+          }
         }
-      } else if (currentTool === 'pick' && event.type === 'click') {
-        // Regular click with pick tool active
-        console.log('[MapEditor3D] Picking cell:', x, y);
-        pickCell(x, y);
       }
     },
     [cells, currentTool, selectedTile, currentHeight, editorMode, spriteTypeInput, spriteIdInput, spriteFacing]
@@ -1238,57 +1250,63 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             fontWeight: 'bold',
             borderBottom: '1px solid #3e3e42'
           }}>
-            🎨 Tools
+            🎨 Tile Tools {editorMode !== 'tiles' && <span style={{ fontSize: '10px', color: '#888', fontWeight: 'normal' }}>(Tile mode only)</span>}
           </div>
-          <div style={{ padding: '10px' }}>
+          <div style={{ padding: '10px', opacity: editorMode === 'tiles' ? 1 : 0.5 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}>
               <button
+                disabled={editorMode !== 'tiles'}
                 style={{
                   background: currentTool === 'paint' ? '#1177bb' : '#0e639c',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '3px',
-                  cursor: 'pointer',
+                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
                   fontSize: '13px'
                 }}
-                onClick={() => setCurrentTool('paint')}
-                onMouseOver={(e) => e.target.style.background = '#1177bb'}
-                onMouseOut={(e) => e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c'}
+                onClick={() => editorMode === 'tiles' && setCurrentTool('paint')}
+                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c')}
               >
-                🖌️ Paint (Shift+Click)
+                🖌️ Paint Tool
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click to paint • Shift+Drag to paint multiple</div>
               </button>
               <button
+                disabled={editorMode !== 'tiles'}
                 style={{
                   background: currentTool === 'erase' ? '#1177bb' : '#0e639c',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '3px',
-                  cursor: 'pointer',
+                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
                   fontSize: '13px'
                 }}
-                onClick={() => setCurrentTool('erase')}
-                onMouseOver={(e) => e.target.style.background = '#1177bb'}
-                onMouseOut={(e) => e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c'}
+                onClick={() => editorMode === 'tiles' && setCurrentTool('erase')}
+                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c')}
               >
-                🗑️ Erase (Shift+Right-Click)
+                🗑️ Erase Tool
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click to erase • Right-click also erases</div>
               </button>
               <button
+                disabled={editorMode !== 'tiles'}
                 style={{
                   background: currentTool === 'pick' ? '#1177bb' : '#0e639c',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '3px',
-                  cursor: 'pointer',
+                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
                   fontSize: '13px'
                 }}
-                onClick={() => setCurrentTool('pick')}
-                onMouseOver={(e) => e.target.style.background = '#1177bb'}
-                onMouseOut={(e) => e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c'}
+                onClick={() => editorMode === 'tiles' && setCurrentTool('pick')}
+                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c')}
               >
-                🔍 Pick
+                🔍 Pick Tool
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click a tile to select it</div>
               </button>
             </div>
 
@@ -1456,7 +1474,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               }}
               onClick={() => setEditorMode('tiles')}
             >
-              🟦 Tiles ({cells.length} x {cells[0]?.length || 0})
+              <div>🟦 Tile Mode</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells</div>
             </button>
             <button
               style={{
@@ -1471,7 +1490,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               }}
               onClick={() => setEditorMode('sprites')}
             >
-              🎭 Sprites ({sprites.length})
+              <div>🎭 Sprite Mode</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {sprites.length} sprites</div>
             </button>
             <button
               style={{
@@ -1486,7 +1506,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               }}
               onClick={() => setEditorMode('objects')}
             >
-              📦 Objects ({objects.length})
+              <div>📦 Object Mode</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {objects.length} objects</div>
             </button>
             <button
               style={{
@@ -1501,7 +1522,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               }}
               onClick={() => setEditorMode('animatedTiles')}
             >
-              ✨ Animated Tiles ({animatedTiles.length})
+              <div>✨ Animated Tile Mode</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {animatedTiles.length} animated tiles</div>
             </button>
             <button
               style={{
@@ -1554,8 +1576,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               {editorMode === 'sprites' ? '🎭 Sprite Placement' : '📦 Object Placement'}
             </div>
             <div style={{ padding: '10px' }}>
-              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#888' }}>
-                Click on the map to place {editorMode === 'sprites' ? 'sprites' : 'objects'}
+              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#4ec9b0', background: '#1e3a32', padding: '8px', borderRadius: '3px', border: '1px solid #2d5a4a' }}>
+                <strong>➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}</strong><br/>
+                <span style={{ fontSize: '10px', color: '#8ec9b0' }}>• Select type and facing below, then click on any tile</span>
               </div>
               
               <div style={{ marginBottom: '10px' }}>
@@ -1707,8 +1730,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               ✨ Animated Tile Placement
             </div>
             <div style={{ padding: '10px' }}>
-              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#888' }}>
-                Click on the map to place animated tiles (sprite-based animations on tiles)
+              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#ce9178', background: '#3a2a1e', padding: '8px', borderRadius: '3px', border: '1px solid #5a4a3e' }}>
+                <strong>➤ Click on map to place animated tile</strong><br/>
+                <span style={{ fontSize: '10px', color: '#daa178' }}>• Select sprite type below, then click on any tile</span>
               </div>
               
               <div style={{ marginBottom: '10px' }}>

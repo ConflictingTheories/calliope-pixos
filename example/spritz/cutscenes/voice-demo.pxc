@@ -1,0 +1,48 @@
+# Voice-Over Demo
+# Demonstrating dialogue with voice-over audio
+
+@backdrop textures/room.gif [fadeIn=800]
+@char NARRATOR sprite=characters/male
+
+# Background music
+@do playBgm [name=audio/calm-escape.mp3]
+
+wait 1000
+
+# Dialogue with voice-over - voice plays as text types, waits to finish before advancing
+NARRATOR: [expression=neutral,position=left,voice=audio/opening.mp3]
+"""
+Welcome to the voice-over demonstration.
+This dialogue has a voice-over that plays with the text.
+"""
+
+wait 500
+
+NARRATOR: [expression=smile,position=left,voice=audio/organ.mp3]
+"""
+The cutscene won't advance until the voice-over finishes playing.
+This ensures perfect synchronization between audio and text!
+"""
+
+wait 800
+
+# Regular dialogue without voice
+NARRATOR: [expression=neutral,position=left]
+"""
+This line has no voice-over, so it advances immediately.
+"""
+
+wait 500
+
+# Stop all audio
+@do stopAll
+
+NARRATOR: [expression=smile,position=left]
+"""
+And now all audio has been stopped.
+Thanks for watching!
+"""
+
+waitInput
+
+@end
