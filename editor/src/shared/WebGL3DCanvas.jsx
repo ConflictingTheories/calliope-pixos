@@ -140,8 +140,15 @@ export default function WebGL3DCanvas({
   // Mouse event handlers
   const handleMouseDown = useCallback(
     (e) => {
-      // Don't interfere with Shift+Click (painting) or Shift+Right-Click (erasing)
-      if (e.shiftKey) {
+      // Call onCellClick for shift+mousedown (painting)
+      if (e.shiftKey && onCellClick) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const mouseEvent = new MouseEvent('mousedown', e);
+        Object.defineProperty(mouseEvent, 'button', { value: e.button });
+        Object.defineProperty(mouseEvent, 'shiftKey', { value: true });
+        onCellClick(x, y, camera, mouseEvent);
         return;
       }
       
@@ -149,17 +156,17 @@ export default function WebGL3DCanvas({
       setIsPanning(e.button === 1); // Middle mouse for panning
       setLastMousePos({ x: e.clientX, y: e.clientY });
     },
-    []
+    [camera, onCellClick]
   );
 
   const handleMouseMove = useCallback(
     (e) => {
-      // Always notify hover for cell highlighting
-      if (onCellHover && !isDragging) {
+      // Always notify hover for cell highlighting and drag painting
+      if (onCellHover) {
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        onCellHover(x, y, camera);
+        onCellHover(x, y, camera, e);
       }
 
       if (!isDragging) return;

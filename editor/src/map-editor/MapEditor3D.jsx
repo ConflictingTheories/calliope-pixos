@@ -45,6 +45,19 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
   const [showGrid, setShowGrid] = useState(true);
   const [error, setError] = useState(null);
   
+  // Painting state
+  const [isPainting, setIsPainting] = useState(false);
+  const [lastPaintedCell, setLastPaintedCell] = useState(null);
+  
+  // Dialog state
+  const [showTileEditor, setShowTileEditor] = useState(false);
+  const [showGeometryEditor, setShowGeometryEditor] = useState(false);
+  const [editingTileName, setEditingTileName] = useState(null);
+  const [editingGeometryName, setEditingGeometryName] = useState(null);
+  const [showMapSettings, setShowMapSettings] = useState(false);
+  const [newMapWidth, setNewMapWidth] = useState(17);
+  const [newMapHeight, setNewMapHeight] = useState(19);
+  
   // History
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -81,6 +94,12 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
       setMap(parsedMap);
       setCells(parsedCells || []);
+      
+      // Set map dimensions for resize dialog
+      if (parsedCells && parsedCells.length > 0) {
+        setNewMapWidth(parsedCells[0]?.length || 17);
+        setNewMapHeight(parsedCells.length || 19);
+      }
       
       // Initialize or load heights
       let currentHeights;
@@ -125,6 +144,42 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
     };
     img.src = textureAtlas;
   }, [textureAtlas]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      
+      switch(e.key.toLowerCase()) {
+        case 'p':
+          setCurrentTool('paint');
+          break;
+        case 'e':
+          setCurrentTool('erase');
+          break;
+        case 'i':
+          setCurrentTool('pick');
+          break;
+        case 'r':
+          // Reset camera - would need to expose this from WebGL3DCanvas
+          break;
+        default:
+          break;
+      }
+    };
+    
+    const handleMouseUp = () => {
+      setIsPainting(false);
+      setLastPaintedCell(null);
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   // Initialize WebGL program
   const handleWebGLInit = useCallback((gl) => {
@@ -329,11 +384,15 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
     // Set texture or color
     if (textureName && textureRef.current) {
+      console.log('[MapEditor3D] Using texture for:', textureName, 'Texture object:', textureRef.current);
       gl.uniform1i(uUseTexture, 1);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
       gl.uniform1i(uTexture, 0);
     } else {
+      if (textureName && !textureRef.current) {
+        console.warn('[MapEditor3D] Texture requested but not loaded:', textureName);
+      }
       gl.uniform1i(uUseTexture, 0);
       gl.uniform3f(uColor, 0.5, 0.5, 0.5);
     }
@@ -348,13 +407,30 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
 
   // Handle cell hover for highlighting
   const handleCellHover = useCallback(
-    (screenX, screenY, camera) => {
+    (screenX, screenY, camera, event) => {
       if (!cells.length) return;
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current?.canvas);
       setHoveredCell(cellCoords);
+      
+      // Drag painting: if shift is held and mouse is down, paint/erase as we hover
+      if (event?.shiftKey && isPainting && cellCoords) {
+        const { x, y } = cellCoords;
+        // Only paint if we moved to a different cell
+        if (!lastPaintedCell || lastPaintedCell.x !== x || lastPaintedCell.y !== y) {
+          if (event.buttons === 1) {
+            // Left button - paint
+            paintCell(x, y);
+            setLastPaintedCell({ x, y });
+          } else if (event.buttons === 2) {
+            // Right button - erase
+            eraseCell(x, y);
+            setLastPaintedCell({ x, y });
+          }
+        }
+      }
     },
-    [cells]
+    [cells, isPainting, lastPaintedCell, selectedTile, currentHeight]
   );
 
   // Handle cell click for editing
@@ -362,22 +438,43 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
     (screenX, screenY, camera, event) => {
       if (!cells.length) return;
 
+      console.log('[MapEditor3D] Cell click:', {
+        shiftKey: event.shiftKey,
+        button: event.button,
+        type: event.type,
+        currentTool
+      });
+
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
-      if (!cellCoords) return;
+      if (!cellCoords) {
+        console.log('[MapEditor3D] No cell coords found');
+        return;
+      }
 
       const { x, y } = cellCoords;
+      console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x]);
 
-      // Original behavior: Shift+Left-Click = paint, Shift+Right-Click = erase, Click (no shift) = pick
+      // Original behavior: Shift+Click = paint/erase while dragging
       if (event.shiftKey) {
-        if (event.button === 0 || event.type === 'click') {
-          // Shift+Left-Click: Paint
-          paintCell(x, y);
-        } else if (event.button === 2 || event.type === 'contextmenu') {
+        // Start painting on shift+mousedown
+        if (event.type === 'mousedown' || event.type === 'click') {
+          if (event.button === 0) {
+            // Shift+Left-Click: Paint
+            console.log('[MapEditor3D] Painting cell:', x, y, 'with', selectedTile);
+            paintCell(x, y);
+            setIsPainting(true);
+            setLastPaintedCell({ x, y });
+          }
+        } else if (event.type === 'contextmenu') {
           // Shift+Right-Click: Erase
+          console.log('[MapEditor3D] Erasing cell:', x, y);
           eraseCell(x, y);
+          setIsPainting(true);
+          setLastPaintedCell({ x, y });
         }
-      } else if (currentTool === 'pick') {
+      } else if (currentTool === 'pick' && event.type === 'click') {
         // Regular click with pick tool active
+        console.log('[MapEditor3D] Picking cell:', x, y);
         pickCell(x, y);
       }
     },
@@ -494,6 +591,48 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
       setSelectedTile(pickedTile);
       setCurrentHeight(heights[y]?.[x] || 0);
     }
+  }
+  
+  // Resize map
+  function resizeMap(width, height) {
+    const newCells = [];
+    const newHeights = [];
+    
+    for (let y = 0; y < height; y++) {
+      const row = [];
+      const heightRow = [];
+      for (let x = 0; x < width; x++) {
+        // Copy existing data if within bounds, otherwise use EMPTY
+        if (y < cells.length && x < cells[0]?.length) {
+          row.push(cells[y][x]);
+          heightRow.push(heights[y]?.[x] || 0);
+        } else {
+          row.push('EMPTY');
+          heightRow.push(0);
+        }
+      }
+      newCells.push(row);
+      newHeights.push(heightRow);
+    }
+    
+    setCells(newCells);
+    setHeights(newHeights);
+    pushHistory(newCells, newHeights);
+    
+    // Update map bounds
+    if (map) {
+      setMap({ ...map, bounds: [0, 0, width, height] });
+    }
+  }
+  
+  // Clear map
+  function clearMap() {
+    const newCells = cells.map(row => row.map(() => 'EMPTY'));
+    const newHeights = heights.map(row => row.map(() => 0));
+    setCells(newCells);
+    setHeights(newHeights);
+    setCurrentHeight(0);
+    pushHistory(newCells, newHeights);
   }
 
   // History management
@@ -619,6 +758,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
         overflowY: 'auto',
         padding: '10px'
       }}>
+        {/* Tools Section */}
         <div style={{
           background: '#2d2d30',
           border: '1px solid #3e3e42',
@@ -632,7 +772,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
             fontWeight: 'bold',
             borderBottom: '1px solid #3e3e42'
           }}>
-            Tools
+            🎨 Tools
           </div>
           <div style={{ padding: '10px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}>
@@ -713,21 +853,56 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
               <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
                 Height:
               </label>
-              <input
-                type="number"
-                value={currentHeight}
-                onChange={(e) => setCurrentHeight(parseFloat(e.target.value) || 0)}
-                step={0.5}
-                style={{
-                  background: '#3c3c3c',
-                  color: '#d4d4d4',
-                  border: '1px solid #3e3e42',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  width: '100%'
-                }}
-              />
+              <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                <button
+                  onClick={() => {
+                    setCurrentHeight(prev => Math.round((prev - 0.5) * 2) / 2);
+                  }}
+                  style={{
+                    background: '#3e3e42',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontSize: '16px'
+                  }}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  value={currentHeight}
+                  onChange={(e) => setCurrentHeight(parseFloat(e.target.value) || 0)}
+                  step={0.5}
+                  style={{
+                    flex: 1,
+                    background: '#3c3c3c',
+                    color: '#d4d4d4',
+                    border: '1px solid #3e3e42',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '13px',
+                    textAlign: 'center'
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    setCurrentHeight(prev => Math.round((prev + 0.5) * 2) / 2);
+                  }}
+                  style={{
+                    background: '#3e3e42',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontSize: '16px'
+                  }}
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -785,7 +960,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
           </div>
         </div>
 
-        {/* Map Info */}
+        {/* Tiles Section */}
         <div style={{
           background: '#2d2d30',
           border: '1px solid #3e3e42',
@@ -799,11 +974,298 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas }) 
             fontWeight: 'bold',
             borderBottom: '1px solid #3e3e42'
           }}>
-            Map Info
+            🎨 Tiles ({Object.keys(tiles || {}).length})
           </div>
-          <div style={{ padding: '10px', fontSize: '11px', color: '#cccccc' }}>
-            <p style={{ margin: '5px 0' }}>Expected tileset: <strong style={{ color: '#d4d4d4' }}>{map?.tileset || 'unknown'}</strong></p>
-            <p style={{ margin: '5px 0' }}>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
+          <div style={{ padding: '10px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
+              gap: '8px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              marginBottom: '10px'
+            }}>
+              {Object.keys(tiles || {}).sort().map(tileName => (
+                <div
+                  key={tileName}
+                  onClick={() => setSelectedTile(tileName)}
+                  style={{
+                    background: selectedTile === tileName ? '#0e639c' : '#3c3c3c',
+                    border: `2px solid ${selectedTile === tileName ? '#1177bb' : '#3e3e42'}`,
+                    padding: '8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    borderRadius: '3px',
+                    fontSize: '10px',
+                    wordWrap: 'break-word',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    if (selectedTile !== tileName) {
+                      e.currentTarget.style.borderColor = '#0e639c';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (selectedTile !== tileName) {
+                      e.currentTarget.style.borderColor = '#3e3e42';
+                    }
+                  }}
+                >
+                  {tileName}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>
+              Click a tile to select it for painting
+            </div>
+          </div>
+        </div>
+
+        {/* Geometry Section */}
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            📐 Geometry ({Object.keys(geometry || {}).length})
+          </div>
+          <div style={{ padding: '10px' }}>
+            <div style={{ maxHeight: '150px', overflowY: 'auto', marginBottom: '10px' }}>
+              {Object.keys(geometry || {}).sort().map(geomName => (
+                <div
+                  key={geomName}
+                  style={{
+                    background: '#3c3c3c',
+                    padding: '6px 8px',
+                    marginBottom: '5px',
+                    borderRadius: '3px',
+                    fontSize: '11px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <span>{geomName}</span>
+                  <span style={{ color: '#888', fontSize: '10px' }}>
+                    {geometry[geomName]?.vertices?.length || 0} △
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Texture Preview Section */}
+        {textureAtlas && (
+          <div style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42'
+            }}>
+              🖼️ Texture Atlas
+            </div>
+            <div style={{ padding: '10px' }}>
+              <div style={{
+                width: '100%',
+                height: '150px',
+                background: '#1e1e1e',
+                border: '1px solid #3e3e42',
+                borderRadius: '3px',
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                <img
+                  src={textureAtlas}
+                  alt="Texture Atlas"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    imageRendering: 'pixelated'
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: '10px', color: '#888', marginTop: '5px' }}>
+                Tile size: {tileset?.tileSize || 16}px | 
+                Sheet: {tileset?.sheetSize?.[0] || 512}×{tileset?.sheetSize?.[1] || 512}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Map Settings Section */}
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            ⚙️ Map Settings
+          </div>
+          <div style={{ padding: '10px' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Expected Tileset:
+              </label>
+              <div style={{
+                background: '#3c3c3c',
+                padding: '6px 8px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                border: '1px solid #3e3e42'
+              }}>
+                {map?.tileset || 'unknown'}
+              </div>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Current Size:
+              </label>
+              <div style={{
+                background: '#3c3c3c',
+                padding: '6px 8px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                border: '1px solid #3e3e42'
+              }}>
+                {cells[0]?.length || 0} × {cells.length} cells
+              </div>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Map Width:
+              </label>
+              <input
+                type="number"
+                value={newMapWidth}
+                onChange={(e) => setNewMapWidth(parseInt(e.target.value) || 1)}
+                min="1"
+                style={{
+                  background: '#3c3c3c',
+                  color: '#d4d4d4',
+                  border: '1px solid #3e3e42',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '13px',
+                  width: '100%'
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                Map Height:
+              </label>
+              <input
+                type="number"
+                value={newMapHeight}
+                onChange={(e) => setNewMapHeight(parseInt(e.target.value) || 1)}
+                min="1"
+                style={{
+                  background: '#3c3c3c',
+                  color: '#d4d4d4',
+                  border: '1px solid #3e3e42',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '13px',
+                  width: '100%'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '5px' }}>
+              <button
+                onClick={() => resizeMap(newMapWidth, newMapHeight)}
+                style={{
+                  flex: 1,
+                  background: '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#1177bb'}
+                onMouseOut={(e) => e.target.style.background = '#0e639c'}
+              >
+                Resize
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm('Clear entire map?')) {
+                    clearMap();
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  background: '#3e3e42',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#4e4e52'}
+                onMouseOut={(e) => e.target.style.background = '#3e3e42'}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Help Section */}
+        <div style={{
+          background: '#2d2d30',
+          border: '1px solid #3e3e42',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: '#37373d',
+            padding: '10px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #3e3e42'
+          }}>
+            ❓ Help
+          </div>
+          <div style={{ padding: '10px', fontSize: '11px', lineHeight: '1.6' }}>
+            <strong>Keyboard Shortcuts:</strong><br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>P</code> - Paint tool<br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>E</code> - Erase tool<br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>I</code> - Pick tool<br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>R</code> - Reset camera<br />
+            <br />
+            <strong>Editing:</strong><br />
+            • <strong>Shift+Click</strong> - Paint<br />
+            • <strong>Shift+Right-Click</strong> - Erase<br />
+            • Regular drag rotates camera<br />
+            • Middle mouse pans<br />
+            • Scroll wheel zooms
           </div>
         </div>
       </div>
