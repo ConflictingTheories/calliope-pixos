@@ -10,7 +10,21 @@ import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } f
  *  - autoAdvance: boolean (default false)
  *  - onPlayStart: function callback when play starts
  *  - onPlayStop: function callback when play ends or stops
+ *  - assetLoader: function(path) => Promise<url> for loading assets from ZIP
  */
+
+// Generate placeholder images as data URLs matching demo style
+function generatePlaceholder(name, color = '#112430') {
+  const displayName = name.toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="50%" font-size="72" fill="#7dd3fc" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, sans-serif" font-weight="bold">${displayName}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+function generateBackdropPlaceholder(name) {
+  const displayName = name.toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="100%" height="100%" fill="#08202a"/><text x="50%" y="80%" font-size="64" fill="#aee6ff" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="bold">${displayName}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
 
 function parseBracket(s) {
   const out = {};
@@ -189,7 +203,7 @@ function parseScript(text) {
   return scene;
 }
 
-const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false, onPlayStart, onPlayStop }, ref) => {
+const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false, onPlayStart, onPlayStop, assetLoader }, ref) => {
   const [scene, setScene] = useState(null);
   const [portraitSrc, setPortraitSrc] = useState(null);
   const [cutinSrc, setCutinSrc] = useState(null);
@@ -199,7 +213,9 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   const [playing, setPlaying] = useState(false);
   const [cutinVisible, setCutinVisible] = useState(false);
   const [portraitVisible, setPortraitVisible] = useState(false);
+  const [currentExpression, setCurrentExpression] = useState(null);
   const stopFlag = useRef(false);
+  const resourceCache = useRef({});
 
   useEffect(() => {
     if (scriptText) {
@@ -228,6 +244,55 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     setDialogueText('(press Play)');
     setCutinVisible(false);
     setPortraitVisible(false);
+    setCurrentExpression(null);
+  }
+
+  // Load asset with fallback to placeholder
+  async function loadAsset(path, isBackdrop = false) {
+    if (!path) return null;
+    
+    // Check cache first
+    if (resourceCache.current[path]) {
+      return resourceCache.current[path];
+    }
+
+    // Handle data: URIs - generate placeholder with the name
+    if (path.startsWith('data:')) {
+      const name = path.replace('data:', '');
+      const placeholder = isBackdrop 
+        ? generateBackdropPlaceholder(name)
+        : generatePlaceholder(name);
+      resourceCache.current[path] = placeholder;
+      return placeholder;
+    }
+
+    // If it's http(s):// URL, use it directly
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      resourceCache.current[path] = path;
+      return path;
+    }
+
+    // Try to load from ZIP using assetLoader
+    if (assetLoader && typeof assetLoader === 'function') {
+      try {
+        const url = await assetLoader(path);
+        if (url) {
+          resourceCache.current[path] = url;
+          return url;
+        }
+      } catch (err) {
+        console.warn(`Failed to load asset: ${path}`, err);
+      }
+    }
+
+    // Fallback to placeholder
+    const name = path.split('/').pop() || (isBackdrop ? 'BACKDROP' : 'SPRITE');
+    const placeholder = isBackdrop 
+      ? generateBackdropPlaceholder(name)
+      : generatePlaceholder(name);
+    
+    resourceCache.current[path] = placeholder;
+    return placeholder;
   }
 
   async function internalPlay() {
@@ -272,35 +337,42 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     return Promise.resolve();
   }
 
-  function showBackdrop(ev) {
-    return new Promise(resolve => {
-      const file = ev.payload.file;
-      setBackdropSrc(file);
-      if (ev.payload.options && ev.payload.options.fadeIn) {
-        // Simulate fade-in with timeout
-        setTimeout(resolve, ev.payload.options.fadeIn);
-      } else {
-        resolve();
-      }
-    });
+  async function showBackdrop(ev) {
+    const file = ev.payload.file;
+    const url = await loadAsset(file, true);
+    setBackdropSrc(url);
+    if (ev.payload.options && ev.payload.options.fadeIn) {
+      return new Promise(resolve => setTimeout(resolve, ev.payload.options.fadeIn));
+    }
   }
 
-  function showDialogue(ev) {
-    return new Promise(resolve => {
-      const { actor, payload } = ev;
-      const text = payload.text || '';
-      const sprite = (payload.meta && payload.meta.sprite) || (scene.chars[actor] && scene.chars[actor].sprite) || null;
-      if (ev.type === 'dialogue') {
-        setPortraitSrc(sprite);
-        setPortraitVisible(true);
-        setCutinVisible(false);
-      } else if (ev.type === 'cutin') {
-        setCutinSrc(sprite);
-        setCutinVisible(true);
-        setPortraitVisible(false);
-      }
-      setSpeaker(actor);
-      setDialogueText('');
+  async function showDialogue(ev) {
+    const { actor, payload } = ev;
+    const text = payload.text || '';
+    const sprite = (payload.meta && payload.meta.sprite) || (scene.chars[actor] && scene.chars[actor].sprite) || null;
+    const expression = payload.meta && payload.meta.expression;
+    
+    // Load sprite with fallback
+    let spriteUrl = null;
+    if (sprite) {
+      spriteUrl = await loadAsset(sprite, false);
+    }
+    
+    if (ev.type === 'dialogue') {
+      setPortraitSrc(spriteUrl);
+      setPortraitVisible(!!spriteUrl);
+      setCutinVisible(false);
+      setCurrentExpression(expression || null);
+    } else if (ev.type === 'cutin') {
+      setCutinSrc(spriteUrl);
+      setCutinVisible(!!spriteUrl);
+      setPortraitVisible(false);
+      setCurrentExpression(expression || null);
+    }
+    setSpeaker(actor);
+    setDialogueText('');
+    
+    return new Promise((resolve) => {
       let i = 0;
       const baseSpeed = typeof speed === 'function' ? speed() : speed;
       function typeStep() {
@@ -309,7 +381,8 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           return;
         }
         if (i < text.length) {
-          setDialogueText(prev => prev + text.charAt(i));
+          // Use slice instead of charAt to ensure we get the exact substring
+          setDialogueText(text.slice(0, i + 1));
           i++;
           let delay = baseSpeed;
           if (/[.,!?]/.test(text.charAt(i - 1))) {
@@ -399,7 +472,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundImage: backdropSrc ? `url(${backdropSrc})` : 'none',
+          backgroundImage: backdropSrc ? `url("${backdropSrc}")` : 'none',
           transition: 'opacity 0.35s ease',
           opacity: backdropSrc ? 1 : 0,
         }}
@@ -452,6 +525,34 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
+        {currentExpression && portraitVisible && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 4,
+              right: 4,
+              fontSize: '32px',
+              lineHeight: 1,
+              background: 'rgba(0,0,0,0.6)',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            }}
+          >
+            {currentExpression === 'smile' && '😊'}
+            {currentExpression === 'sad' && '😢'}
+            {currentExpression === 'annoyed' && '😠'}
+            {currentExpression === 'shocked' && '😨'}
+            {currentExpression === 'neutral' && '😐'}
+            {currentExpression === 'smirk' && '😏'}
+            {currentExpression === 'worried' && '😰'}
+            {currentExpression === 'tired' && '😴'}
+          </div>
+        )}
       </div>
       <div
         className="cutin"
@@ -465,8 +566,8 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           alignItems: 'center',
           justifyContent: 'center',
           pointerEvents: 'none',
-          opacity: cutinVisible ? 1 : 0,
-          transform: cutinVisible ? 'none' : 'translateY(-8px)',
+          opacity: cutinVisible && cutinSrc ? 1 : 0,
+          transform: cutinVisible && cutinSrc ? 'none' : 'translateY(-8px)',
           transition: 'opacity 0.3s, transform 0.35s',
           zIndex: 12,
         }}
@@ -516,6 +617,64 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
         >
           {dialogueText}
         </div>
+      </div>
+      <div
+        className="stageControls"
+        style={{
+          position: 'absolute',
+          right: 18,
+          bottom: 14,
+          display: 'flex',
+          gap: 8,
+        }}
+      >
+        <button
+          type="button"
+          className="btn"
+          onClick={() => internalPlay()}
+          disabled={playing}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: '#7dd3fc',
+            padding: '8px 10px',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Play
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => internalStop()}
+          disabled={!playing}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: '#7dd3fc',
+            padding: '8px 10px',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Stop
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => internalSkip()}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: '#7dd3fc',
+            padding: '8px 10px',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Skip
+        </button>
       </div>
     </div>
   );

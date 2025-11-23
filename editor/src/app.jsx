@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Header, Sidebar, Content } from 'rsuite';
+import { Container, Header, Content } from 'rsuite';
 
 import ZipManager from './zip-manager/index.jsx';
 import ScriptEditor from './script-editor/index.jsx';
@@ -758,15 +758,67 @@ const App = () => {
 
   const renderCutsceneTool = useCallback(async (entry) => {
     const cutsceneContent = await getData(entry, true);
+    const fileExtension = entry.name.match(/\\.\\w+$/)?.[0] || '.pxc';
+    
+    // Asset loader function that loads from ZIP with proper MIME types
+    const assetLoader = async (path) => {
+      try {
+        // Clean the path
+        const cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
+        
+        // Find the asset in the ZIP
+        const findAsset = (node, targetName) => {
+          if (node.children) {
+            for (const child of node.children) {
+              if (!child.directory && (child.name === targetName || child.name.includes(targetName))) {
+                return child;
+              }
+              if (child.directory) {
+                const found = findAsset(child, targetName);
+                if (found) return found;
+              }
+            }
+          }
+          return null;
+        };
+        
+        const assetEntry = findAsset(zip, cleanPath);
+        if (!assetEntry) {
+          console.warn(`Asset not found in ZIP: ${path}`);
+          return null;
+        }
+        
+        // Get the data and convert to data URI
+        const data = await getData(assetEntry, false);
+        const ext = assetEntry.name.split('.').pop().toLowerCase();
+        const mimeMap = {
+          'png': 'image/png',
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'gif': 'image/gif',
+          'webp': 'image/webp',
+          'svg': 'image/svg+xml',
+        };
+        const mimeType = mimeMap[ext] || 'image/png';
+        return toDataUri(data, mimeType);
+      } catch (err) {
+        console.error(`Failed to load asset ${path}:`, err);
+        return null;
+      }
+    };
+    
     setContents([
       <CutsceneTool
         key={Date.now()}
         content={cutsceneContent}
-        onSave={async (events) => {
+        fileExtension={fileExtension}
+        assetLoader={assetLoader}
+        onSave={async (data) => {
           try {
             const fullPath = getEntryFullPath(entry);
-            const data = JSON.stringify({ events }, null, 2);
-            await writeFile(fullPath, data);
+            // Save as-is if it's a string (DSL), or stringify if it's an object (JSON)
+            const saveData = typeof data === 'string' ? data : JSON.stringify({ events: data }, null, 2);
+            await writeFile(fullPath, saveData);
             console.log('[CutsceneTool] Saved:', fullPath);
             alert('Cutscene saved successfully!');
           } catch (err) {
@@ -777,7 +829,7 @@ const App = () => {
         assets={assets}
       />
     ]);
-  }, [getData, zip, assets]);
+  }, [getData, zip, assets, toDataUri]);
 
   // Open file and route to correct editor/viewer
   const openFile = useCallback(async (entry) => {
@@ -871,23 +923,135 @@ const App = () => {
   }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
 
   return (
-    <Container style={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-      <Sidebar style={{ display: 'flex', flexDirection: 'column', marginBottom: '30px' }} width={420} collapsible>
-        <ZipManager
-          openFile={openFile}
-          onZipLoaded={setZip}
-          onValidatePackage={validatePackage}
-          validationReport={validationReport}
-        />
-      </Sidebar>
-      <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+    <Container style={{ display: 'flex', flexDirection: 'row', flexGrow: 1, overflow: 'hidden' }}>
+      <ResizableSidebar
+        openFile={openFile}
+        onZipLoaded={setZip}
+        onValidatePackage={validatePackage}
+        validationReport={validationReport}
+      />
+      <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' }}>
         <Header className='page-header'></Header>
-        <Content style={{ flexGrow: 1, marginTop: '20px', marginBottom: '88px' }}>
+        <Content style={{ flexGrow: 1, marginTop: '20px', marginBottom: '88px', overflow: 'auto' }}>
           {contents.map((component) => component)}
         </Content>
       </Container>
     </Container>
   );
 };
+
+// Resizable and Collapsible Sidebar Component
+function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validationReport }) {
+  const [width, setWidth] = useState(420);
+  const [collapsed, setCollapsed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const minWidth = 200;
+  const maxWidth = 600;
+  const collapsedWidth = 40;
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => {
+      const newWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth);
+      setWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: collapsed ? collapsedWidth : width,
+        minWidth: collapsed ? collapsedWidth : minWidth,
+        maxWidth: collapsed ? collapsedWidth : maxWidth,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: '1px solid rgba(255,255,255,0.1)',
+        transition: collapsed ? 'width 0.3s ease' : 'none',
+        overflow: 'hidden',
+        background: '#1a1d23',
+      }}
+    >
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 5,
+          zIndex: 1000,
+          background: 'rgba(125,211,252,0.1)',
+          border: '1px solid rgba(125,211,252,0.3)',
+          color: '#7dd3fc',
+          width: 28,
+          height: 28,
+          borderRadius: 4,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 14,
+        }}
+        title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+      >
+        {collapsed ? '›' : '‹'}
+      </button>
+
+      {/* Sidebar Content */}
+      <div style={{ display: collapsed ? 'none' : 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        <ZipManager
+          openFile={openFile}
+          onZipLoaded={onZipLoaded}
+          onValidatePackage={onValidatePackage}
+          validationReport={validationReport}
+        />
+      </div>
+
+      {/* Resize Handle */}
+      {!collapsed && (
+        <div
+          onMouseDown={handleMouseDown}
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 5,
+            cursor: 'col-resize',
+            background: isDragging ? 'rgba(125,211,252,0.3)' : 'transparent',
+            transition: 'background 0.2s',
+            zIndex: 999,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(125,211,252,0.2)';
+          }}
+          onMouseLeave={(e) => {
+            if (!isDragging) {
+              e.currentTarget.style.background = 'transparent';
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 export default App;

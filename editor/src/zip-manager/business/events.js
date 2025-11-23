@@ -10,7 +10,19 @@ function getEventHandlers({
   onHighlightedEntriesKeyDown,
   onSelectedFolderKeyDown,
 }) {
+  function isInputElement(element) {
+    if (!element) return false;
+    const tagName = element.tagName.toLowerCase();
+    const isEditable = element.isContentEditable;
+    const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+    return isInput || isEditable;
+  }
+
   function handleKeyUp(event) {
+    // Ignore if focused on input/textarea/select or contenteditable
+    if (isInputElement(event.target)) {
+      return;
+    }
     if (!dialogDisplayed) {
       onEntriesKeyUp(event);
       onFoldersKeyUp(event);
@@ -20,6 +32,10 @@ function getEventHandlers({
   }
 
   function handleKeyDown(event) {
+    // Ignore if focused on input/textarea/select or contenteditable
+    if (isInputElement(event.target)) {
+      return;
+    }
     if (!dialogDisplayed) {
       onEntriesKeyDown(event);
       onHighlightedEntriesKeyDown(event);
