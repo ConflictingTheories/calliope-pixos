@@ -147,30 +147,35 @@ export default class Avatar extends Sprite {
    * Handles walking input.
    * @param {string} key - The key pressed.
    * @param {object} touchmap - The touch map for mobile input.
+   * @param {number} [forceFacing=null] - Optional forced facing direction (overrides key-based direction).
    * @returns {ActionLoader|null} The action loader or null.
    */
-  handleWalk = (key, touchmap) => {
+  handleWalk = (key, touchmap, forceFacing = null) => {
     let moveTime = 600;
-    let facing = Direction.None;
-    switch (key) {
-      case 'w':
-        facing = Direction.Up;
-        break;
-      case 's':
-        facing = Direction.Down;
-        break;
-      case 'a':
-        facing = Direction.Left;
-        break;
-      case 'd':
-        facing = Direction.Right;
-        break;
-      case 'u':
-        return new ActionLoader(this.engine, 'dance', [300, this.zone], this);
-      case 'p':
-        return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone], this);
-      case 'r':
-        return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
+    let facing = forceFacing !== null ? forceFacing : Direction.None;
+    
+    // Only use key-based direction if no forced facing is provided
+    if (forceFacing === null) {
+      switch (key) {
+        case 'w':
+          facing = Direction.Up;
+          break;
+        case 's':
+          facing = Direction.Down;
+          break;
+        case 'a':
+          facing = Direction.Left;
+          break;
+        case 'd':
+          facing = Direction.Right;
+          break;
+        case 'u':
+          return new ActionLoader(this.engine, 'dance', [300, this.zone], this);
+        case 'p':
+          return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone], this);
+        case 'r':
+          return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
+      }
     }
 
     if (touchmap['x-dir'] === 1) {

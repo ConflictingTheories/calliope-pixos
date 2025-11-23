@@ -361,21 +361,29 @@ export default class InputManager {
           case 'clear_speech':
             return avatar.speech.clearHud();
           case 'move_up':
-            return avatar.handleWalk('w', {});
+            // Get the direction the camera is facing and move forward relative to it
+            const upDir = Direction.getCameraRelativeDirection('forward', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('w', {}, upDir);
           case 'move_down':
-            return avatar.handleWalk('s', {});
+            // Move backward relative to camera
+            const downDir = Direction.getCameraRelativeDirection('backward', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('s', {}, downDir);
           case 'move_left':
-            return avatar.handleWalk('a', {});
+            // Move left relative to camera
+            const leftDir = Direction.getCameraRelativeDirection('left', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('a', {}, leftDir);
           case 'move_right':
-            return avatar.handleWalk('d', {});
+            // Move right relative to camera
+            const rightDir = Direction.getCameraRelativeDirection('right', this.engine.renderManager.camera.cameraDir);
+            return avatar.handleWalk('d', {}, rightDir);
           case 'face_up':
-            return avatar.faceDir(0); // Assuming Direction.Up = 0
+            return avatar.faceDir("N"); // Assuming Direction.Up = 0
           case 'face_down':
-            return avatar.faceDir(2); // Assuming Direction.Down = 2
+            return avatar.faceDir("S"); // Assuming Direction.Down = 2
           case 'face_left':
-            return avatar.faceDir(3); // Assuming Direction.Left = 3
+            return avatar.faceDir("W"); // Assuming Direction.Left = 3
           case 'face_right':
-            return avatar.faceDir(1); // Assuming Direction.Right = 1
+            return avatar.faceDir("E"); // Assuming Direction.Right = 1
           default:
             // For custom actions, try to create ActionLoader with action name
             // Skip actions that don't have corresponding action files
@@ -383,6 +391,7 @@ export default class InputManager {
               // Handle camera actions directly using legacy camera logic
               const from = this.engine.renderManager.camera.cameraVector;
               let to = this.engine.renderManager.camera.cameraVector;
+              let facing = Direction.adjustCameraDirection(to);
               switch (action) {
                 case 'camera_rotate_left':
                   to = from.sub(new Vector(0, 0, 1));
@@ -393,7 +402,7 @@ export default class InputManager {
                   if (to.z === 0 && from.z === 7) {
                     to.z = 8;
                   }
-                  avatar.faceDir(Direction.adjustCameraDirection(to));
+                  avatar.faceDir(Direction.spriteSequence(facing));
                   avatar.zone.world.addEvent(
                     new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
                   );
@@ -407,6 +416,7 @@ export default class InputManager {
                   if (to.z === 0 && from.z === 7) {
                     to.z = 8;
                   }
+                  avatar.faceDir(Direction.spriteSequence(facing));
                   avatar.zone.world.addEvent(
                     new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
                   );

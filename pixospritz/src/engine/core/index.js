@@ -101,6 +101,12 @@ export default class GLEngine {
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
 
+    // Debug flags
+    /** @type {boolean} */
+    this.debug = false; // General debug mode (enables console logs)
+    /** @type {boolean} */
+    this.debugHeightOverlay = false; // Height debug overlay (shows z values on screen)
+
     // Game Loop
     /** @type {boolean} */
     this.running = false;
@@ -248,6 +254,8 @@ export default class GLEngine {
       // Enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen).
       this.renderManager.activatePickerShaderProgram(false);
       this.spritz.render(this, timestamp); // Render scene for picking pass
+      // Read pixel data immediately after picking render, before clearing screen
+      this.getSelectedObject('sprite|object|tile', false);
     }
 
     // Update and render based on the active game mode
@@ -289,6 +297,11 @@ export default class GLEngine {
       try { this.renderManager.renderParticles(); } catch (e) { console.warn('renderParticles failed', e); }
     }
     this.gamepad.render(); // Render gamepad (may be optimizable?)
+
+    // Draw height debug overlay if enabled (shows tile/sprite/object z values on screen)
+    if (this.debugHeightOverlay && this.hud.drawHeightDebugOverlay) {
+      try { this.hud.drawHeightDebugOverlay(); } catch (e) { console.warn('drawHeightDebugOverlay failed', e); }
+    }
 
     // Update debug overlay if enabled
     updateDebugInformation(this);

@@ -1,6 +1,6 @@
 const PARENT_FOLDER_LABEL = '..';
 const ROOT_FOLDER_LABEL = '<radice>';
-const ROOT_ZIP_FILENAME = 'Download.zip';
+const ROOT_ZIP_FILENAME = 'Download.pxz';
 const KEYS_SEPARATOR_LABEL = ', ';
 const PARENT_FOLDER_TOOLTIP = 'Cartella padre';
 
@@ -72,7 +72,7 @@ const RESET_DIALOG_BUTTON_LABEL = 'Resetta';
 const DELETE_ENTRIES_TITLE = 'Elimina voci';
 const DELETE_ENTRIES_MESSAGE = "Confermi l'eliminazione delle voci evidenziate?";
 const DELETE_ENTRIES_DIALOG_BUTTON_LABEL = 'Elimina';
-const ZIP_FILE_DESCRIPTION_LABEL = 'File zip';
+const ZIP_FILE_DESCRIPTION_LABEL = 'Pacchetto PXZ';
 const IMPORT_PASSWORD_TITLE = 'Inserisci password';
 const IMPORT_PASSWORD_LABEL = 'Password:';
 const OPTIONS_DIALOG_BUTTON_LABEL = 'Salva';

@@ -180,6 +180,109 @@ export default class Hud {
   }
 
   /**
+   * Draws height debug overlay showing tile and sprite heights.
+   * Call this after rendering the 3D scene to overlay debug info.
+   */
+  drawHeightDebugOverlay = () => {
+    if (!this.engine?.debugHeightOverlay) return;
+    try {
+      const world = this.engine?.spritz?.world;
+      if (!world) return;
+      const { ctx } = this;
+      const camera = this.engine?.renderManager?.camera;
+      if (!camera) return;
+
+      // Helper to project world position to screen
+      const projectToScreen = (worldX, worldY, worldZ) => {
+        const gl = this.engine.gl;
+        const rm = this.engine.renderManager;
+        const modelMat = rm.uModelMat;
+        const viewMat = camera.uViewMat;
+        const projMat = rm.uProjMat;
+        
+        // Transform: world -> clip -> NDC -> screen
+        const vec4 = [worldX, worldY, worldZ, 1.0];
+        // model * vec
+        let x = modelMat[0] * vec4[0] + modelMat[4] * vec4[1] + modelMat[8] * vec4[2] + modelMat[12];
+        let y = modelMat[1] * vec4[0] + modelMat[5] * vec4[1] + modelMat[9] * vec4[2] + modelMat[13];
+        let z = modelMat[2] * vec4[0] + modelMat[6] * vec4[1] + modelMat[10] * vec4[2] + modelMat[14];
+        let w = modelMat[3] * vec4[0] + modelMat[7] * vec4[1] + modelMat[11] * vec4[2] + modelMat[15];
+        // view * (model * vec)
+        const vx = viewMat[0] * x + viewMat[4] * y + viewMat[8] * z + viewMat[12] * w;
+        const vy = viewMat[1] * x + viewMat[5] * y + viewMat[9] * z + viewMat[13] * w;
+        const vz = viewMat[2] * x + viewMat[6] * y + viewMat[10] * z + viewMat[14] * w;
+        const vw = viewMat[3] * x + viewMat[7] * y + viewMat[11] * z + viewMat[15] * w;
+        // proj * (view * model * vec)
+        const px = projMat[0] * vx + projMat[4] * vy + projMat[8] * vz + projMat[12] * vw;
+        const py = projMat[1] * vx + projMat[5] * vy + projMat[9] * vz + projMat[13] * vw;
+        const pw = projMat[3] * vx + projMat[7] * vy + projMat[11] * vz + projMat[15] * vw;
+        // NDC
+        if (Math.abs(pw) < 0.0001) return null; // behind camera or at infinity
+        const ndcX = px / pw;
+        const ndcY = py / pw;
+        // screen
+        const screenX = (ndcX * 0.5 + 0.5) * gl.canvas.width;
+        const screenY = (1.0 - (ndcY * 0.5 + 0.5)) * gl.canvas.height;
+        return { x: screenX, y: screenY, behind: pw < 0 };
+      };
+
+      this.applyStyle({ font: '12px monospace', textAlign: 'center', textBaseline: 'middle', fillStyle: '#0f0' });
+
+      // Draw tile heights
+      world.zoneList.forEach((zone) => {
+        if (!zone.loaded || !zone.zoneData?.cells) return;
+        const cells = zone.zoneData.cells;
+        for (let row = 0; row < cells.length; row++) {
+          for (let col = 0; col < cells[row].length; col++) {
+            try {
+              const tileHeight = zone.getHeight(col + 0.5, row + 0.5);
+              const screenPos = projectToScreen(col + 0.5, row + 0.5, tileHeight);
+              if (screenPos && !screenPos.behind) {
+                ctx.fillStyle = '#0ff';
+                ctx.fillText(`${tileHeight.toFixed(2)}`, screenPos.x, screenPos.y);
+              }
+            } catch (e) {
+              // ignore projection errors
+            }
+          }
+        }
+      });
+
+      // Draw sprite heights
+      this.applyStyle({ font: '14px monospace', textAlign: 'center', textBaseline: 'bottom', fillStyle: '#ff0' });
+      world.spriteList.forEach((sprite) => {
+        if (!sprite.pos) return;
+        try {
+          const screenPos = projectToScreen(sprite.pos.x, sprite.pos.y, sprite.pos.z + 0.5);
+          if (screenPos && !screenPos.behind) {
+            ctx.fillStyle = '#ff0';
+            ctx.fillText(`${sprite.id}: z=${sprite.pos.z.toFixed(2)}`, screenPos.x, screenPos.y);
+          }
+        } catch (e) {
+          // ignore projection errors
+        }
+      });
+
+      // Draw object heights
+      this.applyStyle({ font: '14px monospace', textAlign: 'center', textBaseline: 'bottom', fillStyle: '#f0f' });
+      world.objectList.forEach((obj) => {
+        if (!obj.pos) return;
+        try {
+          const screenPos = projectToScreen(obj.pos.x, obj.pos.y, obj.pos.z + 0.5);
+          if (screenPos && !screenPos.behind) {
+            ctx.fillStyle = '#f0f';
+            ctx.fillText(`${obj.id}: z=${obj.pos.z.toFixed(2)}`, screenPos.x, screenPos.y);
+          }
+        } catch (e) {
+          // ignore projection errors
+        }
+      });
+    } catch (e) {
+      console.warn('drawHeightDebugOverlay error:', e);
+    }
+  }
+
+  /**
    * Draws the backdrop and cutouts for cutscenes.
    */
   drawCutsceneElements = () => {

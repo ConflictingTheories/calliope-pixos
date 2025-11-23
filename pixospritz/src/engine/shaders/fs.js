@@ -133,8 +133,9 @@ export default function fs() {
     vec4 texelColors = texture2D(uDiffuseMap, vTextureCoord);
     vec3 color = uDiffuse;
     if(useDiffuse == 1.0) {
-      if(texelColors != vec4(0.0, 0.0, 0.0, 0.0)) {
-        color = texelColors.rgb + color;
+      // If texture has valid data, use it multiplied by material diffuse color
+      if(texelColors.a > 0.01) {
+        color = texelColors.rgb * uDiffuse;
       }
     }
     return color;

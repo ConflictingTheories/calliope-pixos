@@ -40,8 +40,10 @@ const DEFAULT_OPTIONS = {
   defaultExportPassword: '',
   zoomFactor: 100,
 };
+const PXZ_EXTENSION = '.pxz';
 const ZIP_EXTENSION = '.zip';
 const ZIP_EXTENSIONS = [
+  PXZ_EXTENSION,
   ZIP_EXTENSION,
   '.docx',
   '.epub',

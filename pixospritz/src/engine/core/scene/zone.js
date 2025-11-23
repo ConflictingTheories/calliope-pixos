@@ -23,7 +23,7 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.js';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * @typedef {object} ZoneData
@@ -254,7 +254,7 @@ export default class Zone extends Loadable {
       if (file) {
         const luaScript = await file.async('string');
         return (_this, subject) => {
-          const interpreter = new PixosLuaInterpreter(_this.engine);
+          const interpreter = new PixoScriptInterpreter(_this.engine);
           interpreter.setScope({ _this, zone: this, subject });
           interpreter.initLibrary();
           return interpreter.run(luaScript);
@@ -262,6 +262,22 @@ export default class Zone extends Loadable {
       }
     } catch (e) {
       if (this.engine?.debug) console.warn('Lua trigger load failed', e);
+    }
+
+    // Try .pxs extension (PixoScript/Lua)
+    try {
+      const pxsFile = await zip.file(`triggers/${trigger}.pxs`);
+      if (pxsFile) {
+        const luaScript = await pxsFile.async('string');
+        return (_this, subject) => {
+          const interpreter = new PixoScriptInterpreter(_this.engine);
+          interpreter.setScope({ _this, zone: this, subject });
+          interpreter.initLibrary();
+          return interpreter.run(luaScript);
+        };
+      }
+    } catch (e) {
+      if (this.engine?.debug) console.warn('PixoScript trigger load failed', e);
     }
 
     // JS fallback (sandboxed) — no global eval
@@ -291,7 +307,7 @@ export default class Zone extends Loadable {
       const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
       const world = this.world;
 
-      const interpreter = new PixosLuaInterpreter(this.engine);
+      const interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ zone: this, map: this, _this: this });
       interpreter.initLibrary();
 
@@ -310,7 +326,7 @@ export default class Zone extends Loadable {
         handlers.update = async (time, params) => {
           try {
             // create a fresh interpreter env for update to avoid state bleed
-            const ui = new PixosLuaInterpreter(this.engine);
+            const ui = new PixoScriptInterpreter(this.engine);
             ui.setScope({ zone: this, map: this, _this: this, time, params });
             ui.initLibrary();
             // The update.lua is expected to return a function
@@ -324,7 +340,7 @@ export default class Zone extends Loadable {
         const tdScript = await teardownFile.async('string');
         handlers.teardown = async (params) => {
           try {
-            const td = new PixosLuaInterpreter(this.engine);
+            const td = new PixoScriptInterpreter(this.engine);
             td.setScope({ zone: this });
             td.initLibrary();
             const res = await td.run(tdScript);
@@ -390,6 +406,23 @@ export default class Zone extends Loadable {
         cellJson = cells.concat(cellJson.cells || []);
       }
 
+      // Load heights.json if it exists
+      let heightsJson = null;
+      try {
+        const heightsFile = zip.file('maps/' + this.id + '/heights.json');
+        if (heightsFile) {
+          const heightsStr = await heightsFile.async('string');
+          heightsJson = JSON.parse(heightsStr);
+          console.log(`[Zone] Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
+          console.log(`[Zone] First row heights:`, heightsJson?.[0]);
+          console.log(`[Zone] Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
+        } else {
+          console.log(`[Zone] No heights.json found for ${this.id}, using default geometry heights`);
+        }
+      } catch (e) {
+        console.warn(`[Zone] Failed to load heights.json for ${this.id}:`, e.message);
+      }
+
       // Menus
       if (zoneJson.menu) {
         const menus = {};
@@ -406,7 +439,7 @@ export default class Zone extends Loadable {
       // Tileset / map / cells
       const tileset = await this.tsLoader.loadFromZip(zip, zoneJson.tileset, this.spritzName);
       const cells = dynamicCells(cellJson, tileset.tiles);
-      const map = await loadMap.call(this, zoneJson, cells, zip);
+      const map = await loadMap.call(this, zoneJson, cells, zip, heightsJson);
       Object.assign(this, map);
 
       // Cells generator (string -> function)
@@ -510,13 +543,28 @@ export default class Zone extends Loadable {
         let cellTex = [];
         let walk = Direction.All;
 
+        // Get height override for this cell if heights data exists
+        const heightOverride = this.heights && this.heights[j] && typeof this.heights[j][i] === 'number' 
+          ? this.heights[j][i] 
+          : null;
+
+        // Debug first few cells - show null/number for diagnostics
+        if (k < 5) {
+          console.log(`[Zone.finalize] Cell [${j},${i}] heightOverride:`, heightOverride);
+        }
+
         for (let l = 0; l < layers; l++) {
           const tileId = cell[3 * l];
           const tileVariant = cell[3 * l + 1];
-          const z = cell[3 * l + 2];
+          let z = cell[3 * l + 2];
+          if (typeof z !== 'number') z = 0;
           const tilePos = [this.bounds[0] + i, this.bounds[1] + j, z];
           walk &= this.tileset.getWalkability(tileId);
-          cellVertices = cellVertices.concat(this.tileset.getTileVertices(tileId, tilePos));
+          
+          // Pass height override to getTileVertices
+          cellVertices = cellVertices.concat(
+            this.tileset.getTileVertices(tileId, tilePos, heightOverride)
+          );
           cellTex = cellTex.concat(this.tileset.getTileTexCoords(tileId, tileVariant));
         }
 
@@ -689,6 +737,11 @@ export default class Zone extends Loadable {
     const cell = this.cells[idx];
     const n = Math.floor(cell.length / 3);
 
+    // Get height override from heights.json if it exists for this cell
+    const heightOverride = this.heights && this.heights[j - this.bounds[1]] && typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number' 
+      ? this.heights[j - this.bounds[1]][i - this.bounds[0]] 
+      : null;
+
     // local helper without allocations
     const triUV = (t) => {
       const ux = t[1][0] - t[0][0];
@@ -705,18 +758,44 @@ export default class Zone extends Loadable {
     for (let l = 0; l < n; l++) {
       const poly = this.tileset.getTileWalkPoly(cell[3 * l]);
       if (!poly) continue;
-      const baseZ = cell[3 * l + 2];
+      const baseZ = (typeof cell[3 * l + 2] === 'number') ? cell[3 * l + 2] : 0;
+      // Add heightOverride to baseZ (heights.json is an offset, not a replacement)
+      const heightOffset = heightOverride !== null ? heightOverride : 0;
+      
       for (let p = 0; p < poly.length; p++) {
         const uv = triUV(poly[p]);
         const w = uv[0] + uv[1];
-        if (w <= 1) {
+        if (uv[0] >= 0 && uv[1] >= 0 && w <= 1) {
           const t = poly[p];
-          return baseZ + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
+          const computed = baseZ + heightOffset + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
+          if (this.engine?.debug) {
+            this.__getHeightLogCount = (this.__getHeightLogCount || 0) + 1;
+            if (this.__getHeightLogCount < 4) console.log(`[Zone.getHeight] sample (x=${x},y=${y}) -> i=${i}, j=${j}, baseZ=${baseZ}, heightOffset=${heightOffset}, uv=[${uv[0].toFixed(2)},${uv[1].toFixed(2)}], w=${w.toFixed(2)}, computed=${computed.toFixed(2)}`);
+          }
+          return computed;
         }
       }
     }
 
-    return cell[2];
+    // No polygon matches - this shouldn't happen if walkPoly is properly defined
+    // Use the walkPoly itself for fallback by finding closest triangle
+    if (n > 0) {
+      const poly = this.tileset.getTileWalkPoly(cell[0]);
+      if (poly && poly.length > 0) {
+        const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+        const heightOffset = heightOverride !== null ? heightOverride : 0;
+        // Use first triangle's average as fallback
+        const t = poly[0];
+        const avgZ = baseZ + heightOffset + (t[0][2] + t[1][2] + t[2][2]) / 3;
+        if (this.engine?.debug) console.log(`[Zone.getHeight] walkPoly fallback for (${x},${y}), using avg of first tri = ${avgZ.toFixed(2)}`);
+        return avgZ;
+      }
+    }
+    
+    // Final fallback: add heightOffset to cell base z
+    const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+    const heightOffset = heightOverride !== null ? heightOverride : 0;
+    return baseZ + heightOffset;
   };
 
   /**
@@ -899,10 +978,11 @@ export default class Zone extends Loadable {
 
     // Lua trigger from spritz zip
     try {
-      const file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
-      const interpreter = new PixosLuaInterpreter(this.engine);
+      const interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: this, subject: new interpreter.lua.Table([row, cell]) });
       interpreter.initLibrary();
       return await interpreter.run(luaScript);

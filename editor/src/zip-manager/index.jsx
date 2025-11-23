@@ -326,6 +326,15 @@ function ZipManager({ openFile, onZipLoaded }) {
   useEffect(updateHighlightedEntries, [highlightedIds]);
   useEffect(updateAccentColor, [theme.accentColor]);
   useEffect(updateSkin, [theme.skin]);
+  
+  // Notify parent when zip filesystem changes
+  useEffect(() => {
+    if (onZipLoaded && zipFilesystem) {
+      console.log('ZipFilesystem changed, notifying parent:', zipFilesystem);
+      onZipLoaded(zipFilesystem);
+    }
+  }, [zipFilesystem, onZipLoaded]);
+  
   useEffect(() => {
     initSelectedFolderFeatures();
     initMiscFeatures();
@@ -342,7 +351,7 @@ function ZipManager({ openFile, onZipLoaded }) {
           clickedButtonName={clickedButtonName}
           onCreateFolder={openPromptCreateFolder}
           onAddFiles={addFiles}
-          onImportZipFile={(a, options) => { console.log('clock');onZipLoaded(a); importZipFile(a, options); }}
+          onImportZipFile={importZipFile}
           onExportZip={openPromptExportZip}
           onReset={openConfirmReset}
           onOpenOptions={openOptions}
@@ -448,7 +457,7 @@ function ZipManager({ openFile, onZipLoaded }) {
       <OptionsDialog data={dialogs.options} onSetOptions={setOptions} onResetOptions={resetOptions} onClose={closeOptions} messages={messages} />
       <ChooseActionDialog
         data={dialogs.chooseAction}
-        onImportZipFile={(a) => { onZipLoaded(a); return importZipFile(a); }}
+        onImportZipFile={importZipFile}
         onAddFiles={addFiles}
         onClose={closeChooseAction}
         messages={messages}

@@ -13,17 +13,21 @@
 
 import { Direction } from '@Engine/utils/enums.js';
 import { Vector } from '@Engine/utils/math/vector.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * Loads map information from JSON, cells, and zip data.
  * @param {Object} json - The JSON configuration.
  * @param {Array|string} cells - The cells data.
  * @param {Object} zip - The zip file data.
+ * @param {Array} heights - Optional heights data for tile elevation.
  * @returns {Promise<Object>} The loaded map data.
  */
-export async function loadMap(json, cells, zip) {
+export async function loadMap(json, cells, zip, heights = null) {
   console.log('loading map....');
+  if (heights) {
+    console.log('[loadMap] Using heights data:', heights.length, 'rows');
+  }
 
   // read sprites & handle functions
   let $sprites =
@@ -62,12 +66,14 @@ export async function loadMap(json, cells, zip) {
     json.scripts.map(async (script) => {
       // Lua Scripting
       try {
-        let luaScript = await zip.file(`triggers/${script.trigger}.lua`).async('string');
+        let file = zip.file(`triggers/${script.trigger}.lua`);
+        if (!file) file = zip.file(`triggers/${script.trigger}.pxs`);
+        let luaScript = await file.async('string');
         console.log({ msg: 'lua script', luaScript });
 
         // defer execution of lua until trigger is called
         let result = ((_this) => {
-          let interpreter = new PixosLuaInterpreter(_this.engine);
+          let interpreter = new PixoScriptInterpreter(_this.engine);
           interpreter.setScope({ _this, zone: this, subject: _this });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - zone")');
@@ -119,6 +125,8 @@ export async function loadMap(json, cells, zip) {
     tileset: json.tileset,
     // (0,0) -> (17,19) (X, Y) (20 Rows x 17 Column)
     cells: cells,
+    // Heights data for each cell (optional)
+    heights: heights,
     // Sprites and Objects to be Loaded in the Scene & their Starting Points (includes effect tiles)
     sprites: $sprites,
     // Scenes + Scenarios

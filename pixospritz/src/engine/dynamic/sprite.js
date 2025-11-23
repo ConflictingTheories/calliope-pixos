@@ -15,7 +15,7 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { mergeDeep } from '@Engine/utils/enums.js';
 import Sprite from '@Engine/core/scene/sprite.js';
-import PixosLuaInterpreter from '@Engine/scripting/PixosLuaInterpreter.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
  * DynamicSprite - A dynamic sprite with JSON loading, state machines, and Lua scripting support.
@@ -143,7 +143,7 @@ export default class DynamicSprite extends Sprite {
         // lua script callback is injected via function wrapper
         let callback = () => {
           console.log('calling callback');
-          let interpreter = new PixosLuaInterpreter(this.engine);
+          let interpreter = new PixoScriptInterpreter(this.engine);
           interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite, finish: finish });
           interpreter.initLibrary();
           interpreter.run('print("hello world lua - sprite callback")');
@@ -203,12 +203,13 @@ export default class DynamicSprite extends Sprite {
     try {
       console.log({ trigger: this.selectTrigger });
       let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
       console.log({ msg: 'trigger lua statement', luaScript });
 
-      let interpreter = new PixosLuaInterpreter(this.engine);
+      let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');
@@ -234,12 +235,13 @@ export default class DynamicSprite extends Sprite {
     try {
       console.log({ trigger: this.stepTrigger });
       let file = this.zip.file(`triggers/${this.stepTrigger}.lua`);
+      if (!file) file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
       console.log({ msg: 'trigger lua statement', luaScript });
 
-      let interpreter = new PixosLuaInterpreter(this.engine);
+      let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
       interpreter.initLibrary();
       interpreter.run('print("hello world lua")');

@@ -33,6 +33,7 @@
     "SE": [0, 1.001, 0.001]
   },
   "hotspotOffset": [0.5, 0.5, 0],
+  "preserveHeightOnWalk": true,
   "state": "closed",
   "stepTrigger": "event/portal",
   "selectTrigger": "interact",

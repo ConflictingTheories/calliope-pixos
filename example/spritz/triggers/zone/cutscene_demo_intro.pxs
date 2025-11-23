@@ -1,0 +1,78 @@
+-- Cutscene Demo Zone Introduction
+-- This script runs when the cutscene-demo zone loads
+-- It showcases the new .pxc cutscene system
+
+local zone = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Cutscene Demo Zone - Loading', 
+    zone = zone 
+}));
+
+-- Check if this is the first time loading this demo
+if pixos.has_flag('cutscene_demo_intro_seen') then
+    pixos.log('Demo intro already seen - entering explore mode');
+    pixos.set_mode('explore');
+    return nil;
+end
+
+-- Set explore mode for demo
+pixos.set_mode('explore');
+
+-- Show welcome message with inline cutscene
+local welcome_cutscene = [[
+@backdrop textures/room.gif [fadeIn=800]
+
+@char NARRATOR sprite=characters/male
+
+NARRATOR: [expression=smile,position=center]
+"""
+Welcome to the PixOS Cutscene System Demo!
+
+This zone showcases the new .pxc cutscene format
+with full audio, expressions, and visual effects.
+"""
+
+wait 500
+
+NARRATOR: [expression=neutral]
+"""
+Try these interactions:
+
+1. Talk to the NPC above (Quest Giver)
+   - Plays epic-quest.pxc with BGM and SFX
+
+2. Walk to the eastern edge (marked tile)
+   - Triggers voice-demo.pxc showcase
+"""
+
+wait 300
+
+NARRATOR: [expression=happy]
+"""
+Each example demonstrates different features:
+- Background music (looping)
+- Sound effects (one-shot)
+- Voice-overs (blocking)
+- Expressions and cutins
+- Backdrops and transitions
+
+Enjoy the demo!
+"""
+
+waitInput
+@end
+]];
+
+-- Play welcome cutscene
+pixos.log('Playing welcome cutscene...');
+pixos.sync({
+    pixos.play_pxc_script(welcome_cutscene)
+});
+
+-- Mark intro as seen
+pixos.set_flag('cutscene_demo_intro_seen', true);
+pixos.log('Demo intro completed - explore mode active');
+
+return nil;

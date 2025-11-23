@@ -1,0 +1,180 @@
+# Macbeth - The Murder of Duncan (Act 2, Scene 2-3)
+# A thrilling adaptation of Shakespeare's tragedy
+
+@backdrop data:castle_hall [fadeIn=500]
+@char MACBETH sprite=data:macbeth
+@char LADY_MACBETH sprite=data:lady_macbeth
+@char MACDUFF sprite=data:macduff
+@char LENNOX sprite=data:lennox
+
+# Scene: After the murder - Macbeth returns with bloody hands
+
+LADY_MACBETH: [expression=worried,position=right] My husband!
+
+MACBETH: [expression=shocked,position=left]
+"""
+I have done the deed.
+Didst thou not hear a noise?
+"""
+
+LADY_MACBETH: [expression=annoyed,position=right]
+"""
+I heard the owl scream and the crickets cry.
+Did not you speak?
+"""
+
+MACBETH: [expression=worried,position=left] When?
+
+LADY_MACBETH: [expression=neutral,position=right] Now.
+
+MACBETH: [expression=shocked,position=left] As I descended?
+
+LADY_MACBETH: [expression=neutral,position=right] Ay.
+
+MACBETH: [expression=worried,position=left]
+"""
+Hark! Who lies in the second chamber?
+"""
+
+LADY_MACBETH: [expression=neutral,position=right] Donalbain.
+
+*MACBETH: [cutin=size=large,expression=shocked]
+"""
+This is a sorry sight!
+Methought I heard a voice cry 'Sleep no more!
+Macbeth does murder sleep!'
+"""
+
+wait 1000
+
+LADY_MACBETH: [expression=annoyed,position=right]
+"""
+What do you mean?
+Consider it not so deeply!
+"""
+
+MACBETH: [expression=worried,position=left]
+"""
+Still it cried 'Sleep no more!' to all the house:
+'Glamis hath murdered sleep, and therefore
+Cawdor shall sleep no more; Macbeth shall sleep no more.'
+"""
+
+LADY_MACBETH: [expression=annoyed,position=right]
+"""
+Who was it that thus cried? Why, worthy thane,
+You do unbend your noble strength to think
+So brainsickly of things!
+"""
+
+*LADY_MACBETH: [cutin=size=large,expression=angry]
+"""
+Go get some water and wash this filthy witness from your hand!
+Why did you bring these daggers from the place?
+They must lie there!
+"""
+
+MACBETH: [expression=shocked,position=left]
+"""
+I'll go no more.
+I am afraid to think what I have done;
+Look on't again I dare not!
+"""
+
+LADY_MACBETH: [expression=angry,position=right]
+"""
+Infirm of purpose!
+Give me the daggers!
+"""
+
+@transition fadeOutBackdrop [duration=600]
+
+wait 2000
+
+# Scene: Morning - The discovery
+
+@backdrop data:castle_courtyard [fadeIn=500]
+
+@action MACDUFF moveTo [x=30,duration=400]
+
+MACDUFF: [expression=neutral,position=left]
+"""
+Is the king stirring, worthy thane?
+"""
+
+MACBETH: [expression=worried,position=right] Not yet.
+
+MACDUFF: [expression=neutral,position=left]
+"""
+He did command me to call timely on him.
+I have almost slipped the hour.
+"""
+
+MACBETH: [expression=worried,position=right] I'll bring you to him.
+
+wait 1500
+
+*MACDUFF: [cutin=size=large,expression=shocked]
+"""
+O horror, horror, horror!
+Tongue nor heart cannot conceive nor name thee!
+"""
+
+MACBETH: [expression=shocked,position=right] What's the matter?
+
+*MACDUFF: [cutin=size=large,expression=shocked]
+"""
+Confusion now hath made his masterpiece!
+Most sacrilegious murder hath broke ope
+The Lord's anointed temple and stole thence
+The life o' the building!
+"""
+
+MACBETH: [expression=shocked,position=right] What is't you say? The life?
+
+LENNOX: [expression=shocked,position=center] Mean you his majesty?
+
+*MACDUFF: [cutin=size=large,expression=sad]
+"""
+Approach the chamber and destroy your sight
+With a new Gorgon. Do not bid me speak!
+See, and then speak yourselves!
+"""
+
+@action MACBETH moveTo [x=40,duration=500]
+@action LENNOX moveTo [x=60,duration=500]
+
+wait 1000
+
+LADY_MACBETH: [expression=worried,position=left]
+"""
+What's the business,
+That such a hideous trumpet calls to parley
+The sleepers of the house? Speak, speak!
+"""
+
+MACDUFF: [expression=sad,position=right]
+"""
+O gentle lady,
+'Tis not for you to hear what I can speak:
+The repetition in a woman's ear
+Would murder as it fell!
+"""
+
+*MACBETH: [cutin=size=large,expression=worried]
+"""
+Had I but died an hour before this chance,
+I had lived a blessed time; for from this instant
+There's nothing serious in mortality!
+"""
+
+MACDUFF: [expression=sad,position=left]
+"""
+Look to the lady!
+"""
+
+@transition wipe [duration=800]
+
+# End Scene
+
+@end

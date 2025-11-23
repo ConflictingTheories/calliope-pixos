@@ -1,6 +1,6 @@
 import './App.css';
-import Pixos from 'calliope-pixos';
-const PixosClient = Pixos['calliope-pixos'].default;
+// In development, the alias 'calliope-pixos' maps to the source directory
+import PixosClient from 'calliope-pixos';
 
 function App() {
   const urlParams = new URLSearchParams(window.location.search);

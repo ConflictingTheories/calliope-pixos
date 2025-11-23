@@ -175,7 +175,14 @@ export default class Spritz {
       case 'touchmove':
       case 'touchcancel':
       default:
-        Spritz._instance.engine.touchHandler(e);
+        // Ensure engine and touchHandler exist before calling
+        if (Spritz._instance && Spritz._instance.engine && typeof Spritz._instance.engine.touchHandler === 'function') {
+          try {
+            Spritz._instance.engine.touchHandler(e);
+          } catch (err) {
+            console.warn('touchHandler error', err);
+          }
+        }
         break;
     }
   };

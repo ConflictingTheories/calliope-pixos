@@ -1,7 +1,7 @@
 {
-  "initialZones": ["base"],
+  "initialZones": ["cutscene-demo"],
   "modes": ["explore", "fight", "debug", "tactics"],
-  "maps": ["room", "dungeon-top", "dungeon-bottom"],
+  "maps": ["room", "dungeon-top", "dungeon-bottom", "hallway", "base", "cutscene-demo"],
   "tilesets": ["common", "sewer"],
   "network": {
     "enabled": true,
@@ -10,7 +10,30 @@
   },
   "sprites": ["characters/male", "npc/air-knight"],
   "objects": [],
-  "textures": [],
+  "textures": [
+    "textures/room.gif",
+    "textures/castle.gif",
+    "textures/forest.gif",
+    "textures/cave.gif",
+    "textures/temple.gif"
+  ],
   "fonts": [],
-  "audio": []
+  "audio": [
+    "audio/opening.mp3",
+    "audio/battle.mp3",
+    "audio/victory.mp3",
+    "audio/door.mp3",
+    "audio/organ.mp3",
+    "audio/swords.mp3",
+    "audio/explosion.mp3",
+    "audio/powerup.mp3",
+    "audio/portal.mp3",
+    "audio/temple_ambient.mp3",
+    "audio/gathering.mp3"
+  ],
+  "cutscenes": [
+    "cutscenes/epic-quest.pxc",
+    "cutscenes/elemental-gathering.pxc",
+    "cutscenes/voice-demo.pxc"
+  ]
 }

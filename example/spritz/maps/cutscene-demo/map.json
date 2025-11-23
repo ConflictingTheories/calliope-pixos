@@ -1,0 +1,32 @@
+{
+  "bounds": [0, 0, 17, 8],
+  "tileset": "common",
+  "audioSrc": "calm-escape.mp3",
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [7, 5, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "quest-npc",
+      "type": "npc/air-knight",
+      "pos": [7, 2, 0],
+      "facing": "Down",
+      "metadata": {
+        "name": "Quest Giver",
+        "interactionTrigger": "sprite/npc_quest_giver"
+      }
+    }
+  ],
+  "mode": "explore",
+  "scenes": [],
+  "scripts": [
+    {
+      "id": "load-spritz",
+      "trigger": "zone/cutscene_demo_intro"
+    }
+  ],
+  "objects": []
+}

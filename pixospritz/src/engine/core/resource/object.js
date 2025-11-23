@@ -61,7 +61,21 @@ export default class ModelObject extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.pos) {
+      this.pos = instanceData.pos;
+      // If z is not defined, compute height from the zone
+      if (this.pos && (this.pos.z === null || this.pos.z === undefined)) {
+        try {
+          const hx = this.pos.x + (this.hotspotOffset?.x ?? 0);
+          const hy = this.pos.y + (this.hotspotOffset?.y ?? 0);
+          const z = this.zone.getHeight(hx, hy);
+          this.pos.z = typeof z === 'number' ? z : 0;
+        } catch (err) {
+          console.warn('Error computing object height from zone', err);
+          this.pos.z = 0;
+        }
+      }
+    }
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
@@ -133,7 +147,20 @@ export default class ModelObject extends Loadable {
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;
-    if (instanceData.pos) this.pos = instanceData.pos;
+    if (instanceData.pos) {
+      this.pos = instanceData.pos;
+      if (this.pos && (this.pos.z === null || this.pos.z === undefined)) {
+        try {
+          const hx = this.pos.x + (this.hotspotOffset?.x ?? 0);
+          const hy = this.pos.y + (this.hotspotOffset?.y ?? 0);
+          const z = this.zone.getHeight(hx, hy);
+          this.pos.z = typeof z === 'number' ? z : 0;
+        } catch (err) {
+          console.warn('Error computing object height from zone', err);
+          this.pos.z = 0;
+        }
+      }
+    }
     if (instanceData.isLit) this.isLit = instanceData.isLit;
     if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
@@ -286,11 +313,19 @@ export default class ModelObject extends Loadable {
         engine.renderManager.bindBuffer(mesh.textureBuffer, engine.renderManager.shaderProgram.aTextureCoord);
         // normal
         engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
-        // Diffuse
+        // Diffuse material properties
         engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
         engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
-        // TODO -- Texture is not being displayed (needs fixing)
-        if (mesh.materialsByIndex[i]?.mapDiffuse?.glTexture) this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
+        
+        // Bind texture if available
+        const hasTexture = mesh.materialsByIndex[i]?.mapDiffuse?.glTexture;
+        if (hasTexture) {
+          this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
+          engine.gl.uniform1f(engine.renderManager.shaderProgram.useDiffuse, 1.0);
+        } else {
+          engine.gl.uniform1f(engine.renderManager.shaderProgram.useDiffuse, 0.0);
+        }
+        
         // Specular
         engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
         engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);

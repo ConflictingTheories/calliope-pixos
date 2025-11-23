@@ -223,23 +223,16 @@ var Mesh = /** @class */ (function () {
                     vertNormals.push.apply(vertNormals, __spreadArray([], __read(elements), false));
                 }
                 else if (TEXTURE_RE.test(line)) {
-                    var coords = elements;
-                    // by default, the loader will only look at the U and V
-                    // coordinates of the vt declaration. So, this truncates the
-                    // elements to only those 2 values. If W texture coordinate
-                    // support is enabled, then the texture coordinate is
-                    // expected to have three values in it.
-                    if (elements.length > 2 && !options.enableWTextureCoord) {
-                        coords = elements.slice(0, 2);
+                    // Parse UV coordinates and flip V for WebGL (like the demo viewer)
+                    var u = parseFloat(elements[0]);
+                    var v = elements.length > 1 ? 1.0 - parseFloat(elements[1]) : 0.0; // Flip V coordinate for WebGL
+                    
+                    if (options.enableWTextureCoord) {
+                        var w = elements.length > 2 ? parseFloat(elements[2]) : 0.0;
+                        textures.push(u.toString(), v.toString(), w.toString());
+                    } else {
+                        textures.push(u.toString(), v.toString());
                     }
-                    else if (elements.length === 2 && options.enableWTextureCoord) {
-                        // If for some reason W texture coordinate support is enabled
-                        // and only the U and V coordinates are given, then we supply
-                        // the default value of 0 so that the stride length is correct
-                        // when the textures are unpacked below.
-                        coords.push("0");
-                    }
-                    textures.push.apply(textures, __spreadArray([], __read(coords), false));
                 }
                 else if (USE_MATERIAL_RE.test(line)) {
                     var materialName = elements[0];

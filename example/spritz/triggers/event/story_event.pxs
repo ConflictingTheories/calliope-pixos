@@ -1,0 +1,42 @@
+-- Story Event Cutscene Trigger
+-- This script shows how to use cutscenes for scripted story events
+-- Can be triggered by game events, quest progression, or special conditions
+
+local event = pixos.get_caller();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Story Event Triggered', 
+    event = event
+}));
+
+-- Check if prerequisites are met (example: player has collected all items)
+local has_fire = pixos.has_flag('collected_fire_crystal');
+local has_water = pixos.has_flag('collected_water_crystal');
+local has_earth = pixos.has_flag('collected_earth_crystal');
+local has_air = pixos.has_flag('collected_air_crystal');
+
+if not (has_fire and has_water and has_earth and has_air) then
+    pixos.log('Story prerequisites not met - skipping event');
+    return;
+end
+
+-- Check if event already played
+if pixos.has_flag('story_gathering_complete') then
+    pixos.log('Story event already completed');
+    return;
+end
+
+pixos.log('All crystals collected - playing gathering cutscene');
+
+-- Play the elemental gathering cutscene
+pixos.sync({
+    pixos.play_pxc_cutscene('cutscenes/elemental-gathering.pxc')
+});
+
+-- After cutscene, mark event as complete and grant rewards
+pixos.set_flag('story_gathering_complete', true);
+pixos.set_flag('unlocked_final_area', true);
+
+pixos.log('Story event completed - final area unlocked');
+
+return nil;
