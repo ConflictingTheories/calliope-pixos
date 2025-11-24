@@ -9,6 +9,8 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
   const [hideNavigationBar, setHideNavigationBar] = useState(false);
   const [hideDownloadManager, setHideDownloadManager] = useState(false);
   const [hideInfobar, setHideInfobar] = useState(false);
+  const [hideTitleBar, setHideTitleBar] = useState(false);
+  const [showSupportPanel, setShowSupportPanel] = useState(true);
   const [skin, setSkin] = useState('default');
   const [defaultExportPassword, setDefaultExportPassword] = useState('');
   const [promptForExportPassword, setPromptForExportPassword] = useState(false);
@@ -33,6 +35,14 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
 
   function handleChangeHideInfobar(event) {
     setHideInfobar(event.target.checked);
+  }
+
+  function handleChangeHideTitleBar(event) {
+    setHideTitleBar(event.target.checked);
+  }
+
+  function handleChangeShowSupportPanel(event) {
+    setShowSupportPanel(event.target.checked);
   }
 
   function handleChangeSkin(event) {
@@ -77,6 +87,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       hideNavigationBar,
       hideDownloadManager,
       hideInfobar,
+      hideTitleBar,
       skin,
       promptForExportPassword,
       defaultExportPassword,
@@ -85,6 +96,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       bufferedWrite,
       maxWorkers: Number(maxWorkers),
       chunkSize: Number(chunkSize) * 1024,
+      showSupportPanel,
     });
   }
 
@@ -95,6 +107,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
         hideNavigationBar,
         hideDownloadManager,
         hideInfobar,
+        hideTitleBar,
         skin,
         promptForExportPassword,
         defaultExportPassword,
@@ -103,11 +116,13 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
         bufferedWrite,
         maxWorkers,
         chunkSize,
+        showSupportPanel,
       } = data;
       setZoomFactor(zoomFactor);
       setHideNavigationBar(hideNavigationBar);
       setHideDownloadManager(hideDownloadManager);
       setHideInfobar(hideInfobar);
+      setHideTitleBar(hideTitleBar);
       setSkin(skin);
       setPromptForExportPassword(promptForExportPassword);
       setDefaultExportPassword(defaultExportPassword);
@@ -116,6 +131,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       setBufferedWrite(bufferedWrite);
       setMaxWorkers(maxWorkers);
       setChunkSize(chunkSize / 1024);
+      setShowSupportPanel(showSupportPanel);
     }
   }
 
@@ -148,6 +164,14 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       <label>
         <span>{messages.OPTIONS_HIDE_INFOBAR_LABEL}</span>
         <input checked={hideInfobar} type="checkbox" onChange={handleChangeHideInfobar} />
+      </label>
+      <label>
+        <span>{messages.OPTIONS_HIDE_TITLE_BAR_LABEL}</span>
+        <input checked={hideTitleBar} type="checkbox" onChange={handleChangeHideTitleBar} />
+      </label>
+      <label>
+        <span>{messages.OPTIONS_SHOW_SUPPORT_PANEL_LABEL}</span>
+        <input checked={showSupportPanel} type="checkbox" onChange={handleChangeShowSupportPanel} />
       </label>
       <label>
         <span>{messages.OPTIONS_SELECT_SKIN_LABEL}</span>

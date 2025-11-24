@@ -45,7 +45,7 @@ const apiFilesystem = zipService.createZipFileSystem();
 const { root } = apiFilesystem;
 const rootZipFilename = messages.ROOT_ZIP_FILENAME;
 
-function ZipManager({ openFile, onZipLoaded }) {
+function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   const [zipFilesystem, setZipFilesystem] = useState(apiFilesystem);
   const [selectedFolder, setSelectedFolder] = useState(root);
   const [entries, setEntries] = useState([]);
@@ -98,6 +98,7 @@ function ZipManager({ openFile, onZipLoaded }) {
     dialogs,
     setDialogs,
     setTheme,
+    onOptionsChange,
   });
 
   const {

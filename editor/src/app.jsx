@@ -12,7 +12,7 @@
  * addition to text and image files.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import ZipManager from './zip-manager/index.jsx';
 import ScriptEditor from './script-editor/index.jsx';
@@ -26,6 +26,20 @@ import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
 import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
+
+const SUPPORT_LINKS = [
+  { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
+  { href: 'https://patreon.com/kderbyma', icon: '🎨', label: 'Patreon' },
+  { href: 'https://ko-fi.com/kderbyma', icon: '☕', label: 'Ko-fi' },
+  { href: 'https://buymeacoffee.com/kderbyma', icon: '☕', label: 'Buy Me a Coffee' },
+];
+
+const COMMUNITY_ACTIONS = [
+  '⭐ Star the GitHub repo',
+  '🐛 Report engine or editor bugs',
+  '💡 Share feature ideas',
+  '📢 Spread Pixospritz to other devs',
+];
 
 /**
  * Primary React component that drives the editor UI.
@@ -43,6 +57,71 @@ const App = () => {
 
   // Validation report state.  When set, contains an object with `errors` and `warnings`
   const [validationReport, setValidationReport] = useState(null);
+  const [supportPreference, setSupportPreference] = useState(true);
+  const [supportPanelPinned, setSupportPanelPinned] = useState(false);
+  const [supportMenuOpen, setSupportMenuOpen] = useState(false);
+  const [hideTitleBar, setHideTitleBar] = useState(false);
+  const supportFabRef = useRef(null);
+
+  const handleOptionsChange = useCallback((options) => {
+    if (!options) {
+      return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(options, 'showSupportPanel')) {
+      const allowSupportPanel = Boolean(options.showSupportPanel);
+      setSupportPreference(allowSupportPanel);
+      if (allowSupportPanel) {
+        setSupportPanelPinned(false);
+        setSupportMenuOpen(false);
+      }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(options, 'hideTitleBar')) {
+      setHideTitleBar(Boolean(options.hideTitleBar));
+    }
+  }, []);
+
+  const handleSupportFabClick = useCallback(() => {
+    setSupportMenuOpen((prev) => !prev);
+  }, []);
+
+  const handleSupportLinkClick = useCallback(() => {
+    setSupportMenuOpen(false);
+  }, []);
+
+  const handleSupportPanelToggle = useCallback(() => {
+    setSupportPanelPinned((prev) => !prev);
+    setSupportMenuOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!supportMenuOpen) {
+      return undefined;
+    }
+
+    const handlePointer = (event) => {
+      if (supportFabRef.current && !supportFabRef.current.contains(event.target)) {
+        setSupportMenuOpen(false);
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        setSupportMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('keydown', handleKey);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('touchstart', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [supportMenuOpen]);
 
   /**
    * Read a file entry from the package filesystem and return its text
@@ -1107,34 +1186,49 @@ const App = () => {
   const errorCount = validationReport?.errors?.length ?? 0;
   const warningCount = validationReport?.warnings?.length ?? 0;
   const selectedEntryLabel = selectedEntry?.name || 'Choose an asset from the sidebar';
-  const shellClassName = hasContent ? 'editor-shell has-active-content' : 'editor-shell';
+  const shellClassName = [
+    hasContent ? 'editor-shell has-active-content' : 'editor-shell',
+    hideTitleBar ? 'editor-shell--compact' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const supportPanelVisible = supportPreference || supportPanelPinned;
+  const supportFabClassName = ['support-fab', supportPreference ? 'is-link' : supportPanelPinned ? 'is-active' : '', supportMenuOpen ? 'is-open' : '']
+    .filter(Boolean)
+    .join(' ');
+  const supportFabTitle = supportMenuOpen ? 'Close support menu' : 'Open support menu';
 
   return (
     <div className={shellClassName}>
-      <section className="editor-hero">
-        <h1>Pixospritz Creator Studio</h1>
-        <p>Manage packages, preview assets, and edit scripts inside an interface inspired by pixospritz.com.</p>
-      </section>
+      {!hideTitleBar && (
+        <section className="editor-hero">
+          <h1>Pixospritz Creator Studio</h1>
+          <p>Manage packages, preview assets, and edit scripts inside an interface inspired by pixospritz.com.</p>
+        </section>
+      )}
       <div className="editor-stage">
         <ResizableSidebar
           openFile={openFile}
           onZipLoaded={setZip}
           onValidatePackage={validatePackage}
           validationReport={validationReport}
+          onOptionsChange={handleOptionsChange}
         />
         <section className="editor-main">
-          <header className="editor-main-header">
-            <div className="editor-main-title">
-              <span>Active file</span>
-              <strong>{selectedEntryLabel}</strong>
-            </div>
-            {validationReport && (
-              <div className="editor-pill">
-                <span>{errorCount} errors</span>
-                <span>{warningCount} warnings</span>
+          {!hideTitleBar && (
+            <header className="editor-main-header">
+              <div className="editor-main-title">
+                <span>Active file</span>
+                <strong>{selectedEntryLabel}</strong>
               </div>
-            )}
-          </header>
+              {validationReport && (
+                <div className="editor-pill">
+                  <span>{errorCount} errors</span>
+                  <span>{warningCount} warnings</span>
+                </div>
+              )}
+            </header>
+          )}
           <div className="editor-main-content">
             {hasContent ? (
               contents.map((component) => component)
@@ -1147,12 +1241,81 @@ const App = () => {
           </div>
         </section>
       </div>
+      {supportPanelVisible && (
+        <section className="editor-support-panel">
+          <div className="support-copy">
+            <p className="eyebrow">Support Pixospritz</p>
+            <h3>Keep the retro tools alive ♥</h3>
+            <p>These utilities stay free thanks to community backing. Every badge, bug report, and donation helps us ship new toys faster.</p>
+          </div>
+          <div className="support-links">
+            {SUPPORT_LINKS.map((link) => (
+              <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className="support-link">
+                <span className="support-icon" aria-hidden="true">{link.icon}</span>
+                <span>{link.label}</span>
+              </a>
+            ))}
+          </div>
+          <ul className="support-other">
+            {COMMUNITY_ACTIONS.map((action) => (
+              <li key={action}>{action}</li>
+            ))}
+          </ul>
+          {!supportPreference && (
+            <button
+              type="button"
+              className="support-panel__dismiss"
+              onClick={() => setSupportPanelPinned(false)}
+              aria-label="Hide support panel"
+            >
+              ×
+            </button>
+          )}
+        </section>
+      )}
+      <div ref={supportFabRef} className={`support-fab-shell ${supportMenuOpen ? 'is-open' : ''}`}>
+        <div className="support-menu" role="menu" aria-hidden={!supportMenuOpen}>
+          <p className="support-menu__eyebrow">Pick a portal</p>
+          <div className="support-menu__links">
+            {SUPPORT_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="support-menu__link"
+                onClick={handleSupportLinkClick}
+              >
+                <span className="support-icon" aria-hidden="true">{link.icon}</span>
+                <span>{link.label}</span>
+              </a>
+            ))}
+          </div>
+          {!supportPreference && (
+            <button type="button" className="support-menu__panel-toggle" onClick={handleSupportPanelToggle}>
+              {supportPanelPinned ? 'Hide support panel' : 'Show support panel'}
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          className={supportFabClassName}
+          aria-haspopup="true"
+          aria-expanded={supportMenuOpen}
+          aria-pressed={!supportPreference && supportPanelPinned}
+          onClick={handleSupportFabClick}
+          title={supportFabTitle}
+        >
+          <span className="support-fab__icon" aria-hidden="true">♥</span>
+          <span>Support Pixospritz</span>
+        </button>
+      </div>
     </div>
   );
 };
 
 // Resizable and Collapsible Sidebar Component
-function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validationReport }) {
+function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validationReport, onOptionsChange }) {
   const [width, setWidth] = useState(420);
   const [collapsed, setCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -1220,6 +1383,7 @@ function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validation
           onZipLoaded={onZipLoaded}
           onValidatePackage={onValidatePackage}
           validationReport={validationReport}
+          onOptionsChange={onOptionsChange}
         />
       </div>
 
