@@ -98,8 +98,11 @@
 
 .skin-dos .entries li {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 0.85rem;
   transition: background var(--transition-fast), border-color var(--transition-fast);
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  gap: var(--spacing-xs);
 }
 
 .skin-dos .entries li:last-child {
@@ -109,6 +112,23 @@
 .skin-dos .entries li.entry-highlighted {
   background: linear-gradient(135deg, rgba(255, 107, 157, 0.18), rgba(78, 205, 196, 0.12));
   border-color: rgba(255, 255, 255, 0.15);
+}
+
+.skin-dos .entries .entry-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.skin-dos .entries .entry-size {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.8rem;
+}
+
+.skin-dos .entries .list-item-button {
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
 }
 
 .skin-dos .entries li.directory .list-item-name::before {

@@ -18,6 +18,8 @@
   outline: none;
   column-gap: var(--gap-inline-size);
   cursor: pointer;
+  color: var(--text-color);
+  font-size: 0.92rem;
 }
 
 @supports (grid-template-columns: subgrid) {
@@ -50,15 +52,26 @@
   column-gap: var(--small-gap-inline-size);
   flex: 1;
   -webkit-tap-highlight-color: transparent;
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 .entries .entry-size {
   text-align: right;
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.8rem;
 }
 
 .entries .entry-highlighted {
   background-color: var(--accent-color);
+  color: var(--highlighted-text-color);
+}
+
+.entries .entry-highlighted .entry-name,
+.entries .entry-highlighted .entry-size,
+.entries .entry-highlighted .list-item-button {
   color: var(--highlighted-text-color);
 }
 

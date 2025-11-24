@@ -195,15 +195,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: var(--spacing-lg) var(--spacing-md);
-  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
+  gap: var(--spacing-sm);
 }
 
 .editor-hero {
   background: var(--panel-gradient);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   box-shadow: var(--shadow-md);
   backdrop-filter: var(--panel-backdrop);
   display: flex;
@@ -213,7 +213,8 @@
 
 .editor-hero h1 {
   margin: 0;
-  font-size: 2.25rem;
+  font-size: 1.85rem;
+  line-height: 1.2;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -224,11 +225,21 @@
   color: var(--text-muted);
 }
 
-.editor-workspace {
-  display: grid;
-  grid-template-columns: minmax(320px, 400px) 1fr;
-  gap: var(--spacing-md);
-  min-height: 65vh;
+
+.editor-stage {
+  display: flex;
+  gap: var(--spacing-sm);
+  min-height: 0;
+  flex: 1;
+  align-items: stretch;
+}
+
+.editor-stage > * {
+  min-width: 0;
+}
+
+.editor-stage > *:last-child {
+  flex: 1;
 }
 
 .editor-sidebar {
@@ -249,12 +260,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 .editor-main-content {
   flex: 1;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
   overflow: auto;
+  min-height: 0;
 }
 
 .editor-console {
@@ -293,16 +306,6 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-sm);
   padding: 0.35rem 0.75rem;
-}
-
-.editor-stage {
-  display: flex;
-  gap: var(--spacing-md);
-  min-height: 70vh;
-}
-
-.editor-stage > *:last-child {
-  flex: 1;
 }
 
 .editor-main-header {
@@ -451,15 +454,16 @@
   }
 }
 
-/* Info Text */
-.editor-info-text {
-  font-size: 11px;
+    flex: 1;
+    padding: var(--spacing-xs);
+    overflow: auto;
+    min-height: 0;
   color: var(--text-muted);
   margin-top: 5px;
 }
 
 /* Scrollbar Styles */
-.editor-scrollbar::-webkit-scrollbar {
+    padding: 2rem 1rem;
   width: 10px;
   height: 10px;
 }
