@@ -13,7 +13,6 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Header, Content } from 'rsuite';
 
 import ZipManager from './zip-manager/index.jsx';
 import ScriptEditor from './script-editor/index.jsx';
@@ -1104,21 +1103,50 @@ const App = () => {
     setContents([<div key="unknown">No registered viewer for {name}</div>]);
   }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
 
+  const hasContent = contents.length > 0;
+  const errorCount = validationReport?.errors?.length ?? 0;
+  const warningCount = validationReport?.warnings?.length ?? 0;
+  const selectedEntryLabel = selectedEntry?.name || 'Choose an asset from the sidebar';
+
   return (
-    <Container style={{ display: 'flex', flexDirection: 'row', flexGrow: 1, overflow: 'hidden' }}>
-      <ResizableSidebar
-        openFile={openFile}
-        onZipLoaded={setZip}
-        onValidatePackage={validatePackage}
-        validationReport={validationReport}
-      />
-      <Container style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' }}>
-        <Header className='page-header'></Header>
-        <Content style={{ flexGrow: 1, marginTop: '20px', marginBottom: '88px', overflow: 'auto' }}>
-          {contents.map((component) => component)}
-        </Content>
-      </Container>
-    </Container>
+    <div className="editor-shell">
+      <section className="editor-hero">
+        <h1>Pixospritz Creator Studio</h1>
+        <p>Manage packages, preview assets, and edit scripts inside an interface inspired by pixospritz.com.</p>
+      </section>
+      <div className="editor-stage">
+        <ResizableSidebar
+          openFile={openFile}
+          onZipLoaded={setZip}
+          onValidatePackage={validatePackage}
+          validationReport={validationReport}
+        />
+        <section className="editor-main">
+          <header className="editor-main-header">
+            <div className="editor-main-title">
+              <span>Active file</span>
+              <strong>{selectedEntryLabel}</strong>
+            </div>
+            {validationReport && (
+              <div className="editor-pill">
+                <span>{errorCount} errors</span>
+                <span>{warningCount} warnings</span>
+              </div>
+            )}
+          </header>
+          <div className="editor-main-content">
+            {hasContent ? (
+              contents.map((component) => component)
+            ) : (
+              <div className="editor-empty-state">
+                <h3>Welcome to Pixospritz IDE</h3>
+                <p>Load a project or drop a .zip file into the sidebar to begin.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
   );
 };
 
@@ -1130,6 +1158,14 @@ function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validation
   const minWidth = 200;
   const maxWidth = 600;
   const collapsedWidth = 40;
+
+  const sidebarClasses = [
+    'editor-sidebar-panel',
+    'editor-scrollbar',
+    collapsed ? 'is-collapsed' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -1158,47 +1194,24 @@ function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validation
   }, [isDragging]);
 
   return (
-    <div
+    <aside
+      className={sidebarClasses}
       style={{
-        position: 'relative',
         width: collapsed ? collapsedWidth : width,
         minWidth: collapsed ? collapsedWidth : minWidth,
         maxWidth: collapsed ? collapsedWidth : maxWidth,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRight: '1px solid rgba(255,255,255,0.1)',
         transition: collapsed ? 'width 0.3s ease' : 'none',
-        overflow: 'hidden',
-        background: '#1a1d23',
       }}
     >
-      {/* Collapse/Expand Button */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
-        style={{
-          position: 'absolute',
-          top: 10,
-          right: 5,
-          zIndex: 1000,
-          background: 'rgba(125,211,252,0.1)',
-          border: '1px solid rgba(125,211,252,0.3)',
-          color: '#7dd3fc',
-          width: 28,
-          height: 28,
-          borderRadius: 4,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 14,
-        }}
+        className="editor-sidebar-toggle"
+        onClick={() => setCollapsed((prev) => !prev)}
         title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
       >
         {collapsed ? '›' : '‹'}
       </button>
 
-      {/* Sidebar Content */}
-      <div style={{ display: collapsed ? 'none' : 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <div className={collapsed ? 'editor-sidebar-body is-hidden' : 'editor-sidebar-body'}>
         <ZipManager
           openFile={openFile}
           onZipLoaded={onZipLoaded}
@@ -1207,32 +1220,13 @@ function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validation
         />
       </div>
 
-      {/* Resize Handle */}
       {!collapsed && (
         <div
+          className={`editor-sidebar-resizer ${isDragging ? 'is-dragging' : ''}`}
           onMouseDown={handleMouseDown}
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 5,
-            cursor: 'col-resize',
-            background: isDragging ? 'rgba(125,211,252,0.3)' : 'transparent',
-            transition: 'background 0.2s',
-            zIndex: 999,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(125,211,252,0.2)';
-          }}
-          onMouseLeave={(e) => {
-            if (!isDragging) {
-              e.currentTarget.style.background = 'transparent';
-            }
-          }}
         />
       )}
-    </div>
+    </aside>
   );
 }
 
