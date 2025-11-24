@@ -11,6 +11,7 @@
   --outline-color: var(--color-secondary);
   --outline-width: 1px;
   --dialog-margin-block-start: 2rem;
+  --highlighted-text-color: var(--text-primary);
   color: var(--text-primary);
 }
 
@@ -29,14 +30,14 @@
 }
 
 .skin-dos main {
-  padding: var(--spacing-sm);
-  gap: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  gap: var(--spacing-xs);
   background: rgba(12, 12, 24, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .skin-dos main > * {
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
 }
 
 .skin-dos .button-bar,
@@ -82,7 +83,8 @@
 }
 
 .skin-dos .entries {
-  min-height: 320px;
+  min-height: 240px;
+  height: 100%;
   padding: 0;
   background: rgba(14, 14, 28, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.04);
@@ -155,9 +157,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.9rem;
+  gap: var(--spacing-xs);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
 }
 
 .skin-dos .info-bar .label {

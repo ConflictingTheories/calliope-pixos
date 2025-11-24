@@ -194,9 +194,24 @@
 .editor-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
   padding: var(--spacing-md) var(--spacing-sm);
   gap: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.editor-shell.has-active-content .editor-hero {
+  padding: var(--spacing-xs);
+  gap: 0.35rem;
+}
+
+.editor-shell.has-active-content .editor-hero h1 {
+  font-size: 1.25rem;
+}
+
+.editor-shell.has-active-content .editor-hero p {
+  display: none;
 }
 
 .editor-hero {
@@ -209,6 +224,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 .editor-hero h1 {
@@ -232,10 +248,12 @@
   min-height: 0;
   flex: 1;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .editor-stage > * {
   min-width: 0;
+  height: 100%;
 }
 
 .editor-stage > *:last-child {
@@ -261,11 +279,12 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  height: 100%;
 }
 
 .editor-main-content {
   flex: 1;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-sm);
   overflow: auto;
   min-height: 0;
 }
@@ -350,7 +369,7 @@
 .editor-empty-state {
   border: 1px dashed rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-lg);
-  padding: 3rem 1rem;
+  padding: 2rem 1rem;
   text-align: center;
   color: var(--text-muted);
   display: flex;
@@ -376,6 +395,8 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 260px;
+  height: 100%;
+  min-height: 0;
 }
 
 .editor-sidebar-panel.is-collapsed {
@@ -409,7 +430,11 @@
 .editor-sidebar-body {
   flex: 1;
   overflow: hidden;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+}
+
+.editor-sidebar-body > * {
+  height: 100%;
 }
 
 .editor-sidebar-body.is-hidden {
@@ -434,36 +459,37 @@
 }
 
 @media (max-width: 1200px) {
+  .editor-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .editor-stage {
     flex-direction: column;
+    overflow: visible;
+  }
+
+  .editor-stage > * {
+    height: auto;
   }
 
   .editor-sidebar-panel {
     width: 100% !important;
     max-width: none;
+    height: auto;
   }
 }
 
-@media (max-width: 1200px) {
-  .editor-workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .editor-sidebar {
-    min-height: 480px;
-  }
-}
-
-    flex: 1;
-    padding: var(--spacing-xs);
-    overflow: auto;
-    min-height: 0;
+/* Info Text */
+.editor-info-text {
+  font-size: 11px;
   color: var(--text-muted);
   margin-top: 5px;
 }
 
 /* Scrollbar Styles */
-    padding: 2rem 1rem;
+.editor-scrollbar::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }

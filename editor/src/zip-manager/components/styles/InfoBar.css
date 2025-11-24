@@ -3,28 +3,30 @@
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(135deg, rgba(40, 40, 69, 0.75), rgba(10, 10, 24, 0.85));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 50px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(18px);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 15px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  padding: 0.35rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
+  gap: 0.75rem;
+  min-height: 56px;
 }
 
 .info-bar__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
 }
 
 .info-bar__title {
   display: flex;
   align-items: baseline;
-  gap: 0.85rem;
+  gap: 0.5rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
 .info-bar__title span:first-child {
@@ -39,13 +41,13 @@
 
 .info-bar__subtitle {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .info-bar__controls {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 0.65rem;
 }
 
 .info-bar .icon {
@@ -57,9 +59,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -85,8 +87,8 @@
 
 .info-bar__visualizer {
   position: relative;
-  width: 150px;
-  height: 48px;
+  width: 140px;
+  height: 40px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);

@@ -1,7 +1,8 @@
 .entries {
-  block-size: 55dvh;
-  min-block-size: 10dvh;
-  resize: vertical;
+  flex: 1;
+  min-height: 240px;
+  max-height: 100%;
+  resize: none;
   box-sizing: border-box;
   padding-block-start: 0;
   margin-block-start: var(--gap-block-size);
@@ -65,8 +66,10 @@
 }
 
 .entries .entry-highlighted {
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.35), rgba(78, 205, 196, 0.28));
   color: var(--highlighted-text-color);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(6, 5, 15, 0.35);
 }
 
 .entries .entry-highlighted .entry-name,

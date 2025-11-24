@@ -1107,9 +1107,10 @@ const App = () => {
   const errorCount = validationReport?.errors?.length ?? 0;
   const warningCount = validationReport?.warnings?.length ?? 0;
   const selectedEntryLabel = selectedEntry?.name || 'Choose an asset from the sidebar';
+  const shellClassName = hasContent ? 'editor-shell has-active-content' : 'editor-shell';
 
   return (
-    <div className="editor-shell">
+    <div className={shellClassName}>
       <section className="editor-hero">
         <h1>Pixospritz Creator Studio</h1>
         <p>Manage packages, preview assets, and edit scripts inside an interface inspired by pixospritz.com.</p>
@@ -1201,6 +1202,8 @@ function ResizableSidebar({ openFile, onZipLoaded, onValidatePackage, validation
         minWidth: collapsed ? collapsedWidth : minWidth,
         maxWidth: collapsed ? collapsedWidth : maxWidth,
         transition: collapsed ? 'width 0.3s ease' : 'none',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <button
