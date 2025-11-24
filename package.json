@@ -6,12 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf build",
-    "compile": "npm run clean && cross-env NODE_ENV=production babel pixospritz/src --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
+    "compile": "yarn clean && cross-env NODE_ENV=production babel pixospritz/src --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
     "webpack": "npx webpack",
-    "start:server": "node server/v2/main.js",
-    "start:server:legacy": "node server/v1/main.js",
+    "lint": "cd pixoscript && yarn typecheck",
     "lint:editor": "cd editor && yarn lint",
-    "lint:pixoscript": "cd pixoscript && yarn typecheck"
+    "lint:player": "cd example && yarn lint",
+    "start:player": "cd example && yarn start",
+    "start:editor": "cd editor && yarn start",
+    "start:server": "node server/v2/main.js",
+    "start:server:legacy": "node server/v1/main.js"
   },
   "files": [
     "dist",
