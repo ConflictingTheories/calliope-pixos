@@ -42,6 +42,7 @@
   --dialog-margin-block-start: min(10dvh, 5em);
   --dialog-width: min(44ch, 75dvw);
   --dialog-form-max-block-size: 70dvh;
+  --retro-button-font: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', 'Courier New', monospace;
 }
 
 :root {
@@ -80,13 +81,19 @@ button {
   user-select: none;
   background: linear-gradient(135deg, rgba(255, 107, 157, 0.95), rgba(78, 205, 196, 0.85));
   color: var(--button-color);
-  font-weight: 600;
-  border-radius: var(--border-radius-width);
-  padding-block: var(--button-padding-block-size);
-  padding-inline: var(--button-padding-inline-size);
+  font-family: var(--retro-button-font);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(7, 7, 16, 0.95);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding-block: 0.3rem;
+  padding-inline: 1.1rem;
   margin: var(--outline-width);
   block-size: fit-content;
-  box-shadow: var(--panel-shadow);
+  box-shadow: 0 12px 20px rgba(5, 5, 16, 0.35);
   transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
