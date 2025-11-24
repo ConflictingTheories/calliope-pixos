@@ -3,6 +3,10 @@
  * Vite’s injectManifest strategy.  The full featured service
  * worker from the upstream project has been omitted for brevity.
  */
+import { precacheAndRoute } from 'workbox-precaching';
+
+precacheAndRoute(self.__WB_MANIFEST);
+
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });

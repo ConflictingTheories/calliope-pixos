@@ -193,7 +193,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         style={{
           position: 'relative',
           padding: 'none',
-          background: 'slategrey',
+          background: 'var(--color-bg)',
           height: canvasHeight + 'px',
           width: canvasWidth + 'px',
         }}
@@ -238,13 +238,15 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
           {/* Gamepad - For controls on Mobile Only*/}
           <canvas
             style={{
-              position: 'relative',
+              position: 'absolute',
               zIndex: 5,
-              top: 0,
+              bottom: 0,
               left: 0,
               background: 'none',
               display: showGamepad ? 'block' : 'none',
               maxHeight: '100vh',
+              width: '100%',
+              height: 'auto'
             }}
             ref={gamepadRef}
             hidden={!showGamepad}

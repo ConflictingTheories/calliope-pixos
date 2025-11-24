@@ -91,7 +91,7 @@ class ScriptEditor extends Component {
               style={{
                 height: '86vh',
                 overflow: 'overlay',
-                background: '#121216',
+                background: 'var(--bg-primary)',
                 width: '100%',
               }}
             >

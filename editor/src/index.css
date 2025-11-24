@@ -1,10 +1,49 @@
-body {
-  margin: 0;
-  font-family: 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  /* Brand tokens pulled from the marketing site */
+  --color-primary: #ff6b9d;
+  --color-primary-dark: #e5527e;
+  --color-secondary: #4ecdc4;
+  --color-accent: #ffd93d;
+  --color-purple: #a78bfa;
+
+  --color-bg: #0f0f1e;
+  --color-bg-light: #1a1a2e;
+  --color-bg-lighter: #252540;
+  --color-text: #e4e4e7;
+  --color-text-muted: #a1a1aa;
+  --color-border: #3f3f46;
+
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 2rem;
+  --spacing-lg: 3rem;
+  --spacing-xl: 4rem;
+
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Courier New', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 20px 40px rgba(10, 10, 25, 0.45);
+  --shadow-glow: 0 0 30px rgba(255, 107, 157, 0.35);
+
+  /* Editor specific helpers */
+  --bg-primary: var(--color-bg);
+  --bg-secondary: #131327;
+  --bg-tertiary: rgba(24, 24, 48, 0.85);
+  --panel-surface: rgba(22, 22, 40, 0.9);
+  --panel-border: rgba(255, 255, 255, 0.06);
+  --panel-blur: blur(18px);
+  --text-primary: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --accent-color: var(--color-primary);
 }
 
 @font-face {
@@ -13,7 +52,62 @@ body {
   font-display: swap;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 107, 157, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(78, 205, 196, 0.15), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 40px);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 107, 157, 0.25), transparent 40%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+a {
+  color: var(--color-secondary);
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
 button {
-  border-radius: 0px !important;
-  padding: 0.1rem 0.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 0.45rem 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #0f0f1e;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+button:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
