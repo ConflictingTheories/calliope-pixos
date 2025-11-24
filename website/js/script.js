@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastScroll = 0;
     window.addEventListener('scroll', () => {
         const currentScroll = window.pageYOffset;
-        
+
         if (currentScroll > 100) {
             navbar.classList.add('scrolled');
         } else {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Active nav link based on scroll position
     const sections = document.querySelectorAll('section[id]');
-    
+
     window.addEventListener('scroll', () => {
         const scrollY = window.pageYOffset;
 
@@ -69,15 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
-        
+
         // Skip if it's just "#"
         if (href === '#') return;
-        
+
         const target = document.querySelector(href);
         if (target) {
             e.preventDefault();
             const offsetTop = target.offsetTop - 60; // Account for navbar
-            
+
             window.scrollTo({
                 top: offsetTop,
                 behavior: 'smooth'
@@ -91,11 +91,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ============================================
 async function loadGames() {
     const gamesGrid = document.getElementById('gamesGrid');
-    
+
     try {
         const response = await fetch('data/games.json');
         const games = await response.json();
-        
+
         if (games.length === 0) {
             gamesGrid.innerHTML = `
                 <div class="loading">
@@ -104,9 +104,9 @@ async function loadGames() {
             `;
             return;
         }
-        
+
         gamesGrid.innerHTML = games.map(game => createGameCard(game)).join('');
-        
+
         // Add animation to cards
         animateCards();
     } catch (error) {
@@ -130,7 +130,7 @@ async function loadGames() {
                 </div>
             </div>
         `;
-        
+
         animateCards();
     }
 }
@@ -138,7 +138,7 @@ async function loadGames() {
 function createGameCard(game) {
     const imageSrc = game.image || 'assets/placeholder-game.png';
     const links = game.links || [];
-    
+
     return `
         <div class="game-card reveal">
             <img src="${imageSrc}" alt="${game.title}" class="game-image" 
@@ -163,12 +163,12 @@ function createGameCard(game) {
 // ============================================
 function revealOnScroll() {
     const reveals = document.querySelectorAll('.reveal');
-    
+
     reveals.forEach(element => {
         const windowHeight = window.innerHeight;
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
-        
+
         if (elementTop < windowHeight - elementVisible) {
             element.classList.add('active');
         }
@@ -177,12 +177,12 @@ function revealOnScroll() {
 
 function animateCards() {
     const cards = document.querySelectorAll('.game-card, .feature-card, .doc-card');
-    
+
     cards.forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
         card.classList.add('reveal');
     });
-    
+
     revealOnScroll();
 }
 
@@ -192,11 +192,11 @@ function animateCards() {
 document.addEventListener('DOMContentLoaded', () => {
     // Load games
     loadGames();
-    
+
     // Setup scroll reveal
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll(); // Initial check
-    
+
     // Add feature card animations
     const featureCards = document.querySelectorAll('.feature-card');
     featureCards.forEach((card, index) => {
@@ -210,10 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 function addGlitchEffect() {
     const glitchElements = document.querySelectorAll('.glitch');
-    
+
     glitchElements.forEach(element => {
         const text = element.getAttribute('data-text');
-        
+
         // Random glitch effect on hover
         element.addEventListener('mouseenter', () => {
             let iterations = 0;
@@ -227,13 +227,13 @@ function addGlitchEffect() {
                         return String.fromCharCode(33 + Math.floor(Math.random() * 94));
                     })
                     .join('');
-                
+
                 if (iterations >= text.length) {
                     clearInterval(interval);
                     element.textContent = text;
                 }
-                
-                iterations += 1/3;
+
+                iterations += 1 / 3;
             }, 30);
         });
     });
@@ -249,10 +249,10 @@ document.addEventListener('DOMContentLoaded', addGlitchEffect);
 // Debounce function for scroll events
 function debounce(func, wait = 10, immediate = true) {
     let timeout;
-    return function() {
+    return function () {
         const context = this;
         const args = arguments;
-        const later = function() {
+        const later = function () {
             timeout = null;
             if (!immediate) func.apply(context, args);
         };
@@ -271,10 +271,10 @@ window.addEventListener('scroll', debounce(() => {
 // ============================================
 // Easter Egg - Konami Code
 // ============================================
-(function() {
+(function () {
     const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
     let konamiIndex = 0;
-    
+
     document.addEventListener('keydown', (e) => {
         if (e.key === konamiCode[konamiIndex]) {
             konamiIndex++;
@@ -286,14 +286,14 @@ window.addEventListener('scroll', debounce(() => {
             konamiIndex = 0;
         }
     });
-    
+
     function activateEasterEgg() {
         document.body.style.animation = 'rainbow 2s linear infinite';
-        
+
         setTimeout(() => {
             document.body.style.animation = '';
         }, 5000);
-        
+
         // Add rainbow animation
         const style = document.createElement('style');
         style.textContent = `
