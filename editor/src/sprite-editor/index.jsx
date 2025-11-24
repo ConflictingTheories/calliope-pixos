@@ -1,4 +1,4 @@
-/*
+/**
  * ---------------------------------------------------------------
  *                 Pixospritz – Editor – Sprite Editor
  * ---------------------------------------------------------------
@@ -13,7 +13,7 @@
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Panel, Container, Row, Col, Button, Message, Input } from 'rsuite';
+import { Panel, Container, Row, Col, Button, Message } from 'rsuite';
 
 const DEFAULT_SIZE = 32;
 const DEFAULT_FRAMES = 1;
@@ -21,8 +21,16 @@ const DEFAULT_PALETTE = [
   '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'
 ];
 
+/**
+ * SpriteEditor component provides an interactive canvas for editing
+ * pixel sprites with multiple frames, palette colors, and undo/redo support.
+ *
+ * @param {object} props
+ * @param {string} [props.content] - Initial sprite data serialized as JSON (optional)
+ * @param {function(object):void} [props.onSave] - Callback invoked with sprite data on save
+ * @returns {JSX.Element}
+ */
 function SpriteEditor({ content, onSave }) {
-  // Sprite state
   const [frames, setFrames] = useState(DEFAULT_FRAMES);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [palette, setPalette] = useState(DEFAULT_PALETTE);
@@ -36,13 +44,17 @@ function SpriteEditor({ content, onSave }) {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 16 });
+  /** @type {React.MutableRefObject<{x: number, y: number, zoom: number}>} */
   const cameraRef = useRef(camera);
   cameraRef.current = camera;
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const canvasRef = useRef();
 
-  // Push history
+  /**
+   * Pushes a snapshot of the current pixels array to history for undo/redo.
+   * @param {number[][][]} newPixels
+   */
   function pushHistorySnapshot(newPixels) {
     const snapshot = JSON.parse(JSON.stringify(newPixels));
     setHistory((prev) => {
@@ -53,13 +65,15 @@ function SpriteEditor({ content, onSave }) {
     });
   }
 
-  // Undo/redo
+  /** Undo the last pixel edit */
   function undo() {
     if (historyIndex > 0) {
       setPixels(history[historyIndex - 1]);
       setHistoryIndex(historyIndex - 1);
     }
   }
+
+  /** Redo the next pixel edit */
   function redo() {
     if (historyIndex < history.length - 1) {
       setPixels(history[historyIndex + 1]);
@@ -67,18 +81,22 @@ function SpriteEditor({ content, onSave }) {
     }
   }
 
-  // Mouse/touch camera controls
+  /** Mouse down handler for dragging canvas */
   function handleMouseDown(e) {
     e.stopPropagation();
     e.preventDefault();
     setDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
   }
+
+  /** Mouse up handler ends dragging */
   function handleMouseUp(e) {
     e.stopPropagation();
     e.preventDefault();
     setDragging(false);
   }
+
+  /** Mouse move handler to pan the canvas */
   function handleMouseMove(e) {
     if (!dragging) return;
     e.stopPropagation();
@@ -88,6 +106,8 @@ function SpriteEditor({ content, onSave }) {
     dragStart.current = { x: e.clientX, y: e.clientY };
     setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
   }
+
+  /** Mouse wheel handler for zooming */
   function handleWheel(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -95,15 +115,21 @@ function SpriteEditor({ content, onSave }) {
     zoom = Math.max(4, Math.min(64, zoom));
     setCamera((prev) => ({ ...prev, zoom }));
   }
+
+  /** Touch start handler for dragging */
   function handleTouchStart(e) {
     if (e.touches.length === 1) {
       setDragging(true);
       dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }
   }
-  function handleTouchEnd(e) {
+
+  /** Touch end handler stops dragging */
+  function handleTouchEnd() {
     setDragging(false);
   }
+
+  /** Touch move handler for panning canvas */
   function handleTouchMove(e) {
     if (!dragging || e.touches.length !== 1) return;
     const dx = e.touches[0].clientX - dragStart.current.x;
@@ -112,9 +138,10 @@ function SpriteEditor({ content, onSave }) {
     setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
   }
 
-  // Draw sprite
+  // Draw sprite to canvas when pixels, currentFrame, palette or camera state changes
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -123,14 +150,18 @@ function SpriteEditor({ content, onSave }) {
     ctx.scale(camera.zoom, camera.zoom);
     for (let y = 0; y < DEFAULT_SIZE; y++) {
       for (let x = 0; x < DEFAULT_SIZE; x++) {
-        ctx.fillStyle = palette[pixels[currentFrame][y][x]];
+        const colorIndex = pixels[currentFrame][y][x];
+        ctx.fillStyle = palette[colorIndex] || '#000';
         ctx.fillRect(x, y, 1, 1);
       }
     }
     ctx.restore();
   }, [pixels, currentFrame, palette, camera]);
 
-  // Paint pixel
+  /**
+   * Handles pixel painting on canvas click.
+   * @param {React.MouseEvent<HTMLCanvasElement>} e
+   */
   function handleCanvasClick(e) {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left - camera.x) / camera.zoom);
@@ -143,7 +174,7 @@ function SpriteEditor({ content, onSave }) {
     }
   }
 
-  // Save sprite
+  /** Handles save button click, sends sprite data to onSave callback */
   function handleSave() {
     const spriteData = { frames, palette, pixels };
     if (onSave) {
@@ -211,7 +242,7 @@ function SpriteEditor({ content, onSave }) {
                   Frame {f + 1}
                 </Button>
               ))}
-              <Button appearance='default' style={{ margin: 2 }} onClick={() => {
+              <Button appearance="default" style={{ margin: 2 }} onClick={() => {
                 setFrames(frames + 1);
                 setPixels([...pixels, Array.from({ length: DEFAULT_SIZE }, () => Array(DEFAULT_SIZE).fill(0))]);
               }}>
@@ -222,20 +253,20 @@ function SpriteEditor({ content, onSave }) {
         </Col>
       </Row>
       <Row style={{ paddingTop: '1rem' }}>
-        <Button appearance='primary' onClick={handleSave}>
+        <Button appearance="primary" onClick={handleSave}>
           Save Changes
         </Button>
-        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={undo} disabled={historyIndex <= 0}>
+        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={undo} disabled={historyIndex <= 0}>
           Undo
         </Button>
-        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={redo} disabled={historyIndex >= history.length - 1}>
+        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={redo} disabled={historyIndex >= history.length - 1}>
           Redo
         </Button>
       </Row>
       {error && (
         <Row style={{ marginTop: '1rem' }}>
           <Col sm={24} md={24} lg={24}>
-            <Message type='error' description={error} />
+            <Message type="error" description={error} />
           </Col>
         </Row>
       )}

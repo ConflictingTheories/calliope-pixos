@@ -20,9 +20,26 @@ import { collect } from 'react-recollect';
 import Editor from '@monaco-editor/react';
 import { Panel, Row, Col, Container } from 'rsuite';
 
+/**
+ * ScriptEditor component allows editing and viewing of script and text files
+ * with syntax highlighting and language support via Monaco Editor.
+ *
+ * @extends React.Component
+ */
 class ScriptEditor extends Component {
+  /**
+   * Creates an instance of ScriptEditor.
+   * @param {object} props - React props
+   * @param {string} props.content - Initial content to display in editor
+   * @param {string} props.lang - Programming language identifier for syntax highlighting
+   * @param {string} props.type - Layout type; 'script-only' uses full width, otherwise split panes
+   * @param {function(string):void} [props.onSave] - Optional callback to save edited content
+   */
   constructor(props) {
     super(props);
+    /**
+     * @type {{content: string, lang: string, type: string}}
+     */
     this.state = {
       content: props.content || 'please start your edits :)',
       lang: props.lang || 'lua',
@@ -31,6 +48,10 @@ class ScriptEditor extends Component {
     this.saveChanges = this.saveChanges.bind(this);
   }
 
+  /**
+   * Update component state when new props arrive.
+   * @param {object} nextProps - Incoming props
+   */
   componentWillReceiveProps(nextProps) {
     if (this.props !== nextProps) {
       this.setState({
@@ -40,9 +61,10 @@ class ScriptEditor extends Component {
     }
   }
 
-  // TODO: Persist changes back into the zip
+  /**
+   * Saves the current content state by invoking the onSave callback if provided.
+   */
   async saveChanges() {
-    // When onSave prop is provided, invoke it with the current content
     if (this.props.onSave) {
       this.props.onSave(this.state.content);
     } else {
@@ -50,6 +72,10 @@ class ScriptEditor extends Component {
     }
   }
 
+  /**
+   * Renders the ScriptEditor JSX UI.
+   * @returns {JSX.Element} Rendered component
+   */
   render() {
     const { content, lang, type } = this.state;
     // Determine layout based on the type – when editing scripts only
@@ -71,8 +97,8 @@ class ScriptEditor extends Component {
             >
               <Container style={{ minHeight: '80vh' }}>
                 <Editor
-                  theme='vs-dark'
-                  height='86vh'
+                  theme="vs-dark"
+                  height="86vh"
                   value={content}
                   language={lang}
                   defaultValue={content}

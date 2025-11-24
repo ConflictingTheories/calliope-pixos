@@ -30,6 +30,9 @@ import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
 
 /**
  * Primary React component that drives the editor UI.
+ * Maintains package state, renders the appropriate editor pane, and exposes
+ * helpers for asset validation, file management, and content previews.
+ * @returns {React.ReactElement}
  */
 const App = () => {
   const [contents, setContents] = useState([]);
@@ -44,11 +47,11 @@ const App = () => {
 
   /**
    * Read a file entry from the package filesystem and return its text
-   * representation.  For binary assets this will still return a
-   * string containing the raw bytes which can later be converted
-   * into a data URI.
+   * representation or raw bytes when requested.
+   * @param {object} entry - Zip.js entry describing the file.
+   * @param {boolean} [asText=false] - Whether to resolve the content as text.
+   * @returns {Promise<string|Uint8Array|null>}
    */
-  // Helper to get file data from zip.js FS entry
   const getData = useCallback(async (entry, asText = false) => {
     if (!entry) return null;
     
@@ -84,10 +87,11 @@ const App = () => {
   }, []);
 
   /**
-   * Helper to convert a binary string into a base64 encoded data
-   * URI.  The caller must provide the appropriate MIME type.
+   * Convert binary bytes to a base64 data URI with the provided MIME type.
+   * @param {Uint8Array|string} binaryString - Raw bytes or string to encode.
+   * @param {string} mimeType - MIME type of the binary payload.
+   * @returns {string}
    */
-  // Convert binary string to base64 data URI
   const toDataUri = useCallback((binaryString, mimeType) => {
     if (!binaryString) return '';
     const bytes = typeof binaryString !== 'string' ? binaryString : new Uint8Array([...binaryString].map((c) => c.charCodeAt(0)));
@@ -98,8 +102,10 @@ const App = () => {
   }, []);
 
   /**
-   * Write a text file to the package filesystem. This finds the existing file
-   * by its full path, removes it, and re-adds it. If file doesn't exist, creates it.
+   * Write or replace text content at the given path in the loaded package.
+   * @param {string} filePath - Full path of the file inside the package.
+   * @param {string} textContent - UTF-8 text to save.
+   * @returns {Promise<void>}
    */
   const writeFile = useCallback(async (filePath, textContent) => {
     if (!zip) {
@@ -187,7 +193,9 @@ const App = () => {
   }, [zip]);
 
   /**
-   * Get the full path of an entry by traversing up to root
+   * Get the full path of a zip entry by traversing up to the root parent.
+   * @param {object} entry - Zip.js entry whose path is resolved.
+   * @returns {string}
    */
   const getEntryFullPath = useCallback((entry) => {
     if (entry.fullName) {
@@ -212,12 +220,11 @@ const App = () => {
   }, []);
 
   /**
-   * Build a list of image assets from the loaded package.  Each asset
-   * includes its filename and a data URI for previewing in the
-   * tileset editor.  Supported image types are png, jpg/jpeg, gif
-   * and bmp.
+   * Build a list of image assets with URIs so the tileset editor can
+   * render them.  Supports png, jpg/jpeg, gif, and bmp files.
+   * @param {object} zipFs - Zip.js filesystem for the loaded package.
+   * @returns {Promise<void>}
    */
-  // Build asset list (images) from package
   const buildAssetList = useCallback(async (zipFs) => {
     if (!zipFs || typeof zipFs.entries !== 'function') {
       setAssets([]);
@@ -254,13 +261,10 @@ const App = () => {
   }, [zip, buildAssetList]);
 
   /**
-   * Validate the currently loaded package.  Scans JSON files in the zip
-   * and checks for cross‑asset references (missing textures, invalid
-   * geometry indices, undefined tile IDs, missing portraits, etc.).
-   * Errors and warnings are collected into a report object and stored
-   * in state.  If no zip is loaded the report is cleared.
+   * Validate the currently loaded package by scanning JSON assets and
+   * collecting cross-reference errors/warnings.
+   * @returns {Promise<void>}
    */
-  // Validate package (spritz zip)
   const validatePackage = useCallback(async () => {
     if (!zip) {
       setValidationReport(null);

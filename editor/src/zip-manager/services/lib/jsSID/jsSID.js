@@ -1,6 +1,6 @@
 /* global AudioContext, webkitAudioContext */
 
-/* eslint-disable no-fallthrough */
+ 
 /* eslint-disable indent */
 
 // jsSID by Hermit (Mihaly Horvath) : a javascript SID emulator and player for the Web Audio API
@@ -29,19 +29,19 @@ var sidLibrary,
 
 function jsSID(bufferlen, background_noise) {
   var jsSID_audioCtx, jsSID_scriptNode;
-  this.author = "Hermit";
-  this.sourcecode = "http://hermit.uw.hu";
-  this.version = "0.9.1.7";
-  this.year = "2019";
+  this.author = 'Hermit';
+  this.sourcecode = 'http://hermit.uw.hu';
+  this.version = '0.9.1.7';
+  this.year = '2019';
 
   //create Web Audio context and scriptNode at jsSID object initialization (at the moment only mono output)
-  if (typeof AudioContext !== "undefined") {
+  if (typeof AudioContext !== 'undefined') {
     audioContext = jsSID_audioCtx = new AudioContext();
   } else {
     audioContext = jsSID_audioCtx = new webkitAudioContext();
   }
   var samplerate = jsSID_audioCtx.sampleRate;
-  if (typeof jsSID_audioCtx.createJavaScriptNode === "function") {
+  if (typeof jsSID_audioCtx.createJavaScriptNode === 'function') {
     jsSID_scriptNode = jsSID_audioCtx.createJavaScriptNode(bufferlen, 0, 1);
   } else {
     jsSID_scriptNode = jsSID_audioCtx.createScriptProcessor(bufferlen, 0, 1);
@@ -56,7 +56,7 @@ function jsSID(bufferlen, background_noise) {
     for (var sample = 0; sample < outBuffer.length; sample++) {
       outData[sample] = play();
     }
-    if (typeof buffercallback !== "undefined") buffercallback();
+    if (typeof buffercallback !== 'undefined') buffercallback();
     // Added by JCH
   };
 
@@ -138,7 +138,7 @@ function jsSID(bufferlen, background_noise) {
   };
   this.playcont = function () {
     jsSID_scriptNode.connect(out).connect(jsSID_audioCtx.destination);
-    if (jsSID_audioCtx.state == "suspended") jsSID_audioCtx.resume();
+    if (jsSID_audioCtx.state == 'suspended') jsSID_audioCtx.resume();
     /* Added by JCH */
   };
   this.pause = function () {
@@ -216,7 +216,7 @@ function jsSID(bufferlen, background_noise) {
   };
   // Added by JCH
   this.issuspended = function () {
-    return jsSID_audioCtx.state == "suspended";
+    return jsSID_audioCtx.state == 'suspended';
   };
   // Added by JCH
 

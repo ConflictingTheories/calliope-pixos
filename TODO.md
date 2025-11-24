@@ -1,66 +1,27 @@
-# C++ Pixospritz Engine Port TODO
+# Refactor Plan TODO
 
-## 1. Core Engine Port
-- [x] Create GLEngine.h/.cpp (main engine class, orchestrates loop, managers)
-- [ ] Implement main game loop (init, run, shutdown)
-- [ ] Integrate GLFW for window management
-- [ ] Handle manifest loading and game initialization
+## Phase 1: Editor doc comments and types
+- Add JSDoc comments for functions and React components in editor/src/
+- Add or enhance type annotations using JSDoc or PropTypes
+- Enforce ESLint code style rules for naming and formatting
 
-## 2. Managers Port
-- [ ] RenderManager.h/.cpp (OpenGL rendering, shaders, cameras, lights)
-- [ ] InputManager.h/.cpp (SDL-based input handling for keyboard/mouse/gamepad)
-- [ ] ModeManager.h/.cpp (game modes like explore, fight, debug)
-- [ ] NetworkManager.h/.cpp (WebSocket-like networking for multiplayer)
+## Phase 2: Pixoscript doc comments and typings
+- Add comprehensive JSDoc comments matching existing TS typings in pixoscript/src/
+- Maintain strict TS compiler compliance
 
-## 3. Scene Management
-- [x] World.h/.cpp (manages zones, sprites, objects, events)
-- [x] Zone.h/.cpp (map zones with tiles, sprites, objects)
-- [x] Avatar.h/.cpp (player-controlled character)
-- [x] Sprite.h/.cpp (base sprite class)
-- [x] Object.h/.cpp (game objects)
+## Phase 3: Pixospritz core alignment
+- Review and align minor doc comment/style inconsistencies in pixospritz/src/
 
-## 4. Rendering System
-- [ ] Port WebGL shaders to GLSL (vertex.glsl, fragment.glsl)
-- [ ] Implement camera system (Camera.h/.cpp)
-- [ ] Lighting system (LightManager.h/.cpp)
-- [ ] Skybox rendering
-- [ ] Particle system
-- [ ] Screen transitions (fade, cross, etc.)
+## Phase 4: Config files update
+- Optionally update editor/.eslintrc.json for doc comment linting rules and naming conventions
+- Optionally add Prettier config file for consistent formatting
 
-## 5. Input Handling
-- [ ] Map JS input mappings to SDL events
-- [ ] Support keyboard, mouse, gamepad, touch
-- [ ] Action bindings per mode
-- [ ] Object picking (color-based selection)
+## Phase 5: Testing and validation
+- Run full ESLint with updated rules
+- Run full TS build for pixoscript
+- Conduct thorough manual testing across all affected areas for doc, types, naming, formatting, and modularity
 
-## 6. Scripting Integration
-- [ ] Integrate Lua for PixoScript and Lua scripts
-- [ ] PixoScriptInterpreter.h/.cpp
-- [ ] PixosLuaInterpreter.h/.cpp
-- [ ] Library functions for scripting
+---
 
-## 7. Resource Management
-- [ ] ResourceManager.h/.cpp (load textures, models, audio)
-- [ ] Support for zip-based game packages
-- [ ] Texture loading and management
-- [ ] Audio system (if applicable)
-
-## 8. Dependencies and Build
-- [ ] Update CMakeLists.txt for all libraries (OpenGL, GLFW, GLEW, SDL2, Lua, GLM, nlohmann/json)
-- [ ] Ensure cross-platform compatibility (macOS, Windows, Linux)
-- [ ] Build and test basic loop
-
-## 9. Testing and Integration
-- [ ] Test rendering with basic scene
-- [ ] Test input handling
-- [ ] Load and render zones from manifest
-- [ ] Implement avatar movement and interactions
-- [ ] Add networking for multiplayer
-- [ ] Full game loop testing
-
-## 10. Advanced Features
-- [ ] Cutscene system
-- [ ] HUD and UI rendering
-- [ ] Audio playback
-- [ ] Save/load game state
-- [ ] Performance optimizations
+# Next Step
+Proceed with Phase 1: enhance editor/src/ doc comments, typing, and styling.
