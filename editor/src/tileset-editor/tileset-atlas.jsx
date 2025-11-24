@@ -408,7 +408,7 @@ export default function TilesetAtlasEditor({ atlasImage, atlasURL, sheetSize, ti
     drawAtlas();
     drawThumb();
     drawGL();
-  }, []); // eslint-disable-line
+  }, []);  
 
   return (
     <div style={{

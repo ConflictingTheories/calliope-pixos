@@ -19,7 +19,8 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "lint": "eslint src --ext .js,.jsx --max-warnings=9999"
   },
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "@eslint/eslintrc": "^3.4.1",
     "eslint": "^9.8.0",
     "eslint-plugin-react": "^7.35.0",
     "vite": "^5.3.5",

@@ -5,7 +5,7 @@ import { themeService } from '../../services/index.js'; // Import the stylesheet
 import { zipService } from '../../services/index.js'; // Import the stylesheetService module
 import { storageService } from '../../services/index.js'; // Import the stylesheetService module
 
-function getOptionsFeatures({ dialogs, setDialogs, setTheme }) {
+function getOptionsFeatures({ dialogs, setDialogs, setTheme, onOptionsChange = () => {} }) {
   const { DEFAULT_OPTIONS, OPTIONS_KEY_NAME, FONT_SIZE_PROPERTY_NAME } = constants;
 
   function initOptionsFeatures() {
@@ -16,6 +16,7 @@ function getOptionsFeatures({ dialogs, setDialogs, setTheme }) {
     configureZipService(options);
     configureZoomFactor(options);
     configureTheme(options);
+    onOptionsChange(options);
   }
 
   function openOptions() {
@@ -62,6 +63,12 @@ function getOptionsFeatures({ dialogs, setDialogs, setTheme }) {
     }
     if (options.hideInfobar === undefined) {
       options.hideInfobar = DEFAULT_OPTIONS.hideInfobar;
+    }
+    if (options.hideTitleBar === undefined) {
+      options.hideTitleBar = DEFAULT_OPTIONS.hideTitleBar;
+    }
+    if (options.showSupportPanel === undefined) {
+      options.showSupportPanel = DEFAULT_OPTIONS.showSupportPanel;
     }
     if (options.promptForExportPassword === undefined) {
       options.promptForExportPassword = DEFAULT_OPTIONS.promptForExportPassword;

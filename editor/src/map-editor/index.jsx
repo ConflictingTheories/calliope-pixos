@@ -274,7 +274,7 @@ function MapEditor({ content, onSave }) {
   const layerOptions = layers.map((_, idx) => ({ label: `Layer ${idx}`, value: idx }));
 
   return (
-  <Container style={{ padding: '1rem' }}>
+    <Container style={{ padding: '1rem' }}>
       {/* Display any JSON parsing errors */}
       {error && (
         <Row style={{ marginBottom: '0.5rem' }}>
@@ -340,16 +340,16 @@ function MapEditor({ content, onSave }) {
                       {row.map((value, x) => (
                         <td
                           key={x}
-                        onClick={() => setCell(x, y)}
+                          onClick={() => setCell(x, y)}
                           style={{
                             width: 24,
                             height: 24,
                             backgroundColor: TILE_COLOURS[value] || '#111',
                             border: '1px solid #333',
                             cursor: 'pointer',
-                          boxSizing: 'border-box',
-                          // Highlight selected cell
-                          outline:
+                            boxSizing: 'border-box',
+                            // Highlight selected cell
+                            outline:
                             selectedCell.layer === currentLayer &&
                             selectedCell.x === x &&
                             selectedCell.y === y

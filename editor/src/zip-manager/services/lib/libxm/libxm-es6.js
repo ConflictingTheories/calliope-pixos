@@ -8,10 +8,10 @@
  * License, Version 2, as published by Sam Hocevar. See
  * http://sam.zoy.org/wtfpl/COPYING for more details. */
 
-var libxm = typeof libxm !== "undefined" ? libxm : {};
+var libxm = typeof libxm !== 'undefined' ? libxm : {};
 var moduleOverrides = {};
 var arguments_ = [];
-var scriptDirectory = "";
+var scriptDirectory = '';
 var err = libxm.printErr || console.warn.bind(console);
 var tempRet0 = 0;
 var wasmMemory;
@@ -27,7 +27,7 @@ var dependenciesFulfilled = function runCaller() {
   if (!calledRun) run();
   if (!calledRun) dependenciesFulfilled = runCaller;
 };
-var wasmBinaryFile = locateFile("./assets/lib/libxm.wasm");
+var wasmBinaryFile = locateFile('./assets/lib/libxm.wasm');
 var asmLibraryArg = {
   b: _emscripten_memcpy_big,
   c: _emscripten_resize_heap,
@@ -70,10 +70,10 @@ for (let key in moduleOverrides) {
   }
 }
 moduleOverrides = null;
-if (typeof document !== "undefined" && document.currentScript) {
+if (typeof document !== 'undefined' && document.currentScript) {
   scriptDirectory = document.currentScript.src;
 } else {
-  scriptDirectory = "";
+  scriptDirectory = '';
 }
 if (libxm.arguments) {
   arguments_ = libxm.arguments;
@@ -81,8 +81,8 @@ if (libxm.arguments) {
 if (libxm.quit) {
   quit_ = libxm.quit;
 }
-if (typeof WebAssembly !== "object") {
-  abort("no native wasm support detected");
+if (typeof WebAssembly !== 'object') {
+  abort('no native wasm support detected');
 }
 __ATINIT__.push({
   func: function () {
@@ -90,7 +90,7 @@ __ATINIT__.push({
   }
 });
 if (libxm.preInit) {
-  if (typeof libxm.preInit == "function") libxm.preInit = [libxm.preInit];
+  if (typeof libxm.preInit == 'function') libxm.preInit = [libxm.preInit];
   while (libxm.preInit.length > 0) {
     libxm.preInit.pop()();
   }
@@ -116,25 +116,25 @@ function locateFile(path) {
 }
 
 function getValue(ptr, type, noSafe) {
-  type = type || "i8";
-  if (type.charAt(type.length - 1) === "*") type = "i32";
+  type = type || 'i8';
+  if (type.charAt(type.length - 1) === '*') type = 'i32';
   switch (type) {
-    case "i1":
-      return HEAP8[ptr >> 0];
-    case "i8":
-      return HEAP8[ptr >> 0];
-    case "i16":
-      return HEAP16[ptr >> 1];
-    case "i32":
-      return HEAP32[ptr >> 2];
-    case "i64":
-      return HEAP32[ptr >> 2];
-    case "float":
-      return HEAPF32[ptr >> 2];
-    case "double":
-      return HEAPF64[ptr >> 3];
-    default:
-      abort("invalid type for getValue: " + type);
+  case 'i1':
+    return HEAP8[ptr >> 0];
+  case 'i8':
+    return HEAP8[ptr >> 0];
+  case 'i16':
+    return HEAP16[ptr >> 1];
+  case 'i32':
+    return HEAP32[ptr >> 2];
+  case 'i64':
+    return HEAP32[ptr >> 2];
+  case 'float':
+    return HEAPF32[ptr >> 2];
+  case 'double':
+    return HEAPF64[ptr >> 3];
+  default:
+    abort('invalid type for getValue: ' + type);
   }
   return null;
 }
@@ -156,7 +156,7 @@ function updateGlobalBufferAndViews(buf) {
 
 function preRun() {
   if (libxm.preRun) {
-    if (typeof libxm.preRun == "function") libxm.preRun = [libxm.preRun];
+    if (typeof libxm.preRun == 'function') libxm.preRun = [libxm.preRun];
     while (libxm.preRun.length) {
       addOnPreRun(libxm.preRun.shift());
     }
@@ -174,7 +174,7 @@ function preMain() {
 
 function postRun() {
   if (libxm.postRun) {
-    if (typeof libxm.postRun == "function") libxm.postRun = [libxm.postRun];
+    if (typeof libxm.postRun == 'function') libxm.postRun = [libxm.postRun];
     while (libxm.postRun.length) {
       addOnPostRun(libxm.postRun.shift());
     }
@@ -209,10 +209,10 @@ function abort(what) {
   if (libxm.onAbort) {
     libxm.onAbort(what);
   }
-  what += "";
+  what += '';
   err(what);
   ABORT = true;
-  what = "abort(" + what + "). Build with -s ASSERTIONS=1 for more info.";
+  what = 'abort(' + what + '). Build with -s ASSERTIONS=1 for more info.';
   var e = new WebAssembly.RuntimeError(what);
   throw e;
 }
@@ -234,7 +234,7 @@ async function createWasm() {
     wasmTable = libxm.asm.H;
     removeRunDependency();
   } catch (error) {
-    err("failed to asynchronously prepare wasm: " + error);
+    err('failed to asynchronously prepare wasm: ' + error);
     abort(error);
   }
 }
@@ -242,12 +242,12 @@ async function createWasm() {
 function callRuntimeCallbacks(callbacks) {
   while (callbacks.length > 0) {
     var callback = callbacks.shift();
-    if (typeof callback == "function") {
+    if (typeof callback == 'function') {
       callback(libxm);
       continue;
     }
     var func = callback.func;
-    if (typeof func === "number") {
+    if (typeof func === 'number') {
       if (callback.arg === undefined) {
         wasmTable.get(func)();
       } else {
@@ -264,7 +264,7 @@ function _emscripten_memcpy_big(dest, src, num) {
 }
 
 function abortOnCannotGrowMemory(requestedSize) {
-  abort("OOM (" + requestedSize + ")");
+  abort('OOM (' + requestedSize + ')');
 }
 
 function _emscripten_resize_heap(requestedSize) {
@@ -296,10 +296,10 @@ function run(args) {
     postRun();
   }
   if (libxm.setStatus) {
-    libxm.setStatus("Running...");
+    libxm.setStatus('Running...');
     setTimeout(function () {
       setTimeout(function () {
-        libxm.setStatus("");
+        libxm.setStatus('');
       }, 1);
       doRun();
     }, 1);
@@ -351,9 +351,9 @@ function load(arrayBuffer) {
     libxm._free(moduleStringBuffer);
     if (result !== 0) {
       moduleContext = undefined;
-      throw new Error("Module context not defined");
+      throw new Error('Module context not defined');
     } else {
-      moduleContext = libxm.getValue(moduleContextPtr, "*");
+      moduleContext = libxm.getValue(moduleContextPtr, '*');
     }
   });
 }
@@ -369,9 +369,9 @@ function fillBuffer(buffer) {
     libxm._xm_generate_samples(moduleContext, cFloatArray, XM_BUFFER_LENGTH);
     for (let indexOffset = 0; indexOffset < XM_BUFFER_LENGTH; ++indexOffset) {
       leftChannel[offset + indexOffset] =
-        libxm.getValue(cFloatArray + 8 * indexOffset, "float") * amp;
+        libxm.getValue(cFloatArray + 8 * indexOffset, 'float') * amp;
       rightChannel[offset + indexOffset] =
-        libxm.getValue(cFloatArray + 8 * indexOffset + 4, "float") * amp;
+        libxm.getValue(cFloatArray + 8 * indexOffset + 4, 'float') * amp;
       if (
         !clip &&
         (leftChannel[indexOffset] < -1.0 ||

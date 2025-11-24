@@ -2,6 +2,9 @@
   font-family: monospace;
   cursor: pointer;
   user-select: none;
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
 }
 
 .list-item-button:hover {

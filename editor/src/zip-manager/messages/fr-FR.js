@@ -81,7 +81,9 @@ const OPTIONS_ZOOM_FACTOR_LABEL = 'Facteur de zoom (%) :';
 const OPTIONS_HIDE_NAVIGATION_BAR_LABEL = 'Cacher la barre de navigation :';
 const OPTIONS_HIDE_DOWNLOAD_MANAGER_LABEL = 'Cacher le panneau de téléchargements :';
 const OPTIONS_HIDE_INFOBAR_LABEL = 'Cacher la barre du bas :';
+const OPTIONS_HIDE_TITLE_BAR_LABEL = 'Masquer la barre de titre :';
 const OPTIONS_SELECT_SKIN_LABEL = 'Thème :';
+const OPTIONS_SHOW_SUPPORT_PANEL_LABEL = 'Afficher le panneau de soutien :';
 const OPTIONS_DEFAULT_SKIN_LABEL = 'Défaut';
 const OPTIONS_DOS_SKIN_LABEL = 'DOS';
 const OPTIONS_EXPORT_ZIP_PASSWORD_LABEL = 'Demander un mot de passe :';
@@ -188,6 +190,8 @@ export {
   OPTIONS_HIDE_NAVIGATION_BAR_LABEL,
   OPTIONS_HIDE_DOWNLOAD_MANAGER_LABEL,
   OPTIONS_HIDE_INFOBAR_LABEL,
+  OPTIONS_HIDE_TITLE_BAR_LABEL,
+  OPTIONS_SHOW_SUPPORT_PANEL_LABEL,
   OPTIONS_SELECT_SKIN_LABEL,
   OPTIONS_DEFAULT_SKIN_LABEL,
   OPTIONS_DOS_SKIN_LABEL,

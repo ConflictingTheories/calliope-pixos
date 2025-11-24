@@ -1,130 +1,24 @@
 :root,
 ::backdrop {
-  --page-color-light: gainsboro;
-  --bg-color-light: white;
-  --basic-bg-color-light: white;
-  --dark-accent-color-light: var(--accent-color);
-  --darker-accent-color-light: var(--accent-color);
-  --text-color-light: #333;
-  --basic-text-color-light: black;
-  --highlighted-text-color-light: white;
-  --button-color-light: white;
-  --disabled-button-color-light: gray;
-  --bg-disabled-button-color-light: gainsboro;
-  --outline-color-light: #333;
-  --page-color-dark: #333;
-  --bg-color-dark: black;
-  --basic-bg-color-dark: black;
-  --dark-accent-color-dark: var(--accent-color);
-  --darker-accent-color-dark: var(--accent-color);
-  --text-color-dark: gainsboro;
-  --basic-text-color-dark: white;
-  --highlighted-text-color-dark: black;
-  --button-color-dark: black;
-  --disabled-button-color-dark: gray;
-  --bg-disabled-button-color-dark: #333;
-  --outline-color-dark: gainsboro;
-}
-
-@supports (color: color-mix(in srgb, red 0%, red)) {
-  :root,
-  ::backdrop {
-    --page-color-light: color-mix(in srgb, var(--accent-color) 7.5%, white);
-    --bg-color-light: color-mix(in srgb, var(--accent-color) 5%, white);
-    --dark-accent-color-light: color-mix(in srgb, var(--accent-color) 60%, var(--bg-color));
-    --darker-accent-color-light: color-mix(in srgb, var(--accent-color) 30%, var(--bg-color));
-    --text-color-light: color-mix(in srgb, var(--accent-color) 90%, black);
-    --highlighted-text-color-light: color-mix(in srgb, var(--accent-color) 10%, white);
-    --button-color-light: color-mix(in srgb, var(--accent-color) 10%, white);
-    --disabled-button-color-light: color-mix(in srgb, var(--accent-color) 50%, gray);
-    --bg-disabled-button-color-light: color-mix(in srgb, var(--accent-color) 25%, white);
-    --outline-color-dark: color-mix(in srgb, var(--accent-color) 25%, black);
-    --page-color-dark: color-mix(in srgb, var(--accent-color) 7.5%, black);
-    --bg-color-dark: color-mix(in srgb, var(--accent-color) 5%, black);
-    --dark-accent-color-dark: color-mix(in srgb, var(--accent-color) 60%, var(--bg-color));
-    --darker-accent-color-dark: color-mix(in srgb, var(--accent-color) 30%, var(--bg-color));
-    --text-color-dark: color-mix(in srgb, var(--accent-color) 90%, white);
-    --highlighted-text-color-dark: color-mix(in srgb, var(--accent-color) 10%, black);
-    --button-color-dark: color-mix(in srgb, var(--accent-color) 10%, black);
-    --disabled-button-color-dark: color-mix(in srgb, var(--accent-color) 50%, gray);
-    --bg-disabled-button-color-dark: color-mix(in srgb, var(--accent-color) 25%, black);
-    --outline-color-dark: color-mix(in srgb, var(--accent-color) 25%, white);
-  }
-}
-
-:root.light,
-:root.light ::backdrop {
-  --page-color: var(--page-color-light);
-  --bg-color: var(--bg-color-light);
-  --basic-bg-color: var(--basic-bg-color-light);
-  --dark-accent-color: var(--dark-accent-color-light);
-  --darker-accent-color: var(--darker-accent-color-light);
-  --text-color: var(--text-color-light);
-  --basic-text-color: var(--basic-text-color-light);
-  --highlighted-text-color: var(--highlighted-text-color-light);
-  --button-color: var(--button-color-light);
-  --disabled-button-color: var(--disabled-button-color-light);
-  --bg-disabled-button-color: var(--bg-disabled-button-color-light);
-  --outline-color: var(--outline-color-light);
-}
-
-:root.dark,
-:root.dark ::backdrop {
-  --page-color: var(--page-color-dark);
-  --bg-color: var(--bg-color-dark);
-  --basic-bg-color: var(--basic-bg-color-dark);
-  --dark-accent-color: var(--dark-accent-color-dark);
-  --darker-accent-color: var(--darker-accent-color-dark);
-  --text-color: var(--text-color-dark);
-  --basic-text-color: var(--basic-text-color-dark);
-  --highlighted-text-color: var(--highlighted-text-color-dark);
-  --button-color: var(--button-color-dark);
-  --disabled-button-color: var(--disabled-button-color-dark);
-  --bg-disabled-button-color: var(--bg-disabled-button-color-dark);
-  --outline-color: var(--outline-color-dark);
-}
-
-@media (prefers-color-scheme: light) {
-  :root,
-  ::backdrop {
-    --page-color: var(--page-color-light);
-    --bg-color: var(--bg-color-light);
-    --basic-bg-color: var(--basic-bg-color-light);
-    --dark-accent-color: var(--dark-accent-color-light);
-    --darker-accent-color: var(--darker-accent-color-light);
-    --text-color: var(--text-color-light);
-    --basic-text-color: var(--basic-text-color-light);
-    --highlighted-text-color: var(--highlighted-text-color-light);
-    --button-color: var(--button-color-light);
-    --disabled-button-color: var(--disabled-button-color-light);
-    --bg-disabled-button-color: var(--bg-disabled-button-color-light);
-    --outline-color: var(--outline-color-light);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root,
-  ::backdrop {
-    --page-color: var(--page-color-dark);
-    --bg-color: var(--bg-color-dark);
-    --basic-bg-color: var(--basic-bg-color-dark);
-    --dark-accent-color: var(--dark-accent-color-dark);
-    --darker-accent-color: var(--darker-accent-color-dark);
-    --text-color: var(--text-color-dark);
-    --basic-text-color: var(--basic-text-color-dark);
-    --highlighted-text-color: var(--highlighted-text-color-dark);
-    --button-color: var(--button-color-dark);
-    --disabled-button-color: var(--disabled-button-color-dark);
-    --bg-disabled-button-color: var(--bg-disabled-button-color-dark);
-    --outline-color: var(--outline-color-dark);
-  }
-}
-
-:root {
-  --brightness-hover: 0.75;
-  --border-radius-width: 0.25em;
+  --page-color: var(--color-bg, #050510);
+  --bg-color: rgba(13, 13, 24, 0.9);
+  --basic-bg-color: rgba(8, 8, 16, 0.85);
+  --dark-accent-color: var(--color-primary, #ff6b9d);
+  --darker-accent-color: var(--color-primary-dark, #b34972);
+  --text-color: var(--color-text, #f5f7ff);
+  --basic-text-color: var(--color-text, #f5f7ff);
+  --highlighted-text-color: #06050f;
+  --button-color: #050510;
+  --disabled-button-color: rgba(255, 255, 255, 0.5);
+  --bg-disabled-button-color: rgba(255, 255, 255, 0.05);
+  --outline-color: var(--color-secondary, #4ecdc4);
+  --panel-border-color: rgba(255, 255, 255, 0.08);
+  --panel-surface: rgba(10, 10, 24, 0.75);
+  --panel-shadow: 0 18px 35px rgba(3, 4, 10, 0.45);
+  --brightness-hover: 0.92;
+  --border-radius-width: 0.35rem;
   --gap-inline-size: 0.75ch;
-  --gap-block-size: 0.5em;
+  --gap-block-size: 0.5rem;
   --small-gap-inline-size: calc(var(--gap-inline-size) / 2);
   --small-gap-block-size: calc(var(--gap-block-size) / 2);
   --smaller-gap-inline-size: calc(var(--small-gap-inline-size) / 2);
@@ -133,7 +27,7 @@
   --large-gap-block-size: calc(var(--gap-block-size) * 2);
   --button-padding-inline-size: 1.5ch;
   --small-button-padding-inline-size: calc(var(--button-padding-inline-size) / 1.5);
-  --button-padding-block-size: 0.25em;
+  --button-padding-block-size: 0.4rem;
   --small-button-padding-block-size: calc(var(--button-padding-block-size) / 1.5);
   --list-item-padding-inline-size: var(--small-button-padding-inline-size);
   --list-item-padding-block-size: calc(var(--button-padding-block-size) / 2);
@@ -143,26 +37,28 @@
   --no-scrollable-outline-width: 1px;
   --font-weight: 400;
   --font-weight-bolder: 500;
-  --button-animation-duration: 0.2s;
+  --button-animation-duration: 0.18s;
   --app-width: 85dvw;
   --dialog-margin-block-start: min(10dvh, 5em);
-  --dialog-width: min(40ch, 75dvw);
+  --dialog-width: min(44ch, 75dvw);
   --dialog-form-max-block-size: 70dvh;
+  --retro-button-font: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', 'Courier New', monospace;
 }
 
 :root {
   background-color: var(--page-color);
   overscroll-behavior: none;
+  color: var(--text-color);
+  font-weight: var(--font-weight);
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font-size: inherit;
-}
-
-body {
-  font-weight: var(--font-weight);
+  font-family: inherit;
+  color: var(--text-color);
 }
 
 ol,
@@ -181,21 +77,35 @@ ol li {
 }
 
 button {
-  border-width: 0;
+  border: 1px solid var(--panel-border-color);
   user-select: none;
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.95), rgba(78, 205, 196, 0.85));
   color: var(--button-color);
-  font-family: inherit;
-  border-radius: var(--border-radius-width);
-  padding-block: var(--button-padding-block-size);
-  padding-inline: var(--button-padding-inline-size);
+  font-family: var(--retro-button-font);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(7, 7, 16, 0.95);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding-block: 0.3rem;
+  padding-inline: 1.1rem;
   margin: var(--outline-width);
   block-size: fit-content;
+  box-shadow: 0 12px 20px rgba(5, 5, 16, 0.35);
+  transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+button.secondary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-color);
 }
 
 button:disabled {
   color: var(--disabled-button-color);
-  background-color: var(--bg-disabled-button-color);
+  background: var(--bg-disabled-button-color);
+  box-shadow: none;
 }
 
 button.flashing-button {
@@ -205,6 +115,7 @@ button.flashing-button {
 
 button:not([disabled]):hover {
   filter: brightness(var(--brightness-hover));
+  transform: translateY(-1px);
 }
 
 @keyframes flashing-button-animation {
@@ -215,6 +126,34 @@ button:not([disabled]):hover {
     filter: brightness(var(--brightness-hover));
     outline: var(--outline-width) solid var(--outline-color);
   }
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border-color);
+  border-radius: var(--border-radius-width);
+  padding: 0.55rem 0.65rem;
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-secondary, #4ecdc4);
+  box-shadow: 0 0 0 1px rgba(78, 205, 196, 0.4);
+}
+
+dialog {
+  background: var(--panel-surface);
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+  border-radius: var(--radius-lg, 1rem);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(16px);
 }
 
 a,
@@ -232,8 +171,8 @@ a:visited {
 }
 
 ::selection {
-  background-color: var(--text-color);
-  color: var(--bg-color);
+  background-color: var(--color-secondary, #4ecdc4);
+  color: var(--page-color);
 }
 
 @media (display-mode: standalone) {
@@ -244,28 +183,28 @@ a:visited {
 
 @media (max-width: 60ch) {
   * {
-    font-size: 0.85rem;
+    font-size: 0.92rem;
   }
 
   :root .info-bar .source-link * {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 }
 
 @media (max-width: 40ch) {
   * {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   :root .info-bar .source-link * {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
   }
 }
 
 .scrollable {
   overflow-block: auto;
   overflow-y: auto;
-  scrollbar-color: var(--dark-accent-color) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
 }
 
 .scrollable::-webkit-scrollbar {
@@ -273,8 +212,8 @@ a:visited {
 }
 
 .scrollable::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
-  border-radius: var(--border-width);
+  background: linear-gradient(var(--color-primary), var(--color-secondary));
+  border-radius: 999px;
 }
 
 .scrollable::-webkit-resizer {

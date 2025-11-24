@@ -186,6 +186,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
   let canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
   let showGamepad = screenSize.dynamicWidth <= 900;
+  let gamepadHeight = 200;
 
   return (
     <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>
@@ -193,7 +194,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         style={{
           position: 'relative',
           padding: 'none',
-          background: 'slategrey',
+          background: 'var(--color-bg, #0a0a0f)',
           height: canvasHeight + 'px',
           width: canvasWidth + 'px',
         }}
@@ -226,38 +227,15 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
               left: 0,
               background: 'none',
               maxHeight: '100vh',
+              pointerEvents: 'auto',
             }}
             ref={hudRef}
             width={canvasWidth}
             height={canvasHeight}
             className={string}
-            onMouseUp={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-            onMouseDown={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-            onMouseMove={!showGamepad ? (e) => onTouchEvent(e.nativeEvent) : null}
-          />
-          {/* Gamepad - For controls on Mobile Only*/}
-          <canvas
-            style={{
-              position: 'relative',
-              zIndex: 5,
-              top: 0,
-              left: 0,
-              background: 'none',
-              display: showGamepad ? 'block' : 'none',
-              maxHeight: '100vh',
-            }}
-            ref={gamepadRef}
-            hidden={!showGamepad}
-            width={canvasWidth}
-            height={wrapperHeight}
-            className={string}
             onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
             onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
             onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
-            onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
-            onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
-            onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
-            onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
           />
           {/* MIPMAP - For Sprite Text / Speech / Titles */}
           <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
@@ -271,6 +249,38 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
             }}
           ></canvas>
         </div>
+      </div>
+      {/* Gamepad - For controls on Mobile Only - Positioned BELOW game canvas */}
+      <div style={{
+        width: canvasWidth + 'px',
+        height: showGamepad ? gamepadHeight + 'px' : '1px',
+        marginTop: showGamepad ? '10px' : '0px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <canvas
+          style={{
+            position: 'absolute',
+            zIndex: 5,
+            top: 0,
+            left: 0,
+            background: 'none',
+            width: '100%',
+            height: '100%',
+            display: showGamepad ? 'block' : 'none',
+          }}
+          ref={gamepadRef}
+          width={canvasWidth}
+          height={gamepadHeight}
+          className={string}
+          onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
+          onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
+          onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
+          onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
+          onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
+          onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
+          onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
+        />
       </div>
       <div>
         <input type="file" ref={fileRef} src={zipData ?? null} hidden />

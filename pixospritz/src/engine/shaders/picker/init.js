@@ -17,13 +17,19 @@ export default function init(shaderProgram) {
 
   // Get attribute locations - CRITICAL for picking to work!
   shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-  gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
+  if (shaderProgram.aVertexPosition >= 0) {
+    gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
+  }
 
   shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
-  gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
+  if (shaderProgram.aTextureCoord >= 0) {
+    gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
+  }
 
   shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
-  gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
+  if (shaderProgram.aVertexNormal >= 0) {
+    gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
+  }
 
   // Uniform Locations
   shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
@@ -39,6 +45,9 @@ export default function init(shaderProgram) {
     id = null,
     sampler = 1.0
   }) => {
+    // Ensure this program is active before setting uniforms
+    gl.useProgram(shaderProgram);
+    
     gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, self.uProjMat);
     gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, self.uModelMat);
     gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, self.camera.uViewMat);

@@ -31,6 +31,8 @@ const DEFAULT_OPTIONS = {
   hideNavigationBar: false,
   hideDownloadManager: false,
   hideInfobar: false,
+  hideTitleBar: false,
+  showSupportPanel: true,
   bufferedWrite: true,
   checkSignature: false,
   keepOrder: true,

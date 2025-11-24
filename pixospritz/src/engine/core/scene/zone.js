@@ -594,10 +594,23 @@ export default class Zone extends Loadable {
    * @param {boolean} [refresh=false] - Whether to refresh.
    */
   loadScripts = (refresh = false) => {
+    console.log('[Zone.loadScripts] ENTRY - zone:', this.id, 'refresh:', refresh, 'isPaused:', this.world.isPaused, 'scripts:', this.scripts.length);
+    
     if (this.world.isPaused) return;
+    // CRITICAL: Zone load scripts must run even when paused
+    // They are responsible for initializing the zone state
     const zone = this;
     for (const x of this.scripts) {
-      if (x.id === 'load-spritz' && refresh) this.runWhenLoaded(x.trigger.bind(zone));
+      console.log('[Zone.loadScripts] Checking script:', x.id, 'isLoadSpritz:', x.id === 'load-spritz', 'refresh:', refresh);
+      if (x.id === 'load-spritz' && refresh) {
+        // Call trigger immediately when loading/refreshing
+        console.log('[Zone.loadScripts] Calling load-spritz trigger for zone:', this.id);
+        try {
+          x.trigger.call(zone);
+        } catch (e) {
+          console.error('[Zone.loadScripts] Error calling load-spritz trigger:', e);
+        }
+      }
     }
   };
 

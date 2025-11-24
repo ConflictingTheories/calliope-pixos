@@ -245,13 +245,19 @@ export default class RenderManager {
 
     // Get attribute locations
     shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
-    gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
+    if (shaderProgram.aVertexNormal >= 0) {
+      gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
+    }
 
     shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-    gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
+    if (shaderProgram.aVertexPosition >= 0) {
+      gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
+    }
 
     shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
-    gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
+    if (shaderProgram.aTextureCoord >= 0) {
+      gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
+    }
 
     // Get uniform locations
     shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, 'uDiffuse');
@@ -301,6 +307,9 @@ export default class RenderManager {
      * @returns {void}
      */
     shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
+      // Ensure this program is active before setting uniforms
+      gl.useProgram(shaderProgram);
+      
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -414,7 +423,10 @@ export default class RenderManager {
      * @param {number[]|null} [options.color=null] - The color of the particle.
      * @returns {void}
      */
-    particleShaderProgram.setMatrixUniforms = function ({ scale = null, color = null }) {
+    particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null }) {
+      // Ensure this program is active before setting uniforms
+      gl.useProgram(particleShaderProgram);
+      
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -422,7 +434,7 @@ export default class RenderManager {
       // Scale
       gl.uniform3fv(this.scaleUniform, scale ? scale.toArray() : self.scale.toArray());
 
-      // Particle color
+      // Color
       gl.uniform3fv(this.particleColorUniform, color ? color : [1.0, 1.0, 1.0]);
     };
 
@@ -779,6 +791,7 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(attribute);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
   }
 

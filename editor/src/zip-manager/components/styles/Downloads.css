@@ -1,7 +1,8 @@
 .downloads {
   min-block-size: 5dvh;
-  overflow-block: auto;
-  flex: 1;
+  max-height: 140px;
+  overflow-y: auto;
+  flex: 0 0 auto;
 }
 
 .downloads ol,

@@ -285,20 +285,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       
       switch(e.key.toLowerCase()) {
-        case 'p':
-          setCurrentTool('paint');
-          break;
-        case 'e':
-          setCurrentTool('erase');
-          break;
-        case 'i':
-          setCurrentTool('pick');
-          break;
-        case 'r':
-          // Reset camera - would need to expose this from WebGL3DCanvas
-          break;
-        default:
-          break;
+      case 'p':
+        setCurrentTool('paint');
+        break;
+      case 'e':
+        setCurrentTool('erase');
+        break;
+      case 'i':
+        setCurrentTool('pick');
+        break;
+      case 'r':
+        // Reset camera - would need to expose this from WebGL3DCanvas
+        break;
+      default:
+        break;
       }
     };
     
@@ -670,39 +670,39 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     const vertices = [
       // Front face
       -size, -size,  size,
-       size, -size,  size,
-       size,  size,  size,
+      size, -size,  size,
+      size,  size,  size,
       -size, -size,  size,
-       size,  size,  size,
+      size,  size,  size,
       -size,  size,  size,
       // Back face
       -size, -size, -size,
       -size,  size, -size,
-       size,  size, -size,
+      size,  size, -size,
       -size, -size, -size,
-       size,  size, -size,
-       size, -size, -size,
+      size,  size, -size,
+      size, -size, -size,
       // Top face
       -size,  size, -size,
       -size,  size,  size,
-       size,  size,  size,
+      size,  size,  size,
       -size,  size, -size,
-       size,  size,  size,
-       size,  size, -size,
+      size,  size,  size,
+      size,  size, -size,
       // Bottom face
       -size, -size, -size,
-       size, -size, -size,
-       size, -size,  size,
+      size, -size, -size,
+      size, -size,  size,
       -size, -size, -size,
-       size, -size,  size,
+      size, -size,  size,
       -size, -size,  size,
       // Right face
-       size, -size, -size,
-       size,  size, -size,
-       size,  size,  size,
-       size, -size, -size,
-       size,  size,  size,
-       size, -size,  size,
+      size, -size, -size,
+      size,  size, -size,
+      size,  size,  size,
+      size, -size, -size,
+      size,  size,  size,
+      size, -size,  size,
       // Left face
       -size, -size, -size,
       -size, -size,  size,
@@ -1158,8 +1158,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   // Get available tiles
   const tileOptions = tiles
     ? Object.keys(tiles)
-        .sort()
-        .map((key) => ({ label: key, value: key }))
+      .sort()
+      .map((key) => ({ label: key, value: key }))
     : [];
 
   // Show loading/error states

@@ -289,7 +289,7 @@ const mul = (a, b) => {
     o[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
   }
   return o;
-}
+};
 
 const lookAt = (eye, center, up) => {
   const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2];
@@ -300,7 +300,7 @@ const lookAt = (eye, center, up) => {
   xx /= xl; xy /= xl; xz /= xl;
   const y0 = z1 * xz - z2 * xy, y1 = z2 * xx - z0 * xz, y2 = z0 * xy - z1 * xx;
   return [xx, y0, z0, 0, xy, y1, z1, 0, xz, y2, z2, 0, -(xx * eye[0] + xy * eye[1] + xz * eye[2]), -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]), -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]), 1];
-}
+};
 
 const invert = (m) => {
   const out = new Array(16);
@@ -328,6 +328,6 @@ const invert = (m) => {
   out[14] = (-m[12] * b03 + m[13] * b01 - m[14] * b00) * id;
   out[15] = (m[8] * b03 - m[9] * b01 + m[10] * b00) * id;
   return out;
-}
+};
 
 export { from, normalize, subtractVectors, normalFromMat4, create, create3, invert, lookAt, mul, identity, perspective, frustum, translate, rotate, isPowerOf2, set };

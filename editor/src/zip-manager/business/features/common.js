@@ -91,9 +91,9 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
   }
 
   function getWritableBlob() {
-    // eslint-disable-next-line no-undef
+     
     const { readable, writable } = new TransformStream({});
-    // eslint-disable-next-line no-undef
+     
     const blob = new Response(readable).blob();
     return {
       blob,

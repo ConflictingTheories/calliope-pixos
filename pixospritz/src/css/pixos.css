@@ -9,13 +9,23 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
+:root {
+  --color-bg: #0a0a0f;
+  --color-primary: #00ff88;
+  --color-secondary: #00ccff;
+  --color-accent: #ff0055;
+  --color-border: #2a2a3e;
+  --glow-primary: rgba(0, 255, 136, 0.5);
+  --glow-secondary: rgba(0, 204, 255, 0.5);
+}
+
 .pixos {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
   font-size: 16px;
   width: 100%;
-  text-shadow: #3f3f3f 2px 2px 0px;
+  text-shadow: #000 2px 2px 0px;
   position: relative;
-  /* padding: 2.5em; */
   align-items: center;
   align-content: center;
 }
@@ -29,9 +39,12 @@
 }
 
 .materialSelector {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(10, 10, 15, 0.95);
   margin: auto;
   position: relative;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 .materialSelector tr {
   height: 70px;
@@ -40,77 +53,97 @@
   background-position: 0px 0px;
   cursor: pointer;
   margin: 0;
-  opacity: 0.3;
+  opacity: 0.5;
   padding: 0;
   width: 70px;
+  transition: opacity 0.2s;
 }
 .materialSelector td:hover {
-  opacity: 0.8;
+  opacity: 1;
+  box-shadow: 0 0 10px var(--glow-primary);
 }
 
 .nickname {
-  color: #ffffff;
+  color: var(--color-primary);
   cursor: default;
   left: 42%;
   position: absolute;
   top: 40%;
   width: 300px;
+  text-shadow: 0 0 10px var(--glow-primary);
 }
 .nickname input {
-  background: none;
-  border-bottom: 1px solid #888888;
-  border: none;
-  color: white;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 24px;
+  background: rgba(10, 10, 15, 0.8);
+  border-bottom: 2px solid var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-primary);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 16px;
   outline: none;
   width: 100%;
+  padding: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.nickname input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px var(--glow-primary);
 }
 
 .joininfo {
-  color: #ffffff;
+  color: var(--color-primary);
   cursor: default;
-  font-size: 24px;
+  font-size: 16px;
   position: absolute;
   text-align: center;
   top: 42%;
   width: 99%;
+  text-shadow: 0 0 10px var(--glow-primary);
 }
 
 .chatbox {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(10, 10, 15, 0.95);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
   bottom: 55px;
-  color: white;
+  color: var(--color-primary);
   cursor: default;
   height: 195px;
   left: 20px;
   overflow: hidden;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 10px;
   position: absolute;
   width: 600px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .chatbox_text {
   bottom: 8px;
   position: absolute;
   text-shadow: none;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .chatbox_entry {
-  background: rgba(0, 0, 0, 0.6);
-  border: none;
+  background: rgba(10, 10, 15, 0.95);
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
   bottom: 18px;
-  color: white;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  color: var(--color-primary);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 12px;
   height: 30px;
   left: 20px;
   outline: none;
-  padding-bottom: 2px;
-  padding-left: 10px;
+  padding: 8px 10px;
   position: absolute;
   width: 610px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.chatbox_entry:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px var(--glow-primary);
 }
 
 html {

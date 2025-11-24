@@ -13,10 +13,19 @@ import { getLibPackage } from './lib/package.js'
 import { LuaType, ensureArray, Config } from './utils.js'
 import { parse as parseScript } from './parser.js'
 
+/**
+ * Represents a parsed PixoScript chunk that can be executed later.
+ */
 interface Script {
     exec: () => LuaType
 }
 
+/**
+ * Invoke a callable object, normal function, or table with a metamethod.
+ * @param {Function|Table} f - Callable target.
+ * @param {...LuaType} args - Arguments to forward.
+ * @returns {LuaType[]}
+ */
 const call = (f: Function | Table, ...args: LuaType[]): LuaType[] => {
     if (f instanceof Function) return ensureArray(f(...args))
 
@@ -29,6 +38,12 @@ const call = (f: Function | Table, ...args: LuaType[]): LuaType[] => {
 const stringTable = new Table()
 stringTable.metatable = stringMetatable
 
+/**
+ * Resolve keys against tables or string metatables by delegating.
+ * @param {Table|string} t - Table or string value.
+ * @param {LuaType} v - Key to look up.
+ * @returns {LuaType}
+ */
 const get = (t: Table | string, v: LuaType): LuaType => {
     if (t instanceof Table) return t.get(v)
     if (typeof t === 'string') return stringTable.get(v)
@@ -36,6 +51,13 @@ const get = (t: Table | string, v: LuaType): LuaType => {
     throw new LuaError(`no table or metatable found for given type`)
 }
 
+/**
+ * Execute a compiled script chunk inside the provided global table.
+ * @param {Table} _G - Global execution table.
+ * @param {string} chunk - JavaScript-compiled Lua chunk.
+ * @param {string} [chunkName] - Optional chunk name for varargs.
+ * @returns {LuaType[]}
+ */
 const execChunk = (_G: Table, chunk: string, chunkName?: string): LuaType[] => {
     const exec = new Function('__lua', chunk)
     const globalScope = new Scope(_G.strValues).extend()
@@ -50,6 +72,10 @@ const execChunk = (_G: Table, chunk: string, chunkName?: string): LuaType[] => {
     return res === undefined ? [undefined] : res
 }
 
+/**
+ * Create a Pixoscript runtime environment with injected libraries.
+ * @param {Config} [config={}] - Runtime overrides (paths, IO, filesystem helpers).
+ */
 function createEnv(
     config: Config = {}
 ): {
@@ -86,6 +112,11 @@ function createEnv(
 
     _G.rawset('require', _require)
 
+    /**
+     * Parse in-memory script text.
+     * @param {string} code - PixoScript source text.
+     * @returns {Script}
+     */
     const parse = (code: string): Script => {
         const script = parseScript(code)
         return {
@@ -93,6 +124,11 @@ function createEnv(
         }
     }
 
+    /**
+     * Load and parse a script from the configured filesystem.
+     * @param {string} filename - Path to the .pxs file.
+     * @returns {Script}
+     */
     const parseFile = (filename: string): Script => {
         if (!cfg.fileExists) throw new LuaError('parseFile requires the config.fileExists function')
         if (!cfg.loadFile) throw new LuaError('parseFile requires the config.loadFile function')

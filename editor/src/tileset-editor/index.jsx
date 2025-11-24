@@ -40,8 +40,8 @@ import './style.css';
 function TilesetEditor({ content, onSave, assets = [] }) {
 
   const [tileset, setTileset] = useState({
-    name: "",
-    src: "",
+    name: '',
+    src: '',
     sheetSize: [0, 0],
     sheetOffsetX: 0,
     sheetOffsetY: 0,
@@ -291,7 +291,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   // Thumbnail Render
   function drawThumb() {
-    let thX = thC.current?.getContext('2d')
+    let thX = thC.current?.getContext('2d');
     setCtx(thX);
     if (thX) {
       const srcW = glC.current.width, srcH = glC.current.height, dstW = thC.current.width, dstH = thC.current.height;
@@ -310,7 +310,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
 
   function resize() {
-    const r = glC.current?.getBoundingClientRect()
+    const r = glC.current?.getBoundingClientRect();
     if (r) {
       setW(Math.max(1, Math.floor(r.width * dpr)));
       setH(Math.max(1, Math.floor(r.height * dpr)));
@@ -417,7 +417,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   /* ===== I/O ===== */
-  function toHex(c) { return '#' + c.map(v => ('0' + v.toString(16)).slice(-2)).join('') }
+  function toHex(c) { return '#' + c.map(v => ('0' + v.toString(16)).slice(-2)).join(''); }
 
   function ingestTileset() {
     const t = tileset;
@@ -619,7 +619,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   useEffect(() => {
     new ResizeObserver(resizeUV).observe(uvC.current);
-  }, [uvC])
+  }, [uvC]);
 
   // Parse incoming JSON into state
   useEffect(() => {
@@ -820,7 +820,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   function resizeUV() {
     const r = uvC.current?.getBoundingClientRect();
-    console.log({ uvC, c: uvC.current, b: uvC.current.getBoundingClientRect() })
+    console.log({ uvC, c: uvC.current, b: uvC.current.getBoundingClientRect() });
     setUvW(Math.max(1, Math.floor(r.width * dpr)));
     setUvH(Math.max(1, Math.floor(r.height * dpr)));
     uvC.width = uvW;
@@ -842,22 +842,22 @@ function TilesetEditor({ content, onSave, assets = [] }) {
           <Panel bordered header={<strong>Tileset Editor</strong>}>
             <div id="app">
               <div id="toolbar">
-                <select id="tilePick" ref={tilePick} className={"pill"} style={{ minWidth: '220px' }} onChange={selectTile}>
+                <select id="tilePick" ref={tilePick} className={'pill'} style={{ minWidth: '220px' }} onChange={selectTile}>
                   <option value="">— select tile —</option>
                 </select>
 
-                <select id="layerPick" ref={layerPick} className={"pill"} style={{ minWidth: '220px' }} onChange={selectLayer}>
+                <select id="layerPick" ref={layerPick} className={'pill'} style={{ minWidth: '220px' }} onChange={selectLayer}>
                   <option value={editLayerIndex}>— select layer —</option>
                 </select>
 
-                <label className={"btn"}>Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden="" onChange={loadAtlas} /></label>
-                <select id="texPick" ref={texPick} className={"pill"} style={{ minWidth: '180px' }}>
+                <label className={'btn'}>Load atlas image <input id="fAtlas" type="file" accept="image/*" hidden="" onChange={loadAtlas} /></label>
+                <select id="texPick" ref={texPick} className={'pill'} style={{ minWidth: '180px' }}>
                   <option value="">— texture key —</option>
                 </select>
-                <button onClick={applyTexture} id="btnUseTex" className={"btn"} title="Set selected layer’s texture key to the chosen one">Use chosen
+                <button onClick={applyTexture} id="btnUseTex" className={'btn'} title="Set selected layer’s texture key to the chosen one">Use chosen
                   texture</button>
 
-                <button id="btnExportTileset" className={"btn"} onClick={() => {
+                <button id="btnExportTileset" className={'btn'} onClick={() => {
                   if (!tileset) { alert('Nothing to export'); return; }
                   downloadJSON(tileset, 'tileset.json');
                 }}>Export tileset.json</button>
@@ -871,64 +871,64 @@ function TilesetEditor({ content, onSave, assets = [] }) {
               <aside id="side">
                 <div id="pane">
                   <h3>Tile / Layers</h3>
-                  <div className={"row"}>
-                    <div id="tileMeta" className={"mono note"}>—</div>
+                  <div className={'row'}>
+                    <div id="tileMeta" className={'mono note'}>—</div>
                   </div>
-                  <div className={"row"}>
-                    <button id="btnCloneTile" className={"btn"}>Clone Tile…</button>
-                    <button id="btnAddLayer" className={"btn"}>Add Layer…</button>
-                    <button id="btnDelLayer" className={"btn"}>Delete Layer</button>
+                  <div className={'row'}>
+                    <button id="btnCloneTile" className={'btn'}>Clone Tile…</button>
+                    <button id="btnAddLayer" className={'btn'}>Add Layer…</button>
+                    <button id="btnDelLayer" className={'btn'}>Delete Layer</button>
                   </div>
-                  <div className={"row note"}>All layers render together; the Layer picker chooses which one you edit.</div>
+                  <div className={'row note'}>All layers render together; the Layer picker chooses which one you edit.</div>
 
                   <fieldset>
                     <legend>Tileset (live)</legend>
-                    <div className={"row"}><label className={"w120"}>Name</label><input id="tsName" type="text" placeholder="tileset name" value={tileset.name} onChange={(e) => {
+                    <div className={'row'}><label className={'w120'}>Name</label><input id="tsName" type="text" placeholder="tileset name" value={tileset.name} onChange={(e) => {
                       let newTileset = tileset;
                       newTileset.name = e.currentTarget.value;
-                      setTileset(newTileset)
+                      setTileset(newTileset);
                     }} />
                     </div>
-                    <div className={"stack2"}>
-                      <div className={"row"}><label className={"w120"}>Tile size</label><input id="tsTileSize" type="number" min="1" step="1" value={tileSize} onChange={e => setTileSize(e.currentTarget.value)} />
+                    <div className={'stack2'}>
+                      <div className={'row'}><label className={'w120'}>Tile size</label><input id="tsTileSize" type="number" min="1" step="1" value={tileSize} onChange={e => setTileSize(e.currentTarget.value)} />
                       </div>
-                      <div className={"row"}><label className={"w120"}>BG color</label><input id="tsBg" type="color" value={bgColor} onChange={e => setBgColor(e.currentTarget.value)} /></div>
+                      <div className={'row'}><label className={'w120'}>BG color</label><input id="tsBg" type="color" value={bgColor} onChange={e => setBgColor(e.currentTarget.value)} /></div>
                     </div>
-                    <div className={"stack2"}>
-                      <div className={"row"}><label className={"w120"}>Sheet W</label><input id="tsSheetW" type="number" min="1" step="1" value={sheetSize[0]} onChange={(e) => {
+                    <div className={'stack2'}>
+                      <div className={'row'}><label className={'w120'}>Sheet W</label><input id="tsSheetW" type="number" min="1" step="1" value={sheetSize[0]} onChange={(e) => {
                         let newSheetSize = sheetSize;
                         newSheetSize[0] = e.currentTarget.value;
-                        setSheetSize(newSheetSize)
+                        setSheetSize(newSheetSize);
                       }} />
                       </div>
-                      <div className={"row"}><label className={"w120"}>Sheet H</label><input id="tsSheetH" type="number" min="1" step="1" value={sheetSize[1]} onChange={(e) => {
+                      <div className={'row'}><label className={'w120'}>Sheet H</label><input id="tsSheetH" type="number" min="1" step="1" value={sheetSize[1]} onChange={(e) => {
                         let newSheetSize = sheetSize;
                         newSheetSize[1] = e.currentTarget.value;
-                        setSheetSize(newSheetSize)
+                        setSheetSize(newSheetSize);
                       }} />
                       </div>
                     </div>
-                    <div className={"stack2"}>
-                      <div className={"row"}><label className={"w120"}>Offset X</label><input id="tsOffX" type="number" step="1" value={sheetOff[0]} onChange={(e) => {
+                    <div className={'stack2'}>
+                      <div className={'row'}><label className={'w120'}>Offset X</label><input id="tsOffX" type="number" step="1" value={sheetOff[0]} onChange={(e) => {
                         let newSheetOff = sheetOff;
                         newSheetOff[0] = e.currentTarget.value;
-                        setSheetOff(newSheetOff)
+                        setSheetOff(newSheetOff);
                       }} />
                       </div>
-                      <div className={"row"}><label className={"w120"}>Offset Y</label><input id="tsOffY" type="number" step="1" value={sheetOff[1]} onChange={(e) => {
+                      <div className={'row'}><label className={'w120'}>Offset Y</label><input id="tsOffY" type="number" step="1" value={sheetOff[1]} onChange={(e) => {
                         let newSheetOff = sheetOff;
                         newSheetOff[1] = e.currentTarget.value;
-                        setSheetOff(newSheetOff)
+                        setSheetOff(newSheetOff);
                       }} />
                       </div>
                     </div>
-                    <div className={"row note"}>Apply to re-bake UVs and refresh.</div>
-                    <div className={"row"}><button id="btnApplyTileset" onClick={applyTilesetEdits} className={"btn grow"}>Apply &amp; Re-bake</button></div>
+                    <div className={'row note'}>Apply to re-bake UVs and refresh.</div>
+                    <div className={'row'}><button id="btnApplyTileset" onClick={applyTilesetEdits} className={'btn grow'}>Apply &amp; Re-bake</button></div>
                   </fieldset>
 
                   <fieldset>
                     <legend>View</legend>
-                    <div className={"row"}><label><input type="checkbox" id="chkWire" ref={chkWire} /> Wireframe</label>
+                    <div className={'row'}><label><input type="checkbox" id="chkWire" ref={chkWire} /> Wireframe</label>
                       <label><input type="checkbox" id="chkFlipV" checked="" onChange={(e) => {
                         setFlipV(e.currentTarget.checked);
                         for (const L of layers)
@@ -936,13 +936,13 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                         drawUV();
                       }} /> Flip V (top-left UVs)</label>
                     </div>
-                    <div className={"row"}><label>Ambient</label><input id="amb" type="range" min="0" max="1" step="0.01" onChange={e => setAmb(e.currentTarget.value)} value={amb} />
+                    <div className={'row'}><label>Ambient</label><input id="amb" type="range" min="0" max="1" step="0.01" onChange={e => setAmb(e.currentTarget.value)} value={amb} />
                     </div>
-                    <div className={"row"}><label>Light</label>
+                    <div className={'row'}><label>Light</label>
                       <input id="lx" type="range" min="-1" max="1" step="0.01" onChange={e => setLx(e.currentTarget.value)} value={lx} />
                       <input id="ly" type="range" min="-1" max="1" step="0.01" onChange={e => setLy(e.currentTarget.value)} value={ly} />
                       <input id="lz" type="range" min="-1" max="1" step="0.01" onChange={e => setLz(e.currentTarget.value)} value={lz} />
-                      <button id="btnResetView" className={"btn"} onClick={btnResetViewOnClick}>Reset</button>
+                      <button id="btnResetView" className={'btn'} onClick={btnResetViewOnClick}>Reset</button>
                     </div>
                   </fieldset>
 
@@ -952,17 +952,17 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                   </fieldset>
                   <fieldset>
                     <legend>UV (Atlas-aware)</legend>
-                    <div className={"row note"}>Shows atlas, highlights the chosen texture cell, and overlays the baked UVs.
+                    <div className={'row note'}>Shows atlas, highlights the chosen texture cell, and overlays the baked UVs.
                       Drag points to edit.</div>
                     <div id="uvwrap"><canvas id="uv" ref={uvC} width="663" height="444"></canvas></div>
                   </fieldset>
 
                   <h3>Thumbnail</h3>
-                  <canvas id="thumb" className={"thumb"} ref={thC} width="256" height="120"></canvas>
+                  <canvas id="thumb" className={'thumb'} ref={thC} width="256" height="120"></canvas>
                 </div>
               </aside>
 
-              <div id="status"><span id="statL">ready</span><span id="statR" className={"mono"}>—</span></div>
+              <div id="status"><span id="statL">ready</span><span id="statR" className={'mono'}>—</span></div>
             </div>
           </Panel>
         </Col>
