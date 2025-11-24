@@ -1,6 +1,6 @@
 {
-  "name": "calliope-pixos",
-  "version": "0.9.0",
+  "name": "pixospritz-core",
+  "version": "0.10.1",
   "description": "Pixos is a mini interactive spritz avatar plugin for calliope static site generator for generating pixospritz'.",
   "main": "dist/bundle.js",
   "scripts": {
@@ -10,8 +10,8 @@
     "webpack": "npx webpack",
     "lint": "cd pixoscript && yarn typecheck",
     "lint:editor": "cd editor && yarn lint",
-    "lint:player": "cd example && yarn lint",
-    "start:player": "cd example && yarn start",
+    "lint:player": "cd player && yarn lint",
+    "start:player": "cd player && yarn start",
     "start:editor": "cd editor && yarn start",
     "start:server": "node server/v2/main.js",
     "start:server:legacy": "node server/v1/main.js"
@@ -29,13 +29,13 @@
     "webgl",
     "canvas"
   ],
-  "homepage": "https://calliope.site",
+  "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "AGPL-3.0",
+  "license": "Attribution-NonCommercial-ShareAlike 4.0 International",
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.0",
