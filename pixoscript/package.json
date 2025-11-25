@@ -30,7 +30,7 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "AGPL-3.0",
+  "license": "CC-BY-NC-SA-4.0",
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.0",

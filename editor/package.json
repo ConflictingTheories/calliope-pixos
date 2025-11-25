@@ -22,7 +22,7 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "Attribution-NonCommercial-ShareAlike 4.0 International",
+  "license": "CC-BY-NC-SA-4.0",
   "scripts": {
     "start": "vite",
     "build": "vite build",

@@ -10,8 +10,8 @@
     "webpack": "npx webpack",
     "lint": "cd pixoscript && yarn typecheck",
     "lint:editor": "cd editor && yarn lint",
-    "lint:player": "cd player && yarn lint",
-    "start:player": "cd player && yarn start",
+    "lint:console": "cd console && yarn lint",
+    "start:console": "cd console && yarn start",
     "start:editor": "cd editor && yarn start",
     "start:server": "node server/v2/main.js",
     "start:server:legacy": "node server/v1/main.js"
@@ -35,7 +35,7 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "Attribution-NonCommercial-ShareAlike 4.0 International",
+  "license": "CC-BY-NC-SA-4.0",
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.0",
