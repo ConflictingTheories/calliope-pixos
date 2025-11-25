@@ -41,7 +41,27 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   };
   const onTouchEvent = (e) => {
     try {
-      if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(e);
+      // Calculate position relative to HUD canvas
+      const canvas = hudRef.current;
+      if (canvas && e.clientX !== undefined) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        // Create a modified event with adjusted coordinates
+        const adjustedEvent = {
+          ...e,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          _canvasRect: rect,
+          _scaleX: scaleX,
+          _scaleY: scaleY
+        };
+        
+        if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(adjustedEvent);
+      } else {
+        if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(e);
+      }
     } catch (err) {
       // swallow until engine initialized
     }
@@ -211,7 +231,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
               zIndex: 1,
               top: 0,
               left: 0,
-              maxHeight: '100vh',
+              width: '100%',
+              height: '100%',
             }}
             ref={ref}
             width={canvasWidth}
@@ -226,8 +247,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
               top: 0,
               left: 0,
               background: 'none',
-              maxHeight: '100vh',
-              pointerEvents: 'auto',
+              width: '100%',
+              height: '100%',
             }}
             ref={hudRef}
             width={canvasWidth}

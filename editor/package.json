@@ -1,6 +1,6 @@
 {
-  "name": "pixos-editor",
-  "version": "0.2.0",
+  "name": "pixospritz-editor",
+  "version": "0.2.1",
   "type": "module",
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
@@ -16,6 +16,13 @@
     "workbox-precaching": "^7.1.0",
     "workbox-routing": "^7.1.0"
   },
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "CC-BY-NC-SA-4.0",
   "scripts": {
     "start": "vite",
     "build": "vite build",

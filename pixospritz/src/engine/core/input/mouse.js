@@ -80,10 +80,12 @@ export default class Mouse {
    */
   onMouseDown(e) {
     e.preventDefault();
-    const canvas = this.engine.canvas;
+    const canvas = e.target; // Use the actual event target
     const rect = canvas.getBoundingClientRect();
-    this.position.x = e.clientX - rect.left;
-    this.position.y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    this.position.x = (e.clientX - rect.left) * scaleX;
+    this.position.y = (e.clientY - rect.top) * scaleY;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = true;
       if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseDown', e.button, this.position);
@@ -98,10 +100,12 @@ export default class Mouse {
    */
   onMouseUp(e) {
     e.preventDefault();
-    const canvas = this.engine.canvas;
+    const canvas = e.target; // Use the actual event target
     const rect = canvas.getBoundingClientRect();
-    this.position.x = e.clientX - rect.left;
-    this.position.y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    this.position.x = (e.clientX - rect.left) * scaleX;
+    this.position.y = (e.clientY - rect.top) * scaleY;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = false;
       if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseUp', e.button, this.position);
@@ -115,10 +119,12 @@ export default class Mouse {
    * @returns {void}
    */
   onMouseMove(e) {
-  const canvas = this.engine.canvas;
+  const canvas = e.target; // Use the actual event target
   const rect = canvas.getBoundingClientRect();
-  const newX = e.clientX - rect.left;
-  const newY = e.clientY - rect.top;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const newX = (e.clientX - rect.left) * scaleX;
+  const newY = (e.clientY - rect.top) * scaleY;
   this.movement.x = newX - this.position.x;
   this.movement.y = newY - this.position.y;
   this.position.x = newX;
