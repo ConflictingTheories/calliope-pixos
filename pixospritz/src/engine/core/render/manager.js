@@ -19,7 +19,6 @@ import { OBJ } from '../../utils/obj/index.js';
 import CameraManager from './camera.js';
 import LightManager from './light.js';
 import SkyboxManager from './skybox.js';
-import GLEngine from '../index.js';
 import { fetchTransitionShaderFiles } from './shaders.js';
 import ParticleManager from './ParticleManager.js';
 
