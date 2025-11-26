@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/monorepo",
+  "name": "pixospritz-monorepo",
   "version": "1.0.0",
   "description": "PixoSpritz - A WebGL-based game engine and editor ecosystem",
   "workspaces": [

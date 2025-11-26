@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/server",
+  "name": "pixospritz-server",
   "version": "1.0.0",
   "description": "PixoSpritz Server - WebSocket multiplayer server for PixoSpritz games",
   "type": "module",

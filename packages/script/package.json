@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/script",
+  "name": "pixoscript",
   "version": "1.0.0",
   "description": "PixoScript - A Lua-inspired scripting language for PixoSpritz game engine",
   "type": "module",

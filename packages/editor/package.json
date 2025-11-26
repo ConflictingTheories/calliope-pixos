@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/editor",
+  "name": "pixospritz-editor",
   "version": "1.0.0",
   "description": "PixoSpritz Editor - Visual development tools for creating games",
   "type": "module",
