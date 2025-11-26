@@ -23,8 +23,9 @@ import {
   Input,
 } from 'rsuite';
 
-// Simple isometric tile preview
-function TilePreview({ components, geometryData }) {
+// Isometric tile preview with Z-up coordinate system (matching engine)
+// X: East/West, Y: North/South, Z: Up/Down
+function TilePreview({ components, geometryData, size = 180 }) {
   const canvasRef = useRef(null);
   const [rotation, setRotation] = useState(0);
   
@@ -36,48 +37,64 @@ function TilePreview({ components, geometryData }) {
     const width = canvas.width;
     const height = canvas.height;
     
-    // Clear
-    ctx.fillStyle = '#1a1a2e';
+    // Clear with dark background
+    ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, width, height);
     
-    // Draw grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 8; i++) {
-      const x = (i / 8) * width;
-      const y = (i / 8) * height;
+    // Draw subtle grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    const gridSize = width / 8;
+    for (let i = 1; i < 8; i++) {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
+      ctx.moveTo(i * gridSize, 0);
+      ctx.lineTo(i * gridSize, height);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
+      ctx.moveTo(0, i * gridSize);
+      ctx.lineTo(width, i * gridSize);
       ctx.stroke();
     }
     
     if (!components || components.length === 0) {
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.font = '11px sans-serif';
+      ctx.font = '11px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('No layers', width / 2, height / 2);
       return;
     }
     
-    // Simple isometric projection
+    // Z-up isometric projection (matching engine)
+    // Camera orbits around Z axis, looking down at ~30°
     const cos = Math.cos(rotation);
     const sin = Math.sin(rotation);
-    const scale = 50;
+    const scale = size * 0.28;
     const cx = width / 2;
-    const cy = height / 2 + 20;
+    const cy = height / 2 + 15;
     
+    // Project 3D point to 2D with Z-up coordinate system
     const project = (x, y, z) => {
-      const rx = x * cos - z * sin;
-      const rz = x * sin + z * cos;
-      const px = cx + (rx - rz) * scale * 0.7;
-      const py = cy - y * scale * 0.6 + (rx + rz) * scale * 0.25;
-      return [px, py];
+      // Rotate around Z axis (vertical)
+      const rx = x * cos - y * sin;
+      const ry = x * sin + y * cos;
+      // Isometric projection: X/Y on ground plane, Z is up
+      const px = cx + (rx - ry) * scale * 0.7;
+      const py = cy - z * scale * 0.8 + (rx + ry) * scale * 0.25;
+      return [px, py, rx + ry]; // Include depth for sorting
     };
+    
+    // Draw ground plane reference
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const corners = [[0,0,0], [1,0,0], [1,1,0], [0,1,0]];
+    corners.forEach((c, i) => {
+      const [px, py] = project(c[0], c[1], c[2]);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.stroke();
     
     // Color palette for layers
     const layerColors = [
@@ -90,6 +107,7 @@ function TilePreview({ components, geometryData }) {
     
     // Draw each layer
     components.forEach((comp, idx) => {
+      // Z offset is now applied to Z coordinate (up direction)
       const zOff = (comp.zOffset || 0) * 0.1;
       const color = layerColors[idx % layerColors.length];
       const strokeColor = color.replace('0.4)', '0.8)');
@@ -101,7 +119,7 @@ function TilePreview({ components, geometryData }) {
       }
       
       if (vertices && vertices.length > 0) {
-        // Draw actual geometry
+        // Draw actual geometry with Z offset applied to Z coordinate
         ctx.fillStyle = color;
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1.5;
@@ -109,10 +127,11 @@ function TilePreview({ components, geometryData }) {
         vertices.forEach(tri => {
           if (!tri || tri.length < 3) return;
           ctx.beginPath();
-          const [p0x, p0y] = project(tri[0][0], tri[0][1] + zOff, tri[0][2]);
+          // Apply zOff to Z coordinate (third component, the up direction)
+          const [p0x, p0y] = project(tri[0][0], tri[0][1], tri[0][2] + zOff);
           ctx.moveTo(p0x, p0y);
           for (let i = 1; i < 3; i++) {
-            const [px, py] = project(tri[i][0], tri[i][1] + zOff, tri[i][2]);
+            const [px, py] = project(tri[i][0], tri[i][1], tri[i][2] + zOff);
             ctx.lineTo(px, py);
           }
           ctx.closePath();
@@ -120,17 +139,17 @@ function TilePreview({ components, geometryData }) {
           ctx.stroke();
         });
       } else {
-        // Draw placeholder tile shape
+        // Draw placeholder tile shape on XY plane at Z = zOff
         ctx.fillStyle = color;
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1.5;
         
-        // Draw a simple flat square at the zOffset height
+        // Draw a simple flat square on the XY plane at height zOff
         ctx.beginPath();
-        const [p1x, p1y] = project(0, zOff, 0);
-        const [p2x, p2y] = project(1, zOff, 0);
-        const [p3x, p3y] = project(1, zOff, 1);
-        const [p4x, p4y] = project(0, zOff, 1);
+        const [p1x, p1y] = project(0, 0, zOff);
+        const [p2x, p2y] = project(1, 0, zOff);
+        const [p3x, p3y] = project(1, 1, zOff);
+        const [p4x, p4y] = project(0, 1, zOff);
         ctx.moveTo(p1x, p1y);
         ctx.lineTo(p2x, p2y);
         ctx.lineTo(p3x, p3y);
@@ -141,20 +160,50 @@ function TilePreview({ components, geometryData }) {
       }
       
       // Draw layer label
-      const [labelX, labelY] = project(0.5, zOff + 0.3, 0.5);
+      const [labelX, labelY] = project(0.5, 0.5, zOff + 0.2);
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = 'bold 9px sans-serif';
+      ctx.font = 'bold 9px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(comp.geometry || '?', labelX, labelY);
     });
     
-    // Draw legend
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '9px sans-serif';
+    // Draw axes (Z-up coordinate system)
+    ctx.lineWidth = 2;
+    const [ox, oy] = project(0, 0, 0);
+    
+    // X axis (red) - East
+    ctx.strokeStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    const [ax, ay] = project(0.3, 0, 0);
+    ctx.lineTo(ax, ay);
+    ctx.stroke();
+    
+    // Y axis (green) - North
+    ctx.strokeStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    const [bx, by] = project(0, 0.3, 0);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+    
+    // Z axis (blue) - Up
+    ctx.strokeStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    const [zx, zy] = project(0, 0, 0.3);
+    ctx.lineTo(zx, zy);
+    ctx.stroke();
+    
+    // Draw info
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '9px system-ui';
     ctx.textAlign = 'left';
     ctx.fillText(`${components.length} layer(s)`, 6, height - 6);
+    ctx.textAlign = 'right';
+    ctx.fillText('Z-up', width - 6, height - 6);
     
-  }, [components, geometryData, rotation]);
+  }, [components, geometryData, rotation, size]);
   
   // Auto-rotate
   useEffect(() => {
@@ -167,11 +216,12 @@ function TilePreview({ components, geometryData }) {
   return (
     <canvas 
       ref={canvasRef} 
-      width={180} 
-      height={180}
+      width={size} 
+      height={size}
       style={{ 
         borderRadius: '8px',
-        background: '#1a1a2e',
+        background: '#0d1117',
+        border: '1px solid rgba(255,255,255,0.1)',
       }}
     />
   );

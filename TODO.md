@@ -73,6 +73,57 @@ A unified camera controller supporting:
 - [x] Debug click/touch event propagation
 - [x] Fix event handling in web console
 - [x] Fix canvas coordinate alignment with viewport 
+- [ ] Fix click error
+        spritz.js:183 touchHandler error TypeError: Cannot read properties of undefined (reading 'length')
+            at Object.touchstart (menu.js:92:1)
+            at index.js:287:1
+            at Array.map (<anonymous>)
+            at GamePad.listen (index.js:285:1)
+            at ExampleDynamicSpritz.onTouchEvent (spritz.js:181:1)
+            at onTouchEvent (WebGLView.jsx:98:1)
+            at onMouseDown (WebGLView.jsx:317:1)
+            at HTMLUnknownElement.callCallback (react-dom.development.js:3945:1)
+            at Object.invokeGuardedCallbackDev (react-dom.development.js:3994:1)
+            at invokeGuardedCallback (react-dom.development.js:4056:1)
+            at invokeGuardedCallbackAndCatchFirstError (react-dom.development.js:4070:1)
+            at executeDispatch (react-dom.development.js:8243:1)
+            at processDispatchQueueItemsInOrder (react-dom.development.js:8275:1)
+            at processDispatchQueue (react-dom.development.js:8288:1)
+            at dispatchEventsForPlugins (react-dom.development.js:8299:1)
+            at react-dom.development.js:8508:1
+            at batchedEventUpdates$1 (react-dom.development.js:22396:1)
+            at batchedEventUpdates (react-dom.development.js:3745:1)
+            at dispatchEventForPluginEventSystem (react-dom.development.js:8507:1)
+            at attemptToDispatchEvent (react-dom.development.js:6005:1)
+            at dispatchEvent (react-dom.development.js:5924:1)
+            at unstable_runWithPriority (scheduler.development.js:468:1)
+            at runWithPriority$1 (react-dom.development.js:11276:1)
+            at discreteUpdates$1 (react-dom.development.js:22413:1)
+            at discreteUpdates (react-dom.development.js:3756:1)
+            at dispatchDiscreteEvent (react-dom.development.js:5889:1)
+        (anonymous) @ spritz.js:183
+        onTouchEvent @ WebGLView.jsx:98
+        onMouseDown @ WebGLView.jsx:317
+        callCallback @ react-dom.development.js:3945
+        invokeGuardedCallbackDev @ react-dom.development.js:3994
+        invokeGuardedCallback @ react-dom.development.js:4056
+        invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4070
+        executeDispatch @ react-dom.development.js:8243
+        processDispatchQueueItemsInOrder @ react-dom.development.js:8275
+        processDispatchQueue @ react-dom.development.js:8288
+        dispatchEventsForPlugins @ react-dom.development.js:8299
+        (anonymous) @ react-dom.development.js:8508
+        batchedEventUpdates$1 @ react-dom.development.js:22396
+        batchedEventUpdates @ react-dom.development.js:3745
+        dispatchEventForPluginEventSystem @ react-dom.development.js:8507
+        attemptToDispatchEvent @ react-dom.development.js:6005
+        dispatchEvent @ react-dom.development.js:5924
+        unstable_runWithPriority @ scheduler.development.js:468
+        runWithPriority$1 @ react-dom.development.js:11276
+        discreteUpdates$1 @ react-dom.development.js:22413
+        discreteUpdates @ react-dom.development.js:3756
+        dispatchDiscreteEvent @ react-dom.development.js:5889
+
 - [ ] Fix resize handling --- NOTE --> DID NOT FIX YET!
 - [ ] Test on various browsers
 
