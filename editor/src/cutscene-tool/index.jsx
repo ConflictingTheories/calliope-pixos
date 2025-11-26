@@ -218,6 +218,599 @@ function serializeEvents(events) {
   return script;
 }
 
+// =============================================================================
+// StoryboardEditor - A visual, beginner-friendly cutscene editor
+// =============================================================================
+
+// Event type icons and colors for visual distinction
+const EVENT_VISUALS = {
+  dialogue: { icon: '💬', color: '#7dd3fc', label: 'Dialogue' },
+  cutin: { icon: '🎭', color: '#f472b6', label: 'Cutin' },
+  wait: { icon: '⏱️', color: '#fbbf24', label: 'Wait' },
+  action: { icon: '⚡', color: '#a78bfa', label: 'Action' },
+};
+
+// Expression emoji mapping
+const EXPRESSION_EMOJIS = {
+  smile: '😊', happy: '😊', sad: '😢', angry: '😠', annoyed: '😠',
+  shocked: '😨', surprised: '😨', neutral: '😐', smirk: '😏',
+  worried: '😰', tired: '😴',
+};
+
+function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot, portraitOptions }) {
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  
+  // Track known speakers for autocomplete
+  const knownSpeakers = useMemo(() => {
+    const speakers = new Set();
+    events.forEach(ev => {
+      if (ev.speaker) speakers.add(ev.speaker.toUpperCase());
+    });
+    return Array.from(speakers);
+  }, [events]);
+
+  // Update event and sync
+  const updateEvent = useCallback((index, field, value) => {
+    const next = events.map((ev, i) => {
+      if (i === index) {
+        if (field === 'meta') {
+          return { ...ev, meta: { ...ev.meta, ...value } };
+        }
+        return { ...ev, [field]: value };
+      }
+      return ev;
+    });
+    setEvents(next);
+    setTextContent(serializeEvents(next));
+    pushHistorySnapshot(next);
+  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]);
+
+  // Add a new event of a specific type
+  const addEvent = useCallback((type, insertAfter = null) => {
+    const newEvent = type === 'dialogue' || type === 'cutin'
+      ? { type, speaker: '', content: '', portrait: '', meta: {} }
+      : type === 'wait'
+      ? { type, duration: 1, command: 'wait 1000' }
+      : { type, command: '', speaker: '', content: '' };
+    
+    let next;
+    if (insertAfter !== null && insertAfter >= 0) {
+      next = [...events.slice(0, insertAfter + 1), newEvent, ...events.slice(insertAfter + 1)];
+      setSelectedIndex(insertAfter + 1);
+    } else {
+      next = [...events, newEvent];
+      setSelectedIndex(events.length);
+    }
+    setEvents(next);
+    setTextContent(serializeEvents(next));
+    pushHistorySnapshot(next);
+    setShowAddMenu(false);
+  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]);
+
+  // Remove an event
+  const removeEvent = useCallback((index) => {
+    if (events.length <= 1) return; // Keep at least one event
+    const next = events.filter((_, i) => i !== index);
+    setEvents(next);
+    setTextContent(serializeEvents(next));
+    pushHistorySnapshot(next);
+    if (selectedIndex === index) setSelectedIndex(null);
+    else if (selectedIndex > index) setSelectedIndex(selectedIndex - 1);
+  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot, selectedIndex]);
+
+  // Drag and drop handlers
+  const handleDragStart = (index) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDropTarget(index);
+    }
+  };
+
+  const handleDrop = (index) => {
+    if (draggedIndex !== null && draggedIndex !== index) {
+      const next = [...events];
+      const [dragged] = next.splice(draggedIndex, 1);
+      next.splice(index, 0, dragged);
+      setEvents(next);
+      setTextContent(serializeEvents(next));
+      pushHistorySnapshot(next);
+    }
+    setDraggedIndex(null);
+    setDropTarget(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDropTarget(null);
+  };
+
+  // Render a compact card for each event in the timeline
+  const renderEventCard = (ev, idx) => {
+    const visual = EVENT_VISUALS[ev.type] || EVENT_VISUALS.action;
+    const isSelected = selectedIndex === idx;
+    const isDragging = draggedIndex === idx;
+    const isDropTarget = dropTarget === idx;
+
+    return (
+      <div
+        key={idx}
+        draggable
+        onDragStart={() => handleDragStart(idx)}
+        onDragOver={(e) => handleDragOver(e, idx)}
+        onDrop={() => handleDrop(idx)}
+        onDragEnd={handleDragEnd}
+        onClick={() => setSelectedIndex(isSelected ? null : idx)}
+        style={{
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: '8px',
+          padding: '6px 8px',
+          marginBottom: '4px',
+          background: isSelected 
+            ? `linear-gradient(135deg, ${visual.color}22, ${visual.color}11)`
+            : 'rgba(255,255,255,0.02)',
+          border: `1px solid ${isSelected ? visual.color + '66' : isDropTarget ? '#fbbf24' : 'rgba(255,255,255,0.06)'}`,
+          borderRadius: '6px',
+          cursor: 'pointer',
+          opacity: isDragging ? 0.5 : 1,
+          transform: isDropTarget ? 'scale(1.02)' : 'scale(1)',
+          transition: 'all 0.15s ease',
+        }}
+      >
+        {/* Drag handle + type icon */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2px',
+          cursor: 'grab',
+          padding: '0 2px',
+        }}>
+          <span style={{ fontSize: '14px', filter: 'grayscale(0.2)' }}>{visual.icon}</span>
+          <span style={{ 
+            fontSize: '8px', 
+            color: visual.color, 
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
+          }}>
+            {visual.label.slice(0, 3)}
+          </span>
+        </div>
+
+        {/* Content preview */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {(ev.type === 'dialogue' || ev.type === 'cutin') && (
+            <>
+              <div style={{ 
+                fontSize: '11px', 
+                fontWeight: 600, 
+                color: visual.color,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}>
+                {ev.speaker || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>Speaker?</span>}
+                {ev.meta?.expression && (
+                  <span style={{ fontSize: '12px' }}>{EXPRESSION_EMOJIS[ev.meta.expression] || ''}</span>
+                )}
+              </div>
+              <div style={{ 
+                fontSize: '11px', 
+                color: 'rgba(255,255,255,0.7)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
+                {ev.content || <span style={{ opacity: 0.4, fontStyle: 'italic' }}>Enter dialogue...</span>}
+              </div>
+            </>
+          )}
+          {ev.type === 'wait' && (
+            <div style={{ fontSize: '11px', color: visual.color }}>
+              {ev.command?.includes('waitInput') ? '⌨️ Wait for input' : `⏱️ ${ev.duration || 1}s`}
+            </div>
+          )}
+          {ev.type === 'action' && (
+            <div style={{ 
+              fontSize: '10px', 
+              color: 'rgba(255,255,255,0.7)',
+              fontFamily: 'monospace',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {ev.command || <span style={{ opacity: 0.4 }}>@command...</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Quick delete on hover */}
+        <button
+          onClick={(e) => { e.stopPropagation(); removeEvent(idx); }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(239,68,68,0.6)',
+            cursor: 'pointer',
+            padding: '0 4px',
+            fontSize: '14px',
+            opacity: 0.5,
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = 0.5}
+          title="Delete"
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
+
+  // Render the detail editor for selected event
+  const renderDetailEditor = () => {
+    if (selectedIndex === null || !events[selectedIndex]) {
+      return (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'rgba(255,255,255,0.3)',
+          fontSize: '12px',
+          fontStyle: 'italic',
+          textAlign: 'center',
+          padding: '20px',
+        }}>
+          Click an event to edit<br/>or drag to reorder
+        </div>
+      );
+    }
+
+    const ev = events[selectedIndex];
+    const visual = EVENT_VISUALS[ev.type] || EVENT_VISUALS.action;
+
+    return (
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        overflow: 'auto',
+        padding: '8px',
+        background: 'rgba(0,0,0,0.2)',
+        borderRadius: '6px',
+      }}>
+        {/* Type selector as visual tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          marginBottom: '10px',
+          flexWrap: 'wrap',
+        }}>
+          {Object.entries(EVENT_VISUALS).map(([type, vis]) => (
+            <button
+              key={type}
+              onClick={() => updateEvent(selectedIndex, 'type', type)}
+              style={{
+                background: ev.type === type ? vis.color + '33' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${ev.type === type ? vis.color : 'transparent'}`,
+                borderRadius: '4px',
+                padding: '4px 8px',
+                cursor: 'pointer',
+                color: ev.type === type ? vis.color : 'rgba(255,255,255,0.5)',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s',
+              }}
+            >
+              <span>{vis.icon}</span>
+              <span>{vis.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Dialogue/Cutin editor */}
+        {(ev.type === 'dialogue' || ev.type === 'cutin') && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Speaker with suggestions */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={ev.speaker || ''}
+                onChange={(e) => updateEvent(selectedIndex, 'speaker', e.target.value.toUpperCase())}
+                placeholder="SPEAKER NAME"
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(125,211,252,0.2)',
+                  borderRadius: '4px',
+                  color: visual.color,
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  boxSizing: 'border-box',
+                }}
+                list="speaker-suggestions"
+              />
+              <datalist id="speaker-suggestions">
+                {knownSpeakers.map(s => <option key={s} value={s} />)}
+              </datalist>
+            </div>
+
+            {/* Expression quick-select */}
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+              {Object.entries(EXPRESSION_EMOJIS).slice(0, 8).map(([expr, emoji]) => (
+                <button
+                  key={expr}
+                  onClick={() => updateEvent(selectedIndex, 'meta', { expression: ev.meta?.expression === expr ? '' : expr })}
+                  style={{
+                    padding: '4px 6px',
+                    background: ev.meta?.expression === expr ? 'rgba(125,211,252,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: ev.meta?.expression === expr ? '1px solid rgba(125,211,252,0.4)' : '1px solid transparent',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    transition: 'all 0.15s',
+                  }}
+                  title={expr}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            {/* Dialogue text - big comfortable textarea */}
+            <textarea
+              value={ev.content || ''}
+              onChange={(e) => updateEvent(selectedIndex, 'content', e.target.value)}
+              placeholder="What do they say?"
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '10px',
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                color: '#e6eef8',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Wait editor */}
+        {ev.type === 'wait' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => {
+                  updateEvent(selectedIndex, 'duration', ev.duration || 1);
+                  updateEvent(selectedIndex, 'command', `wait ${Math.round((ev.duration || 1) * 1000)}`);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: !ev.command?.includes('waitInput') ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.05)',
+                  border: !ev.command?.includes('waitInput') ? '1px solid rgba(251,191,36,0.4)' : '1px solid transparent',
+                  borderRadius: '6px',
+                  color: !ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                ⏱️ Timed Wait
+              </button>
+              <button
+                onClick={() => {
+                  updateEvent(selectedIndex, 'command', 'waitInput');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: ev.command?.includes('waitInput') ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.05)',
+                  border: ev.command?.includes('waitInput') ? '1px solid rgba(251,191,36,0.4)' : '1px solid transparent',
+                  borderRadius: '6px',
+                  color: ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                ⌨️ Wait for Input
+              </button>
+            </div>
+            {!ev.command?.includes('waitInput') && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  value={ev.duration || 1}
+                  onChange={(e) => {
+                    const dur = parseFloat(e.target.value);
+                    updateEvent(selectedIndex, 'duration', dur);
+                    updateEvent(selectedIndex, 'command', `wait ${Math.round(dur * 1000)}`);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ 
+                  color: '#fbbf24', 
+                  fontWeight: 600, 
+                  fontSize: '14px',
+                  minWidth: '40px',
+                  textAlign: 'right',
+                }}>
+                  {ev.duration || 1}s
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Action editor */}
+        {ev.type === 'action' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Quick action buttons */}
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+              {[
+                { label: '🖼️', cmd: '@backdrop ', title: 'Set backdrop' },
+                { label: '👤', cmd: '@char ', title: 'Add character' },
+                { label: '🎵', cmd: '@do playBgm [name=]', title: 'Play music' },
+                { label: '🔊', cmd: '@do playSfx [name=]', title: 'Play sound' },
+                { label: '🌀', cmd: '@transition ', title: 'Transition' },
+                { label: '🔇', cmd: '@do stopBgm', title: 'Stop music' },
+              ].map(({ label, cmd, title }) => (
+                <button
+                  key={cmd}
+                  onClick={() => updateEvent(selectedIndex, 'command', cmd)}
+                  style={{
+                    padding: '6px 10px',
+                    background: 'rgba(167,139,250,0.15)',
+                    border: '1px solid rgba(167,139,250,0.3)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    transition: 'all 0.15s',
+                  }}
+                  title={title}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* Command input */}
+            <input
+              type="text"
+              value={ev.command || ''}
+              onChange={(e) => updateEvent(selectedIndex, 'command', e.target.value)}
+              placeholder="@command [param=value]"
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(167,139,250,0.3)',
+                borderRadius: '4px',
+                color: '#e6eef8',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div 
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+      }}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
+      {/* Timeline - scrollable list of event cards */}
+      <div style={{
+        flex: '0 0 auto',
+        maxHeight: '180px',
+        overflowY: 'auto',
+        padding: '4px',
+        background: 'rgba(0,0,0,0.15)',
+        borderRadius: '6px',
+      }}>
+        {events.map((ev, idx) => renderEventCard(ev, idx))}
+        
+        {/* Add button */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowAddMenu(!showAddMenu)}
+            style={{
+              width: '100%',
+              padding: '6px',
+              background: 'transparent',
+              border: '1px dashed rgba(125,211,252,0.3)',
+              borderRadius: '4px',
+              color: 'rgba(125,211,252,0.6)',
+              cursor: 'pointer',
+              fontSize: '16px',
+              transition: 'all 0.15s',
+            }}
+          >
+            +
+          </button>
+          {showAddMenu && (
+            <div style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 0,
+              right: 0,
+              marginBottom: '4px',
+              background: 'rgba(10,15,26,0.98)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '6px',
+              padding: '4px',
+              display: 'flex',
+              gap: '4px',
+              zIndex: 10,
+            }}>
+              {Object.entries(EVENT_VISUALS).map(([type, vis]) => (
+                <button
+                  key={type}
+                  onClick={() => addEvent(type)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 4px',
+                    background: `${vis.color}15`,
+                    border: `1px solid ${vis.color}40`,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    color: vis.color,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '2px',
+                  }}
+                >
+                  <span style={{ fontSize: '16px' }}>{vis.icon}</span>
+                  <span>{vis.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Detail editor for selected event */}
+      {renderDetailEditor()}
+    </div>
+  );
+}
+
 function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', assetLoader }) {
   // Maintain events state; parse input content in an effect
   const [events, setEvents] = useState([
@@ -656,312 +1249,6 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 portraitOptions={portraitOptions}
               />
             )}
-                      size="sm"
-                      style={{ flex: 1 }}
-                      placeholder="Event Type"
-                      preventOverflow
-                      menuStyle={{ zIndex: 10000 }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
-                    <button
-                      onClick={() => moveEvent(idx, -1)}
-                      disabled={idx === 0}
-                      style={{
-                        background: 'rgba(125,211,252,0.1)',
-                        border: '1px solid rgba(125,211,252,0.2)',
-                        color: idx === 0 ? 'rgba(125,211,252,0.3)' : '#7dd3fc',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        cursor: idx === 0 ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                      }}
-                      title="Move Up"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      onClick={() => moveEvent(idx, 1)}
-                      disabled={idx === events.length - 1}
-                      style={{
-                        background: 'rgba(125,211,252,0.1)',
-                        border: '1px solid rgba(125,211,252,0.2)',
-                        color: idx === events.length - 1 ? 'rgba(125,211,252,0.3)' : '#7dd3fc',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        cursor: idx === events.length - 1 ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                      }}
-                      title="Move Down"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={() => removeEvent(idx)}
-                      style={{
-                        background: 'rgba(239,68,68,0.1)',
-                        border: '1px solid rgba(239,68,68,0.3)',
-                        color: '#ef4444',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                      }}
-                      title="Delete"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content Fields */}
-                {(ev.type === 'dialogue' || ev.type === 'cutin') && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div>
-                      <label style={{ 
-                        display: 'block',
-                        fontSize: '11px',
-                        color: 'rgba(125,211,252,0.8)',
-                        marginBottom: '4px',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Speaker Name
-                      </label>
-                      <Input
-                        value={ev.speaker || ''}
-                        placeholder='e.g., ALDEN'
-                        onChange={(val) => updateEvent(idx, 'speaker', val)}
-                        size="sm"
-                        style={{
-                          background: 'rgba(2,20,35,0.6)',
-                          border: '1px solid rgba(125,211,252,0.2)',
-                          color: '#e6eef8',
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ 
-                        display: 'block',
-                        fontSize: '11px',
-                        color: 'rgba(125,211,252,0.8)',
-                        marginBottom: '4px',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        {ev.type === 'cutin' ? 'Cutin Image' : 'Portrait Image'}
-                      </label>
-                      <SelectPicker
-                        data={portraitOptions}
-                        value={ev.portrait || ''}
-                        onChange={(val) => updateEvent(idx, 'portrait', val)}
-                        placeholder={ev.type === 'cutin' ? 'Select cutin image...' : 'Select portrait...'}
-                        cleanable
-                        block
-                        size="sm"
-                        style={{
-                          background: 'rgba(2,20,35,0.6)',
-                        }}
-                        preventOverflow
-                        menuStyle={{ zIndex: 10000 }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ 
-                          display: 'block',
-                          fontSize: '11px',
-                          color: 'rgba(125,211,252,0.8)',
-                          marginBottom: '4px',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
-                          Expression / State
-                        </label>
-                        <SelectPicker
-                          data={[
-                            { label: '😊 Happy / Smile', value: 'smile' },
-                            { label: '😢 Sad', value: 'sad' },
-                            { label: '😠 Angry / Annoyed', value: 'annoyed' },
-                            { label: '😨 Shocked / Surprised', value: 'shocked' },
-                            { label: '😐 Neutral', value: 'neutral' },
-                            { label: '😏 Smirk', value: 'smirk' },
-                            { label: '😰 Worried', value: 'worried' },
-                            { label: '😴 Tired / Sleepy', value: 'tired' },
-                          ]}
-                          value={ev.meta?.expression || ''}
-                          onChange={(val) => updateEvent(idx, 'meta', { ...(ev.meta || {}), expression: val })}
-                          placeholder='Select expression...'
-                          cleanable
-                          block
-                          size="sm"
-                          style={{
-                            background: 'rgba(2,20,35,0.6)',
-                          }}
-                          preventOverflow
-                          menuStyle={{ zIndex: 10000 }}
-                        />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ 
-                          display: 'block',
-                          fontSize: '11px',
-                          color: 'rgba(125,211,252,0.8)',
-                          marginBottom: '4px',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
-                          Position
-                        </label>
-                        <SelectPicker
-                          data={[
-                            { label: '← Left', value: 'left' },
-                            { label: '→ Right', value: 'right' },
-                            { label: '● Center', value: 'center' },
-                            { label: '↖ Top-Left', value: 'top-left' },
-                            { label: '↗ Top-Right', value: 'top-right' },
-                            { label: '↑ Top-Center', value: 'top-center' },
-                          ]}
-                          value={ev.meta?.position || ''}
-                          onChange={(val) => updateEvent(idx, 'meta', { ...(ev.meta || {}), position: val })}
-                          placeholder='Select position...'
-                          cleanable
-                          block
-                          size="sm"
-                          style={{
-                            background: 'rgba(2,20,35,0.6)',
-                          }}
-                          preventOverflow
-                          menuStyle={{ zIndex: 10000 }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{ 
-                        display: 'block',
-                        fontSize: '11px',
-                        color: 'rgba(125,211,252,0.8)',
-                        marginBottom: '4px',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Dialogue Text
-                      </label>
-                      <Input
-                        as='textarea'
-                        rows={3}
-                        placeholder={ev.type === 'cutin' ? 'Enter cutin dialogue...' : 'Enter dialogue...'}
-                        value={ev.content || ''}
-                        onChange={(val) => updateEvent(idx, 'content', val)}
-                        size="sm"
-                        style={{
-                          background: 'rgba(2,20,35,0.6)',
-                          border: '1px solid rgba(125,211,252,0.2)',
-                          color: '#e6eef8',
-                          fontFamily: 'monospace',
-                          fontSize: '12px',
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-                {ev.type === 'wait' && (
-                  <div>
-                    <label style={{ 
-                      display: 'block',
-                      fontSize: '11px',
-                      color: 'rgba(125,211,252,0.8)',
-                      marginBottom: '4px',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      Duration (seconds)
-                    </label>
-                    <Input
-                      type='number'
-                      placeholder='e.g., 2'
-                      value={ev.duration || 1}
-                      onChange={(val) => updateEvent(idx, 'duration', Number(val))}
-                      size="sm"
-                      style={{
-                        background: 'rgba(2,20,35,0.6)',
-                        border: '1px solid rgba(125,211,252,0.2)',
-                        color: '#e6eef8',
-                      }}
-                    />
-                  </div>
-                )}
-                {ev.type === 'action' && (
-                  <div>
-                    <label style={{ 
-                      display: 'block',
-                      fontSize: '11px',
-                      color: 'rgba(125,211,252,0.8)',
-                      marginBottom: '4px',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      Command
-                    </label>
-                    <Input
-                      placeholder='e.g., @backdrop image.png'
-                      value={ev.command || ''}
-                      onChange={(val) => updateEvent(idx, 'command', val)}
-                      size="sm"
-                      style={{
-                        background: 'rgba(2,20,35,0.6)',
-                        border: '1px solid rgba(125,211,252,0.2)',
-                        color: '#e6eef8',
-                        fontFamily: 'monospace',
-                        fontSize: '12px',
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-            <button
-              onClick={addEvent}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'linear-gradient(135deg, rgba(125,211,252,0.15), rgba(125,211,252,0.08))',
-                border: '1px dashed rgba(125,211,252,0.4)',
-                borderRadius: '8px',
-                color: '#7dd3fc',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(125,211,252,0.25), rgba(125,211,252,0.15))';
-                e.currentTarget.style.borderColor = 'rgba(125,211,252,0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(125,211,252,0.15), rgba(125,211,252,0.08))';
-                e.currentTarget.style.borderColor = 'rgba(125,211,252,0.4)';
-              }}
-            >
-              <span style={{ fontSize: '16px' }}>+</span>
-              Add Event
-            </button>
-          </div>
-        )}
           
           {/* Footer with save/undo/redo */}
           <div style={{ 
