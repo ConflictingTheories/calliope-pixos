@@ -729,13 +729,15 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
+        height: '100%',
+        overflow: 'hidden',
       }}
       onKeyDown={(e) => e.stopPropagation()}
     >
       {/* Timeline - scrollable list of event cards */}
       <div style={{
-        flex: '0 0 auto',
-        maxHeight: '180px',
+        flex: '1 1 50%',
+        minHeight: '120px',
         overflowY: 'auto',
         padding: '4px',
         background: 'rgba(0,0,0,0.15)',
@@ -806,7 +808,9 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
       </div>
 
       {/* Detail editor for selected event */}
-      {renderDetailEditor()}
+      <div style={{ flex: '1 1 50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+        {renderDetailEditor()}
+      </div>
     </div>
   );
 }
@@ -830,11 +834,78 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
   const [editorMode, setEditorMode] = useState('text');
   // Text content for text editor
   const [textContent, setTextContent] = useState('');
+  
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(null);
+  
+  // Panel split ratio (preview panel width as percentage)
+  const [splitRatio, setSplitRatio] = useState(60);
+  const [isDraggingSplit, setIsDraggingSplit] = useState(false);
+  const containerRef = useRef(null);
 
   // Ref to CutscenePlayer for imperative control
   const cutscenePlayerRef = useRef(null);
   // Track if initial content has been loaded
   const initialLoadDone = useRef(false);
+  
+  // Handle split resizing
+  const handleSplitMouseDown = useCallback((e) => {
+    e.preventDefault();
+    setIsDraggingSplit(true);
+  }, []);
+  
+  useEffect(() => {
+    if (!isDraggingSplit) return;
+    
+    const handleMouseMove = (e) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = (x / rect.width) * 100;
+      // Clamp between 30% and 80%
+      setSplitRatio(Math.max(30, Math.min(80, percentage)));
+    };
+    
+    const handleMouseUp = () => {
+      setIsDraggingSplit(false);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingSplit]);
+  
+  // Handle video export
+  const handleExportVideo = useCallback(async () => {
+    if (!cutscenePlayerRef.current) return;
+    
+    setIsExporting(true);
+    setExportProgress({ status: 'starting', progress: 0 });
+    
+    try {
+      const result = await cutscenePlayerRef.current.exportVideo();
+      if (result?.success) {
+        setExportProgress({ status: 'complete', progress: 100 });
+        setTimeout(() => {
+          setIsExporting(false);
+          setExportProgress(null);
+        }, 2000);
+      } else {
+        setError('Export failed: ' + (result?.error || 'Unknown error'));
+        setIsExporting(false);
+        setExportProgress(null);
+      }
+    } catch (err) {
+      setError('Export failed: ' + err.message);
+      setIsExporting(false);
+      setExportProgress(null);
+    }
+  }, []);
 
   // Push snapshot into history; ensures future redo states are discarded
   function pushHistorySnapshot(nextEvents) {
@@ -1023,15 +1094,18 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
       )}
       
       {/* Main content area - horizontal split */}
-      <div style={{
-        display: 'flex',
-        flex: 1,
-        minHeight: 0,
-        gap: '0.75rem',
-      }}>
+      <div 
+        ref={containerRef}
+        style={{
+          display: 'flex',
+          flex: 1,
+          minHeight: 0,
+          gap: 0,
+        }}
+      >
         {/* Left side - Preview player */}
         <div style={{
-          flex: '0 0 60%',
+          flex: `0 0 ${splitRatio}%`,
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -1081,6 +1155,36 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 />
                 Auto
               </label>
+              
+              {/* Export Video Button */}
+              <button
+                onClick={handleExportVideo}
+                disabled={isExporting}
+                style={{
+                  padding: '4px 10px',
+                  background: isExporting ? 'rgba(251,191,36,0.2)' : 'rgba(34,197,94,0.15)',
+                  border: `1px solid ${isExporting ? 'rgba(251,191,36,0.4)' : 'rgba(34,197,94,0.4)'}`,
+                  borderRadius: '4px',
+                  color: isExporting ? '#fbbf24' : '#22c55e',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: isExporting ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s',
+                }}
+                title="Export cutscene as WebM video"
+              >
+                {isExporting ? (
+                  <>
+                    <span style={{ animation: 'spin 1s linear infinite' }}>⏳</span>
+                    {exportProgress?.progress || 0}%
+                  </>
+                ) : (
+                  <>📹 Export</>
+                )}
+              </button>
             </div>
           </div>
           
@@ -1093,6 +1197,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             justifyContent: 'center',
             padding: '8px',
             background: '#000',
+            position: 'relative',
           }}>
             <div style={{
               width: '100%',
@@ -1106,16 +1211,132 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 speed={speed}
                 autoAdvance={autoAdvance}
                 assetLoader={assetLoader}
+                onExportProgress={setExportProgress}
               />
             </div>
+            
+            {/* Export Progress Overlay */}
+            {isExporting && exportProgress && (
+              <div style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.85)',
+                border: '1px solid rgba(251,191,36,0.4)',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                minWidth: '280px',
+                zIndex: 100,
+                backdropFilter: 'blur(4px)',
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                }}>
+                  <span style={{ 
+                    color: '#fbbf24', 
+                    fontSize: '12px', 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}>
+                    <span style={{ animation: 'spin 1s linear infinite' }}>📹</span>
+                    {exportProgress.status === 'complete' ? 'Export Complete!' : 'Exporting Video...'}
+                  </span>
+                  <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 700 }}>
+                    {exportProgress.progress || 0}%
+                  </span>
+                </div>
+                
+                {/* Progress bar */}
+                <div style={{
+                  width: '100%',
+                  height: '6px',
+                  background: 'rgba(251,191,36,0.15)',
+                  borderRadius: '3px',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${exportProgress.progress || 0}%`,
+                    height: '100%',
+                    background: exportProgress.status === 'complete' 
+                      ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                      : exportProgress.status === 'error'
+                      ? '#ef4444'
+                      : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                    borderRadius: '3px',
+                    transition: 'width 0.2s ease',
+                  }} />
+                </div>
+                
+                {/* Status message */}
+                {exportProgress.message && (
+                  <div style={{ 
+                    marginTop: '6px', 
+                    fontSize: '10px', 
+                    color: 'rgba(255,255,255,0.6)',
+                    textAlign: 'center',
+                  }}>
+                    {exportProgress.message}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Resizable divider */}
+        <div
+          className="split-divider"
+          onMouseDown={handleSplitMouseDown}
+          style={{
+            width: '10px',
+            cursor: 'col-resize',
+            background: isDraggingSplit 
+              ? 'rgba(125, 211, 252, 0.2)' 
+              : 'transparent',
+            transition: 'background 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => {
+            if (!isDraggingSplit) {
+              e.currentTarget.style.background = 'rgba(125, 211, 252, 0.1)';
+              e.currentTarget.querySelector('.split-handle').style.background = 'rgba(125, 211, 252, 0.6)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isDraggingSplit) {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.querySelector('.split-handle').style.background = 'rgba(255,255,255,0.15)';
+            }
+          }}
+        >
+          <div 
+            className="split-handle"
+            style={{
+              width: '3px',
+              height: '50px',
+              background: isDraggingSplit 
+                ? 'rgba(125, 211, 252, 0.8)'
+                : 'rgba(255,255,255,0.15)',
+              borderRadius: '2px',
+              transition: 'background 0.15s',
+            }} 
+          />
         </div>
 
         {/* Right side - Editor Panel */}
         <div 
           className="editor-panel"
           style={{
-            flex: '0 0 40%',
+            flex: 1,
             minWidth: 0,
             background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
             border: '1px solid rgba(255,255,255,0.08)',
@@ -1240,14 +1461,16 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
             {/* Visual Editor Mode - Storyboard Style */}
             {editorMode === 'visual' && (
-              <StoryboardEditor
-                events={events}
-                setEvents={setEvents}
-                setTextContent={setTextContent}
-                serializeEvents={serializeEvents}
-                pushHistorySnapshot={pushHistorySnapshot}
-                portraitOptions={portraitOptions}
-              />
+              <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <StoryboardEditor
+                  events={events}
+                  setEvents={setEvents}
+                  setTextContent={setTextContent}
+                  serializeEvents={serializeEvents}
+                  pushHistorySnapshot={pushHistorySnapshot}
+                  portraitOptions={portraitOptions}
+                />
+              </div>
             )}
           
           {/* Footer with save/undo/redo */}
