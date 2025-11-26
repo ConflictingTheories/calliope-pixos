@@ -20,6 +20,7 @@ import ImagePreview from './image-preview/index.jsx';
 import AudioPreview from './audio-preview/index.jsx';
 import ModelPreview from './model-preview/index.jsx';
 import MapEditor3D from './map-editor/MapEditor3D.jsx';
+import TileEditor from './tile-editor/index.jsx';
 import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
@@ -980,13 +981,114 @@ const App = () => {
     ]);
   }, [getData, zip, toDataUri]);
 
+  const renderTileEditor = useCallback(async (entry) => {
+    const tileContent = await getData(entry, true);
+    console.log('[TileEditor] Loading tiles:', tileContent);
+    
+    // Try to load geometry.json from the same directory
+    let geometryContent = null;
+    let textureList = [];
+    try {
+      const entryPath = getEntryFullPath(entry);
+      const parentPath = entryPath.substring(0, entryPath.lastIndexOf('/'));
+      
+      // Helper to find sibling file
+      const findSiblingFile = (node, targetName, currentPath = '') => {
+        if (!node || !node.children) return null;
+        for (const child of node.children) {
+          const childPath = currentPath ? `${currentPath}/${child.name}` : child.name;
+          if (!child.directory && child.name.toLowerCase() === targetName.toLowerCase()) {
+            if (childPath.includes(parentPath) || parentPath.includes(currentPath)) {
+              return child;
+            }
+          }
+          if (child.directory) {
+            const found = findSiblingFile(child, targetName, childPath);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      
+      // Find geometry.json in same folder
+      const geoEntry = findSiblingFile(zip, 'geometry.json');
+      if (geoEntry) {
+        geometryContent = await getData(geoEntry, true);
+        console.log('[TileEditor] Loaded geometry context');
+      }
+      
+      // Find tileset.json to get texture names
+      const tilesetEntry = findSiblingFile(zip, 'tileset.json');
+      if (tilesetEntry) {
+        const tilesetContent = await getData(tilesetEntry, true);
+        const tileset = JSON.parse(tilesetContent);
+        if (tileset.textures) {
+          textureList = Object.keys(tileset.textures);
+          console.log('[TileEditor] Loaded texture list:', textureList);
+        }
+      }
+    } catch (err) {
+      console.warn('[TileEditor] Could not load sibling files:', err);
+    }
+    
+    setContents([
+      <TileEditor
+        key={Date.now()}
+        content={tileContent}
+        geometryContent={geometryContent}
+        textureList={textureList}
+        onSave={async (obj) => {
+          try {
+            const fullPath = getEntryFullPath(entry);
+            const data = JSON.stringify(obj, null, 2);
+            await writeFile(fullPath, data);
+            console.log('[TileEditor] Saved:', fullPath);
+            alert('Tiles saved successfully!');
+          } catch (err) {
+            console.error('[TileEditor] Save failed:', err);
+            alert('Failed to save tiles: ' + err.message);
+          }
+        }}
+      />
+    ]);
+  }, [getData, zip]);
+
   const renderTilesetEditor = useCallback(async (entry) => {
     const tilesetContent = await getData(entry, true);
-    console.log(tilesetContent);
+    console.log('[TilesetEditor] Loading tileset:', entry.name);
+    
+    // Gather image assets from the ZIP for the tileset editor
+    const imageAssets = [];
+    try {
+      const collectImages = async (node, path = '') => {
+        if (!node) return;
+        if (node.children) {
+          for (const child of node.children) {
+            const childPath = path ? `${path}/${child.name}` : child.name;
+            if (child.directory) {
+              await collectImages(child, childPath);
+            } else if (/\.(png|jpg|jpeg|gif|bmp)$/i.test(child.name)) {
+              try {
+                const dataUri = await toDataUri(child);
+                imageAssets.push({ name: childPath, uri: dataUri });
+              } catch (e) {
+                console.warn('[TilesetEditor] Could not load image:', childPath);
+              }
+            }
+          }
+        }
+      };
+      await collectImages(zip);
+      console.log('[TilesetEditor] Loaded', imageAssets.length, 'image assets');
+    } catch (err) {
+      console.warn('[TilesetEditor] Error loading assets:', err);
+    }
+    
     setContents([
       <TilesetEditor
         key={Date.now()}
         content={tilesetContent}
+        assets={imageAssets}
         onSave={async (obj) => {
           try {
             const fullPath = getEntryFullPath(entry);
@@ -999,10 +1101,9 @@ const App = () => {
             alert('Failed to save tileset: ' + err.message);
           }
         }}
-        assets={assets}
       />
     ]);
-  }, [getData, zip, assets]);
+  }, [getData, zip, toDataUri]);
 
   const renderGeometryEditor = useCallback(async (entry) => {
     const geoContent = await getData(entry, true);
@@ -1264,8 +1365,13 @@ const App = () => {
         renderGeometryEditor(entry);
         return;
       }
+      // Check for 'tileset' first since it also contains 'tile'
       if (name.includes('tileset')) {
         renderTilesetEditor(entry);
+        return;
+      }
+      if (name.includes('tiles')) {
+        renderTileEditor(entry);
         return;
       }
       if (name.includes('cutscene')) {
@@ -1289,7 +1395,7 @@ const App = () => {
     }
     // Unknown file types fallback
     setContents([<div key="unknown">No registered viewer for {name}</div>]);
-  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
+  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTileEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
 
   const hasContent = contents.length > 0;
   const errorCount = validationReport?.errors?.length ?? 0;

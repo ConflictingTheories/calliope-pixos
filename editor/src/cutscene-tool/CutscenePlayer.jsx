@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
+// Dynamically import html2canvas for DOM-to-canvas capture
+let html2canvasModule = null;
+async function getHtml2Canvas() {
+  if (!html2canvasModule) {
+    try {
+      html2canvasModule = (await import('html2canvas')).default;
+    } catch (err) {
+      console.warn('html2canvas not available:', err);
+      return null;
+    }
+  }
+  return html2canvasModule;
+}
+
 /**
  * React CutscenePlayer component closely modeled on demos/cutscene-editor.html.
  * Plays SpritzCut DSL script with backdrop, portraits, cutins, dialogue box, and controls.
@@ -205,7 +219,7 @@ function parseScript(text) {
   return scene;
 }
 
-const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false, onPlayStart, onPlayStop, assetLoader }, ref) => {
+const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false, onPlayStart, onPlayStop, assetLoader, onExportProgress }, ref) => {
   const [scene, setScene] = useState(null);
   const [portraitSrc, setPortraitSrc] = useState(null);
   const [cutinSrc, setCutinSrc] = useState(null);
@@ -216,8 +230,11 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   const [cutinVisible, setCutinVisible] = useState(false);
   const [portraitVisible, setPortraitVisible] = useState(false);
   const [currentExpression, setCurrentExpression] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
   const stopFlag = useRef(false);
   const resourceCache = useRef({});
+  const stageRef = useRef(null);
+  const exportContextRef = useRef(null);
 
   useEffect(() => {
     if (scriptText) {
@@ -235,6 +252,12 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     },
     skip() {
       internalSkip();
+    },
+    async exportVideo() {
+      return internalExport();
+    },
+    isExporting() {
+      return isExporting;
     },
   }));
 
@@ -351,6 +374,310 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     if (voiceRef.current) {
       voiceRef.current.pause();
       voiceRef.current = null;
+    }
+  }
+
+  // ==========================================================================
+  // Video Export Functionality
+  // ==========================================================================
+  async function internalExport() {
+    if (!scene || !stageRef.current) {
+      console.warn('Cannot export: no scene or stage element');
+      return null;
+    }
+
+    const html2canvas = await getHtml2Canvas();
+    if (!html2canvas) {
+      alert('Video export requires html2canvas library. Please install it with: npm install html2canvas');
+      return null;
+    }
+
+    setIsExporting(true);
+    if (onExportProgress) onExportProgress({ status: 'initializing', progress: 0, message: 'Setting up recording...' });
+
+    try {
+      // Create an offscreen canvas for recording
+      const stageElement = stageRef.current;
+      const width = stageElement.offsetWidth || 960;
+      const height = stageElement.offsetHeight || 540;
+      
+      const recordCanvas = document.createElement('canvas');
+      recordCanvas.width = width;
+      recordCanvas.height = height;
+      const recordCtx = recordCanvas.getContext('2d');
+      
+      // Fill with initial black frame so the stream has content
+      recordCtx.fillStyle = '#000';
+      recordCtx.fillRect(0, 0, width, height);
+
+      // Set up audio context for capturing audio
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioDestination = audioContext.createMediaStreamDestination();
+      
+      // Store original Audio constructor
+      const OriginalAudio = window.Audio;
+      const audioElements = [];
+      
+      // Override Audio to capture audio streams during export
+      window.Audio = function(src) {
+        const audio = new OriginalAudio(src);
+        audioElements.push(audio);
+        
+        // When audio loads, connect it to our destination
+        audio.addEventListener('canplaythrough', () => {
+          try {
+            const source = audioContext.createMediaElementSource(audio);
+            source.connect(audioDestination);
+            source.connect(audioContext.destination); // Also play through speakers
+          } catch (e) {
+            // Already connected or error
+          }
+        }, { once: true });
+        
+        return audio;
+      };
+
+      // Get canvas stream - use 30 FPS for consistent capture
+      // Note: Using a fixed framerate is more reliable across browsers
+      const canvasStream = recordCanvas.captureStream(30);
+      
+      // Combine video and audio streams
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...audioDestination.stream.getAudioTracks()
+      ]);
+
+      // Set up MediaRecorder
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') 
+        ? 'video/webm;codecs=vp9,opus'
+        : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+        ? 'video/webm;codecs=vp8,opus'
+        : 'video/webm';
+      
+      console.log('[Export] Using mime type:', mimeType);
+      
+      const mediaRecorder = new MediaRecorder(combinedStream, {
+        mimeType,
+        videoBitsPerSecond: 2500000, // 2.5 Mbps
+      });
+      
+      const recordedChunks = [];
+      mediaRecorder.ondataavailable = (event) => {
+        console.log('[Export] Data available:', event.data.size, 'bytes');
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onerror = (event) => {
+        console.error('[Export] MediaRecorder error:', event);
+      };
+
+      // Start recording
+      mediaRecorder.start(100); // Collect data every 100ms
+      console.log('[Export] MediaRecorder started, state:', mediaRecorder.state);
+      
+      if (onExportProgress) onExportProgress({ status: 'recording', progress: 5, message: 'Starting playback...' });
+
+      // Frame capture state
+      const frameCountRef = { value: 0 };
+      let isRecording = true;
+      
+      // Capture a single frame - call this periodically during playback
+      const captureFrame = async () => {
+        if (!isRecording) return;
+        try {
+          const capturedCanvas = await html2canvas(stageElement, {
+            backgroundColor: '#000',
+            scale: 1,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            imageTimeout: 0,
+          });
+          recordCtx.clearRect(0, 0, width, height);
+          recordCtx.drawImage(capturedCanvas, 0, 0, width, height);
+          
+          frameCountRef.value++;
+          if (frameCountRef.value % 5 === 0) {
+            console.log('[Export] Captured frame:', frameCountRef.value);
+          }
+        } catch (err) {
+          console.warn('Frame capture error:', err);
+        }
+      };
+      
+      // Continuous frame capture loop
+      const frameLoop = async () => {
+        while (isRecording) {
+          await captureFrame();
+          // Wait ~33ms between captures (~30fps)
+          await new Promise(r => setTimeout(r, 33));
+        }
+      };
+      
+      // Start capturing frames in background (intentionally not awaited)
+      frameLoop();
+
+      // Store export context for cleanup
+      exportContextRef.current = {
+        mediaRecorder,
+        audioContext,
+        audioElements,
+        OriginalAudio,
+        frameCountRef,
+        stopRecording: () => { 
+          isRecording = false;
+        }
+      };
+
+      // Play the cutscene for export (auto-advance enabled)
+      const originalAutoAdvance = autoAdvance;
+      stopFlag.current = false;
+      setPlaying(true);
+      resetDisplay();
+      
+      // Wait a moment for initial capture
+      await waitMs(200);
+
+      const totalEvents = scene.events.length;
+      let processedEvents = 0;
+
+      for (const ev of scene.events) {
+        if (stopFlag.current) break;
+        
+        // For export, we auto-advance waitInput events
+        if (ev.type === 'waitInput') {
+          await waitMs(500); // Brief pause instead of waiting for input
+        } else {
+          await handleEvent(ev);
+        }
+        
+        // Give html2canvas time to capture the state
+        await waitMs(50);
+        
+        processedEvents++;
+        if (onExportProgress) {
+          const progress = 5 + Math.round((processedEvents / totalEvents) * 85);
+          onExportProgress({ 
+            status: 'recording', 
+            progress, 
+            message: `Processing event ${processedEvents} of ${totalEvents}`,
+            event: processedEvents, 
+            total: totalEvents 
+          });
+        }
+      }
+
+      // Wait a moment for final frames to be captured
+      await waitMs(1000);
+      console.log('[Export] Playback complete, captured', frameCountRef.value, 'frames');
+
+      // Stop the frame capture loop
+      isRecording = false;
+      exportContextRef.current.stopRecording();
+      
+      // Wait a bit for any pending frames
+      await waitMs(200);
+      
+      // Request one final data collection before stopping
+      if (mediaRecorder.state === 'recording') {
+        mediaRecorder.requestData();
+      }
+      await waitMs(100);
+      
+      if (onExportProgress) onExportProgress({ status: 'processing', progress: 92, message: 'Processing video...' });
+      
+      console.log('[Export] Stopping recorder, state:', mediaRecorder.state, 'chunks so far:', recordedChunks.length);
+
+      // Stop media recorder and wait for final data
+      return new Promise((resolve) => {
+        mediaRecorder.onstop = async () => {
+          console.log('[Export] MediaRecorder stopped, total chunks:', recordedChunks.length);
+          
+          // Calculate total size of chunks
+          const totalSize = recordedChunks.reduce((acc, chunk) => acc + chunk.size, 0);
+          console.log('[Export] Total chunk data:', totalSize, 'bytes');
+          
+          // Restore original Audio constructor
+          window.Audio = OriginalAudio;
+          
+          // Clean up audio
+          audioElements.forEach(audio => {
+            try { audio.pause(); } catch(e) {}
+          });
+          audioContext.close();
+
+          // Stop all player audio
+          if (sfxRef.current) { sfxRef.current.pause(); sfxRef.current = null; }
+          if (bgmRef.current) { bgmRef.current.pause(); bgmRef.current = null; }
+          if (voiceRef.current) { voiceRef.current.pause(); voiceRef.current = null; }
+
+          if (onExportProgress) onExportProgress({ status: 'finalizing', progress: 95, message: 'Creating video file...' });
+
+          // Create blob
+          const blob = new Blob(recordedChunks, { type: mimeType });
+          console.log('[Export] Created blob, size:', blob.size);
+          
+          if (blob.size === 0) {
+            console.error('[Export] Blob is empty!');
+            setPlaying(false);
+            setIsExporting(false);
+            exportContextRef.current = null;
+            if (onExportProgress) onExportProgress({ status: 'error', progress: 0, message: 'Export failed: No video data captured' });
+            resolve({ success: false, error: 'No video data captured' });
+            return;
+          }
+          
+          // Create download link
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `cutscene-export-${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          // Cleanup
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+          setPlaying(false);
+          setIsExporting(false);
+          exportContextRef.current = null;
+          
+          if (onExportProgress) onExportProgress({ 
+            status: 'complete', 
+            progress: 100, 
+            message: `Export complete! ${frameCountRef.value} frames, ${(blob.size / 1024 / 1024).toFixed(2)} MB` 
+          });
+          
+          resolve({ 
+            success: true, 
+            frames: frameCountRef.value,
+            duration: recordedChunks.length * 0.1,
+            size: blob.size 
+          });
+        };
+
+        mediaRecorder.stop();
+      });
+
+    } catch (error) {
+      console.error('Export failed:', error);
+      setIsExporting(false);
+      
+      // Stop recording loop
+      if (exportContextRef.current?.stopRecording) {
+        exportContextRef.current.stopRecording();
+      }
+      
+      // Restore Audio if overridden
+      if (exportContextRef.current?.OriginalAudio) {
+        window.Audio = exportContextRef.current.OriginalAudio;
+      }
+      
+      if (onExportProgress) onExportProgress({ status: 'error', progress: 0, message: error.message });
+      return { success: false, error: error.message };
     }
   }
 
@@ -798,6 +1125,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
   return (
     <div
+      ref={stageRef}
       style={{
         position: 'relative',
         width: '100%',

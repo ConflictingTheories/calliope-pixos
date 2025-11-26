@@ -1982,11 +1982,91 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             background: '#37373d',
             padding: '10px',
             fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
+            borderBottom: '1px solid #3e3e42',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            🎨 Tiles ({Object.keys(tiles || {}).length})
+            <span>🎨 Tiles ({Object.keys(tiles || {}).length})</span>
+            <button
+              onClick={() => setShowTileEditor(!showTileEditor)}
+              style={{
+                background: showTileEditor ? '#0e639c' : '#505050',
+                border: 'none',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '10px'
+              }}
+              title="Toggle inline tile editor"
+            >
+              {showTileEditor ? '✕ Close' : '✏️ Edit'}
+            </button>
           </div>
           <div style={{ padding: '10px' }}>
+            {/* Inline Tile Editor Panel */}
+            {showTileEditor && editingTileName && tiles[editingTileName] && (
+              <div style={{
+                background: '#252526',
+                border: '1px solid #0e639c',
+                borderRadius: '4px',
+                padding: '10px',
+                marginBottom: '10px'
+              }}>
+                <div style={{ 
+                  fontWeight: 'bold', 
+                  color: '#7dd3fc', 
+                  marginBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span>Editing: {editingTileName}</span>
+                  <button
+                    onClick={() => setEditingTileName(null)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#888',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >✕</button>
+                </div>
+                <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px' }}>
+                  Layers: {Math.floor(tiles[editingTileName].length / 3)}
+                </div>
+                <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                  {(() => {
+                    const arr = tiles[editingTileName];
+                    const layers = [];
+                    for (let i = 0; i < arr.length; i += 3) {
+                      layers.push({ geom: arr[i], tex: arr[i+1], z: arr[i+2] });
+                    }
+                    return layers.map((layer, idx) => (
+                      <div key={idx} style={{
+                        display: 'grid',
+                        gridTemplateColumns: '60px 60px 40px',
+                        gap: '4px',
+                        marginBottom: '4px',
+                        fontSize: '9px',
+                        background: '#2d2d30',
+                        padding: '4px',
+                        borderRadius: '2px'
+                      }}>
+                        <span title="Geometry" style={{ color: '#a78bfa', overflow: 'hidden', textOverflow: 'ellipsis' }}>{layer.geom}</span>
+                        <span title="Texture" style={{ color: '#7dd3fc', overflow: 'hidden', textOverflow: 'ellipsis' }}>{layer.tex}</span>
+                        <span title="Z-Offset" style={{ color: '#fbbf24' }}>z:{layer.z}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <div style={{ fontSize: '9px', color: '#ce9178', marginTop: '6px' }}>
+                  💡 For full editing, open tiles.json in the sidebar
+                </div>
+              </div>
+            )}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
@@ -1999,9 +2079,13 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 <div
                   key={tileName}
                   onClick={() => setSelectedTile(tileName)}
+                  onDoubleClick={() => {
+                    setShowTileEditor(true);
+                    setEditingTileName(tileName);
+                  }}
                   style={{
                     background: selectedTile === tileName ? '#0e639c' : '#3c3c3c',
-                    border: `2px solid ${selectedTile === tileName ? '#1177bb' : '#3e3e42'}`,
+                    border: `2px solid ${selectedTile === tileName ? '#1177bb' : editingTileName === tileName ? '#a78bfa' : '#3e3e42'}`,
                     padding: '6px',
                     textAlign: 'center',
                     cursor: 'pointer',
@@ -2018,7 +2102,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   }}
                   onMouseOut={(e) => {
                     if (selectedTile !== tileName) {
-                      e.currentTarget.style.borderColor = '#3e3e42';
+                      e.currentTarget.style.borderColor = editingTileName === tileName ? '#a78bfa' : '#3e3e42';
                     }
                   }}
                 >
@@ -2034,8 +2118,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               ))}
             </div>
             <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>
-              Click a tile to select it for painting.<br/>
-              <em style={{ color: '#ce9178' }}>Note: Tile editor coming soon - edit tiles.json manually for now</em>
+              Click to select • Double-click to inspect layers
             </div>
           </div>
         </div>
@@ -2052,15 +2135,61 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             background: '#37373d',
             padding: '10px',
             fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
+            borderBottom: '1px solid #3e3e42',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            📐 Geometry ({Object.keys(geometry || {}).length})
+            <span>📐 Geometry ({Object.keys(geometry || {}).length})</span>
           </div>
           <div style={{ padding: '10px' }}>
+            {/* Inline Geometry Inspector */}
+            {editingGeometryName && geometry[editingGeometryName] && (
+              <div style={{
+                background: '#1e1e2e',
+                border: '1px solid #a78bfa',
+                borderRadius: '4px',
+                padding: '10px',
+                marginBottom: '10px'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  borderBottom: '1px solid #3e3e42',
+                  paddingBottom: '8px'
+                }}>
+                  <span style={{ fontWeight: 'bold', color: '#a78bfa' }}>🔍 {editingGeometryName}</span>
+                  <button
+                    onClick={() => setEditingGeometryName(null)}
+                    style={{ background: '#333', border: '1px solid #555', color: '#fff', padding: '2px 8px', borderRadius: '3px', cursor: 'pointer' }}
+                  >×</button>
+                </div>
+                <div style={{ fontSize: '11px', color: '#aaa' }}>
+                  Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} | 
+                  Surfaces: {geometry[editingGeometryName]?.surfaces?.length || 0} | 
+                  Type: {geometry[editingGeometryName]?.type_bitmask || 0}
+                </div>
+                {geometry[editingGeometryName]?.vertices && (
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
+                    {geometry[editingGeometryName].vertices.slice(0, 6).map((v, i) => (
+                      <div key={i} style={{ fontFamily: 'monospace' }}>
+                        v{i}: [{v.map(n => n.toFixed(2)).join(', ')}]
+                      </div>
+                    ))}
+                    {geometry[editingGeometryName].vertices.length > 6 && (
+                      <div style={{ fontStyle: 'italic' }}>... {geometry[editingGeometryName].vertices.length - 6} more</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             <div style={{ maxHeight: '150px', overflowY: 'auto', marginBottom: '10px' }}>
               {Object.keys(geometry || {}).sort().map(geomName => (
                 <div
                   key={geomName}
+                  onClick={() => setEditingGeometryName(geomName)}
                   style={{
                     background: '#3c3c3c',
                     padding: '6px 8px',
@@ -2069,7 +2198,17 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                     fontSize: '11px',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    border: `2px solid ${editingGeometryName === geomName ? '#a78bfa' : '#3e3e42'}`
+                  }}
+                  onMouseOver={(e) => {
+                    if (editingGeometryName !== geomName) {
+                      e.currentTarget.style.borderColor = '#0e639c';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.borderColor = editingGeometryName === geomName ? '#a78bfa' : '#3e3e42';
                   }}
                 >
                   <span>{geomName}</span>
@@ -2079,8 +2218,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: '10px', color: '#ce9178', fontStyle: 'italic' }}>
-              Geometry editor coming soon - edit geometry.json manually for now
+            <div style={{ fontSize: '11px', color: '#888' }}>
+              Click to inspect geometry details
             </div>
           </div>
         </div>

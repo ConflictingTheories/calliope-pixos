@@ -328,7 +328,7 @@ function GeometryEditor3D({ content, onSave }) {
   const geometryKeys = Object.keys(geometryData);
 
   return (
-    <Container style={{ padding: '1rem' }}>
+    <Container style={{ padding: '1rem', height: '100%', overflow: 'auto' }}>
       {error && (
         <Row style={{ marginBottom: '0.5rem' }}>
           <Col sm={24}>
@@ -340,7 +340,7 @@ function GeometryEditor3D({ content, onSave }) {
       <Row>
         <Col sm={12}>
           <Panel bordered header={<strong>3D Preview</strong>}>
-            <div style={{ height: '60vh', position: 'relative' }}>
+            <div style={{ height: '50vh', minHeight: '300px', position: 'relative' }}>
               <WebGL3DCanvas
                 onRender={handleRender}
                 onInit={handleWebGLInit}
