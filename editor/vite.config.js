@@ -5,13 +5,27 @@ import { VitePWA } from 'vite-plugin-pwa';
 // This configuration mirrors the upstream editor setup.  It
 // specifies a relative base path for correct asset resolution and
 // registers the service worker for offline support using the
-// injectManifest strategy.  Additional file handlers have been
-// removed for brevity but can be reintroduced as needed.
+// injectManifest strategy.  Monaco editor is bundled locally for
+// full offline support - no CDN dependencies.
 export default defineConfig(() => {
   return {
     base: './',
     build: {
       outDir: 'build',
+      // Increase chunk size warning limit for Monaco (it's large but necessary)
+      chunkSizeWarningLimit: 2000,
+      rollupOptions: {
+        output: {
+          // Separate Monaco into its own chunk for better caching
+          manualChunks: {
+            'monaco-editor': ['monaco-editor'],
+          },
+        },
+      },
+    },
+    // Optimize Monaco dependencies
+    optimizeDeps: {
+      include: ['monaco-editor'],
     },
     plugins: [
       react(),

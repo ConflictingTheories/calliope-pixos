@@ -4,6 +4,9 @@
  * ---------------------------------------------------------------
  * Copyright (c) 2022‑2025  Kyle Derby MacInnis
  *
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Use the Map Editor combined with Geometry Editor instead.
+ * 
  * The TilesetEditor provides a simple form interface for editing
  * tile and geometry definitions within a Pixospritz package.  It
  * accepts a JSON string describing a tileset and allows the
@@ -14,6 +17,7 @@
  */
 
 // TODO - FIX NEEDED - NOT RENDERING CORRECTLY INTO THE CANVASES
+// DEPRECATED: This entire component will be removed. Use Map Editor + Geometry Editor instead.
 
 import React, { useState, useEffect, useRef } from 'react';
 import TilesetAtlasEditor from './tileset-atlas.jsx';
@@ -33,11 +37,16 @@ import { degToRad, V3 } from '../math/vector.jsx';
 import './style.css';
 
 /**
+ * @deprecated Use Map Editor + Geometry Editor instead.
  * Tileset viewer and editor
  * @param {{content, onSave, assets}} props 
  * @returns 
  */
 function TilesetEditor({ content, onSave, assets = [] }) {
+  // Show deprecation warning
+  useEffect(() => {
+    console.warn('[TilesetEditor] DEPRECATED: This component will be removed. Use Map Editor + Geometry Editor instead.');
+  }, []);
 
   const [tileset, setTileset] = useState({
     name: '',

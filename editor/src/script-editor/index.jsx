@@ -8,127 +8,154 @@
  * scripts and text files contained within a Pixospritz package.
  * It leverages the Monaco Editor via the @monaco-editor/react
  * wrapper.  The editor supports multiple languages (Lua, JSON,
- * plain text, etc.) and exposes a simple save button to write
- * changes back to the underlying entry.  Saving is currently
- * stubbed out – integration with the zip manager is left as
- * future work.  The component updates its internal state when
- * new props are received and re-renders accordingly.
+ * plain text, etc.) and exposes a save button to write changes
+ * back to the underlying entry.
  */
 
-import React, { Component } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { collect } from 'react-recollect';
-import Editor from '@monaco-editor/react';
-import { Panel, Row, Col, Container } from 'rsuite';
+import Editor, { loader } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
+import { Button } from 'rsuite';
+
+// Configure Monaco to use local bundle instead of CDN
+loader.config({ monaco });
 
 /**
  * ScriptEditor component allows editing and viewing of script and text files
  * with syntax highlighting and language support via Monaco Editor.
  *
- * @extends React.Component
+ * @param {object} props
+ * @param {string} props.content - Initial content to display in editor
+ * @param {string} props.lang - Programming language identifier for syntax highlighting
+ * @param {string} props.type - Layout type; 'script-only' uses full width, otherwise split panes
+ * @param {function(string):void} [props.onSave] - Optional callback to save edited content
+ * @returns {JSX.Element}
  */
-class ScriptEditor extends Component {
-  /**
-   * Creates an instance of ScriptEditor.
-   * @param {object} props - React props
-   * @param {string} props.content - Initial content to display in editor
-   * @param {string} props.lang - Programming language identifier for syntax highlighting
-   * @param {string} props.type - Layout type; 'script-only' uses full width, otherwise split panes
-   * @param {function(string):void} [props.onSave] - Optional callback to save edited content
-   */
-  constructor(props) {
-    super(props);
-    /**
-     * @type {{content: string, lang: string, type: string}}
-     */
-    this.state = {
-      content: props.content || 'please start your edits :)',
-      lang: props.lang || 'lua',
-      type: props.type || 'script-only',
-    };
-    this.saveChanges = this.saveChanges.bind(this);
-  }
+function ScriptEditor({ content: initialContent, lang: initialLang, type: initialType, onSave }) {
+  const [content, setContent] = useState(initialContent || 'please start your edits :)');
+  const [lang, setLang] = useState(initialLang || 'lua');
+  const [type] = useState(initialType || 'script-only');
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Update content when props change
+  useEffect(() => {
+    if (initialContent !== undefined) {
+      setContent(initialContent);
+      setHasChanges(false);
+    }
+  }, [initialContent]);
+
+  // Update lang when props change
+  useEffect(() => {
+    if (initialLang !== undefined) {
+      setLang(initialLang);
+    }
+  }, [initialLang]);
 
   /**
-   * Update component state when new props arrive.
-   * @param {object} nextProps - Incoming props
+   * Handle content changes in the editor
    */
-  componentWillReceiveProps(nextProps) {
-    if (this.props !== nextProps) {
-      this.setState({
-        content: nextProps.content,
-        lang: nextProps.lang,
-      });
-    }
-  }
+  const handleEditorChange = useCallback((value) => {
+    setContent(value || '');
+    setHasChanges(true);
+  }, []);
 
   /**
    * Saves the current content state by invoking the onSave callback if provided.
    */
-  async saveChanges() {
-    if (this.props.onSave) {
-      this.props.onSave(this.state.content);
+  const saveChanges = useCallback(async () => {
+    if (onSave) {
+      try {
+        await onSave(content);
+        setHasChanges(false);
+      } catch (err) {
+        console.error('Save failed:', err);
+      }
     } else {
-      console.log('TODO: Save changes back into the package');
+      console.warn('ScriptEditor: No onSave callback provided');
     }
-  }
+  }, [content, onSave]);
 
-  /**
-   * Renders the ScriptEditor JSX UI.
-   * @returns {JSX.Element} Rendered component
-   */
-  render() {
-    const { content, lang, type } = this.state;
-    // Determine layout based on the type – when editing scripts only
-    // we use the full width; otherwise we show two panes.
-    const size = type === 'script-only' ? 24 : 12;
-    return (
-      <Container>
-        <Row>
-          <Col sm={size} md={size} lg={size}>
-            <Panel
-              bordered
-              bodyFill
-              style={{
-                height: '86vh',
-                overflow: 'overlay',
-                background: 'var(--bg-primary)',
-                width: '100%',
-              }}
-            >
-              <Container style={{ minHeight: '80vh' }}>
-                <Editor
-                  theme="vs-dark"
-                  height="86vh"
-                  value={content}
-                  language={lang}
-                  defaultValue={content}
-                  onChange={(value) => this.setState({ content: value })}
-                />
-              </Container>
-            </Panel>
-          </Col>
-          {type === 'script-only' ? null : (
-            <Col sm={12} md={12} lg={12}>
-              <Panel
-                bordered
-                style={{
-                  height: '86vh',
-                  overflow: 'overlay',
-                  background: '#121216',
-                  width: '100%',
-                }}
-              >
-                {content}
-              </Panel>
-            </Col>
+  // Keyboard shortcut for save (Ctrl+S / Cmd+S)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveChanges();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saveChanges]);
+
+  return (
+    <div 
+      style={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+        minHeight: '400px',
+        padding: '0.5rem',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div 
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: 'var(--bg-primary, #0f0f1e)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}
+      >
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <Editor
+            theme="vs-dark"
+            height="100%"
+            value={content}
+            language={lang}
+            onChange={handleEditorChange}
+            loading={<div style={{ padding: '2rem', color: '#888' }}>Loading editor...</div>}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+              lineNumbers: 'on',
+              scrollBeyondLastLine: false,
+              wordWrap: 'on',
+              automaticLayout: true,
+            }}
+          />
+        </div>
+        <div style={{ 
+          padding: '10px', 
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          flexShrink: 0,
+        }}>
+          <Button 
+            appearance="primary" 
+            size="sm"
+            onClick={saveChanges}
+            disabled={!hasChanges}
+          >
+            {hasChanges ? 'Save Changes *' : 'Save Changes'}
+          </Button>
+          {hasChanges && (
+            <span style={{ color: '#888', fontSize: '12px' }}>
+              Unsaved changes (Ctrl+S to save)
+            </span>
           )}
-        </Row>
-        <Row style={{ padding: '10px' }}>
-          <button onClick={() => this.saveChanges()}>Save Changes</button>
-        </Row>
-      </Container>
-    );
-  }
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default collect(ScriptEditor);

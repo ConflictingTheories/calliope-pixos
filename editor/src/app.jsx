@@ -478,21 +478,130 @@ const App = () => {
     ]);
   }, [getData, toDataUri]);
 
+  /**
+   * Render a 3D model preview with full support for OBJ files with MTL and textures.
+   * Automatically discovers and loads associated MTL files and textures from the zip.
+   */
   const renderModelPreview = useCallback(async (entry) => {
-    const modelBytes = await getData(entry, false);
     const extension = entry.name.split('.').pop().toLowerCase();
-    const mimeLookup = {
-      obj: 'text/plain',
-      mtl: 'text/plain',
-      gltf: 'model/gltf+json',
-      glb: 'model/gltf-binary',
+    
+    // Helper to get full path of an entry
+    const getEntryPath = (ent) => {
+      if (ent.fullName) return ent.fullName;
+      const parts = [];
+      let current = ent;
+      while (current && current.name) {
+        parts.unshift(current.name);
+        current = current.parent;
+      }
+      return parts.join('/');
     };
-    const mime = mimeLookup[extension] || 'application/octet-stream';
-    const dataUri = toDataUri(modelBytes, mime);
-    setContents([
-      <ModelPreview key={Date.now()} content={dataUri} />
-    ]);
-  }, [getData, toDataUri]);
+    
+    // Get the directory path of the model file
+    const entryPath = getEntryPath(entry);
+    const modelDir = entryPath.substring(0, entryPath.lastIndexOf('/') + 1);
+    
+    // Get all entries from zip
+    let allEntries = [];
+    if (zip) {
+      if (typeof zip.entries === 'function') {
+        allEntries = Array.from(zip.entries());
+      } else if (zip.root) {
+        const buildEntryList = (node, path = '', list = []) => {
+          if (node.children) {
+            node.children.forEach(child => {
+              const fullPath = path ? `${path}/${child.name}` : child.name;
+              if (!fullPath.includes('__MACOSX') && !child.name.startsWith('._')) {
+                if (!child.directory) {
+                  list.push({ ...child, fullName: fullPath });
+                }
+                buildEntryList(child, fullPath, list);
+              }
+            });
+          }
+          return list;
+        };
+        allEntries = buildEntryList(zip.root);
+      }
+    }
+    
+    if (extension === 'obj') {
+      // Read OBJ file content
+      const objBytes = await getData(entry, false);
+      const objText = new TextDecoder().decode(objBytes);
+      
+      // Parse OBJ to find mtllib reference
+      let mtlFileName = null;
+      const mtlMatch = objText.match(/mtllib\s+(.+)/i);
+      if (mtlMatch) {
+        mtlFileName = mtlMatch[1].trim();
+      }
+      
+      // Find and load MTL file
+      let mtlContent = '';
+      let materials = {};
+      if (mtlFileName) {
+        const mtlPath = modelDir + mtlFileName;
+        const mtlEntry = allEntries.find(e => (e.fullName || e.name) === mtlPath);
+        if (mtlEntry) {
+          const mtlBytes = await getData(mtlEntry, false);
+          mtlContent = new TextDecoder().decode(mtlBytes);
+          
+          // Parse MTL to find texture references
+          const lines = mtlContent.split(/\r?\n/);
+          let currentMaterial = null;
+          for (const line of lines) {
+            const parts = line.trim().split(/\s+/);
+            if (parts[0] === 'newmtl') {
+              currentMaterial = parts[1];
+              materials[currentMaterial] = {};
+            } else if (currentMaterial && parts[0] === 'map_Kd') {
+              materials[currentMaterial].map_Kd = parts.slice(1).join(' ');
+            }
+          }
+        }
+      }
+      
+      // Load textures referenced in MTL
+      const textures = {};
+      for (const matName of Object.keys(materials)) {
+        const mat = materials[matName];
+        if (mat.map_Kd) {
+          const texPath = modelDir + mat.map_Kd;
+          const texEntry = allEntries.find(e => (e.fullName || e.name) === texPath);
+          if (texEntry) {
+            const texBytes = await getData(texEntry, false);
+            const texExt = mat.map_Kd.split('.').pop().toLowerCase();
+            const texMime = `image/${texExt === 'jpg' ? 'jpeg' : texExt}`;
+            textures[mat.map_Kd] = toDataUri(texBytes, texMime);
+          }
+        }
+      }
+      
+      setContents([
+        <ModelPreview 
+          key={Date.now()} 
+          content={objText}
+          mtlContent={mtlContent}
+          textures={textures}
+          textureBasePath={modelDir}
+        />
+      ]);
+    } else {
+      // For GLTF/GLB, pass as data URI
+      const modelBytes = await getData(entry, false);
+      const mimeLookup = {
+        mtl: 'text/plain',
+        gltf: 'model/gltf+json',
+        glb: 'model/gltf-binary',
+      };
+      const mime = mimeLookup[extension] || 'application/octet-stream';
+      const dataUri = toDataUri(modelBytes, mime);
+      setContents([
+        <ModelPreview key={Date.now()} content={dataUri} />
+      ]);
+    }
+  }, [getData, toDataUri, zip]);
 
   const renderMapEditor = useCallback(async (entry) => {
     console.log('Loading map editor for:', entry.name);
@@ -1135,7 +1244,7 @@ const App = () => {
     const name = entry.name.toLowerCase();
     setSelectedEntry(entry);
     if (name.endsWith('.pxs')) {
-      renderScriptEditor(entry, 'pixoscript');
+      renderScriptEditor(entry, 'lua');
       return;
     }
     if (name.endsWith('.pxc')) {

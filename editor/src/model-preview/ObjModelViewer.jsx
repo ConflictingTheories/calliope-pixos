@@ -279,7 +279,16 @@ function parseMTL(text) {
   return materials;
 }
 
-function ObjModelViewer() {
+/**
+ * ObjModelViewer - WebGL2-based OBJ model viewer
+ * 
+ * Props:
+ *  - objContent (string): Raw OBJ file content
+ *  - mtlContent (string): Raw MTL file content  
+ *  - textures (object): Map of texture filenames to data URIs
+ *  - textureBasePath (string): Base path for texture references
+ */
+function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, textureBasePath }) {
   const canvasRef = useRef(null);
   const glRef = useRef(null);
   const programRef = useRef(null);
@@ -287,13 +296,14 @@ function ObjModelViewer() {
 
   const [error, setError] = useState(null);
   const [meshes, setMeshes] = useState([]);
-  const [materials, setMaterials] = useState({});
-  const [textures, setTextures] = useState({});
+  const [loadedTextures, setLoadedTextures] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const cameraRef = useRef({ theta: 0, phi: 0.2, distance: 5, center: [0,0,0], up: [0,1,0], position: [0, 0, 5] });
   const draggingRef = useRef(false);
   const lastMouseRef = useRef({ x:0, y: 0 });
 
+  // Initialize WebGL context
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -335,134 +345,140 @@ function ObjModelViewer() {
     };
   }, []);
 
-  function loadTexture(gl, imageFile, callback) {
-    const url = URL.createObjectURL(imageFile);
-    const img = new Image();
-    img.onload = () => {
-      const tex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      if ((img.width & (img.width - 1)) === 0 && (img.height & (img.height - 1)) === 0) {
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      } else {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      }
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      callback(tex);
-      URL.revokeObjectURL(url);
-    };
-    img.onerror = () => {
-      setError('Failed to load texture: ' + imageFile.name);
-      URL.revokeObjectURL(url);
-      callback(null);
-    };
-    img.src = url;
-  }
-
-  function processFiles(files) {
-    const gl = glRef.current;
-    if (!gl) return;
-
-    const objFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.obj'));
-    if (!objFile) {
-      setError('No .obj file found in selection.');
-      return;
-    }
-    const mtlFile = Array.from(files).find(f => f.name.toLowerCase().endsWith('.mtl'));
-    const imageFiles = Array.from(files).filter(f => /\.(png|jpg|jpeg)$/i.test(f.name));
-
-    setError(null);
-
-    const loadedTextures = {};
-    let loadedCount = 0;
-    if (imageFiles.length === 0) {
-      finalizeLoad(null);
-    } else {
-      imageFiles.forEach(imageFile => {
-        loadTexture(gl, imageFile, (tex) => {
-          if (tex) loadedTextures[imageFile.name] = tex;
-          loadedCount++;
-          if (loadedCount === imageFiles.length) {
-            finalizeLoad(loadedTextures);
-          }
-        });
-      });
-    }
-
-    function finalizeLoad(textures) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const objText = e.target.result;
-        // Fix: prevent JSON parsing on MTL load, use plain text parsing
-        const parsedMeshes = parseOBJ(objText);
-
-        if (mtlFile) {
-          const mtlReader = new FileReader();
-          mtlReader.onload = me => {
-            const mtlText = me.target.result;
-            // Ensure parseMTL is not called with JSON.parse anywhere
-            const parsedMaterials = parseMTL(mtlText);
-            assignMaterials(parsedMeshes, parsedMaterials, textures);
-          };
-          mtlReader.readAsText(mtlFile);
+  /**
+   * Load texture from data URI
+   */
+  function loadTextureFromDataUri(gl, dataUri, name) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        if ((img.width & (img.width - 1)) === 0 && (img.height & (img.height - 1)) === 0) {
+          gl.generateMipmap(gl.TEXTURE_2D);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         } else {
-          assignMaterials(parsedMeshes, {}, textures);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        resolve({ name, tex });
       };
-      reader.readAsText(objFile);
-    }
-
-    function assignMaterials(parsedMeshes, parsedMaterials, textures) {
-      parsedMeshes.forEach(mesh => {
-        mesh.materialProps = parsedMaterials[mesh.material] || { Ka: [0.25, 0.25, 0.3], Kd: [0.75, 0.75, 0.75], Ks: [1,1,1], Ns: 50 };
-        let tex = null;
-        if (mesh.materialProps.map_Kd) {
-          const texName = mesh.materialProps.map_Kd.split('/').pop();
-          tex = textures ? textures[texName] : null;
-        }
-        mesh.texture = tex;
-        mesh.hasTexture = !!tex;
-      });
-      setMeshes(parsedMeshes);
-      setMaterials(parsedMaterials);
-      setTextures(textures || {});
-
-      initBuffers(parsedMeshes);
-    }
-  }
-
-  function initBuffers(meshes) {
-    const gl = glRef.current;
-    if (!gl) return;
-
-    meshes.forEach(mesh => {
-      const vao = gl.createVertexArray();
-      gl.bindVertexArray(vao);
-
-      const posBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.positions), gl.STATIC_DRAW);
-      gl.enableVertexAttribArray(0);
-      gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-      const normBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
-      gl.enableVertexAttribArray(1);
-      gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-
-      const uvBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.uvs), gl.STATIC_DRAW);
-      gl.enableVertexAttribArray(2);
-      gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
-
-      mesh.vao = vao;
-      mesh.count = mesh.positions.length / 3;
+      img.onerror = () => {
+        console.warn('Failed to load texture:', name);
+        resolve({ name, tex: null });
+      };
+      img.src = dataUri;
     });
   }
+
+  // Process OBJ content when props change
+  useEffect(() => {
+    const gl = glRef.current;
+    if (!gl || !objContent) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    async function loadModel() {
+      try {
+        // Parse OBJ
+        const parsedMeshes = parseOBJ(objContent);
+        
+        // Parse MTL if provided
+        const parsedMaterials = mtlContent ? parseMTL(mtlContent) : {};
+        
+        // Load textures from data URIs
+        const texMap = {};
+        if (textureDataUris && Object.keys(textureDataUris).length > 0) {
+          const texPromises = Object.entries(textureDataUris).map(([name, dataUri]) => 
+            loadTextureFromDataUri(gl, dataUri, name)
+          );
+          const results = await Promise.all(texPromises);
+          results.forEach(({ name, tex }) => {
+            if (tex) texMap[name] = tex;
+          });
+        }
+        setLoadedTextures(texMap);
+        
+        // Assign materials to meshes
+        parsedMeshes.forEach(mesh => {
+          mesh.materialProps = parsedMaterials[mesh.material] || { 
+            Ka: [0.25, 0.25, 0.3], 
+            Kd: [0.75, 0.75, 0.75], 
+            Ks: [1,1,1], 
+            Ns: 50 
+          };
+          let tex = null;
+          if (mesh.materialProps.map_Kd) {
+            const texName = mesh.materialProps.map_Kd.split('/').pop();
+            tex = texMap[texName] || texMap[mesh.materialProps.map_Kd];
+          }
+          mesh.texture = tex;
+          mesh.hasTexture = !!tex;
+        });
+
+        // Initialize buffers
+        parsedMeshes.forEach(mesh => {
+          const vao = gl.createVertexArray();
+          gl.bindVertexArray(vao);
+
+          const posBuf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.positions), gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(0);
+          gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+          const normBuf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(1);
+          gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+
+          const uvBuf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.uvs), gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(2);
+          gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+
+          mesh.vao = vao;
+          mesh.count = mesh.positions.length / 3;
+        });
+
+        // Auto-fit camera to model bounds
+        if (parsedMeshes.length > 0) {
+          let minX = Infinity, minY = Infinity, minZ = Infinity;
+          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+          parsedMeshes.forEach(mesh => {
+            for (let i = 0; i < mesh.positions.length; i += 3) {
+              minX = Math.min(minX, mesh.positions[i]);
+              maxX = Math.max(maxX, mesh.positions[i]);
+              minY = Math.min(minY, mesh.positions[i+1]);
+              maxY = Math.max(maxY, mesh.positions[i+1]);
+              minZ = Math.min(minZ, mesh.positions[i+2]);
+              maxZ = Math.max(maxZ, mesh.positions[i+2]);
+            }
+          });
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          const centerZ = (minZ + maxZ) / 2;
+          const size = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+          cameraRef.current.center = [centerX, centerY, centerZ];
+          cameraRef.current.distance = size * 2;
+        }
+
+        setMeshes(parsedMeshes);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Failed to load model:', err);
+        setError('Failed to parse model: ' + err.message);
+        setIsLoading(false);
+      }
+    }
+
+    loadModel();
+  }, [objContent, mtlContent, textureDataUris]);
 
   function updateCamera() {
     const camera = cameraRef.current;
@@ -472,6 +488,7 @@ function ObjModelViewer() {
     camera.position[2] = camera.center[2] + camera.distance * Math.cos(camera.theta) * cosPhi;
   }
 
+  // Render loop
   useEffect(() => {
     const gl = glRef.current;
     const program = programRef.current;
@@ -494,12 +511,12 @@ function ObjModelViewer() {
     };
 
     const canvas = canvasRef.current;
-    const projectionMatrix = perspective(45*Math.PI/180, canvas.clientWidth/canvas.clientHeight, 0.01, 10000);
     const upVec = [0,1,0];
 
     let animationFrameId;
 
     function render() {
+      const projectionMatrix = perspective(45*Math.PI/180, canvas.clientWidth/canvas.clientHeight, 0.01, 10000);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -560,28 +577,70 @@ function ObjModelViewer() {
     e.preventDefault();
     const camera = cameraRef.current;
     camera.distance += e.deltaY * 0.001 * camera.distance;
-    camera.distance = Math.max(0.1, Math.min(100, camera.distance));
-  }
-  function onFilesSelected(e) {
-    const filesArray = Array.from(e.target.files);
-    processFiles(filesArray);
+    camera.distance = Math.max(0.1, Math.min(1000, camera.distance));
   }
 
   return (
-    <Container style={{padding: '1rem'}}>
-      <Panel bordered header={<strong>OBJ Model Viewer (WebGL2)</strong>}>
-        <input type="file" id="file_input" multiple accept=".obj,.mtl,.png,.jpg,.jpeg" onChange={onFilesSelected} style={{marginBottom: '1rem'}} />
-        <canvas ref={canvasRef} style={{width: '100%', height: '512px', border: '1px solid #333', background: '#222', touchAction: 'none', userSelect: 'none'}} width={512} height={512}
+    <div className="editor-tool-container" style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      minHeight: 0,
+      overflow: 'hidden'
+    }}>
+      <Panel bordered header={<strong>OBJ Model Viewer</strong>} style={{ 
+        margin: '1rem', 
+        flex: '1 1 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        overflow: 'hidden'
+      }}>
+        <div style={{ 
+          padding: '0.5rem', 
+          background: 'var(--rs-bg-card, #1a1d24)', 
+          borderRadius: '4px',
+          marginBottom: '0.5rem',
+          flexShrink: 0,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span style={{ fontSize: '12px', color: '#888' }}>
+            {meshes.length > 0 ? `${meshes.length} mesh(es) loaded` : 'No model loaded'}
+            {Object.keys(loadedTextures).length > 0 && ` • ${Object.keys(loadedTextures).length} texture(s)`}
+          </span>
+          <span style={{ fontSize: '11px', color: '#666' }}>
+            Drag to rotate • Scroll to zoom
+          </span>
+        </div>
+        <canvas 
+          ref={canvasRef} 
+          style={{
+            flex: '1 1 auto',
+            width: '100%', 
+            minHeight: 0,
+            border: '1px solid #333', 
+            background: '#141418', 
+            touchAction: 'none', 
+            userSelect: 'none',
+            borderRadius: '4px'
+          }} 
+          width={800} 
+          height={600}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseUp}
           onWheel={onWheel}
         />
-        {error && <Message type="error" description={error} />}
-        {!error && meshes.length === 0 && <Message type="info" description="Select an OBJ file with materials and textures to view." />}
+        {isLoading && <Message type="info" description="Loading model..." style={{ marginTop: '0.5rem' }} />}
+        {error && <Message type="error" description={error} style={{ marginTop: '0.5rem' }} />}
+        {!isLoading && !error && meshes.length === 0 && !objContent && (
+          <Message type="info" description="Select an OBJ file from the package to preview." style={{ marginTop: '0.5rem' }} />
+        )}
       </Panel>
-    </Container>
+    </div>
   );
 }
 

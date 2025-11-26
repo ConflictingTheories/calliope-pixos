@@ -88,6 +88,10 @@ export default class RenderManager {
       /** @type {WebGLFramebuffer|null} */
       this.framebuffer = null; // Framebuffer for off-screen rendering (e.g., picker)
 
+      // Picker State - true when rendering for object picking
+      /** @type {boolean} */
+      this.isPickerPass = false;
+
       // Transitions
       /** @type {boolean} */
       this.isTransitioning = false;
@@ -470,6 +474,10 @@ export default class RenderManager {
   activateShaderProgram = () => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
+    
+    // Clear picker pass flag - back to normal rendering
+    this.isPickerPass = false;
+    
     gl.useProgram(this.shaderProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Render to screen
     this.initProjection(); // Re-initialize projection in case canvas size changed
@@ -484,6 +492,10 @@ export default class RenderManager {
   activatePickerShaderProgram = (useFrustum) => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
+    
+    // Set picker pass flag - objects will check this to use picker uniforms only
+    this.isPickerPass = true;
+    
     gl.useProgram(this.effectPrograms['picker']);
 
     // TODO: Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen.

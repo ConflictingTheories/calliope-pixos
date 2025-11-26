@@ -42,18 +42,30 @@
   position: relative;
   background: #000;
   border-radius: 4px;
-  overflow: visible;
+  overflow: hidden; /* Changed from visible to prevent layout issues */
   box-shadow: 
     inset 0 0 30px rgba(0, 0, 0, 0.9),
     0 0 20px rgba(50, 150, 250, 0.3);
+  /* Create isolated stacking context for children */
+  isolation: isolate;
+  /* Ensure container properly sizes to content */
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 }
 
-/* Screen Container - Disable pointer events on container itself */
+/* Ensure game canvas elements can receive pointer events */
 .screen-container > * {
   pointer-events: auto;
+  /* Place game content above CRT effects within this stacking context */
+  position: relative;
+  z-index: 10;
+  /* Ensure full width/height */
+  width: 100%;
+  height: 100%;
 }
 
-/* CRT Scanlines */
+/* CRT Scanlines - decorative overlay */
 .screen-container::before {
   content: '';
   position: absolute;
@@ -69,11 +81,11 @@
     rgba(0, 0, 0, 0.15) 3px
   );
   pointer-events: none;
-  z-index: 100;
+  z-index: 20; /* Above game content but still non-interactive */
   animation: flicker 0.15s infinite;
 }
 
-/* CRT Glow */
+/* CRT Glow - decorative overlay */
 .screen-container::after {
   content: '';
   position: absolute;
@@ -87,7 +99,7 @@
     transparent 60%
   );
   pointer-events: none;
-  z-index: 99;
+  z-index: 21; /* Above scanlines */
 }
 
 /* Console Header */

@@ -481,4 +481,51 @@ export default class GLEngine {
       height: this.canvas.clientHeight,
     };
   }
+
+  /**
+   * Handles canvas resize events. Updates internal dimensions and notifies
+   * relevant subsystems (HUD, RenderManager, Gamepad) of the size change.
+   * This should be called when the canvas container is resized.
+   */
+  handleResize() {
+    if (!this.gl || !this.ctx) return;
+
+    const displayWidth = this.canvas.clientWidth;
+    const displayHeight = this.canvas.clientHeight;
+
+    // Check if the canvas needs resizing
+    if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
+      // Update canvas internal dimensions to match display size
+      this.canvas.width = displayWidth;
+      this.canvas.height = displayHeight;
+      
+      // Update HUD canvas
+      if (this.hudCanvas) {
+        this.hudCanvas.width = displayWidth;
+        this.hudCanvas.height = displayHeight;
+      }
+
+      // Update engine width/height
+      this.width = displayWidth;
+      this.height = displayHeight;
+
+      // Update WebGL viewport
+      this.gl.viewport(0, 0, displayWidth, displayHeight);
+
+      // Update render manager if available
+      if (this.renderManager && this.renderManager.handleResize) {
+        this.renderManager.handleResize(displayWidth, displayHeight);
+      }
+
+      // Update gamepad/input manager if available
+      if (this.inputManager && this.inputManager.gamepad) {
+        this.inputManager.gamepad.resize();
+      }
+
+      // Update HUD
+      if (this.hud && this.hud.handleResize) {
+        this.hud.handleResize(displayWidth, displayHeight);
+      }
+    }
+  }
 }

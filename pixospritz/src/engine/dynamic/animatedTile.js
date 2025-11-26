@@ -70,22 +70,29 @@ export default class DynamicAnimatedTile extends DynamicSprite {
    */
   draw = (engine) => {
     if (!this.loaded) return;
-    engine.renderManager.mvPushMatrix();
-    translate(engine.renderManager.uModelMat, engine.renderManager.uModelMat, this.pos.toArray());
+    const rm = engine.renderManager;
+    const isPickerPass = rm.isPickerPass;
+    
+    rm.mvPushMatrix();
+    translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
     // Lie flat on the ground
     translate(
-      engine.renderManager.uModelMat,
-      engine.renderManager.uModelMat,
-      (this.drawOffset[engine.renderManager.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+      rm.uModelMat,
+      rm.uModelMat,
+      (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
     );
-    rotate(engine.renderManager.uModelMat, engine.renderManager.uModelMat, degToRad(90), [1, 0, 0]);
-    engine.renderManager.bindBuffer(this.vertexPosBuf, engine.renderManager.shaderProgram.aVertexPosition);
-    engine.renderManager.bindBuffer(this.vertexTexBuf, engine.renderManager.shaderProgram.aTextureCoord);
+    rotate(rm.uModelMat, rm.uModelMat, degToRad(90), [1, 0, 0]);
+    rm.bindBuffer(this.vertexPosBuf, rm.shaderProgram.aVertexPosition);
+    rm.bindBuffer(this.vertexTexBuf, rm.shaderProgram.aTextureCoord);
     this.texture.attach();
-    // Draw
-    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
-    engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+    
+    // Draw - set uniforms based on render pass
+    if (isPickerPass) {
+      rm.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
+    } else {
+      rm.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+    }
     engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
-    engine.renderManager.mvPopMatrix();
+    rm.mvPopMatrix();
   }
 }

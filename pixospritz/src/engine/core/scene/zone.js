@@ -860,6 +860,7 @@ export default class Zone extends Loadable {
     const gl = this.engine.gl;
     const shader = rm.shaderProgram;
     const picker = rm.effectPrograms['picker'];
+    const isPickerPass = rm.isPickerPass;
 
     const vPos = this.cellVertexPosBuf[row][cell];
     const vTex = this.cellVertexTexBuf[row][cell];
@@ -867,13 +868,19 @@ export default class Zone extends Loadable {
     rm.bindBuffer(vTex, shader.aTextureCoord);
 
     const id = this.cellPickingId[row][cell];
-    picker.setMatrixUniforms({ id });
-    shader.setMatrixUniforms({
-      id,
-      isSelected: !!this._selectedSet?.has(`${row},${cell}`),
-      sampler: 1.0,
-      colorMultiplier: this._highlight || [1, 1, 0, 1],
-    });
+    
+    if (isPickerPass) {
+      // During picker pass, only set picker shader uniforms
+      picker.setMatrixUniforms({ id });
+    } else {
+      // During normal render, set main shader uniforms
+      shader.setMatrixUniforms({
+        id,
+        isSelected: !!this._selectedSet?.has(`${row},${cell}`),
+        sampler: 1.0,
+        colorMultiplier: this._highlight || [1, 1, 0, 1],
+      });
+    }
     gl.drawArrays(gl.TRIANGLES, 0, vPos.numItems);
   };
 

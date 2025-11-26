@@ -362,69 +362,79 @@ export default class Sprite extends Loadable {
       this.engine.renderManager.debug.spritesDrawn++;
     }
 
+    const rm = this.engine.renderManager;
+    const isPickerPass = rm.isPickerPass;
+
     //update light position
     if (this.isLit) {
       let pos = this.pos.toArray();
-      this.engine.renderManager.lightManager.updateLight(this.lightIndex, pos);
+      rm.lightManager.updateLight(this.lightIndex, pos);
     }
 
-    this.engine.renderManager.mvPushMatrix();
+    rm.mvPushMatrix();
     // position
     translate(
-      this.engine.renderManager.uModelMat,
-      this.engine.renderManager.uModelMat,
-      (this.drawOffset[this.engine.renderManager.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+      rm.uModelMat,
+      rm.uModelMat,
+      (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
     );
-    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
+    translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
     if (!this.fixed) {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({
-        id: this.getPickingId(),
-        scale: new Vector(1, Math.cos(this.engine.renderManager.camera.cameraAngle / 180), 1),
-      });
-      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
-        0.5 * this.engine.renderManager.camera.cameraVector.x,
-        0.5 * this.engine.renderManager.camera.cameraVector.y,
+      // Only set main shader uniforms during normal render, not picker pass
+      if (!isPickerPass) {
+        rm.shaderProgram.setMatrixUniforms({
+          id: this.getPickingId(),
+          scale: new Vector(1, Math.cos(rm.camera.cameraAngle / 180), 1),
+        });
+      }
+      translate(rm.uModelMat, rm.uModelMat, [
+        0.5 * rm.camera.cameraVector.x,
+        0.5 * rm.camera.cameraVector.y,
         0,
       ]);
       rotate(
-        this.engine.renderManager.uModelMat,
-        this.engine.renderManager.uModelMat,
-        degToRad(this.engine.renderManager.camera.cameraAngle * this.engine.renderManager.camera.cameraVector.z),
+        rm.uModelMat,
+        rm.uModelMat,
+        degToRad(rm.camera.cameraAngle * rm.camera.cameraVector.z),
         [0, 0, -1]
       );
-      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, [
-        -0.5 * this.engine.renderManager.camera.cameraVector.x,
-        -0.5 * this.engine.renderManager.camera.cameraVector.y,
+      translate(rm.uModelMat, rm.uModelMat, [
+        -0.5 * rm.camera.cameraVector.x,
+        -0.5 * rm.camera.cameraVector.y,
         0,
       ]);
     }
 
-    // Bind texture
-    this.engine.renderManager.bindBuffer(this.vertexPosBuf, this.engine.renderManager.shaderProgram.aVertexPosition);
-    this.engine.renderManager.bindBuffer(this.vertexTexBuf, this.engine.renderManager.shaderProgram.aTextureCoord);
+    // Bind texture - attribute locations are the same for both shaders (hardcoded to 0, 1)
+    rm.bindBuffer(this.vertexPosBuf, rm.shaderProgram.aVertexPosition);
+    rm.bindBuffer(this.vertexTexBuf, rm.shaderProgram.aTextureCoord);
     this.texture.attach();
 
-    // picking shader
-    this.engine.renderManager.effectPrograms['picker'].setMatrixUniforms({
-      sampler: 1.0,
-      id: this.getPickingId(),
-    });
-
-    // if selected
-    if (this.isSelected) {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({
-        id: this.getPickingId(),
-        isSelected: true,
+    if (isPickerPass) {
+      // During picker pass, only set picker shader uniforms
+      rm.effectPrograms['picker'].setMatrixUniforms({
         sampler: 1.0,
-        colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+        id: this.getPickingId(),
+        scale: new Vector(1, Math.cos(rm.camera.cameraAngle / 180), 1),
       });
     } else {
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({
-        id: this.getPickingId(),
-        sampler: 1.0,
-      });
+      // During normal render, set main shader uniforms
+      // if selected
+      if (this.isSelected) {
+        rm.shaderProgram.setMatrixUniforms({
+          id: this.getPickingId(),
+          isSelected: true,
+          sampler: 1.0,
+          colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+        });
+      } else {
+        rm.shaderProgram.setMatrixUniforms({
+          id: this.getPickingId(),
+          sampler: 1.0,
+        });
+      }
     }
 
     // Draw
@@ -432,38 +442,38 @@ export default class Sprite extends Loadable {
     this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     this.engine.gl.depthFunc(this.engine.gl.LESS);
 
-    this.engine.renderManager.mvPopMatrix();
+    rm.mvPopMatrix();
 
-    // Draw Speech
-    if (this.enableSpeech) {
-      this.engine.renderManager.mvPushMatrix();
+    // Draw Speech (skip during picker pass - speech bubbles don't need to be pickable)
+    if (this.enableSpeech && !isPickerPass) {
+      rm.mvPushMatrix();
 
       // Undo rotation so that character plane is normal to LOS
       translate(
-        this.engine.renderManager.uModelMat,
-        this.engine.renderManager.uModelMat,
-        (this.drawOffset[this.engine.renderManager.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+        rm.uModelMat,
+        rm.uModelMat,
+        (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
       );
-      translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
+      translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
       rotate(
-        this.engine.renderManager.uModelMat,
-        this.engine.renderManager.uModelMat,
-        degToRad(this.engine.renderManager.camera.cameraAngle * this.engine.renderManager.camera.cameraVector.z),
+        rm.uModelMat,
+        rm.uModelMat,
+        degToRad(rm.camera.cameraAngle * rm.camera.cameraVector.z),
         [0, 0, -1]
       );
 
       // Bind texture for speech bubble
-      this.engine.renderManager.bindBuffer(this.speechVerBuf, this.engine.renderManager.shaderProgram.aVertexPosition);
-      this.engine.renderManager.bindBuffer(this.speechTexBuf, this.engine.renderManager.shaderProgram.aTextureCoord);
+      rm.bindBuffer(this.speechVerBuf, rm.shaderProgram.aVertexPosition);
+      rm.bindBuffer(this.speechTexBuf, rm.shaderProgram.aTextureCoord);
       this.speech.attach();
 
       // Draw Speech bubble
-      this.engine.renderManager.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
+      rm.shaderProgram.setMatrixUniforms({ id: this.getPickingId() });
       this.engine.gl.depthFunc(this.engine.gl.ALWAYS);
       this.engine.gl.drawArrays(this.engine.gl.TRIANGLES, 0, this.speechVerBuf.numItems);
       this.engine.gl.depthFunc(this.engine.gl.LESS);
 
-      this.engine.renderManager.mvPopMatrix();
+      rm.mvPopMatrix();
     }
   }
 

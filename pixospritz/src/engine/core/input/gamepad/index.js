@@ -222,11 +222,65 @@ export class GamePad {
     let { touches, controller, buttonsLayout } = this;
     if (e.type) {
       var type = e.type;
-      if (e.type.indexOf('mouse') != -1) {
-        e.identifier = 'desktop';
-        e = { touches: [e] };
+      
+      // Normalize event to always have a touches-like array
+      // Handle mouse events (click, mousedown, mouseup, mousemove)
+      let eventTouches;
+      if (e.type.indexOf('mouse') !== -1 || e.type === 'click') {
+        // Mouse/click events - wrap in array
+        eventTouches = [{
+          identifier: 'desktop',
+          clientX: e.clientX,
+          clientY: e.clientY,
+          pageX: e.pageX,
+          pageY: e.pageY,
+          canvasX: e.canvasX,
+          canvasY: e.canvasY
+        }];
+      } else if (e.touches && e.touches.length > 0) {
+        // Touch events with active touches
+        eventTouches = Array.from(e.touches).map(t => ({
+          identifier: t.identifier,
+          clientX: t.clientX,
+          clientY: t.clientY,
+          pageX: t.pageX,
+          pageY: t.pageY,
+          canvasX: e.canvasX, // Use pre-computed from WebGLView
+          canvasY: e.canvasY
+        }));
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        // Touch end events - use changedTouches
+        eventTouches = Array.from(e.changedTouches).map(t => ({
+          identifier: t.identifier,
+          clientX: t.clientX,
+          clientY: t.clientY,
+          pageX: t.pageX,
+          pageY: t.pageY,
+          canvasX: e.canvasX,
+          canvasY: e.canvasY
+        }));
+      } else if (e.canvasX !== undefined) {
+        // Adjusted event from WebGLView with pre-computed coordinates
+        eventTouches = [{
+          identifier: 'desktop',
+          clientX: e.clientX,
+          clientY: e.clientY,
+          pageX: e.pageX,
+          pageY: e.pageY,
+          canvasX: e.canvasX,
+          canvasY: e.canvasY
+        }];
+      } else {
+        // Fallback - no valid touch data
+        return;
       }
-      let offset = this.getPosition(this.engine.gp.canvas);
+      
+      // Get canvas offset using getBoundingClientRect for accuracy
+      const canvas = this.engine.gp.canvas;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
       // run against attached listeners
       this.listeners.map((l) => {
         if (l[type]) {
@@ -234,18 +288,33 @@ export class GamePad {
         }
       });
 
-      for (var n = 0; n < (e.touches.length > 5 ? 5 : e.touches.length); n++) {
-        var id = e.touches[n].identifier;
+      const touchCount = Math.min(eventTouches.length, 5);
+      for (var n = 0; n < touchCount; n++) {
+        var id = eventTouches[n].identifier;
+        
+        // Use pre-computed canvas coordinates if available, otherwise calculate
+        let x, y;
+        if (eventTouches[n].canvasX !== undefined) {
+          x = eventTouches[n].canvasX;
+          y = eventTouches[n].canvasY;
+        } else {
+          // Calculate coordinates relative to canvas with proper scaling
+          const clientX = eventTouches[n].clientX ?? eventTouches[n].pageX;
+          const clientY = eventTouches[n].clientY ?? eventTouches[n].pageY;
+          x = (clientX - rect.left) * scaleX;
+          y = (clientY - rect.top) * scaleY;
+        }
+        
         if (!touches[id]) {
           touches[id] = {
-            x: e.touches[n].pageX - offset.x,
-            y: e.touches[n].pageY - offset.y,
+            x: x,
+            y: y,
             leftClick: false,
             rightClick: false,
           };
         } else {
-          touches[id].x = e.touches[n].pageX - offset.x;
-          touches[id].y = e.touches[n].pageY - offset.y;
+          touches[id].x = x;
+          touches[id].y = y;
         }
       }
 

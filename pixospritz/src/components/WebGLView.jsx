@@ -39,33 +39,69 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       // swallow until engine initialized
     }
   };
+
+  /**
+   * Handles touch/mouse events with proper coordinate transformation.
+   * The canvas element may be scaled via CSS to fit the viewport, but its
+   * internal resolution (width/height attributes) can differ from the display
+   * size (getBoundingClientRect). This function computes the correct canvas
+   * coordinates by accounting for the scale difference and any offset.
+   */
   const onTouchEvent = (e) => {
     try {
-      // Calculate position relative to HUD canvas
       const canvas = hudRef.current;
-      if (canvas && e.clientX !== undefined) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        
-        // Create a modified event with adjusted coordinates
-        const adjustedEvent = {
-          ...e,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          _canvasRect: rect,
-          _scaleX: scaleX,
-          _scaleY: scaleY
-        };
-        
-        if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(adjustedEvent);
-      } else {
+      if (!canvas) {
         if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(e);
+        return;
+      }
+      
+      const rect = canvas.getBoundingClientRect();
+      
+      // Handle both mouse and touch events
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      // Calculate scale factors between internal canvas size and displayed size
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      // Calculate position relative to canvas with proper scaling
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
+      
+      // Create adjusted event with canvas-relative coordinates
+      const adjustedEvent = {
+        ...e,
+        type: e.type,
+        clientX: clientX,
+        clientY: clientY,
+        // Pre-computed canvas coordinates for the engine
+        canvasX: canvasX,
+        canvasY: canvasY,
+        pageX: canvasX + rect.left,
+        pageY: canvasY + rect.top,
+        _canvasRect: rect,
+        _scaleX: scaleX,
+        _scaleY: scaleY
+      };
+      
+      if (SpritzProvider && SpritzProvider.onTouchEvent) {
+        SpritzProvider.onTouchEvent(adjustedEvent);
       }
     } catch (err) {
-      // swallow until engine initialized
+      console.warn('onTouchEvent error:', err);
     }
   };
+  
   let engine = null;
 
   // recording stream & media tracks
@@ -173,6 +209,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   useEffect(async () => {
     // handle resize
     window.addEventListener('resize', setDimension);
+    
     // setup canvases
     const canvas = ref.current;
     const hud = hudRef.current;
@@ -189,6 +226,23 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     // Initialize Spritz
     await engine.init(SpritzProvider);
 
+    // Create ResizeObserver for proper canvas resize handling
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.target === canvas || entry.target === hud) {
+            // Notify engine of resize
+            if (engine && engine.handleResize) {
+              engine.handleResize();
+            }
+          }
+        }
+      });
+      resizeObserver.observe(canvas);
+      resizeObserver.observe(hud);
+    }
+
     // render loop
     engine.render();
 
@@ -198,6 +252,9 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       stopTouchScrolling(gamepad);
       stopTouchScrolling(hud);
       window.removeEventListener('resize', setDimension);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       engine.close();
     };
   }, [SpritzProvider]);
@@ -249,14 +306,21 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
               background: 'none',
               width: '100%',
               height: '100%',
+              touchAction: 'none', // Prevent browser gestures
+              cursor: 'pointer',
             }}
             ref={hudRef}
             width={canvasWidth}
             height={canvasHeight}
             className={string}
-            onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
-            onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
-            onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
+            onMouseUp={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onMouseDown={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onMouseMove={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onClick={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onTouchStart={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onTouchEnd={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onTouchMove={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
+            onTouchCancel={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
           />
           {/* MIPMAP - For Sprite Text / Speech / Titles */}
           <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />

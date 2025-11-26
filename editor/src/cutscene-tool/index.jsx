@@ -12,7 +12,7 @@
  * in a Pixospritz package.
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { collect } from 'react-recollect';
 import {
   Button,
@@ -23,7 +23,16 @@ import {
   ButtonGroup,
   Panel,
 } from 'rsuite';
+import Editor, { loader } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
+import { registerSpritzCutLanguage } from '../shared/spritzcut-language.js';
 import CutscenePlayer from './CutscenePlayer';
+
+// Configure Monaco to use local bundle
+loader.config({ monaco });
+
+// Register SpritzCut language
+registerSpritzCutLanguage(monaco);
 
 // Available event types for cutscenes
 const EVENT_TYPES = [
@@ -405,12 +414,13 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
       className="cutscene-tool"
       style={{ 
         display: 'flex', 
-        gap: '18px', 
-        padding: '12px',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        height: 'calc(100vh - 24px)',
-        alignItems: 'flex-start'
+        flexDirection: 'column',
+        padding: '0.5rem',
+        height: '100%',
+        width: '100%',
+        boxSizing: 'border-box',
+        gap: '0.5rem',
+        overflow: 'hidden',
       }}
     >
       {error && (
@@ -419,360 +429,233 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
         </div>
       )}
       
-      {/* Stage - Fixed size with player inside */}
+      {/* Main content area - horizontal split */}
       <div style={{
-        width: '960px',
-        height: '540px',
-        flexShrink: 0,
-        position: 'relative'
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+        gap: '0.75rem',
       }}>
-        <CutscenePlayer
-          ref={cutscenePlayerRef}
-          scriptText={scriptText}
-          speed={speed}
-          autoAdvance={autoAdvance}
-          assetLoader={assetLoader}
-        />
-      </div>
-
-      {/* Editor Panel */}
-      <div 
-        className="editor-panel"
-        style={{
-          width: '400px',
-          flexShrink: 0,
-          background: 'linear-gradient(135deg, rgba(7,20,38,0.8), rgba(4,12,20,0.8))',
-          border: '1px solid rgba(255,255,255,0.04)',
-          borderRadius: '10px',
-          padding: '12px',
-          boxShadow: '0 12px 30px rgba(0,0,0,0.5)',
+        {/* Left side - Preview player */}
+        <div style={{
+          flex: '0 0 60%',
+          minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
-          height: '540px',
-          overflow: 'hidden'
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <h4 style={{ 
-            margin: 0, 
-            color: '#7dd3fc', 
-            fontSize: '14px',
-            fontWeight: 600 
-          }}>
-            SpritzCut DSL Editor
-          </h4>
-          <Nav appearance="subtle" activeKey={editorMode} onSelect={setEditorMode} style={{ marginBottom: 0 }}>
-            <Nav.Item eventKey="text" style={{ fontSize: '12px', padding: '4px 8px' }}>Text</Nav.Item>
-            <Nav.Item eventKey="visual" style={{ fontSize: '12px', padding: '4px 8px' }}>Visual</Nav.Item>
-          </Nav>
-        </div>
-        
-        {/* Quick Insert Commands Panel */}
-        <details style={{ 
-          marginBottom: '8px',
-          background: 'rgba(125,211,252,0.05)',
-          border: '1px solid rgba(125,211,252,0.15)',
-          borderRadius: '6px',
-          padding: '6px'
+          background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '10px',
+          overflow: 'hidden',
         }}>
-          <summary style={{ 
-            color: '#7dd3fc',
-            fontSize: '11px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            userSelect: 'none',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
+          {/* Preview header */}
+          <div style={{
+            padding: '8px 12px',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexShrink: 0,
           }}>
-            Quick Insert Commands
-          </summary>
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '4px',
-            marginTop: '6px'
-          }}>
-            <button
-              onClick={() => insertTemplate('@backdrop textures/room.gif [fadeIn=800]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
+            <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
+              Preview Stage
+            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Speed</label>
+                <input
+                  type="range"
+                  min="8"
+                  max="200"
+                  value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  style={{ width: '80px' }}
+                />
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', width: '28px', textAlign: 'right' }}>{speed}</span>
+              </div>
+              <label style={{ 
+                fontSize: '11px', 
+                color: 'rgba(255,255,255,0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
                 cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert backdrop command"
-            >
-              🖼️ Backdrop
-            </button>
-            <button
-              onClick={() => insertTemplate('@char HERO sprite=characters/male')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert character definition"
-            >
-              👤 Character
-            </button>
-            <button
-              onClick={() => insertTemplate('@do playBgm [name=audio/brass-loop.mp3]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert looping background music"
-            >
-              🎵 BGM (Loop)
-            </button>
-            <button
-              onClick={() => insertTemplate('@do playSfx [name=audio/organ.mp3]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert one-shot sound effect"
-            >
-              🔊 SFX
-            </button>
-            <button
-              onClick={() => insertTemplate('@do playVoice [name=audio/opening.mp3]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert blocking voice-over"
-            >
-              🎙️ Voice-over
-            </button>
-            <button
-              onClick={() => insertTemplate('@do stopBgm')}
-              style={{
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid rgba(239,68,68,0.2)',
-                color: '#ef4444',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Stop background music"
-            >
-              🔇 Stop BGM
-            </button>
-            <button
-              onClick={() => insertTemplate('@do stopAll')}
-              style={{
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid rgba(239,68,68,0.2)',
-                color: '#ef4444',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Stop all audio"
-            >
-              🔇 Stop All
-            </button>
-            <button
-              onClick={() => insertTemplate('wait 1000')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert wait command"
-            >
-              ⏱️ Wait
-            </button>
-            <button
-              onClick={() => insertTemplate('waitInput')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert wait for input"
-            >
-              ⌨️ Wait Input
-            </button>
-            <button
-              onClick={() => insertTemplate('@transition fadeOutBackdrop [duration=600]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert transition"
-            >
-              🌀 Transition
-            </button>
-            <button
-              onClick={() => insertTemplate('@action HERO moveTo [x=40,duration=600]')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert action"
-            >
-              ⚡ Action
-            </button>
-            <button
-              onClick={() => insertTemplate('# Comment or scene header')}
-              style={{
-                background: 'rgba(125,211,252,0.1)',
-                border: '1px solid rgba(125,211,252,0.2)',
-                color: '#7dd3fc',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 500,
-              }}
-              title="Insert comment"
-            >
-              💬 Comment
-            </button>
+              }}>
+                <input
+                  type="checkbox"
+                  checked={autoAdvance}
+                  onChange={(e) => setAutoAdvance(e.target.checked)}
+                  style={{ margin: 0 }}
+                />
+                Auto
+              </label>
+            </div>
           </div>
-        </details>
-        
-        {/* Text Editor Mode */}
-        {editorMode === 'text' && (
-          <textarea
-            value={textContent}
-            onChange={(e) => {
-              setTextContent(e.target.value);
-              try {
-                const parsed = parseDSLToEvents(e.target.value);
-                setEvents(parsed);
-              } catch (err) {
-                console.warn('Parse error:', err);
-              }
-            }}
-            style={{
+          
+          {/* Player container - maintains aspect ratio */}
+          <div style={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '8px',
+            background: '#000',
+          }}>
+            <div style={{
               width: '100%',
-              flex: 1,
-              background: '#021423',
-              border: '1px solid rgba(255,255,255,0.04)',
-              color: '#e6eef8',
-              padding: '10px',
-              borderRadius: '8px',
-              fontFamily: 'monospace',
-              fontSize: '13px',
-              resize: 'none',
-              marginBottom: '8px'
-            }}
-          />
-        )}
+              maxWidth: '960px',
+              aspectRatio: '16/9',
+              position: 'relative',
+            }}>
+              <CutscenePlayer
+                ref={cutscenePlayerRef}
+                scriptText={scriptText}
+                speed={speed}
+                autoAdvance={autoAdvance}
+                assetLoader={assetLoader}
+              />
+            </div>
+          </div>
+        </div>
 
-        {/* Visual Editor Mode */}
-        {editorMode === 'visual' && (
-          <div 
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              marginBottom: '8px',
-              paddingRight: '8px'
-            }}
-            onKeyDown={(e) => e.stopPropagation()}
-            onKeyUp={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {events.map((ev, idx) => (
-              <div
-                key={idx}
-                style={{
-                  marginBottom: '12px',
-                  background: 'linear-gradient(135deg, rgba(7,20,38,0.8), rgba(4,12,20,0.8))',
-                  border: '1px solid rgba(125,211,252,0.15)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                }}
-              >
-                {/* Header Row */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  marginBottom: '12px',
-                  paddingBottom: '8px',
-                  borderBottom: '1px solid rgba(125,211,252,0.1)'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    gap: '8px',
-                    flex: 1
-                  }}>
-                    <span style={{ 
-                      color: '#7dd3fc',
-                      fontWeight: 600,
-                      fontSize: '13px',
-                      minWidth: '24px'
-                    }}>
-                      #{idx + 1}
-                    </span>
-                    <SelectPicker
-                      data={EVENT_TYPES}
-                      value={ev.type}
-                      onChange={(val) => updateEvent(idx, 'type', val)}
-                      cleanable={false}
+        {/* Right side - Editor Panel */}
+        <div 
+          className="editor-panel"
+          style={{
+            flex: '0 0 40%',
+            minWidth: 0,
+            background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+          onKeyUp={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {/* Editor header with tabs */}
+          <div style={{ 
+            padding: '8px 12px',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexShrink: 0,
+          }}>
+            <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
+              SpritzCut DSL Editor
+            </h4>
+            <Nav appearance="subtle" activeKey={editorMode} onSelect={setEditorMode} style={{ marginBottom: 0 }}>
+              <Nav.Item eventKey="text" style={{ fontSize: '11px', padding: '3px 8px' }}>Code</Nav.Item>
+              <Nav.Item eventKey="visual" style={{ fontSize: '11px', padding: '3px 8px' }}>Visual</Nav.Item>
+            </Nav>
+          </div>
+          
+          {/* Quick Insert Commands Panel */}
+          <details style={{ 
+            margin: '8px',
+            background: 'rgba(125,211,252,0.05)',
+            border: '1px solid rgba(125,211,252,0.15)',
+            borderRadius: '6px',
+            padding: '6px',
+            flexShrink: 0,
+          }}>
+            <summary style={{ 
+              color: '#7dd3fc',
+              fontSize: '10px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              userSelect: 'none',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              Quick Insert Commands
+            </summary>
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '3px',
+              marginTop: '6px'
+            }}>
+              {[
+                { label: '🖼️ Backdrop', template: '@backdrop textures/room.gif [fadeIn=800]' },
+                { label: '👤 Character', template: '@char HERO sprite=characters/male' },
+                { label: '🎵 BGM', template: '@do playBgm [name=audio/brass-loop.mp3]' },
+                { label: '🔊 SFX', template: '@do playSfx [name=audio/organ.mp3]' },
+                { label: '⏱️ Wait', template: 'wait 1000' },
+                { label: '⌨️ Input', template: 'waitInput' },
+                { label: '🌀 Transition', template: '@transition fadeOutBackdrop [duration=600]' },
+                { label: '⚡ Action', template: '@action HERO moveTo [x=40,duration=600]' },
+                { label: '💬 Comment', template: '# Comment or scene header' },
+              ].map(({ label, template }) => (
+                <button
+                  key={label}
+                  onClick={() => insertTemplate(template)}
+                  style={{
+                    background: 'rgba(125,211,252,0.1)',
+                    border: '1px solid rgba(125,211,252,0.2)',
+                    color: '#7dd3fc',
+                    padding: '3px 4px',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontSize: '9px',
+                    fontWeight: 500,
+                  }}
+                  title={template}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </details>
+          
+          {/* Editor content area */}
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 8px 8px' }}>
+            {/* Text Editor Mode - Monaco */}
+            {editorMode === 'text' && (
+              <div style={{ flex: 1, minHeight: 0, borderRadius: '6px', overflow: 'hidden' }}>
+                <Editor
+                  theme="spritzcut-dark"
+                  height="100%"
+                  value={textContent}
+                  language="spritzcut"
+                  onChange={(value) => {
+                    setTextContent(value || '');
+                    try {
+                      const parsed = parseDSLToEvents(value || '');
+                      setEvents(parsed);
+                    } catch (err) {
+                      console.warn('Parse error:', err);
+                    }
+                  }}
+                  loading={<div style={{ padding: '1rem', color: '#888' }}>Loading editor...</div>}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 12,
+                    lineNumbers: 'on',
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    automaticLayout: true,
+                    padding: { top: 8 },
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Visual Editor Mode - Storyboard Style */}
+            {editorMode === 'visual' && (
+              <StoryboardEditor
+                events={events}
+                setEvents={setEvents}
+                setTextContent={setTextContent}
+                serializeEvents={serializeEvents}
+                pushHistorySnapshot={pushHistorySnapshot}
+                portraitOptions={portraitOptions}
+              />
+            )}
                       size="sm"
                       style={{ flex: 1 }}
                       placeholder="Event Type"
@@ -1079,83 +962,41 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             </button>
           </div>
         )}
-
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '8px',
-          marginBottom: '8px',
-          paddingTop: '8px',
-          borderTop: '1px solid rgba(255,255,255,0.06)'
-        }}>
-          <label style={{ 
-            fontSize: '12px', 
-            color: 'rgba(255,255,255,0.85)',
-            whiteSpace: 'nowrap'
-          }}>
-            Speed
-          </label>
-          <input
-            type="range"
-            min="8"
-            max="200"
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-            style={{ flex: 1 }}
-          />
+          
+          {/* Footer with save/undo/redo */}
           <div style={{ 
-            width: '36px', 
-            textAlign: 'right', 
-            fontSize: '12px', 
-            color: 'rgba(255,255,255,0.85)',
-            fontVariantNumeric: 'tabular-nums'
+            display: 'flex', 
+            gap: '6px',
+            paddingTop: '8px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            flexShrink: 0,
           }}>
-            {speed}
+            <Button 
+              appearance='primary' 
+              size="sm"
+              style={{ flex: 1 }}
+              onClick={handleSave}
+            >
+              Save
+            </Button>
+            <Button
+              appearance='default'
+              size="sm"
+              onClick={undo}
+              disabled={historyIndex <= 0}
+            >
+              Undo
+            </Button>
+            <Button
+              appearance='default'
+              size="sm"
+              onClick={redo}
+              disabled={historyIndex >= history.length - 1}
+            >
+              Redo
+            </Button>
           </div>
         </div>
-
-        <label style={{ 
-          fontSize: '12px', 
-          color: 'rgba(255,255,255,0.9)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px',
-          cursor: 'pointer',
-          marginBottom: '8px'
-        }}>
-          <input
-            type="checkbox"
-            checked={autoAdvance}
-            onChange={(e) => setAutoAdvance(e.target.checked)}
-          />
-          Auto-advance
-        </label>
-
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <Button 
-            appearance='primary' 
-            size="sm"
-            style={{ flex: 1 }}
-            onClick={handleSave}
-          >
-            Save
-          </Button>
-          <Button
-            appearance='default'
-            size="sm"
-            onClick={undo}
-            disabled={historyIndex <= 0}
-          >
-            Undo
-          </Button>
-          <Button
-            appearance='default'
-            size="sm"
-            onClick={redo}
-            disabled={historyIndex >= history.length - 1}
-          >
-            Redo
-          </Button>
         </div>
       </div>
     </div>

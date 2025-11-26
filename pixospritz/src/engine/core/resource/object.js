@@ -304,64 +304,86 @@ export default class ModelObject extends Loadable {
    */
   drawTexturedObj = () => {
     let { engine, mesh } = this;
+    const rm = engine.renderManager;
+    const isPickerPass = rm.isPickerPass;
+    
     // draw each piece of the object (per material)
     if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
-        engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
+        rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
         // texture
-        engine.renderManager.bindBuffer(mesh.textureBuffer, engine.renderManager.shaderProgram.aTextureCoord);
+        rm.bindBuffer(mesh.textureBuffer, rm.shaderProgram.aTextureCoord);
         // normal
-        engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
-        // Diffuse material properties
-        engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
-        engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+        rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
         
-        // Bind texture if available
-        const hasTexture = mesh.materialsByIndex[i]?.mapDiffuse?.glTexture;
-        if (hasTexture) {
-          this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
-          engine.gl.uniform1f(engine.renderManager.shaderProgram.useDiffuse, 1.0);
-        } else {
-          engine.gl.uniform1f(engine.renderManager.shaderProgram.useDiffuse, 0.0);
+        if (!isPickerPass) {
+          // Only set material properties during normal render
+          // Diffuse material properties
+          engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
+          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+          
+          // Bind texture if available
+          const hasTexture = mesh.materialsByIndex[i]?.mapDiffuse?.glTexture;
+          if (hasTexture) {
+            this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
+            engine.gl.uniform1f(rm.shaderProgram.useDiffuse, 1.0);
+          } else {
+            engine.gl.uniform1f(rm.shaderProgram.useDiffuse, 0.0);
+          }
+          
+          // Specular
+          engine.gl.uniform3fv(rm.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
+          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         }
         
-        // Specular
-        engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
-        engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         // indices
         let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
-        // picking id
-        engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
-        engine.renderManager.shaderProgram.setMatrixUniforms({
-          isSelected: this.isSelected,
-          colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
-          scale: this.scale,
-          sampler: 0.0,
-        });
+        
+        if (isPickerPass) {
+          // During picker pass, only set picker shader uniforms
+          rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
+        } else {
+          // During normal render, set main shader uniforms
+          rm.shaderProgram.setMatrixUniforms({
+            isSelected: this.isSelected,
+            colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+            scale: this.scale,
+            sampler: 0.0,
+          });
+        }
         engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
       // no materials
       // vertices
-      engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
-      engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
-      engine.renderManager.bindBuffer(mesh.textureBuffer, engine.renderManager.shaderProgram.aTextureCoord);
+      rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
+      rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
+      rm.bindBuffer(mesh.textureBuffer, rm.shaderProgram.aTextureCoord);
       engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-      // Diffuse
-      engine.gl.uniform3fv(engine.renderManager.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
-      // Specular
-      engine.gl.uniform3fv(engine.renderManager.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
-      engine.gl.uniform1f(engine.renderManager.shaderProgram.uSpecularExponent, 2);
-      // picking Id
-      engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
-      engine.renderManager.shaderProgram.setMatrixUniforms({
-        isSelected: this.isSelected,
-        colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
-        scale: this.scale,
-        sampler: 0.0,
-      });
+      
+      if (!isPickerPass) {
+        // Only set material properties during normal render
+        // Diffuse
+        engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
+        // Specular
+        engine.gl.uniform3fv(rm.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
+        engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, 2);
+      }
+      
+      if (isPickerPass) {
+        // During picker pass, only set picker shader uniforms
+        rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
+      } else {
+        // During normal render, set main shader uniforms
+        rm.shaderProgram.setMatrixUniforms({
+          isSelected: this.isSelected,
+          colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
+          scale: this.scale,
+          sampler: 0.0,
+        });
+      }
       engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
     }
   }
@@ -385,13 +407,21 @@ export default class ModelObject extends Loadable {
    */
   drawObj = () => {
     let { engine, mesh } = this;
-    engine.gl.disableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
-    engine.renderManager.bindBuffer(mesh.vertexBuffer, engine.renderManager.shaderProgram.aVertexPosition);
-    engine.renderManager.bindBuffer(mesh.normalBuffer, engine.renderManager.shaderProgram.aVertexNormal);
+    const rm = engine.renderManager;
+    const isPickerPass = rm.isPickerPass;
+    
+    engine.gl.disableVertexAttribArray(rm.shaderProgram.aTextureCoord);
+    rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
+    rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
 
-    engine.renderManager.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 1.0 });
-    engine.renderManager.shaderProgram.setMatrixUniforms({ scale: this.scale, sampler: 1.0 });
+    if (isPickerPass) {
+      // During picker pass, only set picker shader uniforms
+      rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 1.0 });
+    } else {
+      // During normal render, set main shader uniforms
+      rm.shaderProgram.setMatrixUniforms({ scale: this.scale, sampler: 1.0 });
+    }
     engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
   }
 
