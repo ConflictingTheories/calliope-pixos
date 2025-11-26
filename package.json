@@ -1,33 +1,36 @@
 {
-  "name": "pixospritz-core",
-  "version": "0.10.1",
-  "description": "Pixos is a mini interactive spritz avatar plugin for calliope static site generator for generating pixospritz'.",
-  "main": "dist/bundle.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf build",
-    "compile": "yarn clean && cross-env NODE_ENV=production babel pixospritz/src --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
-    "webpack": "npx webpack",
-    "lint": "cd pixoscript && yarn typecheck",
-    "lint:editor": "cd editor && yarn lint",
-    "lint:console": "cd console && yarn lint",
-    "start:console": "cd console && yarn start",
-    "start:editor": "cd editor && yarn start",
-    "start:server": "node server/v2/main.js",
-    "start:server:legacy": "node server/v1/main.js"
-  },
-  "files": [
-    "dist",
-    "README.md"
+  "name": "@pixospritz/monorepo",
+  "version": "1.0.0",
+  "description": "PixoSpritz - A WebGL-based game engine and editor ecosystem",
+  "workspaces": [
+    "packages/*"
   ],
+  "scripts": {
+    "clean": "rimraf packages/*/dist packages/*/build",
+    "build": "npm run build:core && npm run build:script && npm run build:editor && npm run build:console",
+    "build:core": "npm run build -w @pixospritz/core",
+    "build:script": "npm run build -w @pixospritz/script",
+    "build:editor": "npm run build -w @pixospritz/editor",
+    "build:console": "npm run build -w @pixospritz/console",
+    "build:website": "npm run build -w @pixospritz/website",
+    "dev": "npm run dev:editor",
+    "dev:editor": "npm run dev -w @pixospritz/editor",
+    "dev:console": "npm run dev -w @pixospritz/console",
+    "start:server": "npm run start -w @pixospritz/server",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
   "keywords": [
-    "calliope",
+    "pixospritz",
     "pixos",
     "html5",
     "game",
     "react",
     "webgl",
-    "canvas"
+    "canvas",
+    "game-engine",
+    "editor"
   ],
   "homepage": "https://pixospritz.com",
   "repository": {
@@ -44,33 +47,11 @@
     "@babel/preset-react": "^7.17.12",
     "@babel/register": "^7.17.7",
     "babel-plugin-macros": "^3.1.0",
-    "babel-register": "^6.26.0",
-    "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
-    "react-recollect": "^5.2.3",
-    "webpack": "^5.72.1",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.9.0"
+    "rimraf": "^5.0.0"
   },
-  "peerDependencies": {
-    "react": "^17.0.0 || ^18.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0",
-    "react-recollect": "^5.2.3"
-  },
-  "dependencies": {
-    "babel-loader": "^8.2.5",
-    "css-loader": "^6.7.1",
-    "dexie": "^3.2.0",
-    "file-saver": "^2.0.5",
-    "gl-transition": "^1.13.0",
-    "jszip": "^3.7.1",
-    "luaparse": "^0.3.1",
-    "pixoscript": "^1.0.1",
-    "printj": "^1.3.1",
-    "prop-types": "^15.7.2",
-    "realtime-bpm-analyzer": "^2.1.6",
-    "style-loader": "^3.3.1",
-    "uuid": "^13.0.0",
-    "ws": "^8.18.3"
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

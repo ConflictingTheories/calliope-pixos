@@ -1,0 +1,32 @@
+{
+  "name": "@pixospritz/website",
+  "version": "1.0.0",
+  "description": "PixoSpritz Website - Marketing and documentation site",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "files": [
+    "*.html",
+    "assets",
+    "css",
+    "js",
+    "data",
+    "README.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "website",
+    "documentation"
+  ],
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "CC-BY-NC-SA-4.0",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

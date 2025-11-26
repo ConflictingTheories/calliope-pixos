@@ -1,0 +1,84 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.fetchSkyboxShaderFiles = fetchSkyboxShaderFiles;
+exports.fetchTransitionShaderFiles = fetchTransitionShaderFiles;
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
+/**
+ * Fetches vertex and fragment shader source code for transition effects.
+ * @param {string} type - The type of transition effect (e.g., 'fade', 'cross', 'swirl').
+ * @returns {[string, string]} An array containing the vertex shader source and fragment shader source.
+ */
+function fetchTransitionShaderFiles(type) {
+  /** @type {string|null} */
+  var vsSource = null;
+  /** @type {string|null} */
+  var fsSource = null;
+  var t = (type || '').toLowerCase();
+  if (t === 'cross') {
+    vsSource = require('../../shaders/transition/cross/vs.js')["default"]();
+    fsSource = require('../../shaders/transition/cross/fs.js')["default"]();
+  } else if (t === 'crossblur' || t === 'cross-blur') {
+    vsSource = require('../../shaders/transition/crossBlur/vs.js')["default"]();
+    fsSource = require('../../shaders/transition/crossBlur/fs.js')["default"]();
+  } else if (t === 'swirl') {
+    vsSource = require('../../shaders/transition/swirl/vs.js')["default"]();
+    fsSource = require('../../shaders/transition/swirl/fs.js')["default"]();
+  } else if (t === 'blur' || t === 'blur-in' || t === 'blur-out') {
+    vsSource = require('../../shaders/transition/blur/vs.js')["default"]();
+    fsSource = require('../../shaders/transition/blur/fs.js')["default"]();
+  } else {
+    // Default to fade transition; also handles 'fade', 'fade-in', 'fade-out'.
+    vsSource = require('../../shaders/transition/fade/vs.js')["default"]();
+    fsSource = require('../../shaders/transition/fade/fs.js')["default"]();
+  }
+  return [vsSource, fsSource];
+}
+
+/**
+ * Fetches vertex and fragment shader source code for skybox effects.
+ * @param {string} type - The type of skybox effect (e.g., 'cosmic', 'morning', 'sky').
+ * @returns {[string, string]} An array containing the vertex shader source and fragment shader source.
+ */
+function fetchSkyboxShaderFiles(type) {
+  /** @type {string|null} */
+  var vsSource = null;
+  /** @type {string|null} */
+  var fsSource = null;
+  var t = (type || '').toLowerCase();
+  if (t === 'morning') {
+    vsSource = require('../../shaders/skybox/morning/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/morning/fs.js')["default"]();
+  } else if (t === 'sky') {
+    vsSource = require('../../shaders/skybox/sky/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/sky/fs.js')["default"]();
+  } else if (t === 'sunset') {
+    vsSource = require('../../shaders/skybox/sunset/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/sunset/fs.js')["default"]();
+  } else if (t === 'matrix') {
+    vsSource = require('../../shaders/skybox/matrix/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/matrix/fs.js')["default"]();
+  } else if (t === 'neon') {
+    vsSource = require('../../shaders/skybox/neon/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/neon/fs.js')["default"]();
+  } else {
+    // Default to cosmic.
+    vsSource = require('../../shaders/skybox/cosmic/vs.js')["default"]();
+    fsSource = require('../../shaders/skybox/cosmic/fs.js')["default"]();
+  }
+  return [vsSource, fsSource];
+}

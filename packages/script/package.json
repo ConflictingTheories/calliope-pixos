@@ -1,0 +1,50 @@
+{
+  "name": "@pixospritz/script",
+  "version": "1.0.0",
+  "description": "PixoScript - A Lua-inspired scripting language for PixoSpritz game engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./parser": "./dist/parser.js",
+    "./scope": "./dist/Scope.js",
+    "./table": "./dist/Table.js"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "test": "node test.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "pixoscript",
+    "scripting",
+    "game-engine",
+    "pixospritz",
+    "lua"
+  ],
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "CC-BY-NC-SA-4.0",
+  "dependencies": {
+    "luaparse": "^0.3.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.18.0",
+    "@babel/preset-env": "^7.18.0",
+    "cross-env": "^7.0.3",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}
