@@ -63,7 +63,7 @@
         {
           "type": "dialogue",
           "dialogue": "I heard about a strange legend once.",
-          "callback": ""
+          "callback": "npc_quest_giver"
         }
       ]
     },
