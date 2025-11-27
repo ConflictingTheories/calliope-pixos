@@ -34,16 +34,16 @@ export async function loadMap(json, cells, zip, heights = null) {
     typeof json.sprites === 'string'
       ? json.sprites
       : json.sprites.map((sprite) => {
-          return {
-            id: sprite.id,
-            type: sprite.type,
-            pos: new Vector(...sprite.pos),
-            facing: Direction[sprite.facing],
-            zones: sprite.zones ?? null,
-          };
-        });
+        return {
+          id: sprite.id,
+          type: sprite.type,
+          pos: new Vector(...sprite.pos),
+          facing: Direction[sprite.facing],
+          zones: sprite.zones ?? null,
+        };
+      });
 
-  let $scenes = json.scenes.map((scene) => {
+  let $scenes = (json.scenes ?? []).map((scene) => {
     return {
       id: scene.id,
       actions: scene.actions.map((action) => {
@@ -63,10 +63,10 @@ export async function loadMap(json, cells, zip, heights = null) {
   });
 
   let $scripts = await Promise.all(
-    json.scripts.map(async (script) => {
+    (json.scripts ?? []).map(async (script) => {
       // Lua Scripting
       try {
-        let file = zip.file(`triggers/${script.trigger}.lua`);
+        let file = zip.file(`triggers/${script.trigger}.pxs`);
         if (!file) file = zip.file(`triggers/${script.trigger}.pxs`);
         let luaScript = await file.async('string');
         console.log({ msg: 'lua script', luaScript });
@@ -94,7 +94,7 @@ export async function loadMap(json, cells, zip, heights = null) {
     })
   );
 
-  let $objects = json.objects.map((object) => {
+  let $objects = (json.objects ?? []).map((object) => {
     return {
       id: object.id,
       type: object.type,

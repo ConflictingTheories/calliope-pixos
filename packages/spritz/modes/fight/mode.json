@@ -1,5 +1,5 @@
 {
     "name":"fight",
-    "update":"update.lua",
-    "setup": "setup.lua"
+    "update":"update.pxs",
+    "setup": "setup.pxs"
 }

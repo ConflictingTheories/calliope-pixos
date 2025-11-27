@@ -89,7 +89,7 @@ export default class DynamicAvatar extends Avatar {
     // lua scripting
     try {
       console.log({ trigger: this.selectTrigger });
-      let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 

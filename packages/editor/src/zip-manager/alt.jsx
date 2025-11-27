@@ -108,7 +108,7 @@ function ZipManager({ openFile, onZipLoaded }) {
   // Create a new empty file (script, map, etc.) in the zip
   function createNewFile() {
     if (!zip) return;
-    const name = window.prompt('Enter new file name (e.g. myscript.lua, map.json)');
+    const name = window.prompt('Enter new file name (e.g. myscript.pxs, map.json)');
     if (!name) return;
     let defaultContent = '';
     if (name.endsWith('.json')) {

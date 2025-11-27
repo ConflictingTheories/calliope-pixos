@@ -7,18 +7,18 @@ This document tracks all tasks for the PixoSpritz game engine upgrade project.
 
 ## ✅ MAJOR MILESTONE: Monorepo Restructure Complete
 
-The entire project has been restructured into a clean `@pixospritz` scoped monorepo:
+The entire project has been restructured into a clean `pixospritz-` scoped monorepo:
 
 | Package | Path | Description |
 |---------|------|-------------|
-| `@pixospritz/core` | `packages/core/` | Core WebGL game engine |
-| `@pixospritz/script` | `packages/script/` | Lua-inspired scripting language |
-| `@pixospritz/math` | `packages/math/` | Math utilities (vectors, matrices) |
-| `@pixospritz/editor` | `packages/editor/` | Visual development tools |
-| `@pixospritz/console` | `packages/console/` | Web game player |
-| `@pixospritz/server` | `packages/server/` | WebSocket multiplayer server |
-| `@pixospritz/website` | `packages/website/` | Documentation website |
-| `@pixospritz/assets` | `packages/assets/` | Shared game assets |
+| `pixospritz-core` | `packages/core/` | Core WebGL game engine |
+| `pixoscript` | `packages/script/` | Lua-inspired scripting language |
+| `pixospritz-math` | `packages/math/` | Math utilities (vectors, matrices) |
+| `pixospritz-editor` | `packages/editor/` | Visual development tools |
+| `pixospritz-console` | `packages/console/` | Web game player |
+| `pixospritz-server` | `packages/server/` | WebSocket multiplayer server |
+| `pixospritz-website` | `packages/website/` | Documentation website |
+| `pixospritz-assets` | `packages/assets/` | Shared game assets |
 
 All builds are managed via the root `package.json` using npm workspaces.
 
@@ -223,7 +223,7 @@ A unified camera controller supporting:
    - `vector.js` - Coord, Vector, Vector4 classes + vec3 functional API + utilities
    - `matrix4.js` - Matrix operations (perspective, lookAt, translate, rotate, multiply, scale)
    - `index.js` - Unified exports
-   - `package.json` - @pixospritz/math package config
+   - `package.json` - pixospritz-math package config
 
 2. **packages/webgl-utils/** - (Future)
    - createShader, createProgram
@@ -360,7 +360,7 @@ A unified camera controller supporting:
   - Created `packages/` directory
   - Created `packages/README.md` with documentation
   - Created `packages/math/` with:
-    - `package.json` for @pixospritz/math
+    - `package.json` for pixospritz-math
     - `vector.js` with Coord, Vector, Vector4, vec3, utility functions
     - `matrix4.js` with create, perspective, lookAt, translate, rotate, multiply, scale
     - `index.js` with unified exports

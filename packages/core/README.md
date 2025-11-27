@@ -1,4 +1,4 @@
-# @pixospritz/core
+# pixospritz-core
 
 The core WebGL-based game engine for PixoSpritz.
 
@@ -16,13 +16,13 @@ The core WebGL-based game engine for PixoSpritz.
 ## Installation
 
 ```bash
-npm install @pixospritz/core
+npm install pixospritz-core
 ```
 
 ## Usage
 
 ```javascript
-import { RenderManager, ActionQueue, GamePad } from '@pixospritz/core';
+import { RenderManager, ActionQueue, GamePad } from 'pixospritz-core';
 
 // Initialize the engine
 const renderer = new RenderManager(canvas, gl);
@@ -48,5 +48,5 @@ src/
 
 ## Dependencies
 
-- `@pixospritz/math` - Math utilities
-- `@pixospritz/script` - Scripting engine
+- `pixospritz-math` - Math utilities
+- `pixoscript` - Scripting engine

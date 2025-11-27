@@ -27,8 +27,8 @@
   "author": "Kyle Derby MacInnis",
   "license": "CC-BY-NC-SA-4.0",
   "dependencies": {
-    "@pixospritz/core": "*",
-    "@pixospritz/script": "*",
+    "pixospritz-core": "*",
+    "pixoscript": "*",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",

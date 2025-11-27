@@ -1,4 +1,4 @@
-# @pixospritz/math
+# pixospritz-math
 
 Math utilities for PixoSpritz - vectors, matrices, and geometric operations.
 
@@ -11,13 +11,13 @@ Math utilities for PixoSpritz - vectors, matrices, and geometric operations.
 ## Installation
 
 ```bash
-npm install @pixospritz/math
+npm install pixospritz-math
 ```
 
 ## Usage
 
 ```javascript
-import { Vec3, Mat4 } from '@pixospritz/math';
+import { Vec3, Mat4 } from 'pixospritz-math';
 
 // Create vectors
 const position = new Vec3(1, 2, 3);

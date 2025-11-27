@@ -1,14 +1,14 @@
 const path = require('path');
 const webpack = require('webpack');
 
-// Webpack Configuration for @pixospritz/core
+// Webpack Configuration for pixospritz-core
 const config = {
   // Entry
   entry: './src/index.jsx',
   // Output
   output: {
     library: {
-      name: '@pixospritz/core',
+      name: 'pixospritz-core',
       type: 'umd',
       export: 'default',
     },

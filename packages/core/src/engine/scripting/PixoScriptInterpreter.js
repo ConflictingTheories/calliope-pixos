@@ -12,7 +12,7 @@
 \*                                                 */
 
 import PixoScriptLibrary from '@Engine/scripting/PixoScriptLibrary.js';
-import * as pixoscript from '@pixospritz/script';
+import * as pixoscript from 'pixoscript';
 
 export default class PixoScriptInterpreter {
   constructor(engine) {

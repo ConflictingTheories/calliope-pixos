@@ -22,11 +22,5 @@
   ],
   "mode": "tactics",
   "scenes": [],
-  "scripts": [
-    {
-      "id": "load-spritz",
-      "trigger": "zone/cutscene_demo_intro"
-    }
-  ],
   "objects": []
 }

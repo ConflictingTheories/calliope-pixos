@@ -1,4 +1,4 @@
-# @pixospritz/server
+# pixospritz-server
 
 WebSocket multiplayer server for PixoSpritz games.
 
@@ -12,7 +12,7 @@ WebSocket multiplayer server for PixoSpritz games.
 ## Installation
 
 ```bash
-npm install @pixospritz/server
+npm install pixospritz-server
 ```
 
 ## Usage

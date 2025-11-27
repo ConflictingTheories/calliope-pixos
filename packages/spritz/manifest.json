@@ -1,5 +1,5 @@
 {
-  "initialZones": ["cutscene-demo"],
+  "initialZones": ["hallway"],
   "modes": ["explore", "fight", "debug", "tactics"],
   "maps": ["room", "dungeon-top", "dungeon-bottom", "hallway", "base", "cutscene-demo"],
   "tilesets": ["common", "sewer"],

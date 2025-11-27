@@ -1,7 +1,7 @@
 {
     "name": "tactics",
-    "update": "update.lua",
-    "setup": "setup.lua",
+    "update": "update.pxs",
+    "setup": "setup.pxs",
     "picker": true,
     "actions": {
         "select": {

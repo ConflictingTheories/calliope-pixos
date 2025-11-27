@@ -250,7 +250,7 @@ export default class Zone extends Loadable {
   loadTriggerFromZip = async (trigger, zip) => {
     // Try Lua first
     try {
-      const file = await zip.file(`triggers/${trigger}.lua`);
+      const file = await zip.file(`triggers/${trigger}.pxs`);
       if (file) {
         const luaScript = await file.async('string');
         return (_this, subject) => {
@@ -302,9 +302,9 @@ export default class Zone extends Loadable {
     try {
       console.log('Loading Game Mode From Zip');
 
-      const setupFile = zip.file(`modes/${modeName}/setup.lua`);
-      const updateFile = zip.file(`modes/${modeName}/update.lua`);
-      const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
+      const setupFile = zip.file(`modes/${modeName}/setup.pxs`);
+      const updateFile = zip.file(`modes/${modeName}/update.pxs`);
+      const teardownFile = zip.file(`modes/${modeName}/teardown.pxs`);
       const world = this.world;
 
       const interpreter = new PixoScriptInterpreter(this.engine);
@@ -315,7 +315,7 @@ export default class Zone extends Loadable {
       if (setupFile) {
         const script = await setupFile.async('string');
         // run the setup registration (it likely calls pixos.register_mode)
-        console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+        console.log('Zone.loadModeFromZip: running setup.pxs for mode', modeName);
         await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
@@ -329,7 +329,7 @@ export default class Zone extends Loadable {
             const ui = new PixoScriptInterpreter(this.engine);
             ui.setScope({ zone: this, map: this, _this: this, time, params });
             ui.initLibrary();
-            // The update.lua is expected to return a function
+            // The update.pxs is expected to return a function
             const res = await ui.run(updateScript);
             // If the script returned a callable (Lua function) we invoke it
             if (typeof res === 'function') res(time, params);
@@ -998,12 +998,12 @@ export default class Zone extends Loadable {
 
     // Lua trigger from spritz zip
     try {
-      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
       const interpreter = new PixoScriptInterpreter(this.engine);
-      interpreter.setScope({ _this: this, zone: this, subject: new interpreter.lua.Table([row, cell]) });
+      interpreter.setScope({ _this: this, zone: this, subject: new interpreter.pxs.Table([row, cell]) });
       interpreter.initLibrary();
       return await interpreter.run(luaScript);
     } catch (e) {

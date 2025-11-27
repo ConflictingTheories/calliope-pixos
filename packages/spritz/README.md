@@ -1,4 +1,4 @@
-# @pixospritz/assets
+# pixospritz-assets
 
 Shared game assets for PixoSpritz demos and examples.
 
