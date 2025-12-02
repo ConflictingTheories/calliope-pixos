@@ -21,6 +21,12 @@
     }
   ],
   "mode": "tactics",
+   "scripts": [
+    {
+      "id": "load-spritz",
+      "trigger": "sprite/npc_quest_giver"
+    }
+  ],
   "scenes": [],
   "objects": []
 }

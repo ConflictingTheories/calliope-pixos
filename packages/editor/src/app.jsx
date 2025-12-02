@@ -25,6 +25,7 @@ import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
+import AIGenerator from './ai-generator/index.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
 import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
 
@@ -62,6 +63,7 @@ const App = () => {
   const [supportPanelPinned, setSupportPanelPinned] = useState(false);
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
   const supportFabRef = useRef(null);
 
   const handleOptionsChange = useCallback((options) => {
@@ -1301,6 +1303,21 @@ const App = () => {
     ]);
   }, [getData, zip, assets, toDataUri]);
 
+  /**
+   * Render the AI Generator panel for creating game assets with AI.
+   */
+  const renderAIGenerator = useCallback(() => {
+    setContents([
+      <AIGenerator
+        key="ai-generator"
+        writeFile={writeFile}
+        zip={zip}
+        assets={assets}
+      />
+    ]);
+    setShowAIPanel(true);
+  }, [writeFile, zip, assets]);
+
   // Open file and route to correct editor/viewer
   const openFile = useCallback(async (entry) => {
     if (!entry) return;
@@ -1436,12 +1453,23 @@ const App = () => {
                 <span>Active file</span>
                 <strong>{selectedEntryLabel}</strong>
               </div>
-              {validationReport && (
-                <div className="editor-pill">
-                  <span>{errorCount} errors</span>
-                  <span>{warningCount} warnings</span>
-                </div>
-              )}
+              <div className="editor-main-actions">
+                <button
+                  type="button"
+                  className={`editor-ai-button ${showAIPanel ? 'is-active' : ''}`}
+                  onClick={renderAIGenerator}
+                  title={zip ? "Open AI Asset Generator" : "Open AI Asset Generator (load a package to save files)"}
+                >
+                  <span className="editor-ai-icon">✨</span>
+                  <span>AI Generate</span>
+                </button>
+                {validationReport && (
+                  <div className="editor-pill">
+                    <span>{errorCount} errors</span>
+                    <span>{warningCount} warnings</span>
+                  </div>
+                )}
+              </div>
             </header>
           )}
           <div className="editor-main-content">

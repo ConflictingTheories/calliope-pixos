@@ -7,11 +7,9 @@ import {
   TopButtonBar,
   NavigationBar,
   Entries,
-  BottomButtonBar,
-  Downloads,
   InfoBar,
+  ContextMenu,
   ExportZipDialog,
-  ExtractDialog,
   RenameDialog,
   CreateFolderDialog,
   ResetDialog,
@@ -48,6 +46,14 @@ const rootZipFilename = messages.ROOT_ZIP_FILENAME;
 function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   const [zipFilesystem, setZipFilesystem] = useState(apiFilesystem);
   const [selectedFolder, setSelectedFolder] = useState(root);
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    entry: null,
+  });
   const [entries, setEntries] = useState([]);
   const [entriesElementHeight, setEntriesElementHeight] = useState(0);
   const [entriesDeltaHeight, setEntriesDeltaHeight] = useState(0);
@@ -343,6 +349,21 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
     initAppFeatures();
   }, []);
 
+  // Context menu handlers
+  const handleContextMenu = (event, entry) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      entry: entry || highlightedEntry,
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, entry: null });
+  };
+
   return (
     <div className={appClassName}>
       <main>
@@ -382,12 +403,13 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
           highlightedIds={highlightedIds}
           entriesElementHeight={entriesElementHeight}
           deltaEntriesHeight={entriesDeltaHeight}
-          hiddenDownloadManager={hiddenDownloadManager}
+          hiddenDownloadManager={true}
           onDropFiles={dropFiles}
           onHighlight={highlight}
           onToggle={toggle}
           onToggleRange={toggleRange}
           onEnter={enterEntry}
+          onContextMenu={handleContextMenu}
           onUpdateEntriesHeight={updateEntriesHeight}
           onUpdateEntriesElementHeight={updateEntriesElementHeight}
           onRegisterResizeEntriesHandler={registerResizeEntriesHandler}
@@ -397,59 +419,37 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
           constants={constants}
           messages={messages}
         />
-        <BottomButtonBar
-          disabledCopyButton={disabledCopy}
-          disabledCutButton={disabledCut}
-          disabledPasteButton={disabledPaste}
-          disabledResetClipboardDataButton={disabledResetClipboardData}
-          disabledExtractButton={disabledExtract}
-          disabledHighlightAllButton={disabledHighlightAll}
-          disabledRenameButton={disabledRename}
-          disabledDeleteButton={disabledDelete}
-          clickedButtonName={clickedButtonName}
-          onCopy={copy}
-          onCut={cut}
-          onPaste={paste}
-          onResetClipboardData={resetClipboardData}
-          onExtract={extract}
-          onHighlightAll={highlightAll}
-          onRename={openPromptRename}
-          onRemove={openConfirmDeleteEntries}
-          onMove={resizeEntries}
-          onUpdateElementHeight={updateEntriesElementHeightEnd}
-          onClickedButton={resetClickedButtonName}
-          constants={constants}
-          messages={messages}
-        />
-        <Downloads
-          downloads={downloads}
-          hidden={hiddenDownloadManager}
-          onAbortDownload={abortDownload}
-          i18n={i18nService}
-          constants={constants}
-          messages={messages}
-        />
       </main>
       <InfoBar
         hidden={hiddenInfobar}
         theme={theme}
-        musicData={musicData}
-        onPlayMusic={playMusic}
-        onStopMusic={stopMusic}
         onSetTheme={setTheme}
-        musicPlayerActive={musicPlayerActive}
-        constants={constants}
+        messages={messages}
+      />
+      <ContextMenu
+        visible={contextMenu.visible}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        entry={contextMenu.entry}
+        highlightedEntries={highlightedEntries}
+        disabledCopy={disabledCopy}
+        disabledCut={disabledCut}
+        disabledPaste={disabledPaste}
+        disabledExtract={disabledExtract}
+        disabledRename={disabledRename}
+        disabledDelete={disabledDelete}
+        onClose={closeContextMenu}
+        onOpen={() => enterEntry(contextMenu.entry)}
+        onCopy={copy}
+        onCut={cut}
+        onPaste={paste}
+        onExtract={extract}
+        onRename={openPromptRename}
+        onDelete={openConfirmDeleteEntries}
+        onDownload={() => saveEntries(highlightedEntries)}
         messages={messages}
       />
       <CreateFolderDialog data={dialogs.createFolder} onCreateFolder={createFolder} onClose={closePromptCreateFolder} messages={messages} />
-      <ExportZipDialog
-        data={dialogs.exportZip}
-        hiddenPassword={hiddenExportPassword}
-        onExportZip={exportZip}
-        onClose={closePromptExportZip}
-        messages={messages}
-      />
-      <ExtractDialog data={dialogs.extract} onExtract={extract} onClose={closePromptExtract} messages={messages} />
       <RenameDialog data={dialogs.rename} onRename={rename} onClose={closePromptRename} messages={messages} />
       <ResetDialog data={dialogs.reset} onReset={reset} onClose={closeConfirmReset} messages={messages} />
       <DeleteEntriesDialog data={dialogs.deleteEntries} onDeleteEntries={deleteEntries} onClose={closeConfirmDeleteEntries} messages={messages} />
