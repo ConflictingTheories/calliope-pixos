@@ -1,0 +1,179 @@
+{
+  "name": "Earth Chamber",
+  "description": "The steadfast trial of the Earth Elemental",
+  "bounds": [0, 0, 12, 12],
+  "tileset": "village",
+  "audioSrc": "jungle-rhythm.mp3",
+  "mode": "tactics",
+  
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [6, 10, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    {
+      "id": "earth-elemental",
+      "type": "monsters/earth_elemental",
+      "pos": [6, 3, 0],
+      "facing": "Down",
+      "selectTrigger": "sprite/earth_elemental_battle"
+    },
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [6, 11, 0],
+      "facing": "Up",
+      "zones": ["dungeon-entrance"],
+      "state": "open"
+    },
+    {
+      "id": "earth-chest",
+      "type": "objects/chests/metal",
+      "pos": [2, 2, 0],
+      "facing": "South",
+      "inventory": ["earth_shard", "stone_shield"]
+    },
+    {
+      "id": "tree-1",
+      "type": "furniture/tree",
+      "pos": [1, 4, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "tree-2",
+      "type": "furniture/tree",
+      "pos": [11, 4, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "tree-3",
+      "type": "furniture/tree",
+      "pos": [3, 7, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "tree-4",
+      "type": "furniture/tree",
+      "pos": [9, 7, 0],
+      "facing": "Down"
+    }
+  ],
+  
+  "lights": [
+    {
+      "id": "earth-glow-1",
+      "pos": [3, 4, 1],
+      "color": [0.6, 0.5, 0.2],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.08, 0.08, 0.04],
+      "density": 0.3,
+      "enabled": true
+    },
+    {
+      "id": "earth-glow-2",
+      "pos": [9, 4, 1],
+      "color": [0.5, 0.4, 0.15],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.08, 0.08, 0.04],
+      "density": 0.3,
+      "enabled": true
+    },
+    {
+      "id": "boss-light",
+      "pos": [6, 3, 2],
+      "color": [0.7, 0.5, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.05, 0.05, 0.02],
+      "density": 0.4,
+      "scatteringCoefficients": [0.5, 0.4, 0.2],
+      "enabled": true
+    },
+    {
+      "id": "sunlight",
+      "pos": [6, 6, 5],
+      "color": [1.0, 0.95, 0.8],
+      "direction": [0.3, 0.5, 1.0],
+      "attenuation": [0.02, 0.02, 0.01],
+      "enabled": true
+    }
+  ],
+  
+  "scenes": [
+    {
+      "id": "earth-trial-intro",
+      "actions": [
+        {
+          "sprite": "earth-elemental",
+          "action": "dialogue",
+          "args": [
+            ["The ground trembles at my awakening...", "I am the mountain, unyielding and eternal!", "Can your spirit match the weight of the world?"],
+            false,
+            { "autoclose": true }
+          ]
+        },
+        { "trigger": "event/start_earth_battle" }
+      ]
+    },
+    {
+      "id": "earth-trial-victory",
+      "actions": [
+        {
+          "sprite": "earth-elemental",
+          "action": "dialogue",
+          "args": [
+            ["Your roots... run deep...", "The Earth Shard acknowledges your strength.", "Stand firm, hero. The final trial approaches."],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  "scripts": [
+    {
+      "id": "earth-chamber-load",
+      "trigger": "zone/earth_chamber_load"
+    }
+  ],
+  
+  "objects": [
+    {
+      "id": "boulder-1",
+      "type": "cube",
+      "mtl": false,
+      "pos": [2, 5, 0],
+      "useScale": [0.6, 0.6, 0.6]
+    },
+    {
+      "id": "boulder-2",
+      "type": "cube",
+      "mtl": false,
+      "pos": [10, 5, 0],
+      "useScale": [0.5, 0.5, 0.5]
+    },
+    {
+      "id": "ancient-chair",
+      "type": "chair",
+      "mtl": true,
+      "pos": [6, 1, 0]
+    },
+    {
+      "id": "cactus-1",
+      "type": "cactus_short",
+      "mtl": true,
+      "pos": [4, 9, 0]
+    },
+    {
+      "id": "cactus-2",
+      "type": "cactus_tall",
+      "mtl": true,
+      "pos": [8, 9, 0]
+    }
+  ],
+  
+  "menu": {}
+}

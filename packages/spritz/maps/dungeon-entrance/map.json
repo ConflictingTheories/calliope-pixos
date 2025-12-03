@@ -1,0 +1,165 @@
+{
+  "name": "Dungeon Entrance",
+  "description": "The central hub connecting all elemental chambers",
+  "bounds": [0, 0, 15, 15],
+  "tileset": "sewer",
+  "audioSrc": "dungeon-beat.mp3",
+  "mode": "explore",
+  
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [7, 12, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    {
+      "id": "dungeon-guide",
+      "type": "npc/air-knight",
+      "pos": [7, 7, 0],
+      "facing": "Down",
+      "selectTrigger": "sprite/dungeon_guide"
+    },
+    {
+      "id": "fire-portal",
+      "type": "furniture/portal",
+      "pos": [2, 2, 0],
+      "facing": "Down",
+      "zones": ["fire-chamber"],
+      "state": "open"
+    },
+    {
+      "id": "water-portal",
+      "type": "furniture/portal",
+      "pos": [12, 2, 0],
+      "facing": "Down",
+      "zones": ["water-chamber"],
+      "state": "open"
+    },
+    {
+      "id": "earth-portal",
+      "type": "furniture/portal",
+      "pos": [2, 12, 0],
+      "facing": "Down",
+      "zones": ["earth-chamber"],
+      "state": "open"
+    },
+    {
+      "id": "air-portal",
+      "type": "furniture/portal",
+      "pos": [12, 12, 0],
+      "facing": "Down",
+      "zones": ["air-chamber"],
+      "state": "open"
+    },
+    {
+      "id": "boss-door",
+      "type": "furniture/door",
+      "pos": [7, 2, 0],
+      "facing": "Down",
+      "zones": ["boss-arena"],
+      "state": "closed"
+    },
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [7, 14, 0],
+      "facing": "Up",
+      "zones": ["village-hub"],
+      "state": "open"
+    },
+    {
+      "id": "lava-spurt-1",
+      "type": "effects/spurt",
+      "pos": [2, 2, -0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "lava-spurt-2",
+      "type": "effects/spurt",
+      "pos": [12, 2, -0.5],
+      "facing": "Up"
+    }
+  ],
+  
+  "lights": [
+    {
+      "id": "fire-glow",
+      "pos": [2, 2, 1],
+      "color": [1.0, 0.3, 0.1],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "water-glow",
+      "pos": [12, 2, 1],
+      "color": [0.1, 0.5, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "earth-glow",
+      "pos": [2, 12, 1],
+      "color": [0.6, 0.4, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "air-glow",
+      "pos": [12, 12, 1],
+      "color": [0.7, 0.9, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "center-light",
+      "pos": [7, 7, 3],
+      "color": [1.0, 1.0, 1.0],
+      "direction": [0.5, 0.5, 1.0],
+      "attenuation": [0.05, 0.05, 0.02],
+      "density": 0.2,
+      "enabled": true
+    }
+  ],
+  
+  "scenes": [
+    {
+      "id": "dungeon-welcome",
+      "actions": [
+        {
+          "sprite": "dungeon-guide",
+          "action": "dialogue",
+          "args": [
+            ["Welcome to the Dungeon of Elements!", "Four trials await you in the cardinal directions.", "Fire to the northwest, Water to the northeast,", "Earth to the southwest, Air to the southeast.", "Complete all four to unlock the Boss Chamber!"],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  "scripts": [
+    {
+      "id": "dungeon-load",
+      "trigger": "zone/dungeon_entrance_load"
+    }
+  ],
+  
+  "objects": [
+    {
+      "id": "center-pillar",
+      "type": "cube",
+      "mtl": false,
+      "pos": [7, 7, 0],
+      "useScale": [0.8, 0.8, 2.0]
+    }
+  ],
+  
+  "menu": {}
+}

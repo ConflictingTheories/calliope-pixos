@@ -1,39 +1,132 @@
 {
-  "initialZones": ["hallway"],
+  "title": "The Elemental Trials",
+  "version": "1.0.0",
+  "description": "A complete showcase of the PixoSpritz engine featuring exploration, combat, puzzles, and an epic quest to save the kingdom.",
+  
+  "initialZones": ["village-hub"],
   "modes": ["explore", "fight", "debug", "tactics"],
-  "maps": ["room", "dungeon-top", "dungeon-bottom", "hallway", "base", "cutscene-demo"],
-  "tilesets": ["common", "sewer"],
+  
+  "maps": [
+    "village-hub",
+    "dungeon-entrance",
+    "fire-chamber",
+    "water-chamber",
+    "earth-chamber",
+    "air-chamber",
+    "boss-arena",
+    "room",
+    "dungeon-top",
+    "dungeon-bottom",
+    "hallway",
+    "base",
+    "cutscene-demo"
+  ],
+  
+  "tilesets": ["common", "sewer", "village"],
+  
   "network": {
-    "enabled": true,
+    "enabled": false,
     "url": "ws://localhost:8080",
     "authority": "server"
   },
-  "sprites": ["characters/male", "npc/air-knight"],
-  "objects": [],
+  
+  "sprites": [
+    "characters/male",
+    "characters/female",
+    "npc/air-knight",
+    "monsters/fire_elemental",
+    "monsters/water_elemental",
+    "monsters/earth_elemental",
+    "monsters/air_elemental",
+    "furniture/door",
+    "furniture/portal",
+    "furniture/fireplace",
+    "furniture/tree",
+    "effects/fireplace",
+    "effects/spurt",
+    "objects/chests/wood",
+    "objects/chests/metal",
+    "objects/chests/red",
+    "objects/chests/blue"
+  ],
+  
+  "objects": [
+    "apple",
+    "bed",
+    "book",
+    "cactus_short",
+    "cactus_tall",
+    "chair",
+    "cube",
+    "die",
+    "person",
+    "robot"
+  ],
+  
   "textures": [
     "textures/room.gif",
+    "textures/room.png",
     "textures/castle.gif",
     "textures/forest.gif",
     "textures/cave.gif",
-    "textures/temple.gif"
+    "textures/temple.gif",
+    "textures/sewer.gif",
+    "textures/sewer-lava.gif",
+    "textures/portraits/male_portrait.gif",
+    "textures/portraits/female_portrait.gif",
+    "textures/portraits/knight_portrait.gif"
   ],
+  
   "fonts": [],
+  
   "audio": [
     "audio/opening.mp3",
-    "audio/battle.mp3",
-    "audio/victory.mp3",
-    "audio/door.mp3",
+    "audio/brass-loop.mp3",
+    "audio/calm-escape.mp3",
+    "audio/dawns-peak.mp3",
+    "audio/deep-unknown-beat.mp3",
+    "audio/dial-in.mp3",
+    "audio/distorted-communication.mp3",
+    "audio/dungeon-beat.mp3",
+    "audio/fields.mp3",
+    "audio/icy-passage.mp3",
+    "audio/jungle-rhythm.mp3",
+    "audio/lonely-mountain.mp3",
+    "audio/menu.mp3",
+    "audio/ocean-waves.mp3",
     "audio/organ.mp3",
-    "audio/swords.mp3",
-    "audio/explosion.mp3",
-    "audio/powerup.mp3",
-    "audio/portal.mp3",
-    "audio/temple_ambient.mp3",
-    "audio/gathering.mp3"
+    "audio/sewer-beat.mp3"
   ],
+  
   "cutscenes": [
+    "cutscenes/game-intro.pxc",
+    "cutscenes/fire-trial.pxc",
+    "cutscenes/water-trial.pxc",
+    "cutscenes/earth-trial.pxc",
+    "cutscenes/air-trial.pxc",
+    "cutscenes/final-boss.pxc",
+    "cutscenes/victory.pxc",
     "cutscenes/epic-quest.pxc",
     "cutscenes/elemental-gathering.pxc",
-    "cutscenes/voice-demo.pxc"
-  ]
+    "cutscenes/voice-demo.pxc",
+    "cutscenes/demo.pxc",
+    "cutscenes/showcase-demo.pxc",
+    "cutscenes/shakespeare.pxc"
+  ],
+  
+  "shaders": [
+    "shaders/glow_effect.pxsl",
+    "shaders/water_surface.pxsl",
+    "shaders/retro_crt.pxsl",
+    "shaders/magic_particle.pxsl"
+  ],
+  
+  "gameFlags": {
+    "fire_trial_complete": false,
+    "water_trial_complete": false,
+    "earth_trial_complete": false,
+    "air_trial_complete": false,
+    "boss_defeated": false,
+    "intro_played": false
+  }
 }

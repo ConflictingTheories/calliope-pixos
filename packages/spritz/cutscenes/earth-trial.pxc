@@ -1,0 +1,134 @@
+# Earth Trial - Elemental Battle Cutscene
+# Features grounded music, themes of endurance, and the Earth Elemental encounter
+
+@backdrop textures/forest.gif [fadeIn=800]
+@char HERO sprite=characters/male
+@char EARTH_ELEMENTAL sprite=monsters/earth_elemental
+
+@do playBgm [name=audio/jungle-rhythm.mp3]
+
+wait 800
+
+# The Earth Elemental awakens
+
+*EARTH_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The ground trembles at my awakening...
+I am the mountain. I am eternal.
+"""
+
+wait 600
+
+HERO: [expression=neutral,position=left]
+"""
+Two shards already! The Earth trial is next.
+"""
+
+wait 500
+
+EARTH_ELEMENTAL: [expression=neutral,position=right]
+"""
+Fire taught you passion.
+Water taught you adaptation.
+But do you have ENDURANCE?
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+wait 600
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+I've come this far!
+Nothing will shake my resolve!
+"""
+
+wait 800
+
+@transition wipe [duration=500]
+
+wait 500
+
+@backdrop textures/cave.gif [fadeIn=600]
+@do playBgm [name=audio/sewer-beat.mp3]
+
+# The test of endurance
+
+EARTH_ELEMENTAL: [expression=neutral,position=right]
+"""
+My trial is not about winning.
+It's about not losing.
+Can you withstand... EVERYTHING?
+"""
+
+wait 600
+
+HERO: [expression=tired,position=left]
+"""
+The weight... it's like carrying a mountain...
+My body wants to collapse...
+"""
+
+wait 600
+
+*EARTH_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+Pain is temporary!
+The weak crumble. The strong endure!
+What are YOU?
+"""
+
+wait 600
+
+HERO: [expression=worried,position=left]
+"""
+I... I... won't... FALL!
+Every step... every breath...
+I keep... moving... FORWARD!
+"""
+
+@do playSfx [name=audio/brass-loop.mp3]
+
+wait 800
+
+@transition fadeOutBackdrop [duration=500]
+
+wait 500
+
+@backdrop textures/forest.gif [fadeIn=600]
+@do playBgm [name=audio/calm-escape.mp3]
+
+# Victory
+
+EARTH_ELEMENTAL: [expression=neutral,position=right]
+"""
+Still standing...
+After all that pressure...
+You have the soul of a mountain.
+"""
+
+wait 500
+
+HERO: [expression=smile,position=left]
+"""
+I learned something important today.
+True strength isn't about power.
+It's about never giving up!
+"""
+
+*EARTH_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The Earth Shard recognizes your spirit.
+Take it, and stand firm in your convictions.
+One final trial awaits you...
+"""
+
+wait 800
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+@transition wipe [duration=700]
+
+waitInput
+
+@end

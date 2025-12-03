@@ -1,0 +1,50 @@
+-- Water Chamber Zone Load Script
+-- Handles the Water Elemental trial
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: water_chamber_load', zone = zone }));
+
+-- Check if trial already complete
+if pixos.has_flag('water_trial_complete') then
+    pixos.log('Water trial already complete - exploration mode');
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/ocean-waves.mp3');
+else
+    pixos.log('Water trial active - tactics mode');
+    -- Set to tactics mode for the trial
+    pixos.set_mode('tactics');
+    
+    -- Play ocean/water ambient music
+    pixos.play_bgm('audio/ocean-waves.mp3');
+    
+    -- Play the water trial cutscene intro
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/water-trial.pxc')
+    });
+    
+    -- After cutscene, mark trial complete
+    pixos.set_flag('water_trial_complete', true);
+    pixos.log('Water trial complete - shard obtained!');
+    
+    -- Add water shard to player inventory
+    local avatar = pixos.get_sprite('avatar');
+    if avatar then
+        local inventory = pixos.from(avatar, 'inventory') or {};
+        table.insert(inventory, 'water_shard');
+        pixos.to(avatar, { inventory = inventory });
+        pixos.log('Water shard added to inventory');
+    end;
+    
+    -- Visual celebration effect
+    pixos.emit_particles({6, 3, 1}, { preset = 'water', count = 50, life = 3000 });
+end;
+
+-- Constant water bubble effects
+pixos.emit_particles({2, 4, -1}, { preset = 'water', count = 15, life = 2500 });
+pixos.emit_particles({10, 4, -1}, { preset = 'water', count = 15, life = 2500 });
+pixos.emit_particles({6, 8, -1}, { preset = 'water', count = 15, life = 2500 });
+
+-- Set water shader effect for the chamber
+pixos.set_skybox_shader('ocean');
+
+return nil;
