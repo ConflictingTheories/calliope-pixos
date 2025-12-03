@@ -192,7 +192,13 @@ export class AssetOrchestrator {
         try {
           const portraitBase64 = await generatePortrait(description, {
             style: config.style || 'pixel art',
-            size: '512x512',
+            onRetry: (retryInfo) => {
+              this.onStatusChange({
+                phase: 'rate-limited',
+                message: `Portrait: ${retryInfo.message}`,
+                retryInfo,
+              });
+            },
           });
 
           const portraitPath = `${folderPath}/${spriteName}_portrait.png`;
@@ -215,6 +221,14 @@ export class AssetOrchestrator {
           results.errors.push({
             phase: 'portrait',
             message: `Failed to generate portrait: ${error.message}`,
+            retryable: true,
+            retryContext: {
+              type: 'portrait',
+              description,
+              config: { style: config.style || 'pixel art' },
+              outputPath: `${folderPath}/${spriteName}_portrait.png`,
+              spriteName,
+            },
           });
         }
       }
@@ -223,7 +237,16 @@ export class AssetOrchestrator {
       this.onProgress({ step: 3, total: 4, message: 'Generating spritesheet...' });
       
       try {
-        const spritesheetBase64 = await generateSpritesheet(description, config);
+        const spritesheetBase64 = await generateSpritesheet(description, {
+          ...config,
+          onRetry: (retryInfo) => {
+            this.onStatusChange({
+              phase: 'rate-limited',
+              message: `Spritesheet: ${retryInfo.message}`,
+              retryInfo,
+            });
+          },
+        });
         
         const sheetPath = `${folderPath}/${spriteName}.png`;
         const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
@@ -245,6 +268,14 @@ export class AssetOrchestrator {
         results.errors.push({
           phase: 'spritesheet',
           message: `Failed to generate spritesheet: ${error.message}`,
+          retryable: true,
+          retryContext: {
+            type: 'spritesheet',
+            description,
+            config: { ...config },
+            outputPath: `${folderPath}/${spriteName}.png`,
+            spriteName,
+          },
         });
       }
 
@@ -513,6 +544,146 @@ export class AssetOrchestrator {
         });
       }
     }
+
+    return results;
+  }
+
+  /**
+   * Retry failed assets from a previous generation
+   * This conserves tokens by only regenerating the failed assets
+   * @param {Array} failedErrors - Array of error objects with retryContext
+   * @returns {Promise<object>} Results with newly generated assets
+   */
+  async retryFailedAssets(failedErrors) {
+    const results = {
+      success: true,
+      assets: [],
+      errors: [],
+    };
+
+    const retryableErrors = failedErrors.filter(err => err.retryable && err.retryContext);
+    const total = retryableErrors.length;
+
+    for (let i = 0; i < retryableErrors.length; i++) {
+      const error = retryableErrors[i];
+      const ctx = error.retryContext;
+      
+      this.onProgress({ 
+        step: i + 1, 
+        total, 
+        message: `Retrying ${ctx.type}...` 
+      });
+
+      try {
+        switch (ctx.type) {
+        case 'portrait': {
+          this.onStatusChange({ phase: 'retrying', message: `Regenerating portrait...` });
+          
+          const portraitBase64 = await generatePortrait(ctx.description, {
+            style: ctx.config.style || 'pixel art',
+            onRetry: (retryInfo) => {
+              this.onStatusChange({
+                phase: 'rate-limited',
+                message: `Portrait: ${retryInfo.message}`,
+                retryInfo,
+              });
+            },
+          });
+
+          const portraitBlob = base64ToBlob(portraitBase64, 'image/png');
+
+          results.assets.push({
+            type: 'image',
+            subtype: 'portrait',
+            name: `${ctx.spriteName}_portrait.png`,
+            path: ctx.outputPath,
+            content: portraitBlob,
+            contentType: 'image/png',
+            base64: portraitBase64,
+          });
+          break;
+        }
+
+        case 'spritesheet': {
+          this.onStatusChange({ phase: 'retrying', message: `Regenerating spritesheet...` });
+          
+          const spritesheetBase64 = await generateSpritesheet(ctx.description, {
+            ...ctx.config,
+            onRetry: (retryInfo) => {
+              this.onStatusChange({
+                phase: 'rate-limited',
+                message: `Spritesheet: ${retryInfo.message}`,
+                retryInfo,
+              });
+            },
+          });
+
+          const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
+
+          results.assets.push({
+            type: 'image',
+            subtype: 'spritesheet',
+            name: `${ctx.spriteName}.png`,
+            path: ctx.outputPath,
+            content: sheetBlob,
+            contentType: 'image/png',
+            base64: spritesheetBase64,
+          });
+          break;
+        }
+
+        case 'audio': {
+          this.onStatusChange({ phase: 'retrying', message: `Regenerating audio...` });
+          
+          const audioData = await generateSpeech(ctx.text, {
+            voice: ctx.config.voice,
+            onRetry: (retryInfo) => {
+              this.onStatusChange({
+                phase: 'rate-limited',
+                message: `Audio: ${retryInfo.message}`,
+                retryInfo,
+              });
+            },
+          });
+
+          const audioBlob = createAudioBlob(audioData, 'audio/mpeg');
+
+          results.assets.push({
+            type: 'audio',
+            subtype: ctx.config.subtype || 'speech',
+            name: ctx.outputPath.split('/').pop(),
+            path: ctx.outputPath,
+            content: audioBlob,
+            contentType: 'audio/mpeg',
+          });
+          break;
+        }
+
+        default:
+          results.errors.push({
+            phase: ctx.type,
+            message: `Unknown retry type: ${ctx.type}`,
+            retryable: false,
+          });
+        }
+      } catch (retryError) {
+        // Re-add to errors with updated message
+        results.errors.push({
+          ...error,
+          message: `Retry failed: ${retryError.message}`,
+        });
+      }
+    }
+
+    results.success = results.errors.length === 0;
+
+    this.onStatusChange({
+      phase: 'complete',
+      message: results.success 
+        ? `Retry complete! Generated ${results.assets.length} asset(s)`
+        : `Retry completed with ${results.errors.length} error(s)`,
+      results,
+    });
 
     return results;
   }

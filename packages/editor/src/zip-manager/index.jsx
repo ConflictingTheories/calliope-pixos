@@ -449,6 +449,13 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
         onDownload={() => saveEntries(highlightedEntries)}
         messages={messages}
       />
+      <ExportZipDialog
+        data={dialogs.exportZip}
+        hiddenPassword={hiddenExportPassword}
+        onExportZip={exportZip}
+        onClose={closePromptExportZip}
+        messages={messages}
+      />
       <CreateFolderDialog data={dialogs.createFolder} onCreateFolder={createFolder} onClose={closePromptCreateFolder} messages={messages} />
       <RenameDialog data={dialogs.rename} onRename={rename} onClose={closePromptRename} messages={messages} />
       <ResetDialog data={dialogs.reset} onReset={reset} onClose={closeConfirmReset} messages={messages} />

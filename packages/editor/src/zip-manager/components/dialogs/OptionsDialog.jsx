@@ -3,6 +3,15 @@ import Dialog from './Dialog.jsx';
 
 import { useEffect, useRef, useState } from 'react';
 import { constants } from '../../business/index.js';
+import { aiService, AI_PROVIDERS } from '../../../ai-generator/services/index.js';
+
+// AI Provider options
+const AI_PROVIDER_OPTIONS = [
+  { value: AI_PROVIDERS.OPENAI, label: 'OpenAI' },
+  { value: AI_PROVIDERS.ANTHROPIC, label: 'Anthropic' },
+  { value: AI_PROVIDERS.GOOGLE, label: 'Google' },
+  { value: AI_PROVIDERS.CUSTOM, label: 'Custom' },
+];
 
 function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }) {
   const [zoomFactor, setZoomFactor] = useState('');
@@ -20,6 +29,13 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
   const [maxWorkers, setMaxWorkers] = useState('0');
   const [chunkSize, setChunkSize] = useState('0');
   const defaultPasswordInputRef = useRef(null);
+  
+  // AI Settings state
+  const [aiProvider, setAiProvider] = useState(AI_PROVIDERS.OPENAI);
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [aiCustomEndpoint, setAiCustomEndpoint] = useState('');
+  const aiApiKeyInputRef = useRef(null);
 
   function handleChangeZoomFactor(event) {
     setZoomFactor(event.target.value);
@@ -81,7 +97,35 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
     setChunkSize(event.target.value);
   }
 
+  // AI Settings handlers
+  function handleChangeAiProvider(event) {
+    setAiProvider(event.target.value);
+  }
+
+  function handleChangeAiApiKey(event) {
+    setAiApiKey(event.target.value);
+  }
+
+  function handleFocusAiApiKey() {
+    aiApiKeyInputRef.current.select();
+  }
+
+  function handleChangeAiModel(event) {
+    setAiModel(event.target.value);
+  }
+
+  function handleChangeAiCustomEndpoint(event) {
+    setAiCustomEndpoint(event.target.value);
+  }
+
   function handleSubmit() {
+    // Save AI settings separately via aiService
+    aiService.updateConfig({
+      provider: aiProvider,
+      apiKey: aiApiKey,
+      customEndpoint: aiCustomEndpoint,
+      models: { chat: aiModel },
+    });
     onSetOptions({
       zoomFactor: Number(zoomFactor),
       hideNavigationBar,
@@ -132,6 +176,13 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       setMaxWorkers(maxWorkers);
       setChunkSize(chunkSize / 1024);
       setShowSupportPanel(showSupportPanel);
+      
+      // Load AI settings from aiService
+      const aiConfig = aiService.getConfig();
+      setAiProvider(aiConfig.provider || AI_PROVIDERS.OPENAI);
+      setAiApiKey(aiConfig.apiKey || '');
+      setAiModel(aiConfig.models?.chat || '');
+      setAiCustomEndpoint(aiConfig.customEndpoint || '');
     }
   }
 
@@ -215,6 +266,52 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
         <span>{messages.OPTIONS_CHUNK_SIZE_LABEL}</span>
         <input value={chunkSize} type="number" required min={1} onChange={handleChangeChunkSize} />
       </label>
+      
+      {/* AI Settings Section */}
+      <div className="options-section-header">AI Generator Settings</div>
+      <label>
+        <span>AI Provider:</span>
+        <select value={aiProvider} onChange={handleChangeAiProvider}>
+          {AI_PROVIDER_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>API Key:</span>
+        <input
+          type="password"
+          autoComplete="off"
+          value={aiApiKey}
+          onFocus={handleFocusAiApiKey}
+          onChange={handleChangeAiApiKey}
+          ref={aiApiKeyInputRef}
+          placeholder="Enter your API key"
+        />
+      </label>
+      <label>
+        <span>Model:</span>
+        <input
+          type="text"
+          value={aiModel}
+          onChange={handleChangeAiModel}
+          placeholder="gpt-4o, claude-3-5-sonnet, etc."
+        />
+      </label>
+      {aiProvider === AI_PROVIDERS.CUSTOM && (
+        <label>
+          <span>Custom Endpoint:</span>
+          <input
+            type="text"
+            value={aiCustomEndpoint}
+            onChange={handleChangeAiCustomEndpoint}
+            placeholder="https://api.example.com/v1"
+          />
+        </label>
+      )}
+      <div className="options-help-text">
+        API keys are stored locally in your browser only.
+      </div>
     </Dialog>
   );
 }

@@ -32,6 +32,27 @@
 
 .options-dialog input[type='password'],
 .options-dialog input[type='number'],
+.options-dialog input[type='text'],
 .options-dialog select {
-  inline-size: min(10ch, 100%);
+  inline-size: min(14ch, 100%);
+}
+
+/* AI Settings Section */
+.options-dialog .options-section-header {
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary, #ff6b9d);
+  margin-block-start: 1em;
+  margin-block-end: 0.5em;
+  padding-block-start: 0.75em;
+  border-block-start: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+}
+
+.options-dialog .options-help-text {
+  font-size: 0.75em;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  margin-block-start: 0.5em;
+  font-style: italic;
 }

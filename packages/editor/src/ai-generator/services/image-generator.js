@@ -15,14 +15,16 @@ import aiService from './ai-service.js';
  * Generate a portrait image
  * @param {string} description - Character description
  * @param {object} options - Generation options
+ * @param {function} [options.onRetry] - Callback for retry status
  * @returns {Promise<string>} Base64 encoded image data
  */
 export async function generatePortrait(description, options = {}) {
   const prompt = buildPortraitPrompt(description, options);
   
   const imageData = await aiService.generateImage(prompt, {
-    size: options.size || '512x512',
+    size: '1024x1024', // DALL-E 3 only supports 1024x1024, 1024x1792, 1792x1024
     quality: options.quality || 'standard',
+    onRetry: options.onRetry,
   });
 
   return imageData;
@@ -32,6 +34,7 @@ export async function generatePortrait(description, options = {}) {
  * Generate a spritesheet with animated frames
  * @param {string} description - Sprite description
  * @param {object} config - Sprite configuration
+ * @param {function} [config.onRetry] - Callback for retry status
  * @returns {Promise<string>} Base64 encoded image data
  */
 export async function generateSpritesheet(description, config) {
@@ -43,6 +46,7 @@ export async function generateSpritesheet(description, config) {
   const imageData = await aiService.generateImage(prompt, {
     size: genSize,
     quality: 'hd', // Use HD for spritesheets to preserve detail
+    onRetry: config.onRetry,
   });
 
   return imageData;
@@ -73,7 +77,7 @@ export async function generateSpriteFrame(description, direction, action, option
   const prompt = `Pixel art game sprite, ${description}, ${directionDesc}, ${action} pose, clean edges, transparent background, centered in frame, game asset style`;
 
   const imageData = await aiService.generateImage(prompt, {
-    size: options.size || '256x256',
+    size: '1024x1024', // DALL-E 3 only supports 1024x1024, 1024x1792, 1792x1024
     quality: 'standard',
   });
 
@@ -113,7 +117,7 @@ export async function generateEffect(description, config = {}) {
   const prompt = `Pixel art animation sprite sheet for ${description} effect, ${frames} frames horizontal strip, transparent background, game VFX, magical effect, clean edges`;
 
   const imageData = await aiService.generateImage(prompt, {
-    size: '1024x256',
+    size: '1792x1024', // DALL-E 3 - wide format for horizontal strip
     quality: 'standard',
   });
 
@@ -151,19 +155,20 @@ function buildSpritesheetPrompt(description, config) {
 
 /**
  * Calculate optimal generation size for a spritesheet
+ * DALL-E 3 only supports: 1024x1024, 1024x1792, 1792x1024
  */
 function calculateGenerationSize(config) {
   const { sheetSize } = config;
   
-  // Find the smallest DALL-E supported size that can contain our sheet
+  if (!sheetSize) return '1024x1024';
+  
   const width = sheetSize[0];
   const height = sheetSize[1];
   
-  if (width <= 256 && height <= 256) return '256x256';
-  if (width <= 512 && height <= 512) return '512x512';
-  if (width <= 1024 && height <= 1024) return '1024x1024';
+  // DALL-E 3 only supports these sizes
   if (width > height) return '1792x1024';
-  return '1024x1792';
+  if (height > width) return '1024x1792';
+  return '1024x1024';
 }
 
 /**

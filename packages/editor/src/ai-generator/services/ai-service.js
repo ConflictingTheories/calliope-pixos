@@ -48,6 +48,61 @@ const DEFAULT_MODELS = {
   },
 };
 
+// Rate limit configuration
+const RATE_LIMIT_CONFIG = {
+  maxRetries: 5,
+  baseDelayMs: 60000, // 1 minute base delay for rate limits
+  maxDelayMs: 300000, // 5 minutes max delay
+};
+
+/**
+ * Sleep for a given number of milliseconds
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Parse rate limit retry delay from error message or headers
+ * @param {Response} response - Fetch response
+ * @param {object} errorBody - Parsed error body
+ * @returns {number} - Delay in milliseconds
+ */
+function parseRateLimitDelay(response, errorBody) {
+  // Check for Retry-After header
+  const retryAfter = response.headers.get('Retry-After');
+  if (retryAfter) {
+    const seconds = parseInt(retryAfter, 10);
+    if (!isNaN(seconds)) {
+      return seconds * 1000;
+    }
+  }
+  
+  // Try to extract from error message (e.g., "Please retry after X seconds")
+  const message = errorBody?.error?.message || '';
+  const match = message.match(/retry after (\d+)/i);
+  if (match) {
+    return parseInt(match[1], 10) * 1000;
+  }
+  
+  // Default to base delay
+  return RATE_LIMIT_CONFIG.baseDelayMs;
+}
+
+/**
+ * Check if an error is a rate limit error
+ * @param {Response} response - Fetch response
+ * @param {object} errorBody - Parsed error body
+ * @returns {boolean}
+ */
+function isRateLimitError(response, errorBody) {
+  if (response.status === 429) return true;
+  const message = errorBody?.error?.message || '';
+  return message.toLowerCase().includes('rate limit');
+}
+
 /**
  * AI Service class for managing AI provider connections and requests
  */
@@ -386,9 +441,10 @@ export class AIService {
   }
 
   /**
-   * Generate an image using DALL-E or compatible API
+   * Generate an image using DALL-E or compatible API with retry logic
    * @param {string} prompt - Image description
    * @param {object} [options] - Generation options
+   * @param {function} [options.onRetry] - Callback for retry status updates
    * @returns {Promise<string>} - Base64 image data or URL
    */
   async generateImage(prompt, options = {}) {
@@ -410,25 +466,55 @@ export class AIService {
       response_format: 'b64_json',
     };
 
-    const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].image, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    });
+    let lastError = null;
+    
+    for (let attempt = 0; attempt < RATE_LIMIT_CONFIG.maxRetries; attempt++) {
+      const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].image, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `Image generation error: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.data[0]?.b64_json;
+      }
+
+      const errorBody = await response.json().catch(() => ({}));
+      
+      // Check if it's a rate limit error
+      if (isRateLimitError(response, errorBody) && attempt < RATE_LIMIT_CONFIG.maxRetries - 1) {
+        const delay = Math.min(
+          parseRateLimitDelay(response, errorBody) * Math.pow(1.5, attempt),
+          RATE_LIMIT_CONFIG.maxDelayMs
+        );
+        
+        // Notify about retry
+        if (options.onRetry) {
+          options.onRetry({
+            attempt: attempt + 1,
+            maxRetries: RATE_LIMIT_CONFIG.maxRetries,
+            delayMs: delay,
+            message: `Rate limited. Waiting ${Math.ceil(delay / 1000)}s before retry...`,
+          });
+        }
+        
+        await sleep(delay);
+        continue;
+      }
+      
+      lastError = errorBody.error?.message || `Image generation error: ${response.status}`;
+      break;
     }
-
-    const data = await response.json();
-    return data.data[0]?.b64_json;
+    
+    throw new Error(lastError);
   }
 
   /**
-   * Generate audio using text-to-speech API
+   * Generate audio using text-to-speech API with retry logic
    * @param {string} text - Text to convert to speech
    * @param {object} [options] - Generation options
+   * @param {function} [options.onRetry] - Callback for retry status updates
    * @returns {Promise<ArrayBuffer>} - Audio data
    */
   async generateAudio(text, options = {}) {
@@ -447,18 +533,47 @@ export class AIService {
       response_format: options.format || 'mp3',
     };
 
-    const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].audio, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    });
+    let lastError = null;
+    
+    for (let attempt = 0; attempt < RATE_LIMIT_CONFIG.maxRetries; attempt++) {
+      const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].audio, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `Audio generation error: ${response.status}`);
+      if (response.ok) {
+        return await response.arrayBuffer();
+      }
+
+      const errorBody = await response.json().catch(() => ({}));
+      
+      // Check if it's a rate limit error
+      if (isRateLimitError(response, errorBody) && attempt < RATE_LIMIT_CONFIG.maxRetries - 1) {
+        const delay = Math.min(
+          parseRateLimitDelay(response, errorBody) * Math.pow(1.5, attempt),
+          RATE_LIMIT_CONFIG.maxDelayMs
+        );
+        
+        // Notify about retry
+        if (options.onRetry) {
+          options.onRetry({
+            attempt: attempt + 1,
+            maxRetries: RATE_LIMIT_CONFIG.maxRetries,
+            delayMs: delay,
+            message: `Rate limited. Waiting ${Math.ceil(delay / 1000)}s before retry...`,
+          });
+        }
+        
+        await sleep(delay);
+        continue;
+      }
+      
+      lastError = errorBody.error?.message || `Audio generation error: ${response.status}`;
+      break;
     }
-
-    return await response.arrayBuffer();
+    
+    throw new Error(lastError);
   }
 }
 

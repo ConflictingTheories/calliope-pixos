@@ -8,27 +8,18 @@
  * Supports multiple modalities: Image, Audio, and Text generation.
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  Panel,
   Button,
   Input,
   SelectPicker,
   Message,
   Progress,
-  Modal,
-  Form,
-  Tabs,
-  IconButton,
-  Tooltip,
-  Whisper,
-  ButtonToolbar,
-  Divider,
+  ButtonGroup,
 } from 'rsuite';
 
 import {
   aiService,
-  AI_PROVIDERS,
   analyzePrompt,
   createOrchestrator,
 } from './services/index.js';
@@ -39,159 +30,64 @@ import './styles/ai-generator.css';
 const MODALITIES = [
   { label: 'Auto-detect', value: 'auto' },
   { label: 'Sprite Package', value: 'sprite' },
-  { label: 'Portrait Image', value: 'portrait' },
+  { label: 'Portrait', value: 'portrait' },
   { label: 'Spritesheet', value: 'spritesheet' },
-  { label: 'Audio / Voice', value: 'audio' },
-  { label: 'Cutscene / Dialogue', value: 'cutscene' },
+  { label: 'Audio', value: 'audio' },
+  { label: 'Cutscene', value: 'cutscene' },
   { label: 'Script', value: 'script' },
-  { label: 'Configuration', value: 'config' },
-];
-
-// Provider options
-const PROVIDERS = [
-  { label: 'OpenAI', value: AI_PROVIDERS.OPENAI },
-  { label: 'Anthropic (Claude)', value: AI_PROVIDERS.ANTHROPIC },
-  { label: 'Google (Gemini)', value: AI_PROVIDERS.GOOGLE },
-  { label: 'Custom Endpoint', value: AI_PROVIDERS.CUSTOM },
 ];
 
 /**
- * Settings Modal Component
+ * Asset Card Component
  */
-function SettingsModal({ open, onClose }) {
-  const [config, setConfig] = useState(aiService.getConfig());
-
-  const handleSave = useCallback(() => {
-    aiService.updateConfig(config);
-    onClose();
-  }, [config, onClose]);
-
-  return (
-    <Modal open={open} onClose={onClose} size="sm">
-      <Modal.Header>
-        <Modal.Title>AI Settings</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form fluid>
-          <Form.Group>
-            <Form.ControlLabel>AI Provider</Form.ControlLabel>
-            <SelectPicker
-              data={PROVIDERS}
-              value={config.provider}
-              onChange={(value) => setConfig({ ...config, provider: value })}
-              block
-              cleanable={false}
-            />
-          </Form.Group>
-
-          <Form.Group>
-            <Form.ControlLabel>API Key</Form.ControlLabel>
-            <Input
-              type="password"
-              value={config.apiKey}
-              onChange={(value) => setConfig({ ...config, apiKey: value })}
-              placeholder="Enter your API key"
-            />
-            <Form.HelpText>
-              Your API key is stored locally and never sent to our servers.
-            </Form.HelpText>
-          </Form.Group>
-
-          {config.provider === AI_PROVIDERS.CUSTOM && (
-            <Form.Group>
-              <Form.ControlLabel>Custom Endpoint URL</Form.ControlLabel>
-              <Input
-                value={config.customEndpoint}
-                onChange={(value) => setConfig({ ...config, customEndpoint: value })}
-                placeholder="https://your-api.com/v1/chat/completions"
-              />
-            </Form.Group>
-          )}
-
-          <Form.Group>
-            <Form.ControlLabel>Chat Model</Form.ControlLabel>
-            <Input
-              value={config.models?.chat || ''}
-              onChange={(value) => setConfig({
-                ...config,
-                models: { ...config.models, chat: value }
-              })}
-              placeholder="gpt-4o, claude-3-5-sonnet, etc."
-            />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={onClose} appearance="subtle">Cancel</Button>
-        <Button onClick={handleSave} appearance="primary">Save</Button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
-
-/**
- * Asset Preview Component
- */
-function AssetPreview({ asset }) {
-  if (!asset) return null;
-
+function AssetCard({ asset, onSave, saving }) {
   const renderPreview = () => {
     switch (asset.type) {
-      case 'image':
-        return (
-          <div className="ai-asset-preview-image">
-            <img
-              src={asset.base64 ? `data:image/png;base64,${asset.base64}` : URL.createObjectURL(asset.content)}
-              alt={asset.name}
-            />
-          </div>
-        );
-      case 'audio':
-        return (
-          <div className="ai-asset-preview-audio">
-            <audio controls src={URL.createObjectURL(asset.content)} />
-          </div>
-        );
-      case 'config':
-      case 'text':
-        return (
-          <div className="ai-asset-preview-text">
-            <pre>{typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}</pre>
-          </div>
-        );
-      default:
-        return <div className="ai-asset-preview-unknown">Preview not available</div>;
+    case 'image':
+      return (
+        <div className="asset-card-image">
+          <img
+            src={asset.base64 ? `data:image/png;base64,${asset.base64}` : URL.createObjectURL(asset.content)}
+            alt={asset.name}
+          />
+        </div>
+      );
+    case 'audio':
+      return (
+        <div className="asset-card-audio">
+          <audio controls src={URL.createObjectURL(asset.content)} />
+        </div>
+      );
+    case 'config':
+    case 'text':
+      return (
+        <div className="asset-card-text">
+          <pre>{typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}</pre>
+        </div>
+      );
+    default:
+      return <div className="asset-card-unknown">Preview unavailable</div>;
     }
   };
 
   return (
-    <div className="ai-asset-preview">
-      <div className="ai-asset-preview-header">
-        <span className="ai-asset-type">{asset.subtype || asset.type}</span>
-        <span className="ai-asset-name">{asset.name}</span>
+    <div className="asset-card">
+      <div className="asset-card-header">
+        <span className="asset-card-type">{asset.subtype || asset.type}</span>
+        <span className="asset-card-name">{asset.name}</span>
       </div>
       {renderPreview()}
-      <div className="ai-asset-path">{asset.path}</div>
-    </div>
-  );
-}
-
-/**
- * Generation Progress Component
- */
-function GenerationProgress({ status, progress }) {
-  if (!status) return null;
-
-  return (
-    <div className="ai-generation-progress">
-      <div className="ai-progress-phase">{status.phase}</div>
-      <div className="ai-progress-message">{status.message}</div>
-      {progress && (
-        <Progress.Line
-          percent={Math.round((progress.current / progress.total) * 100)}
-          status="active"
-        />
-      )}
+      <div className="asset-card-footer">
+        <span className="asset-card-path">{asset.path}</span>
+        <Button 
+          size="xs" 
+          appearance="primary" 
+          onClick={() => onSave(asset)}
+          loading={saving}
+        >
+          Save
+        </Button>
+      </div>
     </div>
   );
 }
@@ -204,35 +100,79 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   const [prompt, setPrompt] = useState('');
   const [modality, setModality] = useState('auto');
   const [loading, setLoading] = useState(false);
+  const [savingAsset, setSavingAsset] = useState(null);
   const [status, setStatus] = useState(null);
   const [progress, setProgress] = useState(null);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState(null);
   const [analysis, setAnalysis] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  
+  const resultsRef = useRef(null);
+  const countdownRef = useRef(null);
 
   // Check if configured
   const isConfigured = aiService.isConfigured();
 
-  // Handle prompt analysis (for preview)
-  const handleAnalyze = useCallback(() => {
-    if (!prompt.trim()) return;
-    const result = analyzePrompt(prompt);
-    setAnalysis(result);
-  }, [prompt]);
+  // Warn before closing if there are unsaved results
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (results?.assets?.length > 0) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved generated assets. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [results]);
+
+  // Handle countdown for rate limiting
+  useEffect(() => {
+    if (status?.phase === 'rate-limited' && status?.retryInfo?.delayMs) {
+      const endTime = Date.now() + status.retryInfo.delayMs;
+      
+      const updateCountdown = () => {
+        const remaining = Math.max(0, endTime - Date.now());
+        setCountdown(Math.ceil(remaining / 1000));
+        
+        if (remaining > 0) {
+          countdownRef.current = requestAnimationFrame(updateCountdown);
+        }
+      };
+      
+      updateCountdown();
+      
+      return () => {
+        if (countdownRef.current) {
+          cancelAnimationFrame(countdownRef.current);
+        }
+      };
+    } else {
+      setCountdown(null);
+    }
+  }, [status]);
 
   // Debounced analysis on prompt change
   useEffect(() => {
     const timer = setTimeout(() => {
       if (prompt.trim().length > 10) {
-        handleAnalyze();
+        const result = analyzePrompt(prompt);
+        setAnalysis(result);
       } else {
         setAnalysis(null);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [prompt, handleAnalyze]);
+  }, [prompt]);
+
+  // Scroll to results when generated
+  useEffect(() => {
+    if (results && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [results]);
 
   // Handle generation
   const handleGenerate = useCallback(async () => {
@@ -242,15 +182,13 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     }
 
     if (!isConfigured) {
-      setError('Please configure your API key in settings');
-      setShowSettings(true);
+      setError('Configure your API key in Options (⚙️) to use AI generation');
       return;
     }
 
     setLoading(true);
     setError(null);
     setResults(null);
-    setSelectedAsset(null);
 
     try {
       const orchestrator = createOrchestrator({
@@ -262,14 +200,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       const generationResults = await orchestrator.generateFromPrompt(prompt);
       setResults(generationResults);
 
-      // Auto-select first asset for preview
-      if (generationResults.assets.length > 0) {
-        setSelectedAsset(generationResults.assets[0]);
-      }
-
-      // Report errors if any
       if (generationResults.errors.length > 0) {
-        setError(`Generation completed with ${generationResults.errors.length} error(s)`);
+        setError(`Completed with ${generationResults.errors.length} error(s)`);
       }
 
     } catch (err) {
@@ -281,8 +213,69 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     }
   }, [prompt, isConfigured, writeFile]);
 
-  // Handle saving assets to zip
-  const handleSaveToZip = useCallback(async () => {
+  // Handle retrying only failed assets (conserves tokens)
+  const handleRetryFailed = useCallback(async () => {
+    if (!results?.errors?.length) return;
+
+    const retryableErrors = results.errors.filter(err => err.retryable);
+    if (retryableErrors.length === 0) {
+      setError('No retryable errors found');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const orchestrator = createOrchestrator({
+        writeFile,
+        onProgress: (p) => setProgress(p),
+        onStatusChange: (s) => setStatus(s),
+      });
+
+      const retryResults = await orchestrator.retryFailedAssets(retryableErrors);
+
+      // Merge new assets with existing ones
+      setResults(prev => ({
+        ...prev,
+        assets: [...prev.assets, ...retryResults.assets],
+        errors: retryResults.errors, // Replace errors with remaining errors
+      }));
+
+      if (retryResults.errors.length > 0) {
+        setError(`Retry completed with ${retryResults.errors.length} error(s)`);
+      }
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setStatus(null);
+      setProgress(null);
+    }
+  }, [results, writeFile]);
+
+  // Handle saving single asset
+  const handleSaveAsset = useCallback(async (asset) => {
+    if (!writeFile) return;
+
+    setSavingAsset(asset.path);
+    try {
+      const orchestrator = createOrchestrator({ writeFile });
+      await orchestrator.writeAssetsToZip([asset], writeFile);
+      
+      if (refreshFolder) refreshFolder();
+      if (onFileGenerated) onFileGenerated(asset);
+      
+    } catch (err) {
+      setError(`Failed to save: ${err.message}`);
+    } finally {
+      setSavingAsset(null);
+    }
+  }, [writeFile, refreshFolder, onFileGenerated]);
+
+  // Handle saving all assets
+  const handleSaveAll = useCallback(async () => {
     if (!results?.assets || !writeFile) return;
 
     setLoading(true);
@@ -300,17 +293,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       if (writeResults.failed.length > 0) {
         setError(`Failed to save ${writeResults.failed.length} file(s)`);
       } else {
-        setStatus({ phase: 'saved', message: `Saved ${writeResults.success.length} file(s) to package` });
-
-        // Refresh the folder view
-        if (refreshFolder) {
-          refreshFolder();
-        }
-
-        // Notify parent
-        if (onFileGenerated) {
-          writeResults.success.forEach(asset => onFileGenerated(asset));
-        }
+        setStatus({ phase: 'saved', message: `Saved ${writeResults.success.length} file(s)` });
+        if (refreshFolder) refreshFolder();
       }
 
     } catch (err) {
@@ -319,151 +303,171 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       setLoading(false);
       setProgress(null);
     }
-  }, [results, writeFile, refreshFolder, onFileGenerated]);
-
-  // Render analysis preview
-  const renderAnalysisPreview = () => {
-    if (!analysis) return null;
-
-    return (
-      <div className="ai-analysis-preview">
-        <div className="ai-analysis-header">Detected Assets</div>
-        <div className="ai-analysis-assets">
-          {analysis.detectedAssets.map((asset, i) => (
-            <span key={i} className="ai-analysis-tag">{asset}</span>
-          ))}
-        </div>
-        {analysis.spriteConfig && (
-          <div className="ai-analysis-config">
-            <div>Preset: {analysis.spriteConfig.preset}</div>
-            <div>Size: {analysis.spriteConfig.tileSize.join('x')}</div>
-            <div>Directions: {analysis.spriteConfig.directions}</div>
-            <div>Frames: {analysis.spriteConfig.framesPerDirection}</div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  }, [results, writeFile, refreshFolder]);
 
   return (
-    <Panel className="ai-generator-panel" bordered>
-      <div className="ai-generator-header">
-        <h4>AI Asset Generator</h4>
-        <ButtonToolbar>
-          <Whisper placement="top" speaker={<Tooltip>Settings</Tooltip>}>
-            <IconButton
-              icon={<span>⚙️</span>}
-              onClick={() => setShowSettings(true)}
-              size="sm"
-            />
-          </Whisper>
-        </ButtonToolbar>
-      </div>
+    <div className="ai-generator">
+      {/* Header */}
+      <header className="ai-generator-header">
+        <h2>AI Asset Generator</h2>
+        <span className="ai-header-hint">Configure API key in Options</span>
+      </header>
 
-      {!isConfigured && (
-        <Message type="warning" style={{ marginBottom: 16 }}>
-          Please configure your API key to use the AI generator.
-          <Button size="xs" onClick={() => setShowSettings(true)} style={{ marginLeft: 8 }}>
-            Open Settings
-          </Button>
-        </Message>
-      )}
+      {/* Main Content */}
+      <div className="ai-generator-content">
+        {/* API Key Warning */}
+        {!isConfigured && (
+          <Message type="warning" showIcon className="ai-warning">
+            <span>Configure your API key in the main Options dialog to use AI generation.</span>
+          </Message>
+        )}
 
-      <div className="ai-generator-input">
-        <Form.Group>
-          <Form.ControlLabel>What would you like to create?</Form.ControlLabel>
+        {/* Prompt Section */}
+        <section className="ai-prompt-section">
+          <label>Describe what you want to create:</label>
           <Input
             as="textarea"
-            rows={4}
+            rows={3}
             value={prompt}
             onChange={setPrompt}
-            placeholder="Describe the asset you want to generate. For example: 'Create a wizard sprite with a portrait, 8-direction walk animation, blue robes and a staff, pixel art style'"
+            placeholder="e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."
             disabled={loading}
           />
-        </Form.Group>
+          
+          <div className="ai-prompt-controls">
+            <SelectPicker
+              data={MODALITIES}
+              value={modality}
+              onChange={setModality}
+              cleanable={false}
+              disabled={loading}
+              searchable={false}
+              style={{ width: 140 }}
+              size="sm"
+            />
+            <Button
+              appearance="primary"
+              onClick={handleGenerate}
+              disabled={loading || !prompt.trim()}
+              loading={loading}
+            >
+              Generate
+            </Button>
+          </div>
+        </section>
 
-        <Form.Group>
-          <Form.ControlLabel>Asset Type</Form.ControlLabel>
-          <SelectPicker
-            data={MODALITIES}
-            value={modality}
-            onChange={setModality}
-            block
-            cleanable={false}
-            disabled={loading}
-          />
-          <Form.HelpText>
-            Auto-detect analyzes your prompt to determine what to generate.
-          </Form.HelpText>
-        </Form.Group>
-      </div>
-
-      {renderAnalysisPreview()}
-
-      {error && (
-        <Message type="error" style={{ marginBottom: 16 }}>
-          {error}
-        </Message>
-      )}
-
-      {loading && <GenerationProgress status={status} progress={progress} />}
-
-      <div className="ai-generator-actions">
-        <Button
-          appearance="primary"
-          onClick={handleGenerate}
-          disabled={loading || !prompt.trim()}
-          loading={loading}
-        >
-          {loading ? 'Generating...' : 'Generate'}
-        </Button>
-
-        {results?.assets.length > 0 && (
-          <Button
-            appearance="ghost"
-            onClick={handleSaveToZip}
-            disabled={loading}
-          >
-            Save to Package
-          </Button>
-        )}
-      </div>
-
-      {results && (
-        <div className="ai-generator-results">
-          <Divider>Generated Assets ({results.assets.length})</Divider>
-
-          <Tabs defaultActiveKey="0" appearance="subtle">
-            {results.assets.map((asset, index) => (
-              <Tabs.Tab
-                key={index}
-                eventKey={String(index)}
-                title={asset.name}
-                onClick={() => setSelectedAsset(asset)}
-              >
-                <AssetPreview asset={asset} />
-              </Tabs.Tab>
-            ))}
-          </Tabs>
-
-          {results.errors.length > 0 && (
-            <div className="ai-generator-errors">
-              <Divider>Errors</Divider>
-              {results.errors.map((err, i) => (
-                <Message key={i} type="error" style={{ marginBottom: 8 }}>
-                  [{err.phase}] {err.message}
-                </Message>
+        {/* Analysis Preview */}
+        {analysis && !loading && !results && (
+          <section className="ai-analysis">
+            <div className="ai-analysis-label">Will generate:</div>
+            <div className="ai-analysis-tags">
+              {analysis.detectedAssets.map((asset, i) => (
+                <span key={i} className="ai-tag">{asset}</span>
               ))}
             </div>
-          )}
-        </div>
-      )}
+            {analysis.spriteConfig && (
+              <div className="ai-analysis-config">
+                <span>{analysis.spriteConfig.preset}</span>
+                <span>{analysis.spriteConfig.tileSize.join('×')}px</span>
+                <span>{analysis.spriteConfig.directions}dir</span>
+              </div>
+            )}
+          </section>
+        )}
 
-      <SettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
-    </Panel>
+        {/* Progress */}
+        {loading && status && (
+          <section className={`ai-progress ${status.phase === 'rate-limited' ? 'ai-progress-rate-limited' : ''}`}>
+            <div className="ai-progress-status">
+              <span className="ai-progress-phase">{status.phase}</span>
+              <span className="ai-progress-message">{status.message}</span>
+            </div>
+            {status.phase === 'rate-limited' && countdown !== null && (
+              <div className="ai-countdown">
+                <div className="ai-countdown-timer">{countdown}s</div>
+                <div className="ai-countdown-label">until retry</div>
+                <Progress.Line
+                  percent={Math.max(0, 100 - (countdown / (status.retryInfo?.delayMs / 1000 || 60)) * 100)}
+                  status="active"
+                  showInfo={false}
+                />
+              </div>
+            )}
+            {progress && status.phase !== 'rate-limited' && (
+              <Progress.Line
+                percent={Math.round((progress.current / progress.total) * 100)}
+                status="active"
+                showInfo={false}
+              />
+            )}
+          </section>
+        )}
+
+        {/* Error */}
+        {error && (
+          <Message type="error" showIcon closable onClose={() => setError(null)} className="ai-error">
+            {error}
+          </Message>
+        )}
+
+        {/* Results */}
+        {results && results.assets.length > 0 && (
+          <section className="ai-results" ref={resultsRef}>
+            <div className="ai-results-header">
+              <h3>Generated Assets ({results.assets.length})</h3>
+              <ButtonGroup>
+                <Button size="sm" appearance="primary" onClick={handleSaveAll} disabled={loading}>
+                  Save All to Package
+                </Button>
+              </ButtonGroup>
+            </div>
+            
+            <div className="ai-results-grid">
+              {results.assets.map((asset, index) => (
+                <AssetCard
+                  key={index}
+                  asset={asset}
+                  onSave={handleSaveAsset}
+                  saving={savingAsset === asset.path}
+                />
+              ))}
+            </div>
+
+            {results.errors.length > 0 && (
+              <div className="ai-results-errors">
+                <div className="ai-errors-header">
+                  <h4>Errors ({results.errors.length})</h4>
+                  {results.errors.some(err => err.retryable) && (
+                    <Button 
+                      size="xs" 
+                      appearance="primary" 
+                      onClick={handleRetryFailed}
+                      disabled={loading}
+                      loading={loading}
+                    >
+                      🔄 Retry Failed ({results.errors.filter(e => e.retryable).length})
+                    </Button>
+                  )}
+                </div>
+                {results.errors.map((err, i) => (
+                  <Message key={i} type="error" showIcon>
+                    <strong>[{err.phase}]</strong> {err.message}
+                    {err.retryable && <span className="ai-error-retryable"> (retryable)</span>}
+                  </Message>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Success message */}
+        {status?.phase === 'saved' && (
+          <Message type="success" showIcon className="ai-success">
+            {status.message}
+          </Message>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -111,3 +111,88 @@ button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* RSuite Dark Theme Overrides */
+.rs-picker {
+  background: rgba(30, 30, 50, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.rs-picker:hover,
+.rs-picker-focused {
+  border-color: var(--color-primary) !important;
+}
+
+.rs-picker-toggle {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+.rs-picker-toggle-value,
+.rs-picker-toggle-placeholder {
+  color: var(--text-primary) !important;
+}
+
+.rs-picker-menu {
+  background: rgba(22, 22, 40, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px);
+  z-index: 1100 !important;
+}
+
+.rs-picker-select-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.rs-picker-select-menu-item:hover,
+.rs-picker-select-menu-item-focus {
+  background: rgba(255, 107, 157, 0.15) !important;
+}
+
+.rs-picker-select-menu-item-active {
+  background: rgba(255, 107, 157, 0.25) !important;
+  color: var(--color-primary) !important;
+}
+
+.rs-btn {
+  font-family: var(--font-primary);
+}
+
+.rs-input {
+  background: rgba(30, 30, 50, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+.rs-input:focus {
+  border-color: var(--color-primary) !important;
+}
+
+.rs-modal-wrapper {
+  z-index: 1200 !important;
+}
+
+.rs-modal-content {
+  background: rgba(22, 22, 40, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+}
+
+.rs-modal-header,
+.rs-modal-body,
+.rs-modal-footer {
+  background: transparent !important;
+}
+
+.rs-modal-title {
+  color: var(--text-primary) !important;
+}
+
+.rs-form-control-label {
+  color: var(--text-muted) !important;
+}
+
+.rs-form-help-text {
+  color: var(--text-muted) !important;
+  opacity: 0.7;
+}

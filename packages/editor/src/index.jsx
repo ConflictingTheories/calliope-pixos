@@ -5,6 +5,10 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
+// RSuite CSS must be imported before custom styles
+import 'rsuite/dist/rsuite-no-reset.min.css';
+
 import './index.css';
 import './shared/editor-styles.css';
 import App from './app.jsx';
