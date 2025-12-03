@@ -20,6 +20,7 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; } /*                                                 *\
 ** ----------------------------------------------- **
@@ -52,7 +53,10 @@ function loadMap(_x, _x2, _x3) {
  */
 function _loadMap() {
   _loadMap = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(json, cells, zip) {
-    var _this2 = this;
+    var _json$scenes,
+      _this2 = this,
+      _json$scripts,
+      _json$objects;
     var heights,
       $sprites,
       $scenes,
@@ -79,7 +83,7 @@ function _loadMap() {
               zones: (_sprite$zones = sprite.zones) !== null && _sprite$zones !== void 0 ? _sprite$zones : null
             };
           });
-          $scenes = json.scenes.map(function (scene) {
+          $scenes = ((_json$scenes = json.scenes) !== null && _json$scenes !== void 0 ? _json$scenes : []).map(function (scene) {
             return {
               id: scene.id,
               actions: scene.actions.map(function (action) {
@@ -101,7 +105,7 @@ function _loadMap() {
             };
           });
           _context3.n = 1;
-          return Promise.all(json.scripts.map(/*#__PURE__*/function () {
+          return Promise.all(((_json$scripts = json.scripts) !== null && _json$scripts !== void 0 ? _json$scripts : []).map(/*#__PURE__*/function () {
             var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(script) {
               var file, luaScript, result, _t;
               return _regenerator().w(function (_context2) {
@@ -168,7 +172,7 @@ function _loadMap() {
           }()));
         case 1:
           $scripts = _context3.v;
-          $objects = json.objects.map(function (object) {
+          $objects = ((_json$objects = json.objects) !== null && _json$objects !== void 0 ? _json$objects : []).map(function (object) {
             return {
               id: object.id,
               type: object.type,
@@ -221,12 +225,31 @@ function dynamicCells(cells, Tileset) {
   if (typeof cells === 'string') {
     return cells;
   }
+
+  // Guard: Check if Tileset is valid
+  if (!Tileset || _typeof(Tileset) !== 'object') {
+    console.error('[dynamicCells] Tileset is undefined or invalid - tiles.json may be missing from tileset');
+    return [];
+  }
   var result = [];
+  var missingTiles = new Set();
   cells.forEach(function (row, i) {
     var len = row.length;
     row.forEach(function (cell, j) {
-      result[i * len + j] = Tileset[cell];
+      var tileData = Tileset[cell];
+      if (!tileData) {
+        missingTiles.add(cell);
+        // Provide a fallback empty tile
+        result[i * len + j] = ['FLAT_ALL', 'FLOOR', 0];
+      } else {
+        result[i * len + j] = tileData;
+      }
     });
   });
+
+  // Log missing tiles once
+  if (missingTiles.size > 0) {
+    console.warn('[dynamicCells] Missing tile definitions:', Array.from(missingTiles).join(', '));
+  }
   return result;
 }

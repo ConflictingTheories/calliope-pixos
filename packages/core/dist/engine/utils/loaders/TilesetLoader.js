@@ -83,9 +83,11 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
     key: "loadTilesetData",
     value: function () {
       var _loadTilesetData = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(tilesetJson, zip) {
+        var tilesetName, tilesFile, geometryFile, _t3, _t4, _t5, _t6;
         return _regenerator().w(function (_context3) {
-          while (1) switch (_context3.n) {
+          while (1) switch (_context3.p = _context3.n) {
             case 0:
+              tilesetName = tilesetJson.name || 'common'; // extend tileset
               if (!tilesetJson["extends"]) {
                 _context3.n = 2;
                 break;
@@ -116,6 +118,54 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
               // unset
               tilesetJson["extends"] = null;
             case 2:
+              if (tilesetJson.tiles) {
+                _context3.n = 7;
+                break;
+              }
+              _context3.p = 3;
+              tilesFile = zip.file("tilesets/".concat(tilesetName, "/tiles.json"));
+              if (!tilesFile) {
+                _context3.n = 5;
+                break;
+              }
+              _t3 = JSON;
+              _context3.n = 4;
+              return tilesFile.async('string');
+            case 4:
+              tilesetJson.tiles = _t3.parse.call(_t3, _context3.v);
+              console.log("[TilesetLoader] Loaded separate tiles.json for ".concat(tilesetName));
+            case 5:
+              _context3.n = 7;
+              break;
+            case 6:
+              _context3.p = 6;
+              _t4 = _context3.v;
+              console.warn("[TilesetLoader] No tiles.json found for ".concat(tilesetName));
+            case 7:
+              if (tilesetJson.geometry) {
+                _context3.n = 12;
+                break;
+              }
+              _context3.p = 8;
+              geometryFile = zip.file("tilesets/".concat(tilesetName, "/geometry.json"));
+              if (!geometryFile) {
+                _context3.n = 10;
+                break;
+              }
+              _t5 = JSON;
+              _context3.n = 9;
+              return geometryFile.async('string');
+            case 9:
+              tilesetJson.geometry = _t5.parse.call(_t5, _context3.v);
+              console.log("[TilesetLoader] Loaded separate geometry.json for ".concat(tilesetName));
+            case 10:
+              _context3.n = 12;
+              break;
+            case 11:
+              _context3.p = 11;
+              _t6 = _context3.v;
+              console.warn("[TilesetLoader] No geometry.json found for ".concat(tilesetName));
+            case 12:
               console.log({
                 tilesetJson: tilesetJson
               });
@@ -136,7 +186,7 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
                 tiles: tilesetJson.tiles
               });
           }
-        }, _callee3);
+        }, _callee3, null, [[8, 11], [3, 6]]);
       }));
       function loadTilesetData(_x4, _x5) {
         return _loadTilesetData.apply(this, arguments);

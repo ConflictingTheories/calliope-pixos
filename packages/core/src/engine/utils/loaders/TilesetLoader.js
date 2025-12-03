@@ -40,6 +40,8 @@ export class TilesetLoader {
 
   // load tileset data components and merge into config
   async loadTilesetData(tilesetJson, zip) {
+    const tilesetName = tilesetJson.name || 'common';
+    
     // extend tileset
     if (tilesetJson.extends) {
       await Promise.all(
@@ -51,6 +53,33 @@ export class TilesetLoader {
       // unset
       tilesetJson.extends = null;
     }
+    
+    // Try to load separate tiles.json if tiles not in tileset.json
+    if (!tilesetJson.tiles) {
+      try {
+        const tilesFile = zip.file(`tilesets/${tilesetName}/tiles.json`);
+        if (tilesFile) {
+          tilesetJson.tiles = JSON.parse(await tilesFile.async('string'));
+          console.log(`[TilesetLoader] Loaded separate tiles.json for ${tilesetName}`);
+        }
+      } catch (e) {
+        console.warn(`[TilesetLoader] No tiles.json found for ${tilesetName}`);
+      }
+    }
+    
+    // Try to load separate geometry.json if geometry not in tileset.json
+    if (!tilesetJson.geometry) {
+      try {
+        const geometryFile = zip.file(`tilesets/${tilesetName}/geometry.json`);
+        if (geometryFile) {
+          tilesetJson.geometry = JSON.parse(await geometryFile.async('string'));
+          console.log(`[TilesetLoader] Loaded separate geometry.json for ${tilesetName}`);
+        }
+      } catch (e) {
+        console.warn(`[TilesetLoader] No geometry.json found for ${tilesetName}`);
+      }
+    }
+    
     console.log({ tilesetJson });
 
     return {

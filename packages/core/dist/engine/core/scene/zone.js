@@ -915,6 +915,12 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       var height = _this2.size[1];
       var rm = _this2.engine.renderManager;
       var gl = _this2.engine.gl;
+
+      // Guard: Check if cells are properly loaded
+      if (!_this2.cells || _this2.cells.length === 0) {
+        console.error('[Zone.onTilesetDefinitionLoaded] No cells data - tileset may be missing tiles definition');
+        return;
+      }
       _this2.cellVertexPosBuf = Array.from({
         length: height
       }, function () {
@@ -937,6 +943,17 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       for (var j = 0; j < height; j++) {
         for (var i = 0; i < width; i++, k++) {
           var cell = _this2.cells[k];
+
+          // Guard: Skip if cell is undefined (tile lookup failed)
+          if (!cell || !Array.isArray(cell)) {
+            console.warn("[Zone] Cell [".concat(j, ",").concat(i, "] is undefined - missing tile in tileset"));
+            // Create empty buffers
+            _this2.cellVertexPosBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 3);
+            _this2.cellVertexTexBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 2);
+            _this2.cellPickingId[j][i] = rm.pickingManager.nextPickingId();
+            _this2.walkability[k] = 0;
+            continue;
+          }
           var layers = Math.floor(cell.length / 3);
           var cellVertices = [];
           var cellTex = [];
@@ -1329,6 +1346,11 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @param {WebGLRenderingContext} gl - The WebGL context.
      */
     _defineProperty(_this2, "drawRow", function (row, selectedSet, highlight, rm, shaderProgram, pickerProgram, gl) {
+      // Guard: Check if row data exists
+      if (!_this2.cellVertexPosBuf || !_this2.cellVertexPosBuf[row]) {
+        return; // Skip row if not initialized
+      }
+
       // Attach tileset once per row (sprites may switch textures between rows)
       _this2.tileset.texture.attach();
       var vPosRow = _this2.cellVertexPosBuf[row];
@@ -1340,6 +1362,11 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       for (var cell = 0; cell < width; cell++) {
         var vPos = vPosRow[cell];
         var vTex = vTexRow[cell];
+
+        // Guard: Skip cells with no vertices (empty or failed tile lookup)
+        if (!vPos || !vTex || vPos.numItems === 0) {
+          continue;
+        }
         rm.bindBuffer(vPos, shaderProgram.aVertexPosition);
         rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
         var id = pickingRow[cell];

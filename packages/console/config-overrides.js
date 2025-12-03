@@ -1,4 +1,5 @@
 const { override, addWebpackAlias, addBabelPlugin } = require('customize-cra');
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = override(
@@ -26,6 +27,15 @@ module.exports = override(
         (plugin) => plugin.constructor.name !== 'ModuleScopePlugin'
       );
     }
+    
+    // Add process polyfill for browser environment
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      })
+    );
+    
     // Also allow Babel to process the pixospritz source outside of CRA src/ directory
     const pixosSource = path.resolve(__dirname, '..', 'core', 'src');
     const mathSource = path.resolve(__dirname, '..', 'math', 'src');

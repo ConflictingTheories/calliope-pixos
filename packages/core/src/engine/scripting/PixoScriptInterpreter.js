@@ -22,6 +22,8 @@ export default class PixoScriptInterpreter {
     this.scope = {};
     this.env = null;
     this.library = null;
+    // Cache for loaded scripts (simulated filesystem)
+    this._scriptCache = new Map();
   }
 
   setScope = (scope) => {
@@ -32,8 +34,36 @@ export default class PixoScriptInterpreter {
     return this.scope;
   };
 
+  /**
+   * Register a script in the virtual filesystem for require() support
+   * @param {string} path - Virtual path like "mymodule" or "lib/utils"
+   * @param {string} content - The script content
+   */
+  registerScript = (path, content) => {
+    this._scriptCache.set(path, content);
+    this._scriptCache.set(path + '.pxs', content);
+  };
+
   createEnv = () => {
-    this.env = this.pixoscript.createEnv({});
+    // Create config with virtual filesystem handlers
+    const config = {
+      PIXOSCRIPT_PATH: './?.pxs;./?/init.pxs',
+      fileExists: (path) => {
+        // Check if path exists in our script cache
+        const normalizedPath = path.replace(/^\.\//, '');
+        return this._scriptCache.has(normalizedPath);
+      },
+      loadFile: (path) => {
+        const normalizedPath = path.replace(/^\.\//, '');
+        const content = this._scriptCache.get(normalizedPath);
+        if (!content) {
+          throw new Error(`Script not found: ${path}`);
+        }
+        return content;
+      }
+    };
+    
+    this.env = this.pixoscript.createEnv(config);
     return this.env;
   };
 
