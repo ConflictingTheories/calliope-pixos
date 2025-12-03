@@ -20,7 +20,7 @@
       "type": "furniture/door",
       "pos": [2, 2, 0],
       "facing": "Down",
-      "zones": ["cutscene-demo"]
+      "zones": ["town-village"]
     }
   ],
   "mode": "tactics",
