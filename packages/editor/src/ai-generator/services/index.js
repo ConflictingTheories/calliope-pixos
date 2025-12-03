@@ -11,11 +11,11 @@
 export { AIService, aiService, AI_PROVIDERS } from './ai-service.js';
 
 // Prompt analysis
-export { 
-  analyzePrompt, 
-  ASSET_TYPES, 
-  DIRECTIONS, 
-  SPRITE_PRESETS 
+export {
+  analyzePrompt,
+  ASSET_TYPES,
+  DIRECTIONS,
+  SPRITE_PRESETS
 } from './prompt-analyzer.js';
 
 // Image generation
@@ -110,3 +110,17 @@ export {
   DIALOGUE_LINES_SCHEMA,
   GENERATION_PLAN_SCHEMA,
 } from './schemas.js';
+
+// Game Templates (Pre-built demos)
+export {
+  GAME_TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  COMPLEXITY,
+  getTemplateById,
+  getTemplatesByCategory,
+  getTemplatesByComplexity,
+  getFeaturedTemplates,
+  getStarterTemplates,
+  searchTemplatesByTag,
+  getAllTags,
+} from './game-templates.js';

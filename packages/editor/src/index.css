@@ -1,150 +1,81 @@
 /**
  * Pixospritz IDE - Master Styles
- * Sleek, dark, modern design system
+ * Clean, professional dark theme
  */
 
+/* Import the design system foundation */
+@import './styles/design-system.css';
+
+/* Legacy aliases for backward compatibility */
 :root {
-  /* Core palette */
-  --color-primary: #ff6b9d;
+  /* Map old variables to new design system */
+  --color-primary: var(--brand-secondary);
   --color-primary-dark: #e5527e;
-  --color-secondary: #4ecdc4;
-  --color-accent: #ffd93d;
+  --color-secondary: var(--brand-primary);
+  --color-accent: var(--brand-accent);
   --color-purple: #a78bfa;
 
-  /* Backgrounds - deep space dark */
-  --color-bg: #08080f;
-  --color-bg-light: #0d0d18;
-  --color-bg-lighter: #12121f;
-  --color-bg-elevated: #181825;
+  /* Backgrounds */
+  --color-bg: var(--bg-base);
+  --color-bg-light: var(--bg-surface);
+  --color-bg-lighter: var(--bg-elevated);
+  --color-bg-elevated: var(--bg-hover);
   
   /* Text */
-  --color-text: #e4e4e7;
-  --color-text-muted: #71717a;
-  --color-text-dim: #52525b;
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-secondary);
+  --color-text-dim: var(--text-tertiary);
   
   /* Borders */
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-light: rgba(255, 255, 255, 0.1);
-  --color-border-focus: var(--color-secondary);
+  --color-border: var(--border-subtle);
+  --color-border-light: var(--border-default);
+  --color-border-focus: var(--border-focus);
 
-  /* Spacing - compact */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 24px;
+  /* Spacing */
+  --spacing-xs: var(--space-1);
+  --spacing-sm: var(--space-2);
+  --spacing-md: var(--space-3);
+  --spacing-lg: var(--space-4);
+  --spacing-xl: var(--space-6);
 
   /* Typography */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, monospace;
-  --font-size-xs: 10px;
-  --font-size-sm: 11px;
-  --font-size-base: 13px;
-  --font-size-lg: 15px;
+  --font-primary: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-size-xs: var(--text-xs);
+  --font-size-sm: var(--text-sm);
+  --font-size-base: var(--text-base);
+  --font-size-lg: var(--text-lg);
 
   /* Radii */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
 
   /* Transitions */
   --transition-fast: 0.1s ease;
   --transition-normal: 0.2s ease;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
   --shadow-glow: 0 0 20px rgba(78, 205, 196, 0.15);
 
   /* Semantic aliases */
-  --bg-primary: var(--color-bg);
-  --bg-secondary: var(--color-bg-light);
-  --bg-tertiary: var(--color-bg-lighter);
-  --bg-elevated: var(--color-bg-elevated);
-  --panel-surface: rgba(12, 12, 22, 0.95);
-  --panel-border: var(--color-border);
-  --text-primary: var(--color-text);
-  --text-muted: var(--color-text-muted);
+  --bg-primary: var(--bg-base);
+  --bg-secondary: var(--bg-surface);
+  --bg-tertiary: var(--bg-elevated);
+  --bg-elevated: var(--bg-hover);
+  --panel-surface: var(--bg-surface);
+  --panel-border: var(--border-subtle);
+  --text-primary: var(--text-primary);
+  --text-muted: var(--text-secondary);
 }
 
-/* Base reset */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-primary);
-  font-size: var(--font-size-base);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100vh;
-}
-
-/* Subtle background texture */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: 
-    radial-gradient(ellipse at 20% 0%, rgba(78, 205, 196, 0.04), transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(255, 107, 157, 0.03), transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-a {
-  color: var(--color-secondary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-a:hover {
-  color: var(--color-accent);
-}
-
-/* Global button style */
-button {
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Primary action button */
-button.primary,
-.btn-primary {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
-  color: #0a0a14;
-}
-
-button.primary:hover:not(:disabled),
-.btn-primary:hover:not(:disabled) {
-  background: #5ed9d0;
-  border-color: #5ed9d0;
-}
+/* 
+ * NOTE: Base resets, buttons, inputs, and RSuite overrides are now in 
+ * design-system.css. The styles below are kept for backward compatibility
+ * and any component-specific overrides.
+ */
 
 /* Inputs */
 input,

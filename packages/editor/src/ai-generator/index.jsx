@@ -16,6 +16,8 @@ import {
   Message,
   Progress,
   ButtonGroup,
+  Toggle,
+  Nav,
 } from 'rsuite';
 
 import {
@@ -25,6 +27,7 @@ import {
   createGamePackageOrchestrator,
 } from './services/index.js';
 
+import TemplateSelector from './TemplateSelector.jsx';
 import './styles/ai-generator.css';
 
 // Modality options
@@ -110,11 +113,23 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   const [analysis, setAnalysis] = useState(null);
   const [countdown, setCountdown] = useState(null);
   
+  // UI state
+  const [activeTab, setActiveTab] = useState('templates'); // 'templates' or 'custom'
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  
   const resultsRef = useRef(null);
   const countdownRef = useRef(null);
 
   // Check if configured
   const isConfigured = aiService.isConfigured();
+  
+  // Handle template selection
+  const handleSelectTemplate = useCallback((template) => {
+    setSelectedTemplate(template);
+    setPrompt(template.prompt);
+    setModality('game');
+    setActiveTab('custom'); // Switch to custom tab to show the prompt
+  }, []);
 
   // Warn before closing if there are unsaved results
   useEffect(() => {
@@ -324,27 +339,19 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       });
 
       const writeResults = await orchestrator.writeAssetsToZip(results.assets, writeFile);
-      
-      console.log('[AI Generator] Save results:', {
-        success: writeResults.success.length,
-        failed: writeResults.failed.length,
-      });
 
       // Always refresh folder to show saved files
       if (refreshFolder) {
-        console.log('[AI Generator] Refreshing folder...');
         refreshFolder();
       }
 
       if (writeResults.failed.length > 0) {
         setError(`Failed to save ${writeResults.failed.length} file(s). ${writeResults.success.length} file(s) saved successfully.`);
-        console.error('[AI Generator] Failed to save:', writeResults.failed);
       } else {
         setStatus({ phase: 'saved', message: `Saved ${writeResults.success.length} file(s)` });
       }
 
     } catch (err) {
-      console.error('[AI Generator] Save error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -360,6 +367,16 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
         <span className="ai-header-hint">Configure API key in Options</span>
       </header>
 
+      {/* Tab Navigation */}
+      <Nav appearance="subtle" activeKey={activeTab} onSelect={setActiveTab} className="ai-generator-tabs">
+        <Nav.Item eventKey="templates" icon={<span>🎮</span>}>
+          Templates
+        </Nav.Item>
+        <Nav.Item eventKey="custom" icon={<span>✨</span>}>
+          Custom Prompt
+        </Nav.Item>
+      </Nav>
+
       {/* Main Content */}
       <div className="ai-generator-content">
         {/* API Key Warning */}
@@ -369,52 +386,79 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
           </Message>
         )}
 
-        {/* Prompt Section */}
-        <section className="ai-prompt-section">
-          <label>
-            {modality === 'game' 
-              ? 'Describe the game you want to create:' 
-              : 'Describe what you want to create:'}
-          </label>
-          <Input
-            as="textarea"
-            rows={modality === 'game' ? 5 : 3}
-            value={prompt}
-            onChange={setPrompt}
-            placeholder={modality === 'game' 
-              ? "e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues..."
-              : "e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."}
-            disabled={loading}
+        {/* Template Selector Tab */}
+        {activeTab === 'templates' && (
+          <TemplateSelector
+            onSelectTemplate={handleSelectTemplate}
+            selectedTemplate={selectedTemplate}
           />
-          
-          <div className="ai-prompt-controls">
-            <SelectPicker
-              data={MODALITIES}
-              value={modality}
-              onChange={setModality}
-              cleanable={false}
-              disabled={loading}
-              searchable={false}
-              style={{ width: 180 }}
-              size="sm"
-            />
-            <Button
-              appearance="primary"
-              onClick={handleGenerate}
-              disabled={loading || !prompt.trim()}
-              loading={loading}
-            >
-              {modality === 'game' ? '🎮 Generate Game' : 'Generate'}
-            </Button>
-          </div>
-          
-          {modality === 'game' && !loading && (
-            <div className="ai-game-hint">
-              <strong>Full Game Generation</strong> will create: player character, NPCs, enemies, 
-              cutscenes, scripts, zones, and manifest.json - a complete playable package!
-            </div>
-          )}
-        </section>
+        )}
+
+        {/* Custom Prompt Tab */}
+        {activeTab === 'custom' && (
+          <>
+            {/* Selected Template Banner */}
+            {selectedTemplate && (
+              <div className="ai-template-banner">
+                <span>📋 Using template: <strong>{selectedTemplate.name}</strong></span>
+                <Button 
+                  size="xs" 
+                  appearance="ghost" 
+                  onClick={() => setSelectedTemplate(null)}
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+
+            {/* Prompt Section */}
+            <section className="ai-prompt-section">
+              <label>
+                {modality === 'game' 
+                  ? 'Describe the game you want to create:' 
+                  : 'Describe what you want to create:'}
+              </label>
+              <Input
+                as="textarea"
+                rows={modality === 'game' ? 5 : 3}
+                value={prompt}
+                onChange={setPrompt}
+                placeholder={modality === 'game' 
+                  ? "e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues..."
+                  : "e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."}
+                disabled={loading}
+              />
+              
+              <div className="ai-prompt-controls">
+                <SelectPicker
+                  data={MODALITIES}
+                  value={modality}
+                  onChange={setModality}
+                  cleanable={false}
+                  disabled={loading}
+                  searchable={false}
+                  style={{ width: 180 }}
+                  size="sm"
+                />
+                <Button
+                  appearance="primary"
+                  onClick={handleGenerate}
+                  disabled={loading || !prompt.trim()}
+                  loading={loading}
+                >
+                  {modality === 'game' ? '🎮 Generate Game' : 'Generate'}
+                </Button>
+              </div>
+              
+              {modality === 'game' && !loading && (
+                <div className="ai-game-hint">
+                  <strong>Full Game Generation</strong> will create: player character, NPCs, enemies, 
+                  cutscenes, scripts, zones, and manifest.json - a complete playable package!
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
         {/* Analysis Preview */}
         {analysis && !loading && !results && (

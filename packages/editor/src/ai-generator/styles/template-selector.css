@@ -1,0 +1,178 @@
+/**
+ * Template Selector - Professional Theme
+ */
+
+.template-selector {
+  padding: 16px;
+}
+
+.template-selector-header {
+  margin-bottom: 16px;
+}
+
+.template-selector-header h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.template-selector-header p {
+  margin: 0;
+  color: var(--text-secondary, #a0a0b0);
+  font-size: 13px;
+}
+
+.template-search {
+  margin-bottom: 16px;
+}
+
+.template-search input {
+  background: var(--bg-elevated, #151520) !important;
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.12)) !important;
+  color: var(--text-primary, #f0f0f5) !important;
+}
+
+.template-search input:focus {
+  border-color: var(--brand-primary, #4ecdc4) !important;
+}
+
+.template-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.template-card {
+  background: var(--bg-elevated, #151520);
+  border: 2px solid var(--border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.template-card:hover {
+  border-color: var(--brand-primary, #4ecdc4);
+  transform: translateY(-2px);
+}
+
+.template-card-selected {
+  border-color: var(--brand-primary, #4ecdc4);
+  background: rgba(78, 205, 196, 0.08);
+}
+
+.template-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.template-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.template-card-description {
+  color: var(--text-secondary, #a0a0b0);
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.template-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.template-meta-item {
+  color: var(--text-tertiary, #606070);
+}
+
+.template-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.template-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 32px;
+  color: var(--text-tertiary, #606070);
+}
+
+.template-preview {
+  margin-top: 16px;
+  background: var(--bg-elevated, #151520);
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.template-preview h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.template-preview-prompt {
+  margin: 16px 0;
+}
+
+.template-preview-prompt pre {
+  background: var(--bg-base, #0a0a12);
+  padding: 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary, #a0a0b0);
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.template-preview-assets {
+  margin-top: 16px;
+}
+
+.template-preview-assets ul {
+  font-size: 12px;
+  color: var(--text-secondary, #a0a0b0);
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.template-preview-assets li {
+  margin-bottom: 4px;
+}
+
+/* First-time user highlight */
+.template-card[data-recommended="true"] {
+  position: relative;
+}
+
+.template-card[data-recommended="true"]::before {
+  content: "Recommended for beginners";
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: var(--status-success, #22c55e);
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 4px;
+}

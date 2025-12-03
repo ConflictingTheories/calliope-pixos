@@ -1,0 +1,152 @@
+/**
+ * Onboarding - Professional Theme
+ */
+
+.onboarding-modal .rs-modal-content {
+  background: var(--bg-surface, #0f0f1a);
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.12));
+}
+
+.onboarding-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.onboarding-content {
+  padding: 16px 0;
+}
+
+.onboarding-steps {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.onboarding-step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border-default, rgba(255, 255, 255, 0.15));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.onboarding-step-dot:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.onboarding-step-dot.active {
+  background: var(--brand-primary, #4ecdc4);
+  transform: scale(1.2);
+}
+
+.onboarding-step-dot.completed {
+  background: rgba(78, 205, 196, 0.5);
+}
+
+.onboarding-step-content {
+  color: var(--text-secondary, #a0a0b0);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.onboarding-step-content p {
+  margin-bottom: 14px;
+}
+
+.onboarding-step-content ol,
+.onboarding-step-content ul {
+  margin: 14px 0;
+  padding-left: 24px;
+}
+
+.onboarding-step-content li {
+  margin-bottom: 8px;
+}
+
+.onboarding-step-content strong {
+  color: var(--brand-primary, #4ecdc4);
+}
+
+.onboarding-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.onboarding-features .feature {
+  background: var(--bg-elevated, #151520);
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 500;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.onboarding-step-content .prompt-example {
+  background: var(--bg-base, #0a0a12);
+  border-left: 3px solid var(--brand-primary, #4ecdc4);
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.onboarding-step-content .tip {
+  background: var(--status-warning-bg, rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.onboarding-step-content .highlight {
+  background: rgba(78, 205, 196, 0.1);
+  border: 1px solid rgba(78, 205, 196, 0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 500;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.onboarding-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.onboarding-nav {
+  display: flex;
+  gap: 12px;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+  margin-bottom: 16px;
+}
+
+/* Quick Tips */
+.quick-tip {
+  background: var(--bg-elevated, #151520);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--brand-primary, #4ecdc4);
+  margin-bottom: 14px;
+}
+
+/* Subtle animation for tips */
+@keyframes tipPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.quick-tip {
+  animation: tipPulse 4s ease-in-out infinite;
+}

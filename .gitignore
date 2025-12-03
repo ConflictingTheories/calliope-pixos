@@ -5,3 +5,5 @@
 .DS_Store
 
 **/cpp/CMakeFiles/
+**/*.zip
+**/*.pxz

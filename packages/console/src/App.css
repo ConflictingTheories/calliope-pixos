@@ -6,66 +6,54 @@
   min-height: 100vh;
   padding: 20px;
   position: relative;
+  background: #0a0a12;
 }
 
-/* Console Frame Container */
+/* Console Frame Container - Clean, professional */
 .console-frame {
   position: relative;
-  background: linear-gradient(145deg, #1a1a24, #0d0d14);
+  background: #12121a;
   border-radius: 12px;
-  padding: 30px;
-  box-shadow: 
-    0 0 40px rgba(0, 0, 0, 0.8),
-    inset 0 0 20px rgba(0, 0, 0, 0.5),
-    0 8px 16px rgba(0, 0, 0, 0.9);
-  border: 2px solid #2a2a3e;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Console Bezel Effect */
+/* Subtle shine on top edge */
 .console-frame::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.05) 0%, 
-    transparent 50%, 
-    rgba(0, 0, 0, 0.3) 100%);
-  border-radius: 12px;
-  pointer-events: none;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 12px 12px 0 0;
 }
 
-/* Screen Container with CRT Effect */
+/* Screen Container - Clean */
 .screen-container {
   position: relative;
   background: #000;
   border-radius: 4px;
-  overflow: hidden; /* Changed from visible to prevent layout issues */
-  box-shadow: 
-    inset 0 0 30px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(50, 150, 250, 0.3);
-  /* Create isolated stacking context for children */
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
   isolation: isolate;
-  /* Ensure container properly sizes to content */
   display: flex;
   align-items: stretch;
   justify-content: center;
 }
 
 /* Ensure game canvas elements can receive pointer events */
-.screen-container > * {
+.screen-container>* {
   pointer-events: auto;
-  /* Place game content above CRT effects within this stacking context */
   position: relative;
   z-index: 10;
-  /* Ensure full width/height */
   width: 100%;
   height: 100%;
 }
 
-/* CRT Scanlines - decorative overlay */
+/* Optional subtle scanlines - less aggressive */
 .screen-container::before {
   content: '';
   position: absolute;
@@ -73,68 +61,53 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0px,
-    transparent 1px,
-    transparent 2px,
-    rgba(0, 0, 0, 0.15) 3px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
   pointer-events: none;
-  z-index: 20; /* Above game content but still non-interactive */
-  animation: flicker 0.15s infinite;
+  z-index: 20;
 }
 
-/* CRT Glow - decorative overlay */
+/* Remove the aggressive glow */
 .screen-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(50, 150, 250, 0.1) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 21; /* Above scanlines */
+  display: none;
 }
 
-/* Console Header */
+/* Console Header - Clean, minimal */
 .console-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding: 10px 15px;
-  background: linear-gradient(90deg, #1a1a2e, #16213e);
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 6px;
-  border: 1px solid #2a2a3e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .console-title {
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
-/* Multi-color PixosSpritz branding */
-.title-pixos, .logo-pixos {
-  color: #00ff88;
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+/* Clean brand colors */
+.title-pixos,
+.logo-pixos {
+  color: #4ecdc4;
 }
 
-.title-spritz, .logo-spritz {
-  color: #00ccff;
-  text-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+.title-spritz,
+.logo-spritz {
+  color: #5ed9d0;
 }
 
 .title-version {
-  color: #ff0055;
-  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+  color: #a0a0b0;
   font-size: 10px;
+  font-weight: 400;
 }
 
 .loading-logo {
@@ -150,45 +123,42 @@
 }
 
 .status-indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #ff0055;
-  box-shadow: 0 0 10px rgba(255, 0, 85, 0.8);
-  animation: pulse 2s infinite;
+  background: #ef4444;
 }
 
 .status-indicator.active {
-  background: #00ff88;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+  background: #22c55e;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.6; }
 }
 
 .status-text {
-  font-size: 8px;
-  color: #666;
+  font-size: 10px;
+  color: #a0a0b0;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-/* Loading Screen */
+/* Loading Screen - Clean */
 .loading-screen {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0a0a0f;
+  background: #0a0a12;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  animation: fadeIn 0.5s;
+  animation: fadeIn 0.3s;
 }
 
 @keyframes fadeIn {
@@ -197,7 +167,7 @@
 }
 
 .loading-screen.fade-out {
-  animation: fadeOut 0.5s forwards;
+  animation: fadeOut 0.3s forwards;
 }
 
 @keyframes fadeOut {
@@ -212,41 +182,40 @@
 }
 
 .loading-bar {
-  width: 300px;
+  width: 280px;
   height: 4px;
-  background: #1a1a2e;
+  background: #151520;
   border-radius: 2px;
   overflow: hidden;
-  border: 1px solid #2a2a3e;
 }
 
 .loading-progress {
   height: 100%;
-  background: linear-gradient(90deg, #00ff88, #00ccff);
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-  animation: loading 2s ease-in-out infinite;
+  background: #4ecdc4;
+  border-radius: 2px;
+  animation: loading 1.5s ease-in-out infinite;
 }
 
 @keyframes loading {
   0% { width: 0%; }
-  50% { width: 50%; }
+  50% { width: 70%; }
   100% { width: 100%; }
 }
 
 .loading-text {
-  margin-top: 20px;
-  font-size: 10px;
-  color: #666;
-  letter-spacing: 2px;
+  margin-top: 16px;
+  font-size: 11px;
+  color: #606070;
+  letter-spacing: 1px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .console-frame {
-    padding: 15px;
+    padding: 16px;
   }
-  
+
   .console-title {
-    font-size: 10px;
+    font-size: 11px;
   }
 }

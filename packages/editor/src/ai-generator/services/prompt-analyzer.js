@@ -126,23 +126,23 @@ function isGameGenerationRequest(lowerPrompt) {
       return true;
     }
   }
-  
+
   // Heuristic: If prompt mentions 3+ different character types, it's likely a game
   const characterTypes = ['player', 'npc', 'enemy', 'boss', 'merchant', 'shopkeeper', 'mentor', 'villain', 'hero'];
   const mentionedTypes = characterTypes.filter(type => lowerPrompt.includes(type));
   if (mentionedTypes.length >= 3) {
     return true;
   }
-  
+
   // Heuristic: If prompt mentions locations + characters + story elements
   const hasLocations = /\b(dungeon|town|forest|castle|cave|temple|village|world)\b/.test(lowerPrompt);
   const hasCharacters = /\b(character|npc|enemy|player|hero|protagonist)\b/.test(lowerPrompt);
   const hasStory = /\b(quest|mission|story|adventure|journey|cutscene|dialogue)\b/.test(lowerPrompt);
-  
+
   if (hasLocations && hasCharacters && hasStory) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -153,7 +153,7 @@ function isGameGenerationRequest(lowerPrompt) {
  */
 export function analyzePrompt(prompt) {
   const lowerPrompt = prompt.toLowerCase();
-  
+
   const result = {
     originalPrompt: prompt,
     detectedAssets: [],
@@ -179,7 +179,7 @@ export function analyzePrompt(prompt) {
 
   // Detect primary asset types
   const detectedTypes = new Set();
-  
+
   for (const [type, keywords] of Object.entries(ASSET_KEYWORDS)) {
     for (const keyword of keywords) {
       if (lowerPrompt.includes(keyword)) {
@@ -202,8 +202,8 @@ export function analyzePrompt(prompt) {
   }
 
   // Analyze for text/dialogue requirements
-  if (detectedTypes.has(ASSET_TYPES.DIALOGUE) || detectedTypes.has(ASSET_TYPES.SCRIPT) || 
-      detectedTypes.has(ASSET_TYPES.CUTSCENE) || detectedTypes.has(ASSET_TYPES.CONFIG)) {
+  if (detectedTypes.has(ASSET_TYPES.DIALOGUE) || detectedTypes.has(ASSET_TYPES.SCRIPT) ||
+    detectedTypes.has(ASSET_TYPES.CUTSCENE) || detectedTypes.has(ASSET_TYPES.CONFIG)) {
     result.textConfig = analyzeTextRequirements(lowerPrompt, detectedTypes);
   }
 
@@ -221,8 +221,8 @@ export function analyzePrompt(prompt) {
  */
 function hasSpriteLikeAsset(types) {
   return types.has(ASSET_TYPES.SPRITE) || types.has(ASSET_TYPES.CHARACTER) ||
-         types.has(ASSET_TYPES.NPC) || types.has(ASSET_TYPES.MONSTER) ||
-         types.has(ASSET_TYPES.ITEM) || types.has(ASSET_TYPES.EFFECT);
+    types.has(ASSET_TYPES.NPC) || types.has(ASSET_TYPES.MONSTER) ||
+    types.has(ASSET_TYPES.ITEM) || types.has(ASSET_TYPES.EFFECT);
 }
 
 /**
@@ -324,7 +324,7 @@ function extractActions(prompt) {
     'idle', 'walk', 'run', 'attack', 'hit', 'die', 'jump', 'fall',
     'cast', 'block', 'dodge', 'climb', 'swim', 'fly', 'crouch', 'talk',
   ];
-  
+
   const found = actionKeywords.filter(action => prompt.includes(action));
   return found.length > 0 ? found : ['idle', 'walk'];
 }
