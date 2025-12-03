@@ -6,43 +6,25 @@
  *
  * Handles generation of text content including scripts (.pxs),
  * cutscenes/dialogues (.pxc), and configuration files (.json).
+ * Uses comprehensive DSL specifications for guaranteed valid output.
  */
 
 import aiService from './ai-service.js';
 import { SPRITE_CONFIG_SCHEMA, NPC_STATES_SCHEMA } from './schemas.js';
+import { 
+  getSystemPrompt, 
+  SPRITESHEET_LAYOUTS, 
+  calculateFrameCoordinates,
+  generateSpriteConfigFromLayout,
+} from './dsl-specifications.js';
+import {
+  validateSpriteConfig,
+  validateCutscene,
+  validateScript,
+} from './asset-validation.js';
 
 /**
- * System prompts for different content types
- */
-const SYSTEM_PROMPTS = {
-  sprite: `You are an expert game asset designer. Generate JSON configurations for game sprites following the exact schema provided. Include proper frame coordinates, directions, and animation states. Use pixel-perfect coordinates.`,
-  
-  cutscene: `You are a game narrative designer. Generate cutscene scripts in the Pixospritz cutscene format (.pxc). Use the format:
-@backdrop [image] - Set background
-@char [NAME] sprite=[spritePath] - Define character
-@action [NAME] [action] - Character actions
-[NAME]: [expression=X] Dialogue text - Character dialogue
-*[NAME]: [cutin=size=large] Dialogue - Emphasized dialogue with character cut-in
-waitInput - Wait for player input
-@transition [type] [duration=X] - Scene transitions
-@end - End the cutscene`,
-
-  script: `You are a game programmer. Generate Pixospritz script files (.pxs) for game callbacks and behaviors. The script format is Lua-like with these special functions:
-- print(text) - Log output
-- sprite:say(text) - Make sprite speak
-- sprite:move(dir, steps) - Move sprite
-- sprite:face(dir) - Face direction
-- sprite:wait(ms) - Wait milliseconds
-- world:playSound(name) - Play sound effect
-- world:trigger(event) - Trigger event`,
-
-  config: `You are a game configuration expert. Generate clean, valid JSON configuration files for game assets. Follow the schema exactly and use sensible default values.`,
-  
-  dialogue: `You are a game writer. Create engaging dialogue for game characters. Keep responses concise but meaningful. Consider character personality and context.`,
-};
-
-/**
- * Generate a sprite configuration JSON
+ * Generate a sprite configuration JSON with GUARANTEED valid frame coordinates
  * @param {string} description - Sprite description
  * @param {object} spriteConfig - Sprite parameters from analyzer
  * @returns {Promise<object>} Sprite configuration object
@@ -50,33 +32,99 @@ waitInput - Wait for player input
 export async function generateSpriteConfig(description, spriteConfig) {
   const { tileSize, sheetSize, directions, framesPerDirection, preset } = spriteConfig;
   
-  const prompt = `Generate a sprite JSON configuration for: ${description}
+  // Determine layout based on preset and directions
+  let layoutName = 'character4';
+  if (directions >= 8) {
+    layoutName = 'character8';
+  } else if (preset === 'npc') {
+    layoutName = 'npc';
+  } else if (preset === 'monster') {
+    layoutName = 'monster';
+  } else if (preset === 'item') {
+    layoutName = 'item';
+  } else if (preset === 'effect') {
+    layoutName = 'effect';
+  }
+  
+  // Generate base config with CORRECT frame coordinates
+  const layout = SPRITESHEET_LAYOUTS[layoutName];
+  const correctFrames = calculateFrameCoordinates(layout);
+  
+  // Build the config with guaranteed correct values
+  const baseConfig = {
+    type: 'sprite',
+    src: 'sprite.png', // Will be replaced later
+    sheetSize: layout.sheetSize,
+    tileSize: layout.tileSize,
+    frames: correctFrames,
+    drawOffset: {},
+    hotspotOffset: [0.5, 0.5, 0],
+    state: 'intro',
+    enableSpeech: true,
+    bindCamera: preset === 'character',
+    frameTime: 150,
+  };
+  
+  // Add draw offsets for each direction
+  for (const dir of layout.directions) {
+    baseConfig.drawOffset[dir] = [-0.15, -0.15, -1];
+  }
+  
+  // Try to get AI-enhanced metadata (name, description, states, etc.)
+  try {
+    const systemPrompt = getSystemPrompt('sprite-config');
+    
+    const prompt = `Generate sprite metadata for: ${description}
 
-Requirements:
-- Type: ${preset || 'character'} sprite
-- Tile size: ${tileSize[0]}x${tileSize[1]} pixels
-- Sheet size: ${sheetSize[0]}x${sheetSize[1]} pixels
-- Directions: ${directions} (${directions === 8 ? 'N, NE, E, SE, S, SW, W, NW' : 'N, E, S, W'})
-- Frames per direction: ${framesPerDirection}
-- Include portrait: ${spriteConfig.needsPortrait || spriteConfig.includePortrait}
-- Generate realistic frame coordinates based on tile size and direction layout
+The frame coordinates are already calculated correctly. 
+Only provide these optional properties as JSON:
+{
+  "displayName": "Human readable name",
+  "description": "Brief description",
+  "states": [
+    {
+      "name": "intro",
+      "next": "idle", 
+      "actions": [{"type": "dialogue", "dialogue": "...", "callback": "..."}]
+    },
+    {
+      "name": "idle",
+      "next": "idle",
+      "actions": []
+    }
+  ]
+}
 
-The spritesheet layout should be:
-- Each row is a direction
-- Each column is an animation frame
-- Coordinates are [x, y] from top-left of sheet`;
+Keep the dialogue SHORT (1-2 sentences) and character-appropriate.
+Return ONLY valid JSON.`;
 
-  const config = await aiService.chatCompletion(
-    prompt,
-    SYSTEM_PROMPTS.sprite,
-    SPRITE_CONFIG_SCHEMA
-  );
-
-  return config;
+    const aiMetadata = await aiService.chatCompletion(
+      prompt,
+      systemPrompt,
+      null,
+      { temperature: 0.5 }
+    );
+    
+    // Merge AI suggestions, keeping our correct frame data
+    if (aiMetadata && typeof aiMetadata === 'object') {
+      if (aiMetadata.displayName) baseConfig.displayName = aiMetadata.displayName;
+      if (aiMetadata.description) baseConfig.description = aiMetadata.description;
+      if (aiMetadata.states && Array.isArray(aiMetadata.states)) {
+        baseConfig.states = aiMetadata.states;
+      }
+    }
+  } catch (error) {
+    console.warn('AI metadata generation failed, using defaults:', error.message);
+  }
+  
+  // Validate and fix any remaining issues
+  const validated = validateSpriteConfig(baseConfig, layoutName);
+  
+  return validated.config;
 }
 
 /**
- * Generate a cutscene script
+ * Generate a cutscene script with PROPER format
  * @param {string} description - Scene description
  * @param {object} options - Generation options
  * @returns {Promise<string>} Cutscene script content
@@ -86,86 +134,187 @@ export async function generateCutscene(description, options = {}) {
   const mood = options.mood || 'neutral';
   const length = options.length || 'medium';
 
-  const charList = characters.length > 0 
-    ? `Characters involved: ${characters.join(', ')}`
-    : 'Create appropriate characters for the scene';
-
   const lengthGuide = {
-    short: '3-5 dialogue exchanges',
-    medium: '6-10 dialogue exchanges',
-    long: '10-15 dialogue exchanges',
+    short: '3-5 dialogue exchanges, ~30 seconds',
+    medium: '6-10 dialogue exchanges, ~1 minute',
+    long: '10-15 dialogue exchanges, ~2 minutes',
   };
 
-  const prompt = `Create a cutscene script for: ${description}
+  const charList = characters.length > 0 
+    ? `Use these characters: ${characters.map(c => c.toUpperCase()).join(', ')}`
+    : 'Create 2-3 appropriate characters (use UPPERCASE names like HERO, MERCHANT, GUARD)';
+
+  const systemPrompt = getSystemPrompt('cutscene', { mood, characters });
+  
+  const prompt = `Create a ${mood} cutscene for: ${description}
 
 ${charList}
-Mood/tone: ${mood}
 Length: ${lengthGuide[length] || lengthGuide.medium}
 
-Include:
-- A backdrop setting
-- Character definitions with sprites
-- Natural dialogue with expressions
-- At least one character action or movement
-- Appropriate transitions
-- End marker
+Requirements:
+1. Start with @backdrop and @char definitions
+2. Include @do playBgm for atmosphere
+3. Use varied expressions (smile, worried, shocked, angry, neutral)
+4. Alternate character positions (left, right)
+5. Add wait commands (500-1500ms) for pacing
+6. Use ONE *cutin moment for drama
+7. End with waitInput and @end
 
-Make the dialogue feel natural and engaging.`;
+Write engaging, natural dialogue that fits the scene.`;
 
-  const result = await aiService.chatCompletion(
+  let result = await aiService.chatCompletion(
     prompt,
-    SYSTEM_PROMPTS.cutscene,
+    systemPrompt,
     null, // Don't use structured output for cutscenes
-    { temperature: 0.8 }
+    { temperature: 0.75 }
   );
-
-  return result;
+  
+  // Clean up result
+  if (typeof result === 'string') {
+    // Remove markdown code blocks if present
+    result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
+  }
+  
+  // Validate and fix
+  const validated = validateCutscene(result);
+  
+  if (validated.warnings.length > 0) {
+    console.warn('Cutscene warnings:', validated.warnings);
+  }
+  
+  return validated.content;
 }
 
 /**
- * Generate a behavior script
+ * Generate a PixosScript behavior script
  * @param {string} description - Script description/purpose
- * @param {string} triggerType - Type of trigger (callback, trigger, etc.)
+ * @param {string} triggerType - Type of trigger (callback, trigger, zone, event)
  * @param {object} options - Generation options
  * @returns {Promise<string>} Script content
  */
 export async function generateScript(description, triggerType = 'callback', options = {}) {
   const context = options.context || '';
-  const sprite = options.spriteName || 'sprite';
+  const spriteName = options.spriteName || 'sprite';
 
-  const triggerExamples = {
-    callback: `-- Callback script for ${sprite}
--- Triggered when ${description}`,
-    trigger: `-- Trigger script
--- Activates when player enters trigger zone`,
-    interaction: `-- Interaction script for ${sprite}
--- Triggered when player interacts with this object`,
-    quest: `-- Quest callback
--- Handles quest state updates`,
+  const scriptTemplates = {
+    callback: `-- Callback: ${description}
+-- Called when sprite action is triggered
+
+local _this = pixos.get_caller()
+local player = pixos.get_subject()
+
+pixos.log(pixos.as_obj({ msg = '${description}', caller = _this }))
+
+-- TODO: Add your callback logic here
+
+pixos.callback_finish(1)`,
+
+    npc: `-- NPC Interaction: ${description}
+local npc = pixos.get_caller()
+local player = pixos.get_subject()
+
+-- Check quest state
+if pixos.has_flag('quest_${spriteName}_complete') then
+    pixos.sync({ pixos.sprite_dialogue(npc, 'Thank you for your help!') })
+    return nil
+end
+
+if pixos.has_flag('quest_${spriteName}_active') then
+    pixos.sync({ pixos.sprite_dialogue(npc, 'Have you completed the task?') })
+    return nil
+end
+
+-- First interaction
+pixos.sync({ pixos.sprite_dialogue(npc, 'Greetings, traveler! I need your assistance.') })
+pixos.set_flag('quest_${spriteName}_active', true)
+
+return nil`,
+
+    zone: `-- Zone Load Trigger: ${description}
+local zone = pixos.get_caller()
+
+pixos.log(pixos.as_obj({ msg = 'zone loaded', zone = zone }))
+
+-- Set atmosphere
+pixos.set_mode('explore')
+
+-- Optional: Play intro cutscene once
+if not pixos.has_flag('zone_${spriteName}_visited') then
+    pixos.set_flag('zone_${spriteName}_visited', true)
+    -- pixos.sync({ pixos.play_pxc_cutscene('cutscenes/zone-intro.pxc') })
+end
+
+return nil`,
+
+    portal: `-- Portal Trigger: ${description}
+local portal = pixos.get_caller()
+local player = pixos.get_subject()
+
+local targetZone = pixos.from(portal, 'zones')
+local zipPath = pixos.from(portal, 'zip')
+
+pixos.log(pixos.as_obj({ msg = 'entering portal', target = targetZone }))
+
+pixos.remove_all_zones()
+
+local steps = {}
+table.insert(steps, { type = 'transition', effect = 'fade', direction = 'out', duration = 500 })
+table.insert(steps, { type = 'load_zone', zone = targetZone, zip = zipPath })
+table.insert(steps, { type = 'transition', effect = 'fade', direction = 'in', duration = 500 })
+
+pixos.sync({ pixos.run_cutscene(steps) })
+
+return nil`,
+
+    event: `-- Event Trigger: ${description}
+local _this = pixos.get_caller()
+local subject = pixos.get_subject()
+
+pixos.log(pixos.as_obj({ msg = 'event triggered', event = '${description}' }))
+
+-- Check prerequisites
+-- if not pixos.has_flag('prerequisite') then return nil end
+
+-- Trigger action
+
+return nil`,
   };
 
-  const prompt = `Generate a game script for: ${description}
+  // Get template or let AI generate
+  const template = scriptTemplates[triggerType] || scriptTemplates.callback;
+  
+  const systemPrompt = getSystemPrompt('script', { type: triggerType });
+  
+  const prompt = `Generate a PixosScript for: ${description}
 
 Script type: ${triggerType}
 ${context ? `Context: ${context}` : ''}
-Sprite/Object name: ${sprite}
+Base template:
+\`\`\`lua
+${template}
+\`\`\`
 
-${triggerExamples[triggerType] || triggerExamples.callback}
+Modify the template to implement the described behavior.
+Keep the core structure but add specific logic for: ${description}
 
-The script should:
-- Be concise and functional
-- Use proper Pixospritz script syntax
-- Include comments explaining the logic
-- Handle edge cases appropriately`;
+Return ONLY the Lua script, no explanations.`;
 
-  const result = await aiService.chatCompletion(
+  let result = await aiService.chatCompletion(
     prompt,
-    SYSTEM_PROMPTS.script,
+    systemPrompt,
     null,
-    { temperature: 0.5 }
+    { temperature: 0.4 }
   );
-
-  return result;
+  
+  // Clean up result
+  if (typeof result === 'string') {
+    result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
+  }
+  
+  // Validate
+  const validated = validateScript(result);
+  
+  return validated.content;
 }
 
 /**
@@ -179,25 +328,70 @@ export async function generateNPCStates(description, options = {}) {
   const personality = options.personality || 'friendly';
   const interactions = options.interactions || ['talk'];
 
-  const prompt = `Generate NPC state machine configuration for: ${description}
+  const systemPrompt = getSystemPrompt('sprite-config');
+  
+  const prompt = `Generate NPC state machine for: ${description}
 
 Role: ${role}
 Personality: ${personality}
 Interactions: ${interactions.join(', ')}
 
-Create states for:
-- An intro state (first meeting)
-- A loop/idle state (repeated interactions)
-- Any relevant quest or shop states based on the role
-- Include appropriate dialogue and actions for each state`;
+Return ONLY valid JSON with this exact structure:
+{
+  "states": [
+    {
+      "name": "intro",
+      "next": "idle",
+      "actions": [
+        {
+          "type": "dialogue",
+          "dialogue": "Short greeting appropriate for ${role}",
+          "callback": "npc_greet"
+        }
+      ]
+    },
+    {
+      "name": "idle",
+      "next": "idle",
+      "actions": []
+    }
+  ]
+}
 
-  const states = await aiService.chatCompletion(
-    prompt,
-    SYSTEM_PROMPTS.config,
-    NPC_STATES_SCHEMA
-  );
+Keep dialogue SHORT (1-2 sentences). Match the ${personality} personality.`;
 
-  return states;
+  try {
+    const states = await aiService.chatCompletion(
+      prompt,
+      systemPrompt,
+      NPC_STATES_SCHEMA,
+      { temperature: 0.5 }
+    );
+    
+    return states;
+  } catch (error) {
+    // Return default states on failure
+    return {
+      states: [
+        {
+          name: 'intro',
+          next: 'idle',
+          actions: [
+            {
+              type: 'dialogue',
+              dialogue: 'Hello there.',
+              callback: 'npc_default',
+            },
+          ],
+        },
+        {
+          name: 'idle',
+          next: 'idle',
+          actions: [],
+        },
+      ],
+    };
+  }
 }
 
 /**
@@ -208,19 +402,21 @@ Create states for:
  * @returns {Promise<string[]>} Array of dialogue lines
  */
 export async function generateDialogueLines(characterDescription, situation, count = 5) {
-  const prompt = `Generate ${count} dialogue lines for this character: ${characterDescription}
+  const prompt = `Generate ${count} dialogue lines for: ${characterDescription}
 
 Situation: ${situation}
 
 Requirements:
-- Each line should be unique
-- Lines should feel natural and in-character
-- Mix of short and medium length
-- Appropriate for an RPG game context`;
+- Each line 1-2 sentences MAX
+- Natural and in-character
+- Appropriate for RPG game
+- No modern slang
+
+Return as JSON array: ["line1", "line2", ...]`;
 
   const result = await aiService.chatCompletion(
     prompt,
-    SYSTEM_PROMPTS.dialogue,
+    'You are a game writer. Write concise, engaging RPG dialogue. Return ONLY a JSON array.',
     {
       type: 'object',
       properties: {
@@ -239,74 +435,70 @@ Requirements:
 }
 
 /**
- * Generate a complete configuration file
- * @param {string} assetType - Type of asset (sprite, tileset, map, etc.)
- * @param {string} description - Asset description
- * @param {object} template - Base template to extend
- * @returns {Promise<object>} Configuration object
+ * Generate a map configuration
+ * @param {string} description - Map/zone description
+ * @param {object} options - Generation options
+ * @returns {Promise<object>} Map configuration
  */
-export async function generateConfig(assetType, description, template = {}) {
-  const templateStr = Object.keys(template).length > 0 
-    ? `Base template to extend:\n${JSON.stringify(template, null, 2)}`
-    : '';
+export async function generateMapConfig(description, options = {}) {
+  const width = options.width || 15;
+  const height = options.height || 15;
+  const tileset = options.tileset || 'common';
 
-  const prompt = `Generate a complete ${assetType} configuration for: ${description}
+  const systemPrompt = getSystemPrompt('map');
+  
+  const prompt = `Generate a zone map.json for: ${description}
 
-${templateStr}
+Dimensions: ${width}x${height}
+Tileset: ${tileset}
 
-Ensure all required fields are present and values are sensible for a game asset.`;
-
-  const result = await aiService.chatCompletion(
-    prompt,
-    SYSTEM_PROMPTS.config,
-    null,
-    { temperature: 0.3 }
-  );
-
-  // Try to parse if string
-  if (typeof result === 'string') {
-    try {
-      const jsonMatch = result.match(/```json\s*([\s\S]*?)\s*```/) || 
-                        result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[1] || jsonMatch[0]);
-      }
-    } catch {
-      // Return as-is if parsing fails
+Return ONLY valid JSON with this structure:
+{
+  "bounds": [0, 0, ${width}, ${height}],
+  "tileset": "${tileset}",
+  "mode": "explore",
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/hero",
+      "pos": [${Math.floor(width/2)}, ${Math.floor(height/2)}, 0],
+      "facing": "Down"
     }
-  }
-
-  return result;
+  ],
+  "lights": [],
+  "scripts": []
 }
 
-/**
- * Enhance/improve existing content
- * @param {string} content - Existing content
- * @param {string} contentType - Type of content (script, dialogue, config)
- * @param {string} instructions - Enhancement instructions
- * @returns {Promise<string>} Enhanced content
- */
-export async function enhanceContent(content, contentType, instructions) {
-  const prompt = `Improve this ${contentType}:
-
----
-${content}
----
-
-Instructions: ${instructions}
-
-Provide the enhanced version only, without explanations.`;
-
-  const systemPrompt = SYSTEM_PROMPTS[contentType] || SYSTEM_PROMPTS.config;
+Add appropriate NPCs, objects, and lights for: ${description}`;
 
   const result = await aiService.chatCompletion(
     prompt,
     systemPrompt,
     null,
-    { temperature: 0.6 }
+    { temperature: 0.4 }
   );
-
+  
   return result;
+}
+
+/**
+ * Generate manifest.json for a game package
+ * @param {object} assets - Object containing arrays of asset paths
+ * @returns {object} Manifest configuration
+ */
+export function generateManifest(assets) {
+  return {
+    initialZones: assets.maps?.slice(0, 1) || ['start'],
+    modes: assets.modes || ['explore'],
+    maps: assets.maps || [],
+    tilesets: assets.tilesets || ['common'],
+    sprites: assets.sprites || [],
+    objects: assets.objects || [],
+    textures: assets.textures || [],
+    fonts: [],
+    audio: assets.audio || [],
+    cutscenes: assets.cutscenes || [],
+  };
 }
 
 export default {
@@ -315,6 +507,6 @@ export default {
   generateScript,
   generateNPCStates,
   generateDialogueLines,
-  generateConfig,
-  enhanceContent,
+  generateMapConfig,
+  generateManifest,
 };

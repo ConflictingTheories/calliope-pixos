@@ -25,6 +25,7 @@ export {
   generateSpriteFrame,
   generateTileset,
   generateEffect,
+  generateBackdrop,
   base64ToBlob,
   resizeImage,
   extractRegion,
@@ -53,9 +54,42 @@ export {
   generateScript,
   generateNPCStates,
   generateDialogueLines,
-  generateConfig,
-  enhanceContent,
+  generateMapConfig,
+  generateManifest,
 } from './text-generator.js';
+
+// DSL Specifications
+export {
+  PIXOSCRIPT_SPEC,
+  PIXOCUT_SPEC,
+  SPRITE_CONFIG_SPEC,
+  MANIFEST_SPEC,
+  MAP_SPEC,
+  TILESET_SPEC,
+  PACKAGE_STRUCTURE,
+  getSystemPrompt,
+  SPRITESHEET_LAYOUTS,
+  calculateFrameCoordinates,
+  generateSpriteConfigFromLayout,
+} from './dsl-specifications.js';
+
+// Asset Validation
+export {
+  validateSpriteConfig,
+  validateCutscene,
+  validateScript,
+  validateManifest,
+  processPortraitImage,
+  processSpritesheetImage,
+  analyzeSpritesheet,
+} from './asset-validation.js';
+
+// Game Package Orchestrator (Full Game Generation)
+export {
+  GamePackageOrchestrator,
+  GameConcept,
+  createGamePackageOrchestrator,
+} from './game-package-orchestrator.js';
 
 // Asset orchestration
 export {

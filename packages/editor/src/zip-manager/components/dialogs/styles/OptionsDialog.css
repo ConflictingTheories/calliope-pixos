@@ -1,6 +1,6 @@
 .options-dialog form p {
-  padding-inline: var(--small-gap-inline-size);
-  padding-block-start: var(--large-gap-block-size);
+  padding-inline: 4px;
+  padding-block-start: 12px;
 }
 
 .options-dialog label {
@@ -8,51 +8,55 @@
   align-items: center;
   justify-content: space-between;
   min-block-size: 1.5em;
+  font-size: 12px;
+  gap: 10px;
 }
 
 .options-dialog label span {
   flex: 1;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .options-dialog input,
 .options-dialog select {
-  margin-inline-start: var(--gap-inline-size);
+  margin-inline-start: 8px;
 }
 
 .options-dialog input[disabled] {
-  color: var(--disabled-button-color);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .options-dialog input[type='checkbox'] {
-  inline-size: 2ch;
-  block-size: 1em;
-  accent-color: var(--accent-color);
-  margin-inline: calc(var(--outline-width));
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--color-secondary, #4ecdc4);
+  margin-inline: 1px;
 }
 
 .options-dialog input[type='password'],
 .options-dialog input[type='number'],
 .options-dialog input[type='text'],
 .options-dialog select {
-  inline-size: min(14ch, 100%);
+  inline-size: min(160px, 100%);
+  font-size: 12px;
 }
 
 /* AI Settings Section */
 .options-dialog .options-section-header {
   font-weight: 600;
-  font-size: 0.85em;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-primary, #ff6b9d);
-  margin-block-start: 1em;
-  margin-block-end: 0.5em;
-  padding-block-start: 0.75em;
-  border-block-start: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  color: var(--color-secondary, #4ecdc4);
+  margin-block-start: 12px;
+  margin-block-end: 8px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .options-dialog .options-help-text {
-  font-size: 0.75em;
-  color: var(--text-muted, rgba(255, 255, 255, 0.5));
-  margin-block-start: 0.5em;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-block-start: 8px;
   font-style: italic;
 }

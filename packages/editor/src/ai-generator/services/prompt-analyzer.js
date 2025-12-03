@@ -101,6 +101,52 @@ export const SPRITE_PRESETS = {
 };
 
 /**
+ * Keywords that indicate a full game generation request
+ */
+const GAME_KEYWORDS = [
+  'create a game', 'make a game', 'build a game', 'generate a game',
+  'rpg where', 'rpg game', 'adventure game', 'puzzle game', 'action game',
+  'game where', 'game with', 'full game', 'complete game', 'entire game',
+  'playable game', 'game package', 'game project',
+  // Complex multi-asset indicators
+  'multiple npcs', 'several npcs', 'different dungeons', 'various locations',
+  'intro cutscene', 'quest dialogues', 'boss fight', 'final boss',
+  'collect crystals', 'collect items', 'save the', 'defeat the',
+];
+
+/**
+ * Detect if prompt is asking for full game generation
+ * @param {string} lowerPrompt - Lowercase prompt
+ * @returns {boolean}
+ */
+function isGameGenerationRequest(lowerPrompt) {
+  // Check for explicit game keywords
+  for (const keyword of GAME_KEYWORDS) {
+    if (lowerPrompt.includes(keyword)) {
+      return true;
+    }
+  }
+  
+  // Heuristic: If prompt mentions 3+ different character types, it's likely a game
+  const characterTypes = ['player', 'npc', 'enemy', 'boss', 'merchant', 'shopkeeper', 'mentor', 'villain', 'hero'];
+  const mentionedTypes = characterTypes.filter(type => lowerPrompt.includes(type));
+  if (mentionedTypes.length >= 3) {
+    return true;
+  }
+  
+  // Heuristic: If prompt mentions locations + characters + story elements
+  const hasLocations = /\b(dungeon|town|forest|castle|cave|temple|village|world)\b/.test(lowerPrompt);
+  const hasCharacters = /\b(character|npc|enemy|player|hero|protagonist)\b/.test(lowerPrompt);
+  const hasStory = /\b(quest|mission|story|adventure|journey|cutscene|dialogue)\b/.test(lowerPrompt);
+  
+  if (hasLocations && hasCharacters && hasStory) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
  * Analyze a user prompt to extract generation requirements
  * @param {string} prompt - User's natural language prompt
  * @returns {object} Analysis result with detected assets and parameters
@@ -116,7 +162,20 @@ export function analyzePrompt(prompt) {
     textConfig: null,
     metadata: {},
     generationPlan: [],
+    isGameRequest: false, // NEW: Flag for full game generation
+    suggestedModality: 'auto', // NEW: Suggested modality based on analysis
   };
+
+  // FIRST: Check if this is a full game request
+  if (isGameGenerationRequest(lowerPrompt)) {
+    result.isGameRequest = true;
+    result.suggestedModality = 'game';
+    result.detectedAssets = ['Full Game Package'];
+    // For game requests, we don't need detailed sprite/audio analysis
+    // The game orchestrator handles everything
+    result.metadata = extractMetadata(prompt);
+    return result;
+  }
 
   // Detect primary asset types
   const detectedTypes = new Set();

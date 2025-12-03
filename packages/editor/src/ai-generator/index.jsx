@@ -22,6 +22,7 @@ import {
   aiService,
   analyzePrompt,
   createOrchestrator,
+  createGamePackageOrchestrator,
 } from './services/index.js';
 
 import './styles/ai-generator.css';
@@ -29,6 +30,7 @@ import './styles/ai-generator.css';
 // Modality options
 const MODALITIES = [
   { label: 'Auto-detect', value: 'auto' },
+  { label: '🎮 Full Game Package', value: 'game' },
   { label: 'Sprite Package', value: 'sprite' },
   { label: 'Portrait', value: 'portrait' },
   { label: 'Spritesheet', value: 'spritesheet' },
@@ -191,13 +193,42 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     setResults(null);
 
     try {
-      const orchestrator = createOrchestrator({
-        writeFile,
-        onProgress: (p) => setProgress(p),
-        onStatusChange: (s) => setStatus(s),
-      });
+      let generationResults;
+      
+      // Determine effective modality (auto-detect or user-selected)
+      let effectiveModality = modality;
+      
+      if (modality === 'auto') {
+        // Check if prompt analyzer detected a game request
+        const promptAnalysis = analyzePrompt(prompt);
+        if (promptAnalysis.isGameRequest) {
+          effectiveModality = 'game';
+          console.log('[AI Generator] Auto-detected full game request');
+        }
+      }
+      
+      // Use Game Package Orchestrator for full game generation
+      if (effectiveModality === 'game') {
+        setStatus({ phase: 'initializing', message: 'Starting full game generation...' });
+        
+        const gameOrchestrator = createGamePackageOrchestrator({
+          writeFile,
+          onProgress: (p) => setProgress(p),
+          onStatusChange: (s) => setStatus(s),
+        });
+        
+        generationResults = await gameOrchestrator.generateGamePackage(prompt);
+      } else {
+        // Use regular orchestrator for individual assets
+        const orchestrator = createOrchestrator({
+          writeFile,
+          onProgress: (p) => setProgress(p),
+          onStatusChange: (s) => setStatus(s),
+        });
 
-      const generationResults = await orchestrator.generateFromPrompt(prompt);
+        generationResults = await orchestrator.generateFromPrompt(prompt);
+      }
+      
       setResults(generationResults);
 
       if (generationResults.errors.length > 0) {
@@ -211,7 +242,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       setStatus(null);
       setProgress(null);
     }
-  }, [prompt, isConfigured, writeFile]);
+  }, [prompt, modality, isConfigured, writeFile]);
 
   // Handle retrying only failed assets (conserves tokens)
   const handleRetryFailed = useCallback(async () => {
@@ -276,8 +307,12 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
   // Handle saving all assets
   const handleSaveAll = useCallback(async () => {
-    if (!results?.assets || !writeFile) return;
+    if (!results?.assets || !writeFile) {
+      console.error('[AI Generator] Cannot save: no assets or writeFile function');
+      return;
+    }
 
+    console.log('[AI Generator] Starting save of', results.assets.length, 'assets');
     setLoading(true);
     setError(null);
 
@@ -289,15 +324,27 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       });
 
       const writeResults = await orchestrator.writeAssetsToZip(results.assets, writeFile);
+      
+      console.log('[AI Generator] Save results:', {
+        success: writeResults.success.length,
+        failed: writeResults.failed.length,
+      });
+
+      // Always refresh folder to show saved files
+      if (refreshFolder) {
+        console.log('[AI Generator] Refreshing folder...');
+        refreshFolder();
+      }
 
       if (writeResults.failed.length > 0) {
-        setError(`Failed to save ${writeResults.failed.length} file(s)`);
+        setError(`Failed to save ${writeResults.failed.length} file(s). ${writeResults.success.length} file(s) saved successfully.`);
+        console.error('[AI Generator] Failed to save:', writeResults.failed);
       } else {
         setStatus({ phase: 'saved', message: `Saved ${writeResults.success.length} file(s)` });
-        if (refreshFolder) refreshFolder();
       }
 
     } catch (err) {
+      console.error('[AI Generator] Save error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -324,13 +371,19 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         {/* Prompt Section */}
         <section className="ai-prompt-section">
-          <label>Describe what you want to create:</label>
+          <label>
+            {modality === 'game' 
+              ? 'Describe the game you want to create:' 
+              : 'Describe what you want to create:'}
+          </label>
           <Input
             as="textarea"
-            rows={3}
+            rows={modality === 'game' ? 5 : 3}
             value={prompt}
             onChange={setPrompt}
-            placeholder="e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."
+            placeholder={modality === 'game' 
+              ? "e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues..."
+              : "e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."}
             disabled={loading}
           />
           
@@ -342,7 +395,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
               cleanable={false}
               disabled={loading}
               searchable={false}
-              style={{ width: 140 }}
+              style={{ width: 180 }}
               size="sm"
             />
             <Button
@@ -351,26 +404,52 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
               disabled={loading || !prompt.trim()}
               loading={loading}
             >
-              Generate
+              {modality === 'game' ? '🎮 Generate Game' : 'Generate'}
             </Button>
           </div>
+          
+          {modality === 'game' && !loading && (
+            <div className="ai-game-hint">
+              <strong>Full Game Generation</strong> will create: player character, NPCs, enemies, 
+              cutscenes, scripts, zones, and manifest.json - a complete playable package!
+            </div>
+          )}
         </section>
 
         {/* Analysis Preview */}
         {analysis && !loading && !results && (
           <section className="ai-analysis">
-            <div className="ai-analysis-label">Will generate:</div>
-            <div className="ai-analysis-tags">
-              {analysis.detectedAssets.map((asset, i) => (
-                <span key={i} className="ai-tag">{asset}</span>
-              ))}
-            </div>
-            {analysis.spriteConfig && (
-              <div className="ai-analysis-config">
-                <span>{analysis.spriteConfig.preset}</span>
-                <span>{analysis.spriteConfig.tileSize.join('×')}px</span>
-                <span>{analysis.spriteConfig.directions}dir</span>
-              </div>
+            {analysis.isGameRequest ? (
+              <>
+                <div className="ai-analysis-label ai-game-detected">
+                  🎮 Full Game Detected! Will generate:
+                </div>
+                <div className="ai-analysis-tags">
+                  <span className="ai-tag ai-tag-game">Player Character</span>
+                  <span className="ai-tag ai-tag-game">NPCs</span>
+                  <span className="ai-tag ai-tag-game">Enemies</span>
+                  <span className="ai-tag ai-tag-game">Cutscenes</span>
+                  <span className="ai-tag ai-tag-game">Scripts</span>
+                  <span className="ai-tag ai-tag-game">Zones</span>
+                  <span className="ai-tag ai-tag-game">Manifest</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="ai-analysis-label">Will generate:</div>
+                <div className="ai-analysis-tags">
+                  {analysis.detectedAssets.map((asset, i) => (
+                    <span key={i} className="ai-tag">{asset}</span>
+                  ))}
+                </div>
+                {analysis.spriteConfig && (
+                  <div className="ai-analysis-config">
+                    <span>{analysis.spriteConfig.preset}</span>
+                    <span>{analysis.spriteConfig.tileSize.join('×')}px</span>
+                    <span>{analysis.spriteConfig.directions}dir</span>
+                  </div>
+                )}
+              </>
             )}
           </section>
         )}
@@ -408,6 +487,81 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
           <Message type="error" showIcon closable onClose={() => setError(null)} className="ai-error">
             {error}
           </Message>
+        )}
+
+        {/* Game Concept Summary (for full game generation) */}
+        {results && results.concept && (
+          <section className="ai-game-concept">
+            <h3>🎮 {results.concept.title}</h3>
+            <p className="ai-game-synopsis">{results.concept.synopsis}</p>
+            <div className="ai-game-details">
+              <div className="ai-game-detail">
+                <strong>Genre:</strong> {results.concept.genre}
+              </div>
+              <div className="ai-game-detail">
+                <strong>Setting:</strong> {results.concept.setting}
+              </div>
+              <div className="ai-game-detail">
+                <strong>Mood:</strong> {results.concept.mood}
+              </div>
+            </div>
+            <div className="ai-game-lists">
+              <div className="ai-game-list">
+                <strong>Characters:</strong>
+                <ul>
+                  {results.concept.characters?.map((c, i) => (
+                    <li key={i}>{c.displayName || c.name} ({c.type})</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="ai-game-list">
+                <strong>Locations:</strong>
+                <ul>
+                  {results.concept.locations?.map((l, i) => (
+                    <li key={i}>{l.name}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Package Validation Status */}
+        {results && results.validation && (
+          <section className={`ai-validation ${results.validation.isComplete ? 'ai-validation-complete' : 'ai-validation-incomplete'}`}>
+            <div className="ai-validation-header">
+              {results.validation.isComplete ? (
+                <span className="ai-validation-status">✓ Package Complete</span>
+              ) : (
+                <span className="ai-validation-status">⚠️ Package Incomplete</span>
+              )}
+              <span className="ai-validation-stats">
+                {results.validation.stats.completed}/{results.validation.stats.total} required assets
+              </span>
+            </div>
+            
+            {!results.validation.isComplete && results.validation.missing.length > 0 && (
+              <div className="ai-validation-missing">
+                <strong>Missing Required Assets:</strong>
+                <ul>
+                  {results.validation.missing.map((item, i) => (
+                    <li key={i} className="ai-missing-item">❌ {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {results.validation.isComplete && (
+              <div className="ai-validation-generated">
+                <strong>Generated:</strong>
+                <ul>
+                  {results.validation.generated.map((item, i) => (
+                    <li key={i} className="ai-generated-item">✓ {item.path}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
         )}
 
         {/* Results */}
