@@ -1,51 +1,805 @@
--- Setup for 'tactics' mode: register handlers for a simple turn-based skeleton
+-- =============================================================================
+-- TACTICS MODE - Full Turn-Based Combat Implementation
+-- =============================================================================
+-- Handles turn-based tactical combat with unit selection, movement grid,
+-- action menu, attack/skill system, and victory/defeat conditions.
+-- =============================================================================
+
+local TacticsMode = {}
+
+-- =============================================================================
+-- State Management
+-- =============================================================================
+TacticsMode.state = {
+    -- Turn management
+    turnOrder = {},           -- Ordered list of units by initiative
+    currentTurnIndex = 1,     -- Current unit's index in turn order
+    currentUnit = nil,        -- Currently active unit
+    turnPhase = 'select',     -- 'select', 'move', 'action', 'target', 'resolve', 'enemy'
+    turnCount = 0,            -- Total turns elapsed
+    
+    -- Selection state
+    selectedTile = nil,       -- Currently highlighted tile {row, cell}
+    selectedTarget = nil,     -- Target for current action
+    movementRange = {},       -- Tiles the current unit can move to
+    attackRange = {},         -- Tiles the current unit can attack
+    
+    -- Action state
+    pendingAction = nil,      -- Action waiting to be executed
+    actionMenu = nil,         -- Current action menu options
+    actionMenuIndex = 1,      -- Selected action in menu
+    
+    -- Combat results
+    combatLog = {},           -- Log of combat actions
+    battleResult = nil,       -- 'victory', 'defeat', or nil
+}
+
+-- =============================================================================
+-- Configuration
+-- =============================================================================
+TacticsMode.config = {
+    moveSpeed = 200,              -- Movement animation speed (ms per tile)
+    attackAnimDuration = 500,     -- Attack animation duration
+    gridHighlightColors = {
+        move = {0.2, 0.6, 1.0, 0.4},       -- Blue for movement
+        attack = {1.0, 0.2, 0.2, 0.4},     -- Red for attack range
+        heal = {0.2, 1.0, 0.4, 0.4},       -- Green for heal range
+        selected = {1.0, 1.0, 0.0, 0.6},   -- Yellow for selection
+    },
+    defaultMoveRange = 3,         -- Default movement range
+    defaultAttackRange = 1,       -- Default attack range (melee)
+}
+
+-- =============================================================================
+-- Mode Registration
+-- =============================================================================
 
 pixos.register_mode('tactics', {
-	picker = true,
+    picker = true,  -- Enable tile/sprite picking
 
-	setup = function(params)
-		pixos.log('tactics: setup called')
-		-- params may include an initial turn order or rules
-		-- place a cursor or menu if needed (game can create HUD elements separately)
-	end,
+    -- =========================================================================
+    -- SETUP - Initialize tactics mode
+    -- =========================================================================
+    setup = function(params)
+        pixos.log('tactics: setup called', params)
+        
+        -- Reset state
+        TacticsMode.resetState()
+        
+        -- Initialize battle units
+        TacticsMode.initializeBattle(params)
+        
+        -- Play battle music
+        local zone = pixos.get_current_zone()
+        if zone and zone.audioSrc then
+            pixos.play_music(zone.audioSrc, { fadeIn = 500 })
+        end
+        
+        -- Show tactics HUD
+        pixos.show_hud('tactics')
+        
+        -- Display turn order
+        TacticsMode.updateTurnOrderUI()
+        
+        -- Start first turn
+        TacticsMode.startTurn()
+        
+        return {}
+    end,
 
-	update = function(time, params)
-		-- tactics update can be used to run a turn state-machine implemented in Lua
-		-- by default do nothing; game scripts should implement the actual loop
-	end,
+    -- =========================================================================
+    -- UPDATE - Per-frame update logic
+    -- =========================================================================
+    update = function(time, params)
+        -- Check victory/defeat conditions
+        if TacticsMode.checkBattleEnd() then
+            return
+        end
+        
+        -- Update based on current phase
+        local phase = TacticsMode.state.turnPhase
+        
+        if phase == 'enemy' then
+            TacticsMode.processEnemyTurn(time)
+        elseif phase == 'resolve' then
+            TacticsMode.resolveAction(time)
+        end
+        
+        -- Update grid highlights
+        TacticsMode.updateGridHighlights()
+        
+        -- Update cursor animation
+        TacticsMode.updateCursor(time)
+    end,
 
-	teardown = function(params)
-		pixos.log('tactics: teardown')
-	end,
+    -- =========================================================================
+    -- TEARDOWN - Cleanup
+    -- =========================================================================
+    teardown = function(params)
+        pixos.log('tactics: teardown')
+        TacticsMode.clearHighlights()
+        TacticsMode.hideActionMenu()
+        pixos.hide_hud('tactics')
+    end,
 
-	on_select = function(zone, row, cell, type, params)
-		-- consume selection and log for demo
-		pixos.log('tactics:on_select', { zone = zone.id, row = row, cell = cell, type = type })
-		-- Emit flame particles at the selected position
-		local pos = {cell, row, 1}  -- Assuming tile position, adjust z as needed
-		if type == 'tile' then
-			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
-		elseif type == 'sprite' then
-			-- For sprite, use sprite position
-			pos = {row.pos.x, row.pos.y, row.pos.z}
-			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
-		elseif type == 'object' then
-			-- For object, use object position
-			pos = {row.pos.x, row.pos.y, row.pos.z}
-			pixos.emit_particles(pos, { preset = 'flame', count = 20, life = 2000 })
-		end
-		-- return true to indicate selection handled (prevents default behaviour)
-		return true
-	end,
+    -- =========================================================================
+    -- INPUT HANDLER
+    -- =========================================================================
+    checkInput = function(time, params)
+        local phase = TacticsMode.state.turnPhase
+        
+        -- During enemy turn, block input
+        if phase == 'enemy' or phase == 'resolve' then
+            return true
+        end
+        
+        -- Action menu navigation
+        if TacticsMode.state.actionMenu then
+            if pixos.is_action_pressed('move_up') then
+                TacticsMode.navigateActionMenu(-1)
+                return true
+            elseif pixos.is_action_pressed('move_down') then
+                TacticsMode.navigateActionMenu(1)
+                return true
+            elseif pixos.is_action_pressed('select') or pixos.is_action_pressed('interact') then
+                TacticsMode.selectActionMenuItem()
+                return true
+            elseif pixos.is_action_pressed('cancel') then
+                TacticsMode.cancelActionMenu()
+                return true
+            end
+            return true
+        end
+        
+        -- Grid navigation
+        if pixos.is_action_pressed('move_up') then
+            TacticsMode.moveCursor(0, -1)
+            return true
+        elseif pixos.is_action_pressed('move_down') then
+            TacticsMode.moveCursor(0, 1)
+            return true
+        elseif pixos.is_action_pressed('move_left') then
+            TacticsMode.moveCursor(-1, 0)
+            return true
+        elseif pixos.is_action_pressed('move_right') then
+            TacticsMode.moveCursor(1, 0)
+            return true
+        end
+        
+        -- Selection
+        if pixos.is_action_pressed('select') or pixos.is_action_pressed('interact') then
+            TacticsMode.handleSelect()
+            return true
+        end
+        
+        -- Cancel
+        if pixos.is_action_pressed('cancel') then
+            TacticsMode.handleCancel()
+            return true
+        end
+        
+        -- End turn shortcut
+        if pixos.is_action_pressed('end_turn') then
+            TacticsMode.endTurn()
+            return true
+        end
+        
+        return false
+    end,
 
-	check_input = function(time, params)
-		-- consume input and log for demo
-		pixos.log('tactics:check_input', { params = params, time = time })
-		
-		-- return false to allow default input handling (pass through)
-		return false
-	end,
+    -- =========================================================================
+    -- TILE/SPRITE SELECTION HANDLER
+    -- =========================================================================
+    onSelect = function(zone, row, cell, type, params)
+        pixos.log('tactics:onSelect', { zone = zone.id, row = row, cell = cell, type = type })
+        
+        local phase = TacticsMode.state.turnPhase
+        
+        -- Block selection during enemy turn or resolution
+        if phase == 'enemy' or phase == 'resolve' then
+            return true
+        end
+        
+        if type == 'tile' then
+            TacticsMode.handleTileSelect(row, cell)
+        elseif type == 'sprite' then
+            TacticsMode.handleSpriteSelect(row) -- row is actually the sprite
+        end
+        
+        return true
+    end,
 })
 
--- Set tactics as active mode
+-- =============================================================================
+-- Battle Initialization
+-- =============================================================================
+
+function TacticsMode.resetState()
+    TacticsMode.state = {
+        turnOrder = {},
+        currentTurnIndex = 1,
+        currentUnit = nil,
+        turnPhase = 'select',
+        turnCount = 0,
+        selectedTile = nil,
+        selectedTarget = nil,
+        movementRange = {},
+        attackRange = {},
+        pendingAction = nil,
+        actionMenu = nil,
+        actionMenuIndex = 1,
+        combatLog = {},
+        battleResult = nil,
+    }
+end
+
+function TacticsMode.initializeBattle(params)
+    local world = pixos.get_world()
+    local units = {}
+    
+    -- Collect all combat-capable sprites
+    for _, sprite in ipairs(world.spriteList) do
+        if sprite.stats then  -- Has combat stats
+            table.insert(units, {
+                sprite = sprite,
+                initiative = sprite.stats.speed or 10,
+                team = sprite.team or (sprite.id == 'avatar' and 'player' or 'enemy'),
+                hasMoved = false,
+                hasActed = false,
+            })
+        end
+    end
+    
+    -- Sort by initiative (higher goes first)
+    table.sort(units, function(a, b)
+        return a.initiative > b.initiative
+    end)
+    
+    TacticsMode.state.turnOrder = units
+    TacticsMode.state.turnCount = 1
+    
+    pixos.log('tactics: initialized with ' .. #units .. ' units')
+end
+
+-- =============================================================================
+-- Turn Management
+-- =============================================================================
+
+function TacticsMode.startTurn()
+    local state = TacticsMode.state
+    
+    if state.currentTurnIndex > #state.turnOrder then
+        -- All units have acted, start new round
+        TacticsMode.startNewRound()
+        return
+    end
+    
+    local unitData = state.turnOrder[state.currentTurnIndex]
+    state.currentUnit = unitData
+    
+    -- Reset unit's turn flags
+    unitData.hasMoved = false
+    unitData.hasActed = false
+    
+    -- Center camera on unit
+    pixos.focus_camera(unitData.sprite)
+    
+    -- Highlight unit
+    unitData.sprite:setHighlight(true)
+    
+    -- Determine phase based on team
+    if unitData.team == 'player' then
+        state.turnPhase = 'select'
+        TacticsMode.showActionMenu()
+        pixos.show_notification(unitData.sprite.name .. "'s turn!")
+    else
+        state.turnPhase = 'enemy'
+        pixos.show_notification('Enemy turn...')
+    end
+    
+    -- Calculate movement range
+    TacticsMode.calculateMovementRange(unitData)
+    TacticsMode.updateTurnOrderUI()
+end
+
+function TacticsMode.startNewRound()
+    TacticsMode.state.turnCount = TacticsMode.state.turnCount + 1
+    TacticsMode.state.currentTurnIndex = 1
+    
+    -- Reset all unit flags
+    for _, unit in ipairs(TacticsMode.state.turnOrder) do
+        unit.hasMoved = false
+        unit.hasActed = false
+    end
+    
+    pixos.show_notification('Round ' .. TacticsMode.state.turnCount)
+    TacticsMode.startTurn()
+end
+
+function TacticsMode.endTurn()
+    local state = TacticsMode.state
+    
+    -- Clear highlights
+    if state.currentUnit then
+        state.currentUnit.sprite:setHighlight(false)
+    end
+    
+    TacticsMode.clearHighlights()
+    TacticsMode.hideActionMenu()
+    
+    -- Next unit
+    state.currentTurnIndex = state.currentTurnIndex + 1
+    TacticsMode.startTurn()
+end
+
+-- =============================================================================
+-- Movement System
+-- =============================================================================
+
+function TacticsMode.calculateMovementRange(unitData)
+    local sprite = unitData.sprite
+    local range = sprite.stats and sprite.stats.move or TacticsMode.config.defaultMoveRange
+    local startX, startY = math.floor(sprite.pos.x), math.floor(sprite.pos.y)
+    
+    local moveTiles = {}
+    local zone = pixos.get_current_zone()
+    
+    -- BFS to find reachable tiles
+    local queue = {{x = startX, y = startY, dist = 0}}
+    local visited = {}
+    visited[startX .. ',' .. startY] = true
+    
+    while #queue > 0 do
+        local current = table.remove(queue, 1)
+        
+        if current.dist <= range then
+            table.insert(moveTiles, {row = current.y, cell = current.x, dist = current.dist})
+            
+            -- Check adjacent tiles
+            local dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+            for _, dir in ipairs(dirs) do
+                local nx, ny = current.x + dir[1], current.y + dir[2]
+                local key = nx .. ',' .. ny
+                
+                if not visited[key] and zone:canWalk(nx, ny) then
+                    visited[key] = true
+                    table.insert(queue, {x = nx, y = ny, dist = current.dist + 1})
+                end
+            end
+        end
+    end
+    
+    TacticsMode.state.movementRange = moveTiles
+end
+
+function TacticsMode.moveUnit(targetX, targetY)
+    local state = TacticsMode.state
+    local unit = state.currentUnit
+    if not unit or unit.hasMoved then return end
+    
+    -- Check if target is in range
+    local inRange = false
+    for _, tile in ipairs(state.movementRange) do
+        if tile.cell == targetX and tile.row == targetY then
+            inRange = true
+            break
+        end
+    end
+    
+    if not inRange then
+        pixos.show_notification('Cannot move there!')
+        return
+    end
+    
+    -- Animate movement
+    unit.sprite:moveTo(targetX, targetY, {
+        speed = TacticsMode.config.moveSpeed,
+        onComplete = function()
+            unit.hasMoved = true
+            TacticsMode.state.turnPhase = 'action'
+            TacticsMode.calculateAttackRange(unit)
+            TacticsMode.showActionMenu()
+        end
+    })
+    
+    TacticsMode.state.turnPhase = 'resolve'
+    TacticsMode.clearHighlights()
+end
+
+-- =============================================================================
+-- Action System
+-- =============================================================================
+
+function TacticsMode.calculateAttackRange(unitData)
+    local sprite = unitData.sprite
+    local range = sprite.stats and sprite.stats.attackRange or TacticsMode.config.defaultAttackRange
+    local startX, startY = math.floor(sprite.pos.x), math.floor(sprite.pos.y)
+    
+    local attackTiles = {}
+    
+    for dy = -range, range do
+        for dx = -range, range do
+            if math.abs(dx) + math.abs(dy) <= range and (dx ~= 0 or dy ~= 0) then
+                table.insert(attackTiles, {row = startY + dy, cell = startX + dx})
+            end
+        end
+    end
+    
+    TacticsMode.state.attackRange = attackTiles
+end
+
+function TacticsMode.showActionMenu()
+    local unit = TacticsMode.state.currentUnit
+    if not unit then return end
+    
+    local actions = {'Attack', 'Skill', 'Item', 'Wait'}
+    
+    -- Filter based on unit state
+    if unit.hasActed then
+        actions = {'Wait'}
+    end
+    
+    TacticsMode.state.actionMenu = actions
+    TacticsMode.state.actionMenuIndex = 1
+    
+    pixos.show_action_menu(actions, TacticsMode.state.actionMenuIndex)
+end
+
+function TacticsMode.hideActionMenu()
+    TacticsMode.state.actionMenu = nil
+    pixos.hide_action_menu()
+end
+
+function TacticsMode.navigateActionMenu(direction)
+    if not TacticsMode.state.actionMenu then return end
+    
+    local newIndex = TacticsMode.state.actionMenuIndex + direction
+    local maxIndex = #TacticsMode.state.actionMenu
+    
+    if newIndex < 1 then newIndex = maxIndex end
+    if newIndex > maxIndex then newIndex = 1 end
+    
+    TacticsMode.state.actionMenuIndex = newIndex
+    pixos.show_action_menu(TacticsMode.state.actionMenu, newIndex)
+end
+
+function TacticsMode.selectActionMenuItem()
+    local menu = TacticsMode.state.actionMenu
+    if not menu then return end
+    
+    local action = menu[TacticsMode.state.actionMenuIndex]
+    TacticsMode.hideActionMenu()
+    
+    if action == 'Attack' then
+        TacticsMode.startTargeting('attack')
+    elseif action == 'Skill' then
+        TacticsMode.showSkillMenu()
+    elseif action == 'Item' then
+        TacticsMode.showItemMenu()
+    elseif action == 'Wait' then
+        TacticsMode.endTurn()
+    end
+end
+
+function TacticsMode.cancelActionMenu()
+    TacticsMode.hideActionMenu()
+    
+    local unit = TacticsMode.state.currentUnit
+    if unit and not unit.hasMoved then
+        TacticsMode.state.turnPhase = 'select'
+    end
+end
+
+-- =============================================================================
+-- Targeting System
+-- =============================================================================
+
+function TacticsMode.startTargeting(actionType)
+    TacticsMode.state.turnPhase = 'target'
+    TacticsMode.state.pendingAction = {type = actionType}
+    
+    if actionType == 'attack' then
+        -- Show attack range
+        TacticsMode.calculateAttackRange(TacticsMode.state.currentUnit)
+    end
+    
+    pixos.show_notification('Select a target')
+end
+
+function TacticsMode.executeAttack(target)
+    local attacker = TacticsMode.state.currentUnit
+    if not attacker or not target then return end
+    
+    local attackerStats = attacker.sprite.stats or {attack = 10}
+    local defenderStats = target.stats or {defense = 5, hp = 20}
+    
+    -- Calculate damage
+    local damage = math.max(1, attackerStats.attack - defenderStats.defense)
+    
+    -- Apply damage
+    target.stats.hp = (target.stats.hp or 20) - damage
+    
+    -- Show damage number
+    pixos.show_damage_number(target.pos, damage)
+    
+    -- Play attack animation and effects
+    attacker.sprite:playAnimation('attack')
+    pixos.emit_particles(target.pos, { preset = 'sparks', count = 10 })
+    pixos.play_sound('hit.mp3')
+    
+    -- Log combat
+    table.insert(TacticsMode.state.combatLog, {
+        attacker = attacker.sprite.id,
+        target = target.id,
+        damage = damage,
+    })
+    
+    -- Check if target defeated
+    if target.stats.hp <= 0 then
+        TacticsMode.defeatUnit(target)
+    end
+    
+    attacker.hasActed = true
+    TacticsMode.state.pendingAction = nil
+    TacticsMode.state.turnPhase = 'select'
+    TacticsMode.showActionMenu()
+end
+
+function TacticsMode.defeatUnit(unit)
+    pixos.show_notification(unit.name .. ' defeated!')
+    
+    -- Play defeat animation
+    unit:playAnimation('defeat')
+    pixos.emit_particles(unit.pos, { preset = 'flame', count = 20 })
+    
+    -- Remove from turn order
+    for i, u in ipairs(TacticsMode.state.turnOrder) do
+        if u.sprite == unit then
+            table.remove(TacticsMode.state.turnOrder, i)
+            break
+        end
+    end
+    
+    -- Fade out and remove
+    unit:fadeOut(500, function()
+        unit:destroy()
+    end)
+end
+
+-- =============================================================================
+-- Enemy AI
+-- =============================================================================
+
+function TacticsMode.processEnemyTurn(time)
+    local unit = TacticsMode.state.currentUnit
+    if not unit then
+        TacticsMode.endTurn()
+        return
+    end
+    
+    -- Simple AI: Find nearest player unit and attack
+    local world = pixos.get_world()
+    local nearestPlayer = nil
+    local nearestDist = 999
+    
+    for _, sprite in ipairs(world.spriteList) do
+        if sprite.team == 'player' and sprite.stats and sprite.stats.hp > 0 then
+            local dist = TacticsMode.distance(unit.sprite.pos, sprite.pos)
+            if dist < nearestDist then
+                nearestDist = dist
+                nearestPlayer = sprite
+            end
+        end
+    end
+    
+    if nearestPlayer then
+        -- Move towards player
+        if not unit.hasMoved then
+            local targetX, targetY = TacticsMode.findMoveTarget(unit, nearestPlayer)
+            if targetX and targetY then
+                TacticsMode.moveUnit(targetX, targetY)
+                return
+            end
+        end
+        
+        -- Attack if in range
+        if not unit.hasActed then
+            local inRange = TacticsMode.isInAttackRange(unit, nearestPlayer)
+            if inRange then
+                TacticsMode.executeAttack(nearestPlayer)
+                return
+            end
+        end
+    end
+    
+    -- End turn if no actions possible
+    TacticsMode.endTurn()
+end
+
+function TacticsMode.findMoveTarget(unit, target)
+    -- Find tile closest to target within movement range
+    local bestTile = nil
+    local bestDist = 999
+    
+    for _, tile in ipairs(TacticsMode.state.movementRange) do
+        local dist = math.abs(tile.cell - target.pos.x) + math.abs(tile.row - target.pos.y)
+        if dist < bestDist then
+            bestDist = dist
+            bestTile = tile
+        end
+    end
+    
+    if bestTile then
+        return bestTile.cell, bestTile.row
+    end
+    return nil, nil
+end
+
+function TacticsMode.isInAttackRange(unit, target)
+    for _, tile in ipairs(TacticsMode.state.attackRange) do
+        if tile.cell == math.floor(target.pos.x) and tile.row == math.floor(target.pos.y) then
+            return true
+        end
+    end
+    return false
+end
+
+-- =============================================================================
+-- Victory/Defeat Conditions
+-- =============================================================================
+
+function TacticsMode.checkBattleEnd()
+    local playerAlive = false
+    local enemyAlive = false
+    
+    for _, unit in ipairs(TacticsMode.state.turnOrder) do
+        if unit.team == 'player' then
+            playerAlive = true
+        else
+            enemyAlive = true
+        end
+    end
+    
+    if not playerAlive then
+        TacticsMode.state.battleResult = 'defeat'
+        pixos.show_notification('Defeat...')
+        pixos.run_trigger('event/battle_defeat')
+        return true
+    end
+    
+    if not enemyAlive then
+        TacticsMode.state.battleResult = 'victory'
+        pixos.show_notification('Victory!')
+        pixos.run_trigger('event/battle_victory')
+        return true
+    end
+    
+    return false
+end
+
+-- =============================================================================
+-- Grid & UI Management
+-- =============================================================================
+
+function TacticsMode.updateGridHighlights()
+    local phase = TacticsMode.state.turnPhase
+    
+    if phase == 'select' or phase == 'move' then
+        pixos.highlight_tiles(TacticsMode.state.movementRange, TacticsMode.config.gridHighlightColors.move)
+    elseif phase == 'target' then
+        pixos.highlight_tiles(TacticsMode.state.attackRange, TacticsMode.config.gridHighlightColors.attack)
+    end
+    
+    -- Highlight selected tile
+    if TacticsMode.state.selectedTile then
+        pixos.highlight_tile(
+            TacticsMode.state.selectedTile.row, 
+            TacticsMode.state.selectedTile.cell,
+            TacticsMode.config.gridHighlightColors.selected
+        )
+    end
+end
+
+function TacticsMode.clearHighlights()
+    pixos.clear_tile_highlights()
+end
+
+function TacticsMode.updateCursor(time)
+    -- Animate cursor pulse
+end
+
+function TacticsMode.updateTurnOrderUI()
+    local order = {}
+    for i, unit in ipairs(TacticsMode.state.turnOrder) do
+        table.insert(order, {
+            name = unit.sprite.name or unit.sprite.id,
+            isCurrent = i == TacticsMode.state.currentTurnIndex,
+            team = unit.team,
+        })
+    end
+    pixos.update_turn_order(order)
+end
+
+function TacticsMode.moveCursor(dx, dy)
+    local current = TacticsMode.state.selectedTile or {row = 0, cell = 0}
+    TacticsMode.state.selectedTile = {
+        row = current.row + dy,
+        cell = current.cell + dx,
+    }
+end
+
+function TacticsMode.handleTileSelect(row, cell)
+    local phase = TacticsMode.state.turnPhase
+    
+    if phase == 'select' or phase == 'move' then
+        TacticsMode.moveUnit(cell, row)
+    elseif phase == 'target' then
+        -- Check for target at tile
+        local world = pixos.get_world()
+        for _, sprite in ipairs(world.spriteList) do
+            if math.floor(sprite.pos.x) == cell and math.floor(sprite.pos.y) == row then
+                TacticsMode.handleSpriteSelect(sprite)
+                return
+            end
+        end
+    end
+end
+
+function TacticsMode.handleSpriteSelect(sprite)
+    local phase = TacticsMode.state.turnPhase
+    
+    if phase == 'target' then
+        local action = TacticsMode.state.pendingAction
+        if action and action.type == 'attack' then
+            TacticsMode.executeAttack(sprite)
+        end
+    end
+end
+
+function TacticsMode.handleSelect()
+    local tile = TacticsMode.state.selectedTile
+    if tile then
+        TacticsMode.handleTileSelect(tile.row, tile.cell)
+    end
+end
+
+function TacticsMode.handleCancel()
+    local phase = TacticsMode.state.turnPhase
+    
+    if phase == 'target' then
+        TacticsMode.state.pendingAction = nil
+        TacticsMode.state.turnPhase = 'action'
+        TacticsMode.showActionMenu()
+    elseif phase == 'move' then
+        TacticsMode.state.turnPhase = 'select'
+        TacticsMode.showActionMenu()
+    end
+end
+
+function TacticsMode.showSkillMenu()
+    pixos.show_notification('Skills not yet implemented')
+    TacticsMode.showActionMenu()
+end
+
+function TacticsMode.showItemMenu()
+    pixos.show_notification('Items not yet implemented')
+    TacticsMode.showActionMenu()
+end
+
+function TacticsMode.resolveAction(time)
+    -- Wait for animations to complete
+    -- This would check animation state and transition when done
+end
+
+-- =============================================================================
+-- Utility Functions
+-- =============================================================================
+
+function TacticsMode.distance(pos1, pos2)
+    return math.abs(pos2.x - pos1.x) + math.abs(pos2.y - pos1.y)
+end
+
+-- =============================================================================
+-- Set as active mode
+-- =============================================================================
 pixos.set_mode('tactics')

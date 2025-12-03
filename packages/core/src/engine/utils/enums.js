@@ -114,25 +114,26 @@ export const Direction = {
 
   // Get camera-relative movement direction
   // Maps input directions (forward/backward/left/right) to world directions based on camera facing
-  // The mapping is based on sprite sequence logic: which direction makes the character move "into" the screen
+  // Forward always moves "into" the screen (away from camera), backward comes toward camera
+  // Left/right are perpendicular to the camera view
   getCameraRelativeDirection(inputDir, cameraDir) {
     const mappings = {
-      // Camera North: standard orientation
+      // Camera North: forward moves north (up in world), etc.
       'N':  { forward: Direction.Up,    backward: Direction.Down,  left: Direction.Left,  right: Direction.Right },
-      // Camera NE: forward=down (moving toward NE on screen)
-      'NE': { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Left,  right: Direction.Right },
-      // Camera East: rotated 90°
+      // Camera NE: forward moves up-right diagonally
+      'NE': { forward: Direction.Up,    backward: Direction.Down,  left: Direction.Up,    right: Direction.Down },
+      // Camera East: forward moves right, left moves up
       'E':  { forward: Direction.Right, backward: Direction.Left,  left: Direction.Up,    right: Direction.Down },
-      // Camera SE: forward=down (moving toward SE on screen)
-      'SE': { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Right, right: Direction.Left },
+      // Camera SE: forward moves right-down diagonally  
+      'SE': { forward: Direction.Right, backward: Direction.Left,  left: Direction.Up,    right: Direction.Down },
       // Camera South: inverted from North
       'S':  { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Right, right: Direction.Left },
-      // Camera SW: forward=right (moving toward SW on screen)
-      'SW': { forward: Direction.Right, backward: Direction.Left,  left: Direction.Down,  right: Direction.Up },
-      // Camera West: rotated 270° from North
+      // Camera SW: forward moves left-down diagonally
+      'SW': { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Right, right: Direction.Left },
+      // Camera West: forward moves left, right moves up
       'W':  { forward: Direction.Left,  backward: Direction.Right, left: Direction.Down,  right: Direction.Up },
-      // Camera NW: forward=right (moving toward NW on screen)
-      'NW': { forward: Direction.Right, backward: Direction.Left,  left: Direction.Up,    right: Direction.Down }
+      // Camera NW: forward moves up-left diagonally
+      'NW': { forward: Direction.Left,  backward: Direction.Right, left: Direction.Down,  right: Direction.Up }
     };
     
     const mapping = mappings[cameraDir] || mappings['N'];

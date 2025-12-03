@@ -69,6 +69,14 @@ function CutsceneManager(engine) {
     _this.scenes[name] = Array.isArray(steps) ? steps.slice() : [];
   });
   /**
+   * Checks if a cutscene is registered.
+   * @param {string} name - The name of the cutscene.
+   * @returns {boolean} True if the cutscene is registered.
+   */
+  _defineProperty(this, "isRegistered", function (name) {
+    return name in _this.scenes;
+  });
+  /**
    * Starts playing a cutscene by name.
    * @param {string} name - The name of the cutscene to start.
    */

@@ -404,68 +404,85 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
       const recordCanvas = document.createElement('canvas');
       recordCanvas.width = width;
       recordCanvas.height = height;
-      const recordCtx = recordCanvas.getContext('2d');
+      const recordCtx = recordCanvas.getContext('2d', { willReadFrequently: true });
       
       // Fill with initial black frame so the stream has content
       recordCtx.fillStyle = '#000';
       recordCtx.fillRect(0, 0, width, height);
 
       // Set up audio context for capturing audio
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const audioDestination = audioContext.createMediaStreamDestination();
+      let audioContext = null;
+      let audioDestination = null;
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioDestination = audioContext.createMediaStreamDestination();
+      } catch (e) {
+        console.warn('[Export] Audio context not available, exporting without audio');
+      }
       
       // Store original Audio constructor
       const OriginalAudio = window.Audio;
       const audioElements = [];
       
       // Override Audio to capture audio streams during export
-      window.Audio = function(src) {
-        const audio = new OriginalAudio(src);
-        audioElements.push(audio);
-        
-        // When audio loads, connect it to our destination
-        audio.addEventListener('canplaythrough', () => {
-          try {
-            const source = audioContext.createMediaElementSource(audio);
-            source.connect(audioDestination);
-            source.connect(audioContext.destination); // Also play through speakers
-          } catch (e) {
-            // Already connected or error
-          }
-        }, { once: true });
-        
-        return audio;
-      };
+      if (audioContext && audioDestination) {
+        window.Audio = function(src) {
+          const audio = new OriginalAudio(src);
+          audioElements.push(audio);
+          
+          // When audio loads, connect it to our destination
+          audio.addEventListener('canplaythrough', () => {
+            try {
+              const source = audioContext.createMediaElementSource(audio);
+              source.connect(audioDestination);
+              source.connect(audioContext.destination); // Also play through speakers
+            } catch (e) {
+              // Already connected or error
+            }
+          }, { once: true });
+          
+          return audio;
+        };
+      }
 
-      // Get canvas stream - use 30 FPS for consistent capture
-      // Note: Using a fixed framerate is more reliable across browsers
+      // Get canvas stream - use fixed framerate
       const canvasStream = recordCanvas.captureStream(30);
       
       // Combine video and audio streams
-      const combinedStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
-        ...audioDestination.stream.getAudioTracks()
-      ]);
+      const tracks = [...canvasStream.getVideoTracks()];
+      if (audioDestination) {
+        tracks.push(...audioDestination.stream.getAudioTracks());
+      }
+      const combinedStream = new MediaStream(tracks);
 
-      // Set up MediaRecorder
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') 
-        ? 'video/webm;codecs=vp9,opus'
-        : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
-        ? 'video/webm;codecs=vp8,opus'
-        : 'video/webm';
+      // Set up MediaRecorder with fallback mime types
+      let mimeType = 'video/webm';
+      const mimeTypes = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm'
+      ];
+      for (const mt of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mt)) {
+          mimeType = mt;
+          break;
+        }
+      }
       
       console.log('[Export] Using mime type:', mimeType);
       
       const mediaRecorder = new MediaRecorder(combinedStream, {
         mimeType,
-        videoBitsPerSecond: 2500000, // 2.5 Mbps
+        videoBitsPerSecond: 4000000, // 4 Mbps for better quality
       });
       
       const recordedChunks = [];
       mediaRecorder.ondataavailable = (event) => {
-        console.log('[Export] Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           recordedChunks.push(event.data);
+          console.log('[Export] Data chunk:', event.data.size, 'bytes, total chunks:', recordedChunks.length);
         }
       };
       
@@ -473,8 +490,8 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
         console.error('[Export] MediaRecorder error:', event);
       };
 
-      // Start recording
-      mediaRecorder.start(100); // Collect data every 100ms
+      // Start recording - request data frequently for more reliable capture
+      mediaRecorder.start(50); // Collect data every 50ms
       console.log('[Export] MediaRecorder started, state:', mediaRecorder.state);
       
       if (onExportProgress) onExportProgress({ status: 'recording', progress: 5, message: 'Starting playback...' });
@@ -482,10 +499,20 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
       // Frame capture state
       const frameCountRef = { value: 0 };
       let isRecording = true;
+      let lastCaptureTime = 0;
+      const targetFrameTime = 1000 / 30; // 30 FPS target
       
-      // Capture a single frame - call this periodically during playback
+      // Optimized frame capture using rAF for better timing
       const captureFrame = async () => {
         if (!isRecording) return;
+        
+        const now = performance.now();
+        if (now - lastCaptureTime < targetFrameTime * 0.8) {
+          // Skip if too soon to maintain consistent framerate
+          return;
+        }
+        lastCaptureTime = now;
+        
         try {
           const capturedCanvas = await html2canvas(stageElement, {
             backgroundColor: '#000',
@@ -494,29 +521,40 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
             allowTaint: true,
             logging: false,
             imageTimeout: 0,
+            removeContainer: true, // Clean up temp container
           });
+          
           recordCtx.clearRect(0, 0, width, height);
           recordCtx.drawImage(capturedCanvas, 0, 0, width, height);
           
           frameCountRef.value++;
-          if (frameCountRef.value % 5 === 0) {
+          if (frameCountRef.value % 10 === 0) {
             console.log('[Export] Captured frame:', frameCountRef.value);
           }
         } catch (err) {
           console.warn('Frame capture error:', err);
+          // Draw fallback frame with current state indicator
+          recordCtx.fillStyle = '#112430';
+          recordCtx.fillRect(0, 0, width, height);
+          recordCtx.fillStyle = '#7dd3fc';
+          recordCtx.font = '24px system-ui';
+          recordCtx.textAlign = 'center';
+          recordCtx.fillText('Frame ' + frameCountRef.value, width/2, height/2);
         }
       };
       
-      // Continuous frame capture loop
+      // Continuous frame capture loop using requestAnimationFrame for smoother capture
+      let frameLoopId = null;
       const frameLoop = async () => {
-        while (isRecording) {
-          await captureFrame();
-          // Wait ~33ms between captures (~30fps)
-          await new Promise(r => setTimeout(r, 33));
-        }
+        if (!isRecording) return;
+        
+        await captureFrame();
+        
+        // Use setTimeout for more consistent timing with html2canvas
+        frameLoopId = setTimeout(frameLoop, targetFrameTime);
       };
       
-      // Start capturing frames in background (intentionally not awaited)
+      // Start capturing frames
       frameLoop();
 
       // Store export context for cleanup
@@ -528,6 +566,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
         frameCountRef,
         stopRecording: () => { 
           isRecording = false;
+          if (frameLoopId) clearTimeout(frameLoopId);
         }
       };
 
@@ -538,7 +577,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
       resetDisplay();
       
       // Wait a moment for initial capture
-      await waitMs(200);
+      await waitMs(300);
 
       const totalEvents = scene.events.length;
       let processedEvents = 0;
@@ -606,7 +645,9 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           audioElements.forEach(audio => {
             try { audio.pause(); } catch(e) {}
           });
-          audioContext.close();
+          if (audioContext) {
+            try { audioContext.close(); } catch(e) {}
+          }
 
           // Stop all player audio
           if (sfxRef.current) { sfxRef.current.pause(); sfxRef.current = null; }
@@ -654,7 +695,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           resolve({ 
             success: true, 
             frames: frameCountRef.value,
-            duration: recordedChunks.length * 0.1,
+            duration: recordedChunks.length * 0.05, // 50ms per chunk
             size: blob.size 
           });
         };

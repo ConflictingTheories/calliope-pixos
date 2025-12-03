@@ -364,7 +364,6 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @returns
      */
     _defineProperty(_this, "draw", function () {
-      var _this$drawOffset$rm$c;
       if (!_this.loaded) return;
       // Increment sprite draw counter for debug metrics. Counting draws at
       // the start ensures that only successfully rendered sprites are tallied.
@@ -380,8 +379,25 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
         rm.lightManager.updateLight(_this.lightIndex, pos);
       }
       rm.mvPushMatrix();
-      // position
-      (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, ((_this$drawOffset$rm$c = _this.drawOffset[rm.camera.cameraDir]) !== null && _this$drawOffset$rm$c !== void 0 ? _this$drawOffset$rm$c : _this.drawOffset['N']).toArray());
+
+      // Get the draw offset for the current camera direction
+      // Handle both formats: drawOffset as a Vector or as an object with direction keys
+      var drawOffsetVec;
+      if (_this.drawOffset && _typeof(_this.drawOffset) === 'object') {
+        if (_this.drawOffset.toArray) {
+          // drawOffset is a Vector - use it directly
+          drawOffsetVec = _this.drawOffset;
+        } else {
+          var _ref5, _this$drawOffset$rm$c;
+          // drawOffset is an object with direction keys (N, S, E, W, etc.)
+          drawOffsetVec = (_ref5 = (_this$drawOffset$rm$c = _this.drawOffset[rm.camera.cameraDir]) !== null && _this$drawOffset$rm$c !== void 0 ? _this$drawOffset$rm$c : _this.drawOffset['N']) !== null && _ref5 !== void 0 ? _ref5 : new _vector.Vector(0, 0, 0);
+        }
+      } else {
+        drawOffsetVec = new _vector.Vector(0, 0, 0);
+      }
+      var drawOffsetArr = drawOffsetVec.toArray ? drawOffsetVec.toArray() : [0, 0, 0];
+
+      // Position the sprite at its world position
       (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, _this.pos.toArray());
 
       // scale & rotate sprite to handle walls
@@ -393,9 +409,18 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
             scale: new _vector.Vector(1, Math.cos(rm.camera.cameraAngle / 180), 1)
           });
         }
+
+        // Apply camera rotation for sprite billboarding
         (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, [0.5 * rm.camera.cameraVector.x, 0.5 * rm.camera.cameraVector.y, 0]);
         (0, _matrix.rotate)(rm.uModelMat, rm.uModelMat, (0, _vector2.degToRad)(rm.camera.cameraAngle * rm.camera.cameraVector.z), [0, 0, -1]);
         (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, [-0.5 * rm.camera.cameraVector.x, -0.5 * rm.camera.cameraVector.y, 0]);
+
+        // Apply draw offset AFTER rotation so it's in screen-space
+        // This keeps the sprite at a consistent screen position regardless of camera angle
+        (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, drawOffsetArr);
+      } else {
+        // For fixed sprites, apply draw offset directly
+        (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, drawOffsetArr);
       }
 
       // Bind texture - attribute locations are the same for both shaders (hardcoded to 0, 1)
@@ -435,11 +460,11 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
 
       // Draw Speech (skip during picker pass - speech bubbles don't need to be pickable)
       if (_this.enableSpeech && !isPickerPass) {
-        var _this$drawOffset$rm$c2;
         rm.mvPushMatrix();
 
         // Undo rotation so that character plane is normal to LOS
-        (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, ((_this$drawOffset$rm$c2 = _this.drawOffset[rm.camera.cameraDir]) !== null && _this$drawOffset$rm$c2 !== void 0 ? _this$drawOffset$rm$c2 : _this.drawOffset['N']).toArray());
+        // Use the same drawOffset handling as above
+        (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, drawOffsetArr);
         (0, _matrix.translate)(rm.uModelMat, rm.uModelMat, _this.pos.toArray());
         (0, _matrix.rotate)(rm.uModelMat, rm.uModelMat, (0, _vector2.degToRad)(rm.camera.cameraAngle * rm.camera.cameraVector.z), [0, 0, -1]);
 
@@ -487,7 +512,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @param {*} action
      */
     _defineProperty(_this, "addAction", /*#__PURE__*/function () {
-      var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(action) {
+      var _ref6 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(action) {
         return _regenerator().w(function (_context5) {
           while (1) switch (_context5.n) {
             case 0:
@@ -504,7 +529,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
         }, _callee5);
       }));
       return function (_x3) {
-        return _ref5.apply(this, arguments);
+        return _ref6.apply(this, arguments);
       };
     }());
     /**
@@ -567,7 +592,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @param {string} url
      */
     _defineProperty(_this, "loadRemote", /*#__PURE__*/function () {
-      var _ref6 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(url) {
+      var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(url) {
         var response;
         return _regenerator().w(function (_context6) {
           while (1) switch (_context6.n) {
@@ -589,7 +614,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
         }, _callee6);
       }));
       return function (_x4) {
-        return _ref6.apply(this, arguments);
+        return _ref7.apply(this, arguments);
       };
     }());
     /**
@@ -661,7 +686,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @returns
      */
     _defineProperty(_this, "interact", /*#__PURE__*/function () {
-      var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(sprite, finish) {
+      var _ref8 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(sprite, finish) {
         var ret, _t;
         return _regenerator().w(function (_context7) {
           while (1) switch (_context7.n) {
@@ -680,7 +705,7 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
         }, _callee7);
       }));
       return function (_x5, _x6) {
-        return _ref7.apply(this, arguments);
+        return _ref8.apply(this, arguments);
       };
     }());
     /**

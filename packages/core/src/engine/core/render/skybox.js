@@ -166,7 +166,7 @@ export default class SkyboxManager {
 
         // Set up and cache the attribute location for 'aPosition'.
         shaderProgram.aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
-        gl.enableVertexAttribArray(shaderProgram.aPosition);
+        // Note: Don't enable vertex attrib array here - do it at render time to avoid WebGL state issues
 
         // Cache the uniform locations for various uniforms used in the shaders.
         shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
@@ -208,6 +208,11 @@ export default class SkyboxManager {
 
         const { gl } = this.engine;
 
+        // Reset all vertex attrib arrays to prevent errors from other shaders
+        for (let i = 0; i < 8; i++) {
+            gl.disableVertexAttribArray(i);
+        }
+
         // Use the shader program for rendering
         gl.useProgram(this.shaderProgram);
 
@@ -246,7 +251,8 @@ export default class SkyboxManager {
         // Draw the skybox using TRIANGLE_STRIP and the specified number of vertices
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.numVertices);
 
-        // Unbind the buffer and program after drawing
+        // Disable the vertex attrib array and unbind the buffer/program after drawing
+        gl.disableVertexAttribArray(this.shaderProgram.aPosition);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.useProgram(null);
     }

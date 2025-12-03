@@ -390,8 +390,15 @@ function downloadModelsFromZip(gl, models, zip) {
     var parts = model.obj.split('/');
     var name_1 = parts[parts.length - 1].replace('.obj', '');
     var namePromise = Promise.resolve(name_1);
-    var meshPromise = zip
-      .file(`models/${name_1}.obj`)
+    
+    // Check if OBJ file exists in zip
+    var objFile = zip.file(`models/${name_1}.obj`);
+    if (!objFile) {
+      console.warn(`[downloadModelsFromZip] Model file not found: models/${name_1}.obj`);
+      return "continue";
+    }
+    
+    var meshPromise = objFile
       .async('string')
       .then(function (data) {
         return new mesh_1['default'](data, options);
@@ -400,28 +407,32 @@ function downloadModelsFromZip(gl, models, zip) {
     // Download MaterialLibrary file?
     if (model.mtl) {
       var mtl_1 = getMtl(model);
-      mtlPromise = zip
-        .file(`models/${name_1}.mtl`)
-        .async('string')
-        .then(function (data) {
-          var material = new material_1.MaterialLibrary(data);
-          if (model.downloadMtlTextures !== false) {
-            var root = model.mtlTextureRoot;
-            if (!root) {
-              // get the directory of the MTL file as default
-              root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+      var mtlFile = zip.file(`models/${name_1}.mtl`);
+      if (mtlFile) {
+        mtlPromise = mtlFile
+          .async('string')
+          .then(function (data) {
+            var material = new material_1.MaterialLibrary(data);
+            if (model.downloadMtlTextures !== false) {
+              var root = model.mtlTextureRoot;
+              if (!root) {
+                // get the directory of the MTL file as default
+                root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+              }
+              // downloadMtlTextures returns a Promise that
+              // is resolved once all of the images it
+              // contains are downloaded. These are then
+              // attached to the map data objects
+              return Promise.all([Promise.resolve(material), downloadMtlTexturesFromZip(gl, material, root, zip)]);
             }
-            // downloadMtlTextures returns a Promise that
-            // is resolved once all of the images it
-            // contains are downloaded. These are then
-            // attached to the map data objects
-            return Promise.all([Promise.resolve(material), downloadMtlTexturesFromZip(gl, material, root, zip)]);
-          }
-          return Promise.all([Promise.resolve(material), undefined]);
-        })
-        .then(function (value) {
-          return value;
-        });
+            return Promise.all([Promise.resolve(material), undefined]);
+          })
+          .then(function (value) {
+            return value;
+          });
+      } else {
+        console.warn(`[downloadModelsFromZip] MTL file not found: models/${name_1}.mtl`);
+      }
     }
     var parsed = [namePromise, meshPromise, mtlPromise];
     finished.push(Promise.all(parsed));
