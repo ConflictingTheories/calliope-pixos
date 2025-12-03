@@ -99,6 +99,15 @@
       "type": "effects/fireplace",
       "pos": [10, 5, 0.5],
       "facing": "Up"
+    },
+    {
+      "id": "particle-demo-portal",
+      "type": "furniture/portal",
+      "pos": [5, 12, 0],
+      "facing": "Down",
+      "zones": ["particle-demo"],
+      "state": "open",
+      "selectTrigger": "sprite/portal_enter"
     }
   ],
   

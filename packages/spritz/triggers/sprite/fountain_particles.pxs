@@ -1,0 +1,44 @@
+-- Fountain Particle Effect
+-- Continuous water spray effect when near fountain
+
+local fountain = pixos.get_caller();
+local player = pixos.get_subject();
+
+local fountain_pos = pixos.from(fountain, 'pos');
+if not fountain_pos then return; end;
+
+-- Main water jet going up
+pixos.emit_particles({ fountain_pos[1], fountain_pos[2], fountain_pos[3] + 0.5 }, {
+    count = 25,
+    life = 1200,
+    speed = 0.04,
+    spread = 0.3,
+    size = 0.08,
+    color = { 0.5, 0.7, 1.0 },
+    gravity = { 0, 0, -0.003 },  -- Falls down (negative z)
+    drag = 0.99
+});
+
+-- Mist at base
+pixos.emit_particles({ fountain_pos[1], fountain_pos[2], fountain_pos[3] + 0.2 }, {
+    count = 10,
+    life = 2000,
+    speed = 0.015,
+    spread = 1.2,
+    size = 0.12,
+    color = { 0.7, 0.85, 1.0 },
+    gravity = { 0, 0, 0.0005 },  -- Rises slowly
+    drag = 0.995
+});
+
+-- Sparkle effect on water surface
+pixos.emit_particles({ fountain_pos[1], fountain_pos[2], fountain_pos[3] + 0.1 }, {
+    count = 5,
+    life = 600,
+    speed = 0.01,
+    spread = 0.8,
+    size = 0.05,
+    color = { 1.0, 1.0, 1.0 },
+    gravity = { 0, 0, 0 },
+    drag = 0.9
+});
