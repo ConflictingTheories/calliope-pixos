@@ -199,18 +199,61 @@ export default class PixoScriptLibrary {
         }
       },
 
-      // zone functions
+      /**
+       * Play a cutscene by name. Supports both:
+       * 1. Pre-registered cutscene names (registered via register_cutscene)
+       * 2. File paths to .pxc cutscene files
+       * 
+       * Returns a function that can be yielded in a Lua script.
+       * 
+       * Example Lua:
+       *   pixos.sync({ pixos.play_cutscene('intro') })
+       *   pixos.sync({ pixos.play_cutscene('cutscenes/opening.pxc') })
+       * 
+       * @param {string} cutscene - Cutscene name or file path
+       * @returns {function} Async function that resolves when cutscene completes
+       */
       play_cutscene: (cutscene) => {
-        // todo - not working
         return () =>
-          new Promise((resolve) => {
-            console.log({ msg: 'playing cutscene via lua', zone: envScope.zone, cutscene });
-            if (envScope.zone.playCutscene) {
-              console.log({ msg: 'cutscene function found' });
-              return envScope.zone.playCutscene(cutscene).then(() => {
-                resolve();
-              });
-            } else {
+          new Promise(async (resolve) => {
+            try {
+              // Check if this is a file path (ends with .pxc) or a registered cutscene name
+              if (typeof cutscene === 'string' && cutscene.endsWith('.pxc')) {
+                // Load and play .pxc file
+                const scriptText = await engine.assetLoader.load(cutscene);
+                if (scriptText) {
+                  const player = new PxcPlayer(engine, {
+                    onEnd: () => resolve()
+                  });
+                  await player.playCutscene(scriptText);
+                } else {
+                  console.warn('[play_cutscene] Failed to load cutscene file:', cutscene);
+                  resolve();
+                }
+              } else {
+                // Try registered cutscene first
+                if (engine.cutsceneManager && engine.cutsceneManager.isRegistered?.(cutscene)) {
+                  engine.cutsceneManager.start(cutscene);
+                  // Poll until cutscene finishes
+                  const poll = () => {
+                    if (!engine.cutsceneManager.isRunning()) {
+                      resolve();
+                    } else {
+                      setTimeout(poll, 30);
+                    }
+                  };
+                  poll();
+                } else if (envScope.zone?.playCutscene) {
+                  // Fallback to zone's playCutscene method
+                  await envScope.zone.playCutscene(cutscene);
+                  resolve();
+                } else {
+                  console.warn('[play_cutscene] Cutscene not found:', cutscene);
+                  resolve();
+                }
+              }
+            } catch (e) {
+              console.warn('[play_cutscene] Error playing cutscene:', e);
               resolve();
             }
           });

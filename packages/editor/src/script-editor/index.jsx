@@ -12,14 +12,24 @@
  * back to the underlying entry.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
 import Editor, { loader } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
 import { Button } from 'rsuite';
+
+// Import Monaco with pre-configured web workers
+import { monaco } from '../monaco-setup.js';
+import { registerPixoScriptLanguage } from '../shared/pixoscript-language.js';
+import { registerSpritzCutLanguage } from '../shared/spritzcut-language.js';
+import { registerPXSLLanguage } from '../shared/pxsl-language.js';
 
 // Configure Monaco to use local bundle instead of CDN
 loader.config({ monaco });
+
+// Register custom languages
+registerPixoScriptLanguage(monaco);
+registerSpritzCutLanguage(monaco);
+registerPXSLLanguage(monaco);
 
 /**
  * ScriptEditor component allows editing and viewing of script and text files
@@ -37,6 +47,19 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   const [lang, setLang] = useState(initialLang || 'lua');
   const [type] = useState(initialType || 'script-only');
   const [hasChanges, setHasChanges] = useState(false);
+  const editorRef = useRef(null);
+
+  // Map file extensions to appropriate languages
+  const getLanguage = useCallback((langOrExt) => {
+    if (!langOrExt) return 'lua';
+    const ext = langOrExt.toLowerCase();
+    if (ext === 'pxs' || ext === 'pixoscript') return 'pixoscript';
+    if (ext === 'pxc' || ext === 'spritzcut') return 'spritzcut';
+    if (ext === 'pxsl') return 'pxsl';  // PixoSpritz Shader Language
+    if (ext === 'glsl' || ext === 'vert' || ext === 'frag') return 'glsl';
+    if (ext === 'lua') return 'pixoscript'; // Use enhanced PixoScript for .lua files
+    return langOrExt;
+  }, []);
 
   // Update content when props change
   useEffect(() => {
@@ -49,9 +72,9 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   // Update lang when props change
   useEffect(() => {
     if (initialLang !== undefined) {
-      setLang(initialLang);
+      setLang(getLanguage(initialLang));
     }
-  }, [initialLang]);
+  }, [initialLang, getLanguage]);
 
   /**
    * Handle content changes in the editor
@@ -60,6 +83,20 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
     setContent(value || '');
     setHasChanges(true);
   }, []);
+
+  /**
+   * Handle editor mount - store reference for future use
+   */
+  const handleEditorMount = useCallback((editor, monacoInstance) => {
+    editorRef.current = editor;
+    
+    // Apply custom theme based on language
+    if (lang === 'pixoscript') {
+      monacoInstance.editor.setTheme('pixoscript-dark');
+    } else if (lang === 'spritzcut') {
+      monacoInstance.editor.setTheme('spritzcut-dark');
+    }
+  }, [lang]);
 
   /**
    * Saves the current content state by invoking the onSave callback if provided.
@@ -115,11 +152,12 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
       >
         <div style={{ flex: 1, minHeight: 0 }}>
           <Editor
-            theme="vs-dark"
+            theme={lang === 'pixoscript' ? 'pixoscript-dark' : lang === 'spritzcut' ? 'spritzcut-dark' : 'vs-dark'}
             height="100%"
             value={content}
             language={lang}
             onChange={handleEditorChange}
+            onMount={handleEditorMount}
             loading={<div style={{ padding: '2rem', color: '#888' }}>Loading editor...</div>}
             options={{
               minimap: { enabled: false },
@@ -128,6 +166,9 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
               scrollBeyondLastLine: false,
               wordWrap: 'on',
               automaticLayout: true,
+              quickSuggestions: true,
+              suggestOnTriggerCharacters: true,
+              parameterHints: { enabled: true },
             }}
           />
         </div>

@@ -1,0 +1,96 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *                    Water Ripple Shader - PXSL Example
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Creates a dynamic water surface with waves and reflections.
+ * Perfect for lakes, rivers, puddles, and magical pools.
+ * 
+ * Usage in PixoScript:
+ *   set_shader("water_surface")
+ *   set_uniform("waterColor", 0.2, 0.5, 0.8)
+ *   set_uniform("waveAmplitude", 0.05)
+ *   set_uniform("waveSpeed", 2.0)
+ */
+
+@shader "water_surface"
+
+@vertex
+input position: vec3
+input uv: vec2
+input normal: vec3
+uniform modelMatrix: mat4
+uniform viewMatrix: mat4
+uniform projectionMatrix: mat4
+uniform normalMatrix: mat3
+uniform time: float
+uniform waveAmplitude: float
+uniform waveSpeed: float
+output vUV: vec2
+output vNormal: vec3
+output vWorldPos: vec3
+
+main {
+  // Create wave displacement on Y axis
+  let wave1 = sin(position.x * 3.0 + time * waveSpeed) * waveAmplitude
+  let wave2 = sin(position.z * 2.5 + time * waveSpeed * 0.8) * waveAmplitude * 0.7
+  let wave3 = sin((position.x + position.z) * 4.0 + time * waveSpeed * 1.2) * waveAmplitude * 0.3
+  let totalWave = wave1 + wave2 + wave3
+  
+  // Displace vertex
+  let displaced = position + vec3(0.0, totalWave, 0.0)
+  
+  // Calculate displaced normal (approximate)
+  let dx = cos(position.x * 3.0 + time * waveSpeed) * 3.0 * waveAmplitude
+  let dz = cos(position.z * 2.5 + time * waveSpeed * 0.8) * 2.5 * waveAmplitude * 0.7
+  let waveNormal = normalize(vec3(-dx, 1.0, -dz))
+  
+  vUV = uv
+  vNormal = normalMatrix * waveNormal
+  vWorldPos = vec3(modelMatrix * vec4(displaced, 1.0))
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(displaced, 1.0)
+}
+
+@fragment
+input vUV: vec2
+input vNormal: vec3
+input vWorldPos: vec3
+uniform texture: sampler2D
+uniform time: float
+uniform waterColor: vec3
+uniform transparency: float
+uniform reflectivity: float
+uniform cameraPosition: vec3
+output fragColor: vec4
+
+main {
+  // Animate UV for water caustics
+  let animatedUV = waveUV(vUV, 0.015, 8.0, time)
+  
+  // Sample base texture (could be a reflection or underwater texture)
+  let tex = sample(texture, animatedUV)
+  
+  // Calculate view direction for fresnel
+  let viewDir = normalize(cameraPosition - vWorldPos)
+  let n = normalize(vNormal)
+  
+  // Fresnel effect - more reflective at glancing angles
+  let fresnelFactor = fresnel(n, viewDir, 3.0)
+  
+  // Mix texture with water color based on transparency
+  let baseColor = mix(tex.rgb, waterColor, transparency)
+  
+  // Add shimmer/sparkle effect
+  let shimmer = pulse(vWorldPos.x * 10.0 + vWorldPos.z * 10.0 + time * 3.0, 1.0)
+  shimmer = shimmer * shimmer * 0.3 * reflectivity
+  
+  // Apply fresnel to brighten edges
+  let reflectionColor = brighten(waterColor, 0.3)
+  let finalColor = mix(baseColor, reflectionColor, fresnelFactor * reflectivity)
+  finalColor = finalColor + vec3(shimmer)
+  
+  // Water is semi-transparent
+  let alpha = mix(0.6, 0.9, fresnelFactor)
+  
+  fragColor = vec4(finalColor, alpha)
+}

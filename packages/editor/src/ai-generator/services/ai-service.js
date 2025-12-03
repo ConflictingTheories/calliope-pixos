@@ -7,6 +7,14 @@
  * Provides a unified interface for multiple AI providers including
  * OpenAI, Anthropic, and local/custom endpoints. Supports structured
  * outputs, image generation, audio generation, and text completion.
+ *
+ * IMPORTANT: Direct browser calls to OpenAI/Anthropic APIs will fail
+ * due to CORS restrictions. For production use, you should either:
+ *   1. Use the "Custom" provider with a proxy server endpoint
+ *   2. Use a CORS-enabled proxy service
+ *   3. Run the AI calls through a backend server
+ *
+ * For local development, you can use a local proxy or browser extension.
  */
 
 // Supported AI providers
@@ -254,11 +262,24 @@ export class AIService {
       };
     }
 
-    const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].chat, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    });
+    let response;
+    try {
+      response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].chat, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      });
+    } catch (err) {
+      // CORS or network error
+      if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
+        throw new Error(
+          'Unable to reach OpenAI API. This is likely due to CORS restrictions. ' +
+          'Direct browser calls to OpenAI are blocked. Please use the "Custom" provider ' +
+          'with a proxy server, or run the editor from a server that proxies API requests.'
+        );
+      }
+      throw err;
+    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
@@ -469,11 +490,24 @@ export class AIService {
     let lastError = null;
     
     for (let attempt = 0; attempt < RATE_LIMIT_CONFIG.maxRetries; attempt++) {
-      const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].image, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(body),
-      });
+      let response;
+      try {
+        response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].image, {
+          method: 'POST',
+          headers: this.getHeaders(),
+          body: JSON.stringify(body),
+        });
+      } catch (err) {
+        // CORS or network error
+        if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
+          throw new Error(
+            'Unable to reach OpenAI Image API. This is likely due to CORS restrictions. ' +
+            'Direct browser calls to OpenAI are blocked. Please use a proxy server ' +
+            'or run the editor from a server that proxies API requests.'
+          );
+        }
+        throw err;
+      }
 
       if (response.ok) {
         const data = await response.json();
