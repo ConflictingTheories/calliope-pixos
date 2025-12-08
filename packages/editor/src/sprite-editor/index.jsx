@@ -180,7 +180,6 @@ function SpriteEditor({ content, onSave }) {
     if (onSave) {
       onSave(spriteData);
     } else {
-      console.log('Sprite saved:', JSON.stringify(spriteData, null, 2));
     }
   }
 

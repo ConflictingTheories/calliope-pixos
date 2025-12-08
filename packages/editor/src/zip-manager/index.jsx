@@ -337,7 +337,6 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   // Notify parent when zip filesystem changes
   useEffect(() => {
     if (onZipLoaded && zipFilesystem) {
-      console.log('ZipFilesystem changed, notifying parent:', zipFilesystem);
       onZipLoaded(zipFilesystem);
     }
   }, [zipFilesystem, onZipLoaded]);

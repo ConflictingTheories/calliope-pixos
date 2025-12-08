@@ -266,7 +266,6 @@ function MapEditor({ content, onSave }) {
     if (onSave) {
       onSave(mapObject);
     } else {
-      console.log('Map saved:', JSON.stringify(mapObject, null, 2));
     }
   }
 

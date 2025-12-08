@@ -140,11 +140,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       
       setAvailableSprites(Array.from(spriteTypes).sort());
       setAvailableObjects(Array.from(objectTypes).sort());
-      
-      console.log('[MapEditor3D] Discovered sprite types:', spriteTypes.size);
-      console.log('[MapEditor3D] Discovered object types:', objectTypes.size);
     } catch (err) {
       console.error('[MapEditor3D] Failed to discover sprite/object types:', err);
+
     }
   }, [zip]);
   
@@ -245,29 +243,22 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   // Load texture atlas
   useEffect(() => {
     if (!textureAtlas) {
-      console.log('[MapEditor3D] No texture atlas provided');
       return;
     }
     
     if (!glRef.current) {
-      console.log('[MapEditor3D] GL context not ready, waiting...');
       return;
     }
     
-    console.log('[MapEditor3D] Loading texture atlas:', textureAtlas.substring(0, 50) + '...');
     const img = new Image();
     img.onload = () => {
-      console.log('[MapEditor3D] Texture image loaded:', img.width, 'x', img.height);
       if (glRef.current) {
         const texture = createTextureFromImage(glRef.current, img);
         textureRef.current = texture;
-        console.log('[MapEditor3D] WebGL texture created:', texture);
         
         // Verify texture was created successfully
         if (!texture) {
           console.error('[MapEditor3D] Failed to create WebGL texture object!');
-        } else {
-          console.log('[MapEditor3D] Texture successfully bound to textureRef');
         }
       } else {
         console.error('[MapEditor3D] GL context lost after image load!');
@@ -317,24 +308,19 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
   // Initialize WebGL program
   const handleWebGLInit = useCallback((gl) => {
-    console.log('[MapEditor3D] WebGL initialized');
     glRef.current = gl;
     
     // Create shader program
     const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
     if (program) {
       shaderProgramRef.current = program;
-      console.log('[MapEditor3D] Shader program created');
       
       // If we already have a texture atlas, load it now
       if (textureAtlas && !textureRef.current) {
-        console.log('[MapEditor3D] Texture atlas available, loading now...');
         const img = new Image();
         img.onload = () => {
-          console.log('[MapEditor3D] Texture image loaded in init:', img.width, 'x', img.height);
           const texture = createTextureFromImage(gl, img);
           textureRef.current = texture;
-          console.log('[MapEditor3D] WebGL texture created in init:', texture);
         };
         img.onerror = (e) => {
           console.error('[MapEditor3D] Failed to load texture in init:', e);
@@ -368,7 +354,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
       // Debug: Log texture and uniform state once
       if (!window._renderDebugLogged) {
-        console.log('[MapEditor3D] Render state:', {
           hasTexture: !!textureRef.current,
           textureObject: textureRef.current,
           uniformLocations: {
@@ -610,7 +595,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       // Debug: log texture usage once per texture name
       if (!window._textureDebugNames) window._textureDebugNames = new Set();
       if (!window._textureDebugNames.has(textureName)) {
-        console.log('[MapEditor3D] Using texture:', textureName, {
           textureObject: textureRef.current,
           tilesetHasTexture: !!tileset?.textures?.[textureName],
           texturePos: tileset?.textures?.[textureName],
@@ -789,7 +773,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     (screenX, screenY, camera, event) => {
       if (!cells.length) return;
 
-      console.log('[MapEditor3D] Cell click:', {
         shiftKey: event.shiftKey,
         button: event.button,
         type: event.type,
@@ -799,17 +782,14 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
       if (!cellCoords) {
-        console.log('[MapEditor3D] No cell coords found');
         return;
       }
 
       const { x, y } = cellCoords;
-      console.log('[MapEditor3D] Cell coords:', x, y, 'tile:', cells[y]?.[x], 'editorMode:', editorMode);
 
       // Handle different editor modes - each mode is completely separate
       if (editorMode === 'sprites') {
         if (event.type === 'click' && event.button === 0) {
-          console.log('[MapEditor3D] Placing sprite at:', x, y);
           addSprite(x, y);
         }
         return; // Don't process any other actions in sprite mode
@@ -817,7 +797,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       
       if (editorMode === 'objects') {
         if (event.type === 'click' && event.button === 0) {
-          console.log('[MapEditor3D] Placing object at:', x, y);
           addObject(x, y);
         }
         return; // Don't process any other actions in object mode
@@ -825,7 +804,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       
       if (editorMode === 'animatedTiles') {
         if (event.type === 'click' && event.button === 0) {
-          console.log('[MapEditor3D] Placing animated tile at:', x, y);
           addAnimatedTile(x, y);
         }
         return; // Don't process any other actions in animated tile mode
@@ -836,7 +814,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         if (currentTool === 'paint') {
           // Left-Click or Shift+Left-Click: Paint
           if ((event.type === 'click' || event.type === 'mousedown') && event.button === 0) {
-            console.log('[MapEditor3D] Painting cell:', x, y, 'with', selectedTile);
             paintCell(x, y);
             setIsPainting(true);
             setLastPaintedCell({ x, y });
@@ -844,7 +821,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         } else if (currentTool === 'erase') {
           // Left-Click or Right-Click: Erase
           if ((event.type === 'click' && event.button === 0) || event.type === 'contextmenu') {
-            console.log('[MapEditor3D] Erasing cell:', x, y);
             eraseCell(x, y);
             setIsPainting(true);
             setLastPaintedCell({ x, y });
@@ -852,7 +828,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         } else if (currentTool === 'pick') {
           // Click: Pick tile
           if (event.type === 'click') {
-            console.log('[MapEditor3D] Picking cell:', x, y);
             pickCell(x, y);
           }
         }

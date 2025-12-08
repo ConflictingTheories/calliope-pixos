@@ -1071,7 +1071,6 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
         onSave(events);
       }
     } else {
-      console.log('Cutscene saved:', JSON.stringify(events, null, 2));
     }
   }
 

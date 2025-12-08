@@ -648,7 +648,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       setGl(glContext);
       setUvx(uvContext);
 
-      console.log({ glContext, uvContext });
     }
 
     if (gl) {
@@ -755,7 +754,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     if (onSave) {
       onSave(tileset);
     } else {
-      console.log('Tileset saved:', JSON.stringify(tileset, null, 2));
     }
   }
 
@@ -836,7 +834,6 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   function resizeUV() {
     if (!uvC.current) return;
     const r = uvC.current.getBoundingClientRect();
-    console.log({ uvC, c: uvC.current, b: r });
     const dpr = window.devicePixelRatio || 1;
     setUvW(Math.max(1, Math.floor(r.width * dpr)));
     setUvH(Math.max(1, Math.floor(r.height * dpr)));
