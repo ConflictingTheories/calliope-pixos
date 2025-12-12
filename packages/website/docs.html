@@ -62,13 +62,13 @@
             const params = new URLSearchParams(window.location.search);
             const topic = params.get('topic') || 'getting-started'; // Default to getting-started
 
-            // Map topics to their corresponding Markdown files
+            // Map topics to their corresponding local Markdown files
             const docFiles = {
-                'getting-started': 'https://raw.githubusercontent.com/ConflictingTheories/calliope-pixos/main/QUICKSTART.md', // This file will be created
-                'api': 'https://raw.githubusercontent.com/ConflictingTheories/calliope-pixos/main/packages/core/documentation/specifications/00-pixospritz-api.md',
-                'tutorials': 'https://raw.githubusercontent.com/ConflictingTheories/calliope-pixos/main/.github/TUTORIALS.md',
-                'faq': 'https://raw.githubusercontent.com/ConflictingTheories/calliope-pixos/main/.github/FAQ.md',
-                'editor-guide': 'https://raw.githubusercontent.com/ConflictingTheories/calliope-pixos/main/.github/EDITOR_GUIDE.md'
+                'getting-started': 'docs/QUICKSTART.md',
+                'api': 'docs/00-pixospritz-api.md',
+                'tutorials': 'docs/TUTORIALS.md',
+                'faq': 'docs/FAQ.md',
+                'editor-guide': 'docs/EDITOR_GUIDE.md'
             };
 
             const filePath = docFiles[topic];
