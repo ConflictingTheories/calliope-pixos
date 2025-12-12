@@ -358,6 +358,9 @@ export default class GLEngine {
       return id;
     }
 
+    // Deselect all objects before processing the new selection
+    this.spritz.world.deselectAll();
+
     // Select type(s) based on request
     type.split('|').forEach((t) => {
       switch (t) {

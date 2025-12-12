@@ -35,6 +35,7 @@ export default function WebGL3DCanvas({
   initialCamera = {},
   onCellClick,
   onCellHover,
+  onMouseUp,
   style = {},
   showControls = true,
 }) {
@@ -140,23 +141,11 @@ export default function WebGL3DCanvas({
   // Mouse event handlers
   const handleMouseDown = useCallback(
     (e) => {
-      // Call onCellClick for shift+mousedown (painting)
-      if (e.shiftKey && onCellClick) {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const mouseEvent = new MouseEvent('mousedown', e);
-        Object.defineProperty(mouseEvent, 'button', { value: e.button });
-        Object.defineProperty(mouseEvent, 'shiftKey', { value: true });
-        onCellClick(x, y, camera, mouseEvent);
-        return;
-      }
-      
       setIsDragging(true);
       setIsPanning(e.button === 1); // Middle mouse for panning
       setLastMousePos({ x: e.clientX, y: e.clientY });
     },
-    [camera, onCellClick]
+    []
   );
 
   const handleMouseMove = useCallback(
@@ -204,7 +193,10 @@ export default function WebGL3DCanvas({
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     setIsPanning(false);
-  }, []);
+    if (onMouseUp) {
+      onMouseUp();
+    }
+  }, [onMouseUp]);
 
   const handleWheel = useCallback((e) => {
     e.preventDefault();
@@ -219,13 +211,8 @@ export default function WebGL3DCanvas({
 
   const handleClick = useCallback(
     (e) => {
-      // Only trigger click if not dragging and not shift-clicking
+      // Only trigger click if not dragging
       if (Math.abs(e.clientX - lastMousePos.x) > 5 || Math.abs(e.clientY - lastMousePos.y) > 5) {
-        return;
-      }
-
-      // Don't handle regular clicks - painting is done via Shift+Click
-      if (!e.shiftKey) {
         return;
       }
 
@@ -271,14 +258,12 @@ export default function WebGL3DCanvas({
         onWheel={handleWheel}
         onClick={handleClick}
         onContextMenu={(e) => {
-          if (e.shiftKey) {
-            e.preventDefault(); // Prevent context menu for Shift+Right-Click (erase)
-            if (onCellClick) {
-              const rect = canvasRef.current.getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const y = e.clientY - rect.top;
-              onCellClick(x, y, camera, e);
-            }
+          e.preventDefault(); // Prevent context menu for Right-Click (erase)
+          if (onCellClick) {
+            const rect = canvasRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            onCellClick(x, y, camera, e);
           }
         }}
       />

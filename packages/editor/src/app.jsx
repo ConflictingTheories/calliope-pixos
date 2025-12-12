@@ -28,6 +28,8 @@ import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
 import AIGenerator from './ai-generator/index.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
 import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
+import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
+import './onboarding/FirstTimeWizard.css';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -64,6 +66,13 @@ const App = () => {
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showWizard, setShowWizard] = useState(() => {
+    try {
+      return localStorage.getItem('pixospritz_onboarded') !== 'true';
+    } catch {
+      return true;
+    }
+  });
   const supportFabRef = useRef(null);
 
   const handleOptionsChange = useCallback((options) => {
@@ -96,6 +105,13 @@ const App = () => {
   const handleSupportPanelToggle = useCallback(() => {
     setSupportPanelPinned((prev) => !prev);
     setSupportMenuOpen(false);
+  }, []);
+
+  const handleWizardClose = useCallback(() => {
+    setShowWizard(false);
+    try {
+      localStorage.setItem('pixospritz_onboarded', 'true');
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -614,8 +630,7 @@ const App = () => {
   }, [getData, toDataUri, zip]);
 
   const renderMapEditor = useCallback(async (entry) => {
-    
-    // Helper to get full path of an entry
+    try {
     const getEntryFullPath = (ent) => {
       // If entry already has fullName, use it
       if (ent.fullName) return ent.fullName;
@@ -794,14 +809,14 @@ const App = () => {
       cells: cellsData || mapData?.cells || [],
       heights: heightsData || mapData?.heights || null
     };
-    
-    
+
+
     // Load tileset and its dependencies
     let tileset = null;
     let geometry = null;
     let tiles = null;
     let textureAtlas = null;
-    
+
     if (tilesetName && allEntries.length > 0) {
       try {
         // Use extends-aware tileset loader
@@ -810,18 +825,18 @@ const App = () => {
           tileset = resolvedTileset;
           geometry = resolvedTileset.geometry || {};
           tiles = resolvedTileset.tiles || {};
-          
+
           // Load texture atlas
           if (resolvedTileset.src) {
             const textureName = resolvedTileset.src;
-            
+
             // Search for texture file - check multiple locations
             let textureFile = allEntries.find(e => {
               const fullPath = e.fullName || e.name;
               // Try exact match first
               return fullPath.endsWith(textureName);
             });
-            
+
             // If not found, try broader search
             if (!textureFile) {
               const baseName = textureName.split('/').pop(); // Get just the filename
@@ -830,7 +845,7 @@ const App = () => {
                 return fullPath.endsWith(baseName) && fullPath.match(/\.(png|jpg|jpeg|gif)$/i);
               });
             }
-            
+
             if (textureFile) {
               const textureBytes = await getData(textureFile, false);
               if (textureBytes) {
@@ -852,14 +867,14 @@ const App = () => {
         } catch (extendsErr) {
           console.error('Failed to load tileset with extends:', extendsErr);
           console.error('Error details:', extendsErr.message);
-          
+
           // Fallback: try loading without extends support
           // Search more broadly for the tileset file
           let tilesetFile = allEntries.find(e => {
             const fullPath = e.fullName || e.name;
             return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
           });
-          
+
           // Try fuzzy match if exact not found
           if (!tilesetFile) {
             tilesetFile = allEntries.find(e => {
@@ -867,7 +882,7 @@ const App = () => {
               return fullPath.includes(tilesetName) && fullPath.endsWith('tileset.json');
             });
           }
-          
+
           if (tilesetFile) {
             const tilesetContent = await getData(tilesetFile, true);
             if (tilesetContent && typeof tilesetContent === 'string') {
@@ -882,15 +897,7 @@ const App = () => {
         console.error('Failed to load tileset dependencies:', err);
       }
     }
-    
-    return {
-      hasTileset: !!tileset,
-      hasGeometry: !!geometry,
-      hasTiles: !!tiles,
-      hasTexture: !!textureAtlas,
-      cellsSize: combinedContent.cells?.length
-    };
-    
+
     setContents([
       <MapEditor3D
         key={Date.now()}
@@ -937,6 +944,16 @@ const App = () => {
         }}
       />
     ]);
+    } catch (err) {
+      console.error('[renderMapEditor] Failed to render map editor:', err);
+      setContents([
+        <div key="error" style={{ padding: '2rem', color: 'red' }}>
+          <h3>Failed to load map editor</h3>
+          <p>Error: {err.message}</p>
+          <p>Please check the console for more details.</p>
+        </div>
+      ]);
+    }
   }, [getData, zip, toDataUri]);
 
   const renderTileEditor = useCallback(async (entry) => {
@@ -1497,6 +1514,7 @@ const App = () => {
           <span>Support Pixospritz</span>
         </button>
       </div>
+      {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
     </div>
   );
 };

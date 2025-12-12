@@ -33,6 +33,15 @@ import {
  * Enhanced MapEditor with 3D rendering
  */
 function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zip }) {
+  console.log('[MapEditor3D] Component props:', {
+    content: !!content,
+    tileset: !!tileset,
+    geometry: !!geometry,
+    tiles: !!tiles,
+    textureAtlas: !!textureAtlas,
+    cells: content?.cells?.length,
+    mapBounds: content?.bounds
+  });
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
@@ -51,15 +60,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   
   // UI state
   const [selectedTile, setSelectedTile] = useState('FLOOR');
-  const [currentTool, setCurrentTool] = useState('paint'); // 'paint', 'erase', 'pick', 'sprite', 'object', 'animatedTile'
+  const [currentTool, setCurrentTool] = useState('paint'); // 'paint', 'erase', 'pick', 'rectangle', 'sprite', 'object', 'animatedTile'
   const [currentHeight, setCurrentHeight] = useState(0);
-  const [showGrid, setShowGrid] = useState(true);
+  const [showGrid] = useState(true);
   const [error, setError] = useState(null);
   const [editorMode, setEditorMode] = useState('tiles'); // 'tiles', 'sprites', 'objects', 'triggers', 'lights', 'animatedTiles'
   
   // Painting state
   const [isPainting, setIsPainting] = useState(false);
   const [lastPaintedCell, setLastPaintedCell] = useState(null);
+
+  // Rectangle selection state
+  const [isSelectingRectangle, setIsSelectingRectangle] = useState(false);
+  const [rectangleStart, setRectangleStart] = useState(null);
+  const [rectangleEnd, setRectangleEnd] = useState(null);
   
   // Sprite/Object editing state
   const [selectedSprite, setSelectedSprite] = useState(null);
@@ -274,7 +288,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-      
+
       switch(e.key.toLowerCase()) {
       case 'p':
         setCurrentTool('paint');
@@ -286,28 +300,32 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         setCurrentTool('pick');
         break;
       case 'r':
+        setCurrentTool('rectangle');
+        break;
+      case 'c':
         // Reset camera - would need to expose this from WebGL3DCanvas
         break;
       default:
         break;
       }
     };
-    
+
     const handleMouseUp = () => {
       setIsPainting(false);
       setLastPaintedCell(null);
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('mouseup', handleMouseUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [isSelectingRectangle, rectangleStart, rectangleEnd]);
 
   // Initialize WebGL program
   const handleWebGLInit = useCallback((gl) => {
+    console.log('[MapEditor3D] handleWebGLInit called', { gl: !!gl, textureAtlas: !!textureAtlas });
     glRef.current = gl;
     
     // Create shader program
@@ -335,7 +353,11 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   // Render callback for WebGL3DCanvas
   const handleRender = useCallback(
     (gl, projectionMatrix, viewMatrix, camera, showGridFlag) => {
-      if (!shaderProgramRef.current || !cells.length) return;
+      console.log('[MapEditor3D] handleRender called', { cellsLength: cells?.length, shaderProgram: !!shaderProgramRef.current });
+      if (!shaderProgramRef.current || !cells.length) {
+        console.log('[MapEditor3D] Early return - no shader program or no cells');
+        return;
+      }
 
       const program = shaderProgramRef.current;
       gl.useProgram(program);
@@ -712,8 +734,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current?.canvas);
       setHoveredCell(cellCoords);
       
-      // Drag painting: only works in tile mode with shift key held and mouse down
-      if (editorMode === 'tiles' && event?.shiftKey && isPainting && cellCoords) {
+      // Drag painting: works in tile mode when painting/erasing
+      if (editorMode === 'tiles' && isPainting && cellCoords) {
         const { x, y } = cellCoords;
         // Only paint if we moved to a different cell
         if (!lastPaintedCell || lastPaintedCell.x !== x || lastPaintedCell.y !== y) {
@@ -727,6 +749,11 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             setLastPaintedCell({ x, y });
           }
         }
+      }
+
+      // Rectangle selection: update end point while dragging
+      if (editorMode === 'tiles' && currentTool === 'rectangle' && isSelectingRectangle && cellCoords) {
+        setRectangleEnd(cellCoords);
       }
     },
     [cells, isPainting, lastPaintedCell, selectedTile, currentHeight, editorMode, currentTool]
@@ -766,7 +793,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         return; // Don't process any other actions in animated tile mode
       }
 
-      // Tile mode - handle paint/erase/pick tools
+      // Tile mode - handle paint/erase/pick/rectangle tools
       if (editorMode === 'tiles') {
         if (currentTool === 'paint') {
           // Left-Click or Shift+Left-Click: Paint
@@ -786,6 +813,13 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           // Click: Pick tile
           if (event.type === 'click') {
             pickCell(x, y);
+          }
+        } else if (currentTool === 'rectangle') {
+          // Left-Click: Start rectangle selection
+          if (event.type === 'mousedown' && event.button === 0) {
+            setIsSelectingRectangle(true);
+            setRectangleStart(cellCoords);
+            setRectangleEnd(cellCoords);
           }
         }
       }
@@ -903,6 +937,38 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       setSelectedTile(pickedTile);
       setCurrentHeight(heights[y]?.[x] || 0);
     }
+  }
+
+  // Fill rectangle with selected tile
+  function fillRectangle(start, end) {
+    if (!start || !end) return;
+
+    const minX = Math.min(start.x, end.x);
+    const maxX = Math.max(start.x, end.x);
+    const minY = Math.min(start.y, end.y);
+    const maxY = Math.max(start.y, end.y);
+
+    const newCells = cells.map((row, y) =>
+      row.map((cell, x) => {
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          return selectedTile;
+        }
+        return cell;
+      })
+    );
+
+    const newHeights = heights.map((row, y) =>
+      row.map((height, x) => {
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          return currentHeight;
+        }
+        return height;
+      })
+    );
+
+    setCells(newCells);
+    setHeights(newHeights);
+    pushHistory(newCells, newHeights);
   }
   
   // Resize map
@@ -1113,26 +1179,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   }
 
   if (!tiles || Object.keys(tiles).length === 0) {
-    return (
-      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div style={{
-          background: '#4d3319',
-          border: '1px solid #ce9178',
-          borderRadius: '3px',
-          padding: '10px',
-          fontSize: '13px',
-          color: '#ce9178',
-          marginBottom: '1rem'
-        }}>
-          ⚠️ Map loaded but tileset data is missing. Please ensure the tileset file exists and is properly referenced in the map.
-        </div>
-        <div style={{ fontSize: '13px' }}>
-          <p style={{ margin: '5px 0' }}>Map file loaded successfully, but cannot render 3D view without tileset data.</p>
-          <p style={{ margin: '5px 0' }}>Expected tileset: <strong>{map?.tileset || 'unknown'}</strong></p>
-          <p style={{ margin: '5px 0' }}>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
-        </div>
-      </div>
-    );
+    setError('Map loaded but tileset data is missing. 3D view will be empty. Expected tileset: ' + (map?.tileset || 'unknown'));
   }
 
   if (!geometry) {
@@ -1226,6 +1273,24 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               >
                 🔍 Pick Tool
                 <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click a tile to select it</div>
+              </button>
+              <button
+                disabled={editorMode !== 'tiles'}
+                style={{
+                  background: currentTool === 'rectangle' ? '#1177bb' : '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '3px',
+                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
+                  fontSize: '13px'
+                }}
+                onClick={() => editorMode === 'tiles' && setCurrentTool('rectangle')}
+                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'rectangle' ? '#1177bb' : '#0e639c')}
+              >
+                □ Rectangle Tool
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click and drag to fill area</div>
               </button>
             </div>
 
@@ -2350,7 +2415,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             • <strong>Shift+Right-Click</strong> - Erase<br />
             • Regular drag rotates camera<br />
             • Middle mouse pans<br />
-            • Scroll wheel zooms
+            • Scroll wheel zooms<br />
+            • Rectangle tool: Click and drag to select area, release to fill
           </div>
         </div>
       </div>
@@ -2395,6 +2461,17 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             onInit={handleWebGLInit}
             onCellClick={handleCellClick}
             onCellHover={handleCellHover}
+            onMouseUp={() => {
+              setIsPainting(false);
+              setLastPaintedCell(null);
+              // Handle rectangle fill on mouse up
+              if (isSelectingRectangle && rectangleStart && rectangleEnd) {
+                fillRectangle(rectangleStart, rectangleEnd);
+                setIsSelectingRectangle(false);
+                setRectangleStart(null);
+                setRectangleEnd(null);
+              }
+            }}
             showControls={false}
             initialCamera={{
               distance: 25,

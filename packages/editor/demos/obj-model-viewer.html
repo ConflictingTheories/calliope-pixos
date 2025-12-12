@@ -279,11 +279,11 @@
 
       // Load textures first
       imageFiles.forEach(file => {
-        console.log('Loading texture:', file.name);
+        // console.log('Loading texture:', file.name); // Removed for production
         const url = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
-          console.log('Texture loaded:', file.name, img.width, 'x', img.height);
+          // console.log('Texture loaded:', file.name, img.width, 'x', img.height); // Removed for production
           const tex = gl.createTexture();
           gl.bindTexture(gl.TEXTURE_2D, tex);
           gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -299,7 +299,7 @@
 
           textures[file.name] = tex;
           loadedImages++;
-          console.log('Textures loaded:', loadedImages, '/', totalImages);
+          // console.log('Textures loaded:', loadedImages, '/', totalImages); // Removed for production
           checkReady();
         };
         img.onerror = () => console.error('Failed to load texture:', file.name);
@@ -449,7 +449,7 @@
       let current = null;
       const lines = text.split(/\r?\n/);
 
-      console.log('Parsing MTL...');
+      // console.log('Parsing MTL...'); // Removed for production
 
       for (let line of lines) {
         line = line.trim();
@@ -459,22 +459,22 @@
         if (parts[0] === 'newmtl') {
           current = parts[1];
           materials[current] = { Ka: [1, 1, 1], Kd: [0.8, 0.8, 0.8], Ks: [1, 1, 1], Ns: 50 };
-          console.log('New material:', current);
+          // console.log('New material:', current); // Removed for production
         } else if (current) {
           if (parts[0] === 'Ka' || parts[0] === 'Kd' || parts[0] === 'Ks') {
             const vals = parts.slice(1).map(parseFloat);
             materials[current][parts[0]] = vals.length === 1 ? [vals[0], vals[0], vals[0]] : vals;
-            console.log('Material', current, parts[0] + ':', materials[current][parts[0]]);
+            // console.log('Material', current, parts[0] + ':', materials[current][parts[0]]); // Removed for production
           } else if (parts[0] === 'Ns') {
             materials[current].Ns = parseFloat(parts[1]);
-            console.log('Material', current, 'Ns:', materials[current].Ns);
+            // console.log('Material', current, 'Ns:', materials[current].Ns); // Removed for production
           } else if (parts[0] === 'map_Kd') {
             materials[current].map_Kd = parts.slice(1).join(' ');
-            console.log('Material', current, 'map_Kd:', materials[current].map_Kd);
+            // console.log('Material', current, 'map_Kd:', materials[current].map_Kd); // Removed for production
           }
         }
       }
-      console.log('Parsed materials:', materials);
+      // console.log('Parsed materials:', materials); // Removed for production
       return materials;
     }
 
@@ -519,7 +519,7 @@
 
         m.texture = texture;
         m.hasTexture = !!texture;
-        console.log('Mesh material:', m.material, 'Texture found:', !!texture, 'map_Kd:', m.mat.map_Kd);
+        // console.log('Mesh material:', m.material, 'Texture found:', !!texture, 'map_Kd:', m.mat.map_Kd); // Removed for production
       });
 
       // compute bounding sphere
