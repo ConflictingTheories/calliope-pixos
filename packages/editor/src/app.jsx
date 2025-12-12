@@ -804,10 +804,6 @@ const App = () => {
     
     if (tilesetName && allEntries.length > 0) {
       try {
-          .filter(e => (e.fullName || e.name).includes('tileset'))
-          .map(e => e.fullName || e.name)
-        );
-        
         // Use extends-aware tileset loader
         try {
           const resolvedTileset = await loadTilesetWithExtends(zip, tilesetName, getData);
@@ -887,12 +883,13 @@ const App = () => {
       }
     }
     
+    return {
       hasTileset: !!tileset,
       hasGeometry: !!geometry,
       hasTiles: !!tiles,
       hasTexture: !!textureAtlas,
       cellsSize: combinedContent.cells?.length
-    });
+    };
     
     setContents([
       <MapEditor3D

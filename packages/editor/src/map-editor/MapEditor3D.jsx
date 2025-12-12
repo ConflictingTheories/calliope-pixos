@@ -352,30 +352,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
       gl.uniform1i(uShowGrid, showGridFlag);
 
-      // Debug: Log texture and uniform state once
-      if (!window._renderDebugLogged) {
-          hasTexture: !!textureRef.current,
-          textureObject: textureRef.current,
-          uniformLocations: {
-            uModelViewMatrix,
-            uProjectionMatrix,
-            uUseTexture,
-            uColor,
-            uShowGrid,
-            uTexture,
-            uIsHovered
-          },
-          tilesetInfo: {
-            hasTileset: !!tileset,
-            hasTextures: !!tileset?.textures,
-            textureCount: Object.keys(tileset?.textures || {}).length,
-            tileSize: tileset?.tileSize,
-            sheetSize: tileset?.sheetSize
-          }
-        });
-        window._renderDebugLogged = true;
-      }
-
       // Render each cell
       for (let y = 0; y < cells.length; y++) {
         for (let x = 0; x < cells[y].length; x++) {
@@ -592,18 +568,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
     // Set texture or color
     if (textureName && textureRef.current) {
-      // Debug: log texture usage once per texture name
-      if (!window._textureDebugNames) window._textureDebugNames = new Set();
-      if (!window._textureDebugNames.has(textureName)) {
-          textureObject: textureRef.current,
-          tilesetHasTexture: !!tileset?.textures?.[textureName],
-          texturePos: tileset?.textures?.[textureName],
-          tileSize: tileset?.tileSize,
-          sheetSize: tileset?.sheetSize,
-          firstTexCoords: texCoords.slice(0, 6)
-        });
-        window._textureDebugNames.add(textureName);
-      }
       gl.uniform1i(uUseTexture, 1);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
@@ -772,13 +736,6 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   const handleCellClick = useCallback(
     (screenX, screenY, camera, event) => {
       if (!cells.length) return;
-
-        shiftKey: event.shiftKey,
-        button: event.button,
-        type: event.type,
-        currentTool,
-        editorMode
-      });
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
       if (!cellCoords) {

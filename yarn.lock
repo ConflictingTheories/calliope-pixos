@@ -2262,7 +2262,7 @@
     lz-string "^1.4.4"
     pretty-format "^26.6.2"
 
-"@testing-library/jest-dom@^5.11.4":
+"@testing-library/jest-dom@^5.17.0":
   version "5.17.0"
   resolved "https://registry.npmjs.org/@testing-library/jest-dom/-/jest-dom-5.17.0.tgz"
   integrity sha512-ynmNeT7asXyH3aSVv4vvX4Rb+0qjOhdNHnO/3vuZNqPmhDpV/+rCSGwQ7bLcmU2cJ4dvoheIO85LQj0IbJHEtg==
@@ -2289,7 +2289,7 @@
     picocolors "^1.1.1"
     redent "^3.0.0"
 
-"@testing-library/react@^11.1.0":
+"@testing-library/react@^11.2.7":
   version "11.2.7"
   resolved "https://registry.npmjs.org/@testing-library/react/-/react-11.2.7.tgz"
   integrity sha512-tzRNp7pzd5QmbtXNG/mhdcl7Awfu/Iz1RaVHY75zTdOkmHCuzMhRL83gWHSgOAcjS3CCbyfwUHMZgRJb4kAfpA==
@@ -2304,7 +2304,7 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@testing-library/user-event@^12.1.10":
+"@testing-library/user-event@^12.8.3":
   version "12.8.3"
   resolved "https://registry.npmjs.org/@testing-library/user-event/-/user-event-12.8.3.tgz"
   integrity sha512-IR0iWbFkgd56Bu5ZI/ej8yQwrkCv8Qydx6RzwbKz9faXazR/+5tvYKsZQgyXJiwgpcva127YO6JcWy7YlCfofQ==
@@ -3823,28 +3823,7 @@ babel-plugin-transform-react-remove-prop-types@^0.4.24:
   resolved "https://registry.npmjs.org/babel-plugin-transform-react-remove-prop-types/-/babel-plugin-transform-react-remove-prop-types-0.4.24.tgz"
   integrity sha512-eqj0hVcJUR57/Ug2zE1Yswsw4LhuqqHhD+8v120T1cl3kjg76QwtyBrdIk4WVwK+lAhBJVYCd/v+4nc4y+8JsA==
 
-babel-preset-current-node-syntax@^1.0.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/babel-preset-current-node-syntax/-/babel-preset-current-node-syntax-1.2.0.tgz"
-  integrity sha512-E/VlAEzRrsLEb2+dv8yp3bo4scof3l9nR4lrld+Iy5NyVqgVYUJnDAmunkhPMisRI32Qc4iRiz425d8vM++2fg==
-  dependencies:
-    "@babel/plugin-syntax-async-generators" "^7.8.4"
-    "@babel/plugin-syntax-bigint" "^7.8.3"
-    "@babel/plugin-syntax-class-properties" "^7.12.13"
-    "@babel/plugin-syntax-class-static-block" "^7.14.5"
-    "@babel/plugin-syntax-import-attributes" "^7.24.7"
-    "@babel/plugin-syntax-import-meta" "^7.10.4"
-    "@babel/plugin-syntax-json-strings" "^7.8.3"
-    "@babel/plugin-syntax-logical-assignment-operators" "^7.10.4"
-    "@babel/plugin-syntax-nullish-coalescing-operator" "^7.8.3"
-    "@babel/plugin-syntax-numeric-separator" "^7.10.4"
-    "@babel/plugin-syntax-object-rest-spread" "^7.8.3"
-    "@babel/plugin-syntax-optional-catch-binding" "^7.8.3"
-    "@babel/plugin-syntax-optional-chaining" "^7.8.3"
-    "@babel/plugin-syntax-private-property-in-object" "^7.14.5"
-    "@babel/plugin-syntax-top-level-await" "^7.14.5"
-
-babel-preset-current-node-syntax@^1.2.0:
+babel-preset-current-node-syntax@^1.0.0, babel-preset-current-node-syntax@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/babel-preset-current-node-syntax/-/babel-preset-current-node-syntax-1.2.0.tgz"
   integrity sha512-E/VlAEzRrsLEb2+dv8yp3bo4scof3l9nR4lrld+Iy5NyVqgVYUJnDAmunkhPMisRI32Qc4iRiz425d8vM++2fg==
@@ -11114,6 +11093,20 @@ pixoscript@*, "pixoscript@file:/Users/kderbyma/Git/calliope-pixos/packages/scrip
   dependencies:
     luaparse "^0.3.1"
 
+"pixospritz-console@file:/Users/kderbyma/Git/calliope-pixos/packages/console":
+  version "1.0.0"
+  resolved "file:packages/console"
+  dependencies:
+    "@testing-library/react" "^11.1.0"
+    "@testing-library/user-event" "^12.1.10"
+    pixoscript "*"
+    pixospritz-core "*"
+    react "^17.0.2"
+    react-dom "^17.0.2"
+    react-scripts "4.0.3"
+    typescript "^4.8.4"
+    web-vitals "^1.0.1"
+
 pixospritz-core@*, "pixospritz-core@file:/Users/kderbyma/Git/calliope-pixos/packages/core":
   version "1.0.0"
   resolved "file:packages/core"
@@ -12253,7 +12246,15 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@*, react-dom@^17.0.2:
+react-dom@*, "react-dom@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^17.0.0 || ^18.0.0", "react-dom@^18.0.0 || ^19.0.0", react-dom@^18.3.1, react-dom@>=15.3, react-dom@>=16.8.0:
+  version "18.3.1"
+  resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz"
+  integrity sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==
+  dependencies:
+    loose-envify "^1.1.0"
+    scheduler "^0.23.2"
+
+react-dom@^17.0.2:
   version "17.0.2"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-17.0.2.tgz"
   integrity sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==
@@ -12261,14 +12262,6 @@ react-dom@*, react-dom@^17.0.2:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     scheduler "^0.20.2"
-
-"react-dom@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^17.0.0 || ^18.0.0", "react-dom@^18.0.0 || ^19.0.0", react-dom@^18.3.1, react-dom@>=15.3, react-dom@>=16.8.0:
-  version "18.3.1"
-  resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz"
-  integrity sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==
-  dependencies:
-    loose-envify "^1.1.0"
-    scheduler "^0.23.2"
 
 react-error-overlay@^6.0.9:
   version "6.1.0"

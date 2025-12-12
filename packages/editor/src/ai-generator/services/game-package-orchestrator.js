@@ -325,11 +325,12 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       const concept = await this.analyzeGameConcept(prompt);
       results.concept = concept;
 
+      const conceptSummary = {
         title: concept.title,
         characters: concept.characters.length,
         locations: concept.locations.length,
         cutscenes: concept.cutscenes.length,
-      });
+      };
 
       this.onProgress({ current: 1, total: 8, message: `Designing "${concept.title}"...` });
 

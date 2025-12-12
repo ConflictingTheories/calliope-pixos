@@ -137,10 +137,15 @@
             <p class="section-subtitle">Experience PixoSpritz in your browser</p>
             <div class="demo-container">
                 <div class="demo-links">
-                    <a href="../example/build/index.html" target="_blank" class="demo-link">
+                    <a href="../console/build/index.html?packageUrl=https://github.com/ConflictingTheories/calliope-pixos/releases/download/v0.1.0-alpha/default-spritz.zip" target="_blank" class="demo-link">
                         <span class="demo-icon">🎮</span>
-                        <span class="demo-text">Launch Online Player</span>
+                        <span class="demo-text">Launch Online Demo</span>
                     </a>
+                    <form id="dynamic-console-form" class="demo-link" style="display:flex;align-items:center;gap:8px;" action="../console/build/index.html" method="get" target="_blank">
+                        <span class="demo-icon">🔗</span>
+                        <input type="text" name="package" placeholder="Enter package name..." style="flex:1;min-width:120px;" required>
+                        <button type="submit" style="padding:4px 12px;">Open Console</button>
+                    </form>
                     <a href="../editor/build/index.html" target="_blank" class="demo-link">
                         <span class="demo-icon">🛠️</span>
                         <span class="demo-text">Open Editor</span>
@@ -176,29 +181,29 @@
                     <h3>📚 Getting Started</h3>
                     <p>Learn the basics of PixoSpritz, set up your development environment, and create your first game.
                     </p>
-                    <a href="../README.md" class="doc-link">Read Tutorial →</a>
+                    <a href="docs.html?topic=getting-started" class="doc-link">Read Tutorial →</a>
                 </div>
                 <div class="doc-card">
                     <h3>📖 API Reference</h3>
                     <p>Comprehensive documentation of the PixoSpritz API, Lua scripting interfaces, and engine
                         functions.</p>
-                    <a href="../pixospritz/documentation/readme.md" class="doc-link">View API Docs →</a>
+                    <a href="docs.html?topic=api" class="doc-link">View API Docs →</a>
                 </div>
                 <div class="doc-card">
                     <h3>🎓 Tutorials</h3>
                     <p>Step-by-step guides for building spritz packages, creating maps, sprites, and implementing game
                         logic.</p>
-                    <a href="#" class="doc-link">Browse Tutorials →</a>
+                    <a href="docs.html?topic=tutorials" class="doc-link">Browse Tutorials →</a>
                 </div>
                 <div class="doc-card">
                     <h3>❓ FAQ</h3>
                     <p>Common questions about installation, development, deployment, and troubleshooting issues.</p>
-                    <a href="#faq" class="doc-link">See FAQ →</a>
+                    <a href="docs.html?topic=faq" class="doc-link">See FAQ →</a>
                 </div>
                 <div class="doc-card">
                     <h3>🔧 Editor Guide</h3>
                     <p>Learn how to use the visual editor for creating tilesets, sprites, maps, and cutscenes.</p>
-                    <a href="../editor/README.md" class="doc-link">Editor Docs →</a>
+                    <a href="docs.html?topic=editor-guide" class="doc-link">Editor Docs →</a>
                 </div>
                 <div class="doc-card">
                     <h3>💬 Community</h3>
@@ -330,7 +335,7 @@
                     <h4>Resources</h4>
                     <ul class="footer-links">
                         <li><a href="#docs">Documentation</a></li>
-                        <li><a href="../README.md">Getting Started</a></li>
+                        <li><a href="docs.html?topic=getting-started">Getting Started</a></li>
                         <li><a href="https://github.com/ConflictingTheories/calliope-pixos" target="_blank">GitHub</a>
                         </li>
                         <li><a href="https://github.com/ConflictingTheories/calliope-pixos/issues"

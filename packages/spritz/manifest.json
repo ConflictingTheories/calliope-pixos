@@ -1,6 +1,8 @@
 {
   "title": "The Elemental Trials",
   "version": "1.0.0",
+  "consoleVersion": "1.0.0",
+  "supportedConsoleVersions": ">=1.0.0 <2.0.0",
   "description": "A complete showcase of the PixoSpritz engine featuring exploration, combat, puzzles, and an epic quest to save the kingdom.",
   
   "initialZones": ["particle-demo"],
