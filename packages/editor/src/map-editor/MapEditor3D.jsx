@@ -117,7 +117,10 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   const textureRef = useRef(null);
   const texturesCacheRef = useRef({});
   const missingTextureWarnedRef = useRef(new Set());
+  const missingTileWarnedRef = useRef(new Set());
   const [hoveredCell, setHoveredCell] = useState(null);
+  const [debugRenderedCount, setDebugRenderedCount] = useState(0);
+  const renderSampleRef = useRef({ lastLogged: 0 });
 
   // Discover available sprite and object types from the package
   useEffect(() => {
@@ -415,11 +418,46 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   // Initialize WebGL program
   const handleWebGLInit = useCallback((gl) => {
     glRef.current = gl;
-
     // Create shader program
-    const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
+    let program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
+    if (!program) {
+      console.warn('[MapEditor3D] Default shader program creation failed, attempting fallback shader');
+      const fallbackVertex = `#version 300 es
+      precision highp float;
+      in vec3 aPosition;
+      in vec2 aTexCoord;
+      in vec3 aNormal;
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      out vec2 vTexCoord;
+      out vec3 vNormal;
+      void main(){
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition,1.0);
+        vTexCoord = aTexCoord;
+        vNormal = aNormal;
+      }
+      `;
+      const fallbackFragment = `#version 300 es
+      precision highp float;
+      in vec2 vTexCoord;
+      in vec3 vNormal;
+      uniform vec3 uColor;
+      uniform bool uUseTexture;
+      out vec4 fragColor;
+      void main(){
+        fragColor = vec4(uColor,1.0);
+      }
+      `;
+      program = createProgram(gl, fallbackVertex, fallbackFragment);
+      if (program) {
+        console.warn('[MapEditor3D] Fallback shader program created');
+      } else {
+        console.error('[MapEditor3D] Failed to create fallback shader program');
+      }
+    }
     if (program) {
       shaderProgramRef.current = program;
+      console.log('[MapEditor3D] Shader program created');
 
       // If we already have a texture atlas, load it now
       if (textureAtlas && !textureRef.current) {
@@ -434,7 +472,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         img.src = textureAtlas;
       }
     } else {
-      console.error('[MapEditor3D] Failed to create shader program');
+      console.error('[MapEditor3D] Shader program not available');
     }
   }, [textureAtlas]);
 
@@ -481,7 +519,19 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
               tileType = tilesByIdRef.current[maybe];
             }
           }
-          if (!tileType || tileType === 'EMPTY') continue;
+          if (!tileType || tileType === 'EMPTY') {
+            // If the cell references a value that doesn't map to a tile, warn once
+            const key = String(rawTile);
+            if (rawTile && !missingTileWarnedRef.current.has(key)) {
+              missingTileWarnedRef.current.add(key);
+              console.warn('[MapEditor3D] Tile referenced in map has no matching tile definition:', key, {
+                tilesSample: tiles ? Object.keys(tiles).slice(0, 20) : [],
+                tilesCount: tiles ? Object.keys(tiles).length : 0,
+                tilesByIdSample: Object.keys(tilesByIdRef.current).slice(0, 20),
+              });
+            }
+            continue;
+          }
 
           const isHovered = hoveredCell && hoveredCell.x === x && hoveredCell.y === y;
           gl.uniform1i(uIsHovered, isHovered);
@@ -505,17 +555,80 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         }
       }
 
-      if (typeof window !== 'undefined') {
-        // Log number of rendered tiles for diagnostics
-        if (renderedCount === 0) {
-          console.warn('[MapEditor3D] Rendered zero tiles, verify tile types and tileset mapping', {
-            tilesCount: tiles ? Object.keys(tiles).length : 0,
-            cellsLength: cells ? cells.length : 0,
-            firstRowLength: cells && cells.length ? cells[0].length : 0,
-            sampleCell: cells && cells.length && cells[0].length ? cells[0][0] : null,
-          });
-        } else {
-          // console.debug('[MapEditor3D] Rendered tiles:', renderedCount);
+      // Log number of rendered tiles for diagnostics
+      console.log('[MapEditor3D] Rendered tiles:', renderedCount);
+      if (renderedCount === 0) {
+        console.warn('[MapEditor3D] Rendered zero tiles, verify tile types and tileset mapping', {
+          tilesCount: tiles ? Object.keys(tiles).length : 0,
+          cellsLength: cells ? cells.length : 0,
+          firstRowLength: cells && cells.length ? cells[0].length : 0,
+          sampleCell: cells && cells.length && cells[0].length ? cells[0][0] : null,
+        });
+      }
+
+      // Update small debug state for UI overlay
+      setDebugRenderedCount(renderedCount);
+
+      // If nothing was rendered, draw a simple debug grid to confirm the rendering path
+      if (renderedCount === 0 && cells && cells.length && shaderProgramRef.current) {
+        try {
+          const gridVertices = [];
+          const gridNormals = [];
+          const gridTex = [];
+          const maxRows = Math.min(12, cells.length);
+          const maxCols = Math.min(12, cells[0].length);
+          for (let yy = 0; yy < maxRows; yy++) {
+            for (let xx = 0; xx < maxCols; xx++) {
+              const x = xx;
+              const y = yy;
+              const z = 0;
+              // Two triangles per quad
+              gridVertices.push(
+                x, y, z,
+                x + 1, y, z,
+                x + 1, y + 1, z,
+                x, y, z,
+                x + 1, y + 1, z,
+                x, y + 1, z
+              );
+              // Normals
+              for (let i = 0; i < 6; i++) gridNormals.push(0, 0, 1);
+              // Default UVs
+              for (let i = 0; i < 6; i++) gridTex.push(0, 0);
+            }
+          }
+
+          const positionBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gridVertices), gl.STATIC_DRAW);
+          const aPosition = gl.getAttribLocation(program, 'aPosition');
+          gl.enableVertexAttribArray(aPosition);
+          gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+          const texCoordBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gridTex), gl.STATIC_DRAW);
+          const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
+          gl.enableVertexAttribArray(aTexCoord);
+          gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+          const normalBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gridNormals), gl.STATIC_DRAW);
+          const aNormal = gl.getAttribLocation(program, 'aNormal');
+          gl.enableVertexAttribArray(aNormal);
+          gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+
+          // Set constant color for grid, make it visible
+          gl.uniform1i(uUseTexture, 0);
+          gl.uniform3f(uColor, 0.2, 0.6, 0.8);
+          gl.drawArrays(gl.TRIANGLES, 0, gridVertices.length / 3);
+
+          gl.deleteBuffer(positionBuffer);
+          gl.deleteBuffer(texCoordBuffer);
+          gl.deleteBuffer(normalBuffer);
+        } catch (e) {
+          console.warn('[MapEditor3D] Debug grid failed to render:', e);
         }
       }
 
@@ -585,6 +698,17 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     uTexture
   ) {
     if (!tiles || !tiles[tileType]) return;
+
+    // Log a sample of tile types once per second to avoid spamming the console
+    try {
+      const now = Date.now();
+      if (now - renderSampleRef.current.lastLogged > 1000) {
+        console.log('[MapEditor3D] sample renderTile:', { x, y, tileType });
+        renderSampleRef.current.lastLogged = now;
+      }
+    } catch (e) {
+      // swallow
+    }
 
     const tileData = tiles[tileType];
 
@@ -708,6 +832,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
     // Set texture or color
     if (textureName && textureRef.current && tileset?.textures?.[textureName]) {
+      // Use atlas texture
       gl.uniform1i(uUseTexture, 1);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
@@ -733,17 +858,19 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             });
           }
         }
+        // Fallback to flat color shading
         gl.uniform1i(uUseTexture, 0);
         gl.uniform3f(uColor, 0.5, 0.5, 0.5);
       }
-
-      gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
-
-      // Cleanup
-      gl.deleteBuffer(positionBuffer);
-      gl.deleteBuffer(texCoordBuffer);
-      gl.deleteBuffer(normalBuffer);
     }
+
+    // Draw the geometry (both atlas and single-texture paths should draw)
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+
+    // Cleanup
+    gl.deleteBuffer(positionBuffer);
+    gl.deleteBuffer(texCoordBuffer);
+    gl.deleteBuffer(normalBuffer);
 
     // Render a marker (cube) for sprites, objects, or animated tiles
     function renderMarker(
@@ -2641,6 +2768,10 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 centerZ: 0,
               }}
             />
+            {/* Simple debug overlay showing rendered tile count */}
+            <div style={{ position: 'absolute', right: 10, top: 10, padding: '6px 8px', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 12, borderRadius: 4, zIndex: 200 }}>
+              Rendered: {debugRenderedCount}
+            </div>
           </div>
 
           {/* Status bar */}
