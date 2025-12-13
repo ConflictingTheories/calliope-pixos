@@ -2,4 +2,18 @@
 # https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
+  # For our monorepo we only need Netlify to build/deploy the static website
+  # Use the workspace build script that only prepares the website package.
   ignore = "1"
+  command = "npm ci && npm run build:website"
+  publish = "packages/website"
+
+[build.environment]
+  # Ensure a modern Node version is used on Netlify build image
+  NODE_VERSION = "18"
+
+[[redirects]]
+  # Serve index.html for any path (useful for single-page routing / pretty URLs)
+  from = "/*"
+  to = "/index.html"
+  status = 200
