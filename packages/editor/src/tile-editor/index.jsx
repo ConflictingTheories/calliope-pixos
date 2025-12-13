@@ -439,7 +439,6 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
     if (onSave) {
       onSave(tiles);
     } else {
-      console.log('Tiles saved:', JSON.stringify(tiles, null, 2));
     }
   }, [tiles, onSave]);
 

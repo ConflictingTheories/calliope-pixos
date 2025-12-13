@@ -20,18 +20,17 @@ import ObjModelViewer from './ObjModelViewer.jsx';
 function isOBJContent(content) {
   if (typeof content !== 'string') return false;
   
-  // Check first few non-empty lines for OBJ signatures
-  const lines = content.split(/\r?\n/).slice(0, 20);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    // OBJ files start with: comments (#), mtllib, o (object), g (group), v (vertex), vt, vn, f (face)
-    if (/^(#|mtllib|o\s|g\s|v\s|vt\s|vn\s|f\s|usemtl)/i.test(trimmed)) {
-      return true;
-    }
-    // If first non-empty line doesn't match OBJ patterns, it's probably not OBJ
-    break;
+  // Reject data URIs / URLs early (these are not raw OBJ text)
+  if (content.startsWith('data:') || /^[a-zA-Z]+:\/\//.test(content)) return false;
+
+  // Look for common OBJ tokens anywhere in the start of the file.
+  // Some files may include comments or MTL snippets; scanning the first
+  // chunk is more reliable than only the very first non-empty line.
+  const sample = content.slice(0, 8192);
+  if (/(^|\n)\s*(#|mtllib|newmtl|o\s|g\s|v\s|vt\s|vn\s|f\s|usemtl)/i.test(sample)) {
+    return true;
   }
+
   return false;
 }
 

@@ -7,7 +7,7 @@
     "links": [
       {
         "label": "Play Now",
-        "url": "../example/build/index.html",
+        "url": "console/index.html",
         "icon": "▶️",
         "external": false
       },
