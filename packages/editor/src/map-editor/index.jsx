@@ -158,64 +158,48 @@ function MapEditor({ content, onSave }) {
   // Parse the provided map content when first mounted.  Fallback
   // to a single 16×16 empty layer if no content is passed in.
   useEffect(() => {
-    const defaultSize = 16;
     if (content) {
       try {
         const map = JSON.parse(content);
-        let newLayers;
-        let newAttributes;
-        if (map && Array.isArray(map.layers)) {
-          newLayers = map.layers;
-          newAttributes = Array.isArray(map.attributes)
-            ? map.attributes
-            : map.layers.map((grid) => grid.map((row) => row.map(() => ({}))));
-        } else if (map && Array.isArray(map.cells)) {
-          newLayers = [map.cells];
-          newAttributes = Array.isArray(map.attributes)
+        if (map && Array.isArray(map.cells)) {
+          setLayers([map.cells]);
+          const newAttributes = Array.isArray(map.attributes)
             ? map.attributes
             : [map.cells.map((row) => row.map(() => ({})))];
-        }
-        if (newLayers) {
-          setLayers(newLayers);
           setAttributes(newAttributes);
           setCurrentLayer(0);
           setSelectedCell({ layer: 0, x: null, y: null });
-          // Initialize history with the parsed state
-          setHistory([{
-            layers: JSON.parse(JSON.stringify(newLayers)),
-            attributes: JSON.parse(JSON.stringify(newAttributes)),
-            currentLayer: 0,
-          }]);
+          setHistory([
+            {
+              layers: [JSON.parse(JSON.stringify(map.cells))],
+              attributes: JSON.parse(JSON.stringify(newAttributes)),
+              currentLayer: 0,
+            },
+          ]);
           setHistoryIndex(0);
           setError(null);
-          return;
+        } else {
+          setLayers([]);
+          setAttributes([]);
+          setCurrentLayer(0);
+          setSelectedCell({ layer: 0, x: null, y: null });
+          setHistory([]);
+          setHistoryIndex(-1);
+          setError('No tile grid (cells) found in this map.');
         }
       } catch (err) {
         console.warn('Failed to parse map JSON', err);
         setError('Invalid map JSON');
       }
+    } else {
+      setLayers([]);
+      setAttributes([]);
+      setCurrentLayer(0);
+      setSelectedCell({ layer: 0, x: null, y: null });
+      setHistory([]);
+      setHistoryIndex(-1);
+      setError('No map loaded.');
     }
-    // Initialise an empty layer if no valid map loaded
-    const emptyGrid = Array.from({ length: defaultSize }, () =>
-      Array.from({ length: defaultSize }, () => 0),
-    );
-    const initLayers = [emptyGrid];
-    const initAttributes = [
-      emptyGrid.map((row) => row.map(() => ({}))),
-    ];
-    setLayers(initLayers);
-    setAttributes(initAttributes);
-    setCurrentLayer(0);
-    setSelectedCell({ layer: 0, x: null, y: null });
-    setHistory([
-      {
-        layers: JSON.parse(JSON.stringify(initLayers)),
-        attributes: JSON.parse(JSON.stringify(initAttributes)),
-        currentLayer: 0,
-      },
-    ]);
-    setHistoryIndex(0);
-    setError(null);
   }, [content]);
 
   // Update a cell within the current layer
@@ -237,35 +221,14 @@ function MapEditor({ content, onSave }) {
     setSelectedCell({ layer: currentLayer, x, y });
   }
 
-  function addLayer() {
-    const defaultSize = layers[0] ? layers[0].length : 16;
-    const emptyGrid = Array.from({ length: defaultSize }, () =>
-      Array.from({ length: defaultSize }, () => 0),
-    );
-    const newLayers = [...layers, emptyGrid];
-    const newAttributes = [
-      ...attributes,
-      emptyGrid.map((row) => row.map(() => ({}))),
-    ];
-    setLayers(newLayers);
-    setAttributes(newAttributes);
-    const newCurrentLayer = layers.length;
-    setCurrentLayer(newCurrentLayer);
-    // Reset selected cell
-    setSelectedCell({ layer: newCurrentLayer, x: null, y: null });
-    // Push history
-    pushHistorySnapshot(newLayers, newAttributes, newCurrentLayer);
-  }
+  // Remove addLayer: only single layer supported (cells)
 
   // Serialise and dispatch the updated layers via onSave
   function handleSave() {
-    // When saving, include both layers and attributes if multiple layers
-    const mapObject = layers.length > 1
-      ? { layers, attributes }
-      : { cells: layers[0], attributes: attributes[0] };
+    // Only support saving 'cells' and 'attributes'
+    const mapObject = { cells: layers[0], attributes: attributes[0] };
     if (onSave) {
       onSave(mapObject);
-    } else {
     }
   }
 
@@ -290,31 +253,7 @@ function MapEditor({ content, onSave }) {
             style={{ overflow: 'auto', maxHeight: '75vh' }}
           >
             {/* Layer selection bar */}
-            <Row style={{ marginBottom: '0.5rem' }}>
-              <Col sm={16} md={16} lg={16}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '0.5rem' }}>Layer:</span>
-                  <select
-                    value={currentLayer}
-                    onChange={(e) => setCurrentLayer(Number(e.target.value))}
-                  >
-                    {layerOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    appearance='primary'
-                    size='sm'
-                    style={{ marginLeft: '1rem' }}
-                    onClick={addLayer}
-                  >
-                    Add Layer
-                  </Button>
-                </div>
-              </Col>
-            </Row>
+            {/* No layer selection UI: only single layer supported */}
             <table
               style={{
                 borderCollapse: 'collapse',
@@ -349,11 +288,11 @@ function MapEditor({ content, onSave }) {
                             boxSizing: 'border-box',
                             // Highlight selected cell
                             outline:
-                            selectedCell.layer === currentLayer &&
-                            selectedCell.x === x &&
-                            selectedCell.y === y
-                              ? '2px solid #fff'
-                              : 'none',
+                              selectedCell.layer === currentLayer &&
+                                selectedCell.x === x &&
+                                selectedCell.y === y
+                                ? '2px solid #fff'
+                                : 'none',
                           }}
                         ></td>
                       ))}
