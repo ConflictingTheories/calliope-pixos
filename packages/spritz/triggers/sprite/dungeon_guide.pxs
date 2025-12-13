@@ -1,0 +1,51 @@
+-- Dungeon Guide NPC Interaction Script
+-- The mysterious guide in the dungeon entrance
+
+local npc = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Dungeon Guide Interaction', 
+    npc = npc,
+    player = player 
+}));
+
+-- Check game progress
+local fire_complete = pixos.has_flag('fire_trial_complete');
+local water_complete = pixos.has_flag('water_trial_complete');
+local earth_complete = pixos.has_flag('earth_trial_complete');
+local air_complete = pixos.has_flag('air_trial_complete');
+
+local trials_complete = 0;
+if fire_complete then trials_complete = trials_complete + 1 end;
+if water_complete then trials_complete = trials_complete + 1 end;
+if earth_complete then trials_complete = trials_complete + 1 end;
+if air_complete then trials_complete = trials_complete + 1 end;
+
+-- Build status report
+local status_lines = {};
+table.insert(status_lines, "Trial Status Report:");
+table.insert(status_lines, fire_complete and "✓ Fire Trial: COMPLETE" or "○ Fire Trial: Incomplete (Northwest)");
+table.insert(status_lines, water_complete and "✓ Water Trial: COMPLETE" or "○ Water Trial: Incomplete (Northeast)");
+table.insert(status_lines, earth_complete and "✓ Earth Trial: COMPLETE" or "○ Earth Trial: Incomplete (Southwest)");
+table.insert(status_lines, air_complete and "✓ Air Trial: COMPLETE" or "○ Air Trial: Incomplete (Southeast)");
+
+if trials_complete >= 4 then
+    table.insert(status_lines, "ALL TRIALS COMPLETE! Boss chamber is OPEN!");
+else
+    table.insert(status_lines, string.format("%d of 4 trials complete.", trials_complete));
+end;
+
+pixos.run_scene({
+    {
+        sprite = npc,
+        action = 'dialogue',
+        args = {
+            status_lines,
+            false,
+            { autoclose = true }
+        }
+    }
+});
+
+return nil;

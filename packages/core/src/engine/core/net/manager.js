@@ -49,11 +49,16 @@ export default class NetworkManager {
       this.disconnect();
     }
 
-    this.ws = new WebSocket(url);
+    try {
+      this.ws = new WebSocket(url);
+    } catch (e) {
+      console.warn('[NetworkManager] WebSocket creation failed (server may be offline):', e.message);
+      return; // Gracefully fail - game can run offline
+    }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.ws.onopen = () => {
-        console.log('WebSocket connection established');
+        console.log('[NetworkManager] WebSocket connection established');
         resolve();
       };
 
@@ -62,12 +67,15 @@ export default class NetworkManager {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket connection closed');
+        console.log('[NetworkManager] WebSocket connection closed');
+        this.ws = null;
       };
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        reject(error);
+        console.warn('[NetworkManager] WebSocket error (server may be offline):', error.type || 'connection failed');
+        // Don't reject - resolve to allow game to continue offline
+        this.ws = null;
+        resolve();
       };
     });
   }

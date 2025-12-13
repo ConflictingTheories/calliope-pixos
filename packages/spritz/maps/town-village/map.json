@@ -1,0 +1,67 @@
+{
+  "bounds": [
+    0,
+    0,
+    15,
+    15
+  ],
+  "tileset": "village",
+  "mode": "explore",
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/mage-protagonist",
+      "pos": [
+        7,
+        7,
+        0
+      ],
+      "facing": "Down"
+    },
+    {
+      "id": "mentor-eldrin",
+      "type": "npc/mentor-eldrin",
+      "pos": [
+        5,
+        5,
+        0
+      ],
+      "facing": "Down",
+      "state": "intro"
+    },
+    {
+      "id": "shopkeeper-mira",
+      "type": "npc/shopkeeper-mira",
+      "pos": [
+        8,
+        5,
+        0
+      ],
+      "facing": "Down",
+      "state": "intro"
+    }
+  ],
+  "lights": [
+    {
+      "id": "ambient",
+      "pos": [
+        7,
+        7,
+        10
+      ],
+      "color": [
+        1,
+        0.95,
+        0.9
+      ],
+      "density": 0.3,
+      "enabled": true
+    }
+  ],
+  "scripts": [
+    {
+      "id": "intro",
+      "trigger": "zone/town-village_load"
+    }
+  ]
+}

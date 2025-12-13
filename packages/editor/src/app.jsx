@@ -25,8 +25,11 @@ import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
+import AIGenerator from './ai-generator/index.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
-import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
+import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
+import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
+import './onboarding/FirstTimeWizard.css';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -62,6 +65,8 @@ const App = () => {
   const [supportPanelPinned, setSupportPanelPinned] = useState(false);
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const supportFabRef = useRef(null);
 
   const handleOptionsChange = useCallback((options) => {
@@ -94,6 +99,10 @@ const App = () => {
   const handleSupportPanelToggle = useCallback(() => {
     setSupportPanelPinned((prev) => !prev);
     setSupportMenuOpen(false);
+  }, []);
+
+  const handleWizardClose = useCallback(() => {
+    setShowWizard(false);
   }, []);
 
   useEffect(() => {
@@ -181,17 +190,16 @@ const App = () => {
   }, []);
 
   /**
-   * Write or replace text content at the given path in the loaded package.
+   * Write or replace content at the given path in the loaded package.
+   * Supports both text content and binary Blob content.
    * @param {string} filePath - Full path of the file inside the package.
-   * @param {string} textContent - UTF-8 text to save.
+   * @param {string|Blob} content - UTF-8 text or Blob to save.
    * @returns {Promise<void>}
    */
-  const writeFile = useCallback(async (filePath, textContent) => {
+  const writeFile = useCallback(async (filePath, content) => {
     if (!zip) {
       throw new Error('Package filesystem not available');
     }
-    
-    console.log('[writeFile] Saving file:', filePath);
     
     // Helper to find a file in the tree
     const findFile = (node, path = '', targetPath) => {
@@ -232,43 +240,55 @@ const App = () => {
     const fileName = filePath.split('/').pop();
     const dirPath = filePath.substring(0, filePath.lastIndexOf('/'));
     
-    console.log('[writeFile] File name:', fileName);
-    console.log('[writeFile] Directory path:', dirPath);
-    console.log('[writeFile] Existing file:', existingFile ? 'found' : 'not found');
-    
     let parentFolder;
     
     if (existingFile) {
       // File exists - update it
-      console.log('[writeFile] Found existing file:', existingFile.name);
       parentFolder = existingFile.parent;
       
       if (!parentFolder) {
         throw new Error(`Cannot find parent folder for: ${filePath}`);
       }
       
-      console.log('[writeFile] Removing old file...');
       await zip.remove(existingFile);
-      console.log('[writeFile] Old file removed');
     } else {
       // File doesn't exist - create it in the appropriate directory
-      console.log('[writeFile] File does not exist, creating new file:', fileName, 'in directory:', dirPath);
-      
       // Find the parent directory
       parentFolder = dirPath ? findDirectory(zip.root, '', dirPath) : zip.root;
       
       if (!parentFolder) {
-        throw new Error(`Cannot find directory: ${dirPath}`);
+        // Try to create missing directories
+        const pathParts = dirPath.split('/');
+        let currentDir = zip.root;
+        let currentPath = '';
+        
+        for (const part of pathParts) {
+          if (!part) continue;
+          currentPath = currentPath ? `${currentPath}/${part}` : part;
+          const existingDir = findDirectory(zip.root, '', currentPath);
+          
+          if (existingDir) {
+            currentDir = existingDir;
+          } else {
+            // Create the directory
+            currentDir = await currentDir.addDirectory(part);
+          }
+        }
+        parentFolder = currentDir;
       }
-      
-      console.log('[writeFile] Creating new file in:', parentFolder.name || 'root');
     }
     
     // Add the file with content
-    console.log('[writeFile] Adding file:', fileName, 'to', parentFolder.name || 'root');
-    const blob = new Blob([textContent], { type: 'text/plain' });
+    let blob;
+    if (content instanceof Blob) {
+      // Already a blob (binary file like images)
+      blob = content;
+    } else {
+      // Text content - wrap in blob
+      blob = new Blob([content], { type: 'text/plain' });
+    }
+    
     await parentFolder.addBlob(fileName, blob);
-    console.log('[writeFile] File saved successfully');
   }, [zip]);
 
   /**
@@ -1301,6 +1321,24 @@ const App = () => {
     ]);
   }, [getData, zip, assets, toDataUri]);
 
+  /**
+   * Render the AI Generator panel for creating game assets with AI.
+   */
+  const renderAIGenerator = useCallback(() => {
+    setContents([
+      <AIGenerator
+        key="ai-generator"
+        writeFile={writeFile}
+        refreshFolder={() => buildAssetList(zip)}
+        onFileGenerated={(asset) => {
+          // Rebuild asset list when new file is generated
+          buildAssetList(zip);
+        }}
+      />
+    ]);
+    setShowAIPanel(true);
+  }, [writeFile, zip, buildAssetList]);
+
   // Open file and route to correct editor/viewer
   const openFile = useCallback(async (entry) => {
     if (!entry) return;
@@ -1436,12 +1474,23 @@ const App = () => {
                 <span>Active file</span>
                 <strong>{selectedEntryLabel}</strong>
               </div>
-              {validationReport && (
-                <div className="editor-pill">
-                  <span>{errorCount} errors</span>
-                  <span>{warningCount} warnings</span>
-                </div>
-              )}
+              <div className="editor-main-actions">
+                <button
+                  type="button"
+                  className={`editor-ai-button ${showAIPanel ? 'is-active' : ''}`}
+                  onClick={renderAIGenerator}
+                  title={zip ? "Open AI Asset Generator" : "Open AI Asset Generator (load a package to save files)"}
+                >
+                  <span className="editor-ai-icon">✨</span>
+                  <span>AI Generate</span>
+                </button>
+                {validationReport && (
+                  <div className="editor-pill">
+                    <span>{errorCount} errors</span>
+                    <span>{warningCount} warnings</span>
+                  </div>
+                )}
+              </div>
             </header>
           )}
           <div className="editor-main-content">
@@ -1525,6 +1574,7 @@ const App = () => {
           <span>Support Pixospritz</span>
         </button>
       </div>
+      {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
     </div>
   );
 };

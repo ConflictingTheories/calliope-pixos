@@ -1,17 +1,16 @@
 dialog::backdrop {
-  background-color: var(--basic-bg-color);
-  opacity: 0.85;
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 dialog {
-  margin-block-start: var(--dialog-margin-block-start);
-  inline-size: var(--dialog-width);
-  background-color: var(--page-color);
-  color: var(--text-color);
-  border: solid var(--accent-color) var(--large-border-width);
-  border-radius: var(--border-radius-width);
-  padding-inline: var(--large-gap-inline-size);
-  padding-block: var(--large-gap-block-size);
+  margin-block-start: 10vh;
+  inline-size: min(400px, 85vw);
+  background-color: #181825;
+  color: var(--color-text, #e4e4e7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
 dialog:focus {
@@ -20,19 +19,20 @@ dialog:focus {
 
 dialog input,
 dialog select {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  border: solid var(--accent-color) var(--border-width);
-  block-size: 1.5em;
-  padding-inline: var(--gap-inline-size);
+  background-color: rgba(0, 0, 0, 0.3);
+  color: var(--color-text, #e4e4e7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 10px;
   font-family: inherit;
-  margin: var(--outline-width);
-  border-radius: var(--border-radius-width);
-  box-sizing: content-box;
-  caret-color: var(--accent-color);
-  align-self: baseline;
-  inline-size: calc(100% - 2 * (var(--gap-inline-size) + var(--border-width) + var(--outline-width)));
-  align-self: end;
+  font-size: 13px;
+  border-radius: 5px;
+  transition: border-color 0.15s ease;
+}
+
+dialog input:focus,
+dialog select:focus {
+  outline: none;
+  border-color: var(--color-secondary, #4ecdc4);
 }
 
 dialog form,
@@ -44,33 +44,40 @@ dialog label {
 
 dialog form,
 dialog form p {
-  row-gap: var(--large-gap-block-size);
+  row-gap: 12px;
 }
 
 dialog form {
-  max-block-size: var(--dialog-form-max-block-size);
+  max-block-size: 70vh;
 }
 
 dialog form .dialog-title {
-  font-weight: var(--font-weight-bolder);
-  border-block-end: solid var(--accent-color) var(--border-width);
-  padding-block-end: var(--large-gap-block-size);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-secondary, #4ecdc4);
+  border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+  padding-block-end: 12px;
+  margin-bottom: 4px;
 }
 
 dialog form p {
   margin: 0;
-  padding-block-start: var(--small-gap-block-size);
-  padding-block-end: var(--large-gap-block-size);
+  padding-block-start: 4px;
+  padding-block-end: 12px;
   overflow: visible auto;
 }
 
 dialog label {
-  row-gap: var(--gap-block-size);
+  row-gap: 6px;
   overflow: visible;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 dialog .button-bar {
-  margin-block-start: var(--gap-block-size);
+  margin-block-start: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 dialog .button-group:first-of-type {

@@ -19,6 +19,7 @@ exports["default"] = void 0;
 var _default = exports["default"] = {
   // Initialize Dialogue Object
   init: function init(menu, activeMenus) {
+    var _menu$start$onOpen, _menu$start;
     var scrolling = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
       autoclose: false,
@@ -31,7 +32,7 @@ var _default = exports["default"] = {
     this.line = 0;
     this.options = options;
     this.completed = false;
-    this.onOpen = menu.start.onOpen;
+    this.onOpen = (_menu$start$onOpen = menu === null || menu === void 0 || (_menu$start = menu.start) === null || _menu$start === void 0 ? void 0 : _menu$start.onOpen) !== null && _menu$start$onOpen !== void 0 ? _menu$start$onOpen : null;
     this.lastKey = new Date().getTime();
     this.touches = [];
     this.menuDict = menu !== null && menu !== void 0 ? menu : {};

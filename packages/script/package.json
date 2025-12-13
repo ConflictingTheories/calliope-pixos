@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/script",
+  "name": "pixoscript",
   "version": "1.0.0",
   "description": "PixoScript - A Lua-inspired scripting language for PixoSpritz game engine",
   "type": "module",
@@ -14,8 +14,22 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc",
-    "test": "node test.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".ts"],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "transform": {
+      "^.+\\.ts$": ["ts-jest", {
+        "useESM": true
+      }]
+    }
   },
   "files": [
     "dist",
@@ -43,8 +57,11 @@
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.0",
     "@babel/preset-env": "^7.18.0",
+    "@types/jest": "^30.0.0",
     "cross-env": "^7.0.3",
+    "jest": "^30.2.0",
     "rimraf": "^5.0.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.0.0"
   }
 }

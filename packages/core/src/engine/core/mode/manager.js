@@ -182,43 +182,6 @@ export default class ModeManager {
   }
 
   /**
-   * Sets the active game mode.
-   * @param {string} name - The name of the mode to activate.
-   */
-  set(name) {
-    if (this.registered[name]) {
-      // Teardown current mode if exists
-      if (this.currentMode && this.currentMode.handlers.teardown) {
-        (async () => {
-          try {
-            await this.currentMode.handlers.teardown(this.currentMode.params);
-          } catch (e) {
-            console.warn(`Mode teardown failed for mode "${this.currentMode.name}":`, e);
-          }
-        })();
-      }
-
-      this.currentMode = { name, handlers: this.registered[name], params: {} };
-
-      // Setup new mode
-      if (this.currentMode.handlers.setup) {
-        (async () => {
-          try {
-            const additionalHandlers = await this.currentMode.handlers.setup(this.currentMode.params);
-            if (additionalHandlers) {
-              this.currentMode.handlers = { ...this.currentMode.handlers, ...additionalHandlers };
-            }
-          } catch (e) {
-            console.warn(`Mode setup failed for mode "${name}":`, e);
-          }
-        })();
-      }
-    } else {
-      console.warn(`Mode "${name}" not registered`);
-    }
-  }
-
-  /**
    * Returns the name of the currently active game mode.
    * @returns {string|null} The name of the current mode, or null if no mode is active.
    */

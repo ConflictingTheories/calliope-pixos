@@ -13,7 +13,8 @@
 
 /**
  * Vertex shader for particle rendering in the Pixos game engine.
- * Handles particle positioning, scaling, and passes texture coordinates and color to the fragment shader.
+ * Handles particle positioning, scaling, billboarding, and passes texture coordinates and color to the fragment shader.
+ * Uses camera-facing billboarding for proper particle display from any angle.
  * @returns {string} The GLSL vertex shader source code.
  */
 export default function() {
@@ -26,20 +27,35 @@ export default function() {
     uniform mat4 uViewMatrix;
     uniform vec3 uScale;
     uniform vec3 uParticleColor;
+    uniform float uAlpha;
 
     varying vec2 vTextureCoord;
     varying vec3 vColor;
+    varying float vAlpha;
 
     void main(void) {
-      // Apply model matrix for particle position and scale
-      vec4 worldPosition = uModelMatrix * vec4(aVertexPosition * uScale, 1.0);
+      // Extract world position from model matrix (translation component)
+      vec3 particleWorldPos = vec3(uModelMatrix[3][0], uModelMatrix[3][1], uModelMatrix[3][2]);
+      
+      // Transform particle center to view space
+      vec4 viewPosition = uViewMatrix * vec4(particleWorldPos, 1.0);
+      
+      // Apply billboarding in view space - offset by scaled vertex position
+      // This keeps the quad always facing the camera
+      vec3 billboardOffset = vec3(
+        aVertexPosition.x * uScale.x,
+        aVertexPosition.y * uScale.y,
+        0.0  // No z offset - quad stays flat to camera
+      );
+      viewPosition.xyz += billboardOffset;
 
       // Output position
-      gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
+      gl_Position = uProjectionMatrix * viewPosition;
 
-      // Pass texture coordinates and color to fragment shader
+      // Pass texture coordinates, color, and alpha to fragment shader
       vTextureCoord = aTextureCoord;
       vColor = uParticleColor;
+      vAlpha = uAlpha;
     }
   `;
 }

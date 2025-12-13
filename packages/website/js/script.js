@@ -190,6 +190,9 @@ function animateCards() {
 // Initialize
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize config-based links
+    initializeLinks();
+
     // Load games
     loadGames();
 
@@ -204,6 +207,33 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.add('reveal');
     });
 });
+
+// ============================================
+// Environment-specific Link Initialization
+// ============================================
+function initializeLinks() {
+    const config = window.PixoSpritzConfig;
+
+    if (config) {
+        // Update demo link
+        const demoLink = document.getElementById('demo-link');
+        if (demoLink) {
+            demoLink.href = config.current.demo;
+        }
+
+        // Update editor link
+        const editorLink = document.getElementById('editor-link');
+        if (editorLink) {
+            editorLink.href = config.current.editor;
+        }
+
+        // Update dynamic console form
+        const consoleForm = document.getElementById('dynamic-console-form');
+        if (consoleForm) {
+            consoleForm.action = config.current.console;
+        }
+    }
+}
 
 // ============================================
 // Glitch Effect (Optional Enhancement)

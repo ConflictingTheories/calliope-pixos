@@ -1,4 +1,4 @@
-# @pixospritz/console
+# pixospritz-console
 
 Web player for running PixoSpritz games.
 
@@ -12,7 +12,7 @@ Web player for running PixoSpritz games.
 ## Installation
 
 ```bash
-npm install @pixospritz/console
+npm install pixospritz-console
 ```
 
 ## Development
@@ -42,6 +42,6 @@ public/
 
 ## Dependencies
 
-- `@pixospritz/core` - Core engine
-- `@pixospritz/script` - Scripting engine
+- `pixospritz-core` - Core engine
+- `pixoscript` - Scripting engine
 - React 17

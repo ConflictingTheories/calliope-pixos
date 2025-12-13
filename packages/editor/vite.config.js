@@ -37,8 +37,8 @@ export default defineConfig(() => {
         injectManifest: {
           rollupFormat: 'iife',
           globPatterns: ['./**/*.{js,css,png,ttf,wasm,zip}', './*.{html,ico,png,js,json}'],
-          // Increase limit to 5MB for Monaco Editor
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          // Increase limit to 7MB for Monaco Editor (TypeScript worker is ~6MB)
+          maximumFileSizeToCacheInBytes: 7 * 1024 * 1024,
         },
         includeManifestIcons: false,
         manifest: {

@@ -372,12 +372,24 @@ export default class Sprite extends Loadable {
     }
 
     rm.mvPushMatrix();
-    // position
-    translate(
-      rm.uModelMat,
-      rm.uModelMat,
-      (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
-    );
+    
+    // Get the draw offset for the current camera direction
+    // Handle both formats: drawOffset as a Vector or as an object with direction keys
+    let drawOffsetVec;
+    if (this.drawOffset && typeof this.drawOffset === 'object') {
+      if (this.drawOffset.toArray) {
+        // drawOffset is a Vector - use it directly
+        drawOffsetVec = this.drawOffset;
+      } else {
+        // drawOffset is an object with direction keys (N, S, E, W, etc.)
+        drawOffsetVec = this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N'] ?? new Vector(0, 0, 0);
+      }
+    } else {
+      drawOffsetVec = new Vector(0, 0, 0);
+    }
+    const drawOffsetArr = drawOffsetVec.toArray ? drawOffsetVec.toArray() : [0, 0, 0];
+    
+    // Position the sprite at its world position
     translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
 
     // scale & rotate sprite to handle walls
@@ -389,6 +401,8 @@ export default class Sprite extends Loadable {
           scale: new Vector(1, Math.cos(rm.camera.cameraAngle / 180), 1),
         });
       }
+      
+      // Apply camera rotation for sprite billboarding
       translate(rm.uModelMat, rm.uModelMat, [
         0.5 * rm.camera.cameraVector.x,
         0.5 * rm.camera.cameraVector.y,
@@ -405,6 +419,13 @@ export default class Sprite extends Loadable {
         -0.5 * rm.camera.cameraVector.y,
         0,
       ]);
+      
+      // Apply draw offset AFTER rotation so it's in screen-space
+      // This keeps the sprite at a consistent screen position regardless of camera angle
+      translate(rm.uModelMat, rm.uModelMat, drawOffsetArr);
+    } else {
+      // For fixed sprites, apply draw offset directly
+      translate(rm.uModelMat, rm.uModelMat, drawOffsetArr);
     }
 
     // Bind texture - attribute locations are the same for both shaders (hardcoded to 0, 1)
@@ -449,10 +470,11 @@ export default class Sprite extends Loadable {
       rm.mvPushMatrix();
 
       // Undo rotation so that character plane is normal to LOS
+      // Use the same drawOffset handling as above
       translate(
         rm.uModelMat,
         rm.uModelMat,
-        (this.drawOffset[rm.camera.cameraDir] ?? this.drawOffset['N']).toArray()
+        drawOffsetArr
       );
       translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
       rotate(

@@ -287,7 +287,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                           break;
                         }
                         _context8.n = 1;
-                        return _this2.zip.file('callbacks/' + action.callback + '.lua').async('string');
+                        return _this2.zip.file('callbacks/' + action.callback + '.pxs').async('string');
                       case 1:
                         _t4 = _context8.v;
                         _context8.n = 3;
@@ -452,7 +452,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               console.log({
                 trigger: _this2.selectTrigger
               });
-              file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".lua"));
+              file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (file) {
                 _context0.n = 4;
@@ -518,7 +518,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               console.log({
                 trigger: _this2.stepTrigger
               });
-              file = _this2.zip.file("triggers/".concat(_this2.stepTrigger, ".lua"));
+              file = _this2.zip.file("triggers/".concat(_this2.stepTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.stepTrigger, ".pxs"));
               if (file) {
                 _context1.n = 2;

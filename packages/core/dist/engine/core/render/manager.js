@@ -173,19 +173,10 @@ function RenderManager(engine) {
       throw new Error("WebGL unable to initialize the shader program: ".concat(gl.getProgramInfoLog(shaderProgram)));
     }
 
-    // Get attribute locations
+    // Get attribute locations (don't enable them here - enable during render)
     shaderProgram.aVertexNormal = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
-    if (shaderProgram.aVertexNormal >= 0) {
-      gl.enableVertexAttribArray(shaderProgram.aVertexNormal);
-    }
     shaderProgram.aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-    if (shaderProgram.aVertexPosition >= 0) {
-      gl.enableVertexAttribArray(shaderProgram.aVertexPosition);
-    }
     shaderProgram.aTextureCoord = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
-    if (shaderProgram.aTextureCoord >= 0) {
-      gl.enableVertexAttribArray(shaderProgram.aTextureCoord);
-    }
 
     // Get uniform locations
     shaderProgram.uDiffuse = gl.getUniformLocation(shaderProgram, 'uDiffuse');
@@ -333,11 +324,9 @@ function RenderManager(engine) {
       throw new Error("WebGL unable to initialize the particle shader program: ".concat(gl.getProgramInfoLog(particleShaderProgram)));
     }
 
-    // Get attribute locations
+    // Get attribute locations (don't enable them here - enable during render)
     particleShaderProgram.aVertexPosition = gl.getAttribLocation(particleShaderProgram, 'aVertexPosition');
-    gl.enableVertexAttribArray(particleShaderProgram.aVertexPosition);
     particleShaderProgram.aTextureCoord = gl.getAttribLocation(particleShaderProgram, 'aTextureCoord');
-    gl.enableVertexAttribArray(particleShaderProgram.aTextureCoord);
 
     // Get uniform locations
     particleShaderProgram.pMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
@@ -345,19 +334,23 @@ function RenderManager(engine) {
     particleShaderProgram.vMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
     particleShaderProgram.scaleUniform = gl.getUniformLocation(particleShaderProgram, 'uScale');
     particleShaderProgram.particleColorUniform = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
+    particleShaderProgram.alphaUniform = gl.getUniformLocation(particleShaderProgram, 'uAlpha');
 
     /**
      * Sets the matrix and other common uniforms for the particle shader program.
      * @param {object} [options] - Options for setting uniforms.
      * @param {Vector|null} [options.scale=null] - The scale vector for the particle.
      * @param {number[]|null} [options.color=null] - The color of the particle.
+     * @param {number} [options.alpha=1.0] - The alpha transparency of the particle.
      * @returns {void}
      */
     particleShaderProgram.setMatrixUniforms = function (_ref3) {
       var _ref3$color = _ref3.color,
         color = _ref3$color === void 0 ? null : _ref3$color,
         _ref3$scale = _ref3.scale,
-        scale = _ref3$scale === void 0 ? null : _ref3$scale;
+        scale = _ref3$scale === void 0 ? null : _ref3$scale,
+        _ref3$alpha = _ref3.alpha,
+        alpha = _ref3$alpha === void 0 ? 1.0 : _ref3$alpha;
       // Ensure this program is active before setting uniforms
       gl.useProgram(particleShaderProgram);
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
@@ -369,6 +362,9 @@ function RenderManager(engine) {
 
       // Color
       gl.uniform3fv(this.particleColorUniform, color ? color : [1.0, 1.0, 1.0]);
+
+      // Alpha
+      gl.uniform1f(this.alphaUniform, alpha);
     };
     _this.particleShaderProgram = particleShaderProgram;
     return particleShaderProgram;
@@ -393,6 +389,20 @@ function RenderManager(engine) {
     }
   });
   /**
+   * Resets all vertex attribute arrays to a clean state.
+   * This should be called when switching between different shader programs
+   * to prevent WebGL errors from enabled but unbound attributes.
+   * @returns {void}
+   */
+  _defineProperty(this, "resetVertexAttribArrays", function () {
+    /** @type {WebGL2RenderingContext} */
+    var gl = _this.engine.gl;
+    // Disable a reasonable number of attrib arrays (most shaders use < 8)
+    for (var i = 0; i < 8; i++) {
+      gl.disableVertexAttribArray(i);
+    }
+  });
+  /**
    * Activates the main shader program for rendering.
    * Sets the program as current and binds the default framebuffer.
    * @returns {void}
@@ -403,6 +413,9 @@ function RenderManager(engine) {
 
     // Clear picker pass flag - back to normal rendering
     _this.isPickerPass = false;
+
+    // Reset vertex attrib state before switching shader
+    _this.resetVertexAttribArrays();
     gl.useProgram(_this.shaderProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Render to screen
     _this.initProjection(); // Re-initialize projection in case canvas size changed

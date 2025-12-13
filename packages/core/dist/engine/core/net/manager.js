@@ -77,31 +77,44 @@ var NetworkManager = exports["default"] = /*#__PURE__*/function () {
     function () {
       var _connect = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(url) {
         var _this = this;
+        var _t;
         return _regenerator().w(function (_context) {
-          while (1) switch (_context.n) {
+          while (1) switch (_context.p = _context.n) {
             case 0:
               if (this.ws) {
                 this.disconnect();
               }
+              _context.p = 1;
               this.ws = new WebSocket(url);
-              return _context.a(2, new Promise(function (resolve, reject) {
+              _context.n = 3;
+              break;
+            case 2:
+              _context.p = 2;
+              _t = _context.v;
+              console.warn('[NetworkManager] WebSocket creation failed (server may be offline):', _t.message);
+              return _context.a(2);
+            case 3:
+              return _context.a(2, new Promise(function (resolve) {
                 _this.ws.onopen = function () {
-                  console.log('WebSocket connection established');
+                  console.log('[NetworkManager] WebSocket connection established');
                   resolve();
                 };
                 _this.ws.onmessage = function (event) {
                   _this.handleMessage(event.data);
                 };
                 _this.ws.onclose = function () {
-                  console.log('WebSocket connection closed');
+                  console.log('[NetworkManager] WebSocket connection closed');
+                  _this.ws = null;
                 };
                 _this.ws.onerror = function (error) {
-                  console.error('WebSocket error:', error);
-                  reject(error);
+                  console.warn('[NetworkManager] WebSocket error (server may be offline):', error.type || 'connection failed');
+                  // Don't reject - resolve to allow game to continue offline
+                  _this.ws = null;
+                  resolve();
                 };
               }));
           }
-        }, _callee, this);
+        }, _callee, this, [[1, 2]]);
       }));
       function connect(_x) {
         return _connect.apply(this, arguments);

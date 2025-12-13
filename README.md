@@ -8,14 +8,14 @@ This monorepo contains the following packages:
 
 | Package | Description |
 |---------|-------------|
-| [`@pixospritz/core`](./packages/core) | Core WebGL game engine |
-| [`@pixospritz/script`](./packages/script) | Lua-inspired scripting language |
-| [`@pixospritz/math`](./packages/math) | Math utilities (vectors, matrices) |
-| [`@pixospritz/editor`](./packages/editor) | Visual development tools |
-| [`@pixospritz/console`](./packages/console) | Web game player |
-| [`@pixospritz/server`](./packages/server) | WebSocket multiplayer server |
-| [`@pixospritz/website`](./packages/website) | Documentation website |
-| [`@pixospritz/assets`](./packages/assets) | Shared game assets |
+| [`pixospritz-core`](./packages/core) | Core WebGL game engine |
+| [`pixoscript`](./packages/script) | Lua-inspired scripting language |
+| [`pixospritz-math`](./packages/math) | Math utilities (vectors, matrices) |
+| [`pixospritz-editor`](./packages/editor) | Visual development tools |
+| [`pixospritz-console`](./packages/console) | Web game player |
+| [`pixospritz-server`](./packages/server) | WebSocket multiplayer server |
+| [`pixospritz-website`](./packages/website) | Documentation website |
+| [`pixospritz-assets`](./packages/assets) | Shared game assets |
 
 ## 🚀 Quick Start
 
@@ -66,14 +66,14 @@ npm run build:console
 ```
 calliope-pixos/
 ├── packages/
-│   ├── core/           # @pixospritz/core - Game engine
-│   ├── script/         # @pixospritz/script - Scripting language
-│   ├── math/           # @pixospritz/math - Math utilities
-│   ├── editor/         # @pixospritz/editor - Development tools
-│   ├── console/        # @pixospritz/console - Game player
-│   ├── server/         # @pixospritz/server - Multiplayer server
-│   ├── website/        # @pixospritz/website - Documentation
-│   └── assets/         # @pixospritz/assets - Shared assets
+│   ├── core/           # pixospritz-core - Game engine
+│   ├── script/         # pixoscript - Scripting language
+│   ├── math/           # pixospritz-math - Math utilities
+│   ├── editor/         # pixospritz-editor - Development tools
+│   ├── console/        # pixospritz-console - Game player
+│   ├── server/         # pixospritz-server - Multiplayer server
+│   ├── website/        # pixospritz-website - Documentation
+│   └── assets/         # pixospritz-assets - Shared assets
 ├── package.json        # Root workspace configuration
 └── README.md
 ```

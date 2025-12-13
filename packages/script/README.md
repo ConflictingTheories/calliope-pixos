@@ -1,4 +1,4 @@
-# @pixospritz/script
+# pixoscript
 
 A Lua-inspired scripting language for the PixoSpritz game engine.
 
@@ -12,13 +12,13 @@ A Lua-inspired scripting language for the PixoSpritz game engine.
 ## Installation
 
 ```bash
-npm install @pixospritz/script
+npm install pixoscript
 ```
 
 ## Usage
 
 ```javascript
-import PixoScript from '@pixospritz/script';
+import PixoScript from 'pixoscript';
 
 const script = new PixoScript();
 const result = script.execute(`

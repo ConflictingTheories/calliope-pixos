@@ -243,27 +243,105 @@ function PixoScriptLibrary(pixoscript) {
           console.warn('Failed to show cutout', e);
         }
       },
-      // zone functions
+      /**
+       * Play a cutscene by name. Supports both:
+       * 1. Pre-registered cutscene names (registered via register_cutscene)
+       * 2. File paths to .pxc cutscene files
+       * 
+       * Returns a function that can be yielded in a Lua script.
+       * 
+       * Example Lua:
+       *   pixos.sync({ pixos.play_cutscene('intro') })
+       *   pixos.sync({ pixos.play_cutscene('cutscenes/opening.pxc') })
+       * 
+       * @param {string} cutscene - Cutscene name or file path
+       * @returns {function} Async function that resolves when cutscene completes
+       */
       play_cutscene: function play_cutscene(cutscene) {
-        // todo - not working
         return function () {
-          return new Promise(function (resolve) {
-            console.log({
-              msg: 'playing cutscene via lua',
-              zone: envScope.zone,
-              cutscene: cutscene
-            });
-            if (envScope.zone.playCutscene) {
-              console.log({
-                msg: 'cutscene function found'
-              });
-              return envScope.zone.playCutscene(cutscene).then(function () {
-                resolve();
-              });
-            } else {
-              resolve();
-            }
-          });
+          return new Promise(/*#__PURE__*/function () {
+            var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(resolve) {
+              var scriptText, player, _engine$cutsceneManag, _engine$cutsceneManag2, _envScope$zone, _poll, _t;
+              return _regenerator().w(function (_context) {
+                while (1) switch (_context.p = _context.n) {
+                  case 0:
+                    _context.p = 0;
+                    if (!(typeof cutscene === 'string' && cutscene.endsWith('.pxc'))) {
+                      _context.n = 5;
+                      break;
+                    }
+                    _context.n = 1;
+                    return engine.assetLoader.load(cutscene);
+                  case 1:
+                    scriptText = _context.v;
+                    if (!scriptText) {
+                      _context.n = 3;
+                      break;
+                    }
+                    player = new _PxcPlayer["default"](engine, {
+                      onEnd: function onEnd() {
+                        return resolve();
+                      }
+                    });
+                    _context.n = 2;
+                    return player.playCutscene(scriptText);
+                  case 2:
+                    _context.n = 4;
+                    break;
+                  case 3:
+                    console.warn('[play_cutscene] Failed to load cutscene file:', cutscene);
+                    resolve();
+                  case 4:
+                    _context.n = 9;
+                    break;
+                  case 5:
+                    if (!(engine.cutsceneManager && (_engine$cutsceneManag = (_engine$cutsceneManag2 = engine.cutsceneManager).isRegistered) !== null && _engine$cutsceneManag !== void 0 && _engine$cutsceneManag.call(_engine$cutsceneManag2, cutscene))) {
+                      _context.n = 6;
+                      break;
+                    }
+                    engine.cutsceneManager.start(cutscene);
+                    // Poll until cutscene finishes
+                    _poll = function poll() {
+                      if (!engine.cutsceneManager.isRunning()) {
+                        resolve();
+                      } else {
+                        setTimeout(_poll, 30);
+                      }
+                    };
+                    _poll();
+                    _context.n = 9;
+                    break;
+                  case 6:
+                    if (!((_envScope$zone = envScope.zone) !== null && _envScope$zone !== void 0 && _envScope$zone.playCutscene)) {
+                      _context.n = 8;
+                      break;
+                    }
+                    _context.n = 7;
+                    return envScope.zone.playCutscene(cutscene);
+                  case 7:
+                    resolve();
+                    _context.n = 9;
+                    break;
+                  case 8:
+                    console.warn('[play_cutscene] Cutscene not found:', cutscene);
+                    resolve();
+                  case 9:
+                    _context.n = 11;
+                    break;
+                  case 10:
+                    _context.p = 10;
+                    _t = _context.v;
+                    console.warn('[play_cutscene] Error playing cutscene:', _t);
+                    resolve();
+                  case 11:
+                    return _context.a(2);
+                }
+              }, _callee, null, [[0, 10]]);
+            }));
+            return function (_x) {
+              return _ref.apply(this, arguments);
+            };
+          }());
         };
       },
       /**
@@ -299,14 +377,14 @@ function PixoScriptLibrary(pixoscript) {
               engine.cutsceneManager.register(name, jsSteps);
               engine.cutsceneManager.start(name);
               // Poll until cutscene finishes
-              var _poll = function poll() {
+              var _poll2 = function poll() {
                 if (!engine.cutsceneManager.isRunning()) {
                   resolve();
                 } else {
-                  setTimeout(_poll, 30);
+                  setTimeout(_poll2, 30);
                 }
               };
-              _poll();
+              _poll2();
             } catch (e) {
               console.warn('Failed to run cutscene', e);
               resolve();
@@ -398,26 +476,26 @@ function PixoScriptLibrary(pixoscript) {
         var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         return function () {
           return new Promise(/*#__PURE__*/function () {
-            var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(resolve) {
-              var scriptText, callbacks, player, _t;
-              return _regenerator().w(function (_context) {
-                while (1) switch (_context.p = _context.n) {
+            var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(resolve) {
+              var scriptText, callbacks, player, _t2;
+              return _regenerator().w(function (_context2) {
+                while (1) switch (_context2.p = _context2.n) {
                   case 0:
-                    _context.p = 0;
+                    _context2.p = 0;
                     console.log('[PixoScript] Loading .pxc cutscene:', filePath);
 
                     // Load the .pxc file from asset loader
-                    _context.n = 1;
+                    _context2.n = 1;
                     return engine.assetLoader.load(filePath);
                   case 1:
-                    scriptText = _context.v;
+                    scriptText = _context2.v;
                     if (scriptText) {
-                      _context.n = 2;
+                      _context2.n = 2;
                       break;
                     }
                     console.error('[PixoScript] Failed to load cutscene:', filePath);
                     resolve();
-                    return _context.a(2);
+                    return _context2.a(2);
                   case 2:
                     // Create PxcPlayer instance with callbacks
                     callbacks = {
@@ -434,23 +512,23 @@ function PixoScriptLibrary(pixoscript) {
                       }
                     };
                     player = new _PxcPlayer["default"](engine, callbacks); // Play the cutscene
-                    _context.n = 3;
+                    _context2.n = 3;
                     return player.playCutscene(scriptText);
                   case 3:
-                    _context.n = 5;
+                    _context2.n = 5;
                     break;
                   case 4:
-                    _context.p = 4;
-                    _t = _context.v;
-                    console.error('[PixoScript] Error playing .pxc cutscene:', _t);
+                    _context2.p = 4;
+                    _t2 = _context2.v;
+                    console.error('[PixoScript] Error playing .pxc cutscene:', _t2);
                     resolve();
                   case 5:
-                    return _context.a(2);
+                    return _context2.a(2);
                 }
-              }, _callee, null, [[0, 4]]);
+              }, _callee2, null, [[0, 4]]);
             }));
-            return function (_x) {
-              return _ref.apply(this, arguments);
+            return function (_x2) {
+              return _ref2.apply(this, arguments);
             };
           }());
         };
@@ -472,12 +550,12 @@ function PixoScriptLibrary(pixoscript) {
         var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         return function () {
           return new Promise(/*#__PURE__*/function () {
-            var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(resolve) {
-              var callbacks, player, _t2;
-              return _regenerator().w(function (_context2) {
-                while (1) switch (_context2.p = _context2.n) {
+            var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(resolve) {
+              var callbacks, player, _t3;
+              return _regenerator().w(function (_context3) {
+                while (1) switch (_context3.p = _context3.n) {
                   case 0:
-                    _context2.p = 0;
+                    _context3.p = 0;
                     console.log('[PixoScript] Playing inline .pxc script');
 
                     // Create PxcPlayer instance with callbacks
@@ -495,23 +573,23 @@ function PixoScriptLibrary(pixoscript) {
                       }
                     };
                     player = new _PxcPlayer["default"](engine, callbacks); // Play the cutscene
-                    _context2.n = 1;
+                    _context3.n = 1;
                     return player.playCutscene(scriptText);
                   case 1:
-                    _context2.n = 3;
+                    _context3.n = 3;
                     break;
                   case 2:
-                    _context2.p = 2;
-                    _t2 = _context2.v;
-                    console.error('[PixoScript] Error playing inline .pxc script:', _t2);
+                    _context3.p = 2;
+                    _t3 = _context3.v;
+                    console.error('[PixoScript] Error playing inline .pxc script:', _t3);
                     resolve();
                   case 3:
-                    return _context2.a(2);
+                    return _context3.a(2);
                 }
-              }, _callee2, null, [[0, 2]]);
+              }, _callee3, null, [[0, 2]]);
             }));
-            return function (_x2) {
-              return _ref2.apply(this, arguments);
+            return function (_x3) {
+              return _ref3.apply(this, arguments);
             };
           }());
         };
@@ -543,15 +621,15 @@ function PixoScriptLibrary(pixoscript) {
               from: from,
               to: to,
               duration: duration
-            }], engine.spritz.world, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-              return _regenerator().w(function (_context3) {
-                while (1) switch (_context3.n) {
+            }], engine.spritz.world, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+              return _regenerator().w(function (_context4) {
+                while (1) switch (_context4.n) {
                   case 0:
                     resolve();
                   case 1:
-                    return _context3.a(2);
+                    return _context4.a(2);
                 }
-              }, _callee3);
+              }, _callee4);
             }))));
           });
         };
@@ -644,42 +722,42 @@ function PixoScriptLibrary(pixoscript) {
       },
       // misc utils & functions
       sync: function () {
-        var _sync = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(p) {
-          var _iterator, _step, a, _t3;
-          return _regenerator().w(function (_context4) {
-            while (1) switch (_context4.p = _context4.n) {
+        var _sync = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(p) {
+          var _iterator, _step, a, _t4;
+          return _regenerator().w(function (_context5) {
+            while (1) switch (_context5.p = _context5.n) {
               case 0:
                 _iterator = _createForOfIteratorHelper(p.toObject());
-                _context4.p = 1;
+                _context5.p = 1;
                 _iterator.s();
               case 2:
                 if ((_step = _iterator.n()).done) {
-                  _context4.n = 4;
+                  _context5.n = 4;
                   break;
                 }
                 a = _step.value;
-                _context4.n = 3;
+                _context5.n = 3;
                 return a();
               case 3:
-                _context4.n = 2;
+                _context5.n = 2;
                 break;
               case 4:
-                _context4.n = 6;
+                _context5.n = 6;
                 break;
               case 5:
-                _context4.p = 5;
-                _t3 = _context4.v;
-                _iterator.e(_t3);
+                _context5.p = 5;
+                _t4 = _context5.v;
+                _iterator.e(_t4);
               case 6:
-                _context4.p = 6;
+                _context5.p = 6;
                 _iterator.f();
-                return _context4.f(6);
+                return _context5.f(6);
               case 7:
-                return _context4.a(2);
+                return _context5.a(2);
             }
-          }, _callee4, null, [[1, 5, 6, 7]]);
+          }, _callee5, null, [[1, 5, 6, 7]]);
         }));
-        function sync(_x3) {
+        function sync(_x4) {
           return _sync.apply(this, arguments);
         }
         return sync;
@@ -784,23 +862,23 @@ function PixoScriptLibrary(pixoscript) {
       },
       // skybox shader switching
       set_skybox_shader: function () {
-        var _set_skybox_shader = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(shaderName) {
+        var _set_skybox_shader = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(shaderName) {
           var _engine$renderManager;
-          return _regenerator().w(function (_context5) {
-            while (1) switch (_context5.n) {
+          return _regenerator().w(function (_context6) {
+            while (1) switch (_context6.n) {
               case 0:
                 if (!((_engine$renderManager = engine.renderManager) !== null && _engine$renderManager !== void 0 && (_engine$renderManager = _engine$renderManager.skyboxManager) !== null && _engine$renderManager !== void 0 && _engine$renderManager.setSkyboxShader)) {
-                  _context5.n = 1;
+                  _context6.n = 1;
                   break;
                 }
-                _context5.n = 1;
+                _context6.n = 1;
                 return engine.renderManager.skyboxManager.setSkyboxShader(shaderName);
               case 1:
-                return _context5.a(2);
+                return _context6.a(2);
             }
-          }, _callee5);
+          }, _callee6);
         }));
-        function set_skybox_shader(_x4) {
+        function set_skybox_shader(_x5) {
           return _set_skybox_shader.apply(this, arguments);
         }
         return set_skybox_shader;

@@ -21,7 +21,7 @@ export default {
     this.line = 0;
     this.options = options;
     this.completed = false;
-    this.onOpen = menu.start.onOpen;
+    this.onOpen = menu?.start?.onOpen ?? null;
     this.lastKey = new Date().getTime();
     this.touches = [];
     this.menuDict = menu ?? {};

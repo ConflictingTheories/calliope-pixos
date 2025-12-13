@@ -1,0 +1,171 @@
+{
+  "name": "Water Chamber",
+  "description": "The flowing trial of the Water Elemental",
+  "bounds": [0, 0, 12, 12],
+  "tileset": "common",
+  "audioSrc": "ocean-waves.mp3",
+  "mode": "tactics",
+  
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [6, 10, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    {
+      "id": "water-elemental",
+      "type": "monsters/water_elemental",
+      "pos": [6, 3, 0],
+      "facing": "Down",
+      "selectTrigger": "sprite/water_elemental_battle"
+    },
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [6, 11, 0],
+      "facing": "Up",
+      "zones": ["dungeon-entrance"],
+      "state": "open"
+    },
+    {
+      "id": "water-chest",
+      "type": "objects/chests/blue",
+      "pos": [10, 2, 0],
+      "facing": "South",
+      "inventory": ["water_shard", "ice_staff"]
+    },
+    {
+      "id": "water-spurt-1",
+      "type": "effects/spurt",
+      "pos": [2, 4, -1.5],
+      "facing": "Up"
+    },
+    {
+      "id": "water-spurt-2",
+      "type": "effects/spurt",
+      "pos": [10, 4, -1.5],
+      "facing": "Up"
+    },
+    {
+      "id": "water-spurt-3",
+      "type": "effects/spurt",
+      "pos": [4, 6, -1.5],
+      "facing": "Up"
+    },
+    {
+      "id": "water-spurt-4",
+      "type": "effects/spurt",
+      "pos": [8, 6, -1.5],
+      "facing": "Up"
+    },
+    {
+      "id": "water-spurt-5",
+      "type": "effects/spurt",
+      "pos": [6, 8, -1.5],
+      "facing": "Up"
+    }
+  ],
+  
+  "lights": [
+    {
+      "id": "water-glow-1",
+      "pos": [3, 4, 0],
+      "color": [0.1, 0.4, 0.9],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.08, 0.08, 0.04],
+      "density": 0.4,
+      "enabled": true
+    },
+    {
+      "id": "water-glow-2",
+      "pos": [9, 4, 0],
+      "color": [0.2, 0.5, 1.0],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.08, 0.08, 0.04],
+      "density": 0.4,
+      "enabled": true
+    },
+    {
+      "id": "boss-light",
+      "pos": [6, 3, 2],
+      "color": [0.3, 0.6, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.05, 0.05, 0.02],
+      "density": 0.5,
+      "scatteringCoefficients": [0.2, 0.4, 0.9],
+      "enabled": true
+    },
+    {
+      "id": "ambient-water",
+      "pos": [6, 6, 3],
+      "color": [0.3, 0.5, 0.8],
+      "direction": [1.0, 1.0, 1.0],
+      "attenuation": [0.02, 0.02, 0.01],
+      "enabled": true
+    }
+  ],
+  
+  "scenes": [
+    {
+      "id": "water-trial-intro",
+      "actions": [
+        {
+          "sprite": "water-elemental",
+          "action": "dialogue",
+          "args": [
+            ["The depths call to you, traveler...", "Few have survived the crushing tides.", "Show me your resolve flows as deep as the ocean!"],
+            false,
+            { "autoclose": true }
+          ]
+        },
+        { "trigger": "event/start_water_battle" }
+      ]
+    },
+    {
+      "id": "water-trial-victory",
+      "actions": [
+        {
+          "sprite": "water-elemental",
+          "action": "dialogue",
+          "args": [
+            ["Your spirit... is unyielding...", "The Water Shard grants you its blessing.", "The currents of fate flow in your favor."],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  "scripts": [
+    {
+      "id": "water-chamber-load",
+      "trigger": "zone/water_chamber_load"
+    }
+  ],
+  
+  "objects": [
+    {
+      "id": "coral-1",
+      "type": "cactus_short",
+      "mtl": true,
+      "pos": [1, 3, -1]
+    },
+    {
+      "id": "coral-2",
+      "type": "cactus_tall",
+      "mtl": true,
+      "pos": [11, 3, -1]
+    },
+    {
+      "id": "underwater-book",
+      "type": "book",
+      "mtl": true,
+      "pos": [3, 8, -1]
+    }
+  ],
+  
+  "menu": {}
+}

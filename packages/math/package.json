@@ -1,5 +1,5 @@
 {
-  "name": "@pixospritz/math",
+  "name": "pixospritz-math",
   "version": "1.0.0",
   "description": "Math utilities for PixoSpritz - vectors, matrices, and geometric operations",
   "type": "module",
@@ -11,7 +11,8 @@
     "./matrix4": "./src/matrix4.js"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test __tests__/*.spec.js",
+    "test:watch": "node --test --watch __tests__/*.spec.js"
   },
   "files": [
     "src",
@@ -31,5 +32,8 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "CC-BY-NC-SA-4.0"
+  "license": "CC-BY-NC-SA-4.0",
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
 }

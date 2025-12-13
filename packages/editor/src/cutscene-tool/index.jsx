@@ -24,7 +24,9 @@ import {
   Panel,
 } from 'rsuite';
 import Editor, { loader } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
+
+// Import Monaco with pre-configured web workers
+import { monaco } from '../monaco-setup.js';
 import { registerSpritzCutLanguage } from '../shared/spritzcut-language.js';
 import CutscenePlayer from './CutscenePlayer';
 

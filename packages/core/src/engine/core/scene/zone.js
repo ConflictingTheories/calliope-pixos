@@ -250,7 +250,7 @@ export default class Zone extends Loadable {
   loadTriggerFromZip = async (trigger, zip) => {
     // Try Lua first
     try {
-      const file = await zip.file(`triggers/${trigger}.lua`);
+      const file = await zip.file(`triggers/${trigger}.pxs`);
       if (file) {
         const luaScript = await file.async('string');
         return (_this, subject) => {
@@ -302,9 +302,9 @@ export default class Zone extends Loadable {
     try {
       console.log('Loading Game Mode From Zip');
 
-      const setupFile = zip.file(`modes/${modeName}/setup.lua`);
-      const updateFile = zip.file(`modes/${modeName}/update.lua`);
-      const teardownFile = zip.file(`modes/${modeName}/teardown.lua`);
+      const setupFile = zip.file(`modes/${modeName}/setup.pxs`);
+      const updateFile = zip.file(`modes/${modeName}/update.pxs`);
+      const teardownFile = zip.file(`modes/${modeName}/teardown.pxs`);
       const world = this.world;
 
       const interpreter = new PixoScriptInterpreter(this.engine);
@@ -315,7 +315,7 @@ export default class Zone extends Loadable {
       if (setupFile) {
         const script = await setupFile.async('string');
         // run the setup registration (it likely calls pixos.register_mode)
-        console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+        console.log('Zone.loadModeFromZip: running setup.pxs for mode', modeName);
         await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
@@ -329,7 +329,7 @@ export default class Zone extends Loadable {
             const ui = new PixoScriptInterpreter(this.engine);
             ui.setScope({ zone: this, map: this, _this: this, time, params });
             ui.initLibrary();
-            // The update.lua is expected to return a function
+            // The update.pxs is expected to return a function
             const res = await ui.run(updateScript);
             // If the script returned a callable (Lua function) we invoke it
             if (typeof res === 'function') res(time, params);
@@ -527,6 +527,12 @@ export default class Zone extends Loadable {
     const rm = this.engine.renderManager;
     const gl = this.engine.gl;
 
+    // Guard: Check if cells are properly loaded
+    if (!this.cells || this.cells.length === 0) {
+      console.error('[Zone.onTilesetDefinitionLoaded] No cells data - tileset may be missing tiles definition');
+      return;
+    }
+
     this.cellVertexPosBuf = Array.from({ length: height }, () => new Array(width));
     this.cellVertexTexBuf = Array.from({ length: height }, () => new Array(width));
     this.cellPickingId = Array.from({ length: height }, () => new Array(width));
@@ -537,6 +543,18 @@ export default class Zone extends Loadable {
     for (let j = 0; j < height; j++) {
       for (let i = 0; i < width; i++, k++) {
         const cell = this.cells[k];
+        
+        // Guard: Skip if cell is undefined (tile lookup failed)
+        if (!cell || !Array.isArray(cell)) {
+          console.warn(`[Zone] Cell [${j},${i}] is undefined - missing tile in tileset`);
+          // Create empty buffers
+          this.cellVertexPosBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 3);
+          this.cellVertexTexBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 2);
+          this.cellPickingId[j][i] = rm.pickingManager.nextPickingId();
+          this.walkability[k] = 0;
+          continue;
+        }
+        
         const layers = Math.floor(cell.length / 3);
 
         let cellVertices = [];
@@ -822,6 +840,11 @@ export default class Zone extends Loadable {
    * @param {WebGLRenderingContext} gl - The WebGL context.
    */
   drawRow = (row, selectedSet, highlight, rm, shaderProgram, pickerProgram, gl) => {
+    // Guard: Check if row data exists
+    if (!this.cellVertexPosBuf || !this.cellVertexPosBuf[row]) {
+      return; // Skip row if not initialized
+    }
+    
     // Attach tileset once per row (sprites may switch textures between rows)
     this.tileset.texture.attach();
     const vPosRow = this.cellVertexPosBuf[row];
@@ -834,6 +857,12 @@ export default class Zone extends Loadable {
     for (let cell = 0; cell < width; cell++) {
       const vPos = vPosRow[cell];
       const vTex = vTexRow[cell];
+      
+      // Guard: Skip cells with no vertices (empty or failed tile lookup)
+      if (!vPos || !vTex || vPos.numItems === 0) {
+        continue;
+      }
+      
       rm.bindBuffer(vPos, shaderProgram.aVertexPosition);
       rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
 
@@ -998,12 +1027,12 @@ export default class Zone extends Loadable {
 
     // Lua trigger from spritz zip
     try {
-      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.engine.spritz.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
       const interpreter = new PixoScriptInterpreter(this.engine);
-      interpreter.setScope({ _this: this, zone: this, subject: new interpreter.lua.Table([row, cell]) });
+      interpreter.setScope({ _this: this, zone: this, subject: new interpreter.pxs.Table([row, cell]) });
       interpreter.initLibrary();
       return await interpreter.run(luaScript);
     } catch (e) {

@@ -1,0 +1,110 @@
+{
+  "name": "village",
+  "src": "tileset-forest.png",
+  "sheetSize": [
+    1024,
+    1024
+  ],
+  "sheetOffsetX": 0,
+  "sheetOffsetY": 0,
+  "tileSize": 64,
+  "bgColor": [
+    32,
+    62,
+    88
+  ],
+  "textures": {
+    "FLOOR": [
+      1,
+      1
+    ],
+    "FLOOR_BR": [
+      2,
+      2
+    ],
+    "FLOOR_R": [
+      2,
+      1
+    ],
+    "FLOOR_TR": [
+      2,
+      0
+    ],
+    "FLOOR_T": [
+      1,
+      0
+    ],
+    "FLOOR_TL": [
+      0,
+      0
+    ],
+    "FLOOR_L": [
+      0,
+      1
+    ],
+    "FLOOR_BL": [
+      0,
+      2
+    ],
+    "FLOOR_B": [
+      1,
+      2
+    ],
+    "WALL": [
+      1,
+      5
+    ],
+    "EMPTY": [
+      0,
+      5
+    ],
+    "EMPTY_T": [
+      1,
+      4
+    ],
+    "EMPTY_B": [
+      1,
+      6
+    ],
+    "EMPTY_L": [
+      0,
+      5
+    ],
+    "EMPTY_R": [
+      2,
+      5
+    ],
+    "EMPTY_TL": [
+      0,
+      4
+    ],
+    "EMPTY_TR": [
+      2,
+      4
+    ],
+    "EMPTY_BL": [
+      0,
+      6
+    ],
+    "EMPTY_BR": [
+      2,
+      6
+    ],
+    "EMPTY_CTL": [
+      3,
+      0
+    ],
+    "EMPTY_CTR": [
+      4,
+      0
+    ],
+    "EMPTY_CBL": [
+      3,
+      1
+    ],
+    "EMPTY_CBR": [
+      4,
+      1
+    ]
+  }
+}

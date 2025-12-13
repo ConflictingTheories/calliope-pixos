@@ -4,11 +4,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
-var _matrix = require("../../utils/math/matrix4.js");
 var _vector = require("../../utils/math/vector.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
@@ -99,23 +102,7 @@ function ParticleManager(renderManager) {
     if (zone) {
       z += zone.getHeight(x, y);
     }
-    if (process.env.NODE_ENV === 'development') {
-      console.log({
-        msg: 'particle emit at zone',
-        zone: zone
-      });
-    }
     pos = [x, y, z];
-    if (process.env.NODE_ENV === 'development') {
-      console.log({
-        msg: 'particle emit at pos',
-        pos: pos
-      });
-      console.log({
-        msg: 'particle emit',
-        config: config
-      });
-    }
 
     /** @type {ParticleConfig} */
     var c = Object.assign({
@@ -240,6 +227,7 @@ function ParticleManager(renderManager) {
   });
   /**
    * Renders particles using the dedicated particle shader as proper billboards.
+   * Particles are sorted back-to-front for correct alpha blending.
    * @returns {void}
    */
   _defineProperty(this, "render", function () {
@@ -255,34 +243,58 @@ function ParticleManager(renderManager) {
     var shader = rm.particleShaderProgram;
     if (!shader) return;
 
+    // Reset all vertex attrib arrays to prevent errors from other shaders
+    for (var i = 0; i < 8; i++) {
+      gl.disableVertexAttribArray(i);
+    }
+
     // Use particle shader
     gl.useProgram(shader);
 
-    // Enable blending for transparency
+    // Enable blending for transparency - additive blending for glow effects
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-    // We will draw each particle as a small quad using the particle shader.
+    // Disable depth writing (but keep depth test) for proper transparency
+    gl.depthMask(false);
+
+    // Enable vertex attributes for particle shader
     gl.enableVertexAttribArray(shader.aVertexPosition);
     gl.enableVertexAttribArray(shader.aTextureCoord);
-    var _iterator = _createForOfIteratorHelper(_this.particles),
+
+    // Sort particles back-to-front based on distance from camera
+    var cameraPos = rm.camera.cameraPosition;
+    var sortedParticles = _toConsumableArray(_this.particles).sort(function (a, b) {
+      var distA = Math.pow(a.pos[0] - cameraPos.x, 2) + Math.pow(a.pos[1] - cameraPos.y, 2) + Math.pow(a.pos[2] - cameraPos.z, 2);
+      var distB = Math.pow(b.pos[0] - cameraPos.x, 2) + Math.pow(b.pos[1] - cameraPos.y, 2) + Math.pow(b.pos[2] - cameraPos.z, 2);
+      return distB - distA; // Back to front
+    });
+    var _iterator = _createForOfIteratorHelper(sortedParticles),
       _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var p = _step.value;
         rm.mvPushMatrix();
-        // translate to particle position
+
+        // Set model matrix translation only (billboarding handled in shader)
         var m = rm.uModelMat;
+        // Reset to identity
+        for (var _i = 0; _i < 16; _i++) m[_i] = _i % 5 === 0 ? 1 : 0;
+        // Set translation
         m[12] = p.pos[0];
         m[13] = p.pos[1];
         m[14] = p.pos[2];
-        (0, _matrix.rotate)(rm.uModelMat, rm.uModelMat, (0, _vector.degToRad)(rm.camera.cameraAngle * rm.camera.cameraVector.z), [0, 0, -1]);
 
-        // Set scale and matrix uniforms - uniform scale for proper billboarding
+        // Calculate alpha based on particle age (fade out towards end of life)
+        var lifeRatio = p.age / p.life;
+        var alpha = Math.max(0, 1.0 - lifeRatio * lifeRatio); // Quadratic fade
+
+        // Set scale and matrix uniforms with alpha
         var scaleVec = new _vector.Vector(p.size, p.size, p.size);
         shader.setMatrixUniforms({
           scale: scaleVec,
-          color: p.color
+          color: p.color,
+          alpha: alpha
         });
 
         // Bind buffers and draw
@@ -292,12 +304,20 @@ function ParticleManager(renderManager) {
         rm.mvPopMatrix();
       }
 
-      // cleanup
+      // Restore depth mask and blending
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
     }
+    gl.depthMask(true);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    // Disable vertex attrib arrays to prevent WebGL state issues
+    gl.disableVertexAttribArray(shader.aVertexPosition);
+    gl.disableVertexAttribArray(shader.aTextureCoord);
+
+    // cleanup
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);
   });

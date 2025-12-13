@@ -153,7 +153,7 @@ var DynamicAvatar = exports["default"] = /*#__PURE__*/function (_Avatar) {
               console.log({
                 trigger: _this2.selectTrigger
               });
-              file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".lua"));
+              file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (file) {
                 _context3.n = 4;

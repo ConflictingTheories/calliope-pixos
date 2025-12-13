@@ -137,7 +137,7 @@ export default class DynamicSprite extends Sprite {
         console.log({ msg: 'preping actions', action });
         let luaCallback =
           action.callback && action.callback !== ''
-            ? await this.zip.file('callbacks/' + action.callback + '.lua').async('string')
+            ? await this.zip.file('callbacks/' + action.callback + '.pxs').async('string')
             : 'print("no callback")';
 
         // lua script callback is injected via function wrapper
@@ -202,7 +202,7 @@ export default class DynamicSprite extends Sprite {
     // lua scripting
     try {
       console.log({ trigger: this.selectTrigger });
-      let file = this.zip.file(`triggers/${this.selectTrigger}.lua`);
+      let file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
@@ -234,7 +234,7 @@ export default class DynamicSprite extends Sprite {
     // lua scripting
     try {
       console.log({ trigger: this.stepTrigger });
-      let file = this.zip.file(`triggers/${this.stepTrigger}.lua`);
+      let file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 

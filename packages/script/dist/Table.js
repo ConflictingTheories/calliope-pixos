@@ -135,7 +135,7 @@ class Table {
         while (keys[j + 1]) {
             j += 1;
         }
-        // Following translated from ltable.c (http://www.lua.org/source/5.3/ltable.c.html)
+        // Following translated from ltable.c (http://www.pxs.org/source/5.3/ltable.c.html)
         if (j > 0 && vals[j] === undefined) {
             /* there is a boundary in the array part: (binary) search for it */
             let i = 0;

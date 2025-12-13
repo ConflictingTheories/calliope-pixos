@@ -1203,21 +1203,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     );
   }
 
-  if (!geometry || Object.keys(geometry).length === 0) {
-    return (
-      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div style={{
-          background: '#4d3319',
-          border: '1px solid #ce9178',
-          borderRadius: '3px',
-          padding: '10px',
-          fontSize: '13px',
-          color: '#ce9178'
-        }}>
-          ⚠️ Tileset loaded but geometry definitions are missing. Cannot render 3D view.
-        </div>
-      </div>
-    );
+  if (!geometry) {
+    geometry = {};
   }
 
   return (

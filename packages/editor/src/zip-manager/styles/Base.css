@@ -77,24 +77,21 @@ ol li {
 }
 
 button {
-  border: 1px solid var(--panel-border-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   user-select: none;
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.95), rgba(78, 205, 196, 0.85));
-  color: var(--button-color);
-  font-family: var(--retro-button-font);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  background: rgba(78, 205, 196, 0.9);
+  color: #0a0a14;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: rgba(7, 7, 16, 0.95);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-  padding-block: 0.3rem;
-  padding-inline: 1.1rem;
-  margin: var(--outline-width);
+  border-radius: 5px;
+  padding-block: 5px;
+  padding-inline: 10px;
+  margin: 1px;
   block-size: fit-content;
-  box-shadow: 0 12px 20px rgba(5, 5, 16, 0.35);
-  transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 button.secondary {

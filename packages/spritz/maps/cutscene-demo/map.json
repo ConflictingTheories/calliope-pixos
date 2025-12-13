@@ -21,12 +21,12 @@
     }
   ],
   "mode": "tactics",
-  "scenes": [],
-  "scripts": [
+   "scripts": [
     {
       "id": "load-spritz",
-      "trigger": "zone/cutscene_demo_intro"
+      "trigger": "sprite/npc_quest_giver"
     }
   ],
+  "scenes": [],
   "objects": []
 }

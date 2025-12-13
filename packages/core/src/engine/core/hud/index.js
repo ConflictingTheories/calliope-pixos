@@ -331,6 +331,7 @@ export default class Hud {
 
   /**
    * Creates a scrolling textbox for dialogue.
+   * Caches the textbox to allow typewriter effect to progress across frames.
    * @param {string} text - The text to display.
    * @param {boolean} [scrolling=false] - Whether to enable scrolling.
    * @param {Object} [options={}] - Additional options for the textbox.
@@ -340,19 +341,36 @@ export default class Hud {
     // Draw cutscene elements first (backdrop and cutouts)
     this.drawCutsceneElements();
 
-    let txt = new textScrollBox(this.engine.ctx);
-    txt.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
-    txt.setOptions(options);
+    // Cache the textbox - only create new if text changes
+    // This allows the typewriter effect to progress across frames
+    const cacheKey = text + JSON.stringify(options);
+    if (!this._cachedTextbox || this._cachedTextboxKey !== cacheKey) {
+      this._cachedTextbox = new textScrollBox(this.engine.ctx);
+      this._cachedTextbox.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
+      this._cachedTextbox.setOptions(options);
+      this._cachedTextboxKey = cacheKey;
+    }
+    
+    let txt = this._cachedTextbox;
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
     }
     txt.render();
     return txt;
   }
+  
+  /**
+   * Clears the cached textbox (call when dialogue ends).
+   */
+  clearTextboxCache = () => {
+    this._cachedTextbox = null;
+    this._cachedTextboxKey = null;
+  }
 }
 
 /**
  * textScrollBox - A scrolling text box UI for dialogue.
+ * Features: typewriter effect, animated borders, gradient backgrounds, speaker names.
  * Courtesy of https://stackoverflow.com/questions/44488996/create-a-scrollable-text-inside-canvas
  */
 export class textScrollBox {
@@ -367,21 +385,34 @@ export class textScrollBox {
     this.fontSize = 24;
     this.font = 'minecraftia';
     this.align = 'left';
-    this.background = '#333';
+    this.background = 'rgba(20, 30, 50, 0.92)';
     this.border = {
-      lineWidth: 2,
-      style: '#fff',
+      lineWidth: 3,
+      style: '#7dd3fc',
       corner: 'round',
+      glow: true,
     };
     this.scrollBox = {
-      width: 5,
-      background: '#777',
-      color: '#999',
+      width: 6,
+      background: 'rgba(100, 150, 200, 0.3)',
+      color: '#7dd3fc',
     };
-    this.fontStyle = '#fff';
+    this.fontStyle = '#ffffff';
     this.lines = [];
     this.x = 0;
     this.y = 0;
+    // Typewriter effect settings
+    this.typewriterEnabled = true;
+    this.typewriterSpeed = 30; // ms per character
+    this.typewriterIndex = 0;
+    this.typewriterStartTime = 0;
+    this.typewriterComplete = false;
+    this.totalChars = 0;
+    // Speaker name
+    this.speaker = null;
+    this.speakerColor = '#7dd3fc';
+    // Animation
+    this.animationTime = 0;
   }
 
   /**
@@ -394,12 +425,19 @@ export class textScrollBox {
    * @param {Object} [options={}] - Additional options.
    */
   init = (text, x, y, width, height, options = {}) => {
-    this.text = text;
+    this.text = text || '';
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.portrait = options.portrait ?? null;
+    this.speaker = options.speaker ?? null;
+    this.typewriterStartTime = Date.now();
+    this.typewriterIndex = 0;
+    this.typewriterComplete = false;
+    this.totalChars = 0;
+    this.lines = [];
+    this.dirty = true; // Force re-fitting text
     this.setOptions(options);
     this.cleanit();
   }
@@ -437,7 +475,7 @@ export class textScrollBox {
    */
   setFont = () => {
     this.fontStr = this.fontSize + 'px ' + this.font;
-    this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.05);
+    this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.25);
   }
 
   /**
@@ -445,7 +483,7 @@ export class textScrollBox {
    */
   getTextPos = () => {
     if (this.align === 'left') {
-      this.textPos = 2;
+      this.textPos = 8;
     } else if (this.align === 'right') {
       this.textPos = Math.floor(this.width - this.scrollBox.width - this.fontSize / 4);
     } else {
@@ -466,10 +504,11 @@ export class textScrollBox {
     this.lines.length = 0;
     let line = '';
     let space = '';
+    const maxWidth = this.width - this.scrollBox.width - 16 - (this.portrait ? 84 : 0);
     while (words.length > 0) {
       let word = words.shift();
       let width = ctx.measureText(line + space + word).width;
-      if (width < this.width - this.scrollBox.width - this.scrollBox.width - (this.portrait ? 84 : 0)) {
+      if (width < maxWidth) {
         line += space + word;
         space = ' ';
       } else {
@@ -488,10 +527,12 @@ export class textScrollBox {
       this.lines.push(line);
     }
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;
+    // Calculate total character count for typewriter
+    this.totalChars = this.lines.reduce((sum, line) => sum + line.length, 0);
   }
 
   /**
-   * Draws the textbox border.
+   * Draws the textbox border with optional glow effect.
    * @param {boolean} [portrait=false] - Whether to include portrait space.
    */
   drawBorder = (portrait = false) => {
@@ -499,12 +540,25 @@ export class textScrollBox {
     let bw = this.border.lineWidth / 2;
     ctx.lineJoin = this.border.corner;
     ctx.lineWidth = this.border.lineWidth;
-    ctx.strokeStyle = this.border.style;
-    if (portrait) {
-      ctx.strokeRect(this.x - bw + 84, this.y - bw, this.width + 2 * bw - 84, this.height + 2 * bw);
-    } else {
-      ctx.strokeRect(this.x - bw, this.y - bw, this.width + 2 * bw, this.height + 2 * bw);
+    
+    const boxX = portrait ? this.x + 84 : this.x;
+    const boxWidth = portrait ? this.width - 84 : this.width;
+    
+    // Animated glow effect
+    if (this.border.glow) {
+      const time = Date.now() * 0.003;
+      const glowIntensity = 0.3 + Math.sin(time) * 0.1;
+      ctx.shadowColor = this.border.style;
+      ctx.shadowBlur = 10 + Math.sin(time * 2) * 3;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     }
+    
+    ctx.strokeStyle = this.border.style;
+    ctx.strokeRect(boxX - bw, this.y - bw, boxWidth + 2 * bw, this.height + 2 * bw);
+    
+    // Reset shadow
+    ctx.shadowBlur = 0;
   }
 
   /**
@@ -520,15 +574,58 @@ export class textScrollBox {
     if (barsize > this.height) {
       barsize = this.height;
     }
-    ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y - this.scrollY * scale, this.scrollBox.width, barsize);
+    // Rounded scrollbar
+    const barY = this.y - this.scrollY * scale;
+    const barX = this.x + this.width - this.scrollBox.width;
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, this.scrollBox.width, barsize, 3);
+    ctx.fill();
   }
 
   /**
-   * Draws the portrait.
+   * Draws the portrait with a decorative frame.
    */
   drawPortrait = () => {
     let { ctx } = this;
+    // Draw portrait frame
+    ctx.strokeStyle = this.border.style;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(this.x - 2, this.y + 36, 80, 80);
+    // Draw portrait
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
+  }
+
+  /**
+   * Draws the speaker name above the dialogue box.
+   */
+  drawSpeakerName = () => {
+    if (!this.speaker) return;
+    let { ctx } = this;
+    ctx.save(); // Save context state
+    
+    const nameX = this.portrait ? this.x + 90 : this.x + 10;
+    const nameY = this.y - 28;
+    
+    // Draw name background pill
+    ctx.font = 'bold 18px ' + this.font;
+    const nameWidth = ctx.measureText(this.speaker).width + 20;
+    
+    ctx.fillStyle = 'rgba(20, 30, 50, 0.95)';
+    ctx.beginPath();
+    ctx.roundRect(nameX - 10, nameY - 6, nameWidth, 26, 6);
+    ctx.fill();
+    
+    ctx.strokeStyle = this.speakerColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw name text
+    ctx.fillStyle = this.speakerColor;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(this.speaker, nameX, nameY);
+    
+    ctx.restore(); // Restore context state
   }
 
   /**
@@ -560,13 +657,36 @@ export class textScrollBox {
   }
 
   /**
-   * Renders the textbox.
+   * Skips the typewriter effect and shows all text immediately.
+   */
+  skipTypewriter = () => {
+    this.typewriterComplete = true;
+    this.typewriterIndex = this.totalChars || 0;
+  }
+
+  /**
+   * Checks if typewriter animation is complete.
+   * @returns {boolean} True if complete.
+   */
+  isTypewriterComplete = () => {
+    return this.typewriterComplete || !this.typewriterEnabled;
+  }
+
+  /**
+   * Renders the textbox with typewriter effect.
    */
   render = () => {
     let { ctx } = this;
     this.cleanit();
     ctx.font = this.fontStr;
     ctx.textAlign = this.align;
+    ctx.textBaseline = 'top';
+    
+    // Draw speaker name if present
+    if (this.speaker) {
+      this.drawSpeakerName();
+    }
+    
     if (this.portrait) {
       this.drawBorder(true);
       this.drawPortrait();
@@ -593,11 +713,53 @@ export class textScrollBox {
       ctx.clip();
       ctx.setTransform(1, 0, 0, 1, this.x, Math.floor(this.y + this.scrollY));
     }
+    
     ctx.fillStyle = this.fontStyle;
-    for (let i = 0; i < this.lines.length; i++) {
-      // Important text does not like being place at fractions of a pixel
-      ctx.fillText(this.lines[i], this.textPos, Math.floor(i * this.textHeight) + 2);
+    
+    // Typewriter effect: calculate how many chars to show based on time
+    if (this.typewriterEnabled && !this.typewriterComplete) {
+      const elapsed = Date.now() - this.typewriterStartTime;
+      const charsToShow = Math.floor(elapsed / this.typewriterSpeed);
+      
+      if (charsToShow >= this.totalChars) {
+        this.typewriterComplete = true;
+      }
+      
+      // Draw text with typewriter effect
+      let charCount = 0;
+      for (let i = 0; i < this.lines.length; i++) {
+        const line = this.lines[i];
+        const lineStart = charCount;
+        const lineEnd = charCount + line.length;
+        
+        if (charsToShow <= lineStart) {
+          // Haven't reached this line yet - don't draw
+          break;
+        } else if (charsToShow >= lineEnd) {
+          // Show entire line
+          ctx.fillText(line, this.textPos, Math.floor(i * this.textHeight) + 2);
+        } else {
+          // Partial line - typewriter effect
+          const visibleChars = charsToShow - lineStart;
+          const visibleText = line.substring(0, visibleChars);
+          ctx.fillText(visibleText, this.textPos, Math.floor(i * this.textHeight) + 2);
+          
+          // Draw cursor
+          const cursorX = this.textPos + ctx.measureText(visibleText).width;
+          const cursorY = Math.floor(i * this.textHeight) + 2;
+          ctx.fillStyle = this.speakerColor || '#7dd3fc';
+          ctx.fillRect(cursorX + 2, cursorY, 2, this.fontSize);
+          ctx.fillStyle = this.fontStyle;
+        }
+        charCount = lineEnd + 1; // +1 for space between lines
+      }
+    } else {
+      // No typewriter - show all text immediately
+      for (let i = 0; i < this.lines.length; i++) {
+        ctx.fillText(this.lines[i], this.textPos, Math.floor(i * this.textHeight) + 2);
+      }
     }
+    
     ctx.restore(); // remove the clipping
   }
 }

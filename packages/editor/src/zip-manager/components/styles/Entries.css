@@ -14,13 +14,19 @@
 }
 
 .entries li {
-  padding-block: var(--list-item-padding-block-size);
-  padding-inline: var(--list-item-padding-inline-size);
+  padding-block: 4px;
+  padding-inline: 6px;
   outline: none;
-  column-gap: var(--gap-inline-size);
+  column-gap: 8px;
   cursor: pointer;
   color: var(--text-color);
-  font-size: 0.92rem;
+  font-size: 12px;
+  border-radius: 4px;
+  transition: background 0.1s ease;
+}
+
+.entries li:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 @supports (grid-template-columns: subgrid) {
@@ -50,32 +56,32 @@
   user-select: none;
   overflow-x: hidden;
   overflow-inline: hidden;
-  column-gap: var(--small-gap-inline-size);
+  column-gap: 6px;
   flex: 1;
   -webkit-tap-highlight-color: transparent;
   color: var(--text-color);
   font-weight: 500;
+  font-size: 12px;
 }
 
 .entries .entry-size {
   text-align: right;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.4);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 0.8rem;
+  font-size: 10px;
 }
 
 .entries .entry-highlighted {
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.35), rgba(78, 205, 196, 0.28));
-  color: var(--highlighted-text-color);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 24px rgba(6, 5, 15, 0.35);
+  background: rgba(78, 205, 196, 0.15);
+  color: var(--color-secondary, #4ecdc4);
+  border: 1px solid rgba(78, 205, 196, 0.25);
 }
 
 .entries .entry-highlighted .entry-name,
 .entries .entry-highlighted .entry-size,
 .entries .entry-highlighted .list-item-button {
-  color: var(--highlighted-text-color);
+  color: var(--color-secondary, #4ecdc4);
 }
 
 .entries .entry-highlighted ::selection {

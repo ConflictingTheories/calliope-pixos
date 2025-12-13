@@ -313,7 +313,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
             case 0:
               _context4.p = 0;
               _context4.n = 1;
-              return zip.file("triggers/".concat(trigger, ".lua"));
+              return zip.file("triggers/".concat(trigger, ".pxs"));
             case 1:
               file = _context4.v;
               if (!file) {
@@ -415,9 +415,9 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
             case 0:
               _context7.p = 0;
               console.log('Loading Game Mode From Zip');
-              setupFile = zip.file("modes/".concat(modeName, "/setup.lua"));
-              updateFile = zip.file("modes/".concat(modeName, "/update.lua"));
-              teardownFile = zip.file("modes/".concat(modeName, "/teardown.lua"));
+              setupFile = zip.file("modes/".concat(modeName, "/setup.pxs"));
+              updateFile = zip.file("modes/".concat(modeName, "/update.pxs"));
+              teardownFile = zip.file("modes/".concat(modeName, "/teardown.pxs"));
               world = _this2.world;
               interpreter = new _PixoScriptInterpreter["default"](_this2.engine);
               interpreter.setScope({
@@ -436,7 +436,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
             case 1:
               script = _context7.v;
               // run the setup registration (it likely calls pixos.register_mode)
-              console.log('Zone.loadModeFromZip: running setup.lua for mode', modeName);
+              console.log('Zone.loadModeFromZip: running setup.pxs for mode', modeName);
               _context7.n = 2;
               return interpreter.run(script);
             case 2:
@@ -467,7 +467,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
                           params: params
                         });
                         ui.initLibrary();
-                        // The update.lua is expected to return a function
+                        // The update.pxs is expected to return a function
                         _context5.n = 1;
                         return ui.run(updateScript);
                       case 1:
@@ -915,6 +915,12 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       var height = _this2.size[1];
       var rm = _this2.engine.renderManager;
       var gl = _this2.engine.gl;
+
+      // Guard: Check if cells are properly loaded
+      if (!_this2.cells || _this2.cells.length === 0) {
+        console.error('[Zone.onTilesetDefinitionLoaded] No cells data - tileset may be missing tiles definition');
+        return;
+      }
       _this2.cellVertexPosBuf = Array.from({
         length: height
       }, function () {
@@ -937,6 +943,17 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       for (var j = 0; j < height; j++) {
         for (var i = 0; i < width; i++, k++) {
           var cell = _this2.cells[k];
+
+          // Guard: Skip if cell is undefined (tile lookup failed)
+          if (!cell || !Array.isArray(cell)) {
+            console.warn("[Zone] Cell [".concat(j, ",").concat(i, "] is undefined - missing tile in tileset"));
+            // Create empty buffers
+            _this2.cellVertexPosBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 3);
+            _this2.cellVertexTexBuf[j][i] = rm.createBuffer(new Float32Array([]), gl.STATIC_DRAW, 2);
+            _this2.cellPickingId[j][i] = rm.pickingManager.nextPickingId();
+            _this2.walkability[k] = 0;
+            continue;
+          }
           var layers = Math.floor(cell.length / 3);
           var cellVertices = [];
           var cellTex = [];
@@ -1329,6 +1346,11 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
      * @param {WebGLRenderingContext} gl - The WebGL context.
      */
     _defineProperty(_this2, "drawRow", function (row, selectedSet, highlight, rm, shaderProgram, pickerProgram, gl) {
+      // Guard: Check if row data exists
+      if (!_this2.cellVertexPosBuf || !_this2.cellVertexPosBuf[row]) {
+        return; // Skip row if not initialized
+      }
+
       // Attach tileset once per row (sprites may switch textures between rows)
       _this2.tileset.texture.attach();
       var vPosRow = _this2.cellVertexPosBuf[row];
@@ -1340,6 +1362,11 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       for (var cell = 0; cell < width; cell++) {
         var vPos = vPosRow[cell];
         var vTex = vTexRow[cell];
+
+        // Guard: Skip cells with no vertices (empty or failed tile lookup)
+        if (!vPos || !vTex || vPos.numItems === 0) {
+          continue;
+        }
         rm.bindBuffer(vPos, shaderProgram.aVertexPosition);
         rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
         var id = pickingRow[cell];
@@ -1554,7 +1581,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
               return _context18.a(2);
             case 6:
               _context18.p = 6;
-              file = _this2.engine.spritz.zip.file("triggers/".concat(_this2.selectTrigger, ".lua"));
+              file = _this2.engine.spritz.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (!file) file = _this2.engine.spritz.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (file) {
                 _context18.n = 7;
@@ -1570,7 +1597,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
               interpreter.setScope({
                 _this: _this2,
                 zone: _this2,
-                subject: new interpreter.lua.Table([row, cell])
+                subject: new interpreter.pxs.Table([row, cell])
               });
               interpreter.initLibrary();
               _context18.n = 9;

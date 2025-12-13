@@ -1,4 +1,5 @@
 const { override, addWebpackAlias, addBabelPlugin } = require('customize-cra');
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = override(
@@ -6,9 +7,9 @@ module.exports = override(
     'react': path.resolve('./node_modules/react'),
     'react-dom': path.resolve('./node_modules/react-dom'),
     // Map package imports to local source for development so CRA uses a single React copy
-    '@pixospritz/core': path.resolve(__dirname, '..', 'core', 'src'),
-    '@pixospritz/script': path.resolve(__dirname, '..', 'script', 'dist'),
-    '@pixospritz/math': path.resolve(__dirname, '..', 'math', 'src'),
+    'pixospritz-core': path.resolve(__dirname, '..', 'core', 'src'),
+    'pixoscript': path.resolve(__dirname, '..', 'script', 'dist'),
+    'pixospritz-math': path.resolve(__dirname, '..', 'math', 'src'),
     'calliope-pixos': path.resolve(__dirname, '..', 'core', 'src'),
     'pixoscript': path.resolve(__dirname, '..', 'script', 'dist'),
     '@Components': path.resolve(__dirname, '..', 'core', 'src', 'components'),
@@ -26,6 +27,15 @@ module.exports = override(
         (plugin) => plugin.constructor.name !== 'ModuleScopePlugin'
       );
     }
+    
+    // Add process polyfill for browser environment
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      })
+    );
+    
     // Also allow Babel to process the pixospritz source outside of CRA src/ directory
     const pixosSource = path.resolve(__dirname, '..', 'core', 'src');
     const mathSource = path.resolve(__dirname, '..', 'math', 'src');

@@ -627,7 +627,9 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
   useEffect(() => {
-    new ResizeObserver(resizeUV).observe(uvC.current);
+    if (uvC.current) {
+      new ResizeObserver(resizeUV).observe(uvC.current);
+    }
   }, [uvC]);
 
   // Parse incoming JSON into state
@@ -670,8 +672,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
         const obj = JSON.parse(content);
         setTileset(obj);
         setTileset(obj);
-        setGeom(obj.geometry);
-        setTiles(obj.tiles);
+        setGeom(obj.geometry || {});
+        setTiles(obj.tiles || []);
         ingestTileset();
         rebuildTilePicker();
         setError(null);
@@ -731,16 +733,20 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       setCamDist(Math.max(0.2, camDist * (1 + Math.sign(e.deltaY) * 0.1)));
     };
 
-    glC.current.addEventListener('contextmenu', e => e.preventDefault());
-    glC.current.addEventListener('mousedown', handleMouseDown);
-    glC.current.addEventListener('mousemove', handleMouseMove);
-    glC.current.addEventListener('wheel', handleWheel);
+    if (glC.current) {
+      glC.current.addEventListener('contextmenu', e => e.preventDefault());
+      glC.current.addEventListener('mousedown', handleMouseDown);
+      glC.current.addEventListener('mousemove', handleMouseMove);
+      glC.current.addEventListener('wheel', handleWheel);
+    }
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      glC.current.removeEventListener('mousedown', handleMouseDown);
-      glC.current.removeEventListener('mousemove', handleMouseMove);
-      glC.current.removeEventListener('wheel', handleWheel);
+      if (glC.current) {
+        glC.current.removeEventListener('mousedown', handleMouseDown);
+        glC.current.removeEventListener('mousemove', handleMouseMove);
+        glC.current.removeEventListener('wheel', handleWheel);
+      }
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [glC, isDown, last, panning, camYaw, camPitch, camDist, camTarget]);
@@ -828,12 +834,14 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   // }
 
   function resizeUV() {
-    const r = uvC.current?.getBoundingClientRect();
-    console.log({ uvC, c: uvC.current, b: uvC.current.getBoundingClientRect() });
+    if (!uvC.current) return;
+    const r = uvC.current.getBoundingClientRect();
+    console.log({ uvC, c: uvC.current, b: r });
+    const dpr = window.devicePixelRatio || 1;
     setUvW(Math.max(1, Math.floor(r.width * dpr)));
     setUvH(Math.max(1, Math.floor(r.height * dpr)));
-    uvC.width = uvW;
-    uvC.height = uvH;
+    uvC.current.width = uvW;
+    uvC.current.height = uvH;
     drawUV();
   }
 
@@ -988,14 +996,14 @@ function TilesetEditor({ content, onSave, assets = [] }) {
           Redo
         </Button>
       </Row>
-      {Object.keys(geom).length > 0 && (
+      {geom && Object.keys(geom).length > 0 && (
         <Row style={{ marginTop: '2rem' }}>
           <Col sm={24} md={24} lg={24}>
             <Panel bordered header={<strong>Geometry Definitions</strong>}>
               <pre
                 style={{ maxHeight: '30vh', overflow: 'auto', whiteSpace: 'pre-wrap' }}
               >
-                {JSON.stringify(tileset.geometry, null, 2)}
+                {JSON.stringify(geom, null, 2)}
               </pre>
             </Panel>
           </Col>

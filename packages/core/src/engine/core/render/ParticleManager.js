@@ -11,8 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { rotate } from '../../utils/math/matrix4.js';
-import { degToRad, Vector } from '../../utils/math/vector.js';
+import { Vector } from '../../utils/math/vector.js';
 
 /**
  * @typedef {object} ParticleConfig
@@ -115,15 +114,7 @@ export default class ParticleManager {
       z += zone.getHeight(x, y);
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log({ msg: 'particle emit at zone', zone });
-    }
     pos = [x, y, z];
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log({ msg: 'particle emit at pos', pos });
-      console.log({ msg: 'particle emit', config });
-    }
 
     /** @type {ParticleConfig} */
     const c = Object.assign(
@@ -220,6 +211,7 @@ export default class ParticleManager {
 
   /**
    * Renders particles using the dedicated particle shader as proper billboards.
+   * Particles are sorted back-to-front for correct alpha blending.
    * @returns {void}
    */
   render = () => {
@@ -235,34 +227,56 @@ export default class ParticleManager {
     const shader = rm.particleShaderProgram;
     if (!shader) return;
 
+    // Reset all vertex attrib arrays to prevent errors from other shaders
+    for (let i = 0; i < 8; i++) {
+      gl.disableVertexAttribArray(i);
+    }
+
     // Use particle shader
     gl.useProgram(shader);
 
-    // Enable blending for transparency
+    // Enable blending for transparency - additive blending for glow effects
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    
+    // Disable depth writing (but keep depth test) for proper transparency
+    gl.depthMask(false);
 
-    // We will draw each particle as a small quad using the particle shader.
+    // Enable vertex attributes for particle shader
     gl.enableVertexAttribArray(shader.aVertexPosition);
     gl.enableVertexAttribArray(shader.aTextureCoord);
 
-    for (const p of this.particles) {
+    // Sort particles back-to-front based on distance from camera
+    const cameraPos = rm.camera.cameraPosition;
+    const sortedParticles = [...this.particles].sort((a, b) => {
+      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) + 
+                    Math.pow(a.pos[1] - cameraPos.y, 2) + 
+                    Math.pow(a.pos[2] - cameraPos.z, 2);
+      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) + 
+                    Math.pow(b.pos[1] - cameraPos.y, 2) + 
+                    Math.pow(b.pos[2] - cameraPos.z, 2);
+      return distB - distA; // Back to front
+    });
+
+    for (const p of sortedParticles) {
       rm.mvPushMatrix();
-      // translate to particle position
+      
+      // Set model matrix translation only (billboarding handled in shader)
       const m = rm.uModelMat;
+      // Reset to identity
+      for (let i = 0; i < 16; i++) m[i] = (i % 5 === 0) ? 1 : 0;
+      // Set translation
       m[12] = p.pos[0];
       m[13] = p.pos[1];
       m[14] = p.pos[2];
-      rotate(
-        rm.uModelMat,
-        rm.uModelMat,
-        degToRad(rm.camera.cameraAngle * rm.camera.cameraVector.z),
-        [0, 0, -1]
-      );
 
-      // Set scale and matrix uniforms - uniform scale for proper billboarding
+      // Calculate alpha based on particle age (fade out towards end of life)
+      const lifeRatio = p.age / p.life;
+      const alpha = Math.max(0, 1.0 - lifeRatio * lifeRatio); // Quadratic fade
+
+      // Set scale and matrix uniforms with alpha
       const scaleVec = new Vector(p.size, p.size, p.size);
-      shader.setMatrixUniforms({ scale: scaleVec, color: p.color });
+      shader.setMatrixUniforms({ scale: scaleVec, color: p.color, alpha: alpha });
 
       // Bind buffers and draw
       rm.bindBuffer(this.vertexPosBuf, shader.aVertexPosition);
@@ -272,6 +286,14 @@ export default class ParticleManager {
       rm.mvPopMatrix();
     }
 
+    // Restore depth mask and blending
+    gl.depthMask(true);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    
+    // Disable vertex attrib arrays to prevent WebGL state issues
+    gl.disableVertexAttribArray(shader.aVertexPosition);
+    gl.disableVertexAttribArray(shader.aTextureCoord);
+    
     // cleanup
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);

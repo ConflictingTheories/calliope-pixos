@@ -24,7 +24,7 @@ function Dialog({ className, data, title, resetLabel, cancelLabel, submitLabel, 
     <dialog className={className} ref={dialogRef} onClose={onClose}>
       <form method="dialog" onSubmit={onSubmit} onReset={handleReset}>
         <div className="dialog-title">{title}</div>
-        <p>{children}</p>
+        <div className="dialog-content">{children}</div>
         <div className="button-bar">
           <div className="button-group">
             {resetLabel && (

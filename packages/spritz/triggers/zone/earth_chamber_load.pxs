@@ -1,0 +1,49 @@
+-- Earth Chamber Zone Load Script
+-- Handles the Earth Elemental trial
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: earth_chamber_load', zone = zone }));
+
+-- Check if trial already complete
+if pixos.has_flag('earth_trial_complete') then
+    pixos.log('Earth trial already complete - exploration mode');
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/fields.mp3');
+else
+    pixos.log('Earth trial active - tactics mode');
+    -- Set to tactics mode for the trial
+    pixos.set_mode('tactics');
+    
+    -- Play jungle/earth ambient music
+    pixos.play_bgm('audio/jungle-rhythm.mp3');
+    
+    -- Play the earth trial cutscene intro
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/earth-trial.pxc')
+    });
+    
+    -- After cutscene, mark trial complete
+    pixos.set_flag('earth_trial_complete', true);
+    pixos.log('Earth trial complete - shard obtained!');
+    
+    -- Add earth shard to player inventory
+    local avatar = pixos.get_sprite('avatar');
+    if avatar then
+        local inventory = pixos.from(avatar, 'inventory') or {};
+        table.insert(inventory, 'earth_shard');
+        pixos.to(avatar, { inventory = inventory });
+        pixos.log('Earth shard added to inventory');
+    end;
+    
+    -- Visual celebration effect
+    pixos.emit_particles({6, 3, 1}, { preset = 'earth', count = 40, life = 3000 });
+end;
+
+-- Constant nature/dust effects
+pixos.emit_particles({3, 4, 0.5}, { preset = 'dust', count = 10, life = 3000 });
+pixos.emit_particles({9, 4, 0.5}, { preset = 'dust', count = 10, life = 3000 });
+
+-- Set earth/nature shader effect for the chamber
+pixos.set_skybox_shader('forest');
+
+return nil;

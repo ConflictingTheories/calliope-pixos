@@ -16,6 +16,7 @@ function Entries({
   onToggle,
   onToggleRange,
   onEnter,
+  onContextMenu,
   onUpdateEntriesHeight,
   onUpdateEntriesElementHeight,
   onRegisterResizeEntriesHandler,
@@ -89,8 +90,11 @@ function Entries({
     clearTouchEndEventTimeout();
   }
 
-  function handleContextMenu(event) {
+  function handleContextMenu(event, entry) {
     event.preventDefault();
+    if (onContextMenu) {
+      onContextMenu(event, entry);
+    }
   }
 
   function handleDragOver(event) {
@@ -154,7 +158,6 @@ function Entries({
         onTouchStart={setTouchEndEventTimeout}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onContextMenu={handleContextMenu}
       >
         {entries.map((entry) => {
           if (highlightedIds.includes(entry.id)) {
@@ -165,6 +168,7 @@ function Entries({
                 className={getEntryClassName(entry)}
                 tabIndex={0}
                 onClick={(event) => onEntryClick({ event, entry })}
+                onContextMenu={(event) => handleContextMenu(event, entry)}
               >
                 <Entry
                   entry={entry}
@@ -180,7 +184,12 @@ function Entries({
             );
           } else {
             return (
-              <li key={entry.id} className={getEntryClassName(entry)} onClick={(event) => onEntryClick({ event, entry })}>
+              <li 
+                key={entry.id} 
+                className={getEntryClassName(entry)} 
+                onClick={(event) => onEntryClick({ event, entry })}
+                onContextMenu={(event) => handleContextMenu(event, entry)}
+              >
                 <Entry
                   entry={entry}
                   selectedFolder={selectedFolder}

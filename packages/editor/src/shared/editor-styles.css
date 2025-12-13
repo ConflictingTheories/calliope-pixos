@@ -226,25 +226,24 @@
 }
 
 .editor-hero {
-  background: var(--panel-gradient);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-sm);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: var(--panel-backdrop);
+  background: rgba(12, 12, 24, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .editor-hero h1 {
   margin: 0;
-  font-size: 1.85rem;
+  font-size: 1.25rem;
   line-height: 1.2;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .editor-hero p {
@@ -255,7 +254,7 @@
 
 .editor-stage {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: 8px;
   min-height: 0;
   flex: 1;
   align-items: stretch;
@@ -492,11 +491,9 @@
 }
 
 .editor-main {
-  background: rgba(18, 18, 34, 0.8);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: var(--panel-backdrop);
+  background: rgba(12, 12, 24, 0.9);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -506,7 +503,7 @@
 
 .editor-main-content {
   flex: 1;
-  padding: var(--spacing-sm);
+  padding: 8px;
   overflow: hidden;
   min-height: 0;
   display: flex;
@@ -561,26 +558,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border-bottom: 1px solid var(--border-color);
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .editor-main-title {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 2px;
 }
 
 .editor-main-title span {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font-size: 9px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .editor-main-title strong {
-  font-size: 1rem;
+  font-size: 12px;
+  color: var(--color-secondary);
 }
 
 .editor-pill {
@@ -596,17 +595,60 @@
   letter-spacing: 0.07em;
 }
 
+.editor-main-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.editor-ai-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-secondary);
+  background: rgba(78, 205, 196, 0.1);
+  color: var(--color-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.editor-ai-button:hover:not([disabled]) {
+  background: rgba(78, 205, 196, 0.2);
+  border-color: var(--color-secondary);
+  transform: translateY(-1px);
+}
+
+.editor-ai-button.is-active {
+  background: var(--color-secondary);
+  color: #0a0a14;
+  border-color: var(--color-secondary);
+}
+
+.editor-ai-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.editor-ai-icon {
+  font-size: 1rem;
+}
+
 .editor-empty-state {
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
-  padding: 2rem 1rem;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 24px 16px;
   text-align: center;
   color: var(--text-muted);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
 }
 
 .editor-empty-state h3 {
@@ -616,11 +658,10 @@
 
 .editor-sidebar-panel {
   position: relative;
-  background: var(--panel-gradient);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-sm);
+  background: rgba(10, 10, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 8px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -1,4 +1,4 @@
-# @pixospritz/editor
+# pixospritz-editor
 
 Visual development tools for creating PixoSpritz games.
 
@@ -14,7 +14,7 @@ Visual development tools for creating PixoSpritz games.
 ## Installation
 
 ```bash
-npm install @pixospritz/editor
+npm install pixospritz-editor
 ```
 
 ## Development
@@ -51,8 +51,8 @@ src/
 
 ## Dependencies
 
-- `@pixospritz/core` - Core engine
-- `@pixospritz/math` - Math utilities
+- `pixospritz-core` - Core engine
+- `pixospritz-math` - Math utilities
 - React 18
 - Monaco Editor
 - Rsuite UI components
