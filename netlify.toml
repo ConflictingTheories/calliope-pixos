@@ -2,4 +2,4 @@
 # https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-  ignore = 1
+  ignore = "1"
