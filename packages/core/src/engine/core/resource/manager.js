@@ -20,6 +20,7 @@ import Speech from '../scene/speech.js';
 
 // Absolute imports
 import { OBJ } from '../../utils/obj/index.js';
+import ObjHelper from '../../utils/ObjHelper.js';
 import GLEngine from '../index.js';
 
 /**
@@ -38,6 +39,39 @@ export default class ResourceManager {
 
       /** @type {OBJ} */
       this.objLoader = OBJ;
+      /** @type {ObjHelper} */
+      this.objHelper = new ObjHelper(engine.gl);
+        /**
+         * Loads an OBJ model using ObjHelper (modern loader).
+         * @param {string} objText - OBJ file content (string)
+         * @param {string} [mtlText] - MTL file content (string, optional)
+         * @param {Object} [textureMap] - Map of texture names to data URIs (optional)
+         * @returns {Promise<ParsedMesh[]>} Array of parsed and initialized meshes
+         */
+        async loadModel(objText, mtlText = null, textureMap = null) {
+          // Parse OBJ and MTL
+          const meshes = this.objHelper.parseOBJ(objText);
+          let materials = {};
+          if (mtlText) {
+            materials = this.objHelper.parseMTL(mtlText);
+            this.objHelper.assignMaterials(meshes, materials);
+          }
+          // Load textures if provided
+          if (textureMap) {
+            await this.objHelper.loadTextures(meshes, textureMap);
+          }
+          // Initialize WebGL buffers
+          this.objHelper.initBuffers(meshes);
+          return meshes;
+        }
+
+        /**
+         * Clean up WebGL resources for meshes loaded with ObjHelper.
+         * @param {ParsedMesh[]} meshes
+         */
+        deleteModelBuffers(meshes) {
+          this.objHelper.deleteMeshBuffers(meshes);
+        }
       /** @type {AudioLoader} */
       this.audioLoader = new AudioLoader(this);
 

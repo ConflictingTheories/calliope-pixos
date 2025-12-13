@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/*"
   ],
+  "private": true,
   "scripts": {
     "clean": "rimraf packages/*/dist packages/*/build",
     "build": "npm run build:core && npm run build:script && npm run build:editor && npm run build:console",

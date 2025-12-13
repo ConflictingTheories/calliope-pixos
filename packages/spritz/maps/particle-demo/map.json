@@ -1,0 +1,224 @@
+{
+  "name": "Particle Demo Zone",
+  "description": "A comprehensive demo showcasing particles, dynamic scripting, and conditional events",
+  "bounds": [0, 0, 16, 16],
+  "tileset": "sewer",
+  "audioSrc": "organ.mp3",
+  "mode": "explore",
+  "skybox": "cosmic",
+  "onLoad": "zone/particle_demo_load",
+  
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [8, 14, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    
+    {
+      "id": "particle-fountain",
+      "type": "effects/spurt",
+      "pos": [8, 8, 0],
+      "facing": "Up",
+      "onStep": "sprite/fountain_particles",
+      "loopParticles": true
+    },
+    
+    {
+      "id": "torch-left",
+      "type": "effects/fireplace",
+      "pos": [2, 8, 0.5],
+      "facing": "Up",
+      "onStep": "sprite/torch_fire",
+      "particleType": "flame"
+    },
+    {
+      "id": "torch-right",
+      "type": "effects/fireplace",
+      "pos": [14, 8, 0.5],
+      "facing": "Up",
+      "onStep": "sprite/torch_fire",
+      "particleType": "flame"
+    },
+    
+    {
+      "id": "magic-crystal-1",
+      "type": "objects/chests/blue",
+      "pos": [4, 4, 0],
+      "facing": "South",
+      "selectTrigger": "sprite/crystal_activate",
+      "state": "dormant",
+      "color": [0.2, 0.6, 1.0],
+      "requiredCount": 1
+    },
+    {
+      "id": "magic-crystal-2",
+      "type": "objects/chests/red",
+      "pos": [12, 4, 0],
+      "facing": "South",
+      "selectTrigger": "sprite/crystal_activate",
+      "state": "dormant",
+      "color": [1.0, 0.3, 0.3],
+      "requiredCount": 2
+    },
+    {
+      "id": "magic-crystal-3",
+      "type": "objects/chests/wood",
+      "pos": [4, 12, 0],
+      "facing": "South",
+      "selectTrigger": "sprite/crystal_activate",
+      "state": "dormant",
+      "color": [0.3, 1.0, 0.3],
+      "requiredCount": 3
+    },
+    {
+      "id": "magic-crystal-4",
+      "type": "objects/chests/metal",
+      "pos": [12, 12, 0],
+      "facing": "South",
+      "selectTrigger": "sprite/crystal_activate",
+      "state": "dormant",
+      "color": [1.0, 1.0, 0.2],
+      "requiredCount": 4
+    },
+    
+    {
+      "id": "secret-door",
+      "type": "furniture/door",
+      "pos": [8, 2, 0],
+      "facing": "Up",
+      "state": "locked",
+      "requiredCrystals": 4,
+      "zones": ["boss-arena"]
+    },
+    
+    {
+      "id": "weather-orb",
+      "type": "furniture/portal",
+      "pos": [8, 5, 0.5],
+      "facing": "Up",
+      "selectTrigger": "sprite/weather_cycle",
+      "weatherIndex": 0
+    },
+    
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [8, 15, 0],
+      "facing": "Down",
+      "zones": ["village-hub"],
+      "state": "open"
+    },
+    
+    {
+      "id": "quest-giver",
+      "type": "characters/female",
+      "pos": [6, 10, 0],
+      "facing": "Right",
+      "selectTrigger": "sprite/particle_quest",
+      "questState": "not_started"
+    },
+    
+    {
+      "id": "magic-chest",
+      "type": "objects/chests/wood",
+      "pos": [10, 10, 0],
+      "facing": "South",
+      "inventory": ["particle_wand", "mana_potion", "crystal_key"],
+      "state": "closed",
+      "selectTrigger": "sprite/chest_open_particles"
+    }
+  ],
+  
+  "objects": [],
+  
+  "lights": [
+    {
+      "id": "center-light",
+      "pos": [8, 8, 2],
+      "color": [0.6, 0.8, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.08, 0.08, 0.02],
+      "enabled": true
+    },
+    {
+      "id": "torch-light-left",
+      "pos": [2, 8, 1],
+      "color": [1.0, 0.6, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.15, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "torch-light-right",
+      "pos": [14, 8, 1],
+      "color": [1.0, 0.6, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.15, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "crystal-light-1",
+      "pos": [4, 4, 0.5],
+      "color": [0.2, 0.6, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.2, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "crystal-light-2",
+      "pos": [12, 4, 0.5],
+      "color": [1.0, 0.3, 0.3],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.2, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "crystal-light-3",
+      "pos": [4, 12, 0.5],
+      "color": [0.3, 1.0, 0.3],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.2, 0.1, 0.05],
+      "enabled": true
+    },
+    {
+      "id": "crystal-light-4",
+      "pos": [12, 12, 0.5],
+      "color": [1.0, 1.0, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.2, 0.1, 0.05],
+      "enabled": true
+    }
+  ],
+  
+  "triggers": [
+    {
+      "id": "zone-enter",
+      "type": "zone",
+      "bounds": [0, 0, 16, 16],
+      "onEnter": "zone/particle_demo_enter"
+    },
+    {
+      "id": "fountain-area",
+      "type": "tile",
+      "bounds": [6, 6, 10, 10],
+      "onEnter": "tile/fountain_approach"
+    },
+    {
+      "id": "secret-area",
+      "type": "tile",
+      "bounds": [6, 0, 10, 3],
+      "onEnter": "tile/secret_area_approach"
+    }
+  ],
+  
+  "dynamicState": {
+    "crystalsActivated": 0,
+    "doorUnlocked": false,
+    "questComplete": false,
+    "weatherType": "clear",
+    "particleIntensity": 1.0
+  }
+}

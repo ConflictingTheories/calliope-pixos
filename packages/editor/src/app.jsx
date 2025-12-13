@@ -27,7 +27,9 @@ import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
 import AIGenerator from './ai-generator/index.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
-import { loadTilesetWithExtends, mergeDeep } from './shared/extends-utils.js';
+import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
+import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
+import './onboarding/FirstTimeWizard.css';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -64,6 +66,7 @@ const App = () => {
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const supportFabRef = useRef(null);
 
   const handleOptionsChange = useCallback((options) => {
@@ -96,6 +99,10 @@ const App = () => {
   const handleSupportPanelToggle = useCallback(() => {
     setSupportPanelPinned((prev) => !prev);
     setSupportMenuOpen(false);
+  }, []);
+
+  const handleWizardClose = useCallback(() => {
+    setShowWizard(false);
   }, []);
 
   useEffect(() => {
@@ -1567,6 +1574,7 @@ const App = () => {
           <span>Support Pixospritz</span>
         </button>
       </div>
+      {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
     </div>
   );
 };
