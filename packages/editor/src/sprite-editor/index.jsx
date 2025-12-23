@@ -1,4 +1,4 @@
-ref/**
+/**
  * ---------------------------------------------------------------
  *                 Pixospritz – Editor – Sprite Editor
  * ---------------------------------------------------------------
@@ -49,6 +49,17 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
 
     try {
       const data = JSON.parse(content);
+
+      // Initialize frames structure if missing
+      if (!data.frames) {
+        data.frames = {};
+      }
+      DIRECTIONS.forEach(dir => {
+        if (!data.frames[dir]) {
+          data.frames[dir] = [];
+        }
+      });
+
       setSpriteData(data);
 
       // Load the spritesheet image
@@ -312,77 +323,71 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
   }
 
   return (
-    <div style={{ padding: '0.125rem', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Top Row: Spritesheet + Preview */}
-      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flex: '1', minHeight: 0 }}>
-        {/* Spritesheet View */}
-        <div style={{ flex: '2', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', flex: '1', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Spritesheet</div>
-            <canvas
-              ref={canvasRef}
-              width={400}
-              height={250}
-              style={{
-                border: '1px solid #333',
-                background: '#222',
-                cursor: dragging ? 'grab' : 'crosshair',
-                userSelect: 'none',
-                touchAction: 'none',
-                width: '100%',
-                height: '100%',
-                display: 'block',
-                flex: '1',
-                minHeight: 0,
-              }}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-              onWheel={handleWheel}
-              onClick={handleCanvasClick}
-            />
-            <div style={{ marginTop: '0.125rem', fontSize: '0.6em', color: '#ccc', textAlign: 'center' }}>
-              Zoom: {camera.zoom.toFixed(1)}x
-            </div>
+    <div style={{ height: '100vh', overflowY: 'auto' }}>
+      <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column' }}>
+      {/* Spritesheet View - Top */}
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Spritesheet View</div>
+          <canvas
+            ref={canvasRef}
+            width={spriteImage ? undefined : 600}
+            height={spriteImage ? undefined : 400}
+            style={{
+              border: '1px solid #333',
+              background: '#222',
+              cursor: dragging ? 'grab' : 'crosshair',
+              userSelect: 'none',
+              touchAction: 'none',
+              width: '100%',
+              height: 'auto',
+              maxHeight: '600px',
+              display: 'block',
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onWheel={handleWheel}
+            onClick={handleCanvasClick}
+          />
+          <div style={{ marginTop: '0.5rem', fontSize: '0.8em', color: '#ccc', textAlign: 'center' }}>
+            Zoom: {camera.zoom.toFixed(1)}x | Click grid cells to set frame positions
           </div>
         </div>
+      </div>
 
-        {/* Preview + Controls */}
-        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '0.25rem', minHeight: 0 }}>
-          {/* Preview */}
-          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', flex: '1' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Preview</div>
+      {/* Preview and Controls Row */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+        {/* Preview */}
+        <div style={{ flex: '1' }}>
+          <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Preview</div>
             <canvas
               ref={previewCanvasRef}
-              width={64}
-              height={64}
+              width={128}
+              height={128}
               style={{
                 border: '1px solid #333',
                 background: '#222',
                 width: '100%',
-                height: '100%',
+                height: 'auto',
                 display: 'block',
               }}
             />
-          </div>
-
-          {/* Controls */}
-          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a' }}>
-            <div style={{ display: 'flex', gap: '0.125rem', marginBottom: '0.125rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <Button
                 appearance={isPlaying ? 'primary' : 'default'}
                 onClick={() => setIsPlaying(!isPlaying)}
-                size="xs"
-                style={{ flex: '1', fontSize: '0.7em', padding: '0.125rem' }}
+                size="sm"
               >
                 {isPlaying ? 'Pause' : 'Play'}
               </Button>
-              <Checkbox checked={loop} onChange={setLoop} size="xs" style={{ fontSize: '0.7em' }}>
+              <Checkbox checked={loop} onChange={setLoop} size="sm">
                 Loop
               </Checkbox>
             </div>
-            <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Speed: {animationSpeed}ms</div>
+            <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Speed: {animationSpeed}ms</div>
               <Slider
                 min={50}
                 max={1000}
@@ -394,181 +399,173 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Row: All Controls */}
-      <div style={{ display: 'flex', gap: '0.25rem', flex: '1', minHeight: 0 }}>
-        {/* Direction & Frame */}
-        <div style={{ flex: '1', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Direction & Frame</div>
-          <div style={{ marginBottom: '0.25rem', flex: '1' }}>
-            <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Direction:</div>
-            <SelectPicker
-              data={DIRECTIONS.map(dir => ({ label: dir, value: dir }))}
-              value={selectedDirection}
-              onChange={setSelectedDirection}
-              size="xs"
-              style={{ width: '100%', fontSize: '0.7em' }}
-            />
-          </div>
-          <div style={{ flex: '1' }}>
-            <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Frame:</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.0625rem' }}>
-              {spriteData.frames?.[selectedDirection]?.map((frame, index) => (
+        {/* Direction & Frame Selection */}
+        <div style={{ flex: '1' }}>
+          <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Direction & Frame</div>
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Direction:</div>
+              <SelectPicker
+                data={DIRECTIONS.map(dir => ({ label: dir, value: dir }))}
+                value={selectedDirection}
+                onChange={setSelectedDirection}
+                size="sm"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Frame:</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                {spriteData.frames?.[selectedDirection]?.map((frame, index) => (
+                  <Button
+                    key={index}
+                    appearance={selectedFrame === index ? 'primary' : 'default'}
+                    onClick={() => setSelectedFrame(index)}
+                    size="sm"
+                  >
+                    {index + 1}
+                  </Button>
+                ))}
                 <Button
-                  key={index}
-                  appearance={selectedFrame === index ? 'primary' : 'default'}
-                  onClick={() => setSelectedFrame(index)}
-                  size="xs"
-                  style={{ minWidth: '1.25rem', height: '1.25rem', padding: '0', fontSize: '0.6em' }}
+                  appearance="default"
+                  size="sm"
+                  onClick={() => {
+                    const newData = { ...spriteData };
+                    if (!newData.frames[selectedDirection]) {
+                      newData.frames[selectedDirection] = [];
+                    }
+                    newData.frames[selectedDirection].push([0, 0]);
+                    setSpriteData(newData);
+                  }}
                 >
-                  {index + 1}
+                  + Add Frame
                 </Button>
-              ))}
-              <Button
-                appearance="default"
-                size="xs"
-                onClick={() => {
-                  const newData = { ...spriteData };
-                  if (!newData.frames[selectedDirection]) {
-                    newData.frames[selectedDirection] = [];
-                  }
-                  newData.frames[selectedDirection].push([0, 0]);
-                  setSpriteData(newData);
-                }}
-                style={{ minWidth: '1.25rem', height: '1.25rem', padding: '0', fontSize: '0.6em' }}
-              >
-                +
-              </Button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Frame Coordinates */}
-        <div style={{ flex: '1', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Coordinates</div>
+      {/* Frame Coordinates */}
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Frame Coordinates</div>
           {spriteData.frames?.[selectedDirection]?.[selectedFrame] ? (
-            <div style={{ display: 'flex', gap: '0.125rem', flex: '1' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: '1' }}>
-                <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>X:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>X:</div>
                 <InputNumber
                   value={spriteData.frames[selectedDirection][selectedFrame][0]}
                   onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 0, value)}
-                  size="xs"
-                  style={{ width: '100%', fontSize: '0.7em' }}
+                  style={{ width: '100%' }}
                 />
               </div>
               <div style={{ flex: '1' }}>
-                <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Y:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Y:</div>
                 <InputNumber
                   value={spriteData.frames[selectedDirection][selectedFrame][1]}
                   onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 1, value)}
-                  size="xs"
-                  style={{ width: '100%', fontSize: '0.7em' }}
+                  style={{ width: '100%' }}
                 />
               </div>
             </div>
           ) : (
-            <div style={{ color: '#666', fontStyle: 'italic', fontSize: '0.6em', flex: '1', display: 'flex', alignItems: 'center' }}>
-              Select frame
+            <div style={{ color: '#666', fontStyle: 'italic' }}>
+              Select a frame to edit coordinates
             </div>
           )}
         </div>
+      </div>
 
-        {/* Sprite Properties */}
-        <div style={{ flex: '2', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Properties</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '0.125rem', flex: '1' }}>
+      {/* Sprite Properties */}
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Sprite Properties</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.5rem' }}>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Type:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Type:</div>
               <Input
                 value={spriteData.type || ''}
                 onChange={(value) => updateSpriteProperty('type', value)}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Source:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Source:</div>
               <Input
                 value={spriteData.src || ''}
                 onChange={(value) => updateSpriteProperty('src', value)}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Sheet W:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Sheet W:</div>
               <InputNumber
                 value={spriteData.sheetSize?.[0] || 0}
                 onChange={(value) => updateSpriteProperty('sheetSize', [value, spriteData.sheetSize?.[1] || 0])}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Sheet H:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Sheet H:</div>
               <InputNumber
                 value={spriteData.sheetSize?.[1] || 0}
                 onChange={(value) => updateSpriteProperty('sheetSize', [spriteData.sheetSize?.[0] || 0, value])}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Tile W:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Tile W:</div>
               <InputNumber
                 value={spriteData.tileSize?.[0] || 0}
                 onChange={(value) => updateSpriteProperty('tileSize', [value, spriteData.tileSize?.[1] || 0])}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Tile H:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Tile H:</div>
               <InputNumber
                 value={spriteData.tileSize?.[1] || 0}
                 onChange={(value) => updateSpriteProperty('tileSize', [spriteData.tileSize?.[0] || 0, value])}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>State:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>State:</div>
               <Input
                 value={spriteData.state || ''}
                 onChange={(value) => updateSpriteProperty('state', value)}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
             <div>
-              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Gender:</div>
+              <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Gender:</div>
               <Input
                 value={spriteData.gender || ''}
                 onChange={(value) => updateSpriteProperty('gender', value)}
-                size="xs"
-                style={{ width: '100%', fontSize: '0.7em' }}
+                style={{ width: '100%' }}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom: Save Button */}
-      <div style={{ marginTop: '0.25rem' }}>
-        <Button appearance="primary" onClick={handleSave} block size="xs" style={{ fontSize: '0.8em', padding: '0.25rem' }}>
-          Save
+      {/* Save Button */}
+      <div style={{ marginBottom: '1rem' }}>
+        <Button appearance="primary" onClick={handleSave} block>
+          Save Changes
         </Button>
       </div>
 
       {error && (
-        <div style={{ marginTop: '0.125rem' }}>
-          <div style={{ border: '1px solid #d9534f', padding: '0.125rem', background: '#2a1a1a', color: '#d9534f', fontSize: '0.7em' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ border: '1px solid #d9534f', padding: '0.5rem', background: '#2a1a1a', color: '#d9534f' }}>
             {error}
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
