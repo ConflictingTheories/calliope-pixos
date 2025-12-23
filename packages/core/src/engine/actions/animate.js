@@ -14,7 +14,7 @@
 // Animate a sprite without moving them
 export default {
   init: function (length, untilFrame, finish) {
-    console.log({msg: 'initializing animation', length, untilFrame, finish});
+    console.log({ msg: 'initializing animation', length, untilFrame, finish });
     this.length = length;
     this.untilFrame = untilFrame;
     this.finish = finish;
@@ -35,5 +35,5 @@ export default {
     if (newFrame != this.sprite.animFrame) this.sprite.setFrame(newFrame);
 
     return time >= endTime;
-  },
+  }
 };

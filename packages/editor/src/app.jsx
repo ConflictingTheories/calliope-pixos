@@ -25,6 +25,7 @@ import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
+import SpriteEditor from './sprite-editor/index.jsx';
 import AIGenerator from './ai-generator/index.jsx';
 import { Reader, Writer } from '@zip.js/zip.js';
 import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
@@ -1169,6 +1170,31 @@ const App = () => {
     ]);
   }, [getData, zip]);
 
+  const renderSpriteEditor = useCallback(async (entry) => {
+    const spriteContent = await getData(entry, true);
+    setContents([
+      <SpriteEditor
+        key={Date.now()}
+        content={spriteContent}
+        zip={zip}
+        getData={getData}
+        toDataUri={toDataUri}
+        onSave={async (spriteData) => {
+          try {
+            const fullPath = getEntryFullPath(entry);
+            const data = JSON.stringify(spriteData, null, 2);
+            await writeFile(fullPath, data);
+            console.log('[SpriteEditor] Saved:', fullPath);
+            alert('Sprite saved successfully!');
+          } catch (err) {
+            console.error('[SpriteEditor] Save failed:', err);
+            alert('Failed to save sprite: ' + err.message);
+          }
+        }}
+      />
+    ]);
+  }, [getData, zip, toDataUri]);
+
   const renderCutsceneTool = useCallback(async (entry) => {
     const cutsceneContent = await getData(entry, true);
     const fileExtension = entry.name.match(/\\.\\w+$/)?.[0] || '.pxc';
@@ -1414,6 +1440,10 @@ const App = () => {
       }
       if (name.includes('cutscene')) {
         renderCutsceneTool(entry);
+        return;
+      }
+      if (name.includes('sprite')) {
+        renderSpriteEditor(entry);
         return;
       }
       renderScriptEditor(entry, 'json');

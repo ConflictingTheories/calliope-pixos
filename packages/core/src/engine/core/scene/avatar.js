@@ -169,8 +169,6 @@ export default class Avatar extends Sprite {
         case 'd':
           facing = Direction.Right;
           break;
-        case 'u':
-          return new ActionLoader(this.engine, 'dance', [300, this.zone], this);
         case 'p':
           return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone], this);
         case 'r':

@@ -24,12 +24,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   const gamepadRef = useRef();
   const fileRef = useRef();
   const mmRef = useRef();
-  const recordBtnRef = useRef();
-  const previewBtnRef = useRef();
-  const recordingRef = useRef();
-  const mergeCanvasRef = useRef();
-  const previewRef = useRef();
-  const previewBoxRef = useRef();
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   const onKeyEvent = (e) => {
@@ -54,9 +48,9 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         if (SpritzProvider && SpritzProvider.onTouchEvent) SpritzProvider.onTouchEvent(e);
         return;
       }
-      
+
       const rect = canvas.getBoundingClientRect();
-      
+
       // Handle both mouse and touch events
       let clientX, clientY;
       if (e.touches && e.touches.length > 0) {
@@ -69,15 +63,15 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         clientX = e.clientX;
         clientY = e.clientY;
       }
-      
+
       // Calculate scale factors between internal canvas size and displayed size
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
+
       // Calculate position relative to canvas with proper scaling
       const canvasX = (clientX - rect.left) * scaleX;
       const canvasY = (clientY - rect.top) * scaleY;
-      
+
       // Create adjusted event with canvas-relative coordinates
       const adjustedEvent = {
         ...e,
@@ -93,7 +87,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         _scaleX: scaleX,
         _scaleY: scaleY
       };
-      
+
       if (SpritzProvider && SpritzProvider.onTouchEvent) {
         SpritzProvider.onTouchEvent(adjustedEvent);
       }
@@ -101,15 +95,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       console.warn('onTouchEvent error:', err);
     }
   };
-  
-  let engine = null;
 
-  // recording stream & media tracks
-  let chunks = []; // recording
-  let [isRecording, setRecording] = useState(false);
-  let [showRecording, setPreview] = useState(false);
-  let [recorder, setRecorder] = useState();
-  let [cStream, setStream] = useState();
+  let engine = null;
 
   // Resize
   const [screenSize, getDimension] = useState({
@@ -131,10 +118,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     document.fonts.add(minecraftia);
   }
 
-  function stopRecording(recorder) {
-    recordingRef.current.pause();
-    recorder?.stop();
-  }
   function stopTouchScrolling(canvas) {
     // Prevent scrolling when touching the canvas
     document.body.addEventListener(
@@ -165,51 +148,11 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       { passive: false }
     );
   }
-  function startRecording(cStream, recorder) {
-    setRecorder(recorder);
-    setStream(cStream);
-
-    // start
-    recorder.start();
-    recorder.onstart = () => {
-      setRecording(true);
-    };
-
-    // capture output from merge & preview
-    recorder.ondataavailable = (e) => {
-      e.data.size && chunks.push(e.data);
-    };
-
-    // handle export and display video
-    recorder.onstop = function exportStream(e) {
-      if (chunks.length) {
-        setRecording(false);
-        // generate blob
-        let blob = new Blob(chunks);
-        let vidURL = URL.createObjectURL(blob);
-        // output recording video
-        let vid = recordingRef.current;
-        vid.controls = true;
-        vid.src = vidURL;
-        vid.onend = function () {
-          URL.revokeObjectURL(vidURL);
-        };
-        // clear buffer
-        chunks = [];
-      }
-    };
-  }
-  function hidePreview() {
-    setPreview(false);
-  }
-  function showPreview() {
-    setPreview(true);
-  }
 
   useEffect(async () => {
     // handle resize
     window.addEventListener('resize', setDimension);
-    
+
     // setup canvases
     const canvas = ref.current;
     const hud = hudRef.current;
@@ -280,7 +223,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
         tabIndex={0}
       >
         {/* Game */}
-        <div style={{ display: showRecording ? 'none' : 'block' }}>
+        <div>
           {/* // WEBGL - For 3D Rendering */}
           <canvas
             style={{
@@ -324,15 +267,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
           />
           {/* MIPMAP - For Sprite Text / Speech / Titles */}
           <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
-          {/* Merged Preview Canvas / Recording Source*/}
-          <canvas
-            width={canvasWidth}
-            height={canvasHeight}
-            ref={mergeCanvasRef}
-            style={{
-              display: 'none',
-            }}
-          ></canvas>
         </div>
       </div>
       {/* Gamepad - For controls on Mobile Only - Positioned BELOW game canvas */}

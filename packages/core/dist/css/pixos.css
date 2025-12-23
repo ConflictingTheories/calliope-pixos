@@ -46,9 +46,11 @@
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
+
 .materialSelector tr {
   height: 70px;
 }
+
 .materialSelector td {
   background-position: 0px 0px;
   cursor: pointer;
@@ -58,6 +60,7 @@
   width: 70px;
   transition: opacity 0.2s;
 }
+
 .materialSelector td:hover {
   opacity: 1;
   box-shadow: 0 0 10px var(--glow-primary);
@@ -72,6 +75,7 @@
   width: 300px;
   text-shadow: 0 0 10px var(--glow-primary);
 }
+
 .nickname input {
   background: rgba(10, 10, 15, 0.8);
   border-bottom: 2px solid var(--color-primary);
@@ -85,6 +89,7 @@
   padding: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
+
 .nickname input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 15px var(--glow-primary);
@@ -141,6 +146,7 @@
   width: 610px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
+
 .chatbox_entry:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 15px var(--glow-primary);
@@ -178,6 +184,7 @@ html {
   bottom: 60px;
   opacity: 0.5;
 }
+
 .snow.back-row {
   z-index: 1;
   bottom: 60px;
@@ -210,9 +217,11 @@ body.back-row-toggle .rain.back-row .snow.back-row {
   0% {
     transform: translateY(0vh);
   }
+
   75% {
     transform: translateY(90vh);
   }
+
   100% {
     transform: translateY(90vh);
   }
@@ -222,15 +231,19 @@ body.back-row-toggle .rain.back-row .snow.back-row {
   0% {
     transform: translateY(0vh);
   }
+
   70% {
     transform: translateY(50vh);
   }
+
   85% {
     transform: translateY(85vh);
   }
+
   75% {
     transform: translateY(75vh);
   }
+
   100% {
     transform: translateY(95vh);
     transform: translateX(30vw);
@@ -249,12 +262,15 @@ body.back-row-toggle .rain.back-row .snow.back-row {
   0% {
     opacity: 1;
   }
+
   65% {
     opacity: 1;
   }
+
   75% {
     opacity: 0;
   }
+
   100% {
     opacity: 0;
   }
@@ -279,14 +295,17 @@ body.splat-toggle .splat {
     opacity: 1;
     transform: scale(0);
   }
+
   80% {
     opacity: 1;
     transform: scale(0);
   }
+
   90% {
     opacity: 0.5;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(1.5);

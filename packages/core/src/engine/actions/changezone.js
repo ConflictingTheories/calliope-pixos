@@ -64,7 +64,7 @@ export default {
       if (this.sprite?.zone?.engine?.debug) console.warn('changezone.init failed to compute z for from/to', e?.message || e);
     }
 
-    console.log({renderManager: engine?.renderManager, fromZoneId, toZoneId, from, to, length});
+    console.log({ renderManager: engine?.renderManager, fromZoneId, toZoneId, from, to, length });
     if (engine?.renderManager) {
       console.log('fading in...')
       // fade in once the new zones are ready

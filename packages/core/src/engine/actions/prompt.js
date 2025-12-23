@@ -144,29 +144,9 @@ export default {
   },
   // Handle Keyboard & Mouse & Touch
   checkInput: function (time) {
-    // Mouse
-    // if (this.isTouched && this.touches.length > 0 && this.lastKey + 100 < time) {
-    //   let x = this.touches[0].x;
-    //   let y = this.touches[0].y;
-    //   let self = this;
-    //   self.activeMenu
-    //     .filter((w) => {
-    //       if (w.active && x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
-    //         return true;
-    //       }
-    //       return false;
-    //     })
-    //     .map((w) => {
-    //       if (w.trigger) w.trigger();
-    //       if (w.children) {
-    //         self.activeMenu = w.children.map((c) => {
-    //           c.active = true;
-    //           return c;
-    //         });
-    //       }
-    //     });
-    // }
+    // TODO -- Reimplement mouse / touch handler support
 
+    // TOOD -- Is there a cleaner way to do this? I feel like this should be less hacky
     // Keyboard
     if (time > this.lastKey + 200) {
       let skipChar = false;

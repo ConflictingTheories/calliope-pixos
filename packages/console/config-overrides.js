@@ -8,9 +8,7 @@ module.exports = override(
     'react-dom': path.resolve('./node_modules/react-dom'),
     // Map package imports to local source for development so CRA uses a single React copy
     'pixospritz-core': path.resolve(__dirname, '..', 'core', 'src'),
-    'pixoscript': path.resolve(__dirname, '..', 'script', 'dist'),
     'pixospritz-math': path.resolve(__dirname, '..', 'math', 'src'),
-    'calliope-pixos': path.resolve(__dirname, '..', 'core', 'src'),
     'pixoscript': path.resolve(__dirname, '..', 'script', 'dist'),
     '@Components': path.resolve(__dirname, '..', 'core', 'src', 'components'),
     '@Engine': path.resolve(__dirname, '..', 'core', 'src', 'engine'),

@@ -348,8 +348,6 @@ export default class InputManager {
             );
           case 'chat':
             return new ActionLoader(this.engine, 'chat', ['>:', true, { autoclose: false }], avatar);
-          case 'dance':
-            return new ActionLoader(this.engine, 'dance', [300, avatar.zone], avatar);
           case 'patrol':
             return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone], avatar);
           case 'run':

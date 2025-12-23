@@ -184,8 +184,6 @@ var Avatar = exports["default"] = /*#__PURE__*/function (_Sprite) {
           case 'd':
             facing = _enums.Direction.Right;
             break;
-          case 'u':
-            return new _index.ActionLoader(_this.engine, 'dance', [300, _this.zone], _this);
           case 'p':
             return new _index.ActionLoader(_this.engine, 'patrol', [_this.pos.toArray(), new _vector.Vector(8, 13, _this.pos.z).toArray(), 600, _this.zone], _this);
           case 'r':

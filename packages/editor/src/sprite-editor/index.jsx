@@ -1,275 +1,575 @@
-/**
+ref/**
  * ---------------------------------------------------------------
  *                 Pixospritz – Editor – Sprite Editor
  * ---------------------------------------------------------------
  * Copyright (c) 2022‑2025  Kyle Derby MacInnis
  *
- * A full-featured sprite editor for Pixospritz. Supports:
- * - Canvas-based sprite rendering
- * - Camera pan/zoom controls (event-isolated)
- * - Undo/redo stack for sprite edits
- * - Save/resave button for exporting sprite data
- * - Frame/tile editing and palette support
+ * A sprite editor for Pixospritz spritesheets. Supports:
+ * - Spritesheet visualization with grid overlay
+ * - Frame coordinate editing for directional animations
+ * - Animation preview and playback
+ * - Property editing for sprite configuration
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Panel, Container, Row, Col, Button, Message } from 'rsuite';
+import { Panel, Container, Row, Col, Button, Message, Slider, Checkbox, Input, InputNumber, SelectPicker } from 'rsuite';
 
-const DEFAULT_SIZE = 32;
-const DEFAULT_FRAMES = 1;
-const DEFAULT_PALETTE = [
-  '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'
-];
+const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
 /**
- * SpriteEditor component provides an interactive canvas for editing
- * pixel sprites with multiple frames, palette colors, and undo/redo support.
+ * SpriteEditor component for editing Pixospritz spritesheet-based sprites.
  *
  * @param {object} props
- * @param {string} [props.content] - Initial sprite data serialized as JSON (optional)
+ * @param {string} [props.content] - Initial sprite data as JSON string
+ * @param {object} [props.zip] - ZIP filesystem object
+ * @param {function} [props.getData] - Function to get data from ZIP entries
+ * @param {function} [props.toDataUri] - Function to convert binary to data URI
  * @param {function(object):void} [props.onSave] - Callback invoked with sprite data on save
  * @returns {JSX.Element}
  */
-function SpriteEditor({ content, onSave }) {
-  const [frames, setFrames] = useState(DEFAULT_FRAMES);
-  const [currentFrame, setCurrentFrame] = useState(0);
-  const [palette, setPalette] = useState(DEFAULT_PALETTE);
-  const [pixels, setPixels] = useState(
-    Array.from({ length: DEFAULT_FRAMES }, () =>
-      Array.from({ length: DEFAULT_SIZE }, () => Array(DEFAULT_SIZE).fill(0))
-    )
-  );
-  const [selectedColor, setSelectedColor] = useState(1);
+function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
+  const [spriteData, setSpriteData] = useState(null);
+  const [spriteImage, setSpriteImage] = useState(null);
   const [error, setError] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 16 });
-  /** @type {React.MutableRefObject<{x: number, y: number, zoom: number}>} */
-  const cameraRef = useRef(camera);
-  cameraRef.current = camera;
+  const [selectedDirection, setSelectedDirection] = useState('S');
+  const [selectedFrame, setSelectedFrame] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(200);
+  const [loop, setLoop] = useState(true);
+  const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 2 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const canvasRef = useRef();
+  const previewCanvasRef = useRef();
+  const animationFrameRef = useRef();
 
-  /**
-   * Pushes a snapshot of the current pixels array to history for undo/redo.
-   * @param {number[][][]} newPixels
-   */
-  function pushHistorySnapshot(newPixels) {
-    const snapshot = JSON.parse(JSON.stringify(newPixels));
-    setHistory((prev) => {
-      const trimmed = prev.slice(0, historyIndex + 1);
-      const updated = [...trimmed, snapshot];
-      setHistoryIndex(updated.length - 1);
-      return updated;
-    });
-  }
+  // Load sprite data and image
+  useEffect(() => {
+    if (!content) return;
 
-  /** Undo the last pixel edit */
-  function undo() {
-    if (historyIndex > 0) {
-      setPixels(history[historyIndex - 1]);
-      setHistoryIndex(historyIndex - 1);
+    try {
+      const data = JSON.parse(content);
+      setSpriteData(data);
+
+      // Load the spritesheet image
+      if (data.src && zip && getData && toDataUri) {
+        loadSpriteImage(data.src);
+      }
+    } catch (e) {
+      setError('Failed to parse sprite data: ' + e.message);
     }
-  }
+  }, [content, zip, getData, toDataUri]);
 
-  /** Redo the next pixel edit */
-  function redo() {
-    if (historyIndex < history.length - 1) {
-      setPixels(history[historyIndex + 1]);
-      setHistoryIndex(historyIndex + 1);
+  const loadSpriteImage = async (src) => {
+    if (!zip || !getData || !toDataUri) return;
+
+    try {
+      // Find the image file in the ZIP
+      const findImageEntry = (node, targetName) => {
+        if (node.children) {
+          for (const child of node.children) {
+            if (!child.directory && child.name === targetName) {
+              return child;
+            }
+            if (child.directory) {
+              const found = findImageEntry(child, targetName);
+              if (found) return found;
+            }
+          }
+        }
+        return null;
+      };
+
+      const imageEntry = findImageEntry(zip.root, src);
+      if (imageEntry) {
+        const imageData = await getData(imageEntry, false);
+        const mime = `image/${src.split('.').pop().toLowerCase()}`;
+        const dataUri = toDataUri(imageData, mime);
+        setSpriteImage(dataUri);
+      } else {
+        setError(`Spritesheet image not found: ${src}`);
+      }
+    } catch (e) {
+      setError('Failed to load spritesheet: ' + e.message);
     }
-  }
+  };
 
-  /** Mouse down handler for dragging canvas */
-  function handleMouseDown(e) {
-    e.stopPropagation();
-    e.preventDefault();
+  // Draw spritesheet with grid and frame overlays
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !spriteData || !spriteImage) return;
+
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(camera.x, camera.y);
+      ctx.scale(camera.zoom, camera.zoom);
+
+      // Draw the spritesheet
+      ctx.drawImage(img, 0, 0);
+
+      // Draw grid
+      const { tileSize, sheetSize } = spriteData;
+      if (tileSize && tileSize.length >= 2) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1 / camera.zoom;
+
+        // Use sheetSize if available, otherwise use image dimensions
+        const gridWidth = sheetSize && sheetSize.length >= 1 ? sheetSize[0] : img.width;
+        const gridHeight = sheetSize && sheetSize.length >= 2 ? sheetSize[1] : img.height;
+
+        for (let x = 0; x <= gridWidth; x += tileSize[0]) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, gridHeight);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y <= gridHeight; y += tileSize[1]) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(gridWidth, y);
+          ctx.stroke();
+        }
+      }
+
+      // Draw frame rectangles for current direction
+      if (spriteData.frames && spriteData.frames[selectedDirection]) {
+        const frames = spriteData.frames[selectedDirection];
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 2 / camera.zoom;
+
+        frames.forEach((frame, index) => {
+          if (Array.isArray(frame) && frame.length >= 2) {
+            const [x, y] = frame;
+            const isSelected = index === selectedFrame;
+
+            ctx.strokeStyle = isSelected ? '#ff0000' : '#00ff00';
+            ctx.strokeRect(x, y, tileSize[0], tileSize[1]);
+          }
+        });
+      }
+
+      ctx.restore();
+    };
+    img.src = spriteImage;
+  }, [spriteData, spriteImage, camera, selectedDirection, selectedFrame]);
+
+  // Draw preview animation
+  useEffect(() => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas || !spriteData || !spriteImage) return;
+
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (spriteData.frames && spriteData.frames[selectedDirection]) {
+        const frames = spriteData.frames[selectedDirection];
+        if (frames[selectedFrame] && Array.isArray(frames[selectedFrame])) {
+          const [x, y] = frames[selectedFrame];
+          const { tileSize, drawOffset } = spriteData;
+
+          // Scale to fit preview canvas
+          const scale = Math.min(canvas.width / tileSize[0], canvas.height / tileSize[1]);
+          const scaledWidth = tileSize[0] * scale;
+          const scaledHeight = tileSize[1] * scale;
+          let offsetX = (canvas.width - scaledWidth) / 2;
+          let offsetY = (canvas.height - scaledHeight) / 2;
+
+          // Apply drawOffset if available
+          if (drawOffset && drawOffset[selectedDirection]) {
+            const [dx, dy] = drawOffset[selectedDirection];
+            offsetX += dx * scaledWidth;
+            offsetY += dy * scaledHeight;
+          }
+
+          ctx.drawImage(
+            img,
+            x, y, tileSize[0], tileSize[1],
+            offsetX, offsetY, scaledWidth, scaledHeight
+          );
+        }
+      }
+    };
+    img.src = spriteImage;
+  }, [spriteData, spriteImage, selectedDirection, selectedFrame]);
+
+  // Animation playback
+  useEffect(() => {
+    if (isPlaying && spriteData?.frames?.[selectedDirection]) {
+      const frames = spriteData.frames[selectedDirection];
+      const animate = () => {
+        setSelectedFrame((prev) => {
+          const next = prev + 1;
+          if (next >= frames.length) {
+            if (loop) {
+              return 0;
+            } else {
+              setIsPlaying(false);
+              return prev;
+            }
+          }
+          return next;
+        });
+        animationFrameRef.current = setTimeout(animate, animationSpeed);
+      };
+      animationFrameRef.current = setTimeout(animate, animationSpeed);
+    } else {
+      if (animationFrameRef.current) {
+        clearTimeout(animationFrameRef.current);
+      }
+    }
+    return () => {
+      if (animationFrameRef.current) {
+        clearTimeout(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying, animationSpeed, spriteData, selectedDirection, loop]);
+
+  // Canvas interaction handlers
+  const handleMouseDown = (e) => {
     setDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
-  }
+  };
 
-  /** Mouse up handler ends dragging */
-  function handleMouseUp(e) {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleMouseUp = () => {
     setDragging(false);
-  }
+  };
 
-  /** Mouse move handler to pan the canvas */
-  function handleMouseMove(e) {
+  const handleMouseMove = (e) => {
     if (!dragging) return;
-    e.stopPropagation();
-    e.preventDefault();
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     dragStart.current = { x: e.clientX, y: e.clientY };
     setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
-  }
+  };
 
-  /** Mouse wheel handler for zooming */
-  function handleWheel(e) {
-    e.stopPropagation();
+  const handleWheel = (e) => {
     e.preventDefault();
-    let zoom = cameraRef.current.zoom + (e.deltaY < 0 ? 2 : -2);
-    zoom = Math.max(4, Math.min(64, zoom));
+    let zoom = camera.zoom + (e.deltaY < 0 ? 0.2 : -0.2);
+    zoom = Math.max(0.5, Math.min(8, zoom));
     setCamera((prev) => ({ ...prev, zoom }));
-  }
+  };
 
-  /** Touch start handler for dragging */
-  function handleTouchStart(e) {
-    if (e.touches.length === 1) {
-      setDragging(true);
-      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-  }
+  const handleCanvasClick = (e) => {
+    if (!spriteData || !spriteData.tileSize) return;
 
-  /** Touch end handler stops dragging */
-  function handleTouchEnd() {
-    setDragging(false);
-  }
-
-  /** Touch move handler for panning canvas */
-  function handleTouchMove(e) {
-    if (!dragging || e.touches.length !== 1) return;
-    const dx = e.touches[0].clientX - dragStart.current.x;
-    const dy = e.touches[0].clientY - dragStart.current.y;
-    dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
-  }
-
-  // Draw sprite to canvas when pixels, currentFrame, palette or camera state changes
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.translate(camera.x, camera.y);
-    ctx.scale(camera.zoom, camera.zoom);
-    for (let y = 0; y < DEFAULT_SIZE; y++) {
-      for (let x = 0; x < DEFAULT_SIZE; x++) {
-        const colorIndex = pixels[currentFrame][y][x];
-        ctx.fillStyle = palette[colorIndex] || '#000';
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    ctx.restore();
-  }, [pixels, currentFrame, palette, camera]);
-
-  /**
-   * Handles pixel painting on canvas click.
-   * @param {React.MouseEvent<HTMLCanvasElement>} e
-   */
-  function handleCanvasClick(e) {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left - camera.x) / camera.zoom);
     const y = Math.floor((e.clientY - rect.top - camera.y) / camera.zoom);
-    if (x >= 0 && x < DEFAULT_SIZE && y >= 0 && y < DEFAULT_SIZE) {
-      const newPixels = JSON.parse(JSON.stringify(pixels));
-      newPixels[currentFrame][y][x] = selectedColor;
-      setPixels(newPixels);
-      pushHistorySnapshot(newPixels);
-    }
-  }
 
-  /** Handles save button click, sends sprite data to onSave callback */
-  function handleSave() {
-    const spriteData = { frames, palette, pixels };
-    if (onSave) {
-      onSave(spriteData);
-    } else {
+    const { tileSize } = spriteData;
+    const gridX = Math.floor(x / tileSize[0]) * tileSize[0];
+    const gridY = Math.floor(y / tileSize[1]) * tileSize[1];
+
+    // Update the current frame position
+    const newData = { ...spriteData };
+    if (!newData.frames[selectedDirection]) {
+      newData.frames[selectedDirection] = [];
     }
+    if (!newData.frames[selectedDirection][selectedFrame]) {
+      newData.frames[selectedDirection][selectedFrame] = [0, 0];
+    }
+    newData.frames[selectedDirection][selectedFrame] = [gridX, gridY];
+    setSpriteData(newData);
+  };
+
+  const updateSpriteProperty = (property, value) => {
+    const newData = { ...spriteData };
+    newData[property] = value;
+    setSpriteData(newData);
+  };
+
+  const updateFrameCoordinate = (direction, frameIndex, coordIndex, value) => {
+    const newData = { ...spriteData };
+    if (!newData.frames[direction]) {
+      newData.frames[direction] = [];
+    }
+    if (!newData.frames[direction][frameIndex]) {
+      newData.frames[direction][frameIndex] = [0, 0];
+    }
+    newData.frames[direction][frameIndex][coordIndex] = value;
+    setSpriteData(newData);
+  };
+
+  const handleSave = () => {
+    if (onSave && spriteData) {
+      onSave(spriteData);
+    }
+  };
+
+  if (!spriteData) {
+    return (
+      <Container style={{ padding: '1rem' }}>
+        <Message type="info" description="Loading sprite data..." />
+      </Container>
+    );
   }
 
   return (
-    <Container style={{ padding: '1rem' }}>
-      <Row>
-        <Col sm={18} md={18} lg={18}>
-          <Panel bordered header={<strong>Sprite Editor</strong>}>
+    <div style={{ padding: '0.125rem', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Top Row: Spritesheet + Preview */}
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flex: '1', minHeight: 0 }}>
+        {/* Spritesheet View */}
+        <div style={{ flex: '2', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', flex: '1', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Spritesheet</div>
             <canvas
               ref={canvasRef}
-              width={512}
-              height={512}
+              width={400}
+              height={250}
               style={{
                 border: '1px solid #333',
                 background: '#222',
-                cursor: dragging ? 'grab' : 'pointer',
+                cursor: dragging ? 'grab' : 'crosshair',
                 userSelect: 'none',
                 touchAction: 'none',
+                width: '100%',
+                height: '100%',
+                display: 'block',
+                flex: '1',
+                minHeight: 0,
               }}
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
               onMouseMove={handleMouseMove}
               onWheel={handleWheel}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onTouchMove={handleTouchMove}
               onClick={handleCanvasClick}
             />
-          </Panel>
-        </Col>
-        <Col sm={6} md={6} lg={6}>
-          <Panel bordered header={<strong>Palette</strong>}>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {palette.map((color, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    background: color,
-                    border: selectedColor === idx ? '2px solid #fff' : '1px solid #333',
-                    margin: 2,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setSelectedColor(idx)}
-                />
-              ))}
+            <div style={{ marginTop: '0.125rem', fontSize: '0.6em', color: '#ccc', textAlign: 'center' }}>
+              Zoom: {camera.zoom.toFixed(1)}x
             </div>
-          </Panel>
-          <Panel bordered header={<strong>Frames</strong>}>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {[...Array(frames).keys()].map((f) => (
+          </div>
+        </div>
+
+        {/* Preview + Controls */}
+        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '0.25rem', minHeight: 0 }}>
+          {/* Preview */}
+          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', flex: '1' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Preview</div>
+            <canvas
+              ref={previewCanvasRef}
+              width={64}
+              height={64}
+              style={{
+                border: '1px solid #333',
+                background: '#222',
+                width: '100%',
+                height: '100%',
+                display: 'block',
+              }}
+            />
+          </div>
+
+          {/* Controls */}
+          <div style={{ border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a' }}>
+            <div style={{ display: 'flex', gap: '0.125rem', marginBottom: '0.125rem' }}>
+              <Button
+                appearance={isPlaying ? 'primary' : 'default'}
+                onClick={() => setIsPlaying(!isPlaying)}
+                size="xs"
+                style={{ flex: '1', fontSize: '0.7em', padding: '0.125rem' }}
+              >
+                {isPlaying ? 'Pause' : 'Play'}
+              </Button>
+              <Checkbox checked={loop} onChange={setLoop} size="xs" style={{ fontSize: '0.7em' }}>
+                Loop
+              </Checkbox>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Speed: {animationSpeed}ms</div>
+              <Slider
+                min={50}
+                max={1000}
+                step={50}
+                value={animationSpeed}
+                onChange={setAnimationSpeed}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row: All Controls */}
+      <div style={{ display: 'flex', gap: '0.25rem', flex: '1', minHeight: 0 }}>
+        {/* Direction & Frame */}
+        <div style={{ flex: '1', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Direction & Frame</div>
+          <div style={{ marginBottom: '0.25rem', flex: '1' }}>
+            <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Direction:</div>
+            <SelectPicker
+              data={DIRECTIONS.map(dir => ({ label: dir, value: dir }))}
+              value={selectedDirection}
+              onChange={setSelectedDirection}
+              size="xs"
+              style={{ width: '100%', fontSize: '0.7em' }}
+            />
+          </div>
+          <div style={{ flex: '1' }}>
+            <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Frame:</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.0625rem' }}>
+              {spriteData.frames?.[selectedDirection]?.map((frame, index) => (
                 <Button
-                  key={f}
-                  appearance={currentFrame === f ? 'primary' : 'default'}
-                  style={{ margin: 2 }}
-                  onClick={() => setCurrentFrame(f)}
+                  key={index}
+                  appearance={selectedFrame === index ? 'primary' : 'default'}
+                  onClick={() => setSelectedFrame(index)}
+                  size="xs"
+                  style={{ minWidth: '1.25rem', height: '1.25rem', padding: '0', fontSize: '0.6em' }}
                 >
-                  Frame {f + 1}
+                  {index + 1}
                 </Button>
               ))}
-              <Button appearance="default" style={{ margin: 2 }} onClick={() => {
-                setFrames(frames + 1);
-                setPixels([...pixels, Array.from({ length: DEFAULT_SIZE }, () => Array(DEFAULT_SIZE).fill(0))]);
-              }}>
-                + Add Frame
+              <Button
+                appearance="default"
+                size="xs"
+                onClick={() => {
+                  const newData = { ...spriteData };
+                  if (!newData.frames[selectedDirection]) {
+                    newData.frames[selectedDirection] = [];
+                  }
+                  newData.frames[selectedDirection].push([0, 0]);
+                  setSpriteData(newData);
+                }}
+                style={{ minWidth: '1.25rem', height: '1.25rem', padding: '0', fontSize: '0.6em' }}
+              >
+                +
               </Button>
             </div>
-          </Panel>
-        </Col>
-      </Row>
-      <Row style={{ paddingTop: '1rem' }}>
-        <Button appearance="primary" onClick={handleSave}>
-          Save Changes
+          </div>
+        </div>
+
+        {/* Frame Coordinates */}
+        <div style={{ flex: '1', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Coordinates</div>
+          {spriteData.frames?.[selectedDirection]?.[selectedFrame] ? (
+            <div style={{ display: 'flex', gap: '0.125rem', flex: '1' }}>
+              <div style={{ flex: '1' }}>
+                <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>X:</div>
+                <InputNumber
+                  value={spriteData.frames[selectedDirection][selectedFrame][0]}
+                  onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 0, value)}
+                  size="xs"
+                  style={{ width: '100%', fontSize: '0.7em' }}
+                />
+              </div>
+              <div style={{ flex: '1' }}>
+                <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Y:</div>
+                <InputNumber
+                  value={spriteData.frames[selectedDirection][selectedFrame][1]}
+                  onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 1, value)}
+                  size="xs"
+                  style={{ width: '100%', fontSize: '0.7em' }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: '#666', fontStyle: 'italic', fontSize: '0.6em', flex: '1', display: 'flex', alignItems: 'center' }}>
+              Select frame
+            </div>
+          )}
+        </div>
+
+        {/* Sprite Properties */}
+        <div style={{ flex: '2', border: '1px solid #333', padding: '0.125rem', background: '#1a1a1a', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontWeight: 'bold', fontSize: '0.8em', marginBottom: '0.125rem', color: '#fff' }}>Properties</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '0.125rem', flex: '1' }}>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Type:</div>
+              <Input
+                value={spriteData.type || ''}
+                onChange={(value) => updateSpriteProperty('type', value)}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Source:</div>
+              <Input
+                value={spriteData.src || ''}
+                onChange={(value) => updateSpriteProperty('src', value)}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Sheet W:</div>
+              <InputNumber
+                value={spriteData.sheetSize?.[0] || 0}
+                onChange={(value) => updateSpriteProperty('sheetSize', [value, spriteData.sheetSize?.[1] || 0])}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Sheet H:</div>
+              <InputNumber
+                value={spriteData.sheetSize?.[1] || 0}
+                onChange={(value) => updateSpriteProperty('sheetSize', [spriteData.sheetSize?.[0] || 0, value])}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Tile W:</div>
+              <InputNumber
+                value={spriteData.tileSize?.[0] || 0}
+                onChange={(value) => updateSpriteProperty('tileSize', [value, spriteData.tileSize?.[1] || 0])}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Tile H:</div>
+              <InputNumber
+                value={spriteData.tileSize?.[1] || 0}
+                onChange={(value) => updateSpriteProperty('tileSize', [spriteData.tileSize?.[0] || 0, value])}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>State:</div>
+              <Input
+                value={spriteData.state || ''}
+                onChange={(value) => updateSpriteProperty('state', value)}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6em', marginBottom: '0.125rem', color: '#ccc' }}>Gender:</div>
+              <Input
+                value={spriteData.gender || ''}
+                onChange={(value) => updateSpriteProperty('gender', value)}
+                size="xs"
+                style={{ width: '100%', fontSize: '0.7em' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: Save Button */}
+      <div style={{ marginTop: '0.25rem' }}>
+        <Button appearance="primary" onClick={handleSave} block size="xs" style={{ fontSize: '0.8em', padding: '0.25rem' }}>
+          Save
         </Button>
-        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={undo} disabled={historyIndex <= 0}>
-          Undo
-        </Button>
-        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={redo} disabled={historyIndex >= history.length - 1}>
-          Redo
-        </Button>
-      </Row>
+      </div>
+
       {error && (
-        <Row style={{ marginTop: '1rem' }}>
-          <Col sm={24} md={24} lg={24}>
-            <Message type="error" description={error} />
-          </Col>
-        </Row>
+        <div style={{ marginTop: '0.125rem' }}>
+          <div style={{ border: '1px solid #d9534f', padding: '0.125rem', background: '#2a1a1a', color: '#d9534f', fontSize: '0.7em' }}>
+            {error}
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
 

@@ -45,7 +45,7 @@ export default class Tileset extends Loadable {
     this.onDefinitionLoadActions.run();
     // load texture
     this.texture = this.engine.resourceManager.loadTexture(this.src);
-    this.texture.runWhenLoaded(this.onTextureLoaded);
+    this.texture.runWhenLoaded(this._onTextureLoaded);
     // set background colour
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }
@@ -65,7 +65,7 @@ export default class Tileset extends Loadable {
     this.onDefinitionLoadActions.run();
     // load texture
     this.texture = await this.engine.resourceManager.loadTextureFromZip(this.src, zip);
-    this.texture.runWhenLoaded(this.onTextureLoaded);
+    this.texture.runWhenLoaded(this._onTextureLoaded);
     // set background colour
     if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
   }
@@ -73,7 +73,7 @@ export default class Tileset extends Loadable {
   /**
    * run when loaded
    */
-  onTextureLoaded = () => {
+  _onTextureLoaded = () => {
     this.loaded = true;
     this.onLoadActions.run();
   }

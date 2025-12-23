@@ -668,8 +668,8 @@ export default class World {
   canWalk = (neighbour, jsonNeighbour, visited) => {
     let zone = this.zoneContaining(...neighbour);
     if (
-      visited.indexOf(jsonNeighbour) >= 0 ||
       !zone ||
+      visited.indexOf(jsonNeighbour) >= 0 ||
       !zone.isWalkable(...neighbour) ||
       !zone.isWalkable(neighbour[0], neighbour[1], Direction.reverse(neighbour[2]))
     ) {

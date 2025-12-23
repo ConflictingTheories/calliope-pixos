@@ -51,12 +51,6 @@ var WebGLView = function WebGLView(_ref) {
   var gamepadRef = (0, _react.useRef)();
   var fileRef = (0, _react.useRef)();
   var mmRef = (0, _react.useRef)();
-  var recordBtnRef = (0, _react.useRef)();
-  var previewBtnRef = (0, _react.useRef)();
-  var recordingRef = (0, _react.useRef)();
-  var mergeCanvasRef = (0, _react.useRef)();
-  var previewRef = (0, _react.useRef)();
-  var previewBoxRef = (0, _react.useRef)();
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   var onKeyEvent = function onKeyEvent(e) {
@@ -127,33 +121,14 @@ var WebGLView = function WebGLView(_ref) {
   };
   var engine = null;
 
-  // recording stream & media tracks
-  var chunks = []; // recording
-  var _useState = (0, _react.useState)(false),
-    _useState2 = _slicedToArray(_useState, 2),
-    isRecording = _useState2[0],
-    setRecording = _useState2[1];
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    showRecording = _useState4[0],
-    setPreview = _useState4[1];
-  var _useState5 = (0, _react.useState)(),
-    _useState6 = _slicedToArray(_useState5, 2),
-    recorder = _useState6[0],
-    setRecorder = _useState6[1];
-  var _useState7 = (0, _react.useState)(),
-    _useState8 = _slicedToArray(_useState7, 2),
-    cStream = _useState8[0],
-    setStream = _useState8[1];
-
   // Resize
-  var _useState9 = (0, _react.useState)({
+  var _useState = (0, _react.useState)({
       dynamicWidth: window.innerWidth,
       dynamicHeight: window.innerHeight
     }),
-    _useState0 = _slicedToArray(_useState9, 2),
-    screenSize = _useState0[0],
-    getDimension = _useState0[1];
+    _useState2 = _slicedToArray(_useState, 2),
+    screenSize = _useState2[0],
+    getDimension = _useState2[1];
 
   // window dimensions
   var setDimension = function setDimension() {
@@ -183,10 +158,6 @@ var WebGLView = function WebGLView(_ref) {
     }));
     return _loadFonts.apply(this, arguments);
   }
-  function stopRecording(recorder) {
-    recordingRef.current.pause();
-    recorder === null || recorder === void 0 || recorder.stop();
-  }
   function stopTouchScrolling(canvas) {
     // Prevent scrolling when touching the canvas
     document.body.addEventListener('touchstart', function (e) {
@@ -210,46 +181,6 @@ var WebGLView = function WebGLView(_ref) {
     }, {
       passive: false
     });
-  }
-  function startRecording(cStream, recorder) {
-    setRecorder(recorder);
-    setStream(cStream);
-
-    // start
-    recorder.start();
-    recorder.onstart = function () {
-      setRecording(true);
-    };
-
-    // capture output from merge & preview
-    recorder.ondataavailable = function (e) {
-      e.data.size && chunks.push(e.data);
-    };
-
-    // handle export and display video
-    recorder.onstop = function exportStream(e) {
-      if (chunks.length) {
-        setRecording(false);
-        // generate blob
-        var blob = new Blob(chunks);
-        var vidURL = URL.createObjectURL(blob);
-        // output recording video
-        var vid = recordingRef.current;
-        vid.controls = true;
-        vid.src = vidURL;
-        vid.onend = function () {
-          URL.revokeObjectURL(vidURL);
-        };
-        // clear buffer
-        chunks = [];
-      }
-    };
-  }
-  function hidePreview() {
-    setPreview(false);
-  }
-  function showPreview() {
-    setPreview(true);
   }
   (0, _react.useEffect)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     var canvas, hud, mipmap, gamepad, fileUpload, resizeObserver;
@@ -415,13 +346,6 @@ var WebGLView = function WebGLView(_ref) {
     ref: mmRef,
     width: 256,
     height: 256
-  }), /*#__PURE__*/_react["default"].createElement("canvas", {
-    width: canvasWidth,
-    height: canvasHeight,
-    ref: mergeCanvasRef,
-    style: {
-      display: 'none'
-    }
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       width: canvasWidth + 'px',

@@ -19,6 +19,7 @@ import { rotate, translate } from '@Engine/utils/math/matrix4.js';
 import { _buildBuffer } from '@Engine/utils/obj/utils.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import { degToRad } from '../../utils/math/vector.js';
+
 export default class ModelObject extends Loadable {
   /**
    * 3D Model Objects
@@ -86,12 +87,10 @@ export default class ModelObject extends Loadable {
     let mesh = instanceData.mesh;
 
     // Mesh bounds
-    let maxX,
-      minX = null;
-    let maxY,
-      minY = null;
-    let maxZ,
-      minZ = null;
+    let maxX,minX = null;
+    let maxY,minY = null;
+    let maxZ,minZ = null;
+
     for (let i = 0; i < mesh.vertices.length; i = i + 3) {
       let v = mesh.vertices.slice(i, i + 3);
       // calculate size

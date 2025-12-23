@@ -451,8 +451,6 @@ var InputManager = exports["default"] = /*#__PURE__*/function () {
               return new _index2.ActionLoader(this.engine, 'chat', ['>:', true, {
                 autoclose: false
               }], avatar);
-            case 'dance':
-              return new _index2.ActionLoader(this.engine, 'dance', [300, avatar.zone], avatar);
             case 'patrol':
               return new _index2.ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new _vector.Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone], avatar);
             case 'run':

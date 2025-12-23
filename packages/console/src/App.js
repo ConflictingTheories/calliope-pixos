@@ -1,11 +1,11 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-// In development, the alias 'calliope-pixos' maps to the source directory
-import PixosClient from 'calliope-pixos';
+import PixosClient from 'pixospritz-core';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [preMountClient, setPreMountClient] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const isNetworked = urlParams.get('network') === 'true';
@@ -17,10 +17,14 @@ function App() {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            setLoading(false);
-          }, 500);
+          // Mount PixosClient 100ms before loading finishes
+          setTimeout(() => setPreMountClient(true), 400);
+          setTimeout(() => setLoading(false), 500);
           return 100;
+        }
+        // Pre-mount PixosClient when 100ms left
+        if (prev === 90) {
+          setTimeout(() => setPreMountClient(true), 100);
         }
         return prev + 10;
       });
@@ -58,7 +62,7 @@ function App() {
         </div>
 
         <div className="screen-container">
-          <PixosClient manifest={`/spritz/${manifest}`} loading={loading} />
+          {(preMountClient || !loading) && <PixosClient manifest={`/spritz/${manifest}`} loading={loading} />}
         </div>
       </div>
     </div>

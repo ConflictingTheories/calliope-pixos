@@ -105,19 +105,6 @@ export async function loadMap(json, cells, zip, heights = null) {
     };
   });
 
-  // let $lights = json.lights.map((light) => {
-  //   console.log(light);
-  //   return {
-  //     id: light.id,
-  //     pos: light.pos ? new Vector(...light.pos) : null,
-  //     color: light.color ? new Vector(...light.color) : null,
-  //     direction: light.direction ? new Vector(...light.direction) : null,
-  //     attentuation: light.attentuation ? new Vector(...light.attentuation) : null,
-  //     enabled: light.enabled ?? false,
-  //   };
-  // });
-  // console.log('adding lights....' + $lights.length);
-
   return {
     // size of map
     bounds: json.bounds,

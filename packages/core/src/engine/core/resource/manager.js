@@ -41,51 +41,55 @@ export default class ResourceManager {
       this.objLoader = OBJ;
       /** @type {ObjHelper} */
       this.objHelper = new ObjHelper(engine.gl);
-        /**
-         * Loads an OBJ model using ObjHelper (modern loader).
-         * @param {string} objText - OBJ file content (string)
-         * @param {string} [mtlText] - MTL file content (string, optional)
-         * @param {Object} [textureMap] - Map of texture names to data URIs (optional)
-         * @returns {Promise<ParsedMesh[]>} Array of parsed and initialized meshes
-         */
-        async loadModel(objText, mtlText = null, textureMap = null) {
-          // Parse OBJ and MTL
-          const meshes = this.objHelper.parseOBJ(objText);
-          let materials = {};
-          if (mtlText) {
-            materials = this.objHelper.parseMTL(mtlText);
-            this.objHelper.assignMaterials(meshes, materials);
-          }
-          // Load textures if provided
-          if (textureMap) {
-            await this.objHelper.loadTextures(meshes, textureMap);
-          }
-          // Initialize WebGL buffers
-          this.objHelper.initBuffers(meshes);
-          return meshes;
-        }
-
-        /**
-         * Clean up WebGL resources for meshes loaded with ObjHelper.
-         * @param {ParsedMesh[]} meshes
-         */
-        deleteModelBuffers(meshes) {
-          this.objHelper.deleteMeshBuffers(meshes);
-        }
       /** @type {AudioLoader} */
       this.audioLoader = new AudioLoader(this);
-
-      // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
 
       // ASSETS
       /** @type {Object.<string, Texture>} */
       this.textures = {};
+       /** @type {Object.<string, ColorTexture>} */
+      this.colors = {};
       /** @type {Object.<string, Speech>} */
       this.speeches = {};
 
       ResourceManager._instance = this;
     }
+
     return ResourceManager._instance;
+  }
+
+  // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
+
+  /**
+   * Loads an OBJ model using ObjHelper (modern loader).
+   * @param {string} objText - OBJ file content (string)
+   * @param {string} [mtlText] - MTL file content (string, optional)
+   * @param {Object} [textureMap] - Map of texture names to data URIs (optional)
+   * @returns {Promise<ParsedMesh[]>} Array of parsed and initialized meshes
+   */
+  async loadModel(objText, mtlText = null, textureMap = null) {
+    // Parse OBJ and MTL
+    const meshes = this.objHelper.parseOBJ(objText);
+    let materials = {};
+    if (mtlText) {
+      materials = this.objHelper.parseMTL(mtlText);
+      this.objHelper.assignMaterials(meshes, materials);
+    }
+    // Load textures if provided
+    if (textureMap) {
+      await this.objHelper.loadTextures(meshes, textureMap);
+    }
+    // Initialize WebGL buffers
+    this.objHelper.initBuffers(meshes);
+    return meshes;
+  }
+
+  /**
+   * Clean up WebGL resources for meshes loaded with ObjHelper.
+   * @param {ParsedMesh[]} meshes
+   */
+  deleteModelBuffers(meshes) {
+    this.objHelper.deleteMeshBuffers(meshes);
   }
 
   /**

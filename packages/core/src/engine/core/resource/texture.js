@@ -25,7 +25,7 @@ export class Texture extends Loadable {
     this.src = src;
     this.glTexture = engine.gl.createTexture();
     this.image = new Image();
-    this.image.onload = this.onImageLoaded.bind(this);
+    this.image.onload = this._onImageLoaded.bind(this);
     this.image.src = src;
     this.loaded = false;
     this.onLoadActions = new ActionQueue();
@@ -34,7 +34,7 @@ export class Texture extends Loadable {
   /**
    * Load Texture from Image
    */
-  onImageLoaded() {
+  _onImageLoaded() {
     let { gl } = this.engine;
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
