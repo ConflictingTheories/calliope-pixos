@@ -11,13 +11,21 @@ endif()
 
 # Find packages
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED) # Add GLEW
 
 # Use pkg-config for GLFW on macOS ARM64
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLFW3 REQUIRED glfw3)
 
 # Include directories
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS})
+include_directories(
+    ${OPENGL_INCLUDE_DIRS}
+    ${GLEW_INCLUDE_DIRS} # Add GLEW include dirs
+    ${GLFW3_INCLUDE_DIRS}
+    src/math
+    src/rendering
+)
+link_directories(${GLFW3_LIBRARY_DIRS})
 
 # Source files
 set(SOURCES
@@ -25,13 +33,17 @@ set(SOURCES
     src/engine.c
     src/render_manager.c
     src/input_manager.c
+    src/math/vector.c
+    src/math/matrix4.c
+    src/camera.c
+    src/rendering/shader.c
 )
 
 # Executable
 add_executable(pixos_engine ${SOURCES})
 
 # Link libraries
-target_link_libraries(pixos_engine ${OPENGL_LIBRARIES} ${GLFW3_LIBRARIES})
+target_link_libraries(pixos_engine ${OPENGL_LIBRARIES} GLEW::GLEW ${GLFW3_LIBRARIES}) # Link GLEW
 
 # Compiler flags
 if(MSVC)
@@ -46,5 +58,5 @@ if(UNIX AND NOT APPLE)
     target_compile_definitions(pixos_engine PRIVATE PLATFORM_LINUX)
 elseif(APPLE)
     # macOS specific
-    target_compile_definitions(pixos_engine PRIVATE PLATFORM_MACOS)
+    target_compile_definitions(pixos_engine PRIVATE PLATFORM_MACOS GL_SILENCE_DEPRECATION)
 endif()

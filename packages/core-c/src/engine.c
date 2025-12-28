@@ -2,6 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Callback for when the framebuffer is resized
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    GLEngine* engine = (GLEngine*)glfwGetWindowUserPointer(window);
+    if (engine) {
+        engine->width = width;
+        engine->height = height;
+        render_manager_update_projection(engine->render_manager, width, height);
+    }
+}
+
 int init_engine(GLEngine* engine, int width, int height) {
     engine->width = width;
     engine->height = height;
@@ -30,6 +40,19 @@ int init_engine(GLEngine* engine, int width, int height) {
 
     glfwMakeContextCurrent(engine->window);
 
+    // Initialize GLEW
+    if (glewInit() != GLEW_OK) {
+        fprintf(stderr, "Failed to initialize GLEW\n");
+        return -1;
+    }
+
+    glfwShowWindow(engine->window); // Show the window
+    glfwSwapInterval(1);            // Enable vsync
+
+    // Set user pointer and framebuffer size callback
+    glfwSetWindowUserPointer(engine->window, engine);
+    glfwSetFramebufferSizeCallback(engine->window, framebuffer_size_callback);
+
     // Initialize managers
     engine->render_manager = malloc(sizeof(RenderManager));
     if (!engine->render_manager) {
@@ -51,7 +74,6 @@ int init_engine(GLEngine* engine, int width, int height) {
 
 void render_engine(GLEngine* engine) {
     double current_time = glfwGetTime();
-    double delta_time = current_time - engine->time;
     engine->time = current_time;
 
     // Update input
@@ -77,6 +99,9 @@ void render_engine(GLEngine* engine) {
 
 void close_engine(GLEngine* engine) {
     if (engine->render_manager) {
+        shader_destroy(&engine->render_manager->shader); // Destroy shader program
+        glDeleteVertexArrays(1, &engine->render_manager->vao); // Delete VAO
+        glDeleteBuffers(1, &engine->render_manager->vbo);     // Delete VBO
         free(engine->render_manager);
     }
     if (engine->input_manager) {

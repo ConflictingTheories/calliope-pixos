@@ -1,6 +1,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 // Forward declarations

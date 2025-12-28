@@ -1,7 +1,7 @@
 #include "engine.h"
 #include <stdio.h>
 
-int main() {
+int main(void) {
     GLEngine engine;
 
     // Initialize engine with window size

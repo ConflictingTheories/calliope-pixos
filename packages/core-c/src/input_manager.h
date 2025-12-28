@@ -7,7 +7,7 @@ struct GLEngine;
 /**
  * InputManager - Centralized input handling for keyboard, mouse, and gamepad.
  */
-typedef struct {
+typedef struct InputManager {
     struct GLEngine* engine;
     // Placeholder for future fields like key states, etc.
 } InputManager;
