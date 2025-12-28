@@ -68,6 +68,12 @@ int init_engine(GLEngine* engine, int width, int height) {
     }
     init_input_manager(engine->input_manager, engine);
 
+    // Check for any OpenGL errors after initialization
+    GLenum error;
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after init: %u\n", error);
+    }
+
     printf("GLEngine initialized successfully\n");
     return 0;
 }
@@ -91,6 +97,7 @@ void render_engine(GLEngine* engine) {
     // Poll events
     glfwPollEvents();
 
+    printf("Checking window close\n");
     // Check if window should close
     if (glfwWindowShouldClose(engine->window)) {
         engine->running = 0;

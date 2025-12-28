@@ -12,6 +12,7 @@ int main(void) {
 
     // Main render loop
     while (engine.running) {
+        printf("In main loop\n");
         render_engine(&engine);
     }
 

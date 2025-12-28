@@ -49,6 +49,7 @@ Shader shader_create(const char* vertex_shader_src, const char* fragment_shader_
     GLuint vertex_shader = compile_shader(vertex_shader_src, GL_VERTEX_SHADER);
     GLuint fragment_shader = compile_shader(fragment_shader_src, GL_FRAGMENT_SHADER);
     shader.program_id = link_program(vertex_shader, fragment_shader);
+    printf("Shader program created with ID: %u\n", shader.program_id);
     return shader;
 }
 
@@ -63,7 +64,9 @@ void shader_destroy(Shader* shader) {
 
 // Uniform setters
 void shader_set_mat4(Shader* shader, const char* name, float* value) {
-    glUniformMatrix4fv(glGetUniformLocation(shader->program_id, name), 1, GL_FALSE, value);
+    GLint location = glGetUniformLocation(shader->program_id, name);
+    printf("Setting uniform '%s' at location: %d\n", name, location);
+    glUniformMatrix4fv(location, 1, GL_FALSE, value);
 }
 
 void shader_set_vec3(Shader* shader, const char* name, float x, float y, float z) {

@@ -9,11 +9,12 @@ const char* vertex_shader_src = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 projection;
-uniform mat4 view;
+// uniforms projection and view are not used in this debug shader
+// uniform mat4 projection;
+// uniform mat4 view;
 
 void main() {
-    gl_Position = projection * view * vec4(aPos, 1.0);
+    gl_Position = vec4(aPos, 1.0); // Directly use position, expecting clip space
 }
 )";
 
@@ -23,7 +24,7 @@ const char* fragment_shader_src = R"(
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(0.0f, 0.5f, 0.0f, 1.0f); // Green color
+    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); // Red color
 }
 )";
 
@@ -45,7 +46,7 @@ void init_render_manager(RenderManager* render_manager, GLEngine* engine) {
     // Initial camera setup (using angles for more control later)
     render_manager->camera.yaw = -M_PI / 2.0f; // Look along -X initially
     render_manager->camera.pitch = 0.0f;
-    render_manager->camera.distance = 5.0f;
+    render_manager->camera.distance = 10.0f; // Increased distance
     camera_update_view_from_angles(&render_manager->camera);
 
     // Initialize projection matrix
@@ -57,6 +58,8 @@ void init_render_manager(RenderManager* render_manager, GLEngine* engine) {
     // Generate VAO and VBO
     glGenVertexArrays(1, &render_manager->vao);
     glGenBuffers(1, &render_manager->vbo);
+
+    printf("Generated VAO ID: %u, VBO ID: %u\n", render_manager->vao, render_manager->vbo);
 
     // Bind VAO
     glBindVertexArray(render_manager->vao);
@@ -101,15 +104,39 @@ void render_manager_update_projection(RenderManager* render_manager, int width, 
 void render_manager_clear_screen(RenderManager* render_manager) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    GLenum error;
+
     // Use shader
     shader_use(&render_manager->shader);
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after shader_use: %u\n", error);
+    }
 
-    // Set uniforms
-    shader_set_mat4(&render_manager->shader, "projection", render_manager->projection_matrix.m);
-    shader_set_mat4(&render_manager->shader, "view", render_manager->camera.view_matrix.m);
+    // Set uniforms - commented out for debugging
+    // shader_set_mat4(&render_manager->shader, "projection", render_manager->projection_matrix.m);
+    // while ((error = glGetError()) != GL_NO_ERROR) {
+    //     fprintf(stderr, "OpenGL Error after setting projection uniform: %u\n", error);
+    // }
+    // shader_set_mat4(&render_manager->shader, "view", render_manager->camera.view_matrix.m);
+    // while ((error = glGetError()) != GL_NO_ERROR) {
+    //     fprintf(stderr, "OpenGL Error after setting view uniform: %u\n", error);
+    // }
 
-    // Bind VAO and draw
+    // Bind VAO
     glBindVertexArray(render_manager->vao);
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after glBindVertexArray: %u\n", error);
+    }
+
+    // Draw
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after glDrawArrays: %u\n", error);
+    }
+
+    // Unbind VAO
     glBindVertexArray(0);
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after unbinding VAO: %u\n", error);
+    }
 }
