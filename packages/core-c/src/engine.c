@@ -16,6 +16,7 @@ int init_engine(GLEngine* engine, int width, int height) {
     engine->width = width;
     engine->height = height;
     engine->running = 1;
+    printf("Engine running set to: %d\n", engine->running); // Debug print
     engine->time = glfwGetTime();
 
     // Initialize GLFW
@@ -92,12 +93,17 @@ void render_engine(GLEngine* engine) {
     // TODO: Implement full rendering pipeline
 
     // Swap buffers
+    printf("Before glfwSwapBuffers\n");
     glfwSwapBuffers(engine->window);
+    printf("After glfwSwapBuffers\n");
+    GLenum error;
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "OpenGL Error after glfwSwapBuffers: %u\n", error);
+    }
 
     // Poll events
     glfwPollEvents();
 
-    printf("Checking window close\n");
     // Check if window should close
     if (glfwWindowShouldClose(engine->window)) {
         engine->running = 0;
