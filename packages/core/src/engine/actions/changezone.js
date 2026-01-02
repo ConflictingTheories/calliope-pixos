@@ -13,6 +13,7 @@
 
 import { Vector, set, lerp } from '@Engine/utils/math/vector.js';
 import { Direction } from '@Engine/utils/enums.js';
+import { debug } from '@Engine/utils/debug-logger.js';
 
 export default {
   init: async function (fromZoneId, from, toZoneId, to, length) {
@@ -22,7 +23,7 @@ export default {
     const engine = this.sprite.zone?.world?.engine;
     if (engine?.renderManager) {
       // fade out
-      console.log('fading out...')
+      debug('ChangeZone', 'fading out...');
       await engine.renderManager.startTransition({ effect: 'cross', direction: 'out', duration: 500 });
     }
 
@@ -50,7 +51,7 @@ export default {
       // ignore and continue
     }
     if (this.preserveHeight && this.sprite?.zone?.engine?.debug) {
-      console.log('[changezone.init] preserveHeight true for transition from', this.from.toArray?.() ?? this.from, 'to', this.to.toArray?.() ?? this.to);
+      debug('ChangeZone', 'preserveHeight true for transition from', this.from.toArray?.() ?? this.from, 'to', this.to.toArray?.() ?? this.to);
     }
     // Compute the z height for from/to so we interpolate vertically across zones
     try {
@@ -64,9 +65,9 @@ export default {
       if (this.sprite?.zone?.engine?.debug) console.warn('changezone.init failed to compute z for from/to', e?.message || e);
     }
 
-    console.log({ renderManager: engine?.renderManager, fromZoneId, toZoneId, from, to, length });
+    debug('ChangeZone', 'init', { fromZoneId, toZoneId, from, to, length });
     if (engine?.renderManager) {
-      console.log('fading in...')
+      debug('ChangeZone', 'fading in...');
       // fade in once the new zones are ready
       await engine.renderManager.startTransition({ effect: 'cross', direction: 'in', duration: 500 });
     }
@@ -99,7 +100,7 @@ export default {
         this.sprite.pos.z = this.preserveHeightSourceZ ?? this.sprite.pos.z;
         if (this.sprite.zone.engine?.debug && !this.__preserveLog) {
           this.__preserveLog = true;
-          console.log('[changezone.tick] preserveHeight applied for sprite', this.sprite.id, 'sourceZ=', this.preserveHeightSourceZ);
+          debug('ChangeZone', 'preserveHeight applied for sprite', this.sprite.id, 'sourceZ=', this.preserveHeightSourceZ);
         }
       } else {
         const zZone = (this.switchRenderZone ? this.toZone : this.fromZone).getHeight(hx, hy);
@@ -111,7 +112,7 @@ export default {
         if (this.sprite.zone.engine?.debug && this.__tickLogCount < 3) {
           if (!this.__tickLogCount) this.__tickLogCount = 0;
           this.__tickLogCount++;
-          console.log('[changezone.tick] sprite', this.sprite.id, 'frac=', frac.toFixed(2), 'hx,hy=', hx.toFixed(2), hy.toFixed(2), 'zLerp=', zLerp?.toFixed(2), 'zZone=', zZone?.toFixed(2), 'pos.z=', this.sprite.pos.z.toFixed(2));
+          debug('ChangeZone', 'tick sprite', this.sprite.id, 'frac=', frac.toFixed(2), 'hx,hy=', hx.toFixed(2), hy.toFixed(2), 'zLerp=', zLerp?.toFixed(2), 'zZone=', zZone?.toFixed(2), 'pos.z=', this.sprite.pos.z.toFixed(2));
         }
       }
     }

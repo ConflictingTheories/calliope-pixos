@@ -15,6 +15,7 @@
 import Spritz from '@Engine/core/scene/spritz.js';
 import World from '@Engine/core/scene/world.js';
 import JSZip from 'jszip';
+import { debug } from '@Engine/utils/debug-logger.js';
 
 /**
  * ExampleDynamicSpritz - A dynamic Spritz implementation for loading games from zip files.
@@ -42,11 +43,11 @@ export default class ExampleDynamicSpritz extends Spritz {
 
         // find manifest and read
         let manifest = JSON.parse(await zip.file('manifest.json').async('string'));
-        console.log(manifest);
+        debug('Spritz', 'loaded manifest', manifest);
 
         // Connect to network if specified
         if (manifest.network && manifest.network.url) {
-          console.log('Network connection found -- attempting connectiong to server')
+          debug('Spritz', 'Network connection found -- attempting connection to server');
           engine.networkManager.connect(manifest.network.url);
         }
 

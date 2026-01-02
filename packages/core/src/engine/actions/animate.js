@@ -11,10 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { debug } from '@Engine/utils/debug-logger.js';
+
 // Animate a sprite without moving them
 export default {
   init: function (length, untilFrame, finish) {
-    console.log({ msg: 'initializing animation', length, untilFrame, finish });
+    debug('Animate', 'initializing animation', { length, untilFrame });
     this.length = length;
     this.untilFrame = untilFrame;
     this.finish = finish;

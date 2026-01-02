@@ -14,6 +14,7 @@
 import { Vector } from '@Engine/utils/math/vector.js';
 import Avatar from '@Engine/core/scene/avatar.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
+import { debug } from '@Engine/utils/debug-logger.js';
 
 /**
  * DynamicAvatar - A dynamic avatar with JSON loading and Lua scripting support.
@@ -88,13 +89,13 @@ export default class DynamicAvatar extends Avatar {
 
     // lua scripting
     try {
-      console.log({ trigger: this.selectTrigger });
+      debug('DynamicAvatar', 'onSelect trigger', this.selectTrigger);
       let file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
-      console.log({ msg: 'trigger lua statement', luaScript });
+      debug('DynamicAvatar', 'trigger lua statement', luaScript);
 
       let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: _this, zone: sprite.zone, subject: sprite });
@@ -103,7 +104,7 @@ export default class DynamicAvatar extends Avatar {
 
       return await interpreter.run(luaScript);
     } catch (e) {
-      console.log({ msg: 'no lua script found', e });
+      debug('DynamicAvatar', 'no lua script found', e.message);
     }
   }
 }

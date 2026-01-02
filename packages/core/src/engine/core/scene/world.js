@@ -17,6 +17,7 @@
  */
 
 import Zone from './zone.js';
+import { debug } from '@Engine/utils/debug-logger.js';
 import ModeManager from '../mode/manager.js';
 import ActionQueue from '../queue/index.js';
 import { Direction } from '@Engine/utils/enums.js';
@@ -94,7 +95,7 @@ export default class World {
       // If we already have this remote avatar, update and return it
       if (this.remoteAvatars.has(clientId)) {
         const existing = this.remoteAvatars.get(clientId);
-        try { console.log(`Remote avatar for ${clientId} already exists, updating instead`); } catch (e) { }
+        try { debug('World', 'Remote avatar for ${clientId} already exists, updating instead`); } catch (e) { }
         if (avatarData.x != null) existing.pos.x = avatarData.x;
         if (avatarData.y != null) existing.pos.y = avatarData.y;
         if (avatarData.z != null) existing.pos.z = avatarData.z;
@@ -179,12 +180,12 @@ export default class World {
         zone.spriteDict[avatar.id] = avatar;
         if (!zone.spriteList.includes(avatar)) zone.spriteList.push(avatar);
         if (!this.spriteList.includes(avatar)) this.spriteList.push(avatar);
-        console.log(`Added remote avatar for client ${clientId} as sprite '${avatar.id}' to zone ${zone.id} at (${avatar.pos.x},${avatar.pos.y},${avatar.pos.z})`);
+        debug('World', 'Added remote avatar for client ${clientId} as sprite '${avatar.id}' to zone ${zone.id} at (${avatar.pos.x},${avatar.pos.y},${avatar.pos.z})`);
       }
 
       // store mapping after registration
       this.remoteAvatars.set(clientId, avatar);
-      try { console.log(`Remote avatar map now has ${this.remoteAvatars.size} entries`); } catch (e) { }
+      try { debug('World', 'Remote avatar map now has ${this.remoteAvatars.size} entries`); } catch (e) { }
       return avatar;
     } catch (e) {
       console.warn('Failed to add remote avatar', e);
@@ -212,7 +213,7 @@ export default class World {
   updateRemoteAvatar(clientId, avatarData) {
     const avatar = this.remoteAvatars.get(clientId);
     if (avatar) {
-      try { console.log(`updateRemoteAvatar: client=${clientId} pre pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
+      try { debug('World', 'updateRemoteAvatar: client=${clientId} pre pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
       if (typeof avatar.setPosition === 'function') {
         avatar.setPosition(avatarData.x, avatarData.y, avatarData.z);
       } else if (avatar.pos) {
@@ -234,7 +235,7 @@ export default class World {
         avatar.templateLoaded = true;
         if (!avatar.texture || typeof avatar.texture.attach !== 'function') avatar.texture = { loaded: true, attach: () => { } };
       }
-      try { console.log(`updateRemoteAvatar: client=${clientId} post pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
+      try { debug('World', 'updateRemoteAvatar: client=${clientId} post pos=${avatar.pos?.x},${avatar.pos?.y},${avatar.pos?.z} loaded=${avatar.loaded} id=${avatar.id} zone=${avatar.zone?.id}`); } catch (e) { }
       return avatar;
     }
     return null;
@@ -337,7 +338,7 @@ export default class World {
       await engine.renderManager.startTransition({ effect: effect, direction: 'out', duration: duration });
     }
 
-    console.log('Loading Zone from Zip:', zoneId);
+    debug('World', 'Loading Zone from Zip:', zoneId);
 
     let zoneJson = JSON.parse(await zip.file('maps/' + zoneId + '/map.json').async('string')); // main map file (/zip/maps/{zoneId}/map.json)
     let cellJson = JSON.parse(await zip.file('maps/' + zoneId + '/cells.json').async('string')); // cells (/zip/maps/{zoneId}/cells.json)

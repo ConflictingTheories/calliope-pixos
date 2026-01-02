@@ -8,3 +8,4 @@
  */
 
 export { default as EditorToolbar } from './EditorToolbar.jsx';
+export { default as HelpPanel, HELP_CONTENT, getEditorHelp } from './HelpPanel.jsx';

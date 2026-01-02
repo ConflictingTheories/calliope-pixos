@@ -14,6 +14,7 @@
 import { Direction } from '@Engine/utils/enums.js';
 import { Vector } from '@Engine/utils/math/vector.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
+import { debug, debugError } from '@Engine/utils/debug-logger.js';
 
 /**
  * Loads map information from JSON, cells, and zip data.
@@ -24,9 +25,9 @@ import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
  * @returns {Promise<Object>} The loaded map data.
  */
 export async function loadMap(json, cells, zip, heights = null) {
-  console.log('loading map....');
+  debug('Map', 'loading map....');
   if (heights) {
-    console.log('[loadMap] Using heights data:', heights.length, 'rows');
+    debug('Map', 'Using heights data:', heights.length, 'rows');
   }
 
   // read sprites & handle functions
@@ -69,7 +70,7 @@ export async function loadMap(json, cells, zip, heights = null) {
         let file = zip.file(`triggers/${script.trigger}.pxs`);
         if (!file) file = zip.file(`triggers/${script.trigger}.pxs`);
         let luaScript = await file.async('string');
-        console.log({ msg: 'lua script', luaScript });
+        debug('Map', 'lua script', luaScript);
 
         // defer execution of lua until trigger is called
         let result = ((_this) => {
@@ -80,12 +81,12 @@ export async function loadMap(json, cells, zip, heights = null) {
           return {
             id: script.id,
             trigger: async () => {
-              console.log('running actual trigger');
+              debug('Map', 'running actual trigger');
               return interpreter.run(luaScript);
             },
           };
         }).bind(this)(this);
-        console.log({ msg: 'zone trigger Lua eval response', result });
+        debug('Map', 'zone trigger Lua eval response', result);
 
         return result;
       } catch (e) {

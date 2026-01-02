@@ -16,6 +16,7 @@ import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { mergeDeep } from '@Engine/utils/enums.js';
 import Sprite from '@Engine/core/scene/sprite.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
+import { debug, debugError } from '@Engine/utils/debug-logger.js';
 
 /**
  * DynamicSprite - A dynamic sprite with JSON loading, state machines, and Lua scripting support.
@@ -50,7 +51,7 @@ export default class DynamicSprite extends Sprite {
       await Promise.all(
         this.json.extends.map(async (file) => {
           let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
-          console.log({ old: this.json, new: stringD });
+          debug('DynamicSprite', 'extending', { old: this.json, new: stringD });
           this.json = mergeDeep(this.json, stringD);
         })
       );
@@ -99,13 +100,13 @@ export default class DynamicSprite extends Sprite {
         let actions = await this.loadActionDynamically(state, sprite, finish); // load actions dynamically
 
         for (const action of actions) {
-          console.log({ msg: 'loading action', action });
+          debug('DynamicSprite', 'loading action', action);
         }
-        console.log({ msg: 'switching state', state: state.name });
+        debug('DynamicSprite', 'switching state', state.name);
         stateMachine[state.name] = { next: state.next, actions };
       })
     );
-    console.log({ msg: 'loading stateMachine', stateMachine });
+    debug('DynamicSprite', 'loading stateMachine', stateMachine);
 
     // run state actions
     ret = [];
@@ -130,11 +131,11 @@ export default class DynamicSprite extends Sprite {
    * @returns {Promise<Array>} The loaded actions.
    */
   loadActionDynamically = async (state, sprite, finish) => {
-    console.log({ sprite, state });
+    debug('DynamicSprite', 'loadActionDynamically', { sprite: sprite?.id, state: state?.name });
     return await Promise.all(
       // load actions based on state
       state.actions.map(async (action) => {
-        console.log({ msg: 'preping actions', action });
+        debug('DynamicSprite', 'preping actions', action);
         let luaCallback =
           action.callback && action.callback !== ''
             ? await this.zip.file('callbacks/' + action.callback + '.pxs').async('string')
@@ -142,7 +143,7 @@ export default class DynamicSprite extends Sprite {
 
         // lua script callback is injected via function wrapper
         let callback = () => {
-          console.log('calling callback');
+          debug('DynamicSprite', 'calling callback');
           let interpreter = new PixoScriptInterpreter(this.engine);
           interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite, finish: finish });
           interpreter.initLibrary();
@@ -153,9 +154,9 @@ export default class DynamicSprite extends Sprite {
         // supported action types
         switch (action.type) {
           case 'dialogue':
-            console.log({ _this: this, finish });
+            debug('DynamicSprite', 'preparing dialogue action');
             return async (_this, sprite, finish) => {
-              console.log({ msg: 'dialogue' });
+              debug('DynamicSprite', 'executing dialogue');
               let actionToLoad = new _this.ActionLoader(
                 _this.engine,
                 'dialogue',
@@ -163,20 +164,20 @@ export default class DynamicSprite extends Sprite {
                 _this,
                 callback
               );
-              console.log({ msg: 'action to load', actionToLoad });
+              debug('DynamicSprite', 'action to load', actionToLoad);
               _this.addAction(actionToLoad);
             };
           case 'animate':
-            console.log({ _this: this, finish });
+            debug('DynamicSprite', 'preparing animate action');
             return async (_this, sprite, finish) => {
-              console.log({ msg: 'animate', _this, sprite, finish, action });
+              debug('DynamicSprite', 'executing animate', { action });
               let actionToLoad = new _this.ActionLoader(_this.engine, 'animate', [...action.animate, () => finish(true)], _this, callback);
-              console.log({ msg: 'action to load', actionToLoad });
+              debug('DynamicSprite', 'action to load', actionToLoad);
               _this.addAction(actionToLoad);
             };
           default:
             return async (_this, sprite, _finish) => {
-              console.log({ msg: 'no action found', _this, sprite, _finish });
+              debug('DynamicSprite', 'no action found for type', action.type);
             };
         }
       })
@@ -201,13 +202,13 @@ export default class DynamicSprite extends Sprite {
 
     // lua scripting
     try {
-      console.log({ trigger: this.selectTrigger });
+      debug('DynamicSprite', 'onSelect trigger', this.selectTrigger);
       let file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.selectTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
-      console.log({ msg: 'trigger lua statement', luaScript });
+      debug('DynamicSprite', 'trigger lua statement', luaScript);
 
       let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
@@ -216,7 +217,7 @@ export default class DynamicSprite extends Sprite {
 
       return await interpreter.run(luaScript);
     } catch (e) {
-      console.log({ msg: 'no lua script found', e });
+      debug('DynamicSprite', 'no lua script found', e.message);
     }
   }
 
@@ -233,13 +234,13 @@ export default class DynamicSprite extends Sprite {
 
     // lua scripting
     try {
-      console.log({ trigger: this.stepTrigger });
+      debug('DynamicSprite', 'onStep trigger', this.stepTrigger);
       let file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) file = this.zip.file(`triggers/${this.stepTrigger}.pxs`);
       if (!file) throw new Error('No Lua Script Found');
 
       let luaScript = await file.async('string');
-      console.log({ msg: 'trigger lua statement', luaScript });
+      debug('DynamicSprite', 'trigger lua statement', luaScript);
 
       let interpreter = new PixoScriptInterpreter(this.engine);
       interpreter.setScope({ _this: this, zone: sprite.zone, subject: sprite });
@@ -248,7 +249,7 @@ export default class DynamicSprite extends Sprite {
 
       return await interpreter.run(luaScript);
     } catch (e) {
-      console.log({ msg: 'no lua script found', e });
+      debug('DynamicSprite', 'no lua script found', e.message);
     }
   }
 }

@@ -109,24 +109,59 @@ export default class ZoneHandler {
   }
 
   /**
-   *
+   * Handle client disconnect with session preservation
    * @param {string} clientId
    */
   handleDisconnect(clientId) {
     /** @type{import("./clientManager.js").Client} */
     const client = this.clientManager.getClient(clientId);
     if (client && client.getZoneId()) {
-      const zone = this.getZone(client.getZoneId());
+      const zoneId = client.getZoneId();
+      const zone = this.getZone(zoneId);
       if (zone) {
         zone.delete(clientId);
-        this.broadcastToZone(client.getZoneId(), { type: 'player-left', payload: { clientId } });
+        // Notify others but don't immediately remove - session may reconnect
+        this.broadcastToZone(zoneId, { 
+          type: 'player-disconnected', 
+          payload: { clientId, mayReconnect: true } 
+        });
+        
         // Broadcast updated player list after disconnect
-        const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: this.clientManager.getClient(id).getAvatar() }));
-        this.broadcastToZone(client.getZoneId(), { type: 'players-update', payload: { players: updatedPlayers } });
+        const updatedPlayers = Array.from(zone)
+          .map(id => {
+            const c = this.clientManager.getClient(id);
+            return c ? { clientId: id, avatar: c.getAvatar() } : null;
+          })
+          .filter(Boolean);
+        this.broadcastToZone(zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
       }
     }
-    this.clientManager.clients.delete(clientId);
-    console.log(`Client ${clientId} disconnected`);
+    
+    // Use ClientManager's disconnect handling (preserves session for reconnection)
+    this.clientManager.handleDisconnect(clientId);
+    console.log(`[ZoneHandler] Client ${clientId} disconnected`);
+  }
+
+  /**
+   * Handle client reconnection to a zone
+   * @param {string} clientId 
+   */
+  handleReconnect(clientId) {
+    const client = this.clientManager.getClient(clientId);
+    if (client && client.getZoneId()) {
+      const zoneId = client.getZoneId();
+      const zone = this.getZone(zoneId);
+      
+      if (zone) {
+        zone.add(clientId);
+        this.broadcastToZone(zoneId, { 
+          type: 'player-reconnected', 
+          payload: { clientId, avatar: client.getAvatar() } 
+        }, clientId);
+        
+        console.log(`[ZoneHandler] Client ${clientId} reconnected to zone ${zoneId}`);
+      }
+    }
   }
 
   /**

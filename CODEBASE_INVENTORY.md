@@ -22,203 +22,50 @@
 
 ---
 
-### Task 0.2.1 - JWT Authentication
-
-**Current Server Code:**
-- `packages/server/src/index.js` - Server entry point
-- `packages/server/src/systems/SessionManager.js` - Session handling
-
-**What to add:**
-```
-packages/server/src/
-├── auth/
-│   ├── JwtManager.js (NEW)
-│   └── TokenValidator.js (NEW)
-├── middleware/
-│   └── authenticate.js (NEW)
-└── config/
-    └── auth.config.js (NEW)
-```
-
-**Integration in WebSocket:**
-```javascript
-// In WebSocket connection handler:
-const token = url.searchParams.get('token');
-if (!JwtManager.verify(token)) {
-  socket.close(4001, 'Unauthorized');
-  return;
-}
-```
+### ~~Task 0.2.1 - JWT Authentication~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.2.2 - Rate Limiting
-
-**Location to add:**
-- `packages/server/src/systems/RateLimiter.js` (NEW)
-
-**Tracking per client:**
-```javascript
-class RateLimiter {
-  constructor(maxMessagesPerSecond = 60) {
-    this.clients = new Map(); // Map<clientId, MessageTracker>
-    this.maxMessages = maxMessagesPerSecond;
-  }
-  
-  isAllowed(clientId) {
-    // Check if client exceeded limit
-  }
-}
-```
+### ~~Task 0.2.2 - Rate Limiting~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.2.3 - TLS/WSS Support
-
-**Current config:**
-- `packages/server/src/index.js` - Server creation
-- Check `package.json` for https module
-
-**What to add:**
-```javascript
-// In server startup:
-const https = require('https');
-const fs = require('fs');
-
-const options = {
-  cert: fs.readFileSync(process.env.CERT_PATH),
-  key: fs.readFileSync(process.env.KEY_PATH)
-};
-
-const httpsServer = https.createServer(options);
-```
+### ~~Task 0.2.3 - TLS/WSS Support~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.2.4 - Input Validation
-
-**Location to add:**
-- `packages/server/src/validation/` (NEW)
-
-**Schema file:**
-```javascript
-// packages/server/src/validation/schemas.js
-const messageSchemas = {
-  'player:move': {
-    type: 'object',
-    properties: {
-      x: { type: 'number', min: -999999, max: 999999 },
-      y: { type: 'number', min: -999999, max: 999999 },
-      z: { type: 'number', min: -999999, max: 999999 }
-    },
-    required: ['x', 'y']
-  }
-  // ... more schemas
-};
-```
-
-**Validation middleware:**
-```javascript
-function validateMessage(message, schema) {
-  // Use json-schema library to validate
-}
-```
+### ~~Task 0.2.4 - Input Validation~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.2.5 - Connection Resilience
-
-**Files to modify:**
-- `packages/server/src/systems/SessionManager.js` - Add timeout/recovery
-- `packages/server/src/systems/ZoneManager.js` - Preserve zone state
-
-**Session recovery:**
-```javascript
-class SessionManager {
-  reconnectPlayer(playerId, sessionId, timeout = 5 * 60 * 1000) {
-    // Check if session still exists within timeout
-    if (this.sessions.has(sessionId)) {
-      const session = this.sessions.get(sessionId);
-      if (Date.now() - session.disconnectTime < timeout) {
-        // Restore player state
-        return session;
-      }
-    }
-    return null;
-  }
-}
-```
+### ~~Task 0.2.5 - Connection Resilience~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.3.1 - Onboarding Wizard
-
-**Location to create:**
-- `packages/editor/src/components/OnboardingWizard.jsx` (NEW)
-- `packages/editor/src/flows/OnboardingFlow.js` (NEW)
-
-**Related existing code:**
-- `packages/editor/src/App.jsx` - Main app, check for first-run detection
-- `packages/editor/src/systems/ProjectManager.js` - Project creation
-
-**Integration:**
-```javascript
-// In App.jsx:
-const isFirstRun = !localStorage.getItem('pixospritz:hasRunBefore');
-
-if (isFirstRun) {
-  return <OnboardingWizard onComplete={() => startEditor()} />;
-}
-
-return <EditorUI />;
-```
+### ~~Task 0.3.1 - Onboarding Wizard~~ ✅ COMPLETED
+> Already implemented at `packages/editor/src/onboarding/FirstTimeWizard.jsx`
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.3.2 - Quick-Start Templates
-
-**Existing files:**
-- `packages/editor/src/ai-generator/services/game-templates.js` - HAS template definitions!
-
-**What's already there:**
-```javascript
-// From game-templates.js:
-export const gameTemplates = [
-  {
-    id: 'fantasy-adventure',
-    name: '🗡️ Fantasy Adventure',
-    description: '...',
-    // Already has templates!
-  }
-];
-```
-
-**Need to add:**
-- `packages/editor/src/templates/quick-start/` - Pre-built starter projects
-- Each template should have:
-  - `manifest.json` - Game config
-  - `sprites/` - Basic sprites
-  - `maps/` - Starter maps
-  - `callbacks/` - Sample scripts
+### ~~Task 0.3.2 - Quick-Start Templates~~ ✅ COMPLETED
+> Already implemented at `packages/editor/src/ai-generator/services/game-templates.js`
+> Contains hello-world, coin-collector, fantasy-adventure, and more templates
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 0.3.3 - In-Editor Help System
+### ~~Task 0.3.3 - In-Editor Help System~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/shared/components/HelpPanel.jsx`
+> Keyboard shortcuts at `packages/editor/src/shared/hooks/useKeyboardShortcuts.js`
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**Location to create:**
-- `packages/editor/src/components/HelpPanel.jsx` (NEW)
-- `packages/editor/src/systems/HelpSystem.js` (NEW)
-- `packages/editor/src/data/help-content.json` (NEW)
-
-**How to trigger:**
-```javascript
-// Global keyboard shortcut (?)
-window.addEventListener('keydown', (e) => {
-  if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-    showHelpPanel();
-  }
-});
-```
+---
 
 ---
 

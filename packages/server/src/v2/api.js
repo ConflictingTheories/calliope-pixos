@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import ClientManager from './clientManager.js';
 import ZoneHandler from './zoneHandler.js';
 import { RateLimiter, MessageValidator, ConnectionTracker } from '../utils/security.js';
+import { Authenticator } from '../auth/index.js';
 
 /**
  * PixoSpritz WebSocket API Server
@@ -27,6 +28,12 @@ export default class API {
     // Security: Connection tracking (max 5 connections per IP)
     this.connectionTracker = new ConnectionTracker(5);
     
+    // Security: JWT Authentication (optional in dev, required in production)
+    this.authenticator = new Authenticator({
+      required: process.env.NODE_ENV === 'production',
+      tokenExpiry: parseInt(process.env.JWT_EXPIRY) || 3600
+    });
+    
     console.log(`[API] WebSocket server initialized on port ${port}`);
   }
 
@@ -35,8 +42,18 @@ export default class API {
    */
   listen() {
     this.wss.on('connection', (ws, req) => {
-      const clientId = uuidv4();
       const ip = req.socket.remoteAddress || 'unknown';
+      
+      // Security: JWT Authentication
+      const authResult = this.authenticator.authenticate(req);
+      if (!authResult.authenticated) {
+        console.warn(`[API] Authentication failed from ${ip}: ${authResult.error}`);
+        ws.close(4001, authResult.error || 'Unauthorized');
+        return;
+      }
+      
+      // Use authenticated userId or generate a new one
+      const clientId = authResult.userId || uuidv4();
       
       // Security: Check connection limit per IP
       if (!this.connectionTracker.addConnection(clientId, ip)) {
@@ -45,9 +62,14 @@ export default class API {
         return;
       }
       
-      // Store client with IP for cleanup
-      this.clientManager.setClient(clientId, { ws, ip });
-      console.log(`[API] Client ${clientId} connected from ${ip}`);
+      // Store client with IP and auth info
+      this.clientManager.setClient(clientId, { 
+        ws, 
+        ip,
+        isGuest: authResult.isGuest || false,
+        sessionId: authResult.sessionId
+      });
+      console.log(`[API] Client ${clientId} connected from ${ip} (${authResult.isGuest ? 'guest' : 'authenticated'})`);
 
       ws.on('message', message => this.onMessage(clientId, message));
 
@@ -202,7 +224,18 @@ export default class API {
   shutdown() {
     console.log('[API] Shutting down...');
     this.rateLimiter.destroy();
+    this.authenticator.destroy();
     this.wss.close();
+  }
+  
+  /**
+   * Generate a new authentication token for a user
+   * @param {string} userId - User identifier
+   * @param {object} claims - Additional claims
+   * @returns {string} JWT token
+   */
+  generateToken(userId, claims = {}) {
+    return this.authenticator.generateToken(userId, claims);
   }
 }
 

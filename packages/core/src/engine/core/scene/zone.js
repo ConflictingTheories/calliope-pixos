@@ -23,6 +23,7 @@ import { Vector } from '@Engine/utils/math/vector.js';
 import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.js';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
+import { debug } from '@Engine/utils/debug-logger.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 
 /**
@@ -300,7 +301,7 @@ export default class Zone extends Loadable {
    */
   loadModeFromZip = async (modeName, zip) => {
     try {
-      console.log('Loading Game Mode From Zip');
+      debug('Zone', 'Loading Game Mode From Zip');
 
       const setupFile = zip.file(`modes/${modeName}/setup.pxs`);
       const updateFile = zip.file(`modes/${modeName}/update.pxs`);
@@ -315,7 +316,7 @@ export default class Zone extends Loadable {
       if (setupFile) {
         const script = await setupFile.async('string');
         // run the setup registration (it likely calls pixos.register_mode)
-        console.log('Zone.loadModeFromZip: running setup.pxs for mode', modeName);
+        debug('Zone', 'loadModeFromZip: running setup.pxs for mode', modeName);
         await interpreter.run(script);
       }
       // If update file exists, load it as a function and register as handler
@@ -413,11 +414,11 @@ export default class Zone extends Loadable {
         if (heightsFile) {
           const heightsStr = await heightsFile.async('string');
           heightsJson = JSON.parse(heightsStr);
-          console.log(`[Zone] Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
-          console.log(`[Zone] First row heights:`, heightsJson?.[0]);
-          console.log(`[Zone] Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
+          debug('Zone', Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
+          debug('Zone', First row heights:`, heightsJson?.[0]);
+          debug('Zone', Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
         } else {
-          console.log(`[Zone] No heights.json found for ${this.id}, using default geometry heights`);
+          debug('Zone', No heights.json found for ${this.id}, using default geometry heights`);
         }
       } catch (e) {
         console.warn(`[Zone] Failed to load heights.json for ${this.id}:`, e.message);
@@ -612,17 +613,17 @@ export default class Zone extends Loadable {
    * @param {boolean} [refresh=false] - Whether to refresh.
    */
   loadScripts = (refresh = false) => {
-    console.log('[Zone.loadScripts] ENTRY - zone:', this.id, 'refresh:', refresh, 'isPaused:', this.world.isPaused, 'scripts:', this.scripts.length);
+    debug('Zone',.loadScripts] ENTRY - zone:', this.id, 'refresh:', refresh, 'isPaused:', this.world.isPaused, 'scripts:', this.scripts.length);
     
     if (this.world.isPaused) return;
     // CRITICAL: Zone load scripts must run even when paused
     // They are responsible for initializing the zone state
     const zone = this;
     for (const x of this.scripts) {
-      console.log('[Zone.loadScripts] Checking script:', x.id, 'isLoadSpritz:', x.id === 'load-spritz', 'refresh:', refresh);
+      debug('Zone',.loadScripts] Checking script:', x.id, 'isLoadSpritz:', x.id === 'load-spritz', 'refresh:', refresh);
       if (x.id === 'load-spritz' && refresh) {
         // Call trigger immediately when loading/refreshing
-        console.log('[Zone.loadScripts] Calling load-spritz trigger for zone:', this.id);
+        debug('Zone',.loadScripts] Calling load-spritz trigger for zone:', this.id);
         try {
           x.trigger.call(zone);
         } catch (e) {
@@ -1008,7 +1009,7 @@ export default class Zone extends Loadable {
     // allow active mode to intercept selection
     try {
       if (this.world?.modeManager && this.world.modeManager.handleSelect) {
-        console.log('Running Custom Select Handler')
+        debug('Zone', 'Running Custom Select Handler')
         const handled = await this.world.modeManager.handleSelect(this, row, cell, 'tile');
         if (handled) return; // mode consumed selection
       }

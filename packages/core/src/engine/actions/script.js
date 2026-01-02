@@ -11,13 +11,15 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { debug } from '@Engine/utils/debug-logger.js';
+
 export default {
   init: function (triggerId, zone, onCompleted = null) {
     this.zone = zone;
     this.world = zone.world;
     this.lastKey = new Date().getTime();
     this.completed = false;
-    this.onCompleted = () => console.log('script finished');
+    this.onCompleted = () => debug('Script', 'script finished');
     if (onCompleted) this.onCompleted = onCompleted;
     // Determine Tile
     this.triggerId = triggerId;

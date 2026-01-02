@@ -8,3 +8,9 @@
  */
 
 export { useHistory, createHistoryKeyHandler } from './useHistory.js';
+export { 
+  useKeyboardShortcuts, 
+  useShortcut, 
+  getShortcutDisplay,
+  DEFAULT_SHORTCUTS 
+} from './useKeyboardShortcuts.js';
