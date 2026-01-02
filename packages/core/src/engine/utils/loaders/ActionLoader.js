@@ -11,6 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { debug } from '../debug-logger.js';
 import Action from '@Engine/core/queue/action.js';
 
 // Helps Loads New Action Instance
@@ -39,24 +40,24 @@ export class ActionLoader {
   }
   // Load Internal Action
   async load(type) {
-    console.log('Loading Action: ' + type);
+    debug('Loader', 'Loading Action: ' + type);
 
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
-    console.log({afterLoad, runConfigure})
+    debug('Loader', {afterLoad, runConfigure})
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
     Object.assign(instance, require('@Engine/actions/' + type + '.js')['default']);
     instance.templateLoaded = true;
-    console.log('Notifying in Action: ' + type);
+    debug('Loader', 'Notifying in Action: ' + type);
 
     // Notify existing
     await Promise.all(
       this.instances[type].map(async function (instance) {
-        console.log({instance});
+        debug('Loader', {instance});
         if (instance.afterLoad) await instance.afterLoad(instance.instance);
       })
     );
@@ -68,7 +69,7 @@ export class ActionLoader {
       else this.instances[type].push({ instance, afterLoad });
     }
 
-    console.log('Ending load Action: ' + type);
+    debug('Loader', 'Ending load Action: ' + type);
 
     return instance;
   }

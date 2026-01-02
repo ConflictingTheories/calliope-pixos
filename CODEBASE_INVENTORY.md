@@ -1,125 +1,24 @@
 # 📍 CODEBASE INVENTORY & MAPPING
 
 **Purpose:** Quick reference for finding existing code related to gameplan tasks  
-**Usage:** Before starting each task, check what already exists
+**Usage:** Before starting each task, check what already exists  
+**Note:** Completed tasks are moved to `AI_AGENT_COMPLETED_INVENTORY.md`
 
 ---
 
 ## PHASE 0: CRITICAL LAUNCH BLOCKERS
 
-### Task 0.1.1 - React Lifecycle Deprecations
+### ~~Task 0.1.1 - React Lifecycle Deprecations~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**File to Fix:**
-- `packages/editor/src/components/ImagePreview.jsx` - Uses `componentWillReceiveProps`
+### ~~Task 0.1.2 - Console.log Cleanup~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**How to check:**
-```bash
-grep -r "componentWillReceiveProps" packages/editor/src/
-grep -r "componentWillMount" packages/editor/src/
-grep -r "componentWillUpdate" packages/editor/src/
-```
+### ~~Task 0.1.3 - OBJ Loader MTL Bug Fix~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**How to fix:**
-```javascript
-// Before:
-componentWillReceiveProps(nextProps) {
-  if (nextProps.image !== this.props.image) {
-    this.loadImage(nextProps.image);
-  }
-}
-
-// After:
-useEffect(() => {
-  loadImage(image);
-}, [image, loadImage]);
-```
-
----
-
-### Task 0.1.2 - Console.log Cleanup
-
-**Files likely to have debug logs:**
-- `packages/editor/src/editors/MapEditor.jsx`
-- `packages/editor/src/editors/CutscenePlayer.jsx`
-- `packages/editor/src/systems/ProjectManager.js`
-- `packages/core/src/engine/scripting/ScriptEngine.js`
-
-**How to find:**
-```bash
-grep -n "console.log" packages/editor/src/editors/MapEditor.jsx
-grep -rn "console.log" packages/editor/src/ --include="*.js" --include="*.jsx"
-```
-
-**How to replace:**
-- Production logs → Remove
-- Debug logs → Use `logger.debug()` with env flag
-- Important info → Use `logger.info()`
-
-**Allowed console usage:**
-```javascript
-// OK - package startup
-console.log('[EditorUI] Starting editor with config:', config);
-
-// NOT OK - debug during development
-console.log('Current selection:', selection); // Remove in production
-
-// OK - Using logger system
-if (DEBUG_MODE) {
-  logger.debug('State change:', oldState, newState);
-}
-```
-
----
-
-### Task 0.1.3 - OBJ Loader MTL Bug Fix
-
-**Current Code:**
-- `packages/editor/src/components/ObjModelViewer.jsx` (has the bug)
-- `packages/editor/src/utils/ObjHelper.js` (new utility)
-
-**What to fix:**
-```javascript
-// BEFORE - mtlUrl might be undefined, causing fetch error
-const mtlResponse = await fetch(mtlUrl);
-
-// AFTER - check if mtlUrl exists
-const mtlData = mtlUrl ? await fetch(mtlUrl) : null;
-```
-
-**Related files to check:**
-```
-packages/editor/src/
-├── components/ObjModelViewer.jsx (FIX)
-└── utils/ObjHelper.js (NEW)
-
-packages/core/src/engine/
-├── ResourceManager.js (INTEGRATE)
-└── loaders/
-    └── ObjLoader.js (CHECK)
-```
-
----
-
-### Task 0.1.4 - OBJ Loader Full Integration
-
-**Files involved:**
-- `packages/editor/src/utils/ObjHelper.js` (already created)
-- `packages/core/src/engine/ResourceManager.js` (add OBJ support)
-
-**Integration points:**
-```javascript
-// In ResourceManager.js, add:
-const ObjHelper = require('./loaders/ObjHelper');
-
-ResourceManager.registerLoader('obj', {
-  async load(path) {
-    return ObjHelper.loadOBJ(path);
-  }
-});
-
-// Usage:
-const model = await resourceManager.load('models/player.obj', 'obj');
-```
+### ~~Task 0.1.4 - OBJ Loader Full Integration~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 

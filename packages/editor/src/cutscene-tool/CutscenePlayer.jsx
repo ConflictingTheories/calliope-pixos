@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { debug } from '../shared/debug-logger.js';
 
 // Dynamically import html2canvas for DOM-to-canvas capture
 let html2canvasModule = null;
@@ -44,7 +45,7 @@ function parseBracket(s) {
   const out = {};
   if (!s) return out;
   s = s.trim();
-  console.log('[parseBracket] Input:', s);
+  debug('CutscenePlayer', '[parseBracket] Input:', s);
   if (!s.startsWith('[')) return out;
   s = s.slice(1, -1).trim();
   if (!s) return out;
@@ -59,7 +60,7 @@ function parseBracket(s) {
       else out[k] = val;
     } else out[p] = true;
   });
-  console.log('[parseBracket] Output:', out);
+  debug('CutscenePlayer', '[parseBracket] Output:', out);
   return out;
 }
 
@@ -182,7 +183,7 @@ function parseScript(text) {
       } else if (cmd === 'do') {
         const hook = rest.trim();
         const args = bracket || {};
-        console.log('[parseScript] @do command:', { cmd, rest, hook, args, bracket });
+        debug('CutscenePlayer', '[parseScript] @do command:', { cmd, rest, hook, args, bracket });
         scene.events.push({
           type: 'hook',
           payload: { hook, args },
@@ -471,7 +472,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
         }
       }
       
-      console.log('[Export] Using mime type:', mimeType);
+      debug('CutscenePlayer', '[Export] Using mime type:', mimeType);
       
       const mediaRecorder = new MediaRecorder(combinedStream, {
         mimeType,
@@ -482,7 +483,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           recordedChunks.push(event.data);
-          console.log('[Export] Data chunk:', event.data.size, 'bytes, total chunks:', recordedChunks.length);
+          debug('CutscenePlayer', '[Export] Data chunk:', event.data.size, 'bytes, total chunks:', recordedChunks.length);
         }
       };
       
@@ -492,7 +493,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
       // Start recording - request data frequently for more reliable capture
       mediaRecorder.start(50); // Collect data every 50ms
-      console.log('[Export] MediaRecorder started, state:', mediaRecorder.state);
+      debug('CutscenePlayer', '[Export] MediaRecorder started, state:', mediaRecorder.state);
       
       if (onExportProgress) onExportProgress({ status: 'recording', progress: 5, message: 'Starting playback...' });
 
@@ -529,7 +530,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           
           frameCountRef.value++;
           if (frameCountRef.value % 10 === 0) {
-            console.log('[Export] Captured frame:', frameCountRef.value);
+            debug('CutscenePlayer', '[Export] Captured frame:', frameCountRef.value);
           }
         } catch (err) {
           console.warn('Frame capture error:', err);
@@ -610,7 +611,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
       // Wait a moment for final frames to be captured
       await waitMs(1000);
-      console.log('[Export] Playback complete, captured', frameCountRef.value, 'frames');
+      debug('CutscenePlayer', '[Export] Playback complete, captured', frameCountRef.value, 'frames');
 
       // Stop the frame capture loop
       isRecording = false;
@@ -627,16 +628,16 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
       
       if (onExportProgress) onExportProgress({ status: 'processing', progress: 92, message: 'Processing video...' });
       
-      console.log('[Export] Stopping recorder, state:', mediaRecorder.state, 'chunks so far:', recordedChunks.length);
+      debug('CutscenePlayer', '[Export] Stopping recorder, state:', mediaRecorder.state, 'chunks so far:', recordedChunks.length);
 
       // Stop media recorder and wait for final data
       return new Promise((resolve) => {
         mediaRecorder.onstop = async () => {
-          console.log('[Export] MediaRecorder stopped, total chunks:', recordedChunks.length);
+          debug('CutscenePlayer', '[Export] MediaRecorder stopped, total chunks:', recordedChunks.length);
           
           // Calculate total size of chunks
           const totalSize = recordedChunks.reduce((acc, chunk) => acc + chunk.size, 0);
-          console.log('[Export] Total chunk data:', totalSize, 'bytes');
+          debug('CutscenePlayer', '[Export] Total chunk data:', totalSize, 'bytes');
           
           // Restore original Audio constructor
           window.Audio = OriginalAudio;
@@ -658,7 +659,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
           // Create blob
           const blob = new Blob(recordedChunks, { type: mimeType });
-          console.log('[Export] Created blob, size:', blob.size);
+          debug('CutscenePlayer', '[Export] Created blob, size:', blob.size);
           
           if (blob.size === 0) {
             console.error('[Export] Blob is empty!');
@@ -755,7 +756,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     if (voiceFile) {
       voicePromise = (async () => {
         try {
-          console.log('[CutscenePlayer] Loading dialogue voice-over:', voiceFile);
+          debug('CutscenePlayer', ' Loading dialogue voice-over:', voiceFile);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(voiceFile);
@@ -775,7 +776,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           
           return new Promise((resolve) => {
             audio.onended = () => {
-              console.log('[CutscenePlayer] Dialogue voice-over ended:', voiceFile);
+              debug('CutscenePlayer', ' Dialogue voice-over ended:', voiceFile);
               voiceRef.current = null;
               resolve();
             };
@@ -787,7 +788,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
             };
             
             audio.play().then(() => {
-              console.log('[CutscenePlayer] Dialogue voice-over playing:', voiceFile);
+              debug('CutscenePlayer', ' Dialogue voice-over playing:', voiceFile);
             }).catch(err => {
               console.warn('[CutscenePlayer] Dialogue voice-over playback prevented:', voiceFile, err.message);
               resolve();
@@ -956,7 +957,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
   const voiceRef = useRef(null);   // Blocking voice-overs
 
   function doHook(ev) {
-    console.log('[CutscenePlayer] doHook called with event:', JSON.stringify(ev, null, 2));
+    debug('CutscenePlayer', ' doHook called with event:', JSON.stringify(ev, null, 2));
     const hookType = ev.payload.hook;
     const soundName = ev.payload.args?.name;
     
@@ -969,7 +970,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     if (hookType === 'playBgm') {
       (async () => {
         try {
-          console.log('[CutscenePlayer] Loading BGM:', soundName);
+          debug('CutscenePlayer', ' Loading BGM:', soundName);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(soundName);
@@ -990,7 +991,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           bgmRef.current = audio;
           
           audio.play().then(() => {
-            console.log('[CutscenePlayer] BGM playing (looping):', soundName);
+            debug('CutscenePlayer', ' BGM playing (looping):', soundName);
           }).catch(err => {
             console.warn('[CutscenePlayer] BGM playback prevented:', soundName, err.message);
           });
@@ -1010,7 +1011,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     if (hookType === 'playSfx') {
       (async () => {
         try {
-          console.log('[CutscenePlayer] Loading SFX:', soundName);
+          debug('CutscenePlayer', ' Loading SFX:', soundName);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(soundName);
@@ -1030,13 +1031,13 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           sfxRef.current = audio;
           
           audio.play().then(() => {
-            console.log('[CutscenePlayer] SFX playing:', soundName);
+            debug('CutscenePlayer', ' SFX playing:', soundName);
           }).catch(err => {
             console.warn('[CutscenePlayer] SFX playback prevented:', soundName, err.message);
           });
           
           audio.onended = () => {
-            console.log('[CutscenePlayer] SFX ended:', soundName);
+            debug('CutscenePlayer', ' SFX ended:', soundName);
             sfxRef.current = null;
           };
           audio.onerror = (err) => {
@@ -1054,7 +1055,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
     if (hookType === 'playVoice') {
       return new Promise(async (resolve) => {
         try {
-          console.log('[CutscenePlayer] Loading voice-over:', soundName);
+          debug('CutscenePlayer', ' Loading voice-over:', soundName);
           let soundUrl = null;
           if (assetLoader && typeof assetLoader === 'function') {
             soundUrl = await assetLoader(soundName);
@@ -1076,7 +1077,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           
           // Resolve promise when audio ends (blocking)
           audio.onended = () => {
-            console.log('[CutscenePlayer] Voice-over ended:', soundName);
+            debug('CutscenePlayer', ' Voice-over ended:', soundName);
             voiceRef.current = null;
             resolve();
           };
@@ -1088,7 +1089,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
           };
           
           audio.play().then(() => {
-            console.log('[CutscenePlayer] Voice-over playing (blocking):', soundName);
+            debug('CutscenePlayer', ' Voice-over playing (blocking):', soundName);
           }).catch(err => {
             console.warn('[CutscenePlayer] Voice-over playback prevented:', soundName, err.message);
             resolve();
@@ -1102,7 +1103,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
     // stopBgm - Stop background music
     if (hookType === 'stopBgm') {
-      console.log('[CutscenePlayer] Stopping BGM');
+      debug('CutscenePlayer', ' Stopping BGM');
       if (bgmRef.current) {
         bgmRef.current.pause();
         bgmRef.current = null;
@@ -1112,7 +1113,7 @@ const CutscenePlayer = forwardRef(({ scriptText, speed = 60, autoAdvance = false
 
     // stopAll - Stop all audio
     if (hookType === 'stopAll') {
-      console.log('[CutscenePlayer] Stopping all audio');
+      debug('CutscenePlayer', ' Stopping all audio');
       if (sfxRef.current) {
         sfxRef.current.pause();
         sfxRef.current = null;

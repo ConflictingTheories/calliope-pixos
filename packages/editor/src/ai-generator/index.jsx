@@ -8,6 +8,7 @@
  * Supports multiple modalities: Image, Audio, and Text generation.
  */
 
+import { debug } from '../shared/debug-logger.js';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Button,
@@ -218,7 +219,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
         const promptAnalysis = analyzePrompt(prompt);
         if (promptAnalysis.isGameRequest) {
           effectiveModality = 'game';
-          console.log('[AI Generator] Auto-detected full game request');
+          debug('AIGenerator', ' Auto-detected full game request');
         }
       }
       
@@ -327,7 +328,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       return;
     }
 
-    console.log('[AI Generator] Starting save of', results.assets.length, 'assets');
+    debug('AIGenerator', ' Starting save of', results.assets.length, 'assets');
     setLoading(true);
     setError(null);
 

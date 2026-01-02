@@ -9,6 +9,7 @@
  * merging similar to the engine's behavior.
  */
 
+import { debug } from './debug-logger.js';
 /**
  * Deep merge two objects. Arrays are concatenated, objects are merged recursively.
  * Based on the engine's mergeDeep implementation.
@@ -90,7 +91,7 @@ export async function resolveExtends(config, loader) {
  * @returns {Promise<Object>} Resolved tileset configuration
  */
 export async function loadTilesetWithExtends(zip, tilesetName, getData) {
-  console.log('[extends-utils] Loading tileset:', tilesetName);
+  debug('ExtendsUtils', ' Loading tileset:', tilesetName);
   
   // Find tileset.json file - try multiple path patterns
   const possiblePaths = [
@@ -107,7 +108,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
     for (const path of possiblePaths) {
       if (zip.files[path]) {
         tilesetEntry = zip.files[path];
-        console.log('[extends-utils] Found tileset at:', path);
+        debug('ExtendsUtils', ' Found tileset at:', path);
         break;
       }
     }
@@ -148,7 +149,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
       for (const path of possiblePaths) {
         if (fullPath === path) {
           tilesetEntry = entry;
-          console.log('[extends-utils] Found tileset at:', fullPath);
+          debug('ExtendsUtils', ' Found tileset at:', fullPath);
           break;
         }
       }
@@ -159,7 +160,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
       if (fullPath.includes(`${tilesetName}/tileset.json`) || 
           fullPath.endsWith(`/${tilesetName}/tileset.json`)) {
         tilesetEntry = entry;
-        console.log('[extends-utils] Found tileset (fuzzy match) at:', fullPath);
+        debug('ExtendsUtils', ' Found tileset (fuzzy match) at:', fullPath);
         break;
       }
     }
@@ -172,11 +173,11 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
   }
   
   const tilesetJson = JSON.parse(await getData(tilesetEntry, true));
-  console.log('[extends-utils] Tileset JSON loaded, extends:', tilesetJson.extends);
+  debug('ExtendsUtils', ' Tileset JSON loaded, extends:', tilesetJson.extends);
   
   // Loader function for extends
   const loader = async (extendName) => {
-    console.log('[extends-utils] Loading extended tileset:', extendName);
+    debug('ExtendsUtils', ' Loading extended tileset:', extendName);
     
     const possibleExtendPaths = [
       `tilesets/${extendName}/tileset.json`,
@@ -190,7 +191,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
       for (const path of possibleExtendPaths) {
         if (zip.files[path]) {
           extendEntry = zip.files[path];
-          console.log('[extends-utils] Found extended tileset at:', path);
+          debug('ExtendsUtils', ' Found extended tileset at:', path);
           break;
         }
       }
@@ -226,7 +227,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
         for (const path of possibleExtendPaths) {
           if (fullPath === path) {
             extendEntry = entry;
-            console.log('[extends-utils] Found extended tileset at:', fullPath);
+            debug('ExtendsUtils', ' Found extended tileset at:', fullPath);
             break;
           }
         }
@@ -237,7 +238,7 @@ export async function loadTilesetWithExtends(zip, tilesetName, getData) {
         if (fullPath.includes(`${extendName}/tileset.json`) ||
             fullPath.endsWith(`/${extendName}/tileset.json`)) {
           extendEntry = entry;
-          console.log('[extends-utils] Found extended tileset (fuzzy) at:', fullPath);
+          debug('ExtendsUtils', ' Found extended tileset (fuzzy) at:', fullPath);
           break;
         }
       }

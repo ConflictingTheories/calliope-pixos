@@ -23,6 +23,7 @@ import { generateCutscene, generateScript, generateManifest } from './text-gener
 import { generatePortrait, generateSpritesheet, generateTileset, base64ToBlob } from './image-generator.js';
 import { SPRITESHEET_LAYOUTS, calculateFrameCoordinates } from './dsl-specifications.js';
 import { validateSpriteConfig, validateManifest } from './asset-validation.js';
+import { debug, debugWarn, debugError } from '../../shared/debug-logger.js';
 
 /**
  * Asset tracking for validation
@@ -282,7 +283,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         throw new Error('AI returned empty or invalid response');
       }
 
-      console.log('[GameOrchestrator] Parsed concept data:', JSON.stringify(conceptData).substring(0, 200));
+      debug('GameOrchestrator', ' Parsed concept data:', JSON.stringify(conceptData).substring(0, 200));
 
       const gameConcept = new GameConcept(conceptData);
 
@@ -305,9 +306,9 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
    * @returns {Promise<object>} Generation results with all assets
    */
   async generateGamePackage(prompt) {
-    console.log('[GameOrchestrator] ========================================');
-    console.log('[GameOrchestrator] STARTING FULL GAME GENERATION');
-    console.log('[GameOrchestrator] ========================================');
+    debug('GameOrchestrator', ' ========================================');
+    debug('GameOrchestrator', ' STARTING FULL GAME GENERATION');
+    debug('GameOrchestrator', ' ========================================');
 
     this.tracker.reset();
 
@@ -324,13 +325,13 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 1: Analyze the game concept
       // ================================================================
-      console.log('[GameOrchestrator] STEP 1: Analyzing game concept...');
+      debug('GameOrchestrator', ' STEP 1: Analyzing game concept...');
       this.onStatusChange({ phase: 'analyzing', message: 'Analyzing game concept...' });
 
       const concept = await this.analyzeGameConcept(prompt);
       results.concept = concept;
 
-      console.log('[GameOrchestrator] Concept:', {
+      debug('GameOrchestrator', ' Concept:', {
         title: concept.title,
         characters: concept.characters.length,
         locations: concept.locations.length,
@@ -351,7 +352,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 2: Generate PLAYER character (REQUIRED)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 2: Generating PLAYER character...');
+      debug('GameOrchestrator', ' STEP 2: Generating PLAYER character...');
       this.onStatusChange({ phase: 'generating', message: 'Creating player character (REQUIRED)...' });
 
       const playerChar = concept.characters.find(c => c.type === 'player') || concept.characters[0];
@@ -360,7 +361,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         throw new Error('CRITICAL: No player character in game concept!');
       }
 
-      console.log('[GameOrchestrator] Player:', playerChar.name, '-', playerChar.description?.substring(0, 50));
+      debug('GameOrchestrator', ' Player:', playerChar.name, '-', playerChar.description?.substring(0, 50));
 
       const playerAssets = await this.generateCharacterAssetsWithRetry(
         playerChar,
@@ -387,11 +388,11 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 3: Generate NPC characters (REQUIRED - at least 1)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 3: Generating NPC characters...');
+      debug('GameOrchestrator', ' STEP 3: Generating NPC characters...');
       this.onStatusChange({ phase: 'generating', message: 'Creating NPCs (REQUIRED)...' });
 
       const npcs = concept.characters.filter(c => c.type === 'npc');
-      console.log('[GameOrchestrator] Found', npcs.length, 'NPCs');
+      debug('GameOrchestrator', ' Found', npcs.length, 'NPCs');
 
       // Ensure at least one NPC
       if (npcs.length === 0 && concept.characters.length > 1) {
@@ -399,12 +400,12 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         if (fallbackNpc) {
           fallbackNpc.type = 'npc';
           npcs.push(fallbackNpc);
-          console.log('[GameOrchestrator] Auto-promoted character to NPC:', fallbackNpc.name);
+          debug('GameOrchestrator', ' Auto-promoted character to NPC:', fallbackNpc.name);
         }
       }
 
       for (const npc of npcs.slice(0, 3)) {
-        console.log('[GameOrchestrator] Generating NPC:', npc.name);
+        debug('GameOrchestrator', ' Generating NPC:', npc.name);
 
         const npcAssets = await this.generateCharacterAssetsWithRetry(
           npc,
@@ -432,7 +433,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 4: Generate enemies (optional)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 4: Generating enemies (optional)...');
+      debug('GameOrchestrator', ' STEP 4: Generating enemies (optional)...');
       this.onStatusChange({ phase: 'generating', message: 'Creating enemies...' });
 
       const enemies = concept.characters.filter(c => c.type === 'enemy');
@@ -462,7 +463,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 5: Generate CUTSCENES (REQUIRED - at least intro)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 5: Generating cutscenes (REQUIRED)...');
+      debug('GameOrchestrator', ' STEP 5: Generating cutscenes (REQUIRED)...');
       this.onStatusChange({ phase: 'generating', message: 'Writing cutscenes (REQUIRED)...' });
 
       // Ensure we have an intro cutscene
@@ -479,7 +480,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       }
 
       for (const cutscene of concept.cutscenes.slice(0, 3)) {
-        console.log('[GameOrchestrator] Generating cutscene:', cutscene.id);
+        debug('GameOrchestrator', ' Generating cutscene:', cutscene.id);
 
         try {
           const cutsceneContent = await this.generateCutsceneWithRetry(cutscene, concept);
@@ -509,7 +510,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 6: Generate NPC scripts
       // ================================================================
-      console.log('[GameOrchestrator] STEP 6: Generating scripts...');
+      debug('GameOrchestrator', ' STEP 6: Generating scripts...');
       this.onStatusChange({ phase: 'generating', message: 'Writing NPC scripts...' });
 
       // Generate callback for each NPC
@@ -542,7 +543,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 7: Generate TILESET (REQUIRED - 3 files)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 7: Generating tileset (REQUIRED)...');
+      debug('GameOrchestrator', ' STEP 7: Generating tileset (REQUIRED)...');
       this.onStatusChange({ phase: 'generating', message: 'Creating tileset (REQUIRED)...' });
 
       try {
@@ -580,7 +581,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         });
 
         // Generate tileset texture image
-        console.log('[GameOrchestrator] Generating tileset texture...');
+        debug('GameOrchestrator', ' Generating tileset texture...');
         try {
           const tilesetImageBase64 = await this.generateTilesetTexture(concept.setting);
 
@@ -594,7 +595,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
               contentType: 'image/png',
               base64: tilesetImageBase64,
             });
-            console.log('[GameOrchestrator] ✓ Tileset texture generated');
+            debug('GameOrchestrator', ' ✓ Tileset texture generated');
           }
         } catch (texError) {
           console.error('[GameOrchestrator] Tileset texture failed (using placeholder):', texError.message);
@@ -623,7 +624,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 8: Generate MAP (REQUIRED)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 8: Generating map (REQUIRED)...');
+      debug('GameOrchestrator', ' STEP 8: Generating map (REQUIRED)...');
       this.onStatusChange({ phase: 'generating', message: 'Creating starting zone (REQUIRED)...' });
 
       const startLocation = concept.locations[0] || {
@@ -673,7 +674,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // STEP 9: Generate MANIFEST (REQUIRED)
       // ================================================================
-      console.log('[GameOrchestrator] STEP 9: Generating manifest (REQUIRED)...');
+      debug('GameOrchestrator', ' STEP 9: Generating manifest (REQUIRED)...');
       this.onStatusChange({ phase: 'finalizing', message: 'Creating package manifest...' });
 
       const manifest = generateManifest(assetPaths);
@@ -700,17 +701,17 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // ================================================================
       // FINAL VALIDATION
       // ================================================================
-      console.log('[GameOrchestrator] ========================================');
-      console.log('[GameOrchestrator] VALIDATING PACKAGE COMPLETENESS');
-      console.log('[GameOrchestrator] ========================================');
+      debug('GameOrchestrator', ' ========================================');
+      debug('GameOrchestrator', ' VALIDATING PACKAGE COMPLETENESS');
+      debug('GameOrchestrator', ' ========================================');
 
       const stats = this.tracker.getStats();
       const missing = this.tracker.getMissingRequirements();
 
-      console.log('[GameOrchestrator] Stats:', stats);
-      console.log('[GameOrchestrator] Assets generated:', results.assets.length);
-      console.log('[GameOrchestrator] Errors:', results.errors.length);
-      console.log('[GameOrchestrator] Missing requirements:', missing);
+      debug('GameOrchestrator', ' Stats:', stats);
+      debug('GameOrchestrator', ' Assets generated:', results.assets.length);
+      debug('GameOrchestrator', ' Errors:', results.errors.length);
+      debug('GameOrchestrator', ' Missing requirements:', missing);
 
       results.validation = {
         isComplete: this.tracker.isComplete(),
@@ -738,7 +739,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         });
       } else {
         // Package is complete!
-        console.log('[GameOrchestrator] ✓ PACKAGE IS COMPLETE!');
+        debug('GameOrchestrator', ' ✓ PACKAGE IS COMPLETE!');
         results.success = true;
 
         this.onStatusChange({
@@ -763,12 +764,12 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       });
     }
 
-    console.log('[GameOrchestrator] ========================================');
-    console.log('[GameOrchestrator] GENERATION COMPLETE');
-    console.log('[GameOrchestrator] Success:', results.success);
-    console.log('[GameOrchestrator] Assets:', results.assets.length);
-    console.log('[GameOrchestrator] Errors:', results.errors.length);
-    console.log('[GameOrchestrator] ========================================');
+    debug('GameOrchestrator', ' ========================================');
+    debug('GameOrchestrator', ' GENERATION COMPLETE');
+    debug('GameOrchestrator', ' Success:', results.success);
+    debug('GameOrchestrator', ' Assets:', results.assets.length);
+    debug('GameOrchestrator', ' Errors:', results.errors.length);
+    debug('GameOrchestrator', ' ========================================');
 
     return results;
   }
@@ -781,7 +782,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        console.log(`[GameOrchestrator] Attempt ${attempt}/${this.maxRetries} for ${character.name}`);
+        debug('GameOrchestrator', ` Attempt ${attempt}/${this.maxRetries} for ${character.name}`);
 
         const result = await this.generateCharacterAssets(character, folder, options);
 
@@ -790,13 +791,13 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         const hasImage = result.assets.some(a => a.type === 'image');
 
         if (hasConfig && hasImage) {
-          console.log(`[GameOrchestrator] ✓ Successfully generated ${character.name}`);
+          debug('GameOrchestrator', ` ✓ Successfully generated ${character.name}`);
           return result;
         }
 
         // If we got config but no image, that's a partial success - try again for image
         if (hasConfig && !hasImage && attempt < this.maxRetries) {
-          console.log(`[GameOrchestrator] Partial success for ${character.name}, retrying for image...`);
+          debug('GameOrchestrator', ` Partial success for ${character.name}, retrying for image...`);
           lastError = new Error('Image generation failed');
           continue;
         }
@@ -810,7 +811,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         if (attempt < this.maxRetries) {
           // Wait before retry
           const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
-          console.log(`[GameOrchestrator] Waiting ${delay}ms before retry...`);
+          debug('GameOrchestrator', ` Waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
@@ -934,7 +935,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     });
 
     // Generate spritesheet (REQUIRED)
-    console.log(`[GameOrchestrator] Generating spritesheet for ${name}...`);
+    debug('GameOrchestrator', ` Generating spritesheet for ${name}...`);
     try {
       const spritesheetBase64 = await generateSpritesheet(
         character.description || `${character.displayName || character.name} character sprite`,
@@ -960,7 +961,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         base64: spritesheetBase64,
       });
 
-      console.log(`[GameOrchestrator] ✓ Spritesheet generated for ${name}`);
+      debug('GameOrchestrator', ` ✓ Spritesheet generated for ${name}`);
 
     } catch (error) {
       console.error(`[GameOrchestrator] ✗ Spritesheet failed for ${name}:`, error.message);
@@ -974,7 +975,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
     // Generate portrait (optional for monsters)
     if (options.includePortrait !== false) {
-      console.log(`[GameOrchestrator] Generating portrait for ${name}...`);
+      debug('GameOrchestrator', ` Generating portrait for ${name}...`);
       try {
         const portraitBase64 = await generatePortrait(
           character.description || `${character.displayName || character.name} portrait`,
@@ -994,7 +995,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
             contentType: 'image/png',
             base64: portraitBase64,
           });
-          console.log(`[GameOrchestrator] ✓ Portrait generated for ${name}`);
+          debug('GameOrchestrator', ` ✓ Portrait generated for ${name}`);
         }
       } catch (error) {
         console.error(`[GameOrchestrator] Portrait failed for ${name} (non-critical):`, error.message);

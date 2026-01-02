@@ -20,6 +20,7 @@
 // DEPRECATED: This entire component will be removed. Use Map Editor + Geometry Editor instead.
 
 import React, { useState, useEffect, useRef } from 'react';
+import { debug } from '../shared/debug-logger.js';
 import TilesetAtlasEditor from './tileset-atlas.jsx';
 import { collect } from 'react-recollect';
 import {
@@ -648,7 +649,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
       setGl(glContext);
       setUvx(uvContext);
 
-      console.log({ glContext, uvContext });
+      debug('TilesetEditor', { glContext, uvContext });
     }
 
     if (gl) {
@@ -755,7 +756,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     if (onSave) {
       onSave(tileset);
     } else {
-      console.log('Tileset saved:', JSON.stringify(tileset, null, 2));
+      debug('TilesetEditor', 'Tileset saved:', JSON.stringify(tileset, null, 2));
     }
   }
 
@@ -836,7 +837,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   function resizeUV() {
     if (!uvC.current) return;
     const r = uvC.current.getBoundingClientRect();
-    console.log({ uvC, c: uvC.current, b: r });
+    debug('TilesetEditor', { uvC, c: uvC.current, b: r });
     const dpr = window.devicePixelRatio || 1;
     setUvW(Math.max(1, Math.floor(r.width * dpr)));
     setUvH(Math.max(1, Math.floor(r.height * dpr)));

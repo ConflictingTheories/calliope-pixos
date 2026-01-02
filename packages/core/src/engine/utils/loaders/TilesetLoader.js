@@ -11,6 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { debug } from '../debug-logger.js';
 import Tileset from '@Engine/core/resource/tileset.js';
 import { mergeDeep } from '@Engine/utils/enums.js';
 
@@ -23,7 +24,7 @@ export class TilesetLoader {
 
   // load from zip
   async loadFromZip(zip, type, spritzName) {
-    console.log('loading tileset from zip: ' + type + ' for ' + spritzName);
+    debug('Loader', 'loading tileset from zip: ' + type + ' for ' + spritzName);
     let tileset = this.tilesets[type];
     if (tileset) return tileset;
     let instance = new Tileset(this.engine);
@@ -60,7 +61,7 @@ export class TilesetLoader {
         const tilesFile = zip.file(`tilesets/${tilesetName}/tiles.json`);
         if (tilesFile) {
           tilesetJson.tiles = JSON.parse(await tilesFile.async('string'));
-          console.log(`[TilesetLoader] Loaded separate tiles.json for ${tilesetName}`);
+          debug('Loader', `[TilesetLoader] Loaded separate tiles.json for ${tilesetName}`);
         }
       } catch (e) {
         console.warn(`[TilesetLoader] No tiles.json found for ${tilesetName}`);
@@ -73,14 +74,14 @@ export class TilesetLoader {
         const geometryFile = zip.file(`tilesets/${tilesetName}/geometry.json`);
         if (geometryFile) {
           tilesetJson.geometry = JSON.parse(await geometryFile.async('string'));
-          console.log(`[TilesetLoader] Loaded separate geometry.json for ${tilesetName}`);
+          debug('Loader', `[TilesetLoader] Loaded separate geometry.json for ${tilesetName}`);
         }
       } catch (e) {
         console.warn(`[TilesetLoader] No geometry.json found for ${tilesetName}`);
       }
     }
     
-    console.log({ tilesetJson });
+    debug('Loader', { tilesetJson });
 
     return {
       name: tilesetJson.name,

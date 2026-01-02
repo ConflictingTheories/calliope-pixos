@@ -25,6 +25,7 @@ import {
   Input,
   Checkbox,
 } from 'rsuite';
+import { debug } from '../shared/debug-logger.js';
 
 // Define a simple colour palette corresponding to tile indices.  In a
 // more sophisticated editor this palette would be generated from
@@ -266,7 +267,7 @@ function MapEditor({ content, onSave }) {
     if (onSave) {
       onSave(mapObject);
     } else {
-      console.log('Map saved:', JSON.stringify(mapObject, null, 2));
+      debug('MapEditor', 'Map saved:', JSON.stringify(mapObject, null, 2));
     }
   }
 

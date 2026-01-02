@@ -31,6 +31,7 @@ import { Reader, Writer } from '@zip.js/zip.js';
 import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
 import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
 import './onboarding/FirstTimeWizard.css';
+import { debug, debugWarn, debugError } from './shared/debug-logger.js';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -146,7 +147,7 @@ const App = () => {
     
     // Handle newly created files that have Blob data directly
     if (entry.data instanceof Blob) {
-      console.log('[getData] Entry has Blob data directly, reading...');
+      debug('App', '[getData] Entry has Blob data directly, reading...');
       if (asText) {
         return await entry.data.text();
       } else {
@@ -299,7 +300,7 @@ const App = () => {
    */
   const getEntryFullPath = useCallback((entry) => {
     if (entry.fullName) {
-      console.log('[getEntryFullPath] Using entry.fullName:', entry.fullName);
+      debug('App', '[getEntryFullPath] Using entry.fullName:', entry.fullName);
       return entry.fullName;
     }
     
@@ -315,7 +316,7 @@ const App = () => {
       }
     }
     const fullPath = parts.join('/');
-    console.log('[getEntryFullPath] Constructed path:', fullPath, 'from parts:', parts);
+    debug('App', '[getEntryFullPath] Constructed path:', fullPath, 'from parts:', parts);
     return fullPath;
   }, []);
 
@@ -469,7 +470,7 @@ const App = () => {
           try {
             const fullPath = getEntryFullPath(entry);
             await writeFile(fullPath, newContent);
-            console.log('[ScriptEditor] File saved:', fullPath);
+            debug('App', '[ScriptEditor] File saved:', fullPath);
             alert('File saved successfully!');
           } catch (err) {
             console.error('[ScriptEditor] Save failed:', err);
@@ -626,10 +627,10 @@ const App = () => {
   }, [getData, toDataUri, zip]);
 
   const renderMapEditor = useCallback(async (entry) => {
-    console.log('Loading map editor for:', entry.name);
-    console.log('Zip object:', zip);
-    console.log('Zip type:', typeof zip);
-    console.log('Zip methods:', zip ? Object.keys(zip) : 'no zip');
+    debug('App', 'Loading map editor for:', entry.name);
+    debug('App', 'Zip object:', zip);
+    debug('App', 'Zip type:', typeof zip);
+    debug('App', 'Zip methods:', zip ? Object.keys(zip) : 'no zip');
     
     // Helper to get full path of an entry
     const getEntryFullPath = (ent) => {
@@ -655,7 +656,7 @@ const App = () => {
     if (zip) {
       if (typeof zip.entries === 'function') {
         allEntries = Array.from(zip.entries());
-        console.log('Got entries from zip.entries():', allEntries.length);
+        debug('App', 'Got entries from zip.entries():', allEntries.length);
       } else if (zip.root) {
         // Build a map of full paths to actual entry objects
         const buildEntryMap = (node, path = '', map = new Map()) => {
@@ -680,17 +681,17 @@ const App = () => {
           ...entry,
           fullName: fullPath
         }));
-        console.log('Got entries from root:', allEntries.length);
+        debug('App', 'Got entries from root:', allEntries.length);
       }
     }
-    console.log('Available files in package:', allEntries.map(e => e.fullName || e.name));
+    debug('App', 'Available files in package:', allEntries.map(e => e.fullName || e.name));
     
     // Filter out macOS metadata files
     allEntries = allEntries.filter(e => {
       const fullPath = e.fullName || e.name;
       return !fullPath.includes('__MACOSX') && !fullPath.split('/').some(part => part.startsWith('._'));
     });
-    console.log('Filtered files (no macOS junk):', allEntries.length);
+    debug('App', 'Filtered files (no macOS junk):', allEntries.length);
     
     // Load map.json
     const mapContent = await getData(entry, true);
@@ -701,8 +702,8 @@ const App = () => {
     try {
       mapData = JSON.parse(mapContent);
       tilesetName = mapData.tileset;
-      console.log('Map data loaded, tileset:', tilesetName);
-      console.log('Full map data:', mapData);
+      debug('App', 'Map data loaded, tileset:', tilesetName);
+      debug('App', 'Full map data:', mapData);
     } catch (err) {
       console.error('Failed to parse map.json:', err);
     }
@@ -716,40 +717,40 @@ const App = () => {
         const cellsFileName = 'cells.json';
         const heightsFileName = 'heights.json';
         
-        console.log('Map file path:', entryFullPath);
-        console.log('Searching for cells.json and heights.json in directory:', mapDir);
+        debug('App', 'Map file path:', entryFullPath);
+        debug('App', 'Searching for cells.json and heights.json in directory:', mapDir);
         
         // Find cells.json in the same directory as map.json
         const cellsFile = allEntries.find(e => {
           const fullPath = e.fullName || e.name;
           const exactMatch = fullPath === `${mapDir}${cellsFileName}`;
           if (exactMatch) {
-            console.log('Found exact match for cells.json:', fullPath);
+            debug('App', 'Found exact match for cells.json:', fullPath);
           }
           return exactMatch;
         });
         
         if (cellsFile) {
-          console.log('Found cells.json at:', cellsFile.fullName || cellsFile.name);
+          debug('App', 'Found cells.json at:', cellsFile.fullName || cellsFile.name);
           try {
             const cellsContent = await getData(cellsFile, true);
-            console.log('Cells content type:', typeof cellsContent, 'length:', cellsContent?.length);
-            console.log('Cells content preview:', cellsContent?.substring(0, 100));
+            debug('App', 'Cells content type:', typeof cellsContent, 'length:', cellsContent?.length);
+            debug('App', 'Cells content preview:', cellsContent?.substring(0, 100));
             if (cellsContent) {
               const parsedCells = JSON.parse(cellsContent);
-              console.log('Parsed cells data type:', Array.isArray(parsedCells) ? 'array' : typeof parsedCells);
-              console.log('Cells data:', parsedCells);
+              debug('App', 'Parsed cells data type:', Array.isArray(parsedCells) ? 'array' : typeof parsedCells);
+              debug('App', 'Cells data:', parsedCells);
               
               // Check if cells.json has extends
               if (parsedCells.extends && Array.isArray(parsedCells.extends)) {
-                console.log('[Cells] Found extends:', parsedCells.extends);
+                debug('App', '[Cells] Found extends:', parsedCells.extends);
                 
                 // Load and merge extended cells
                 let mergedCells = parsedCells.cells || [];
                 
                 for (const extendMapName of parsedCells.extends) {
                   try {
-                    console.log('[Cells] Loading extended map:', extendMapName);
+                    debug('App', '[Cells] Loading extended map:', extendMapName);
                     const extendCellsPath = `maps/${extendMapName}/cells.json`;
                     const extendCellsFile = allEntries.find(e => (e.fullName || e.name) === extendCellsPath);
                     
@@ -761,7 +762,7 @@ const App = () => {
                       const extendCells = Array.isArray(extendCellsData) ? extendCellsData : extendCellsData.cells;
                       
                       if (extendCells && Array.isArray(extendCells)) {
-                        console.log('[Cells] Extending with cells from', extendMapName, ':', extendCells.length, 'rows');
+                        debug('App', '[Cells] Extending with cells from', extendMapName, ':', extendCells.length, 'rows');
                         
                         // Append extended cells (note: this is append-style like you mentioned)
                         mergedCells = [...mergedCells, ...extendCells];
@@ -775,15 +776,15 @@ const App = () => {
                 }
                 
                 cellsData = mergedCells;
-                console.log('[Cells] Final merged cells:', cellsData.length, 'rows');
+                debug('App', '[Cells] Final merged cells:', cellsData.length, 'rows');
               } else if (Array.isArray(parsedCells)) {
                 // Simple array format
                 cellsData = parsedCells;
-                console.log('Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
+                debug('App', 'Cells data loaded:', cellsData.length, 'x', cellsData[0]?.length);
               } else if (parsedCells.cells && Array.isArray(parsedCells.cells)) {
                 // Object format with cells property
                 cellsData = parsedCells.cells;
-                console.log('Cells data loaded from .cells property:', cellsData.length, 'x', cellsData[0]?.length);
+                debug('App', 'Cells data loaded from .cells property:', cellsData.length, 'x', cellsData[0]?.length);
               } else {
                 console.error('ERROR: cells.json format not recognized!', parsedCells);
                 cellsData = null;
@@ -807,13 +808,13 @@ const App = () => {
         });
         
         if (heightsFile) {
-          console.log('Found heights.json at:', heightsFile.fullName || heightsFile.name);
+          debug('App', 'Found heights.json at:', heightsFile.fullName || heightsFile.name);
           try {
             const heightsContent = await getData(heightsFile, true);
-            console.log('Heights content type:', typeof heightsContent, 'length:', heightsContent?.length);
+            debug('App', 'Heights content type:', typeof heightsContent, 'length:', heightsContent?.length);
             if (heightsContent) {
               heightsData = JSON.parse(heightsContent);
-              console.log('Heights data loaded:', heightsData.length, 'x', heightsData[0]?.length);
+              debug('App', 'Heights data loaded:', heightsData.length, 'x', heightsData[0]?.length);
             } else {
               console.warn('heights.json getData returned null');
             }
@@ -821,7 +822,7 @@ const App = () => {
             console.error('Failed to parse heights.json:', parseErr);
           }
         } else {
-          console.log('heights.json not found in directory:', mapDir, '(this is OK for maps without custom heights)');
+          debug('App', 'heights.json not found in directory:', mapDir, '(this is OK for maps without custom heights)');
         }
       } catch (err) {
         console.error('Failed to load cells.json/heights.json:', err);
@@ -835,8 +836,8 @@ const App = () => {
       heights: heightsData || mapData?.heights || null
     };
     
-    console.log('Combined content - cells:', Array.isArray(combinedContent.cells) ? `${combinedContent.cells.length} rows` : typeof combinedContent.cells, 'heights:', combinedContent.heights ? 'present' : 'none');
-    console.log('Final cells dimensions:', combinedContent.cells?.length, 'x', combinedContent.cells?.[0]?.length);
+    debug('App', 'Combined content - cells:', Array.isArray(combinedContent.cells) ? `${combinedContent.cells.length} rows` : typeof combinedContent.cells, 'heights:', combinedContent.heights ? 'present' : 'none');
+    debug('App', 'Final cells dimensions:', combinedContent.cells?.length, 'x', combinedContent.cells?.[0]?.length);
     
     // Load tileset and its dependencies
     let tileset = null;
@@ -846,8 +847,8 @@ const App = () => {
     
     if (tilesetName && allEntries.length > 0) {
       try {
-        console.log('Loading tileset:', tilesetName);
-        console.log('Available tileset files:', allEntries
+        debug('App', 'Loading tileset:', tilesetName);
+        debug('App', 'Available tileset files:', allEntries
           .filter(e => (e.fullName || e.name).includes('tileset'))
           .map(e => e.fullName || e.name)
         );
@@ -855,15 +856,15 @@ const App = () => {
         // Use extends-aware tileset loader
         try {
           const resolvedTileset = await loadTilesetWithExtends(zip, tilesetName, getData);
-          console.log('Tileset loaded with extends support:', resolvedTileset);
+          debug('App', 'Tileset loaded with extends support:', resolvedTileset);
           tileset = resolvedTileset;
           geometry = resolvedTileset.geometry || {};
           tiles = resolvedTileset.tiles || {};
-          console.log('Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
+          debug('App', 'Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
           
           // Load texture atlas
           if (resolvedTileset.src) {
-            console.log('Loading texture:', resolvedTileset.src);
+            debug('App', 'Loading texture:', resolvedTileset.src);
             const textureName = resolvedTileset.src;
             
             // Search for texture file - check multiple locations
@@ -883,13 +884,13 @@ const App = () => {
             }
             
             if (textureFile) {
-              console.log('Found texture at:', textureFile.fullName || textureFile.name);
+              debug('App', 'Found texture at:', textureFile.fullName || textureFile.name);
               const textureBytes = await getData(textureFile, false);
               if (textureBytes) {
                 const ext = resolvedTileset.src.split('.').pop().toLowerCase();
                 const mime = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
                 textureAtlas = toDataUri(textureBytes, mime);
-                console.log('Texture atlas loaded, size:', textureBytes.length, 'bytes', 'mime:', mime);
+                debug('App', 'Texture atlas loaded, size:', textureBytes.length, 'bytes', 'mime:', mime);
               } else {
                 console.error('Failed to get texture bytes for:', textureFile.fullName || textureFile.name);
               }
@@ -922,11 +923,11 @@ const App = () => {
           }
           
           if (tilesetFile) {
-            console.log('Found tileset (fallback):', tilesetFile.fullName || tilesetFile.name);
+            debug('App', 'Found tileset (fallback):', tilesetFile.fullName || tilesetFile.name);
             const tilesetContent = await getData(tilesetFile, true);
             if (tilesetContent && typeof tilesetContent === 'string') {
               const tilesetData = JSON.parse(tilesetContent);
-              console.log('Tileset loaded (fallback without extends)');
+              debug('App', 'Tileset loaded (fallback without extends)');
               tileset = tilesetData;
               geometry = tilesetData.geometry || {};
               tiles = tilesetData.tiles || {};
@@ -938,7 +939,7 @@ const App = () => {
       }
     }
     
-    console.log('Rendering MapEditor3D with:', {
+    debug('App', 'Rendering MapEditor3D with:', {
       hasTileset: !!tileset,
       hasGeometry: !!geometry,
       hasTiles: !!tiles,
@@ -958,12 +959,12 @@ const App = () => {
         entryName={entry.name}
         onSave={async (obj) => {
           try {
-            console.log('[MapEditor] Saving map data:', obj);
-            console.log('[MapEditor] Entry:', entry);
+            debug('App', '[MapEditor] Saving map data:', obj);
+            debug('App', '[MapEditor] Entry:', entry);
             
             // Get full path of the entry
             const fullPath = getEntryFullPath(entry);
-            console.log('[MapEditor] Full path:', fullPath);
+            debug('App', '[MapEditor] Full path:', fullPath);
             
             // Extract cells and heights from the saved data
             const { cells, heights, ...mapOnlyData } = obj;
@@ -971,26 +972,26 @@ const App = () => {
             // Save map.json (metadata only, no cells/heights)
             const mapJsonData = JSON.stringify(mapOnlyData, null, 2);
             await writeFile(fullPath, mapJsonData);
-            console.log('[MapEditor] Saved map.json:', fullPath);
+            debug('App', '[MapEditor] Saved map.json:', fullPath);
             
             // Save cells.json
             const cellsPath = fullPath.replace('map.json', 'cells.json');
             const cellsJsonData = JSON.stringify(cells, null, 2);
             await writeFile(cellsPath, cellsJsonData);
-            console.log('[MapEditor] Saved cells.json:', cellsPath);
+            debug('App', '[MapEditor] Saved cells.json:', cellsPath);
             
             // Save heights.json if it exists
-            console.log('[MapEditor] Heights data:', heights ? `${heights.length} rows` : 'null', heights);
+            debug('App', '[MapEditor] Heights data:', heights ? `${heights.length} rows` : 'null', heights);
             if (heights && heights.length > 0) {
               const heightsPath = fullPath.replace('map.json', 'heights.json');
               const heightsJsonData = JSON.stringify(heights, null, 2);
               await writeFile(heightsPath, heightsJsonData);
-              console.log('[MapEditor] Saved heights.json:', heightsPath, 'with', heights.length, 'rows');
+              debug('App', '[MapEditor] Saved heights.json:', heightsPath, 'with', heights.length, 'rows');
             } else {
               console.warn('[MapEditor] No heights data to save');
             }
             
-            console.log('[MapEditor] All map files saved successfully');
+            debug('App', '[MapEditor] All map files saved successfully');
             alert('Map saved successfully! Note: You may need to close and reopen the map to see the changes reflected in the editor.');
           } catch (err) {
             console.error('[MapEditor] Save failed:', err);
@@ -1004,7 +1005,7 @@ const App = () => {
 
   const renderTileEditor = useCallback(async (entry) => {
     const tileContent = await getData(entry, true);
-    console.log('[TileEditor] Loading tiles:', tileContent);
+    debug('App', '[TileEditor] Loading tiles:', tileContent);
     
     // Try to load geometry.json from the same directory
     let geometryContent = null;
@@ -1035,7 +1036,7 @@ const App = () => {
       const geoEntry = findSiblingFile(zip, 'geometry.json');
       if (geoEntry) {
         geometryContent = await getData(geoEntry, true);
-        console.log('[TileEditor] Loaded geometry context');
+        debug('App', '[TileEditor] Loaded geometry context');
       }
       
       // Find tileset.json to get texture names
@@ -1045,7 +1046,7 @@ const App = () => {
         const tileset = JSON.parse(tilesetContent);
         if (tileset.textures) {
           textureList = Object.keys(tileset.textures);
-          console.log('[TileEditor] Loaded texture list:', textureList);
+          debug('App', '[TileEditor] Loaded texture list:', textureList);
         }
       }
     } catch (err) {
@@ -1063,7 +1064,7 @@ const App = () => {
             const fullPath = getEntryFullPath(entry);
             const data = JSON.stringify(obj, null, 2);
             await writeFile(fullPath, data);
-            console.log('[TileEditor] Saved:', fullPath);
+            debug('App', '[TileEditor] Saved:', fullPath);
             alert('Tiles saved successfully!');
           } catch (err) {
             console.error('[TileEditor] Save failed:', err);
@@ -1076,7 +1077,7 @@ const App = () => {
 
   const renderTilesetEditor = useCallback(async (entry) => {
     const tilesetContent = await getData(entry, true);
-    console.log('[TilesetEditor] Loading tileset:', entry.name);
+    debug('App', '[TilesetEditor] Loading tileset:', entry.name);
     
     // Gather image assets from the ZIP for the tileset editor
     const imageAssets = [];
@@ -1100,7 +1101,7 @@ const App = () => {
         }
       };
       await collectImages(zip);
-      console.log('[TilesetEditor] Loaded', imageAssets.length, 'image assets');
+      debug('App', '[TilesetEditor] Loaded', imageAssets.length, 'image assets');
     } catch (err) {
       console.warn('[TilesetEditor] Error loading assets:', err);
     }
@@ -1115,7 +1116,7 @@ const App = () => {
             const fullPath = getEntryFullPath(entry);
             const data = JSON.stringify(obj, null, 2);
             await writeFile(fullPath, data);
-            console.log('[TilesetEditor] Saved:', fullPath);
+            debug('App', '[TilesetEditor] Saved:', fullPath);
             alert('Tileset saved successfully!');
           } catch (err) {
             console.error('[TilesetEditor] Save failed:', err);
@@ -1159,7 +1160,7 @@ const App = () => {
             const fullPath = getEntryFullPath(entry);
             const data = JSON.stringify(obj, null, 2);
             await writeFile(fullPath, data);
-            console.log('[GeometryEditor] Saved:', fullPath);
+            debug('App', '[GeometryEditor] Saved:', fullPath);
             alert('Geometry saved successfully!');
           } catch (err) {
             console.error('[GeometryEditor] Save failed:', err);
@@ -1184,7 +1185,7 @@ const App = () => {
             const fullPath = getEntryFullPath(entry);
             const data = JSON.stringify(spriteData, null, 2);
             await writeFile(fullPath, data);
-            console.log('[SpriteEditor] Saved:', fullPath);
+            debug('App', '[SpriteEditor] Saved:', fullPath);
             alert('Sprite saved successfully!');
           } catch (err) {
             console.error('[SpriteEditor] Save failed:', err);
@@ -1202,10 +1203,10 @@ const App = () => {
     // Asset loader function that loads from ZIP with proper MIME types
     const assetLoader = async (path) => {
       try {
-        console.log('[assetLoader] Loading asset:', path);
+        debug('App', '[assetLoader] Loading asset:', path);
         // Clean the path
         let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
-        console.log('[assetLoader] Clean path:', cleanPath);
+        debug('App', '[assetLoader] Clean path:', cleanPath);
         
         // Helper to find asset by name in ZIP recursively
         const findAsset = (node, targetName) => {
@@ -1243,7 +1244,7 @@ const App = () => {
             for (const trial of trialPaths) {
               assetEntry = findAsset(zip, trial);
               if (assetEntry) {
-                console.log('[assetLoader] Found sprite at:', trial);
+                debug('App', '[assetLoader] Found sprite at:', trial);
                 break;
               }
             }
@@ -1315,7 +1316,7 @@ const App = () => {
           'json': 'application/json',
         };
         const mimeType = mimeMap[ext] || 'application/octet-stream';
-        console.log('[assetLoader] Returning data URI with MIME type:', mimeType);
+        debug('App', '[assetLoader] Returning data URI with MIME type:', mimeType);
         return toDataUri(data, mimeType);
       } catch (err) {
         console.error(`Failed to load asset ${path}:`, err);
@@ -1335,7 +1336,7 @@ const App = () => {
             // Save as-is if it's a string (DSL), or stringify if it's an object (JSON)
             const saveData = typeof data === 'string' ? data : JSON.stringify({ events: data }, null, 2);
             await writeFile(fullPath, saveData);
-            console.log('[CutsceneTool] Saved:', fullPath);
+            debug('App', '[CutsceneTool] Saved:', fullPath);
             alert('Cutscene saved successfully!');
           } catch (err) {
             console.error('[CutsceneTool] Save failed:', err);
@@ -1371,7 +1372,7 @@ const App = () => {
     
     // If it's a directory, check if it's a map directory and auto-load map.json
     if (entry.directory) {
-      console.log('[App] Directory selected:', entry.name);
+      debug('App', '[App] Directory selected:', entry.name);
       
       // Check if this looks like a map directory (maps/* pattern)
       const isMapDir = entry.name.includes('/maps/') || entry.name.endsWith('/maps');
@@ -1388,7 +1389,7 @@ const App = () => {
           });
           
           if (mapJsonEntry) {
-            console.log('[App] Auto-loading map.json from directory:', mapJsonPath);
+            debug('App', '[App] Auto-loading map.json from directory:', mapJsonPath);
             renderMapEditor(mapJsonEntry);
             return;
           } else {

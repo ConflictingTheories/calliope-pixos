@@ -10,6 +10,8 @@
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+
+import { debug } from '../debug-logger.js';
 import { RealTimeBPMAnalyzer } from 'realtime-bpm-analyzer';
 
 // Loads Audio
@@ -48,7 +50,7 @@ export class AudioLoader {
     if (this.instances[src]) {
       return this.instances[src];
     }
-    console.log({ msg: 'let the beat roll in!' });
+    debug('Loader', { msg: 'let the beat roll in!' });
     let blob = await zip
       .file(`audio/${src}`)
       .async('arrayBuffer')
@@ -57,7 +59,7 @@ export class AudioLoader {
         return new Blob([buffer.buffer]);
       });
     let url = URL.createObjectURL(blob);
-    console.log({ msg: 'loading audio track...', url });
+    debug('Loader', { msg: 'loading audio track...', url });
 
     let instance = new AudioTrack(url, loop);
     this.instances[src] = instance;

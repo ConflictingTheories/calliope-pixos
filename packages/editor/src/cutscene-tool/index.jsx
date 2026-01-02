@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { debug } from '../shared/debug-logger.js';
 import { collect } from 'react-recollect';
 import {
   Button,
@@ -1071,7 +1072,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
         onSave(events);
       }
     } else {
-      console.log('Cutscene saved:', JSON.stringify(events, null, 2));
+      debug('CutsceneTool', 'Cutscene saved:', JSON.stringify(events, null, 2));
     }
   }
 

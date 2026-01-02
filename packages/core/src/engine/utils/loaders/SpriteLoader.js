@@ -11,6 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+import { debug } from '../debug-logger.js';
 import DynamicAvatar from '@Engine/dynamic/avatar.js';
 import DynamicSprite from '@Engine/dynamic/sprite.js';
 import DynamicAnimatedSprite from '@Engine/dynamic/animatedSprite.js';
@@ -26,7 +27,7 @@ export class SpriteLoader {
 
   // Load Sprite
   async loadFromZip(zip, type, spritzName) {
-    console.log('loading sprite from zip: ' + type + ' for ' + spritzName);
+    debug('Loader', 'loading sprite from zip: ' + type + ' for ' + spritzName);
     let afterLoad = arguments[3];
     let runConfigure = arguments[4];
     if (!this.instances[type]) {
