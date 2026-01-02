@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ActionLoader = void 0;
+var _debugLogger = require("../debug-logger.js");
 var _action = _interopRequireDefault(require("@Engine/core/queue/action.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -72,13 +73,13 @@ var ActionLoader = exports.ActionLoader = /*#__PURE__*/function () {
         return _regenerator().w(function (_context3) {
           while (1) switch (_context3.n) {
             case 0:
-              console.log('Loading Action: ' + type);
+              (0, _debugLogger.debug)('Loader', 'Loading Action: ' + type);
               afterLoad = _args3[1];
               runConfigure = _args3[2];
               if (!this.instances[type]) {
                 this.instances[type] = [];
               }
-              console.log({
+              (0, _debugLogger.debug)('Loader', {
                 afterLoad: afterLoad,
                 runConfigure: runConfigure
               });
@@ -86,7 +87,7 @@ var ActionLoader = exports.ActionLoader = /*#__PURE__*/function () {
               instance = new _action["default"](this.type, this.sprite, this.callback);
               Object.assign(instance, require('@Engine/actions/' + type + '.js')['default']);
               instance.templateLoaded = true;
-              console.log('Notifying in Action: ' + type);
+              (0, _debugLogger.debug)('Loader', 'Notifying in Action: ' + type);
 
               // Notify existing
               _context3.n = 1;
@@ -95,7 +96,7 @@ var ActionLoader = exports.ActionLoader = /*#__PURE__*/function () {
                   return _regenerator().w(function (_context2) {
                     while (1) switch (_context2.n) {
                       case 0:
-                        console.log({
+                        (0, _debugLogger.debug)('Loader', {
                           instance: instance
                         });
                         if (!instance.afterLoad) {
@@ -123,7 +124,7 @@ var ActionLoader = exports.ActionLoader = /*#__PURE__*/function () {
                   afterLoad: afterLoad
                 });
               }
-              console.log('Ending load Action: ' + type);
+              (0, _debugLogger.debug)('Loader', 'Ending load Action: ' + type);
               return _context3.a(2, instance);
           }
         }, _callee3, this);

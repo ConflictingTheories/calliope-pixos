@@ -234,17 +234,6 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
                 }));
               }
 
-              // Step Handler - todo
-              // if (instanceData.onStep) {
-              //   let stepParent = this.onStep;
-              //   this.onStep = async () => {
-              //     // todo - need to add lua interpreter
-              //     // -- should be able to run lua scripts
-              //     eval.call(this, await this.zip.file(`triggers/${instanceData.onStep}.js`).async('string')).call(this, this);
-              //     await stepParent(this, this);
-              //   };
-              // }
-
               // Texture Buffer
               _context4.n = 3;
               return _this.engine.resourceManager.loadTextureFromZip(_this.src, zip);
@@ -336,13 +325,18 @@ var Sprite = exports["default"] = /*#__PURE__*/function (_Loadable) {
       var sequence = _enums.Direction.spriteSequence(_this.facing, _this.engine.renderManager.camera.cameraDir);
       var frames = (_this$frames$sequence = _this.frames[sequence]) !== null && _this$frames$sequence !== void 0 ? _this$frames$sequence : _this.frames['N']; //default up
       var length = frames.length;
+      // shortened for line length readability (t -> frame[t])
       var t = frames[_this.animFrame % length];
       var ss = _this.sheetSize;
       var ts = _this.tileSize;
-      var bl = [(t[0] + ts[0]) / ss[0], t[1] / ss[1]];
-      var tr = [t[0] / ss[0], (t[1] + ts[1]) / ss[1]];
-      var v = [bl, [tr[0], bl[1]], tr, [bl[0], tr[1]]];
-      var poly = [[v[0], v[1], v[2]], [v[0], v[2], v[3]]];
+      var bl = [(t[0] + ts[0]) / ss[0], t[1] / ss[1]]; // bottom-left
+      var tr = [t[0] / ss[0], (t[1] + ts[1]) / ss[1]]; // top-right
+      var br = [tr[0], bl[1]];
+      var tl = [bl[0], tr[1]];
+      var v = [bl, br, tr, tl]; // rectangle vector
+      var poly = [
+      // triangle poly (two triangles)
+      [v[0], v[1], v[2]], [v[0], v[2], v[3]]];
       return poly.flat(3);
     });
     /**

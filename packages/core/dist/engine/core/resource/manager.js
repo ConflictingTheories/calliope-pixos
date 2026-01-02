@@ -8,6 +8,7 @@ var _AudioLoader = require("../../utils/loaders/AudioLoader.js");
 var _texture = require("./texture.js");
 var _speech = _interopRequireDefault(require("../scene/speech.js"));
 var _index = require("../../utils/obj/index.js");
+var _ObjHelper = _interopRequireDefault(require("../../utils/ObjHelper.js"));
 var _index2 = _interopRequireDefault(require("../index.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -15,9 +16,9 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /*                                                 *\
@@ -37,87 +38,150 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 /**
  * ResourceManager - Manages loading and caching of game resources like textures, audio, models, etc.
  */
-var ResourceManager = exports["default"] = /*#__PURE__*/_createClass(
-/**
- * Creates an instance of ResourceManager.
- * @param {GLEngine} engine - The game engine instance.
- * @returns {ResourceManager} The singleton instance.
- */
-function ResourceManager(engine) {
-  var _this = this;
-  _classCallCheck(this, ResourceManager);
+var ResourceManager = exports["default"] = /*#__PURE__*/function () {
   /**
-   * Loads a texture from a source URL.
-   * @param {string} src - The texture source URL.
-   * @returns {Texture} The loaded texture.
+   * Creates an instance of ResourceManager.
+   * @param {GLEngine} engine - The game engine instance.
+   * @returns {ResourceManager} The singleton instance.
    */
-  _defineProperty(this, "loadTexture", function (src) {
-    if (_this.textures[src]) return _this.textures[src];
-    _this.textures[src] = new _texture.Texture(src, _this.engine);
-    return _this.textures[src];
-  });
-  /**
-   * Loads a texture from a zip file.
-   * @param {string} src - The texture filename in the zip.
-   * @param {JSZip} zip - The zip file instance.
-   * @returns {Promise<Texture>} The loaded texture.
-   */
-  _defineProperty(this, "loadTextureFromZip", /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(src, zip) {
-      var imageData, buffer, blob, dataUrl;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
-          case 0:
-            if (!_this.textures[src]) {
-              _context.n = 1;
-              break;
-            }
-            return _context.a(2, _this.textures[src]);
-          case 1:
-            _context.n = 2;
-            return zip.file("textures/".concat(src)).async('arrayBuffer');
-          case 2:
-            imageData = _context.v;
-            buffer = new Uint8Array(imageData);
-            blob = new Blob([buffer.buffer]);
-            dataUrl = URL.createObjectURL(blob);
-            _this.textures[src] = new _texture.Texture(dataUrl, _this.engine);
-            return _context.a(2, _this.textures[src]);
-        }
-      }, _callee);
-    }));
-    return function (_x, _x2) {
-      return _ref.apply(this, arguments);
-    };
-  }());
-  /**
-   * Loads a speech instance.
-   * @param {string} src - The speech source.
-   * @param {HTMLCanvasElement} canvas - The canvas element.
-   * @returns {Speech} The loaded speech instance.
-   */
-  _defineProperty(this, "loadSpeech", function (src, canvas) {
-    if (_this.speeches[src]) return _this.speeches[src];
-    _this.speeches[src] = new _speech["default"](canvas, _this.engine, src);
-    return _this.speeches[src];
-  });
-  if (!ResourceManager._instance) {
-    /** @type {GLEngine} */
-    this.engine = engine;
+  function ResourceManager(engine) {
+    var _this = this;
+    _classCallCheck(this, ResourceManager);
+    /**
+     * Loads a texture from a source URL.
+     * @param {string} src - The texture source URL.
+     * @returns {Texture} The loaded texture.
+     */
+    _defineProperty(this, "loadTexture", function (src) {
+      if (_this.textures[src]) return _this.textures[src];
+      _this.textures[src] = new _texture.Texture(src, _this.engine);
+      return _this.textures[src];
+    });
+    /**
+     * Loads a texture from a zip file.
+     * @param {string} src - The texture filename in the zip.
+     * @param {JSZip} zip - The zip file instance.
+     * @returns {Promise<Texture>} The loaded texture.
+     */
+    _defineProperty(this, "loadTextureFromZip", /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(src, zip) {
+        var imageData, buffer, blob, dataUrl;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.n) {
+            case 0:
+              if (!_this.textures[src]) {
+                _context.n = 1;
+                break;
+              }
+              return _context.a(2, _this.textures[src]);
+            case 1:
+              _context.n = 2;
+              return zip.file("textures/".concat(src)).async('arrayBuffer');
+            case 2:
+              imageData = _context.v;
+              buffer = new Uint8Array(imageData);
+              blob = new Blob([buffer.buffer]);
+              dataUrl = URL.createObjectURL(blob);
+              _this.textures[src] = new _texture.Texture(dataUrl, _this.engine);
+              return _context.a(2, _this.textures[src]);
+          }
+        }, _callee);
+      }));
+      return function (_x, _x2) {
+        return _ref.apply(this, arguments);
+      };
+    }());
+    /**
+     * Loads a speech instance.
+     * @param {string} src - The speech source.
+     * @param {HTMLCanvasElement} canvas - The canvas element.
+     * @returns {Speech} The loaded speech instance.
+     */
+    _defineProperty(this, "loadSpeech", function (src, canvas) {
+      if (_this.speeches[src]) return _this.speeches[src];
+      _this.speeches[src] = new _speech["default"](canvas, _this.engine, src);
+      return _this.speeches[src];
+    });
+    if (!ResourceManager._instance) {
+      /** @type {GLEngine} */
+      this.engine = engine;
 
-    /** @type {OBJ} */
-    this.objLoader = _index.OBJ;
-    /** @type {AudioLoader} */
-    this.audioLoader = new _AudioLoader.AudioLoader(this);
+      /** @type {OBJ} */
+      this.objLoader = _index.OBJ;
+      /** @type {ObjHelper} */
+      this.objHelper = new _ObjHelper["default"](engine.gl);
+      /** @type {AudioLoader} */
+      this.audioLoader = new _AudioLoader.AudioLoader(this);
 
-    // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
-
-    // ASSETS
-    /** @type {Object.<string, Texture>} */
-    this.textures = {};
-    /** @type {Object.<string, Speech>} */
-    this.speeches = {};
-    ResourceManager._instance = this;
+      // ASSETS
+      /** @type {Object.<string, Texture>} */
+      this.textures = {};
+      /** @type {Object.<string, ColorTexture>} */
+      this.colors = {};
+      /** @type {Object.<string, Speech>} */
+      this.speeches = {};
+      ResourceManager._instance = this;
+    }
+    return ResourceManager._instance;
   }
-  return ResourceManager._instance;
-});
+
+  // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
+
+  /**
+   * Loads an OBJ model using ObjHelper (modern loader).
+   * @param {string} objText - OBJ file content (string)
+   * @param {string} [mtlText] - MTL file content (string, optional)
+   * @param {Object} [textureMap] - Map of texture names to data URIs (optional)
+   * @returns {Promise<ParsedMesh[]>} Array of parsed and initialized meshes
+   */
+  return _createClass(ResourceManager, [{
+    key: "loadModel",
+    value: function () {
+      var _loadModel = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(objText) {
+        var mtlText,
+          textureMap,
+          meshes,
+          materials,
+          _args2 = arguments;
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.n) {
+            case 0:
+              mtlText = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : null;
+              textureMap = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : null;
+              // Parse OBJ and MTL
+              meshes = this.objHelper.parseOBJ(objText);
+              materials = {};
+              if (mtlText) {
+                materials = this.objHelper.parseMTL(mtlText);
+                this.objHelper.assignMaterials(meshes, materials);
+              }
+              // Load textures if provided
+              if (!textureMap) {
+                _context2.n = 1;
+                break;
+              }
+              _context2.n = 1;
+              return this.objHelper.loadTextures(meshes, textureMap);
+            case 1:
+              // Initialize WebGL buffers
+              this.objHelper.initBuffers(meshes);
+              return _context2.a(2, meshes);
+          }
+        }, _callee2, this);
+      }));
+      function loadModel(_x3) {
+        return _loadModel.apply(this, arguments);
+      }
+      return loadModel;
+    }()
+    /**
+     * Clean up WebGL resources for meshes loaded with ObjHelper.
+     * @param {ParsedMesh[]} meshes
+     */
+  }, {
+    key: "deleteModelBuffers",
+    value: function deleteModelBuffers(meshes) {
+      this.objHelper.deleteMeshBuffers(meshes);
+    }
+  }]);
+}();

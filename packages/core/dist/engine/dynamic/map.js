@@ -181,18 +181,7 @@ function _loadMap() {
               pos: object.pos ? _construct(_vector.Vector, _toConsumableArray(object.pos)) : null,
               rotation: object.rotation ? _construct(_vector.Vector, _toConsumableArray(object.rotation)) : null
             };
-          }); // let $lights = json.lights.map((light) => {
-          //   console.log(light);
-          //   return {
-          //     id: light.id,
-          //     pos: light.pos ? new Vector(...light.pos) : null,
-          //     color: light.color ? new Vector(...light.color) : null,
-          //     direction: light.direction ? new Vector(...light.direction) : null,
-          //     attentuation: light.attentuation ? new Vector(...light.attentuation) : null,
-          //     enabled: light.enabled ?? false,
-          //   };
-          // });
-          // console.log('adding lights....' + $lights.length);
+          });
           return _context3.a(2, {
             // size of map
             bounds: json.bounds,

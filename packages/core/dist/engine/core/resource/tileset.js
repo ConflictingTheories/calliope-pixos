@@ -59,7 +59,7 @@ var Tileset = exports["default"] = /*#__PURE__*/function (_Loadable) {
       _this.onDefinitionLoadActions.run();
       // load texture
       _this.texture = _this.engine.resourceManager.loadTexture(_this.src);
-      _this.texture.runWhenLoaded(_this.onTextureLoaded);
+      _this.texture.runWhenLoaded(_this._onTextureLoaded);
       // set background colour
       if (_this.bgColor) _this.engine.gl.clearColor(_this.bgColor[0] / 255, _this.bgColor[1] / 255, _this.bgColor[2] / 255, 1.0);
     });
@@ -85,7 +85,7 @@ var Tileset = exports["default"] = /*#__PURE__*/function (_Loadable) {
               return _this.engine.resourceManager.loadTextureFromZip(_this.src, zip);
             case 1:
               _this.texture = _context.v;
-              _this.texture.runWhenLoaded(_this.onTextureLoaded);
+              _this.texture.runWhenLoaded(_this._onTextureLoaded);
               // set background colour
               if (_this.bgColor) _this.engine.gl.clearColor(_this.bgColor[0] / 255, _this.bgColor[1] / 255, _this.bgColor[2] / 255, 1.0);
             case 2:
@@ -100,7 +100,7 @@ var Tileset = exports["default"] = /*#__PURE__*/function (_Loadable) {
     /**
      * run when loaded
      */
-    _defineProperty(_this, "onTextureLoaded", function () {
+    _defineProperty(_this, "_onTextureLoaded", function () {
       _this.loaded = true;
       _this.onLoadActions.run();
     });

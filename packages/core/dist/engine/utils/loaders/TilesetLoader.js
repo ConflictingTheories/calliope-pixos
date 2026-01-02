@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TilesetLoader = void 0;
+var _debugLogger = require("../debug-logger.js");
 var _tileset = _interopRequireDefault(require("@Engine/core/resource/tileset.js"));
 var _enums = require("@Engine/utils/enums.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
@@ -45,7 +46,7 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
         return _regenerator().w(function (_context) {
           while (1) switch (_context.n) {
             case 0:
-              console.log('loading tileset from zip: ' + type + ' for ' + spritzName);
+              (0, _debugLogger.debug)('Loader', 'loading tileset from zip: ' + type + ' for ' + spritzName);
               tileset = this.tilesets[type];
               if (!tileset) {
                 _context.n = 1;
@@ -133,7 +134,7 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
               return tilesFile.async('string');
             case 4:
               tilesetJson.tiles = _t3.parse.call(_t3, _context3.v);
-              console.log("[TilesetLoader] Loaded separate tiles.json for ".concat(tilesetName));
+              (0, _debugLogger.debug)('Loader', "[TilesetLoader] Loaded separate tiles.json for ".concat(tilesetName));
             case 5:
               _context3.n = 7;
               break;
@@ -157,7 +158,7 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
               return geometryFile.async('string');
             case 9:
               tilesetJson.geometry = _t5.parse.call(_t5, _context3.v);
-              console.log("[TilesetLoader] Loaded separate geometry.json for ".concat(tilesetName));
+              (0, _debugLogger.debug)('Loader', "[TilesetLoader] Loaded separate geometry.json for ".concat(tilesetName));
             case 10:
               _context3.n = 12;
               break;
@@ -166,7 +167,7 @@ var TilesetLoader = exports.TilesetLoader = /*#__PURE__*/function () {
               _t6 = _context3.v;
               console.warn("[TilesetLoader] No geometry.json found for ".concat(tilesetName));
             case 12:
-              console.log({
+              (0, _debugLogger.debug)('Loader', {
                 tilesetJson: tilesetJson
               });
               return _context3.a(2, {

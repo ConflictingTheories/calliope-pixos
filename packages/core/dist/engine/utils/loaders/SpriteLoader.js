@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.SpriteLoader = void 0;
+var _debugLogger = require("../debug-logger.js");
 var _avatar = _interopRequireDefault(require("@Engine/dynamic/avatar.js"));
 var _sprite = _interopRequireDefault(require("@Engine/dynamic/sprite.js"));
 var _animatedSprite = _interopRequireDefault(require("@Engine/dynamic/animatedSprite.js"));
@@ -55,7 +56,7 @@ var SpriteLoader = exports.SpriteLoader = /*#__PURE__*/function () {
         return _regenerator().w(function (_context2) {
           while (1) switch (_context2.p = _context2.n) {
             case 0:
-              console.log('loading sprite from zip: ' + type + ' for ' + spritzName);
+              (0, _debugLogger.debug)('Loader', 'loading sprite from zip: ' + type + ' for ' + spritzName);
               afterLoad = _args2[3];
               runConfigure = _args2[4];
               if (!this.instances[type]) {

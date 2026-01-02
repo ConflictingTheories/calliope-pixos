@@ -593,7 +593,7 @@ var World = exports["default"] = /*#__PURE__*/function () {
      */
     _defineProperty(this, "canWalk", function (neighbour, jsonNeighbour, visited) {
       var zone = _this.zoneContaining.apply(_this, _toConsumableArray(neighbour));
-      if (visited.indexOf(jsonNeighbour) >= 0 || !zone || !zone.isWalkable.apply(zone, _toConsumableArray(neighbour)) || !zone.isWalkable(neighbour[0], neighbour[1], _enums.Direction.reverse(neighbour[2]))) {
+      if (!zone || visited.indexOf(jsonNeighbour) >= 0 || !zone.isWalkable.apply(zone, _toConsumableArray(neighbour)) || !zone.isWalkable(neighbour[0], neighbour[1], _enums.Direction.reverse(neighbour[2]))) {
         return false;
       }
       return true;

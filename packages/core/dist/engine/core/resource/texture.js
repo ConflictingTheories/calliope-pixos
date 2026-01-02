@@ -51,7 +51,7 @@ var Texture = exports.Texture = /*#__PURE__*/function (_Loadable) {
     _this.src = src;
     _this.glTexture = engine.gl.createTexture();
     _this.image = new Image();
-    _this.image.onload = _this.onImageLoaded.bind(_this);
+    _this.image.onload = _this._onImageLoaded.bind(_this);
     _this.image.src = src;
     _this.loaded = false;
     _this.onLoadActions = new _index["default"]();
@@ -63,8 +63,8 @@ var Texture = exports.Texture = /*#__PURE__*/function (_Loadable) {
    */
   _inherits(Texture, _Loadable);
   return _createClass(Texture, [{
-    key: "onImageLoaded",
-    value: function onImageLoaded() {
+    key: "_onImageLoaded",
+    value: function _onImageLoaded() {
       var gl = this.engine.gl;
       gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);

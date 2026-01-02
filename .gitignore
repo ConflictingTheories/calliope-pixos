@@ -1,6 +1,7 @@
 **/node_modules
 **/build
 **/output
+**/dist
 **/.DS_Store
 .DS_Store
 

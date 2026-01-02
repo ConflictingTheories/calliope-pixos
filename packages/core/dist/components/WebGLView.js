@@ -273,11 +273,7 @@ var WebGLView = function WebGLView(_ref) {
       return onKeyEvent(e.nativeEvent);
     },
     tabIndex: 0
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: showRecording ? 'none' : 'block'
-    }
-  }, /*#__PURE__*/_react["default"].createElement("canvas", {
+  }, /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement("canvas", {
     style: {
       position: 'absolute',
       zIndex: 1,
