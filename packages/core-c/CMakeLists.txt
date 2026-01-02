@@ -22,8 +22,12 @@ include_directories(
     ${OPENGL_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS} # Add GLEW include dirs
     ${GLFW3_INCLUDE_DIRS}
+    src
     src/math
     src/rendering
+    src/resource
+    src/scene
+    src/vendor
 )
 link_directories(${GLFW3_LIBRARY_DIRS})
 
@@ -37,6 +41,13 @@ set(SOURCES
     src/math/matrix4.c
     src/camera.c
     src/rendering/shader.c
+    src/rendering/light_manager.c
+    src/resource/texture.c
+    src/resource/resource_manager.c
+    src/scene/tileset.c
+    src/scene/sprite.c
+    src/scene/zone.c
+    src/scene/world.c
 )
 
 # Executable
