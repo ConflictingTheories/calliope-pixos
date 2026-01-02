@@ -5,6 +5,7 @@
 - Improve documentation and API examples
 - Add more geometric operations
 - Expand test coverage for math functions
+- Set Up Unit Testing (Vitest) for math libraries.
 
 ## Roadmap Items
 - Support for additional math types (quaternions, complex numbers)

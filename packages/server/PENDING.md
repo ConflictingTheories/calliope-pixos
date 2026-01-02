@@ -5,6 +5,13 @@
 - Improve error handling and logging
 - Add more tests for WebSocket protocol
 - Enhance action queue processing
+- Implement JWT Authentication for WebSocket connections.
+- Add Rate Limiting (per-client throttle).
+- Enable TLS (WSS) for encrypted communication.
+- Add Input Validation (JSON Schema).
+- Implement Reconnection Handling for dropped connections.
+- Integrate Redis for state persistence.
+- Implement Delta Synchronization for network traffic.
 
 ## Roadmap Items
 - Support for additional multiplayer protocols
