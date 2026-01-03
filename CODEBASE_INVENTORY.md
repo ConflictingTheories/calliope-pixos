@@ -282,30 +282,17 @@ class AutoTiler {
 
 ---
 
-### Task 1.3.3 - Customization
-
-**Palette files:**
-- Check: `packages/spritz/` - Asset structure
-- Look for: color palette definitions
-
-**Canvas sizing:**
-```javascript
-// In SpriteEditor:
-const [canvasSize, setCanvasSize] = useState({ width: 16, height: 16 });
-```
+### ~~Task 1.3.3 - Customization~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/sprite-editor/PaletteManager.jsx` and `CanvasSizeDialog.jsx`
+> Features: preset palettes, custom palettes, import/export, canvas resize with anchor
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 1.3.4 - Import/Export
-
-**Location:**
-- Create: `packages/editor/src/utils/SpriteImporter.js`
-- Create: `packages/editor/src/utils/SpriteExporter.js`
-
-**Libraries to use:**
-- PNG parsing: `packages/core/src/` - Check for image handling
-- GIF: Use `gif.js` or similar
-- Spritesheet packing: Use `bin-pack` or similar
+### ~~Task 1.3.4 - Import/Export~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/sprite-editor/SpriteImporter.js` and `SpriteExporter.js`
+> Features: PNG/GIF/JSON import, PNG/spritesheet/JSON/GIF export
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
@@ -330,26 +317,18 @@ const [canvasSize, setCanvasSize] = useState({ width: 16, height: 16 });
 
 ---
 
-### Task 1.5.2 - Branching Dialogue
-
-**Location:**
-- Enhance: `packages/editor/src/editors/CutsceneEditor.jsx`
-
-**Check existing:**
-- `packages/core/documentation/specifications/cutscenes.md` - DSL spec
-- `packages/spritz/cutscenes/` - Example cutscenes
+### ~~Task 1.5.2 - Branching Dialogue~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/cutscene-tool/BranchingDialogue.jsx`
+> Features: visual node editor, dialogue/choice/condition/action nodes, connections, export to DSL
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 1.5.3 - New DSL Commands
-
-**Current DSL:**
-- Check: `packages/core/documentation/specifications/cutscenes.md`
-- Implementation: `packages/core/src/engine/cutscenes/CutscenePlayer.js`
-
-**Add commands:**
-- Create: `packages/core/src/engine/cutscenes/commands/` - New command classes
-- Update parser: `packages/script/src/parser/` - If needed
+### ~~Task 1.5.3 - New DSL Commands~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/cutscene-tool/ExtendedDSLCommands.js`
+> DSL palette UI at `packages/editor/src/cutscene-tool/DSLCommandPalette.jsx`
+> Commands: camera (pan/zoom/shake), effects (fade/pixelate/blur), text, sprites, conditions, timing
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 

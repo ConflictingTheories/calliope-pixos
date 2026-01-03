@@ -23,6 +23,7 @@ import { fetchTransitionShaderFiles } from './shaders.js';
 import ParticleManager from './ParticleManager.js';
 import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
+import LODManager from './LODManager.js';
 
 /**
  * @typedef {object} ShaderSource
@@ -141,6 +142,10 @@ export default class RenderManager {
       // Frustum culling for performance optimization
       /** @type {FrustumCuller} */
       this.frustumCuller = new FrustumCuller(this);
+
+      // Level of Detail manager for performance optimization
+      /** @type {LODManager} */
+      this.lodManager = new LODManager(this);
 
       // Camera effects (shake, follow, fade, etc.)
       /** @type {CameraEffects} */
