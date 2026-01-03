@@ -1,0 +1,173 @@
+/*
+ * Animation Preview Component Styles
+ */
+
+.animation-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface-color, #1a1a2e);
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #2a2a4e);
+}
+
+.animation-preview-canvas-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 80px;
+}
+
+.animation-preview-canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 1px solid var(--border-color, #2a2a4e);
+}
+
+.animation-preview-info {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 10px;
+  color: var(--text-muted, #888);
+}
+
+.animation-preview-direction {
+  background: var(--primary-color, #ff6b9d);
+  color: white;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+
+.animation-preview-frame-count {
+  background: var(--surface-color-light, #2a2a4e);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.animation-preview-controls {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.animation-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color, #2a2a4e);
+  background: var(--surface-color-light, #2a2a4e);
+  color: var(--text-color, #fff);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.animation-btn:hover {
+  background: var(--surface-hover, #3a3a5e);
+}
+
+.animation-btn:active {
+  transform: scale(0.95);
+}
+
+.animation-btn-primary {
+  background: var(--primary-color, #ff6b9d);
+  border-color: var(--primary-color, #ff6b9d);
+}
+
+.animation-btn-primary:hover {
+  background: var(--primary-hover, #ff8bb8);
+}
+
+.animation-preview-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 12px;
+}
+
+.animation-preview-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.animation-preview-option label {
+  color: var(--text-muted, #888);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.animation-preview-option input[type="range"] {
+  flex: 1;
+  max-width: 120px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: var(--border-color, #2a2a4e);
+  border-radius: 2px;
+}
+
+.animation-preview-option input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color, #ff6b9d);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.animation-preview-option input[type="checkbox"] {
+  accent-color: var(--primary-color, #ff6b9d);
+}
+
+.animation-preview-speed-value {
+  min-width: 40px;
+  color: var(--text-color, #fff);
+}
+
+.animation-preview-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+.animation-timeline-frame {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-color, #2a2a4e);
+  background: var(--surface-color-light, #2a2a4e);
+  color: var(--text-muted, #888);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.animation-timeline-frame:hover {
+  background: var(--surface-hover, #3a3a5e);
+  color: var(--text-color, #fff);
+}
+
+.animation-timeline-frame.active {
+  background: var(--primary-color, #ff6b9d);
+  color: white;
+  border-color: var(--primary-color, #ff6b9d);
+}

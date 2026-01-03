@@ -21,6 +21,8 @@ import LightManager from './light.js';
 import SkyboxManager from './skybox.js';
 import { fetchTransitionShaderFiles } from './shaders.js';
 import ParticleManager from './ParticleManager.js';
+import FrustumCuller from './FrustumCuller.js';
+import CameraEffects from './CameraEffects.js';
 
 /**
  * @typedef {object} ShaderSource
@@ -121,6 +123,9 @@ export default class RenderManager {
       /** @type {import('./camera.js').Camera} */
       this.camera = this.cameraManager.camera;
 
+      // Initialize camera effects after camera is created
+      this.cameraEffects = new CameraEffects(this.camera);
+
       // Lights
       /** @type {LightManager} */
       this.lightManager = new LightManager(this);
@@ -132,6 +137,14 @@ export default class RenderManager {
       // Particle system
       /** @type {ParticleManager} */
       this.particleManager = new ParticleManager(this);
+
+      // Frustum culling for performance optimization
+      /** @type {FrustumCuller} */
+      this.frustumCuller = new FrustumCuller(this);
+
+      // Camera effects (shake, follow, fade, etc.)
+      /** @type {CameraEffects} */
+      this.cameraEffects = null; // Initialized after camera
 
       // Particle shader program
       /** @type {WebGLProgram|null} */

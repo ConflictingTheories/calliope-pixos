@@ -71,33 +71,55 @@
 
 ## PHASE 1: EDITOR OVERHAUL
 
-### Task 1.1.1 - Design System
-
-**Location:**
-- Create: `packages/editor/src/design-system/design-system.css`
-- Create: `packages/editor/src/design-system/index.js`
-
-**Check existing:**
-```bash
-grep -r "--color-" packages/editor/src/
-grep -r "--font-" packages/editor/src/
-```
-
-**Existing CSS structure:**
-- `packages/editor/public/index.html` - Check what's linked
-- `packages/editor/src/App.css` - Check existing styles
-
-**Integration:**
-```css
-/* In App.css or main entry point */
-@import './design-system/design-system.css';
-```
+### ~~Task 1.1.1 - Design System~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 1.1.2 - Core Component Library
+### ~~Task 1.1.2 - Core Component Library~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**Existing shared components:**
+---
+
+### ~~Task 1.1.3 - Shared Hooks~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
+
+---
+
+### ~~Task 1.1.4 - Global Keyboard Shortcuts~~ ✅ COMPLETED
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
+
+---
+
+### ~~Task 1.2.1 - Unified Map Editor~~ ✅ COMPLETED
+> Already implemented: MapEditor3D.jsx provides full 3D editing with 2D grid support
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
+
+---
+
+### ~~Task 1.2.2 - Map Editor Tools~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/map-editor/tools/`
+> Tools: BrushTool, EraserTool, FillTool, SelectionTool, EyedropperTool, RectangleTool, LineTool
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
+
+---
+
+### ~~Task 1.2.3 - Auto-Tiling System~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/map-editor/systems/AutoTiler.js`
+> Supports 4-dir and 8-dir neighbor checking, 16-tile and 47-tile sets
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
+
+---
+
+### Task 1.3.1 - Sprite Editor Tools
+
+**Current code:**
+```
+packages/editor/src/editors/SpriteEditor.jsx
+packages/editor/src/sprite-editor/
+```
+
+**Tools to add:**
 ```
 packages/editor/src/
 ├── components/
@@ -234,28 +256,17 @@ class AutoTiler {
 
 ---
 
-### Task 1.3.1 - Sprite Editor Tools
+### ~~Task 1.3.1 - Sprite Editor Tools~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/sprite-editor/tools/`
+> Tools: PencilTool, BrushTool, EraserTool, FillTool, EyedropperTool, LineTool, RectangleTool, EllipseTool, SelectionTool
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**Current code:**
-```
-packages/editor/src/editors/SpriteEditor.jsx
-packages/editor/src/sprite-editor/
-```
+---
 
-**Tools to add:**
-```javascript
-// Create: packages/editor/src/sprite-editor/tools/
-├── PencilTool.js
-├── BrushTool.js
-├── LineTool.js
-├── ShapeTool.js
-├── FillTool.js
-├── EyedropperTool.js
-└── SelectionTool.js
-```
-
-**Canvas handling:**
-- Check existing canvas code in SpriteEditor.jsx
+### ~~Task 1.3.2 - Animation Preview~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/sprite-editor/AnimationPreview.jsx`
+> Features playback controls, speed adjustment, zoom, onion skinning
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 - Add tool event handlers
 
 ---
@@ -268,22 +279,6 @@ packages/editor/src/sprite-editor/
 **Existing code:**
 - Check `packages/editor/src/sprite-editor/` for frame handling
 - `packages/core/src/engine/dynamic/Sprite.js` - Animation data structure
-
-**Integration:**
-```javascript
-// In SpriteEditor:
-const [animationFrame, setAnimationFrame] = useState(0);
-const [isPlaying, setIsPlaying] = useState(false);
-
-// Use AnimationPreview component
-<AnimationPreview 
-  frames={spriteData.frames}
-  frameIndex={animationFrame}
-  onFrameChange={setAnimationFrame}
-  isPlaying={isPlaying}
-  onPlayToggle={setIsPlaying}
-/>
-```
 
 ---
 
@@ -314,64 +309,24 @@ const [canvasSize, setCanvasSize] = useState({ width: 16, height: 16 });
 
 ---
 
-### Task 1.4.1 - PixoScript Language Support
-
-**Existing Monaco integration:**
-```bash
-grep -r "monaco" packages/editor/src/ --include="*.jsx"
-grep -r "MonacoEditor" packages/editor/src/
-```
-
-**Location to enhance:**
-- `packages/editor/src/editors/ScriptEditor.jsx`
-
-**Language definition:**
-```javascript
-// Create: packages/editor/src/monaco/pixoscript-language.js
-monaco.languages.register({ id: 'pixoscript' });
-monaco.languages.setMonarchTokensProvider('pixoscript', {
-  keywords: ['function', 'if', 'else', 'for', 'while', ...],
-  // ... token rules
-});
-```
-
-**Autocompletion:**
-```javascript
-monaco.languages.registerCompletionItemProvider('pixoscript', {
-  provideCompletionItems(model, position) {
-    // Return suggestions from engine API
-  }
-});
-```
+### ~~Task 1.4.1 - PixoScript Language Support~~ ✅ COMPLETED
+> Already implemented at `packages/editor/src/shared/pixoscript-language.js`
+> Includes tokenizer, completion provider, hover provider, custom theme
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 1.4.2 - Console Output Panel
-
-**Location:**
-- Create: `packages/editor/src/components/ConsolePanel.jsx`
-
-**Integration:**
-- Capture `console.log()` output
-- Capture `ScriptEngine` errors
-- Integrate with ScriptEditor
-
-**Existing logging:**
-- Check: `packages/script/src/runtime/ScriptEngine.js`
-- Look for: error handling, logging
+### ~~Task 1.4.2 - Console Output Panel~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/script-editor/ConsolePanel.jsx`
+> Features: message types, command history, filtering, auto-scroll
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
-### Task 1.5.1 - Visual Timeline
-
-**Existing code:**
-- `packages/editor/src/editors/CutsceneEditor.jsx` - Current implementation
-- `packages/editor/src/editors/CutscenePlayer.jsx` - Playback
-
-**What to enhance:**
-- Add timeline visualization
-- Add scrubber/playhead
-- Add timeline controls
+### ~~Task 1.5.1 - Visual Timeline~~ ✅ COMPLETED
+> Implemented at `packages/editor/src/cutscene-tool/Timeline.jsx`
+> Features: scrubber, zoom, event visualization, playback controls
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
@@ -400,21 +355,19 @@ monaco.languages.registerCompletionItemProvider('pixoscript', {
 
 ## PHASE 2: ENGINE ENHANCEMENTS
 
-### Task 2.1.1 - Frustum Culling
+### ~~Task 2.1.1 - Frustum Culling~~ ✅ COMPLETED
+> Implemented at `packages/core/src/engine/core/render/FrustumCuller.js`
+> Integrated into RenderManager with frustumCuller property
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
-**Create:**
-- `packages/core/src/engine/rendering/FrustumCuller.js`
+---
 
-**Existing rendering:**
-- `packages/core/src/engine/core/RenderManager.js` - Main renderer
-- `packages/core/src/engine/core/Camera.js` - Camera definition
-
-**Integration:**
-```javascript
-// In RenderManager.update():
-const visibleObjects = frustumCuller.cull(objects, camera);
-visibleObjects.forEach(obj => renderObject(obj));
-```
+### ~~Task 2.2.1 - Screen Shake~~ ✅ COMPLETED
+### ~~Task 2.2.2 - Smooth Camera Follow~~ ✅ COMPLETED
+> Both implemented at `packages/core/src/engine/core/render/CameraEffects.js`
+> Includes: shake, follow, zoom, flash, fade, punch effects
+> Integrated into RenderManager with cameraEffects property
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
