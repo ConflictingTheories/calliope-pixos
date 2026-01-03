@@ -8,6 +8,8 @@
  * asset requirements, and determine which generators to invoke.
  */
 
+import { animation } from "../../design-system";
+
 /**
  * Asset types that can be generated
  */
@@ -16,11 +18,20 @@ export const ASSET_TYPES = {
   PORTRAIT: 'portrait',
   SPRITESHEET: 'spritesheet',
   TILESET: 'tileset',
+  GEOMETRY: 'geometry',
+  TILE: 'tile',
   MAP: 'map',
   AUDIO: 'audio',
   MUSIC: 'music',
   SFX: 'sfx',
   SCRIPT: 'script',
+  OBJ: 'obj',
+  MTL: 'mtl',
+  MESH: 'mesh',
+  MODEL: 'model',
+  CALLBACK: 'callback',
+  TRIGGER: 'trigger',
+  SHADER: 'shader',
   DIALOGUE: 'dialogue',
   CUTSCENE: 'cutscene',
   CONFIG: 'config',
@@ -29,6 +40,7 @@ export const ASSET_TYPES = {
   MONSTER: 'monster',
   ITEM: 'item',
   EFFECT: 'effect',
+  TEXTURE: 'texture'
 };
 
 /**
@@ -38,12 +50,20 @@ const ASSET_KEYWORDS = {
   [ASSET_TYPES.SPRITE]: ['sprite', 'character sprite', 'player sprite', 'enemy sprite', 'object sprite'],
   [ASSET_TYPES.PORTRAIT]: ['portrait', 'face', 'avatar', 'profile', 'headshot', 'bust'],
   [ASSET_TYPES.SPRITESHEET]: ['spritesheet', 'sprite sheet', 'animation sheet', 'walk cycle', 'animation frames'],
-  [ASSET_TYPES.TILESET]: ['tileset', 'tile set', 'tiles', 'terrain tiles', 'floor tiles', 'wall tiles'],
-  [ASSET_TYPES.MAP]: ['map', 'level', 'dungeon', 'world', 'area', 'zone', 'room'],
+  [ASSET_TYPES.TILESET]: ['tileset', 'tile set', 'tiles', 'terrain', 'floor', 'wall', 'environment', 'ground'],
+  [ASSET_TYPES.TILE]: ['tiles', 'floor tiles', 'wall tiles', 'pillars'],
+  [ASSET_TYPES.GEOMETRY]: ['tile geometry', 'world geometry', 'map geometry', 'geometry', 'tile shapes'],
+  [ASSET_TYPES.MAP]: ['map', 'level', 'dungeon', 'world', 'area', 'zone', 'room', 'cells'],
   [ASSET_TYPES.AUDIO]: ['audio', 'sound', 'voice'],
   [ASSET_TYPES.MUSIC]: ['music', 'soundtrack', 'bgm', 'background music', 'theme', 'melody'],
   [ASSET_TYPES.SFX]: ['sfx', 'sound effect', 'effect sound', 'footstep', 'explosion', 'click'],
   [ASSET_TYPES.SCRIPT]: ['script', 'code', 'behavior', 'callback', 'trigger', 'logic', 'function'],
+  [ASSET_TYPES.TRIGGER]: ['trigger', 'logic', 'function'],
+  [ASSET_TYPES.CALLBACK]: ['callback', 'logic', 'function'],
+  [ASSET_TYPES.MODEL]: ['model', '3d model', 'mesh', 'obj'],
+  [ASSET_TYPES.MESH]: ['model', 'mesh', '3d object'],
+  [ASSET_TYPES.OBJ]: ['model', 'obj', 'wavefront'],
+  [ASSET_TYPES.MTL]: ['model', 'material', 'mtl'],
   [ASSET_TYPES.DIALOGUE]: ['dialogue', 'conversation', 'speech', 'talk', 'chat', 'text'],
   [ASSET_TYPES.CUTSCENE]: ['cutscene', 'cinematic', 'scene', 'story', 'narrative'],
   [ASSET_TYPES.CONFIG]: ['config', 'configuration', 'settings', 'properties', 'json'],
@@ -51,6 +71,7 @@ const ASSET_KEYWORDS = {
   [ASSET_TYPES.CHARACTER]: ['character', 'hero', 'protagonist', 'player', 'adventurer', 'warrior'],
   [ASSET_TYPES.MONSTER]: ['monster', 'enemy', 'creature', 'boss', 'mob', 'beast', 'demon'],
   [ASSET_TYPES.ITEM]: ['item', 'weapon', 'armor', 'potion', 'key', 'treasure', 'loot'],
+  [ASSET_TYPES.SHADER]: ['shader', 'skybox', 'billboarding', 'shaders', 'glsl', 'hlsl', 'es 300', 'webgl'],
   [ASSET_TYPES.EFFECT]: ['effect', 'particle', 'spell', 'magic', 'explosion', 'glow'],
 };
 
@@ -73,23 +94,41 @@ export const SPRITE_PRESETS = {
   npc: {
     sheetSize: [128, 256],
     tileSize: [24, 32],
-    directions: 4,
+    directions: 8,
     framesPerDirection: 4,
     includePortrait: true,
   },
   monster: {
     sheetSize: [128, 128],
     tileSize: [32, 32],
-    directions: 4,
+    directions: 8,
     framesPerDirection: 4,
     includePortrait: false,
   },
   item: {
     sheetSize: [64, 64],
     tileSize: [16, 16],
+    directions: 8,
+    framesPerDirection: 4,
+    includePortrait: false,
+  },
+  animated_tile: {
+    sheetSize: [128, 32],
+    tileSize: [32, 32],
     directions: 1,
     framesPerDirection: 4,
     includePortrait: false,
+    fixed: true,
+    animated: true,
+  },
+  animated_sprite: {
+    sheetSize: [128, 32],
+    tileSize: [32, 32],
+    directions: 1,
+    framesPerDirection: 4,
+    includePortrait: false,
+    fixed: true,
+    animated: true,
   },
   effect: {
     sheetSize: [128, 32],
@@ -97,6 +136,8 @@ export const SPRITE_PRESETS = {
     directions: 1,
     framesPerDirection: 4,
     includePortrait: false,
+    fixed: true,
+    animated: true,
   },
 };
 
@@ -107,7 +148,7 @@ const GAME_KEYWORDS = [
   'create a game', 'make a game', 'build a game', 'generate a game',
   'rpg where', 'rpg game', 'adventure game', 'puzzle game', 'action game',
   'game where', 'game with', 'full game', 'complete game', 'entire game',
-  'playable game', 'game package', 'game project',
+  'playable game', 'game package', 'game project', 'create a spritz', 'new spritz',
   // Complex multi-asset indicators
   'multiple npcs', 'several npcs', 'different dungeons', 'various locations',
   'intro cutscene', 'quest dialogues', 'boss fight', 'final boss',
