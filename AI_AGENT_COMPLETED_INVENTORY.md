@@ -794,6 +794,60 @@
 
 ---
 
+### ✅ Task 3.1.2 - Source Maps
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Implemented Source Map v3 spec for PixoScript debugging
+- SourceMapGenerator for creating source maps during compilation
+- SourceMapConsumer for reading and querying source maps
+- VLQ encoding/decoding for compact mappings
+- Inline data URL generation for embedded maps
+- PixoScript library wrapper for runtime access
+
+**Source Map Features:**
+- Add source files with optional content
+- Add name identifiers
+- Add mappings (generated → original position)
+- VLQ-encoded mappings string generation
+- toJSON(), toString(), toDataURL(), toComment() exports
+- Consumer can query original positions from generated positions
+- Support for reverse lookup (original → generated)
+
+**Files Created:**
+- `packages/script/src/lib/sourcemap.ts` - Source map generator/consumer
+
+**Files Updated:**
+- `packages/script/src/index.ts` - Added sourcemap library to globals
+
+---
+
+### ✅ Task 0.3.2 - Quick-Start Templates (Enhanced)
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created comprehensive templates.json with 5 starter templates
+- Created TemplateSelector React component for browsing/selecting templates
+- Templates include file structures ready to expand
+- Categories: beginner, intermediate, advanced
+- Search and filter functionality
+
+**Templates:**
+- **Hello World** - Static scene with sprite (beginner)
+- **Top-Down Maze** - Map navigation game (beginner)
+- **Dialog Sequence** - Branching story game (intermediate)
+- **Pixel Art Challenge** - Animation-focused (intermediate)
+- **Space Shooter** - Arcade action game (advanced)
+
+**Files Created:**
+- `packages/editor/src/data/templates.json` - Template definitions
+- `packages/editor/src/shared/components/TemplateSelector.jsx` - Template browser UI
+
+**Files Updated:**
+- `packages/editor/src/shared/components/index.js` - Added TemplateSelector export
+
+---
+
 ## Summary Statistics
 
 | Phase | Section | Tasks Completed | Tasks Total |
@@ -809,9 +863,9 @@
 | 2 | 2.1 Performance | 2 | 4 |
 | 2 | 2.2 Visual Effects | 3 | 4 |
 | 2 | 2.3 Audio | 3 | 3 |
-| 3 | 3.1 Language Features | 2 | 4 |
+| 3 | 3.1 Language Features | 3 | 4 |
 
 **Total Phase 0 Progress:** 12/12 tasks (100% ✅)  
 **Total Phase 1 Progress:** 16/16 tasks (100% ✅)  
 **Total Phase 2 Progress:** 8/11 tasks (73% ✅)  
-**Total Phase 3 Progress:** 2/11 tasks (18%)
+**Total Phase 3 Progress:** 3/11 tasks (27%)

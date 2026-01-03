@@ -24,3 +24,6 @@ export { default as HelpPanel, HELP_CONTENT, getEditorHelp } from './HelpPanel.j
 // Input Controls
 export { default as ColorPicker, hexToHsv, hsvToHex } from './ColorPicker.jsx';
 export { default as Grid, useGrid, alignToGrid, distributeOnGrid } from './Grid.jsx';
+
+// Templates
+export { default as TemplateSelector, expandTemplateFiles } from './TemplateSelector.jsx';

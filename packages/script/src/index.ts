@@ -12,6 +12,7 @@ import { getLibOS } from './lib/os.js'
 import { getLibPackage } from './lib/package.js'
 import { libCoroutine } from './lib/coroutine.js'
 import { libDebug } from './lib/debug.js'
+import { libSourceMap } from './lib/sourcemap.js'
 import { LuaType, ensureArray, Config } from './utils.js'
 import { parse as parseScript } from './parser.js'
 
@@ -113,6 +114,7 @@ function createEnv(
     loadLib('os', getLibOS(cfg))
     loadLib('coroutine', libCoroutine)
     loadLib('debug', libDebug)
+    loadLib('sourcemap', libSourceMap)
 
     _G.rawset('require', _require)
 
