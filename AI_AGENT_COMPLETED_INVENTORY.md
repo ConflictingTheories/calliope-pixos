@@ -924,6 +924,35 @@
 
 ---
 
+### ✅ Task 3.1.4 - Full API Documentation
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created comprehensive standard library documentation
+- Created full engine scripting API documentation
+- Covers all built-in functions, engine APIs, callbacks
+- Includes examples, type signatures, best practices
+
+**Documentation Sections:**
+- Standard Library: base, math, string, table, os, io, coroutine, debug, sourcemap, package
+- Engine API: game, entity, sprite, input, audio, camera, world, zone, hud, event, action, trigger, cutscene, network
+
+**Files Created:**
+- `packages/script/documentation/stdlib.md` - Standard library reference (~700 lines)
+- `packages/core/documentation/scripting-api.md` - Engine API reference (~700 lines)
+
+---
+
+### ✅ Task 3.3.1 - Scripting API Documentation
+**Status:** COMPLETE (Combined with Task 3.1.4)  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Full engine scripting API documented in scripting-api.md
+- All API objects documented: game, entity, sprite, input, audio, camera, world, zone, hud, event, action, trigger, cutscene, network
+- Callback system fully documented
+
+---
+
 ## Summary Statistics
 
 | Phase | Section | Tasks Completed | Tasks Total |
@@ -939,10 +968,11 @@
 | 2 | 2.1 Performance | 2 | 4 |
 | 2 | 2.2 Visual Effects | 3 | 4 |
 | 2 | 2.3 Audio | 3 | 3 |
-| 3 | 3.1 Language Features | 3 | 4 |
+| 3 | 3.1 Language Features | 4 | 4 |
 | 3 | 3.2 Standard Library | 4 | 4 |
+| 3 | 3.3 Engine API | 1 | 3 |
 
 **Total Phase 0 Progress:** 12/12 tasks (100% ✅)  
 **Total Phase 1 Progress:** 16/16 tasks (100% ✅)  
 **Total Phase 2 Progress:** 8/11 tasks (73% ✅)  
-**Total Phase 3 Progress:** 7/11 tasks (64%)
+**Total Phase 3 Progress:** 9/11 tasks (82%)
