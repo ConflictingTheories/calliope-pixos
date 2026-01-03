@@ -13,6 +13,7 @@ import { getLibPackage } from './lib/package.js'
 import { libCoroutine } from './lib/coroutine.js'
 import { libDebug } from './lib/debug.js'
 import { libSourceMap } from './lib/sourcemap.js'
+import { getLibIO } from './lib/io.js'
 import { LuaType, ensureArray, Config } from './utils.js'
 import { parse as parseScript } from './parser.js'
 
@@ -115,6 +116,7 @@ function createEnv(
     loadLib('coroutine', libCoroutine)
     loadLib('debug', libDebug)
     loadLib('sourcemap', libSourceMap)
+    loadLib('io', getLibIO(cfg))
 
     _G.rawset('require', _require)
 
