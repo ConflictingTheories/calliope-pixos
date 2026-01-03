@@ -529,6 +529,82 @@
 
 ---
 
+### ✅ Task 1.3.3 - Sprite Customization
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created PaletteManager component with preset palettes and import/export
+- Created CanvasSizeDialog for canvas resizing with anchor selection
+- Supports custom palettes (create/edit/delete)
+- Preset palettes: GameBoy, NES, PICO-8, CGA, Sweetie-16, ENDESGA-32, Grayscale
+- Import/export GPL and JSON palette formats
+
+**Files Created:**
+- `packages/editor/src/sprite-editor/PaletteManager.jsx` - Palette management component
+- `packages/editor/src/sprite-editor/palette-manager.css` - Palette styles
+- `packages/editor/src/sprite-editor/CanvasSizeDialog.jsx` - Canvas resize dialog
+- `packages/editor/src/sprite-editor/canvas-size-dialog.css` - Dialog styles
+
+---
+
+### ✅ Task 1.3.4 - Import/Export Tools
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created SpriteImporter with PNG, GIF, JSON support
+- Created SpriteExporter with PNG, spritesheet, JSON, GIF export
+- Auto-detect frame boundaries from common sprite sizes
+- GIF frame extraction (basic implementation)
+- Optimized spritesheet packing with power-of-two support
+
+**Files Created:**
+- `packages/editor/src/sprite-editor/SpriteImporter.js` - Multi-format sprite import
+- `packages/editor/src/sprite-editor/SpriteExporter.js` - Multi-format sprite export
+
+---
+
+### ✅ Task 1.5.2 - Branching Dialogue System
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created BranchingDialogue component with visual node editor
+- Node types: Dialogue, Choice, Condition, Action, End
+- Visual node connections with drag-and-drop
+- Properties panel for node editing
+- Export to DSL format
+
+**Files Created:**
+- `packages/editor/src/cutscene-tool/BranchingDialogue.jsx` - Visual dialogue editor
+- `packages/editor/src/cutscene-tool/branching-dialogue.css` - Dialogue editor styles
+
+---
+
+### ✅ Task 1.5.3 - New DSL Commands
+**Status:** COMPLETE  
+**Date Completed:** January 2, 2026  
+**Notes:**
+- Created ExtendedDSLCommands with 40+ new commands
+- Categories: Camera, Effects, Text, Sprites, Conditions, Timing, Dialogue
+- DSL parser for extended commands
+- Command generator for each type
+- DSLCommandPalette UI for command insertion
+
+**Commands Added:**
+- **Camera:** pan, zoom, shake, reset
+- **Effects:** fadeIn, fadeOut, pixelate, flash, blur, vignette, clear
+- **Text:** show, typewriter, clear
+- **Sprites:** move, fade, scale, rotate, animate
+- **Conditions:** if, else, endif, set variable
+- **Timing:** wait, waitInput, sync, parallel, endparallel
+- **Dialogue:** choice, option, endchoice, label, jump
+
+**Files Created:**
+- `packages/editor/src/cutscene-tool/ExtendedDSLCommands.js` - Extended command definitions
+- `packages/editor/src/cutscene-tool/DSLCommandPalette.jsx` - Command insertion UI
+- `packages/editor/src/cutscene-tool/dsl-command-palette.css` - Command palette styles
+
+---
+
 ## Summary Statistics
 
 | Phase | Section | Tasks Completed | Tasks Total |
@@ -538,15 +614,15 @@
 | 0 | 0.3 FTUE | 3 | 3 |
 | 1 | 1.1 Shared Infrastructure | 4 | 4 |
 | 1 | 1.2 Map Editor | 3 | 3 |
-| 1 | 1.3 Sprite Editor | 2 | 4 |
+| 1 | 1.3 Sprite Editor | 4 | 4 |
 | 1 | 1.4 Script Editor | 2 | 2 |
-| 1 | 1.5 Cutscene Editor | 1 | 3 |
+| 1 | 1.5 Cutscene Editor | 3 | 3 |
 | 2 | 2.1-2.2 Engine Rendering | 3 | 3 |
 
 **Total Phase 0 Progress:** 12/12 tasks (100% ✅)  
 **Total Phase 1.1 Progress:** 4/4 tasks (100% ✅)  
 **Total Phase 1.2 Progress:** 3/3 tasks (100% ✅)  
-**Total Phase 1.3 Progress:** 2/4 tasks (50%)  
+**Total Phase 1.3 Progress:** 4/4 tasks (100% ✅)  
 **Total Phase 1.4 Progress:** 2/2 tasks (100% ✅)  
-**Total Phase 1.5 Progress:** 1/3 tasks (33%)  
+**Total Phase 1.5 Progress:** 3/3 tasks (100% ✅)  
 **Total Phase 2.1-2.2 Progress:** 3/3 tasks (100% ✅)
