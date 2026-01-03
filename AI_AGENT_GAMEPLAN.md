@@ -608,28 +608,15 @@ embedded-arm         → Cross-compilation for ARM devices (RG353V)
   8. Trigger system
 - **Acceptance:** Complete scripting reference
 
-#### Task 3.3.2: Callback System Integration
-- **Files:**
-  - `packages/core/src/engine/scripting/CallbackManager.js`
-  - `packages/spritz/callbacks/` sample callbacks
-- **Callbacks:**
-  1. `on_zone_enter(zone, player)`
-  2. `on_zone_exit(zone, player)`
-  3. `on_sprite_click(sprite, player)`
-  4. `on_trigger_enter(trigger, player)`
-  5. `on_action_start(action)`
-  6. `on_action_complete(action)`
-  7. `on_event(event)`
-  8. `on_update(dt)`
-- **Acceptance:** Scripts can hook into engine events
+#### ~~Task 3.3.2: Callback System Integration~~ ✅ COMPLETED
+> Implemented at `packages/core/src/engine/scripting/CallbackManager.js`
+> All 8 callback types implemented with registration, unregistration, lifecycle management
+> Test: `packages/core/__tests__/scripting/CallbackManager.test.js`
 
-#### Task 3.3.3: Advanced Event Filtering
-- **Features:**
-  1. Event wildcard matching
-  2. Event bubbling/capturing
-  3. Prevent default / stop propagation
-  4. Event delegation
-- **Acceptance:** Fine-grained control over game events
+#### ~~Task 3.3.3: Advanced Event Filtering~~ ✅ COMPLETED
+> Implemented at `packages/core/src/engine/events/EventSystem.js`
+> Features: wildcard matching, bubbling/capturing phases, stopPropagation/preventDefault, delegation
+> Test: `packages/core/__tests__/events/EventSystem.test.js`
 
 ---
 
@@ -640,14 +627,10 @@ embedded-arm         → Cross-compilation for ARM devices (RG353V)
 
 ### 4.1 Testing Infrastructure
 
-#### Task 4.1.1: Unit Testing Setup
-- **Framework:** Vitest
-- **Setup tasks:**
-  1. Configure `vitest.config.js` at root
-  2. Define test directory structure
-  3. Set up coverage reporting
-  4. Configure watch mode
-- **Acceptance:** Can run tests with `npm test`
+#### ~~Task 4.1.1: Unit Testing Setup~~ ✅ COMPLETED
+> Implemented at `vitest.config.js` (root) and `vitest.setup.js`
+> Features: Vitest 1.2.0 config, coverage (v8), workspace aliases, WebGL mocks
+> Sample tests created for TextureAtlas, CallbackManager, EventSystem
 
 #### Task 4.1.2: Core Logic Tests
 - **Test coverage:**
@@ -670,15 +653,10 @@ embedded-arm         → Cross-compilation for ARM devices (RG353V)
   6. Test AI game generator
 - **Acceptance:** Critical user flows verified
 
-#### Task 4.1.4: CI/CD Pipeline
-- **Platform:** GitHub Actions
-- **Jobs:**
-  1. Run tests on PR
-  2. Build all packages
-  3. Check for lint errors
-  4. Generate coverage reports
-  5. Deploy website on merge
-- **Acceptance:** Automated quality checks on all PRs
+#### ~~Task 4.1.4: CI/CD Pipeline~~ ✅ COMPLETED
+> Implemented at `.github/workflows/ci.yml` and `.github/workflows/deploy.yml`
+> CI: Tests on push/PR, build verification, Node 18/20 matrix
+> Deploy: Website deployment to Netlify on main merge
 
 ---
 
@@ -868,34 +846,38 @@ embedded-arm         → Cross-compilation for ARM devices (RG353V)
 
 ## 📊 PROGRESS TRACKING TEMPLATE
 
-### Status Board (Update Weekly)
+### Status Board (Updated)
 
 ```
-PHASE 0: CRITICAL LAUNCH BLOCKERS
-├── 0.1 Bug Fixes & Deprecation        [████░░░░░] 40%
-│   ├── Task 0.1.1 React Lifecycle     [██████████] 100% ✅
-│   ├── Task 0.1.2 Console.log Cleanup [████░░░░░] 40%
-│   ├── Task 0.1.3 MTL Bug Fix         [██████░░░] 60%
-│   └── Task 0.1.4 OBJ Integration     [░░░░░░░░░] 0%
-├── 0.2 Security & Networking          [░░░░░░░░░] 0%
-│   ├── Task 0.2.1 JWT Auth            [░░░░░░░░░] 0%
-│   ├── Task 0.2.2 Rate Limiting       [░░░░░░░░░] 0%
-│   ├── Task 0.2.3 TLS/WSS             [░░░░░░░░░] 0%
-│   ├── Task 0.2.4 Input Validation    [░░░░░░░░░] 0%
-│   └── Task 0.2.5 Reconnection        [░░░░░░░░░] 0%
-└── 0.3 First-Time User Experience     [░░░░░░░░░] 0%
-    ├── Task 0.3.1 Onboarding Wizard   [░░░░░░░░░] 0%
-    ├── Task 0.3.2 Quick-Start Tmpl    [░░░░░░░░░] 0%
-    └── Task 0.3.3 In-Editor Help      [░░░░░░░░░] 0%
+PHASE 0: CRITICAL LAUNCH BLOCKERS      [██████████] 100% ✅ COMPLETE
+└── All 11 tasks completed (see AI_AGENT_COMPLETED_INVENTORY.md)
 
-PHASE 1: EDITOR OVERHAUL
-├── 1.1 Design System & Components     [░░░░░░░░░] 0%
-├── 1.2 Map Editor                     [░░░░░░░░░] 0%
-├── 1.3 Sprite Editor                  [░░░░░░░░░] 0%
-├── 1.4 Script Editor                  [░░░░░░░░░] 0%
-└── 1.5 Cutscene Editor                [░░░░░░░░░] 0%
+PHASE 1: EDITOR OVERHAUL               [██████████] 100% ✅ COMPLETE
+└── All 15 tasks completed (Design System, Map/Sprite/Script/Cutscene Editors)
 
-... (Phases 2-5)
+PHASE 2: ENGINE ENHANCEMENTS           [█████████░] 91%
+├── 2.1 Render Optimization            [██████████] 100% ✅
+│   ├── Frustum Culling                ✅
+│   ├── Particle Batching              ✅
+│   ├── LOD System                     ✅
+│   └── Texture Atlas                  ✅
+└── 2.2 Camera & Effects               [████████░░] 80%
+    ├── Screen Shake                   ✅
+    ├── Smooth Camera Follow           ✅
+    ├── Transition System              ✅
+    └── Shader Library                 🔄 (polish)
+
+PHASE 3: SCRIPTING SYSTEM              [██████████] 100% ✅ COMPLETE
+├── 3.1 Coroutines/Debug               ✅
+├── 3.2 Interpreter                    ✅
+└── 3.3 Documentation/Callbacks/Events ✅
+
+PHASE 4: TESTING & DEPLOYMENT          [█████░░░░░] 50%
+├── 4.1.1 Unit Testing Setup           ✅
+├── 4.1.2 Core Logic Tests             🔄 (needs more coverage)
+├── 4.1.3 E2E Testing                  [ ] TODO
+├── 4.1.4 CI/CD Pipeline               ✅
+└── 4.2 State Persistence              [ ] TODO
 ```
 
 ---

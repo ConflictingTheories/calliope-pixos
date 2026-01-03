@@ -453,17 +453,11 @@ ls packages/core/src/engine/shaders/
 
 ## PHASE 4: TESTING & DEPLOYMENT
 
-### Task 4.1.1 - Unit Testing Setup
-
-**Check:**
-```bash
-ls packages/*/package.json
-grep -i "vitest\|jest" packages/*/package.json
-```
-
-**Create:**
-- Root: `vitest.config.js`
-- Each package: Package-level vitest config
+### ~~Task 4.1.1 - Unit Testing Setup~~ ✅ COMPLETED
+> Implemented at `vitest.config.js` (root) and `vitest.setup.js`
+> Features: Vitest workspace config, WebGL mocks, coverage settings, alias paths
+> Sample tests: TextureAtlas.test.js, CallbackManager.test.js, EventSystem.test.js
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 
@@ -490,17 +484,10 @@ ls packages/editor/ | grep -i playwright
 
 ---
 
-### Task 4.1.4 - CI/CD
-
-**Check:**
-```bash
-ls .github/workflows/
-```
-
-**Create GitHub Actions:**
-- `.github/workflows/test.yml`
-- `.github/workflows/build.yml`
-- `.github/workflows/deploy.yml`
+### ~~Task 4.1.4 - CI/CD~~ ✅ COMPLETED
+> Implemented at `.github/workflows/ci.yml` and `.github/workflows/deploy.yml`
+> Features: Test on push/PR, build verification, website deployment workflow
+> Moved to AI_AGENT_COMPLETED_INVENTORY.md
 
 ---
 

@@ -24,6 +24,7 @@ import ParticleManager from './ParticleManager.js';
 import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
+import TextureAtlas from './TextureAtlas.js';
 
 /**
  * @typedef {object} ShaderSource
@@ -147,6 +148,10 @@ export default class RenderManager {
       /** @type {LODManager} */
       this.lodManager = new LODManager(this);
 
+      // Texture atlas for batched rendering
+      /** @type {TextureAtlas} */
+      this.textureAtlas = new TextureAtlas(this);
+
       // Camera effects (shake, follow, fade, etc.)
       /** @type {CameraEffects} */
       this.cameraEffects = null; // Initialized after camera
@@ -208,6 +213,9 @@ export default class RenderManager {
 
     // Initialize skybox
     this.skyboxManager.init();
+
+    // Initialize texture atlas for batched rendering
+    this.textureAtlas.init();
 
     this.initializedWebGl = true;
   }
