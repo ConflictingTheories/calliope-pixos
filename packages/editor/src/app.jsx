@@ -144,7 +144,7 @@ const App = () => {
    */
   const getData = useCallback(async (entry, asText = false) => {
     if (!entry) return null;
-    
+
     // Handle newly created files that have Blob data directly
     if (entry.data instanceof Blob) {
       debug('App', '[getData] Entry has Blob data directly, reading...');
@@ -155,13 +155,13 @@ const App = () => {
         return new Uint8Array(arrayBuffer);
       }
     }
-    
+
     // Check if entry has the data.getData method (zip.js filesystem structure for original files)
     if (!entry.data || typeof entry.data.getData !== 'function') {
       console.error('[getData] Entry missing data.getData and is not a Blob:', entry);
       return null;
     }
-    
+
     if (asText) {
       let stream = new TransformStream();
       let dataPromise = new Response(stream.readable).text();
@@ -202,7 +202,7 @@ const App = () => {
     if (!zip) {
       throw new Error('Package filesystem not available');
     }
-    
+
     // Helper to find a file in the tree
     const findFile = (node, path = '', targetPath) => {
       if (node.children) {
@@ -219,7 +219,7 @@ const App = () => {
       }
       return null;
     };
-    
+
     // Helper to find a directory in the tree
     const findDirectory = (node, path = '', targetPath) => {
       const currentPath = path || (node === zip.root ? '' : node.name);
@@ -237,38 +237,38 @@ const App = () => {
       }
       return null;
     };
-    
+
     const existingFile = findFile(zip.root, '', filePath);
     const fileName = filePath.split('/').pop();
     const dirPath = filePath.substring(0, filePath.lastIndexOf('/'));
-    
+
     let parentFolder;
-    
+
     if (existingFile) {
       // File exists - update it
       parentFolder = existingFile.parent;
-      
+
       if (!parentFolder) {
         throw new Error(`Cannot find parent folder for: ${filePath}`);
       }
-      
+
       await zip.remove(existingFile);
     } else {
       // File doesn't exist - create it in the appropriate directory
       // Find the parent directory
       parentFolder = dirPath ? findDirectory(zip.root, '', dirPath) : zip.root;
-      
+
       if (!parentFolder) {
         // Try to create missing directories
         const pathParts = dirPath.split('/');
         let currentDir = zip.root;
         let currentPath = '';
-        
+
         for (const part of pathParts) {
           if (!part) continue;
           currentPath = currentPath ? `${currentPath}/${part}` : part;
           const existingDir = findDirectory(zip.root, '', currentPath);
-          
+
           if (existingDir) {
             currentDir = existingDir;
           } else {
@@ -279,7 +279,7 @@ const App = () => {
         parentFolder = currentDir;
       }
     }
-    
+
     // Add the file with content
     let blob;
     if (content instanceof Blob) {
@@ -289,7 +289,7 @@ const App = () => {
       // Text content - wrap in blob
       blob = new Blob([content], { type: 'text/plain' });
     }
-    
+
     await parentFolder.addBlob(fileName, blob);
   }, [zip]);
 
@@ -303,7 +303,7 @@ const App = () => {
       debug('App', '[getEntryFullPath] Using entry.fullName:', entry.fullName);
       return entry.fullName;
     }
-    
+
     const parts = [];
     let current = entry;
     while (current && current.name) {
@@ -507,7 +507,7 @@ const App = () => {
    */
   const renderModelPreview = useCallback(async (entry) => {
     const extension = entry.name.split('.').pop().toLowerCase();
-    
+
     // Helper to get full path of an entry
     const getEntryPath = (ent) => {
       if (ent.fullName) return ent.fullName;
@@ -519,11 +519,11 @@ const App = () => {
       }
       return parts.join('/');
     };
-    
+
     // Get the directory path of the model file
     const entryPath = getEntryPath(entry);
     const modelDir = entryPath.substring(0, entryPath.lastIndexOf('/') + 1);
-    
+
     // Get all entries from zip
     let allEntries = [];
     if (zip) {
@@ -547,19 +547,19 @@ const App = () => {
         allEntries = buildEntryList(zip.root);
       }
     }
-    
+
     if (extension === 'obj') {
       // Read OBJ file content
       const objBytes = await getData(entry, false);
       const objText = new TextDecoder().decode(objBytes);
-      
+
       // Parse OBJ to find mtllib reference
       let mtlFileName = null;
       const mtlMatch = objText.match(/mtllib\s+(.+)/i);
       if (mtlMatch) {
         mtlFileName = mtlMatch[1].trim();
       }
-      
+
       // Find and load MTL file
       let mtlContent = '';
       let materials = {};
@@ -569,7 +569,7 @@ const App = () => {
         if (mtlEntry) {
           const mtlBytes = await getData(mtlEntry, false);
           mtlContent = new TextDecoder().decode(mtlBytes);
-          
+
           // Parse MTL to find texture references
           const lines = mtlContent.split(/\r?\n/);
           let currentMaterial = null;
@@ -584,7 +584,7 @@ const App = () => {
           }
         }
       }
-      
+
       // Load textures referenced in MTL
       const textures = {};
       for (const matName of Object.keys(materials)) {
@@ -600,10 +600,10 @@ const App = () => {
           }
         }
       }
-      
+
       setContents([
-        <ModelPreview 
-          key={Date.now()} 
+        <ModelPreview
+          key={Date.now()}
           content={objText}
           mtlContent={mtlContent}
           textures={textures}
@@ -631,12 +631,12 @@ const App = () => {
     debug('App', 'Zip object:', zip);
     debug('App', 'Zip type:', typeof zip);
     debug('App', 'Zip methods:', zip ? Object.keys(zip) : 'no zip');
-    
+
     // Helper to get full path of an entry
     const getEntryFullPath = (ent) => {
       // If entry already has fullName, use it
       if (ent.fullName) return ent.fullName;
-      
+
       // Otherwise, traverse up the parent chain to build the path
       const pathParts = [];
       let current = ent;
@@ -648,9 +648,9 @@ const App = () => {
       }
       return pathParts.join('/');
     };
-    
+
     const entryFullPath = getEntryFullPath(entry);
-    
+
     // Get all entries from zip filesystem - try multiple approaches
     let allEntries = [];
     if (zip) {
@@ -675,7 +675,7 @@ const App = () => {
           }
           return map;
         };
-        
+
         const entryMap = buildEntryMap(zip.root);
         allEntries = Array.from(entryMap.entries()).map(([fullPath, entry]) => ({
           ...entry,
@@ -685,20 +685,20 @@ const App = () => {
       }
     }
     debug('App', 'Available files in package:', allEntries.map(e => e.fullName || e.name));
-    
+
     // Filter out macOS metadata files
     allEntries = allEntries.filter(e => {
       const fullPath = e.fullName || e.name;
       return !fullPath.includes('__MACOSX') && !fullPath.split('/').some(part => part.startsWith('._'));
     });
     debug('App', 'Filtered files (no macOS junk):', allEntries.length);
-    
+
     // Load map.json
     const mapContent = await getData(entry, true);
     let mapData = null;
     let cellsData = null;
     let tilesetName = null;
-    
+
     try {
       mapData = JSON.parse(mapContent);
       tilesetName = mapData.tileset;
@@ -707,7 +707,7 @@ const App = () => {
     } catch (err) {
       console.error('Failed to parse map.json:', err);
     }
-    
+
     // Load cells.json and heights.json from the same directory
     let heightsData = null;
     if (allEntries.length > 0) {
@@ -716,10 +716,10 @@ const App = () => {
         const mapDir = entryFullPath.substring(0, entryFullPath.lastIndexOf('/') + 1);
         const cellsFileName = 'cells.json';
         const heightsFileName = 'heights.json';
-        
+
         debug('App', 'Map file path:', entryFullPath);
         debug('App', 'Searching for cells.json and heights.json in directory:', mapDir);
-        
+
         // Find cells.json in the same directory as map.json
         const cellsFile = allEntries.find(e => {
           const fullPath = e.fullName || e.name;
@@ -729,7 +729,7 @@ const App = () => {
           }
           return exactMatch;
         });
-        
+
         if (cellsFile) {
           debug('App', 'Found cells.json at:', cellsFile.fullName || cellsFile.name);
           try {
@@ -740,30 +740,30 @@ const App = () => {
               const parsedCells = JSON.parse(cellsContent);
               debug('App', 'Parsed cells data type:', Array.isArray(parsedCells) ? 'array' : typeof parsedCells);
               debug('App', 'Cells data:', parsedCells);
-              
+
               // Check if cells.json has extends
               if (parsedCells.extends && Array.isArray(parsedCells.extends)) {
                 debug('App', '[Cells] Found extends:', parsedCells.extends);
-                
+
                 // Load and merge extended cells
                 let mergedCells = parsedCells.cells || [];
-                
+
                 for (const extendMapName of parsedCells.extends) {
                   try {
                     debug('App', '[Cells] Loading extended map:', extendMapName);
                     const extendCellsPath = `maps/${extendMapName}/cells.json`;
                     const extendCellsFile = allEntries.find(e => (e.fullName || e.name) === extendCellsPath);
-                    
+
                     if (extendCellsFile) {
                       const extendCellsContent = await getData(extendCellsFile, true);
                       const extendCellsData = JSON.parse(extendCellsContent);
-                      
+
                       // Get the cells array (handle both array format and object format)
                       const extendCells = Array.isArray(extendCellsData) ? extendCellsData : extendCellsData.cells;
-                      
+
                       if (extendCells && Array.isArray(extendCells)) {
                         debug('App', '[Cells] Extending with cells from', extendMapName, ':', extendCells.length, 'rows');
-                        
+
                         // Append extended cells (note: this is append-style like you mentioned)
                         mergedCells = [...mergedCells, ...extendCells];
                       }
@@ -774,7 +774,7 @@ const App = () => {
                     console.error('[Cells] Failed to load extended map:', extendMapName, extErr);
                   }
                 }
-                
+
                 cellsData = mergedCells;
                 debug('App', '[Cells] Final merged cells:', cellsData.length, 'rows');
               } else if (Array.isArray(parsedCells)) {
@@ -799,14 +799,14 @@ const App = () => {
           console.warn('cells.json not found in directory:', mapDir);
           console.warn('Available files:', allEntries.map(e => e.fullName || e.name));
         }
-        
+
         // Find heights.json in the same directory as map.json
         const heightsFile = allEntries.find(e => {
           const fullPath = e.fullName || e.name;
           const exactMatch = fullPath === `${mapDir}${heightsFileName}`;
           return exactMatch;
         });
-        
+
         if (heightsFile) {
           debug('App', 'Found heights.json at:', heightsFile.fullName || heightsFile.name);
           try {
@@ -828,23 +828,23 @@ const App = () => {
         console.error('Failed to load cells.json/heights.json:', err);
       }
     }
-    
+
     // Combine map, cells, and heights data
     const combinedContent = {
       ...mapData,
       cells: cellsData || mapData?.cells || [],
       heights: heightsData || mapData?.heights || null
     };
-    
+
     debug('App', 'Combined content - cells:', Array.isArray(combinedContent.cells) ? `${combinedContent.cells.length} rows` : typeof combinedContent.cells, 'heights:', combinedContent.heights ? 'present' : 'none');
     debug('App', 'Final cells dimensions:', combinedContent.cells?.length, 'x', combinedContent.cells?.[0]?.length);
-    
+
     // Load tileset and its dependencies
     let tileset = null;
     let geometry = null;
     let tiles = null;
     let textureAtlas = null;
-    
+
     if (tilesetName && allEntries.length > 0) {
       try {
         debug('App', 'Loading tileset:', tilesetName);
@@ -852,7 +852,7 @@ const App = () => {
           .filter(e => (e.fullName || e.name).includes('tileset'))
           .map(e => e.fullName || e.name)
         );
-        
+
         // Use extends-aware tileset loader
         try {
           const resolvedTileset = await loadTilesetWithExtends(zip, tilesetName, getData);
@@ -861,19 +861,19 @@ const App = () => {
           geometry = resolvedTileset.geometry || {};
           tiles = resolvedTileset.tiles || {};
           debug('App', 'Tileset loaded - geometry:', Object.keys(geometry).length, 'tiles:', Object.keys(tiles).length);
-          
+
           // Load texture atlas
           if (resolvedTileset.src) {
             debug('App', 'Loading texture:', resolvedTileset.src);
             const textureName = resolvedTileset.src;
-            
+
             // Search for texture file - check multiple locations
             let textureFile = allEntries.find(e => {
               const fullPath = e.fullName || e.name;
               // Try exact match first
               return fullPath.endsWith(textureName);
             });
-            
+
             // If not found, try broader search
             if (!textureFile) {
               const baseName = textureName.split('/').pop(); // Get just the filename
@@ -882,7 +882,7 @@ const App = () => {
                 return fullPath.endsWith(baseName) && fullPath.match(/\.(png|jpg|jpeg|gif)$/i);
               });
             }
-            
+
             if (textureFile) {
               debug('App', 'Found texture at:', textureFile.fullName || textureFile.name);
               const textureBytes = await getData(textureFile, false);
@@ -906,14 +906,14 @@ const App = () => {
         } catch (extendsErr) {
           console.error('Failed to load tileset with extends:', extendsErr);
           console.error('Error details:', extendsErr.message);
-          
+
           // Fallback: try loading without extends support
           // Search more broadly for the tileset file
           let tilesetFile = allEntries.find(e => {
             const fullPath = e.fullName || e.name;
             return fullPath.includes(`tilesets/${tilesetName}`) && fullPath.endsWith('tileset.json');
           });
-          
+
           // Try fuzzy match if exact not found
           if (!tilesetFile) {
             tilesetFile = allEntries.find(e => {
@@ -921,7 +921,7 @@ const App = () => {
               return fullPath.includes(tilesetName) && fullPath.endsWith('tileset.json');
             });
           }
-          
+
           if (tilesetFile) {
             debug('App', 'Found tileset (fallback):', tilesetFile.fullName || tilesetFile.name);
             const tilesetContent = await getData(tilesetFile, true);
@@ -938,7 +938,7 @@ const App = () => {
         console.error('Failed to load tileset dependencies:', err);
       }
     }
-    
+
     debug('App', 'Rendering MapEditor3D with:', {
       hasTileset: !!tileset,
       hasGeometry: !!geometry,
@@ -946,7 +946,7 @@ const App = () => {
       hasTexture: !!textureAtlas,
       cellsSize: combinedContent.cells?.length
     });
-    
+
     setContents([
       <MapEditor3D
         key={Date.now()}
@@ -961,25 +961,25 @@ const App = () => {
           try {
             debug('App', '[MapEditor] Saving map data:', obj);
             debug('App', '[MapEditor] Entry:', entry);
-            
+
             // Get full path of the entry
             const fullPath = getEntryFullPath(entry);
             debug('App', '[MapEditor] Full path:', fullPath);
-            
+
             // Extract cells and heights from the saved data
             const { cells, heights, ...mapOnlyData } = obj;
-            
+
             // Save map.json (metadata only, no cells/heights)
             const mapJsonData = JSON.stringify(mapOnlyData, null, 2);
             await writeFile(fullPath, mapJsonData);
             debug('App', '[MapEditor] Saved map.json:', fullPath);
-            
+
             // Save cells.json
             const cellsPath = fullPath.replace('map.json', 'cells.json');
             const cellsJsonData = JSON.stringify(cells, null, 2);
             await writeFile(cellsPath, cellsJsonData);
             debug('App', '[MapEditor] Saved cells.json:', cellsPath);
-            
+
             // Save heights.json if it exists
             debug('App', '[MapEditor] Heights data:', heights ? `${heights.length} rows` : 'null', heights);
             if (heights && heights.length > 0) {
@@ -990,7 +990,7 @@ const App = () => {
             } else {
               console.warn('[MapEditor] No heights data to save');
             }
-            
+
             debug('App', '[MapEditor] All map files saved successfully');
             alert('Map saved successfully! Note: You may need to close and reopen the map to see the changes reflected in the editor.');
           } catch (err) {
@@ -1006,14 +1006,14 @@ const App = () => {
   const renderTileEditor = useCallback(async (entry) => {
     const tileContent = await getData(entry, true);
     debug('App', '[TileEditor] Loading tiles:', tileContent);
-    
+
     // Try to load geometry.json from the same directory
     let geometryContent = null;
     let textureList = [];
     try {
       const entryPath = getEntryFullPath(entry);
       const parentPath = entryPath.substring(0, entryPath.lastIndexOf('/'));
-      
+
       // Helper to find sibling file
       const findSiblingFile = (node, targetName, currentPath = '') => {
         if (!node || !node.children) return null;
@@ -1031,14 +1031,14 @@ const App = () => {
         }
         return null;
       };
-      
+
       // Find geometry.json in same folder
       const geoEntry = findSiblingFile(zip, 'geometry.json');
       if (geoEntry) {
         geometryContent = await getData(geoEntry, true);
         debug('App', '[TileEditor] Loaded geometry context');
       }
-      
+
       // Find tileset.json to get texture names
       const tilesetEntry = findSiblingFile(zip, 'tileset.json');
       if (tilesetEntry) {
@@ -1052,7 +1052,7 @@ const App = () => {
     } catch (err) {
       console.warn('[TileEditor] Could not load sibling files:', err);
     }
-    
+
     setContents([
       <TileEditor
         key={Date.now()}
@@ -1078,7 +1078,7 @@ const App = () => {
   const renderTilesetEditor = useCallback(async (entry) => {
     const tilesetContent = await getData(entry, true);
     debug('App', '[TilesetEditor] Loading tileset:', entry.name);
-    
+
     // Gather image assets from the ZIP for the tileset editor
     const imageAssets = [];
     try {
@@ -1105,7 +1105,7 @@ const App = () => {
     } catch (err) {
       console.warn('[TilesetEditor] Error loading assets:', err);
     }
-    
+
     setContents([
       <TilesetEditor
         key={Date.now()}
@@ -1129,13 +1129,13 @@ const App = () => {
 
   const renderGeometryEditor = useCallback(async (entry) => {
     const geoContent = await getData(entry, true);
-    
+
     // Try to parse to determine if it has the new format (with vertices/surfaces)
     let useEnhanced = false;
     try {
       const parsed = JSON.parse(geoContent);
       const geomObj = parsed.geometry || parsed;
-      
+
       // Check if any geometry has vertices (new format)
       if (typeof geomObj === 'object') {
         for (const key in geomObj) {
@@ -1148,9 +1148,9 @@ const App = () => {
     } catch (err) {
       console.warn('Failed to parse geometry', err);
     }
-    
+
     const EditorComponent = useEnhanced ? GeometryEditor3D : GeometryEditor;
-    
+
     setContents([
       <EditorComponent
         key={Date.now()}
@@ -1199,7 +1199,7 @@ const App = () => {
   const renderCutsceneTool = useCallback(async (entry) => {
     const cutsceneContent = await getData(entry, true);
     const fileExtension = entry.name.match(/\\.\\w+$/)?.[0] || '.pxc';
-    
+
     // Asset loader function that loads from ZIP with proper MIME types
     const assetLoader = async (path) => {
       try {
@@ -1207,7 +1207,7 @@ const App = () => {
         // Clean the path
         let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
         debug('App', '[assetLoader] Clean path:', cleanPath);
-        
+
         // Helper to find asset by name in ZIP recursively
         const findAsset = (node, targetName) => {
           if (node.children) {
@@ -1223,10 +1223,10 @@ const App = () => {
           }
           return null;
         };
-        
+
         // First try direct match
         let assetEntry = findAsset(zip, cleanPath);
-        
+
         // If not found, try common prefix and extension fixes for sprites and audio
         if (!assetEntry) {
           // For sprite assets like "characters/male"
@@ -1249,7 +1249,7 @@ const App = () => {
               }
             }
           }
-          
+
           // For texture/backdrop files
           if (!assetEntry && cleanPath.startsWith('textures/')) {
             const trialTexturePaths = [
@@ -1264,13 +1264,13 @@ const App = () => {
               if (assetEntry) break;
             }
           }
-          
+
           // For audio files, try prefixing with "audio/"
           if (!assetEntry && cleanPath.match(/\.mp3$|\.wav$|\.ogg$/)) {
             const trialAudioPath = 'audio/' + cleanPath.replace(/^audio\//, '');
             assetEntry = findAsset(zip, trialAudioPath);
           }
-          
+
           // For direct portrait references (like fire_portrait, water_portrait)
           if (!assetEntry && cleanPath.match(/_portrait$/)) {
             const trialPortraitPaths = [
@@ -1284,13 +1284,13 @@ const App = () => {
               if (assetEntry) break;
             }
           }
-          
+
           // Last resort: try without any prefix if it has an extension
           if (!assetEntry && cleanPath.match(/\.\w+$/)) {
             assetEntry = findAsset(zip, cleanPath.split('/').pop());
           }
         }
-        
+
         if (!assetEntry) {
           // Only warn if it's not an intermediate search path
           // (e.g., don't warn for .json when looking for .gif)
@@ -1299,7 +1299,7 @@ const App = () => {
           }
           return null;
         }
-        
+
         // Get the data and convert to data URI
         const data = await getData(assetEntry, false);
         const ext = assetEntry.name.split('.').pop().toLowerCase();
@@ -1323,7 +1323,7 @@ const App = () => {
         return null;
       }
     };
-    
+
     setContents([
       <CutsceneTool
         key={Date.now()}
@@ -1369,44 +1369,44 @@ const App = () => {
   // Open file and route to correct editor/viewer
   const openFile = useCallback(async (entry) => {
     if (!entry) return;
-    
+
     // If it's a directory, check if it's a map directory and auto-load map.json
     if (entry.directory) {
       debug('App', '[App] Directory selected:', entry.name);
-      
+
       // Check if this looks like a map directory (maps/* pattern)
       const isMapDir = entry.name.includes('/maps/') || entry.name.endsWith('/maps');
-      
+
       if (isMapDir && zip) {
         try {
           // Try to find map.json in this directory
           const allEntries = await zip.entries();
           const mapJsonPath = entry.name.endsWith('/') ? `${entry.name}map.json` : `${entry.name}/map.json`;
-          
+
           const mapJsonEntry = allEntries.find(e => {
             const fullPath = e.fullName || e.name;
             return fullPath === mapJsonPath;
           });
-          
+
           if (mapJsonEntry) {
             debug('App', '[App] Auto-loading map.json from directory:', mapJsonPath);
             renderMapEditor(mapJsonEntry);
             return;
           } else {
             console.warn('[App] No map.json found in directory:', entry.name);
-            setContents([<div key="nomap" style={{padding: '2rem', color: '#d4d4d4'}}>No map.json found in this directory</div>]);
+            setContents([<div key="nomap" style={{ padding: '2rem', color: '#d4d4d4' }}>No map.json found in this directory</div>]);
             return;
           }
         } catch (err) {
           console.error('[App] Failed to auto-load map from directory:', err);
         }
       }
-      
+
       // Not a map directory or failed to load - show message
-      setContents([<div key="dir" style={{padding: '2rem', color: '#d4d4d4'}}>Directory selected. Double-click to enter or select a file.</div>]);
+      setContents([<div key="dir" style={{ padding: '2rem', color: '#d4d4d4' }}>Directory selected. Double-click to enter or select a file.</div>]);
       return;
     }
-    
+
     const name = entry.name.toLowerCase();
     setSelectedEntry(entry);
     if (name.endsWith('.pxs')) {
@@ -1510,7 +1510,7 @@ const App = () => {
                   type="button"
                   className={`editor-ai-button ${showAIPanel ? 'is-active' : ''}`}
                   onClick={renderAIGenerator}
-                  title={zip ? "Open AI Asset Generator" : "Open AI Asset Generator (load a package to save files)"}
+                  title={zip ? 'Open AI Asset Generator' : 'Open AI Asset Generator (load a package to save files)'}
                 >
                   <span className="editor-ai-icon">✨</span>
                   <span>AI Generate</span>

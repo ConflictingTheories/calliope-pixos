@@ -11,9 +11,9 @@
 
 import aiService from './ai-service.js';
 import { SPRITE_CONFIG_SCHEMA, NPC_STATES_SCHEMA } from './schemas.js';
-import { 
-  getSystemPrompt, 
-  SPRITESHEET_LAYOUTS, 
+import {
+  getSystemPrompt,
+  SPRITESHEET_LAYOUTS,
   calculateFrameCoordinates,
   generateSpriteConfigFromLayout,
 } from './dsl-specifications.js';
@@ -31,7 +31,7 @@ import {
  */
 export async function generateSpriteConfig(description, spriteConfig) {
   const { tileSize, sheetSize, directions, framesPerDirection, preset } = spriteConfig;
-  
+
   // Determine layout based on preset and directions
   let layoutName = 'character4';
   if (directions >= 8) {
@@ -45,11 +45,11 @@ export async function generateSpriteConfig(description, spriteConfig) {
   } else if (preset === 'effect') {
     layoutName = 'effect';
   }
-  
+
   // Generate base config with CORRECT frame coordinates
   const layout = SPRITESHEET_LAYOUTS[layoutName];
   const correctFrames = calculateFrameCoordinates(layout);
-  
+
   // Build the config with guaranteed correct values
   const baseConfig = {
     type: 'sprite',
@@ -64,16 +64,16 @@ export async function generateSpriteConfig(description, spriteConfig) {
     bindCamera: preset === 'character',
     frameTime: 150,
   };
-  
+
   // Add draw offsets for each direction
   for (const dir of layout.directions) {
     baseConfig.drawOffset[dir] = [-0.15, -0.15, -1];
   }
-  
+
   // Try to get AI-enhanced metadata (name, description, states, etc.)
   try {
     const systemPrompt = getSystemPrompt('sprite-config');
-    
+
     const prompt = `Generate sprite metadata for: ${description}
 
 The frame coordinates are already calculated correctly. 
@@ -104,7 +104,7 @@ Return ONLY valid JSON.`;
       null,
       { temperature: 0.5 }
     );
-    
+
     // Merge AI suggestions, keeping our correct frame data
     if (aiMetadata && typeof aiMetadata === 'object') {
       if (aiMetadata.displayName) baseConfig.displayName = aiMetadata.displayName;
@@ -116,10 +116,10 @@ Return ONLY valid JSON.`;
   } catch (error) {
     console.warn('AI metadata generation failed, using defaults:', error.message);
   }
-  
+
   // Validate and fix any remaining issues
   const validated = validateSpriteConfig(baseConfig, layoutName);
-  
+
   return validated.config;
 }
 
@@ -140,12 +140,12 @@ export async function generateCutscene(description, options = {}) {
     long: '10-15 dialogue exchanges, ~2 minutes',
   };
 
-  const charList = characters.length > 0 
+  const charList = characters.length > 0
     ? `Use these characters: ${characters.map(c => c.toUpperCase()).join(', ')}`
     : 'Create 2-3 appropriate characters (use UPPERCASE names like HERO, MERCHANT, GUARD)';
 
   const systemPrompt = getSystemPrompt('cutscene', { mood, characters });
-  
+
   const prompt = `Create a ${mood} cutscene for: ${description}
 
 ${charList}
@@ -168,20 +168,20 @@ Write engaging, natural dialogue that fits the scene.`;
     null, // Don't use structured output for cutscenes
     { temperature: 0.75 }
   );
-  
+
   // Clean up result
   if (typeof result === 'string') {
     // Remove markdown code blocks if present
     result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
   }
-  
+
   // Validate and fix
   const validated = validateCutscene(result);
-  
+
   if (validated.warnings.length > 0) {
     console.warn('Cutscene warnings:', validated.warnings);
   }
-  
+
   return validated.content;
 }
 
@@ -282,9 +282,9 @@ return nil`,
 
   // Get template or let AI generate
   const template = scriptTemplates[triggerType] || scriptTemplates.callback;
-  
+
   const systemPrompt = getSystemPrompt('script', { type: triggerType });
-  
+
   const prompt = `Generate a PixosScript for: ${description}
 
 Script type: ${triggerType}
@@ -305,15 +305,15 @@ Return ONLY the Lua script, no explanations.`;
     null,
     { temperature: 0.4 }
   );
-  
+
   // Clean up result
   if (typeof result === 'string') {
     result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
   }
-  
+
   // Validate
   const validated = validateScript(result);
-  
+
   return validated.content;
 }
 
@@ -329,7 +329,7 @@ export async function generateNPCStates(description, options = {}) {
   const interactions = options.interactions || ['talk'];
 
   const systemPrompt = getSystemPrompt('sprite-config');
-  
+
   const prompt = `Generate NPC state machine for: ${description}
 
 Role: ${role}
@@ -367,7 +367,7 @@ Keep dialogue SHORT (1-2 sentences). Match the ${personality} personality.`;
       NPC_STATES_SCHEMA,
       { temperature: 0.5 }
     );
-    
+
     return states;
   } catch (error) {
     // Return default states on failure
@@ -446,7 +446,7 @@ export async function generateMapConfig(description, options = {}) {
   const tileset = options.tileset || 'common';
 
   const systemPrompt = getSystemPrompt('map');
-  
+
   const prompt = `Generate a zone map.json for: ${description}
 
 Dimensions: ${width}x${height}
@@ -461,7 +461,7 @@ Return ONLY valid JSON with this structure:
     {
       "id": "avatar",
       "type": "characters/hero",
-      "pos": [${Math.floor(width/2)}, ${Math.floor(height/2)}, 0],
+      "pos": [${Math.floor(width / 2)}, ${Math.floor(height / 2)}, 0],
       "facing": "Down"
     }
   ],
@@ -477,7 +477,7 @@ Add appropriate NPCs, objects, and lights for: ${description}`;
     null,
     { temperature: 0.4 }
   );
-  
+
   return result;
 }
 

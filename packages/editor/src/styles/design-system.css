@@ -13,33 +13,45 @@
   /* ═══════════════════════════════════════════════════════════════
      COLOR SYSTEM - Clean, high-contrast palette
      ═══════════════════════════════════════════════════════════════ */
-  
+
   /* Brand Colors */
-  --brand-primary: #4ecdc4;      /* Teal - primary accent */
+  --brand-primary: #4ecdc4;
+  /* Teal - primary accent */
   --brand-primary-hover: #5fe4db;
   --brand-primary-muted: rgba(78, 205, 196, 0.15);
-  --brand-secondary: #ff6b9d;    /* Pink - secondary accent */
-  --brand-accent: #fbbf24;       /* Gold - highlights */
-  
+  --brand-secondary: #ff6b9d;
+  /* Pink - secondary accent */
+  --brand-accent: #fbbf24;
+  /* Gold - highlights */
+
   /* Background Scale - Subtle, not muddy */
-  --bg-base: #0a0a12;            /* Deepest */
-  --bg-surface: #0f0f1a;         /* Main panels */
-  --bg-elevated: #151520;        /* Cards, dropdowns */
-  --bg-hover: #1a1a28;           /* Hover states */
-  --bg-active: #202030;          /* Active/selected states */
-  
+  --bg-base: #0a0a12;
+  /* Deepest */
+  --bg-surface: #0f0f1a;
+  /* Main panels */
+  --bg-elevated: #151520;
+  /* Cards, dropdowns */
+  --bg-hover: #1a1a28;
+  /* Hover states */
+  --bg-active: #202030;
+  /* Active/selected states */
+
   /* Text Scale - High contrast */
-  --text-primary: #f0f0f5;       /* Main text - near white */
-  --text-secondary: #a0a0b0;     /* Secondary text */
-  --text-tertiary: #606070;      /* Disabled/hint text */
-  --text-inverse: #0a0a12;       /* Text on light backgrounds */
-  
+  --text-primary: #f0f0f5;
+  /* Main text - near white */
+  --text-secondary: #a0a0b0;
+  /* Secondary text */
+  --text-tertiary: #606070;
+  /* Disabled/hint text */
+  --text-inverse: #0a0a12;
+  /* Text on light backgrounds */
+
   /* Border Scale */
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.2);
   --border-focus: var(--brand-primary);
-  
+
   /* Status Colors */
   --status-success: #22c55e;
   --status-success-bg: rgba(34, 197, 94, 0.12);
@@ -49,14 +61,14 @@
   --status-error-bg: rgba(239, 68, 68, 0.12);
   --status-info: #3b82f6;
   --status-info-bg: rgba(59, 130, 246, 0.12);
-  
+
   /* ═══════════════════════════════════════════════════════════════
      TYPOGRAPHY - Consistent, readable
      ═══════════════════════════════════════════════════════════════ */
-  
+
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  
+
   /* Font Sizes - Readable hierarchy */
   --text-xs: 11px;
   --text-sm: 12px;
@@ -64,22 +76,22 @@
   --text-lg: 14px;
   --text-xl: 16px;
   --text-2xl: 18px;
-  
+
   /* Line Heights */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
-  
+
   /* Font Weights */
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
-  
+
   /* ═══════════════════════════════════════════════════════════════
      SPACING - Balanced, consistent
      ═══════════════════════════════════════════════════════════════ */
-  
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -87,16 +99,16 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
-  
+
   /* ═══════════════════════════════════════════════════════════════
      RADII & SHADOWS
      ═══════════════════════════════════════════════════════════════ */
-  
+
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
-  
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -591,19 +603,54 @@ pre {
    UTILITY CLASSES
    ═══════════════════════════════════════════════════════════════════ */
 
-.text-muted { color: var(--text-secondary); }
-.text-dim { color: var(--text-tertiary); }
-.text-primary-color { color: var(--brand-primary); }
-.text-error { color: var(--status-error); }
-.text-success { color: var(--status-success); }
-.text-warning { color: var(--status-warning); }
+.text-muted {
+  color: var(--text-secondary);
+}
 
-.bg-surface { background: var(--bg-surface); }
-.bg-elevated { background: var(--bg-elevated); }
+.text-dim {
+  color: var(--text-tertiary);
+}
 
-.border-subtle { border: 1px solid var(--border-subtle); }
-.border-default { border: 1px solid var(--border-default); }
+.text-primary-color {
+  color: var(--brand-primary);
+}
 
-.rounded-sm { border-radius: var(--radius-sm); }
-.rounded-md { border-radius: var(--radius-md); }
-.rounded-lg { border-radius: var(--radius-lg); }
+.text-error {
+  color: var(--status-error);
+}
+
+.text-success {
+  color: var(--status-success);
+}
+
+.text-warning {
+  color: var(--status-warning);
+}
+
+.bg-surface {
+  background: var(--bg-surface);
+}
+
+.bg-elevated {
+  background: var(--bg-elevated);
+}
+
+.border-subtle {
+  border: 1px solid var(--border-subtle);
+}
+
+.border-default {
+  border: 1px solid var(--border-default);
+}
+
+.rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.rounded-md {
+  border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}

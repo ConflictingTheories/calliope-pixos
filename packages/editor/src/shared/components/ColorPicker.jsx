@@ -47,7 +47,7 @@ function ColorPicker({
   const [alpha, setAlpha] = useState(1);
   const [hexInput, setHexInput] = useState(color);
   const [activeTab, setActiveTab] = useState('picker'); // 'picker' | 'palette'
-  
+
   const saturationRef = useRef(null);
   const hueRef = useRef(null);
   const alphaRef = useRef(null);
@@ -98,7 +98,7 @@ function ColorPicker({
   const handleMouseDown = useCallback((e, type) => {
     e.preventDefault();
     isDragging.current = type;
-    
+
     if (type === 'saturation') handleSaturationMove(e);
     else if (type === 'hue') handleHueMove(e);
     else if (type === 'alpha') handleAlphaMove(e);
@@ -123,7 +123,7 @@ function ColorPicker({
   const handleHexChange = useCallback((e) => {
     const value = e.target.value;
     setHexInput(value);
-    
+
     if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
       setHsv(hexToHsv(value));
       onChange?.(value);
@@ -150,14 +150,14 @@ function ColorPicker({
     <div className={`color-picker ${compact ? 'color-picker--compact' : ''} ${className}`}>
       {/* Tabs */}
       <div className="color-picker__tabs">
-        <button 
+        <button
           className={`color-picker__tab ${activeTab === 'picker' ? 'color-picker__tab--active' : ''}`}
           onClick={() => setActiveTab('picker')}
         >
           Picker
         </button>
         {palette.length > 0 && (
-          <button 
+          <button
             className={`color-picker__tab ${activeTab === 'palette' ? 'color-picker__tab--active' : ''}`}
             onClick={() => setActiveTab('palette')}
           >
@@ -169,7 +169,7 @@ function ColorPicker({
       {activeTab === 'picker' && (
         <div className="color-picker__picker">
           {/* Saturation/Brightness Box */}
-          <div 
+          <div
             ref={saturationRef}
             className="color-picker__saturation"
             style={{ backgroundColor: hueColor }}
@@ -177,10 +177,10 @@ function ColorPicker({
           >
             <div className="color-picker__saturation-white" />
             <div className="color-picker__saturation-black" />
-            <div 
+            <div
               className="color-picker__saturation-cursor"
-              style={{ 
-                left: `${hsv.s * 100}%`, 
+              style={{
+                left: `${hsv.s * 100}%`,
                 top: `${(1 - hsv.v) * 100}%`,
                 backgroundColor: currentHex
               }}
@@ -188,12 +188,12 @@ function ColorPicker({
           </div>
 
           {/* Hue Slider */}
-          <div 
+          <div
             ref={hueRef}
             className="color-picker__hue"
             onMouseDown={(e) => handleMouseDown(e, 'hue')}
           >
-            <div 
+            <div
               className="color-picker__hue-cursor"
               style={{ left: `${(hsv.h / 360) * 100}%` }}
             />
@@ -201,15 +201,15 @@ function ColorPicker({
 
           {/* Alpha Slider */}
           {showAlpha && (
-            <div 
+            <div
               ref={alphaRef}
               className="color-picker__alpha"
-              style={{ 
-                background: `linear-gradient(to right, transparent, ${currentHex})` 
+              style={{
+                background: `linear-gradient(to right, transparent, ${currentHex})`
               }}
               onMouseDown={(e) => handleMouseDown(e, 'alpha')}
             >
-              <div 
+              <div
                 className="color-picker__alpha-cursor"
                 style={{ left: `${alpha * 100}%` }}
               />
@@ -236,7 +236,7 @@ function ColorPicker({
 
       {/* Preview and Input */}
       <div className="color-picker__footer">
-        <div 
+        <div
           className="color-picker__preview"
           style={{ backgroundColor: currentHex }}
         />
@@ -250,7 +250,7 @@ function ColorPicker({
           />
         )}
         {onPaletteAdd && (
-          <button 
+          <button
             className="color-picker__add"
             onClick={handleAddToPalette}
             title="Add to palette"
@@ -285,7 +285,7 @@ function ColorPicker({
 function hexToHsv(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return { h: 0, s: 0, v: 0 };
-  
+
   const r = parseInt(result[1], 16) / 255;
   const g = parseInt(result[2], 16) / 255;
   const b = parseInt(result[3], 16) / 255;

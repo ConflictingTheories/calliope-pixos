@@ -100,11 +100,11 @@ export default class PixoScriptLibrary {
       },
       // world functions
       remove_all_zones: () => {
-        debug('PixoScript', 'removing all zones via lua' });
+        debug('PixoScript', 'removing all zones via lua');
         return engine.spritz.world.removeAllZones();
       },
       load_zone_from_zip: (z, zip) => {
-        debug('PixoScript', 'loading zone from zip via lua', world: engine.spritz.world, z, zip });
+        debug('PixoScript', 'loading zone from zip via lua', { world: engine.spritz.world, z, zip });
         // When loading zones via Lua we allow the world to manage screen
         // transitions. Passing `undefined` (or omitting the parameter) causes
         // World.loadZoneFromZip() to use its default transition settings
@@ -319,25 +319,25 @@ export default class PixoScriptLibrary {
       sprite_dialogue: (spriteId, dialogue, options = {}) => {
         return () =>
           new Promise((resolve) => {
-            debug('PixoScript', 'playing dialogue via lua', zone: envScope.zone, spriteId, dialogue });
+            debug('PixoScript', 'playing dialogue via lua', { zone: envScope.zone, spriteId, dialogue });
             options.onClose = () => resolve();
             return envScope.zone.spriteDialogue(spriteId, dialogue, options).then(() => {
-              debug('PixoScript', 'played dialogue via lua', zone: envScope.zone, spriteId, dialogue });
+              debug('PixoScript', 'played dialogue via lua', { zone: envScope.zone, spriteId, dialogue });
             });
           });
       },
       move_sprite: (spriteId, location, running) => {
         return () =>
           new Promise((resolve) => {
-            debug('PixoScript', 'moving sprite via lua', zone: envScope.zone, spriteId, location, running });
+            debug('PixoScript', 'moving sprite via lua', { zone: envScope.zone, spriteId, location, running });
             return envScope.zone.moveSprite(spriteId, this.pixoscript.utils.ensureArray(location.toObject()), running).then(() => {
-              debug('PixoScript', 'moved sprite via lua', zone: envScope.zone, spriteId, location, running });
+              debug('PixoScript', 'moved sprite via lua', { zone: envScope.zone, spriteId, location, running });
               resolve();
             });
           });
       },
       load_scripts: (scripts) => {
-        debug('PixoScript', 'loading scripts via lua', scripts, envScope });
+        debug('PixoScript', 'loading scripts via lua', { scripts, envScope });
         return envScope.zone.loadScripts(scripts);
       },
 
@@ -352,11 +352,9 @@ export default class PixoScriptLibrary {
         return () =>
           new Promise(async (resolve) => {
             try {
-              debug('PixoScript', Loading .pxc cutscene:', filePath);
-              
               // Load the .pxc file from asset loader
               const scriptText = await engine.assetLoader.load(filePath);
-              
+
               if (!scriptText) {
                 console.error('[PixoScript] Failed to load cutscene:', filePath);
                 resolve();
@@ -366,23 +364,23 @@ export default class PixoScriptLibrary {
               // Create PxcPlayer instance with callbacks
               const callbacks = {
                 onDialogueShow: options.onDialogueShow || ((data) => {
-                  debug('PxcPlayer', Dialogue:', data.actor, data.text);
+                  debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
                 }),
                 onBackdropChange: options.onBackdropChange || ((url, opts) => {
-                  debug('PxcPlayer', Backdrop:', url);
+                  debug('PxcPlayer', 'Backdrop:', url);
                 }),
                 onEnd: () => {
-                  debug('PxcPlayer', Cutscene ended');
+                  debug('PxcPlayer', 'Cutscene ended');
                   if (options.onEnd) options.onEnd();
                   resolve();
                 }
               };
 
               const player = new PxcPlayer(engine, callbacks);
-              
+
               // Play the cutscene
               await player.playCutscene(scriptText);
-              
+
             } catch (e) {
               console.error('[PixoScript] Error playing .pxc cutscene:', e);
               resolve();
@@ -407,28 +405,28 @@ export default class PixoScriptLibrary {
         return () =>
           new Promise(async (resolve) => {
             try {
-              debug('PixoScript', Playing inline .pxc script');
+              debug('PixoScript', 'Playing inline .pxc script');
 
               // Create PxcPlayer instance with callbacks
               const callbacks = {
                 onDialogueShow: options.onDialogueShow || ((data) => {
-                  debug('PxcPlayer', Dialogue:', data.actor, data.text);
+                  debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
                 }),
                 onBackdropChange: options.onBackdropChange || ((url, opts) => {
-                  debug('PxcPlayer', Backdrop:', url);
+                  debug('PxcPlayer', 'Backdrop:', url);
                 }),
                 onEnd: () => {
-                  debug('PxcPlayer', Cutscene ended');
+                  debug('PxcPlayer', 'Cutscene ended');
                   if (options.onEnd) options.onEnd();
                   resolve();
                 }
               };
 
               const player = new PxcPlayer(engine, callbacks);
-              
+
               // Play the cutscene
               await player.playCutscene(scriptText);
-              
+
             } catch (e) {
               console.error('[PixoScript] Error playing inline .pxc script:', e);
               resolve();
@@ -451,7 +449,7 @@ export default class PixoScriptLibrary {
         engine.renderManager.camera.lookAt(position, target, upDir);
       },
       pan_camera: (from, to, duration) => {
-        debug('PixoScript', 'panning camera via lua', from, to, duration });
+        debug('PixoScript', 'panning camera via lua', { from, to, duration });
         return () =>
           new Promise((resolve) => {
             engine.spritz.world.addEvent(
@@ -641,7 +639,7 @@ export default class PixoScriptLibrary {
         return tbl.length || 0;
       },
       callback_finish: (success) => {
-        debug('PixoScript', 'callback finish', success });
+        debug('PixoScript', 'callback finish', { success });
         if (envScope.finish) {
           envScope.finish(success > 0);
         }

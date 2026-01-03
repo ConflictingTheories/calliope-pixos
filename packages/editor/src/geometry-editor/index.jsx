@@ -36,19 +36,19 @@ import {
 function GeometryPreview({ geometry, size = 280 }) {
   const canvasRef = useRef(null);
   const [rotation, setRotation] = useState(0);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    
+
     // Clear with dark background
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, width, height);
-    
+
     // Draw subtle grid
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
@@ -63,7 +63,7 @@ function GeometryPreview({ geometry, size = 280 }) {
       ctx.lineTo(width, i * gridSize);
       ctx.stroke();
     }
-    
+
     // Z-up isometric projection (matching engine)
     // Camera orbits around Z axis, looking down at ~30°
     const cos = Math.cos(rotation);
@@ -71,7 +71,7 @@ function GeometryPreview({ geometry, size = 280 }) {
     const scale = size * 0.35;
     const cx = width / 2;
     const cy = height / 2 + 20;
-    
+
     // Project 3D point to 2D with Z-up
     const project = (x, y, z) => {
       // Rotate around Z axis (vertical)
@@ -82,12 +82,12 @@ function GeometryPreview({ geometry, size = 280 }) {
       const py = cy - z * scale * 0.8 + (rx + ry) * scale * 0.25;
       return [px, py, rx + ry]; // Include depth for sorting
     };
-    
+
     // Draw ground plane reference
     ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    const corners = [[0,0,0], [1,0,0], [1,1,0], [0,1,0]];
+    const corners = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
     corners.forEach((c, i) => {
       const [px, py] = project(c[0], c[1], c[2]);
       if (i === 0) ctx.moveTo(px, py);
@@ -95,26 +95,26 @@ function GeometryPreview({ geometry, size = 280 }) {
     });
     ctx.closePath();
     ctx.stroke();
-    
+
     // Draw triangles if we have geometry
     if (geometry?.vertices?.length > 0) {
       // Sort triangles by depth for proper rendering
       const trianglesWithDepth = geometry.vertices.map((tri, idx) => {
         if (!tri || tri.length < 3) return null;
         const centerZ = (tri[0][2] + tri[1][2] + tri[2][2]) / 3;
-        const [,, depth] = project(
+        const [, , depth] = project(
           (tri[0][0] + tri[1][0] + tri[2][0]) / 3,
           (tri[0][1] + tri[1][1] + tri[2][1]) / 3,
           centerZ
         );
         return { tri, idx, depth };
       }).filter(Boolean).sort((a, b) => a.depth - b.depth);
-      
+
       trianglesWithDepth.forEach(({ tri }) => {
         ctx.fillStyle = 'rgba(125, 211, 252, 0.2)';
         ctx.strokeStyle = 'rgba(125, 211, 252, 0.8)';
         ctx.lineWidth = 1.5;
-        
+
         ctx.beginPath();
         const [p0x, p0y] = project(tri[0][0], tri[0][1], tri[0][2]);
         ctx.moveTo(p0x, p0y);
@@ -133,11 +133,11 @@ function GeometryPreview({ geometry, size = 280 }) {
       ctx.textAlign = 'center';
       ctx.fillText('No triangles', width / 2, height / 2);
     }
-    
+
     // Draw axes (Z-up coordinate system)
     ctx.lineWidth = 2;
     const [ox, oy] = project(0, 0, 0);
-    
+
     // X axis (red) - East
     ctx.strokeStyle = '#ef4444';
     ctx.beginPath();
@@ -148,7 +148,7 @@ function GeometryPreview({ geometry, size = 280 }) {
     ctx.fillStyle = '#ef4444';
     ctx.font = 'bold 10px system-ui';
     ctx.fillText('X', ax + 5, ay);
-    
+
     // Y axis (green) - North
     ctx.strokeStyle = '#22c55e';
     ctx.beginPath();
@@ -158,7 +158,7 @@ function GeometryPreview({ geometry, size = 280 }) {
     ctx.stroke();
     ctx.fillStyle = '#22c55e';
     ctx.fillText('Y', bx + 5, by);
-    
+
     // Z axis (blue) - Up
     ctx.strokeStyle = '#3b82f6';
     ctx.beginPath();
@@ -168,7 +168,7 @@ function GeometryPreview({ geometry, size = 280 }) {
     ctx.stroke();
     ctx.fillStyle = '#3b82f6';
     ctx.fillText('Z', zx + 5, zy - 5);
-    
+
     // Info text
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '9px system-ui';
@@ -176,9 +176,9 @@ function GeometryPreview({ geometry, size = 280 }) {
     ctx.fillText(`${geometry?.vertices?.length || 0} triangles`, 8, height - 8);
     ctx.textAlign = 'right';
     ctx.fillText('Z-up', width - 8, height - 8);
-    
+
   }, [geometry, rotation, size]);
-  
+
   // Auto-rotate
   useEffect(() => {
     const interval = setInterval(() => {
@@ -186,13 +186,13 @@ function GeometryPreview({ geometry, size = 280 }) {
     }, 50);
     return () => clearInterval(interval);
   }, []);
-  
+
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={size} 
+    <canvas
+      ref={canvasRef}
+      width={size}
       height={size}
-      style={{ 
+      style={{
         borderRadius: '12px',
         background: '#0d1117',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -294,13 +294,13 @@ function GeometryEditor({ content, onSave }) {
     if (onSave) onSave(geometryMap);
   }, [geometryMap, onSave]);
 
-  const geometryKeys = Object.keys(geometryMap).filter(k => 
+  const geometryKeys = Object.keys(geometryMap).filter(k =>
     !searchFilter || k.toLowerCase().includes(searchFilter.toLowerCase())
   );
   const selectedGeom = selectedKey ? geometryMap[selectedKey] : null;
 
   return (
-    <div style={{ 
+    <div style={{
       position: 'relative',
       width: '100%',
       height: '100%',
@@ -353,7 +353,7 @@ function GeometryEditor({ content, onSave }) {
           {geometryKeys.map((key) => {
             const geom = geometryMap[key];
             const triCount = geom.vertices?.length || 0;
-            
+
             return (
               <div
                 key={key}
@@ -384,7 +384,7 @@ function GeometryEditor({ content, onSave }) {
                       style={{ width: '120px' }}
                     />
                   ) : (
-                    <div 
+                    <div
                       onDoubleClick={(e) => {
                         e.stopPropagation();
                         setRenamingKey(key);
@@ -430,7 +430,7 @@ function GeometryEditor({ content, onSave }) {
               </div>
             );
           })}
-          
+
           {geometryKeys.length === 0 && (
             <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
               {searchFilter ? 'No matches found' : 'No geometry defined.'}
@@ -466,7 +466,7 @@ function GeometryEditor({ content, onSave }) {
             }}>
               {/* Preview */}
               <GeometryPreview geometry={selectedGeom} size={180} />
-              
+
               {/* Info */}
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>{selectedKey}</h4>
@@ -487,13 +487,13 @@ function GeometryEditor({ content, onSave }) {
                     style={{ width: '70px' }}
                   />
                 </div>
-                <Button 
-                  appearance='ghost' 
-                  size="sm" 
+                <Button
+                  appearance='ghost'
+                  size="sm"
                   onClick={() => {
                     // Default triangle on XY plane (floor)
-                    const newVerts = [...(selectedGeom.vertices || []), [[0,0,0], [1,0,0], [0.5,1,0]]];
-                    const newSurfs = [...(selectedGeom.surfaces || []), [[0,0], [1,0], [0.5,1]]];
+                    const newVerts = [...(selectedGeom.vertices || []), [[0, 0, 0], [1, 0, 0], [0.5, 1, 0]]];
+                    const newSurfs = [...(selectedGeom.surfaces || []), [[0, 0], [1, 0], [0.5, 1]]];
                     updateGeometry(selectedKey, 'vertices', newVerts);
                     updateGeometry(selectedKey, 'surfaces', newSurfs);
                   }}
@@ -524,9 +524,9 @@ function GeometryEditor({ content, onSave }) {
                         alignItems: 'center',
                         marginBottom: '12px',
                       }}>
-                        <span style={{ 
-                          color: '#a78bfa', 
-                          fontSize: '12px', 
+                        <span style={{
+                          color: '#a78bfa',
+                          fontSize: '12px',
                           fontWeight: 600,
                         }}>
                           Triangle {triIdx + 1}
@@ -552,16 +552,16 @@ function GeometryEditor({ content, onSave }) {
                         </button>
                       </div>
 
-                      <div style={{ 
-                        display: 'grid', 
+                      <div style={{
+                        display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                         gap: '16px',
                       }}>
                         {/* Vertices */}
                         <div>
-                          <label style={{ 
-                            display: 'block', 
-                            color: 'rgba(255,255,255,0.6)', 
+                          <label style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
                             fontSize: '11px',
                             marginBottom: '8px',
                             fontWeight: 500,
@@ -570,9 +570,9 @@ function GeometryEditor({ content, onSave }) {
                           </label>
                           {triangle.map((vertex, vIdx) => (
                             <div key={vIdx} style={{ display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' }}>
-                              <span style={{ 
-                                color: vIdx === 0 ? '#ef4444' : vIdx === 1 ? '#22c55e' : '#3b82f6', 
-                                fontSize: '10px', 
+                              <span style={{
+                                color: vIdx === 0 ? '#ef4444' : vIdx === 1 ? '#22c55e' : '#3b82f6',
+                                fontSize: '10px',
                                 width: '16px',
                                 fontWeight: 600,
                               }}>V{vIdx + 1}</span>
@@ -596,21 +596,21 @@ function GeometryEditor({ content, onSave }) {
 
                         {/* UVs */}
                         <div>
-                          <label style={{ 
-                            display: 'block', 
-                            color: 'rgba(255,255,255,0.6)', 
+                          <label style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
                             fontSize: '11px',
                             marginBottom: '8px',
                             fontWeight: 500,
                           }}>
                             UVs (U, V)
                           </label>
-                          {(selectedGeom.surfaces?.[triIdx] || [[0,0],[0,0],[0,0]]).map((uv, uvIdx) => (
+                          {(selectedGeom.surfaces?.[triIdx] || [[0, 0], [0, 0], [0, 0]]).map((uv, uvIdx) => (
                             <div key={uvIdx} style={{ display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' }}>
-                              <span style={{ 
-                                color: 'rgba(255,255,255,0.4)', 
-                                fontSize: '10px', 
-                                width: '16px' 
+                              <span style={{
+                                color: 'rgba(255,255,255,0.4)',
+                                fontSize: '10px',
+                                width: '16px'
                               }}>{uvIdx + 1}:</span>
                               {uv.map((coord, cIdx) => (
                                 <InputNumber
@@ -619,7 +619,7 @@ function GeometryEditor({ content, onSave }) {
                                   step={0.1}
                                   onChange={(val) => {
                                     const newSurfs = JSON.parse(JSON.stringify(selectedGeom.surfaces || []));
-                                    if (!newSurfs[triIdx]) newSurfs[triIdx] = [[0,0],[0,0],[0,0]];
+                                    if (!newSurfs[triIdx]) newSurfs[triIdx] = [[0, 0], [0, 0], [0, 0]];
                                     newSurfs[triIdx][uvIdx][cIdx] = val;
                                     updateGeometry(selectedKey, 'surfaces', newSurfs);
                                   }}
@@ -642,7 +642,7 @@ function GeometryEditor({ content, onSave }) {
                     background: 'rgba(0,0,0,0.2)',
                     borderRadius: '8px',
                   }}>
-                    No triangles defined.<br/>
+                    No triangles defined.<br />
                     Click "+ Add Triangle" to create geometry.
                   </div>
                 )}
@@ -661,7 +661,7 @@ function GeometryEditor({ content, onSave }) {
           }}>
             <div>
               <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📐</div>
-              Select geometry from the list<br/>
+              Select geometry from the list<br />
               or create a new one.
             </div>
           </div>

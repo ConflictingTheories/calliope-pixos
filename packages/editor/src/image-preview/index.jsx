@@ -38,7 +38,7 @@ function ImagePreview({ content }) {
   const handleImageLoad = useCallback((e) => {
     const img = e.target;
     let format = 'Unknown';
-    
+
     // Detect format from data URI or extension
     if (content) {
       if (content.startsWith('data:image/png')) format = 'PNG';
@@ -89,15 +89,15 @@ function ImagePreview({ content }) {
   }
 
   return (
-    <div className="editor-tool-container" style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
+    <div className="editor-tool-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
       height: '100%',
       minHeight: 0,
       overflow: 'hidden'
     }}>
-      <Panel bordered style={{ 
-        margin: '1rem', 
+      <Panel bordered style={{
+        margin: '1rem',
         flex: '1 1 auto',
         display: 'flex',
         flexDirection: 'column',
@@ -105,9 +105,9 @@ function ImagePreview({ content }) {
         overflow: 'hidden'
       }}>
         {/* Toolbar */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '0.5rem',
           background: 'var(--rs-bg-card, #1a1d24)',
@@ -127,25 +127,25 @@ function ImagePreview({ content }) {
             <span style={{ fontSize: '11px', color: '#666' }}>Shift+Scroll to zoom</span>
             <ButtonToolbar>
               <ButtonGroup size="xs">
-                <IconButton 
-                  icon={<span>−</span>} 
-                  onClick={zoomOut} 
+                <IconButton
+                  icon={<span>−</span>}
+                  onClick={zoomOut}
                   disabled={zoom <= 0.1}
                   title="Zoom Out"
                 />
-                <IconButton 
-                  icon={<span>⟲</span>} 
+                <IconButton
+                  icon={<span>⟲</span>}
                   onClick={zoomReset}
                   title="Reset Zoom"
                 />
-                <IconButton 
-                  icon={<span>+</span>} 
-                  onClick={zoomIn} 
+                <IconButton
+                  icon={<span>+</span>}
+                  onClick={zoomIn}
                   disabled={zoom >= 5}
                   title="Zoom In"
                 />
-                <IconButton 
-                  icon={<span>◻</span>} 
+                <IconButton
+                  icon={<span>◻</span>}
                   onClick={zoomFit}
                   title="Fit to Width"
                 />
@@ -155,11 +155,11 @@ function ImagePreview({ content }) {
         </div>
 
         {/* Image Container */}
-        <div 
+        <div
           ref={containerRef}
-          style={{ 
+          style={{
             flex: '1 1 auto',
-            overflow: 'auto', 
+            overflow: 'auto',
             minHeight: 0,
             background: 'repeating-conic-gradient(#222 0% 25%, #333 0% 50%) 50% / 20px 20px',
             borderRadius: '4px',
@@ -168,17 +168,17 @@ function ImagePreview({ content }) {
           }}
           onWheel={handleWheel}
         >
-          <img 
+          <img
             ref={imgRef}
-            src={content} 
+            src={content}
             alt="Preview"
             onLoad={handleImageLoad}
-            style={{ 
+            style={{
               maxWidth: 'none',
               transform: `scale(${zoom})`,
               transformOrigin: 'top left',
               imageRendering: zoom > 1 ? 'pixelated' : 'auto'
-            }} 
+            }}
           />
         </div>
       </Panel>

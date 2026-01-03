@@ -27,9 +27,8 @@ export default [
     rules: {
       'react/jsx-uses-vars': 'error',
       'react/jsx-uses-react': 'error',
-      indent: ['error', 2],
       'linebreak-style': ['error', 'unix'],
-      quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+      quotes: ['warn', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
       semi: ['warn', 'always'],
       'no-console': ['warn'],
       'no-debugger': ['warn'],

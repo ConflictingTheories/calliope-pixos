@@ -151,28 +151,28 @@ function OnboardingModal({ show, onComplete }) {
           <span className="onboarding-title">{step.title}</span>
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body>
         <div className="onboarding-content">
           {/* Step indicator */}
           <div className="onboarding-steps">
             {ONBOARDING_STEPS.map((_, idx) => (
-              <div 
+              <div
                 key={idx}
                 className={`onboarding-step-dot ${idx === currentStep ? 'active' : ''} ${idx < currentStep ? 'completed' : ''}`}
                 onClick={() => setCurrentStep(idx)}
               />
             ))}
           </div>
-          
+
           {/* Step content */}
-          <div 
+          <div
             className="onboarding-step-content"
             dangerouslySetInnerHTML={{ __html: step.content }}
           />
         </div>
       </Modal.Body>
-      
+
       <Modal.Footer>
         <div className="onboarding-footer">
           <Button appearance="subtle" onClick={handleSkip}>
@@ -221,12 +221,12 @@ function WelcomeBanner({ onShowTutorial }) {
  */
 export function QuickTip({ context }) {
   const tips = {
-    'empty-project': "💡 Start by opening the AI Generator (✨) and choosing a template!",
+    'empty-project': '💡 Start by opening the AI Generator (✨) and choosing a template!',
     'ai-generator': "💡 Try the 'Hello World' template - it generates in under 2 minutes!",
-    'map-editor': "💡 Click a cell to select it, then use the tileset palette to paint.",
+    'map-editor': '💡 Click a cell to select it, then use the tileset palette to paint.',
     'sprite-editor': "💡 Use the animation preview to test your sprite's movement.",
-    'cutscene-editor': "💡 Add @char lines for character portraits, @action for animations.",
-    'script-editor': "💡 PixoScript is Lua-like - no semicolons needed!",
+    'cutscene-editor': '💡 Add @char lines for character portraits, @action for animations.',
+    'script-editor': '💡 PixoScript is Lua-like - no semicolons needed!',
   };
 
   const tip = tips[context];

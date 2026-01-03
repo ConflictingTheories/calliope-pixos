@@ -93,14 +93,14 @@ function Modal({
   if (!open) return null;
 
   const modalContent = (
-    <div 
-      className="modal-overlay" 
+    <div
+      className="modal-overlay"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
     >
-      <div 
+      <div
         ref={modalRef}
         className={`modal modal--${size} ${className}`}
         tabIndex={-1}
@@ -113,8 +113,8 @@ function Modal({
               {title && <h2 id="modal-title" className="modal__title">{title}</h2>}
             </div>
             {showClose && (
-              <button 
-                className="modal__close" 
+              <button
+                className="modal__close"
                 onClick={onClose}
                 aria-label="Close modal"
               >
@@ -146,7 +146,7 @@ function Modal({
 function CloseIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
     </svg>
   );
 }
@@ -176,8 +176,8 @@ function ConfirmModal({
           <button className="modal__button modal__button--secondary" onClick={onClose}>
             {cancelText}
           </button>
-          <button 
-            className={`modal__button modal__button--${variant}`} 
+          <button
+            className={`modal__button modal__button--${variant}`}
             onClick={() => { onConfirm?.(); onClose?.(); }}
           >
             {confirmText}

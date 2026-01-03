@@ -414,11 +414,11 @@ export default class Zone extends Loadable {
         if (heightsFile) {
           const heightsStr = await heightsFile.async('string');
           heightsJson = JSON.parse(heightsStr);
-          debug('Zone', Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
-          debug('Zone', First row heights:`, heightsJson?.[0]);
-          debug('Zone', Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
+          debug('Zone', `Loaded heights.json for ${this.id}:`, heightsJson?.length, 'rows');
+          debug('Zone', `First row heights:`, heightsJson?.[0]);
+          debug('Zone', `Heights data sample:`, JSON.stringify(heightsJson?.slice(0, 3)));
         } else {
-          debug('Zone', No heights.json found for ${this.id}, using default geometry heights`);
+          debug('Zone', `No heights.json found for ${this.id}, using default geometry heights`);
         }
       } catch (e) {
         console.warn(`[Zone] Failed to load heights.json for ${this.id}:`, e.message);
@@ -544,7 +544,7 @@ export default class Zone extends Loadable {
     for (let j = 0; j < height; j++) {
       for (let i = 0; i < width; i++, k++) {
         const cell = this.cells[k];
-        
+
         // Guard: Skip if cell is undefined (tile lookup failed)
         if (!cell || !Array.isArray(cell)) {
           console.warn(`[Zone] Cell [${j},${i}] is undefined - missing tile in tileset`);
@@ -555,7 +555,7 @@ export default class Zone extends Loadable {
           this.walkability[k] = 0;
           continue;
         }
-        
+
         const layers = Math.floor(cell.length / 3);
 
         let cellVertices = [];
@@ -563,8 +563,8 @@ export default class Zone extends Loadable {
         let walk = Direction.All;
 
         // Get height override for this cell if heights data exists
-        const heightOverride = this.heights && this.heights[j] && typeof this.heights[j][i] === 'number' 
-          ? this.heights[j][i] 
+        const heightOverride = this.heights && this.heights[j] && typeof this.heights[j][i] === 'number'
+          ? this.heights[j][i]
           : null;
 
         // Debug first few cells - show null/number for diagnostics
@@ -579,7 +579,7 @@ export default class Zone extends Loadable {
           if (typeof z !== 'number') z = 0;
           const tilePos = [this.bounds[0] + i, this.bounds[1] + j, z];
           walk &= this.tileset.getWalkability(tileId);
-          
+
           // Pass height override to getTileVertices
           cellVertices = cellVertices.concat(
             this.tileset.getTileVertices(tileId, tilePos, heightOverride)
@@ -613,17 +613,13 @@ export default class Zone extends Loadable {
    * @param {boolean} [refresh=false] - Whether to refresh.
    */
   loadScripts = (refresh = false) => {
-    debug('Zone',.loadScripts] ENTRY - zone:', this.id, 'refresh:', refresh, 'isPaused:', this.world.isPaused, 'scripts:', this.scripts.length);
-    
     if (this.world.isPaused) return;
     // CRITICAL: Zone load scripts must run even when paused
     // They are responsible for initializing the zone state
     const zone = this;
     for (const x of this.scripts) {
-      debug('Zone',.loadScripts] Checking script:', x.id, 'isLoadSpritz:', x.id === 'load-spritz', 'refresh:', refresh);
       if (x.id === 'load-spritz' && refresh) {
         // Call trigger immediately when loading/refreshing
-        debug('Zone',.loadScripts] Calling load-spritz trigger for zone:', this.id);
         try {
           x.trigger.call(zone);
         } catch (e) {
@@ -770,8 +766,8 @@ export default class Zone extends Loadable {
     const n = Math.floor(cell.length / 3);
 
     // Get height override from heights.json if it exists for this cell
-    const heightOverride = this.heights && this.heights[j - this.bounds[1]] && typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number' 
-      ? this.heights[j - this.bounds[1]][i - this.bounds[0]] 
+    const heightOverride = this.heights && this.heights[j - this.bounds[1]] && typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number'
+      ? this.heights[j - this.bounds[1]][i - this.bounds[0]]
       : null;
 
     // local helper without allocations
@@ -793,7 +789,7 @@ export default class Zone extends Loadable {
       const baseZ = (typeof cell[3 * l + 2] === 'number') ? cell[3 * l + 2] : 0;
       // Add heightOverride to baseZ (heights.json is an offset, not a replacement)
       const heightOffset = heightOverride !== null ? heightOverride : 0;
-      
+
       for (let p = 0; p < poly.length; p++) {
         const uv = triUV(poly[p]);
         const w = uv[0] + uv[1];
@@ -823,7 +819,7 @@ export default class Zone extends Loadable {
         return avgZ;
       }
     }
-    
+
     // Final fallback: add heightOffset to cell base z
     const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
     const heightOffset = heightOverride !== null ? heightOverride : 0;
@@ -845,7 +841,7 @@ export default class Zone extends Loadable {
     if (!this.cellVertexPosBuf || !this.cellVertexPosBuf[row]) {
       return; // Skip row if not initialized
     }
-    
+
     // Attach tileset once per row (sprites may switch textures between rows)
     this.tileset.texture.attach();
     const vPosRow = this.cellVertexPosBuf[row];
@@ -858,12 +854,12 @@ export default class Zone extends Loadable {
     for (let cell = 0; cell < width; cell++) {
       const vPos = vPosRow[cell];
       const vTex = vTexRow[cell];
-      
+
       // Guard: Skip cells with no vertices (empty or failed tile lookup)
       if (!vPos || !vTex || vPos.numItems === 0) {
         continue;
       }
-      
+
       rm.bindBuffer(vPos, shaderProgram.aVertexPosition);
       rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
 
@@ -898,7 +894,7 @@ export default class Zone extends Loadable {
     rm.bindBuffer(vTex, shader.aTextureCoord);
 
     const id = this.cellPickingId[row][cell];
-    
+
     if (isPickerPass) {
       // During picker pass, only set picker shader uniforms
       picker.setMatrixUniforms({ id });

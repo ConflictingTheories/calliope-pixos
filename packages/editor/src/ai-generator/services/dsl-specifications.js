@@ -634,8 +634,8 @@ game-package/
  */
 export function getSystemPrompt(type, context = {}) {
   switch (type) {
-  case 'sprite-config':
-    return `You are an expert Pixospritz game asset designer. Generate VALID JSON sprite configurations.
+    case 'sprite-config':
+      return `You are an expert Pixospritz game asset designer. Generate VALID JSON sprite configurations.
 
 ${SPRITE_CONFIG_SPEC}
 
@@ -647,8 +647,8 @@ CRITICAL: Frame coordinates MUST be mathematically correct based on tile size an
 
 Return ONLY valid JSON, no explanations.`;
 
-  case 'cutscene':
-    return `You are an expert Pixospritz narrative designer. Generate engaging cutscene scripts.
+    case 'cutscene':
+      return `You are an expert Pixospritz narrative designer. Generate engaging cutscene scripts.
 
 ${PIXOCUT_SPEC}
 
@@ -663,8 +663,8 @@ CRITICAL:
 
 Return ONLY the .pxc script content, no explanations.`;
 
-  case 'script':
-    return `You are an expert Pixospritz game programmer. Generate valid Lua scripts.
+    case 'script':
+      return `You are an expert Pixospritz game programmer. Generate valid Lua scripts.
 
 ${PIXOSCRIPT_SPEC}
 
@@ -679,8 +679,8 @@ CRITICAL:
 
 Return ONLY the .pxs script content, no explanations.`;
 
-  case 'manifest':
-    return `You are an expert Pixospritz package architect. Generate valid manifest.json files.
+    case 'manifest':
+      return `You are an expert Pixospritz package architect. Generate valid manifest.json files.
 
 ${MANIFEST_SPEC}
 
@@ -691,8 +691,8 @@ CRITICAL:
 
 Return ONLY valid JSON, no explanations.`;
 
-  case 'map':
-    return `You are an expert Pixospritz level designer. Generate valid zone configurations.
+    case 'map':
+      return `You are an expert Pixospritz level designer. Generate valid zone configurations.
 
 ${MAP_SPEC}
 
@@ -704,8 +704,8 @@ CRITICAL:
 
 Return ONLY valid JSON, no explanations.`;
 
-  case 'game-package':
-    return `You are an expert Pixospritz game architect. Plan complete game packages.
+    case 'game-package':
+      return `You are an expert Pixospritz game architect. Plan complete game packages.
 
 ${PACKAGE_STRUCTURE}
 ${MANIFEST_SPEC}
@@ -717,8 +717,8 @@ ${PIXOSCRIPT_SPEC}
 Design cohesive, playable game packages with all necessary assets.
 Ensure all references between assets are valid and consistent.`;
 
-  default:
-    return `You are an expert Pixospritz game developer.`;
+    default:
+      return `You are an expert Pixospritz game developer.`;
   }
 }
 
@@ -735,7 +735,7 @@ export const SPRITESHEET_LAYOUTS = {
       return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
     },
   },
-  
+
   // 4-direction character
   character4: {
     directions: ['S', 'E', 'N', 'W'],
@@ -745,7 +745,7 @@ export const SPRITESHEET_LAYOUTS = {
       return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
     },
   },
-  
+
   // NPC (4-direction, smaller)
   npc: {
     directions: ['S', 'E', 'N', 'W'],
@@ -755,7 +755,7 @@ export const SPRITESHEET_LAYOUTS = {
       return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
     },
   },
-  
+
   // Monster (4-direction, square)
   monster: {
     directions: ['S', 'E', 'N', 'W'],
@@ -765,7 +765,7 @@ export const SPRITESHEET_LAYOUTS = {
       return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
     },
   },
-  
+
   // Item (single direction)
   item: {
     directions: ['S'],
@@ -775,7 +775,7 @@ export const SPRITESHEET_LAYOUTS = {
       return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
     },
   },
-  
+
   // Effect (horizontal strip)
   effect: {
     directions: ['S'],
@@ -793,18 +793,18 @@ export const SPRITESHEET_LAYOUTS = {
 export function calculateFrameCoordinates(layout) {
   const { directions, framesPerDirection, tileSize } = layout;
   const [tileWidth, tileHeight] = tileSize;
-  
+
   const frames = {};
-  
+
   for (let row = 0; row < directions.length; row++) {
     const direction = directions[row];
     frames[direction] = [];
-    
+
     for (let col = 0; col < framesPerDirection; col++) {
       frames[direction].push([col * tileWidth, row * tileHeight]);
     }
   }
-  
+
   return frames;
 }
 
@@ -816,16 +816,16 @@ export function generateSpriteConfigFromLayout(layoutName, spriteName, options =
   if (!layout) {
     throw new Error(`Unknown layout: ${layoutName}`);
   }
-  
+
   const frames = calculateFrameCoordinates(layout);
-  
+
   // Build draw offsets
   const drawOffset = {};
   const offsetValue = [-0.15, -0.15, -1];
   for (const dir of layout.directions) {
     drawOffset[dir] = [...offsetValue];
   }
-  
+
   const config = {
     type: 'sprite',
     src: `${spriteName}.png`,
@@ -839,11 +839,11 @@ export function generateSpriteConfigFromLayout(layoutName, spriteName, options =
     bindCamera: layoutName.includes('character'),
     frameTime: options.frameTime || 150,
   };
-  
+
   if (options.includePortrait) {
     config.portraitSrc = `${spriteName}_portrait.png`;
   }
-  
+
   return config;
 }
 

@@ -19,7 +19,7 @@ import { processPortraitImage, processSpritesheetImage } from './asset-validatio
  */
 function buildStrictPortraitPrompt(description, options = {}) {
   const style = options.style || 'pixel art';
-  
+
   return `${style} RPG character portrait, head and shoulders only, ${description}.
 
 CRITICAL REQUIREMENTS:
@@ -41,9 +41,9 @@ CRITICAL REQUIREMENTS:
 function buildStrictSpritesheetPrompt(description, config) {
   const { tileSize, directions, framesPerDirection, style } = config;
   const [tileWidth, tileHeight] = tileSize;
-  
-  const directionDesc = directions === 8 
-    ? '8 rows for directions: South, Southeast, East, Northeast, North, Northwest, West, Southwest' 
+
+  const directionDesc = directions === 8
+    ? '8 rows for directions: South, Southeast, East, Northeast, North, Northwest, West, Southwest'
     : '4 rows for directions: South, East, North, West';
 
   return `${style || 'Pixel art'} game character spritesheet, ${description}.
@@ -61,9 +61,9 @@ EXACT LAYOUT REQUIREMENTS:
 - Top-down 3/4 perspective (classic RPG style)
 
 ROW ORDER (top to bottom):
-${directions === 8 ? 
-  '1. South (facing down/toward camera)\n2. Southeast\n3. East (facing right)\n4. Northeast\n5. North (facing away)\n6. Northwest\n7. West (facing left)\n8. Southwest' :
-  '1. South (facing down)\n2. East (facing right)\n3. North (facing away)\n4. West (facing left)'}
+${directions === 8 ?
+      '1. South (facing down/toward camera)\n2. Southeast\n3. East (facing right)\n4. Northeast\n5. North (facing away)\n6. Northwest\n7. West (facing left)\n8. Southwest' :
+      '1. South (facing down)\n2. East (facing right)\n3. North (facing away)\n4. West (facing left)'}
 
 Each row shows the same walk cycle animation from that viewing angle.`;
 }
@@ -76,7 +76,7 @@ Each row shows the same walk cycle animation from that viewing angle.`;
  */
 export async function generatePortrait(description, options = {}) {
   const prompt = buildStrictPortraitPrompt(description, options);
-  
+
   const imageData = await aiService.generateImage(prompt, {
     size: '1024x1024',
     quality: options.quality || 'standard',
@@ -85,7 +85,7 @@ export async function generatePortrait(description, options = {}) {
 
   // Post-process: center crop to square, focus on face area
   const processed = await processPortraitImage(imageData, options.targetSize || 256);
-  
+
   return processed;
 }
 
@@ -97,7 +97,7 @@ export async function generatePortrait(description, options = {}) {
  */
 export async function generateSpritesheet(description, config) {
   const prompt = buildStrictSpritesheetPrompt(description, config);
-  
+
   // Determine optimal DALL-E size based on aspect ratio
   const { sheetSize } = config;
   let genSize = '1024x1024';
@@ -110,7 +110,7 @@ export async function generateSpritesheet(description, config) {
       genSize = '1792x1024'; // Wide
     }
   }
-  
+
   const imageData = await aiService.generateImage(prompt, {
     size: genSize,
     quality: 'hd', // Use HD for spritesheets to preserve detail
@@ -125,9 +125,9 @@ export async function generateSpritesheet(description, config) {
     directions: config.directions === 8 ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW'] : ['S', 'E', 'N', 'W'],
     framesPerDirection: config.framesPerDirection,
   };
-  
+
   const processed = await processSpritesheetImage(imageData, layout);
-  
+
   return processed;
 }
 
@@ -152,7 +152,7 @@ export async function generateSpriteFrame(description, direction, action, option
   };
 
   const directionDesc = directionNames[direction] || 'facing forward';
-  
+
   const prompt = `Pixel art game sprite, single character, ${description}, ${directionDesc}, ${action} pose.
 
 REQUIREMENTS:
@@ -218,14 +218,14 @@ Tiles must connect seamlessly when placed adjacent.`;
  */
 export async function generateEffect(description, config = {}) {
   const frames = config.frames || 8;
-  
+
   const prompt = `Pixel art effect animation spritesheet, ${description}.
 
 EXACT LAYOUT:
 - Horizontal strip of ${frames} frames
 - Each frame shows progression of the effect
 - Frame 1: Effect start/small
-- Frame ${Math.floor(frames/2)}: Effect peak/largest
+- Frame ${Math.floor(frames / 2)}: Effect peak/largest
 - Frame ${frames}: Effect fade/end
 - Transparent background
 - Glowing/magical appearance
@@ -248,7 +248,7 @@ EXACT LAYOUT:
  */
 export async function generateBackdrop(description, options = {}) {
   const style = options.style || 'pixel art';
-  
+
   const prompt = `${style} game background scene, ${description}.
 
 REQUIREMENTS:
@@ -277,11 +277,11 @@ REQUIREMENTS:
 export function base64ToBlob(base64, mimeType = 'image/png') {
   const byteCharacters = atob(base64);
   const byteNumbers = new Array(byteCharacters.length);
-  
+
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
-  
+
   const byteArray = new Uint8Array(byteNumbers);
   return new Blob([byteArray], { type: mimeType });
 }
@@ -300,12 +300,12 @@ export async function resizeImage(base64, targetWidth, targetHeight) {
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
       canvas.height = targetHeight;
-      
+
       const ctx = canvas.getContext('2d');
       // Use nearest-neighbor scaling for pixel art
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-      
+
       const resized = canvas.toDataURL('image/png').split(',')[1];
       resolve(resized);
     };
@@ -330,11 +330,11 @@ export async function extractRegion(base64, x, y, width, height) {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
-      
+
       const ctx = canvas.getContext('2d');
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
-      
+
       const extracted = canvas.toDataURL('image/png').split(',')[1];
       resolve(extracted);
     };
@@ -352,14 +352,14 @@ export async function extractRegion(base64, x, y, width, height) {
 export async function composeSpritesheet(frames, config) {
   const { tileSize, framesPerDirection, directions } = config;
   const [tileWidth, tileHeight] = tileSize;
-  
+
   const cols = framesPerDirection;
   const rows = directions;
-  
+
   const canvas = document.createElement('canvas');
   canvas.width = cols * tileWidth;
   canvas.height = rows * tileHeight;
-  
+
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
@@ -367,7 +367,7 @@ export async function composeSpritesheet(frames, config) {
   for (let i = 0; i < frames.length; i++) {
     const row = Math.floor(i / cols);
     const col = i % cols;
-    
+
     await new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {

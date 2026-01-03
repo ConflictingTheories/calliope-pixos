@@ -29,25 +29,25 @@ import { ButtonToolbar, IconButton, ButtonGroup, Tooltip, Whisper, Divider, Badg
 // Icon components (using simple SVG icons for standalone use)
 const UndoIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-    <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+    <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z" />
   </svg>
 );
 
 const RedoIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-    <path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/>
+    <path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z" />
   </svg>
 );
 
 const SaveIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-    <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+    <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
   </svg>
 );
 
 const HelpIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
   </svg>
 );
 
@@ -114,7 +114,7 @@ function EditorToolbar({
   }, [handleKeyDown]);
 
   return (
-    <div 
+    <div
       className={`editor-toolbar ${className}`}
       style={{
         display: 'flex',
@@ -131,21 +131,21 @@ function EditorToolbar({
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {title && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h3 style={{ 
-              margin: 0, 
-              fontSize: '16px', 
+            <h3 style={{
+              margin: 0,
+              fontSize: '16px',
               fontWeight: 600,
               color: 'var(--rs-text-primary, #fff)'
             }}>
               {title}
             </h3>
             {hasChanges && (
-              <Badge 
-                content="•" 
-                style={{ 
+              <Badge
+                content="•"
+                style={{
                   background: 'var(--rs-orange-500, #ff9800)',
                   marginLeft: '4px'
-                }} 
+                }}
               />
             )}
           </div>
@@ -186,10 +186,10 @@ function EditorToolbar({
         {extraActions.length > 0 && (
           <ButtonToolbar>
             {extraActions.map((action, i) => (
-              <Whisper 
-                key={i} 
-                placement="bottom" 
-                trigger="hover" 
+              <Whisper
+                key={i}
+                placement="bottom"
+                trigger="hover"
                 speaker={<Tooltip>{action.label}</Tooltip>}
               >
                 <IconButton
@@ -210,10 +210,10 @@ function EditorToolbar({
       {/* Right Section: Save + Right Actions + Help */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {rightActions.map((action, i) => (
-          <Whisper 
-            key={i} 
-            placement="bottom" 
-            trigger="hover" 
+          <Whisper
+            key={i}
+            placement="bottom"
+            trigger="hover"
             speaker={<Tooltip>{action.label}</Tooltip>}
           >
             <IconButton

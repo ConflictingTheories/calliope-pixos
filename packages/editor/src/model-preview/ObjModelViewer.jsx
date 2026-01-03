@@ -123,12 +123,12 @@ const vec3 = {
     out[2] = ax * by - ay * bx;
     return out;
   },
-  dot: (a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
   length: (v) => Math.hypot(v[0], v[1], v[2]),
-  normalize: (v, out=[0,0,0]) => {
+  normalize: (v, out = [0, 0, 0]) => {
     const len = vec3.length(v);
-    if(len === 0) return out;
-    out[0] = v[0]/len; out[1] = v[1]/len; out[2] = v[2]/len;
+    if (len === 0) return out;
+    out[0] = v[0] / len; out[1] = v[1] / len; out[2] = v[2] / len;
     return out;
   },
 };
@@ -187,7 +187,7 @@ function parseOBJ(text) {
     if (!line || line[0] === '#') continue;
     const parts = line.split(/\s+/);
 
-    if(parts[0] === 'v') {
+    if (parts[0] === 'v') {
       positions.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
     } else if (parts[0] === 'vt') {
       uvs.push(parseFloat(parts[1]), 1.0 - parseFloat(parts[2]));
@@ -203,52 +203,52 @@ function parseOBJ(text) {
         };
       });
 
-      for(let i=1; i<faceVerts.length-1; i++) {
-        const fv = [faceVerts[0], faceVerts[i], faceVerts[i+1]];
+      for (let i = 1; i < faceVerts.length - 1; i++) {
+        const fv = [faceVerts[0], faceVerts[i], faceVerts[i + 1]];
 
         const triPos = fv.map(f => {
-          if (!f.v) return [0,0,0];
-          const i = f.v > 0 ? f.v-1 : positions.length/3 + f.v;
-          const off = i*3;
-          return [positions[off], positions[off+1], positions[off+2]];
+          if (!f.v) return [0, 0, 0];
+          const i = f.v > 0 ? f.v - 1 : positions.length / 3 + f.v;
+          const off = i * 3;
+          return [positions[off], positions[off + 1], positions[off + 2]];
         });
 
         const triUv = fv.map(f => {
-          if (!f.vt) return [0,0];
-          const i = f.vt > 0 ? f.vt-1 : uvs.length/2 + f.vt;
-          const off = i*2;
-          return [uvs[off], uvs[off+1]];
+          if (!f.vt) return [0, 0];
+          const i = f.vt > 0 ? f.vt - 1 : uvs.length / 2 + f.vt;
+          const off = i * 2;
+          return [uvs[off], uvs[off + 1]];
         });
 
         const useFaceNormal = fv[0].vn == null && fv[1].vn == null && fv[2].vn == null;
-        let faceNormal = [0,0,0];
-        if(useFaceNormal) {
+        let faceNormal = [0, 0, 0];
+        if (useFaceNormal) {
           const e1 = vec3.sub(triPos[1], triPos[0]);
           const e2 = vec3.sub(triPos[2], triPos[0]);
           vec3.cross(e1, e2, faceNormal);
           vec3.normalize(faceNormal, faceNormal);
         }
 
-        for(let k=0; k<3; k++) {
+        for (let k = 0; k < 3; k++) {
           currentMesh.positions.push(triPos[k][0], triPos[k][1], triPos[k][2]);
           currentMesh.uvs.push(triUv[k][0], triUv[k][1]);
 
-          if(fv[k].vn != null) {
-            const i = fv[k].vn > 0 ? fv[k].vn-1 : normals.length/3 + fv[k].vn;
-            const off = i*3;
-            currentMesh.normals.push(normals[off], normals[off+1], normals[off+2]);
+          if (fv[k].vn != null) {
+            const i = fv[k].vn > 0 ? fv[k].vn - 1 : normals.length / 3 + fv[k].vn;
+            const off = i * 3;
+            currentMesh.normals.push(normals[off], normals[off + 1], normals[off + 2]);
           } else {
             currentMesh.normals.push(faceNormal[0], faceNormal[1], faceNormal[2]);
           }
         }
       }
-    } else if(parts[0] === 'usemtl') {
-      if(currentMesh.positions.length > 0) meshes.push(currentMesh);
+    } else if (parts[0] === 'usemtl') {
+      if (currentMesh.positions.length > 0) meshes.push(currentMesh);
       currentMaterial = parts[1];
       currentMesh = { positions: [], uvs: [], normals: [], material: currentMaterial };
     }
   }
-  if(currentMesh.positions.length > 0) meshes.push(currentMesh);
+  if (currentMesh.positions.length > 0) meshes.push(currentMesh);
   return meshes;
 }
 
@@ -257,21 +257,21 @@ function parseMTL(text) {
   let current = null;
   const lines = text.split(/\r?\n/);
 
-  for(let line of lines) {
+  for (let line of lines) {
     line = line.trim();
-    if(!line || line.startsWith('#')) continue;
+    if (!line || line.startsWith('#')) continue;
     const parts = line.split(/\s+/);
 
-    if(parts[0] === 'newmtl') {
+    if (parts[0] === 'newmtl') {
       current = parts[1];
-      materials[current] = { Ka: [1,1,1], Kd: [0.8,0.8,0.8], Ks: [1,1,1], Ns: 50 };
-    } else if(current) {
-      if(parts[0] === 'Ka' || parts[0] === 'Kd' || parts[0] === 'Ks') {
+      materials[current] = { Ka: [1, 1, 1], Kd: [0.8, 0.8, 0.8], Ks: [1, 1, 1], Ns: 50 };
+    } else if (current) {
+      if (parts[0] === 'Ka' || parts[0] === 'Kd' || parts[0] === 'Ks') {
         const vals = parts.slice(1).map(parseFloat);
         materials[current][parts[0]] = vals.length === 1 ? [vals[0], vals[0], vals[0]] : vals;
-      } else if(parts[0] === 'Ns') {
+      } else if (parts[0] === 'Ns') {
         materials[current].Ns = parseFloat(parts[1]);
-      } else if(parts[0] === 'map_Kd') {
+      } else if (parts[0] === 'map_Kd') {
         materials[current].map_Kd = parts.slice(1).join(' ');
       }
     }
@@ -299,9 +299,9 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
   const [loadedTextures, setLoadedTextures] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const cameraRef = useRef({ theta: 0, phi: 0.2, distance: 5, center: [0,0,0], up: [0,1,0], position: [0, 0, 5] });
+  const cameraRef = useRef({ theta: 0, phi: 0.2, distance: 5, center: [0, 0, 0], up: [0, 1, 0], position: [0, 0, 5] });
   const draggingRef = useRef(false);
-  const lastMouseRef = useRef({ x:0, y: 0 });
+  const lastMouseRef = useRef({ x: 0, y: 0 });
 
   // Initialize WebGL context
   useEffect(() => {
@@ -385,14 +385,14 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
       try {
         // Parse OBJ
         const parsedMeshes = parseOBJ(objContent);
-        
+
         // Parse MTL if provided
         const parsedMaterials = mtlContent ? parseMTL(mtlContent) : {};
-        
+
         // Load textures from data URIs
         const texMap = {};
         if (textureDataUris && Object.keys(textureDataUris).length > 0) {
-          const texPromises = Object.entries(textureDataUris).map(([name, dataUri]) => 
+          const texPromises = Object.entries(textureDataUris).map(([name, dataUri]) =>
             loadTextureFromDataUri(gl, dataUri, name)
           );
           const results = await Promise.all(texPromises);
@@ -401,14 +401,14 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
           });
         }
         setLoadedTextures(texMap);
-        
+
         // Assign materials to meshes
         parsedMeshes.forEach(mesh => {
-          mesh.materialProps = parsedMaterials[mesh.material] || { 
-            Ka: [0.25, 0.25, 0.3], 
-            Kd: [0.75, 0.75, 0.75], 
-            Ks: [1,1,1], 
-            Ns: 50 
+          mesh.materialProps = parsedMaterials[mesh.material] || {
+            Ka: [0.25, 0.25, 0.3],
+            Kd: [0.75, 0.75, 0.75],
+            Ks: [1, 1, 1],
+            Ns: 50
           };
           let tex = null;
           if (mesh.materialProps.map_Kd) {
@@ -454,10 +454,10 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
             for (let i = 0; i < mesh.positions.length; i += 3) {
               minX = Math.min(minX, mesh.positions[i]);
               maxX = Math.max(maxX, mesh.positions[i]);
-              minY = Math.min(minY, mesh.positions[i+1]);
-              maxY = Math.max(maxY, mesh.positions[i+1]);
-              minZ = Math.min(minZ, mesh.positions[i+2]);
-              maxZ = Math.max(maxZ, mesh.positions[i+2]);
+              minY = Math.min(minY, mesh.positions[i + 1]);
+              maxY = Math.max(maxY, mesh.positions[i + 1]);
+              minZ = Math.min(minZ, mesh.positions[i + 2]);
+              maxZ = Math.max(maxZ, mesh.positions[i + 2]);
             }
           });
           const centerX = (minX + maxX) / 2;
@@ -511,12 +511,12 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
     };
 
     const canvas = canvasRef.current;
-    const upVec = [0,1,0];
+    const upVec = [0, 1, 0];
 
     let animationFrameId;
 
     function render() {
-      const projectionMatrix = perspective(45*Math.PI/180, canvas.clientWidth/canvas.clientHeight, 0.01, 10000);
+      const projectionMatrix = perspective(45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.01, 10000);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -527,13 +527,13 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
       gl.uniformMatrix4fv(loc.proj, false, projectionMatrix);
       gl.uniformMatrix4fv(loc.view, false, viewMatrix);
       gl.uniform3fv(loc.cameraPos, camera.position);
-      gl.uniform3fv(loc.lightDir, vec3.normalize([0.4,1.0,0.7]));
-      gl.uniform3fv(loc.lightColor, [1,1,1]);
-      gl.uniform3fv(loc.ambientLight, [0.25,0.25,0.3]);
+      gl.uniform3fv(loc.lightDir, vec3.normalize([0.4, 1.0, 0.7]));
+      gl.uniform3fv(loc.lightColor, [1, 1, 1]);
+      gl.uniform3fv(loc.ambientLight, [0.25, 0.25, 0.3]);
 
       meshes.forEach(m => {
         gl.bindVertexArray(m.vao);
-        if(m.hasTexture) {
+        if (m.hasTexture) {
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, m.texture);
           gl.uniform1i(loc.mapKd, 0);
@@ -559,16 +559,16 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
   function onMouseDown(e) {
     e.preventDefault();
     draggingRef.current = true;
-    lastMouseRef.current = {x: e.clientX, y: e.clientY};
+    lastMouseRef.current = { x: e.clientX, y: e.clientY };
   }
   function onMouseMove(e) {
-    if(!draggingRef.current) return;
+    if (!draggingRef.current) return;
     const dx = e.clientX - lastMouseRef.current.x;
     const dy = e.clientY - lastMouseRef.current.y;
-    lastMouseRef.current = {x: e.clientX, y: e.clientY};
+    lastMouseRef.current = { x: e.clientX, y: e.clientY };
     cameraRef.current.theta -= dx * 0.005;
     cameraRef.current.phi -= dy * 0.005;
-    cameraRef.current.phi = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, cameraRef.current.phi));
+    cameraRef.current.phi = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, cameraRef.current.phi));
   }
   function onMouseUp() {
     draggingRef.current = false;
@@ -581,24 +581,24 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
   }
 
   return (
-    <div className="editor-tool-container" style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
+    <div className="editor-tool-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
       height: '100%',
       minHeight: 0,
       overflow: 'hidden'
     }}>
-      <Panel bordered header={<strong>OBJ Model Viewer</strong>} style={{ 
-        margin: '1rem', 
+      <Panel bordered header={<strong>OBJ Model Viewer</strong>} style={{
+        margin: '1rem',
         flex: '1 1 auto',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
         overflow: 'hidden'
       }}>
-        <div style={{ 
-          padding: '0.5rem', 
-          background: 'var(--rs-bg-card, #1a1d24)', 
+        <div style={{
+          padding: '0.5rem',
+          background: 'var(--rs-bg-card, #1a1d24)',
           borderRadius: '4px',
           marginBottom: '0.5rem',
           flexShrink: 0,
@@ -614,19 +614,19 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
             Drag to rotate • Scroll to zoom
           </span>
         </div>
-        <canvas 
-          ref={canvasRef} 
+        <canvas
+          ref={canvasRef}
           style={{
             flex: '1 1 auto',
-            width: '100%', 
+            width: '100%',
             minHeight: 0,
-            border: '1px solid #333', 
-            background: '#141418', 
-            touchAction: 'none', 
+            border: '1px solid #333',
+            background: '#141418',
+            touchAction: 'none',
             userSelect: 'none',
             borderRadius: '4px'
-          }} 
-          width={800} 
+          }}
+          width={800}
           height={600}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}

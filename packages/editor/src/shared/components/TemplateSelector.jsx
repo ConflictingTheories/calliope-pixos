@@ -54,16 +54,16 @@ function TemplateCard({ template, onSelect }) {
         <span style={{ fontSize: '1.5rem' }}>{template.icon}</span>
         <span style={{ fontWeight: 'bold', fontSize: '1rem' }}>{template.name}</span>
       </div>
-      
-      <p style={{ 
-        fontSize: '0.85rem', 
+
+      <p style={{
+        fontSize: '0.85rem',
         color: 'var(--rs-text-secondary)',
         margin: 0,
         flex: 1
       }}>
         {template.description}
       </p>
-      
+
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         <Tag color={difficultyColors[template.difficulty]} size="sm">
           {template.difficulty}
@@ -102,7 +102,7 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       if (selectedCategory && template.difficulty !== selectedCategory) {
         return false;
       }
-      
+
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -112,7 +112,7 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
           template.tags.some(tag => tag.toLowerCase().includes(query))
         );
       }
-      
+
       return true;
     });
   }, [searchQuery, selectedCategory]);
@@ -145,9 +145,9 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       }}
     >
       {/* Search and Filter Bar */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '1rem', 
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
         marginBottom: '1rem',
         flexWrap: 'wrap'
       }}>
@@ -161,7 +161,7 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
             onChange={setSearchQuery}
           />
         </InputGroup>
-        
+
         <SelectPicker
           data={categoryOptions}
           value={selectedCategory}
@@ -190,9 +190,9 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
             />
           ))
         ) : (
-          <div style={{ 
-            gridColumn: '1 / -1', 
-            textAlign: 'center', 
+          <div style={{
+            gridColumn: '1 / -1',
+            textAlign: 'center',
             padding: '2rem',
             color: 'var(--rs-text-secondary)'
           }}>
@@ -202,9 +202,9 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       </div>
 
       {/* Create Blank Project Option */}
-      <div style={{ 
-        marginTop: '1rem', 
-        paddingTop: '1rem', 
+      <div style={{
+        marginTop: '1rem',
+        paddingTop: '1rem',
         borderTop: '1px solid var(--rs-border-primary)',
         textAlign: 'center'
       }}>
@@ -226,9 +226,9 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
  */
 export function expandTemplateFiles(template) {
   const files = {};
-  
+
   if (!template.files) return files;
-  
+
   for (const [path, content] of Object.entries(template.files)) {
     if (typeof content === 'string') {
       files[path] = content;
@@ -236,6 +236,6 @@ export function expandTemplateFiles(template) {
       files[path] = JSON.stringify(content, null, 2);
     }
   }
-  
+
   return files;
 }

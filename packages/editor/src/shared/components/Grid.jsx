@@ -261,14 +261,14 @@ export function alignToGrid(items, gridSize, horizontal = 'left', vertical = 'to
 export function distributeOnGrid(items, gridSize, direction = 'horizontal') {
   if (items.length < 2) return items;
 
-  const sorted = [...items].sort((a, b) => 
+  const sorted = [...items].sort((a, b) =>
     direction === 'horizontal' ? a.x - b.x : a.y - b.y
   );
 
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
-  const totalDistance = direction === 'horizontal' 
-    ? last.x - first.x 
+  const totalDistance = direction === 'horizontal'
+    ? last.x - first.x
     : last.y - first.y;
   const step = totalDistance / (items.length - 1);
   const gridStep = Math.round(step / gridSize) * gridSize;

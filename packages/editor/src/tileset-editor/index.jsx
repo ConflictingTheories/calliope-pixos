@@ -235,14 +235,14 @@ function TilesetEditor({ content, onSave, assets = [] }) {
 
   // Tile Render
   function drawLayer(L, v, p, isEdit) {
-    
+
     const m = identity();
- 
+
     // position block and rotate accordingly - todo needs work
     // rotate(m, m, degToRad(90), [0, 0, 1]);
     // rotate(m, m, degToRad(90), [1, 0, 0]);
     // rotate(m, m, degToRad(90), [0, 1, 0]);
-    
+
     const mvp = mul(p, mul(v, m)), nmat = invert(m);
     gl.useProgram(prog);
     gl.uniformMatrix4fv(loc.u_mvp, false, new Float32Array(mvp));

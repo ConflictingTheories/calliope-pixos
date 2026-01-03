@@ -40,8 +40,8 @@ const HELP_CONTENT = {
   editors: {
     title: '🛠️ Editors',
     items: [
-      { 
-        name: 'Map Editor', 
+      {
+        name: 'Map Editor',
         icon: '🗺️',
         tips: [
           'Use layers to organize tiles, objects, and triggers',
@@ -50,8 +50,8 @@ const HELP_CONTENT = {
           'Double-click a tile to edit properties'
         ]
       },
-      { 
-        name: 'Sprite Editor', 
+      {
+        name: 'Sprite Editor',
         icon: '🎨',
         tips: [
           'Each sprite can have multiple animations',
@@ -60,8 +60,8 @@ const HELP_CONTENT = {
           'Preview animations with the playback controls'
         ]
       },
-      { 
-        name: 'Cutscene Editor', 
+      {
+        name: 'Cutscene Editor',
         icon: '🎬',
         tips: [
           'Drag to reorder timeline events',
@@ -70,8 +70,8 @@ const HELP_CONTENT = {
           'Add dialogue, camera moves, and effects'
         ]
       },
-      { 
-        name: 'Script Editor', 
+      {
+        name: 'Script Editor',
         icon: '📝',
         tips: [
           'PixoScript is Lua-inspired - easy to learn!',
@@ -80,8 +80,8 @@ const HELP_CONTENT = {
           'Check API docs for available functions'
         ]
       },
-      { 
-        name: 'Tileset Editor', 
+      {
+        name: 'Tileset Editor',
         icon: '🧱',
         tips: [
           'Define collision, walkability per tile',
@@ -150,8 +150,8 @@ export default function HelpPanel({ show, onClose, activeEditor = null }) {
   const renderEditors = () => (
     <div className="help-editors">
       {HELP_CONTENT.editors.items.map((editor, index) => (
-        <Panel 
-          key={index} 
+        <Panel
+          key={index}
           header={<><span className="editor-icon">{editor.icon}</span> {editor.name}</>}
           collapsible
           bordered
@@ -192,10 +192,10 @@ export default function HelpPanel({ show, onClose, activeEditor = null }) {
   const renderLinks = () => (
     <div className="help-links">
       {HELP_CONTENT.links.items.map((item, index) => (
-        <a 
-          key={index} 
-          href={item.url} 
-          target="_blank" 
+        <a
+          key={index}
+          href={item.url}
+          target="_blank"
           rel="noopener noreferrer"
           className="help-link-item"
         >

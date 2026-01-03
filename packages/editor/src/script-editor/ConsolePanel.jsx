@@ -48,7 +48,7 @@ export default function ConsolePanel({
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [filter, setFilter] = useState('all');
   const [autoScroll, setAutoScroll] = useState(true);
-  
+
   const consoleRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -95,8 +95,8 @@ export default function ConsolePanel({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (commandHistory.length > 0) {
-        const newIndex = historyIndex === -1 
-          ? commandHistory.length - 1 
+        const newIndex = historyIndex === -1
+          ? commandHistory.length - 1
           : Math.max(0, historyIndex - 1);
         setHistoryIndex(newIndex);
         setInputValue(commandHistory[newIndex] || '');
@@ -136,10 +136,10 @@ export default function ConsolePanel({
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
+    return date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
       second: '2-digit',
       fractionalSecondDigits: 3,
     });
@@ -172,10 +172,10 @@ export default function ConsolePanel({
             </span>
           )}
         </div>
-        
+
         <div className="console-toolbar-center">
-          <select 
-            value={filter} 
+          <select
+            value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="console-filter"
           >
@@ -185,9 +185,9 @@ export default function ConsolePanel({
             <option value="debug">Debug Only</option>
           </select>
         </div>
-        
+
         <div className="console-toolbar-right">
-          <button 
+          <button
             className="console-btn"
             onClick={() => setAutoScroll(!autoScroll)}
             title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
@@ -195,7 +195,7 @@ export default function ConsolePanel({
             {autoScroll ? '⬇' : '⏸'}
           </button>
           {isRunning && onStop && (
-            <button 
+            <button
               className="console-btn console-btn-stop"
               onClick={onStop}
               title="Stop execution"
@@ -204,7 +204,7 @@ export default function ConsolePanel({
             </button>
           )}
           {onClear && (
-            <button 
+            <button
               className="console-btn"
               onClick={onClear}
               title="Clear console (Ctrl+L)"
@@ -216,7 +216,7 @@ export default function ConsolePanel({
       </div>
 
       {/* Messages */}
-      <div 
+      <div
         ref={consoleRef}
         className="console-messages"
         onScroll={handleScroll}
@@ -229,7 +229,7 @@ export default function ConsolePanel({
           </div>
         ) : (
           filteredMessages.map((msg, idx) => (
-            <div 
+            <div
               key={msg.id || idx}
               className={`console-message console-${msg.type || 'info'}`}
             >
@@ -300,7 +300,7 @@ export function useConsole() {
   const error = useCallback((text, options) => log(text, ConsoleMessageType.ERROR, options), [log]);
   const success = useCallback((text, options) => log(text, ConsoleMessageType.SUCCESS, options), [log]);
   const debug = useCallback((text, options) => log(text, ConsoleMessageType.DEBUG, options), [log]);
-  
+
   const output = useCallback((text, options) => {
     return log(text, ConsoleMessageType.OUTPUT, options);
   }, [log]);

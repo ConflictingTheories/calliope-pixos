@@ -107,7 +107,7 @@ function ContextMenu({
   const handleItemClick = useCallback((item, e) => {
     e.stopPropagation();
     if (item.disabled || item.separator) return;
-    
+
     item.onClick?.();
     if (!item.submenu) {
       onClose?.();
@@ -149,7 +149,7 @@ function ContextMenu({
             <span className="context-menu__label">{item.label}</span>
             {item.shortcut && <span className="context-menu__shortcut">{item.shortcut}</span>}
             {hasSubmenu && <span className="context-menu__arrow"><ChevronRightIcon /></span>}
-            
+
             {/* Submenu */}
             {hasSubmenu && activeSubmenu === item.id && (
               <div className="context-menu__submenu">
@@ -187,7 +187,7 @@ function ContextMenu({
 function ChevronRightIcon() {
   return (
     <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
     </svg>
   );
 }

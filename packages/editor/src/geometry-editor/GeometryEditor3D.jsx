@@ -56,7 +56,7 @@ function GeometryEditor3D({ content, onSave }) {
 
     try {
       const obj = JSON.parse(content);
-      
+
       // Handle different formats
       if (obj.geometry && typeof obj.geometry === 'object') {
         setGeometryData(obj.geometry);

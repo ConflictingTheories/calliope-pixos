@@ -425,10 +425,8 @@
 
 /* Image preview with checkerboard background */
 .asset-card-image {
-  background: repeating-conic-gradient(
-    rgba(255, 255, 255, 0.03) 0% 25%,
-    rgba(255, 255, 255, 0.05) 0% 50%
-  ) 50% / 12px 12px;
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.03) 0% 25%,
+      rgba(255, 255, 255, 0.05) 0% 50%) 50% / 12px 12px;
   padding: 16px;
   display: flex;
   justify-content: center;
@@ -617,21 +615,21 @@
   .ai-generator-content {
     padding: 12px;
   }
-  
+
   .ai-prompt-controls {
     flex-direction: column;
   }
-  
+
   .ai-prompt-controls .rs-picker,
   .ai-prompt-controls .rs-btn-primary {
     width: 100%;
     max-width: none;
   }
-  
+
   .ai-results-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .ai-results-header {
     flex-direction: column;
     gap: 8px;

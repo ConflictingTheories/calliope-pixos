@@ -284,16 +284,16 @@ export function prefersReducedMotion() {
  */
 export function responsive(values, defaultValue) {
   if (typeof window === 'undefined') return defaultValue;
-  
+
   const width = window.innerWidth;
   const breakpointOrder = ['2xl', 'xl', 'lg', 'md', 'sm'];
-  
+
   for (const bp of breakpointOrder) {
     if (width >= breakpoints[bp] && values[bp] !== undefined) {
       return values[bp];
     }
   }
-  
+
   return values.default ?? defaultValue;
 }
 

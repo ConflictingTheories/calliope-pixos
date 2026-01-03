@@ -93,15 +93,24 @@
   --font-display: 'Inter', var(--font-sans);
 
   /* Font Sizes (using 4px base unit scaled) */
-  --font-size-xs: 0.6875rem;   /* 11px */
-  --font-size-sm: 0.8125rem;   /* 13px */
-  --font-size-base: 0.875rem;  /* 14px */
-  --font-size-md: 1rem;        /* 16px */
-  --font-size-lg: 1.125rem;    /* 18px */
-  --font-size-xl: 1.25rem;     /* 20px */
-  --font-size-2xl: 1.5rem;     /* 24px */
-  --font-size-3xl: 1.875rem;   /* 30px */
-  --font-size-4xl: 2.25rem;    /* 36px */
+  --font-size-xs: 0.6875rem;
+  /* 11px */
+  --font-size-sm: 0.8125rem;
+  /* 13px */
+  --font-size-base: 0.875rem;
+  /* 14px */
+  --font-size-md: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
 
   /* Line Heights */
   --line-height-tight: 1.2;
@@ -204,26 +213,46 @@
 :root {
   --spacing-0: 0;
   --spacing-px: 1px;
-  --spacing-0-5: 0.125rem;  /* 2px */
-  --spacing-1: 0.25rem;     /* 4px */
-  --spacing-1-5: 0.375rem;  /* 6px */
-  --spacing-2: 0.5rem;      /* 8px */
-  --spacing-2-5: 0.625rem;  /* 10px */
-  --spacing-3: 0.75rem;     /* 12px */
-  --spacing-3-5: 0.875rem;  /* 14px */
-  --spacing-4: 1rem;        /* 16px */
-  --spacing-5: 1.25rem;     /* 20px */
-  --spacing-6: 1.5rem;      /* 24px */
-  --spacing-7: 1.75rem;     /* 28px */
-  --spacing-8: 2rem;        /* 32px */
-  --spacing-9: 2.25rem;     /* 36px */
-  --spacing-10: 2.5rem;     /* 40px */
-  --spacing-12: 3rem;       /* 48px */
-  --spacing-14: 3.5rem;     /* 56px */
-  --spacing-16: 4rem;       /* 64px */
-  --spacing-20: 5rem;       /* 80px */
-  --spacing-24: 6rem;       /* 96px */
-  --spacing-32: 8rem;       /* 128px */
+  --spacing-0-5: 0.125rem;
+  /* 2px */
+  --spacing-1: 0.25rem;
+  /* 4px */
+  --spacing-1-5: 0.375rem;
+  /* 6px */
+  --spacing-2: 0.5rem;
+  /* 8px */
+  --spacing-2-5: 0.625rem;
+  /* 10px */
+  --spacing-3: 0.75rem;
+  /* 12px */
+  --spacing-3-5: 0.875rem;
+  /* 14px */
+  --spacing-4: 1rem;
+  /* 16px */
+  --spacing-5: 1.25rem;
+  /* 20px */
+  --spacing-6: 1.5rem;
+  /* 24px */
+  --spacing-7: 1.75rem;
+  /* 28px */
+  --spacing-8: 2rem;
+  /* 32px */
+  --spacing-9: 2.25rem;
+  /* 36px */
+  --spacing-10: 2.5rem;
+  /* 40px */
+  --spacing-12: 3rem;
+  /* 48px */
+  --spacing-14: 3.5rem;
+  /* 56px */
+  --spacing-16: 4rem;
+  /* 64px */
+  --spacing-20: 5rem;
+  /* 80px */
+  --spacing-24: 6rem;
+  /* 96px */
+  --spacing-32: 8rem;
+  /* 128px */
 
   /* Semantic Spacing Aliases */
   --spacing-xs: var(--spacing-1);
@@ -246,7 +275,7 @@
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3), 0 8px 10px rgba(0, 0, 0, 0.35);
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.4);
   --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  
+
   /* Colored Shadows (for interactive elements) */
   --shadow-primary: 0 4px 14px rgba(255, 107, 157, 0.25);
   --shadow-secondary: 0 4px 14px rgba(124, 77, 255, 0.25);
@@ -263,14 +292,22 @@
  * ============================================================ */
 :root {
   --radius-none: 0;
-  --radius-sm: 0.125rem;   /* 2px - subtle rounding */
-  --radius-default: 0.25rem; /* 4px - standard */
-  --radius-md: 0.375rem;   /* 6px */
-  --radius-lg: 0.5rem;     /* 8px */
-  --radius-xl: 0.75rem;    /* 12px */
-  --radius-2xl: 1rem;      /* 16px */
-  --radius-3xl: 1.5rem;    /* 24px */
-  --radius-full: 9999px;   /* Pill shape */
+  --radius-sm: 0.125rem;
+  /* 2px - subtle rounding */
+  --radius-default: 0.25rem;
+  /* 4px - standard */
+  --radius-md: 0.375rem;
+  /* 6px */
+  --radius-lg: 0.5rem;
+  /* 8px */
+  --radius-xl: 0.75rem;
+  /* 12px */
+  --radius-2xl: 1rem;
+  /* 16px */
+  --radius-3xl: 1.5rem;
+  /* 24px */
+  --radius-full: 9999px;
+  /* Pill shape */
 }
 
 /* ============================================================
@@ -294,9 +331,9 @@
   --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 
   /* Common Transitions */
-  --transition-colors: color var(--duration-normal) var(--ease-in-out), 
-                       background-color var(--duration-normal) var(--ease-in-out), 
-                       border-color var(--duration-normal) var(--ease-in-out);
+  --transition-colors: color var(--duration-normal) var(--ease-in-out),
+    background-color var(--duration-normal) var(--ease-in-out),
+    border-color var(--duration-normal) var(--ease-in-out);
   --transition-opacity: opacity var(--duration-normal) var(--ease-in-out);
   --transition-transform: transform var(--duration-normal) var(--ease-out);
   --transition-all: all var(--duration-normal) var(--ease-in-out);
@@ -305,43 +342,95 @@
 
 /* Utility Keyframes */
 @keyframes ds-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes ds-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes ds-bounce {
-  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
-  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
 }
 
 @keyframes ds-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes ds-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes ds-slide-up {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes ds-slide-down {
-  from { transform: translateY(-10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes ds-scale-in {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ============================================================
@@ -380,12 +469,10 @@
   --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
   --gradient-surface: linear-gradient(135deg, var(--color-surface-1), var(--color-surface-2));
   --gradient-panel: linear-gradient(135deg, rgba(15, 15, 30, 0.95), rgba(20, 25, 45, 0.9));
-  --gradient-shimmer: linear-gradient(
-    90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.05) 50%, 
-    transparent 100%
-  );
+  --gradient-shimmer: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%);
 }
 
 /* ============================================================
@@ -396,7 +483,7 @@
   --blur-md: blur(8px);
   --blur-lg: blur(12px);
   --blur-xl: blur(24px);
-  
+
   --backdrop-blur: blur(12px);
   --backdrop-saturate: saturate(180%);
 }
@@ -421,8 +508,8 @@
 .focus-ring:focus,
 .focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg), 
-              0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
 }
 
 /* Focus-visible for keyboard users only */
@@ -432,12 +519,13 @@
 
 .focus-visible-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg), 
-              0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
 }
 
 /* Reduce motion preference */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

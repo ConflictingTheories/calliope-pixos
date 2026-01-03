@@ -50,8 +50,8 @@ export const GenerationStatus = {
 export class AssetOrchestrator {
   constructor(options = {}) {
     this.writeFile = options.writeFile;
-    this.onProgress = options.onProgress || (() => {});
-    this.onStatusChange = options.onStatusChange || (() => {});
+    this.onProgress = options.onProgress || (() => { });
+    this.onStatusChange = options.onStatusChange || (() => { });
     this.generatedAssets = [];
     this.errors = [];
   }
@@ -65,7 +65,7 @@ export class AssetOrchestrator {
     // Analyze the prompt
     this.onStatusChange({ phase: 'analyzing', message: 'Analyzing prompt...' });
     const analysis = analyzePrompt(prompt);
-    
+
     // Generate based on analysis
     return this.executeGenerationPlan(analysis);
   }
@@ -143,8 +143,8 @@ export class AssetOrchestrator {
       });
     }
 
-    this.onStatusChange({ 
-      phase: 'complete', 
+    this.onStatusChange({
+      phase: 'complete',
       message: results.success ? 'Generation complete!' : 'Generation completed with errors',
       results,
     });
@@ -171,12 +171,12 @@ export class AssetOrchestrator {
     try {
       // Step 1: Generate sprite configuration JSON
       this.onProgress({ step: 1, total: 4, message: 'Generating sprite configuration...' });
-      
+
       const spriteJson = await this.generateSpriteJson(description, config, spriteName);
-      
+
       const jsonPath = `${folderPath}/${spriteName}.json`;
       const jsonContent = JSON.stringify(spriteJson, null, 2);
-      
+
       results.assets.push({
         type: 'config',
         name: `${spriteName}.json`,
@@ -188,7 +188,7 @@ export class AssetOrchestrator {
       // Step 2: Generate portrait if needed
       if (config.needsPortrait || config.includePortrait) {
         this.onProgress({ step: 2, total: 4, message: 'Generating portrait...' });
-        
+
         try {
           const portraitBase64 = await generatePortrait(description, {
             style: config.style || 'pixel art',
@@ -235,7 +235,7 @@ export class AssetOrchestrator {
 
       // Step 3: Generate spritesheet
       this.onProgress({ step: 3, total: 4, message: 'Generating spritesheet...' });
-      
+
       try {
         const spritesheetBase64 = await generateSpritesheet(description, {
           ...config,
@@ -247,7 +247,7 @@ export class AssetOrchestrator {
             });
           },
         });
-        
+
         const sheetPath = `${folderPath}/${spriteName}.png`;
         const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
 
@@ -282,7 +282,7 @@ export class AssetOrchestrator {
       // Step 4: Generate callbacks/hooks if needed
       if (config.needsHooks) {
         this.onProgress({ step: 4, total: 4, message: 'Generating behavior scripts...' });
-        
+
         try {
           const states = await generateNPCStates(description, {
             role: config.preset,
@@ -327,10 +327,10 @@ export class AssetOrchestrator {
    */
   async generateSpriteJson(description, config, name) {
     const { tileSize, sheetSize, directions, framesPerDirection } = config;
-    
+
     // Calculate frame positions based on layout
     const frames = {};
-    const directionOrder = directions === 8 
+    const directionOrder = directions === 8
       ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW']  // Standard 8-direction layout
       : ['S', 'E', 'N', 'W'];  // Standard 4-direction layout
 
@@ -338,7 +338,7 @@ export class AssetOrchestrator {
       const direction = directionOrder[d];
       const row = d;
       frames[direction] = [];
-      
+
       for (let f = 0; f < framesPerDirection; f++) {
         const x = f * tileSize[0];
         const y = row * tileSize[1];
@@ -377,7 +377,7 @@ export class AssetOrchestrator {
     // Try to get AI-enhanced configuration
     try {
       const aiConfig = await generateSpriteConfig(description, config);
-      
+
       // Merge AI suggestions with our calculated values
       // Keep our calculated frames but take other suggestions
       return {
@@ -459,34 +459,34 @@ export class AssetOrchestrator {
       let ext = '';
 
       switch (config.type) {
-      case 'cutscene':
-        ext = 'pxc';
-        content = await generateCutscene(description, {
-          mood: metadata.style,
-          length: 'medium',
-        });
-        break;
+        case 'cutscene':
+          ext = 'pxc';
+          content = await generateCutscene(description, {
+            mood: metadata.style,
+            length: 'medium',
+          });
+          break;
 
-      case 'script':
-        ext = 'pxs';
-        content = await generateScript(description, 'callback');
-        break;
+        case 'script':
+          ext = 'pxs';
+          content = await generateScript(description, 'callback');
+          break;
 
-      case 'config':
-        ext = 'json';
-        const configObj = await generateSpriteConfig(description, {
-          tileSize: [24, 32],
-          sheetSize: [96, 128],
-          directions: 4,
-          framesPerDirection: 4,
-          preset: 'character',
-        });
-        content = JSON.stringify(configObj, null, 2);
-        break;
+        case 'config':
+          ext = 'json';
+          const configObj = await generateSpriteConfig(description, {
+            tileSize: [24, 32],
+            sheetSize: [96, 128],
+            directions: 4,
+            framesPerDirection: 4,
+            preset: 'character',
+          });
+          content = JSON.stringify(configObj, null, 2);
+          break;
 
-      default:
-        ext = 'pxc';
-        content = await generateCutscene(description);
+        default:
+          ext = 'pxc';
+          content = await generateCutscene(description);
       }
 
       const folder = FOLDER_MAP[config.type] || 'dialogues';
@@ -525,7 +525,7 @@ export class AssetOrchestrator {
     for (const asset of assets) {
       try {
         let content = asset.content;
-        
+
         // Convert Blob to appropriate format if needed
         if (content instanceof Blob) {
           if (asset.contentType.startsWith('text/') || asset.contentType === 'application/json') {
@@ -536,7 +536,7 @@ export class AssetOrchestrator {
 
         await writeFile(asset.path, content);
         results.success.push(asset);
-        
+
       } catch (error) {
         results.failed.push({
           asset,
@@ -567,104 +567,104 @@ export class AssetOrchestrator {
     for (let i = 0; i < retryableErrors.length; i++) {
       const error = retryableErrors[i];
       const ctx = error.retryContext;
-      
-      this.onProgress({ 
-        step: i + 1, 
-        total, 
-        message: `Retrying ${ctx.type}...` 
+
+      this.onProgress({
+        step: i + 1,
+        total,
+        message: `Retrying ${ctx.type}...`
       });
 
       try {
         switch (ctx.type) {
-        case 'portrait': {
-          this.onStatusChange({ phase: 'retrying', message: `Regenerating portrait...` });
-          
-          const portraitBase64 = await generatePortrait(ctx.description, {
-            style: ctx.config.style || 'pixel art',
-            onRetry: (retryInfo) => {
-              this.onStatusChange({
-                phase: 'rate-limited',
-                message: `Portrait: ${retryInfo.message}`,
-                retryInfo,
-              });
-            },
-          });
+          case 'portrait': {
+            this.onStatusChange({ phase: 'retrying', message: `Regenerating portrait...` });
 
-          const portraitBlob = base64ToBlob(portraitBase64, 'image/png');
+            const portraitBase64 = await generatePortrait(ctx.description, {
+              style: ctx.config.style || 'pixel art',
+              onRetry: (retryInfo) => {
+                this.onStatusChange({
+                  phase: 'rate-limited',
+                  message: `Portrait: ${retryInfo.message}`,
+                  retryInfo,
+                });
+              },
+            });
 
-          results.assets.push({
-            type: 'image',
-            subtype: 'portrait',
-            name: `${ctx.spriteName}_portrait.png`,
-            path: ctx.outputPath,
-            content: portraitBlob,
-            contentType: 'image/png',
-            base64: portraitBase64,
-          });
-          break;
-        }
+            const portraitBlob = base64ToBlob(portraitBase64, 'image/png');
 
-        case 'spritesheet': {
-          this.onStatusChange({ phase: 'retrying', message: `Regenerating spritesheet...` });
-          
-          const spritesheetBase64 = await generateSpritesheet(ctx.description, {
-            ...ctx.config,
-            onRetry: (retryInfo) => {
-              this.onStatusChange({
-                phase: 'rate-limited',
-                message: `Spritesheet: ${retryInfo.message}`,
-                retryInfo,
-              });
-            },
-          });
+            results.assets.push({
+              type: 'image',
+              subtype: 'portrait',
+              name: `${ctx.spriteName}_portrait.png`,
+              path: ctx.outputPath,
+              content: portraitBlob,
+              contentType: 'image/png',
+              base64: portraitBase64,
+            });
+            break;
+          }
 
-          const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
+          case 'spritesheet': {
+            this.onStatusChange({ phase: 'retrying', message: `Regenerating spritesheet...` });
 
-          results.assets.push({
-            type: 'image',
-            subtype: 'spritesheet',
-            name: `${ctx.spriteName}.png`,
-            path: ctx.outputPath,
-            content: sheetBlob,
-            contentType: 'image/png',
-            base64: spritesheetBase64,
-          });
-          break;
-        }
+            const spritesheetBase64 = await generateSpritesheet(ctx.description, {
+              ...ctx.config,
+              onRetry: (retryInfo) => {
+                this.onStatusChange({
+                  phase: 'rate-limited',
+                  message: `Spritesheet: ${retryInfo.message}`,
+                  retryInfo,
+                });
+              },
+            });
 
-        case 'audio': {
-          this.onStatusChange({ phase: 'retrying', message: `Regenerating audio...` });
-          
-          const audioData = await generateSpeech(ctx.text, {
-            voice: ctx.config.voice,
-            onRetry: (retryInfo) => {
-              this.onStatusChange({
-                phase: 'rate-limited',
-                message: `Audio: ${retryInfo.message}`,
-                retryInfo,
-              });
-            },
-          });
+            const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
 
-          const audioBlob = createAudioBlob(audioData, 'audio/mpeg');
+            results.assets.push({
+              type: 'image',
+              subtype: 'spritesheet',
+              name: `${ctx.spriteName}.png`,
+              path: ctx.outputPath,
+              content: sheetBlob,
+              contentType: 'image/png',
+              base64: spritesheetBase64,
+            });
+            break;
+          }
 
-          results.assets.push({
-            type: 'audio',
-            subtype: ctx.config.subtype || 'speech',
-            name: ctx.outputPath.split('/').pop(),
-            path: ctx.outputPath,
-            content: audioBlob,
-            contentType: 'audio/mpeg',
-          });
-          break;
-        }
+          case 'audio': {
+            this.onStatusChange({ phase: 'retrying', message: `Regenerating audio...` });
 
-        default:
-          results.errors.push({
-            phase: ctx.type,
-            message: `Unknown retry type: ${ctx.type}`,
-            retryable: false,
-          });
+            const audioData = await generateSpeech(ctx.text, {
+              voice: ctx.config.voice,
+              onRetry: (retryInfo) => {
+                this.onStatusChange({
+                  phase: 'rate-limited',
+                  message: `Audio: ${retryInfo.message}`,
+                  retryInfo,
+                });
+              },
+            });
+
+            const audioBlob = createAudioBlob(audioData, 'audio/mpeg');
+
+            results.assets.push({
+              type: 'audio',
+              subtype: ctx.config.subtype || 'speech',
+              name: ctx.outputPath.split('/').pop(),
+              path: ctx.outputPath,
+              content: audioBlob,
+              contentType: 'audio/mpeg',
+            });
+            break;
+          }
+
+          default:
+            results.errors.push({
+              phase: ctx.type,
+              message: `Unknown retry type: ${ctx.type}`,
+              retryable: false,
+            });
         }
       } catch (retryError) {
         // Re-add to errors with updated message
@@ -679,7 +679,7 @@ export class AssetOrchestrator {
 
     this.onStatusChange({
       phase: 'complete',
-      message: results.success 
+      message: results.success
         ? `Retry complete! Generated ${results.assets.length} asset(s)`
         : `Retry completed with ${results.errors.length} error(s)`,
       results,

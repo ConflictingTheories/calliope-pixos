@@ -28,19 +28,19 @@ import {
 function TilePreview({ components, geometryData, size = 180 }) {
   const canvasRef = useRef(null);
   const [rotation, setRotation] = useState(0);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    
+
     // Clear with dark background
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, width, height);
-    
+
     // Draw subtle grid
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
@@ -55,7 +55,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
       ctx.lineTo(width, i * gridSize);
       ctx.stroke();
     }
-    
+
     if (!components || components.length === 0) {
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.font = '11px system-ui, sans-serif';
@@ -63,7 +63,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
       ctx.fillText('No layers', width / 2, height / 2);
       return;
     }
-    
+
     // Z-up isometric projection (matching engine)
     // Camera orbits around Z axis, looking down at ~30°
     const cos = Math.cos(rotation);
@@ -71,7 +71,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const scale = size * 0.28;
     const cx = width / 2;
     const cy = height / 2 + 15;
-    
+
     // Project 3D point to 2D with Z-up coordinate system
     const project = (x, y, z) => {
       // Rotate around Z axis (vertical)
@@ -82,12 +82,12 @@ function TilePreview({ components, geometryData, size = 180 }) {
       const py = cy - z * scale * 0.8 + (rx + ry) * scale * 0.25;
       return [px, py, rx + ry]; // Include depth for sorting
     };
-    
+
     // Draw ground plane reference
     ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    const corners = [[0,0,0], [1,0,0], [1,1,0], [0,1,0]];
+    const corners = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
     corners.forEach((c, i) => {
       const [px, py] = project(c[0], c[1], c[2]);
       if (i === 0) ctx.moveTo(px, py);
@@ -95,7 +95,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     });
     ctx.closePath();
     ctx.stroke();
-    
+
     // Color palette for layers
     const layerColors = [
       'rgba(125, 211, 252, 0.4)', // cyan
@@ -104,26 +104,26 @@ function TilePreview({ components, geometryData, size = 180 }) {
       'rgba(251, 191, 36, 0.4)',  // amber
       'rgba(244, 114, 182, 0.4)', // pink
     ];
-    
+
     // Draw each layer
     components.forEach((comp, idx) => {
       // Z offset is now applied to Z coordinate (up direction)
       const zOff = (comp.zOffset || 0) * 0.1;
       const color = layerColors[idx % layerColors.length];
       const strokeColor = color.replace('0.4)', '0.8)');
-      
+
       // Get geometry data if available
       let vertices = null;
       if (geometryData && comp.geometry && geometryData[comp.geometry]) {
         vertices = geometryData[comp.geometry].vertices;
       }
-      
+
       if (vertices && vertices.length > 0) {
         // Draw actual geometry with Z offset applied to Z coordinate
         ctx.fillStyle = color;
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1.5;
-        
+
         vertices.forEach(tri => {
           if (!tri || tri.length < 3) return;
           ctx.beginPath();
@@ -143,7 +143,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
         ctx.fillStyle = color;
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1.5;
-        
+
         // Draw a simple flat square on the XY plane at height zOff
         ctx.beginPath();
         const [p1x, p1y] = project(0, 0, zOff);
@@ -158,7 +158,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
         ctx.fill();
         ctx.stroke();
       }
-      
+
       // Draw layer label
       const [labelX, labelY] = project(0.5, 0.5, zOff + 0.2);
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -166,11 +166,11 @@ function TilePreview({ components, geometryData, size = 180 }) {
       ctx.textAlign = 'center';
       ctx.fillText(comp.geometry || '?', labelX, labelY);
     });
-    
+
     // Draw axes (Z-up coordinate system)
     ctx.lineWidth = 2;
     const [ox, oy] = project(0, 0, 0);
-    
+
     // X axis (red) - East
     ctx.strokeStyle = '#ef4444';
     ctx.beginPath();
@@ -178,7 +178,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const [ax, ay] = project(0.3, 0, 0);
     ctx.lineTo(ax, ay);
     ctx.stroke();
-    
+
     // Y axis (green) - North
     ctx.strokeStyle = '#22c55e';
     ctx.beginPath();
@@ -186,7 +186,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const [bx, by] = project(0, 0.3, 0);
     ctx.lineTo(bx, by);
     ctx.stroke();
-    
+
     // Z axis (blue) - Up
     ctx.strokeStyle = '#3b82f6';
     ctx.beginPath();
@@ -194,7 +194,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const [zx, zy] = project(0, 0, 0.3);
     ctx.lineTo(zx, zy);
     ctx.stroke();
-    
+
     // Draw info
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '9px system-ui';
@@ -202,9 +202,9 @@ function TilePreview({ components, geometryData, size = 180 }) {
     ctx.fillText(`${components.length} layer(s)`, 6, height - 6);
     ctx.textAlign = 'right';
     ctx.fillText('Z-up', width - 6, height - 6);
-    
+
   }, [components, geometryData, rotation, size]);
-  
+
   // Auto-rotate
   useEffect(() => {
     const interval = setInterval(() => {
@@ -212,13 +212,13 @@ function TilePreview({ components, geometryData, size = 180 }) {
     }, 50);
     return () => clearInterval(interval);
   }, []);
-  
+
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={size} 
+    <canvas
+      ref={canvasRef}
+      width={size}
       height={size}
-      style={{ 
+      style={{
         borderRadius: '8px',
         background: '#0d1117',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -241,8 +241,8 @@ function parseTileComponents(arr) {
     i += 3;
     // Check if next value is a number (flag) before another geometry name
     let flags = null;
-    if (i < arr.length && typeof arr[i] === 'number' && 
-        (i + 1 >= arr.length || typeof arr[i + 1] !== 'string')) {
+    if (i < arr.length && typeof arr[i] === 'number' &&
+      (i + 1 >= arr.length || typeof arr[i + 1] !== 'string')) {
       flags = arr[i];
       i++;
     }
@@ -322,10 +322,10 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   // Update a component
   const updateComponent = useCallback((compIdx, field, value) => {
     if (!selectedTileName) return;
-    
+
     const newComponents = [...components];
     newComponents[compIdx] = { ...newComponents[compIdx], [field]: value };
-    
+
     setTiles(prev => ({
       ...prev,
       [selectedTileName]: componentsToArray(newComponents)
@@ -335,14 +335,14 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   // Add a component
   const addComponent = useCallback(() => {
     if (!selectedTileName) return;
-    
-    const newComponents = [...components, { 
-      geometry: geometryNames[0] || 'FLAT_ALL', 
-      texture: 'FLOOR', 
+
+    const newComponents = [...components, {
+      geometry: geometryNames[0] || 'FLAT_ALL',
+      texture: 'FLOOR',
       zOffset: 0,
       flags: null
     }];
-    
+
     setTiles(prev => ({
       ...prev,
       [selectedTileName]: componentsToArray(newComponents)
@@ -352,9 +352,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   // Remove a component
   const removeComponent = useCallback((compIdx) => {
     if (!selectedTileName) return;
-    
+
     const newComponents = components.filter((_, i) => i !== compIdx);
-    
+
     setTiles(prev => ({
       ...prev,
       [selectedTileName]: componentsToArray(newComponents)
@@ -369,7 +369,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
       setError(`Tile "${name}" already exists`);
       return;
     }
-    
+
     setTiles(prev => ({
       ...prev,
       [name]: ['FLAT_ALL', 'FLOOR', 0]
@@ -403,11 +403,11 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
       setError(`Tile "${newName}" already exists`);
       return;
     }
-    
+
     const newTiles = { ...tiles };
     newTiles[newName] = newTiles[oldName];
     delete newTiles[oldName];
-    
+
     setTiles(newTiles);
     setTileNames(prev => prev.map(n => n === oldName ? newName : n));
     if (selectedTileName === oldName) {
@@ -425,7 +425,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
     while (tiles[newName]) {
       newName = `${name}_COPY_${counter++}`;
     }
-    
+
     setTiles(prev => ({
       ...prev,
       [newName]: [...prev[name]]
@@ -455,7 +455,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   }));
 
   return (
-    <div style={{ 
+    <div style={{
       position: 'relative',
       width: '100%',
       height: '100%',
@@ -508,7 +508,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
           {tileNames.filter(n => !searchFilter || n.toLowerCase().includes(searchFilter.toLowerCase())).map((name) => {
             const tileArr = tiles[name];
             const compCount = parseTileComponents(tileArr || []).length;
-            
+
             return (
               <div
                 key={name}
@@ -539,7 +539,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       style={{ width: '120px' }}
                     />
                   ) : (
-                    <div 
+                    <div
                       onDoubleClick={(e) => {
                         e.stopPropagation();
                         setRenamingTile(name);
@@ -585,7 +585,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
               </div>
             );
           })}
-          
+
           {tileNames.length === 0 && (
             <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
               No tiles defined.
@@ -621,16 +621,16 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             }}>
               {/* Preview */}
               <TilePreview components={components} geometryData={geometryData} />
-              
+
               {/* Info */}
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>{selectedTileName}</h4>
                 <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginBottom: '12px', fontFamily: 'monospace' }}>
                   [{selectedTileArray.map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')}]
                 </div>
-                <Button 
-                  appearance='ghost' 
-                  size="sm" 
+                <Button
+                  appearance='ghost'
+                  size="sm"
                   onClick={addComponent}
                   style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}
                 >
@@ -663,9 +663,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       alignItems: 'center',
                       marginBottom: '12px',
                     }}>
-                      <span style={{ 
-                        color: '#a78bfa', 
-                        fontSize: '12px', 
+                      <span style={{
+                        color: '#a78bfa',
+                        fontSize: '12px',
                         fontWeight: 600,
                       }}>
                         Layer {compIdx + 1}
@@ -686,16 +686,16 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       </button>
                     </div>
 
-                    <div style={{ 
-                      display: 'grid', 
+                    <div style={{
+                      display: 'grid',
                       gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
                       gap: '12px',
                     }}>
                       {/* Geometry selector */}
                       <div>
-                        <label style={{ 
-                          display: 'block', 
-                          color: 'rgba(255,255,255,0.6)', 
+                        <label style={{
+                          display: 'block',
+                          color: 'rgba(255,255,255,0.6)',
                           fontSize: '11px',
                           marginBottom: '4px',
                           fontWeight: 500,
@@ -725,9 +725,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Texture input */}
                       <div>
-                        <label style={{ 
-                          display: 'block', 
-                          color: 'rgba(255,255,255,0.6)', 
+                        <label style={{
+                          display: 'block',
+                          color: 'rgba(255,255,255,0.6)',
                           fontSize: '11px',
                           marginBottom: '4px',
                           fontWeight: 500,
@@ -756,9 +756,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Z Offset */}
                       <div>
-                        <label style={{ 
-                          display: 'block', 
-                          color: 'rgba(255,255,255,0.6)', 
+                        <label style={{
+                          display: 'block',
+                          color: 'rgba(255,255,255,0.6)',
                           fontSize: '11px',
                           marginBottom: '4px',
                           fontWeight: 500,
@@ -776,9 +776,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Flags (optional) */}
                       <div>
-                        <label style={{ 
-                          display: 'block', 
-                          color: 'rgba(255,255,255,0.6)', 
+                        <label style={{
+                          display: 'block',
+                          color: 'rgba(255,255,255,0.6)',
                           fontSize: '11px',
                           marginBottom: '4px',
                           fontWeight: 500,
@@ -806,7 +806,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                     background: 'rgba(0,0,0,0.2)',
                     borderRadius: '8px',
                   }}>
-                    No layers defined for this tile.<br/>
+                    No layers defined for this tile.<br />
                     Click "+ Add Layer" to add geometry components.
                   </div>
                 )}
@@ -825,7 +825,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
           }}>
             <div>
               <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>🧩</div>
-              Select a tile from the list<br/>
+              Select a tile from the list<br />
               or create a new one to begin editing.
             </div>
           </div>

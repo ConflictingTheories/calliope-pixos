@@ -17,7 +17,7 @@
  * and culls (skips) objects that are outside the visible area.
  */
 
-import { Vector } from '../utils/math/vector.js';
+import { Vector } from '../../utils/math/vector.js';
 
 /**
  * Represents a plane in 3D space (ax + by + cz + d = 0)
@@ -113,8 +113,8 @@ class BoundingSphere {
     const center = aabb.getCenter();
     const halfExtents = aabb.getHalfExtents();
     const radius = Math.sqrt(
-      halfExtents.x * halfExtents.x + 
-      halfExtents.y * halfExtents.y + 
+      halfExtents.x * halfExtents.x +
+      halfExtents.y * halfExtents.y +
       halfExtents.z * halfExtents.z
     );
     return new BoundingSphere(center, radius);
@@ -142,7 +142,7 @@ class Frustum {
    */
   setFromMatrix(vpMatrix) {
     const m = vpMatrix;
-    
+
     // Left plane: row 4 + row 1
     this.planes[0].a = m[3] + m[0];
     this.planes[0].b = m[7] + m[4];
@@ -207,19 +207,19 @@ class Frustum {
    */
   testSphere(sphere) {
     let allInside = true;
-    
+
     for (const plane of this.planes) {
       const distance = plane.distanceToPoint(sphere.center);
-      
+
       if (distance < -sphere.radius) {
         return 'outside';
       }
-      
+
       if (distance < sphere.radius) {
         allInside = false;
       }
     }
-    
+
     return allInside ? 'inside' : 'intersect';
   }
 
@@ -236,7 +236,7 @@ class Frustum {
       const px = plane.a >= 0 ? aabb.max.x : aabb.min.x;
       const py = plane.b >= 0 ? aabb.max.y : aabb.min.y;
       const pz = plane.c >= 0 ? aabb.max.z : aabb.min.z;
-      
+
       // Find the negative vertex (furthest in opposite direction)
       const nx = plane.a >= 0 ? aabb.min.x : aabb.max.x;
       const ny = plane.b >= 0 ? aabb.min.y : aabb.max.y;
@@ -307,7 +307,7 @@ export default class FrustumCuller {
 
     for (const obj of objects) {
       const bounds = getBounds(obj);
-      
+
       if (!bounds) {
         // No bounds = always visible
         visible.push(obj);
@@ -383,7 +383,7 @@ export default class FrustumCuller {
    * @returns {Object}
    */
   getStats() {
-    const cullRate = this.debug.totalObjects > 0 
+    const cullRate = this.debug.totalObjects > 0
       ? (this.debug.culledObjects / this.debug.totalObjects * 100).toFixed(1)
       : 0;
     return {
@@ -398,17 +398,17 @@ export default class FrustumCuller {
    */
   _multiplyMatrices(a, b) {
     const result = new Float32Array(16);
-    
+
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
-        result[j * 4 + i] = 
+        result[j * 4 + i] =
           a[i] * b[j * 4] +
           a[i + 4] * b[j * 4 + 1] +
           a[i + 8] * b[j * 4 + 2] +
           a[i + 12] * b[j * 4 + 3];
       }
     }
-    
+
     return result;
   }
 }

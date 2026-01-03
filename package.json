@@ -8,9 +8,9 @@
   "private": true,
   "scripts": {
     "clean": "rimraf packages/*/dist packages/*/build",
-    "build": "npm run build:core && npm run build:script && npm run build:editor && npm run build:console",
-    "build:core": "npm run build -w pixospritz-core",
+    "build": "npm run build:script && npm run build:core && npm run build:editor && npm run build:console",
     "build:script": "npm run build -w pixoscript",
+    "build:core": "npm run build -w pixospritz-core",
     "build:editor": "npm run build -w pixospritz-editor",
     "build:console": "npm run build -w pixospritz-console",
     "build:website": "npm run build -w pixospritz-website",

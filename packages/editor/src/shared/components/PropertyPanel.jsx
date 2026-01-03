@@ -103,7 +103,7 @@ function PropertyPanel({
   return (
     <div className={`property-panel ${className}`}>
       {title && <div className="property-panel__title">{title}</div>}
-      
+
       <div className="property-panel__content">
         {Object.entries(groupedProperties).map(([groupName, groupProps]) => (
           <PropertyGroup
@@ -136,7 +136,7 @@ function PropertyGroup({ name, properties, collapsed, onToggle, onChange, onRese
           <span className="property-group__name">{name}</span>
         </div>
       )}
-      
+
       {!collapsed && (
         <div className="property-group__content">
           {properties.map(prop => (
@@ -175,8 +175,8 @@ function PropertyRow({ property, onChange, onReset }) {
       <label className="property-row__label">
         {label}
         {isDifferentFromDefault && (
-          <button 
-            className="property-row__reset" 
+          <button
+            className="property-row__reset"
             onClick={handleReset}
             title="Reset to default"
           >
@@ -373,7 +373,7 @@ function ChevronIcon({ collapsed }) {
       fill="currentColor"
       style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
     >
-      <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+      <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
     </svg>
   );
 }

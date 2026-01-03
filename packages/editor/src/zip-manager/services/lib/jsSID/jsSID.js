@@ -1,7 +1,7 @@
 /* global AudioContext, webkitAudioContext */
 
  
-/* eslint-disable indent */
+ 
 
 // jsSID by Hermit (Mihaly Horvath) : a javascript SID emulator and player for the Web Audio API
 // (Year 2016) http://hermit.sidrip.com

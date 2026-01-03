@@ -49,30 +49,30 @@ const MODALITIES = [
 function AssetCard({ asset, onSave, saving }) {
   const renderPreview = () => {
     switch (asset.type) {
-    case 'image':
-      return (
-        <div className="asset-card-image">
-          <img
-            src={asset.base64 ? `data:image/png;base64,${asset.base64}` : URL.createObjectURL(asset.content)}
-            alt={asset.name}
-          />
-        </div>
-      );
-    case 'audio':
-      return (
-        <div className="asset-card-audio">
-          <audio controls src={URL.createObjectURL(asset.content)} />
-        </div>
-      );
-    case 'config':
-    case 'text':
-      return (
-        <div className="asset-card-text">
-          <pre>{typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}</pre>
-        </div>
-      );
-    default:
-      return <div className="asset-card-unknown">Preview unavailable</div>;
+      case 'image':
+        return (
+          <div className="asset-card-image">
+            <img
+              src={asset.base64 ? `data:image/png;base64,${asset.base64}` : URL.createObjectURL(asset.content)}
+              alt={asset.name}
+            />
+          </div>
+        );
+      case 'audio':
+        return (
+          <div className="asset-card-audio">
+            <audio controls src={URL.createObjectURL(asset.content)} />
+          </div>
+        );
+      case 'config':
+      case 'text':
+        return (
+          <div className="asset-card-text">
+            <pre>{typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}</pre>
+          </div>
+        );
+      default:
+        return <div className="asset-card-unknown">Preview unavailable</div>;
     }
   };
 
@@ -85,9 +85,9 @@ function AssetCard({ asset, onSave, saving }) {
       {renderPreview()}
       <div className="asset-card-footer">
         <span className="asset-card-path">{asset.path}</span>
-        <Button 
-          size="xs" 
-          appearance="primary" 
+        <Button
+          size="xs"
+          appearance="primary"
           onClick={() => onSave(asset)}
           loading={saving}
         >
@@ -113,17 +113,17 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   const [error, setError] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [countdown, setCountdown] = useState(null);
-  
+
   // UI state
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' or 'custom'
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  
+
   const resultsRef = useRef(null);
   const countdownRef = useRef(null);
 
   // Check if configured
   const isConfigured = aiService.isConfigured();
-  
+
   // Handle template selection
   const handleSelectTemplate = useCallback((template) => {
     setSelectedTemplate(template);
@@ -150,18 +150,18 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   useEffect(() => {
     if (status?.phase === 'rate-limited' && status?.retryInfo?.delayMs) {
       const endTime = Date.now() + status.retryInfo.delayMs;
-      
+
       const updateCountdown = () => {
         const remaining = Math.max(0, endTime - Date.now());
         setCountdown(Math.ceil(remaining / 1000));
-        
+
         if (remaining > 0) {
           countdownRef.current = requestAnimationFrame(updateCountdown);
         }
       };
-      
+
       updateCountdown();
-      
+
       return () => {
         if (countdownRef.current) {
           cancelAnimationFrame(countdownRef.current);
@@ -210,10 +210,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
     try {
       let generationResults;
-      
+
       // Determine effective modality (auto-detect or user-selected)
       let effectiveModality = modality;
-      
+
       if (modality === 'auto') {
         // Check if prompt analyzer detected a game request
         const promptAnalysis = analyzePrompt(prompt);
@@ -222,17 +222,17 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
           debug('AIGenerator', ' Auto-detected full game request');
         }
       }
-      
+
       // Use Game Package Orchestrator for full game generation
       if (effectiveModality === 'game') {
         setStatus({ phase: 'initializing', message: 'Starting full game generation...' });
-        
+
         const gameOrchestrator = createGamePackageOrchestrator({
           writeFile,
           onProgress: (p) => setProgress(p),
           onStatusChange: (s) => setStatus(s),
         });
-        
+
         generationResults = await gameOrchestrator.generateGamePackage(prompt);
       } else {
         // Use regular orchestrator for individual assets
@@ -244,7 +244,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         generationResults = await orchestrator.generateFromPrompt(prompt);
       }
-      
+
       setResults(generationResults);
 
       if (generationResults.errors.length > 0) {
@@ -310,10 +310,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     try {
       const orchestrator = createOrchestrator({ writeFile });
       await orchestrator.writeAssetsToZip([asset], writeFile);
-      
+
       if (refreshFolder) refreshFolder();
       if (onFileGenerated) onFileGenerated(asset);
-      
+
     } catch (err) {
       setError(`Failed to save: ${err.message}`);
     } finally {
@@ -402,9 +402,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
             {selectedTemplate && (
               <div className="ai-template-banner">
                 <span>📋 Using template: <strong>{selectedTemplate.name}</strong></span>
-                <Button 
-                  size="xs" 
-                  appearance="ghost" 
+                <Button
+                  size="xs"
+                  appearance="ghost"
                   onClick={() => setSelectedTemplate(null)}
                 >
                   Clear
@@ -415,8 +415,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
             {/* Prompt Section */}
             <section className="ai-prompt-section">
               <label>
-                {modality === 'game' 
-                  ? 'Describe the game you want to create:' 
+                {modality === 'game'
+                  ? 'Describe the game you want to create:'
                   : 'Describe what you want to create:'}
               </label>
               <Input
@@ -424,12 +424,12 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 rows={modality === 'game' ? 5 : 3}
                 value={prompt}
                 onChange={setPrompt}
-                placeholder={modality === 'game' 
-                  ? "e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues..."
-                  : "e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait..."}
+                placeholder={modality === 'game'
+                  ? 'e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues...'
+                  : 'e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait...'}
                 disabled={loading}
               />
-              
+
               <div className="ai-prompt-controls">
                 <SelectPicker
                   data={MODALITIES}
@@ -450,10 +450,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                   {modality === 'game' ? '🎮 Generate Game' : 'Generate'}
                 </Button>
               </div>
-              
+
               {modality === 'game' && !loading && (
                 <div className="ai-game-hint">
-                  <strong>Full Game Generation</strong> will create: player character, NPCs, enemies, 
+                  <strong>Full Game Generation</strong> will create: player character, NPCs, enemies,
                   cutscenes, scripts, zones, and manifest.json - a complete playable package!
                 </div>
               )}
@@ -584,7 +584,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 {results.validation.stats.completed}/{results.validation.stats.total} required assets
               </span>
             </div>
-            
+
             {!results.validation.isComplete && results.validation.missing.length > 0 && (
               <div className="ai-validation-missing">
                 <strong>Missing Required Assets:</strong>
@@ -595,7 +595,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 </ul>
               </div>
             )}
-            
+
             {results.validation.isComplete && (
               <div className="ai-validation-generated">
                 <strong>Generated:</strong>
@@ -620,7 +620,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 </Button>
               </ButtonGroup>
             </div>
-            
+
             <div className="ai-results-grid">
               {results.assets.map((asset, index) => (
                 <AssetCard
@@ -637,9 +637,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <div className="ai-errors-header">
                   <h4>Errors ({results.errors.length})</h4>
                   {results.errors.some(err => err.retryable) && (
-                    <Button 
-                      size="xs" 
-                      appearance="primary" 
+                    <Button
+                      size="xs"
+                      appearance="primary"
                       onClick={handleRetryFailed}
                       disabled={loading}
                       loading={loading}

@@ -87,14 +87,14 @@ function parseRateLimitDelay(response, errorBody) {
       return seconds * 1000;
     }
   }
-  
+
   // Try to extract from error message (e.g., "Please retry after X seconds")
   const message = errorBody?.error?.message || '';
   const match = message.match(/retry after (\d+)/i);
   if (match) {
     return parseInt(match[1], 10) * 1000;
   }
-  
+
   // Default to base delay
   return RATE_LIMIT_CONFIG.baseDelayMs;
 }
@@ -186,18 +186,18 @@ export class AIService {
     };
 
     switch (this.config.provider) {
-    case AI_PROVIDERS.OPENAI:
-      headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-      break;
-    case AI_PROVIDERS.ANTHROPIC:
-      headers['x-api-key'] = this.config.apiKey;
-      headers['anthropic-version'] = '2023-06-01';
-      break;
-    case AI_PROVIDERS.GOOGLE:
-      // Google uses query param for API key
-      break;
-    default:
-      headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+      case AI_PROVIDERS.OPENAI:
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        break;
+      case AI_PROVIDERS.ANTHROPIC:
+        headers['x-api-key'] = this.config.apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        break;
+      case AI_PROVIDERS.GOOGLE:
+        // Google uses query param for API key
+        break;
+      default:
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
     }
 
     return headers;
@@ -219,16 +219,16 @@ export class AIService {
     }
 
     switch (provider) {
-    case AI_PROVIDERS.OPENAI:
-      return this.openAIChatCompletion(prompt, systemPrompt, schema, options);
-    case AI_PROVIDERS.ANTHROPIC:
-      return this.anthropicChatCompletion(prompt, systemPrompt, schema, options);
-    case AI_PROVIDERS.GOOGLE:
-      return this.googleChatCompletion(prompt, systemPrompt, schema, options);
-    case AI_PROVIDERS.CUSTOM:
-      return this.customChatCompletion(prompt, systemPrompt, schema, options);
-    default:
-      throw new Error(`Unsupported provider: ${provider}`);
+      case AI_PROVIDERS.OPENAI:
+        return this.openAIChatCompletion(prompt, systemPrompt, schema, options);
+      case AI_PROVIDERS.ANTHROPIC:
+        return this.anthropicChatCompletion(prompt, systemPrompt, schema, options);
+      case AI_PROVIDERS.GOOGLE:
+        return this.googleChatCompletion(prompt, systemPrompt, schema, options);
+      case AI_PROVIDERS.CUSTOM:
+        return this.customChatCompletion(prompt, systemPrompt, schema, options);
+      default:
+        throw new Error(`Unsupported provider: ${provider}`);
     }
   }
 
@@ -237,7 +237,7 @@ export class AIService {
    */
   async openAIChatCompletion(prompt, systemPrompt, schema, options) {
     const messages = [];
-    
+
     if (systemPrompt) {
       messages.push({ role: 'system', content: systemPrompt });
     }
@@ -488,7 +488,7 @@ export class AIService {
     };
 
     let lastError = null;
-    
+
     for (let attempt = 0; attempt < RATE_LIMIT_CONFIG.maxRetries; attempt++) {
       let response;
       try {
@@ -515,14 +515,14 @@ export class AIService {
       }
 
       const errorBody = await response.json().catch(() => ({}));
-      
+
       // Check if it's a rate limit error
       if (isRateLimitError(response, errorBody) && attempt < RATE_LIMIT_CONFIG.maxRetries - 1) {
         const delay = Math.min(
           parseRateLimitDelay(response, errorBody) * Math.pow(1.5, attempt),
           RATE_LIMIT_CONFIG.maxDelayMs
         );
-        
+
         // Notify about retry
         if (options.onRetry) {
           options.onRetry({
@@ -532,15 +532,15 @@ export class AIService {
             message: `Rate limited. Waiting ${Math.ceil(delay / 1000)}s before retry...`,
           });
         }
-        
+
         await sleep(delay);
         continue;
       }
-      
+
       lastError = errorBody.error?.message || `Image generation error: ${response.status}`;
       break;
     }
-    
+
     throw new Error(lastError);
   }
 
@@ -568,7 +568,7 @@ export class AIService {
     };
 
     let lastError = null;
-    
+
     for (let attempt = 0; attempt < RATE_LIMIT_CONFIG.maxRetries; attempt++) {
       const response = await fetch(ENDPOINTS[AI_PROVIDERS.OPENAI].audio, {
         method: 'POST',
@@ -581,14 +581,14 @@ export class AIService {
       }
 
       const errorBody = await response.json().catch(() => ({}));
-      
+
       // Check if it's a rate limit error
       if (isRateLimitError(response, errorBody) && attempt < RATE_LIMIT_CONFIG.maxRetries - 1) {
         const delay = Math.min(
           parseRateLimitDelay(response, errorBody) * Math.pow(1.5, attempt),
           RATE_LIMIT_CONFIG.maxDelayMs
         );
-        
+
         // Notify about retry
         if (options.onRetry) {
           options.onRetry({
@@ -598,15 +598,15 @@ export class AIService {
             message: `Rate limited. Waiting ${Math.ceil(delay / 1000)}s before retry...`,
           });
         }
-        
+
         await sleep(delay);
         continue;
       }
-      
+
       lastError = errorBody.error?.message || `Audio generation error: ${response.status}`;
       break;
     }
-    
+
     throw new Error(lastError);
   }
 }

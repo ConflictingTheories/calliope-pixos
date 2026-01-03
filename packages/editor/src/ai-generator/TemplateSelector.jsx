@@ -63,7 +63,7 @@ const CATEGORY_ICONS = {
  */
 function TemplateCard({ template, onSelect, isSelected }) {
   return (
-    <div 
+    <div
       className={`template-card ${isSelected ? 'template-card-selected' : ''}`}
       onClick={() => onSelect(template)}
     >
@@ -71,9 +71,9 @@ function TemplateCard({ template, onSelect, isSelected }) {
         <span className="template-card-name">{template.name}</span>
         {template.featured && <Tag color="orange" size="sm">Featured</Tag>}
       </div>
-      
+
       <p className="template-card-description">{template.description}</p>
-      
+
       <div className="template-card-meta">
         <Tag color={COMPLEXITY_COLORS[template.complexity]} size="sm">
           {COMPLEXITY_LABELS[template.complexity]}
@@ -88,7 +88,7 @@ function TemplateCard({ template, onSelect, isSelected }) {
           📦 ~{template.estimatedAssets} assets
         </span>
       </div>
-      
+
       <div className="template-card-tags">
         {template.tags.slice(0, 4).map((tag, i) => (
           <Tag key={i} size="sm">{tag}</Tag>
@@ -232,12 +232,12 @@ function TemplateSelector({ onSelectTemplate, selectedTemplate }) {
         <Panel bordered className="template-preview">
           <h4>{selectedTemplate.name}</h4>
           <p>{selectedTemplate.description}</p>
-          
+
           <div className="template-preview-prompt">
             <strong>Generation Prompt:</strong>
             <pre>{selectedTemplate.prompt}</pre>
           </div>
-          
+
           <div className="template-preview-assets">
             <strong>Expected Assets ({selectedTemplate.expectedAssets.length}):</strong>
             <ul>

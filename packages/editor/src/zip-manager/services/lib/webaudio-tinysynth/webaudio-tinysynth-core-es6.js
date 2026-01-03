@@ -1,6 +1,6 @@
 /* global AudioContext, requestAnimationFrame */
 
-/* eslint-disable indent */
+ 
 
 // Fork of https://github.com/g200kg/webaudio-tinysynth/
 // - ported to ES6

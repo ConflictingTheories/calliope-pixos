@@ -1,6 +1,9 @@
 .onboarding-modal {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(20, 22, 30, 0.92);
   z-index: 10000;
   display: flex;
@@ -9,12 +12,14 @@
   justify-content: center;
   padding: 2rem;
 }
+
 .onboarding-title {
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1rem;
   color: #fff;
 }
+
 .onboarding-content {
   font-size: 1.1rem;
   color: #eee;
@@ -22,11 +27,13 @@
   max-width: 400px;
   text-align: center;
 }
+
 .onboarding-steps {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
+
 .onboarding-step-dot {
   width: 14px;
   height: 14px;
@@ -36,18 +43,22 @@
   cursor: pointer;
   transition: background 0.2s, border 0.2s;
 }
+
 .onboarding-step-dot.active {
   background: #fff;
   border-color: #fff;
 }
+
 .onboarding-step-dot.completed {
   background: #4caf50;
   border-color: #4caf50;
 }
+
 .onboarding-actions {
   display: flex;
   gap: 1rem;
 }
+
 .onboarding-actions button {
   background: #222;
   color: #fff;
@@ -58,6 +69,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .onboarding-actions button:hover {
   background: #4caf50;
   color: #fff;

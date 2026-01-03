@@ -19,7 +19,7 @@ import ObjModelViewer from './ObjModelViewer.jsx';
  */
 function isOBJContent(content) {
   if (typeof content !== 'string') return false;
-  
+
   // Reject data URIs / URLs early (these are not raw OBJ text)
   if (content.startsWith('data:') || /^[a-zA-Z]+:\/\//.test(content)) return false;
 
@@ -48,12 +48,12 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
   // Early return if no content
   if (!content) {
     return (
-      <div className="editor-tool-container" style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div className="editor-tool-container" style={{
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
-        color: '#888' 
+        color: '#888'
       }}>
         No model content to preview.
       </div>
@@ -66,10 +66,10 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
   // Use ObjModelViewer for OBJ files
   if (isOBJ) {
     return (
-      <ObjModelViewer 
-        objContent={content} 
-        mtlContent={mtlContent || ''} 
-        textureBasePath={textureBasePath || ''} 
+      <ObjModelViewer
+        objContent={content}
+        mtlContent={mtlContent || ''}
+        textureBasePath={textureBasePath || ''}
         textures={textures || {}}
       />
     );
@@ -86,9 +86,9 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
   }, []);
 
   return (
-    <div className="editor-tool-container" style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
+    <div className="editor-tool-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
       height: '100%',
       minHeight: 0,
       overflow: 'hidden',
@@ -96,9 +96,9 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
     }}>
       <model-viewer
         src={content}
-        style={{ 
+        style={{
           flex: '1 1 auto',
-          width: '100%', 
+          width: '100%',
           minHeight: 0,
           borderRadius: '4px',
           background: '#1a1a1a'
