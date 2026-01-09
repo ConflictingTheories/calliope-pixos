@@ -14,8 +14,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "platform/platform.h"
 #include <stdbool.h>
 
 // Forward declarations
@@ -23,19 +22,34 @@ struct RenderManager;
 struct InputManager;
 struct ResourceManager;
 struct World;
+struct AudioManager;
+struct LuaManager;
+
+// Engine typedef for scripting compatibility
+typedef struct GLEngine Engine;
 
 /**
  * Main Pixos Graphics & Game Engine struct.
  * Orchestrates the main game loop, rendering, input handling, and resource management.
  */
-typedef struct GLEngine {
+struct GLEngine {
     int width;
     int height;
-    GLFWwindow* window;
+    PlatformContext* platform;      // Platform abstraction
     struct RenderManager* render_manager;
     struct InputManager* input_manager;
     struct ResourceManager* resource_manager;
     struct World* world;
+    
+    // Audio manager (optional, enabled via ENABLE_AUDIO)
+    struct AudioManager* audio;
+    
+    // Lua scripting manager (optional, enabled via ENABLE_LUA)
+    struct LuaManager* lua;
+    
+    // Game state flags storage
+    void* game_flags;               // Hash table for game flags
+    
     int running;
     double time;
     double delta_time;
@@ -48,7 +62,7 @@ typedef struct GLEngine {
     
     // Fullscreen state
     bool fullscreen;
-} GLEngine;
+};
 
 #include "render_manager.h"
 #include "input_manager.h"

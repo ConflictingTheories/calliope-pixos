@@ -32,6 +32,9 @@ packages/core-c/
 ├── CMakeLists.txt              # Multi-platform build
 ├── toolchain-arm.cmake         # ARM cross-compilation toolchain
 ├── src/
+│   ├── audio/
+│   │   ├── audio_manager.h     # Audio playback API
+│   │   └── audio_manager.c     # miniaudio implementation
 │   ├── platform/
 │   │   ├── platform.h          # Platform abstraction API
 │   │   ├── platform_desktop.c  # GLFW + GLEW implementation
@@ -40,6 +43,9 @@ packages/core-c/
 │   │   ├── gles_compat.h       # GL/GLES compatibility layer
 │   │   ├── shaders.h           # Desktop OpenGL 3.3 shaders
 │   │   └── shaders_gles.h      # OpenGL ES 2.0/3.0 shaders
+│   ├── scripting/
+│   │   ├── lua_manager.h       # Lua scripting API
+│   │   └── lua_manager.c       # Lua 5.4 integration
 │   ├── input/
 │   │   ├── input_actions.h     # Action mapping system
 │   │   └── input_actions.c     # Gamepad + keyboard support
@@ -49,6 +55,8 @@ packages/core-c/
 │   └── vendor/
 │       ├── cJSON.h             # JSON parser
 │       ├── cJSON.c
+│       ├── miniaudio.h         # Audio library
+│       ├── lua-5.4/            # Lua 5.4 sources
 │       └── stb_image.h         # Image loader
 ```
 
@@ -89,6 +97,8 @@ make
 | `PLATFORM_ARM_LINUX` | OFF | Enable ARM Linux build |
 | `USE_GLES3` | OFF | Use GLES 3.0 instead of 2.0 |
 | `NETWORK_SUPPORT` | ON | Enable optional networking |
+| `ENABLE_AUDIO` | ON | Enable audio via miniaudio |
+| `ENABLE_LUA` | ON | Enable Lua 5.4 scripting |
 
 ## Platform Abstraction
 
@@ -197,18 +207,63 @@ When disabled, all network-related code is excluded from compilation.
 | Point lights | ✅ | ✅ | ✅ | Complete |
 | JSON asset loading | ✅ | ✅ | ✅ | Complete |
 | Gamepad input | ✅ | ⚠️ | ✅ | In progress |
-| Lua scripting | ✅ | ❌ | ❌ | Planned |
-| Audio playback | ✅ | ❌ | ❌ | Planned |
+| Lua scripting | ✅ | ✅ | ✅ | Complete |
+| Audio playback | ✅ | ✅ | ✅ | Complete |
 | Cutscene system | ✅ | ❌ | ❌ | Planned |
 | HUD/UI overlay | ✅ | ❌ | ❌ | Planned |
 | Network multiplayer | ✅ | ❌ | ❌ | Optional |
 
+## Audio System
+
+The engine uses miniaudio for cross-platform audio support:
+
+```c
+// In Lua scripts:
+pixos.play_bgm("audio/music.ogg", true, 0.5)  -- Play with fade-in
+pixos.play_sfx("audio/hit.wav")               -- Play sound effect
+pixos.set_master_volume(0.8)                  -- Set volume
+pixos.stop_bgm(1.0)                           -- Stop with fade-out
+
+// In C code:
+AudioManager* audio = engine->audio;
+audio_manager_play_bgm(audio, "music.ogg", true, 0.5f);
+audio_manager_play_sfx(audio, "hit.wav", 1.0f);
+```
+
+Supported formats: WAV, MP3, OGG, FLAC
+
+## Lua Scripting
+
+Lua 5.4 is integrated for game scripts:
+
+```lua
+-- Example trigger script
+pixos.log("Hello from Lua!")
+
+-- Check input
+if pixos.is_action_active("interact") then
+    pixos.sprite_dialogue("npc1", "Hello, traveler!")
+end
+
+-- Play audio
+pixos.play_sfx("audio/talk.wav")
+
+-- Camera control
+pixos.set_camera_position(10, 5, 20)
+pixos.look_at(10, 0, 15, 10, 0, 0)
+
+-- Game flags
+pixos.set_flag("quest_started", true)
+if pixos.has_flag("key_obtained") then
+    -- unlock door
+end
+```
+
 ## Next Steps
 
-1. **Lua Integration**: Add Lua 5.4 for scripting
-2. **Audio**: Integrate miniaudio for sound effects and music
-3. **Cutscenes**: Port cutscene DSL parser
-4. **HUD System**: 2D overlay rendering with text
+1. **Cutscenes**: Port cutscene DSL parser
+2. **HUD System**: 2D overlay rendering with text
+3. **ARM Testing**: Verify cross-compilation on device
 
 ## References
 

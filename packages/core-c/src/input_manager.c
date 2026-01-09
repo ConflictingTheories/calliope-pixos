@@ -13,7 +13,10 @@
 
 #include "engine.h"
 #include "input_manager.h"
+#include "platform/platform.h"
+#ifdef USE_GLFW
 #include <GLFW/glfw3.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -36,17 +39,20 @@ static const char* ACTION_NAMES[ACTION_COUNT] = {
 static double scroll_accumulator_x = 0.0;
 static double scroll_accumulator_y = 0.0;
 
+#ifdef USE_GLFW
 // GLFW scroll callback
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     (void)window;
     scroll_accumulator_x += xoffset;
     scroll_accumulator_y += yoffset;
 }
+#endif
 
 void input_manager_setup_default_bindings(InputManager* input_manager) {
     // Clear existing bindings
     input_manager->binding_count = 0;
     
+#ifdef USE_GLFW
     // Movement
     input_manager_bind_key(input_manager, GLFW_KEY_W, ACTION_MOVE_UP);
     input_manager_bind_key(input_manager, GLFW_KEY_S, ACTION_MOVE_DOWN);
@@ -81,6 +87,7 @@ void input_manager_setup_default_bindings(InputManager* input_manager) {
     
     // Debug
     input_manager_bind_key(input_manager, GLFW_KEY_F3, ACTION_DEBUG_TOGGLE);
+#endif
 }
 
 void input_manager_bind_key(InputManager* input_manager, int key, ActionType action) {
@@ -99,11 +106,17 @@ void init_input_manager(InputManager* input_manager, struct GLEngine* engine) {
     // Setup default key bindings
     input_manager_setup_default_bindings(input_manager);
     
+#ifdef USE_GLFW
     // Set up GLFW callbacks
-    glfwSetScrollCallback(engine->window, scroll_callback);
+    GLFWwindow* window = (GLFWwindow*)platform_get_glfw_window(engine->platform);
+    glfwSetScrollCallback(window, scroll_callback);
     
     // Get initial mouse position
-    glfwGetCursorPos(engine->window, &input_manager->mouse_x, &input_manager->mouse_y);
+    glfwGetCursorPos(window, &input_manager->mouse_x, &input_manager->mouse_y);
+#else
+    input_manager->mouse_x = 0;
+    input_manager->mouse_y = 0;
+#endif
     input_manager->prev_mouse_x = input_manager->mouse_x;
     input_manager->prev_mouse_y = input_manager->mouse_y;
     
@@ -113,7 +126,9 @@ void init_input_manager(InputManager* input_manager, struct GLEngine* engine) {
 void update_input_manager(InputManager* input_manager) {
     if (!input_manager || !input_manager->engine) return;
     
-    GLFWwindow* window = input_manager->engine->window;
+#ifdef USE_GLFW
+    GLFWwindow* window = (GLFWwindow*)platform_get_glfw_window(input_manager->engine->platform);
+#endif
     
     // Store previous states
     memcpy(input_manager->prev_action_states, input_manager->action_states, sizeof(input_manager->action_states));
@@ -123,6 +138,7 @@ void update_input_manager(InputManager* input_manager) {
     memset(input_manager->action_pressed, 0, sizeof(input_manager->action_pressed));
     memset(input_manager->action_released, 0, sizeof(input_manager->action_released));
     
+#ifdef USE_GLFW
     // Update modifier keys
     input_manager->shift_held = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
                                  glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
@@ -141,6 +157,10 @@ void update_input_manager(InputManager* input_manager) {
             input_manager->action_states[binding->action] = true;
         }
     }
+#else
+    // ARM: TODO - poll evdev input here
+    memset(input_manager->action_states, 0, sizeof(input_manager->action_states));
+#endif
     
     // Calculate pressed/released states
     for (int i = 0; i < ACTION_COUNT; i++) {
@@ -152,6 +172,7 @@ void update_input_manager(InputManager* input_manager) {
         }
     }
     
+#ifdef USE_GLFW
     // Update mouse position
     input_manager->prev_mouse_x = input_manager->mouse_x;
     input_manager->prev_mouse_y = input_manager->mouse_y;
@@ -182,6 +203,7 @@ void update_input_manager(InputManager* input_manager) {
     if (input_manager_is_action_pressed(input_manager, ACTION_ESCAPE)) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+#endif
 }
 
 bool input_manager_is_action_held(InputManager* input_manager, ActionType action) {

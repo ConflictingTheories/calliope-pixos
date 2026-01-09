@@ -12,19 +12,32 @@
 \*                                                 */
 
 #include "engine.h"
+#include "platform/platform.h"
 #include "resource/resource_manager.h"
 #include "scene/world.h"
+#include "rendering/gles_compat.h"
+
+#ifdef ENABLE_AUDIO
+#include "audio/audio_manager.h"
+#endif
+
+#ifdef ENABLE_LUA
+#include "scripting/lua_manager.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Callback for when the framebuffer is resized
+// Callback for when the framebuffer is resized (desktop only)
+#ifdef USE_GLFW
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     GLEngine* engine = (GLEngine*)glfwGetWindowUserPointer(window);
     if (engine) {
         engine_handle_resize(engine, width, height);
     }
 }
+#endif
 
 int init_engine(GLEngine* engine, int width, int height) {
     memset(engine, 0, sizeof(GLEngine));
@@ -38,55 +51,26 @@ int init_engine(GLEngine* engine, int width, int height) {
     
     printf("Initializing Pixos Engine...\n");
 
-    // Initialize GLFW
-    if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
+    // Initialize platform (creates window/display and GL context)
+    engine->platform = platform_init(width, height, "Pixos Engine C", false);
+    if (!engine->platform) {
+        fprintf(stderr, "Failed to initialize platform\n");
         return -1;
     }
 
-    // Set GLFW options for OpenGL 3.3 core profile
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef USE_GLFW
+    // Set user pointer and callbacks for desktop
+    GLFWwindow* window = (GLFWwindow*)platform_get_glfw_window(engine->platform);
+    glfwSetWindowUserPointer(window, engine);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 #endif
-
-    // Create window
-    engine->window = glfwCreateWindow(width, height, "Pixos Engine C", NULL, NULL);
-    if (!engine->window) {
-        fprintf(stderr, "Failed to create GLFW window\n");
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(engine->window);
-
-    // Initialize GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        glfwDestroyWindow(engine->window);
-        glfwTerminate();
-        return -1;
-    }
-
-    // Clear any OpenGL errors from GLEW init
-    while (glGetError() != GL_NO_ERROR);
-
-    glfwShowWindow(engine->window);
-    glfwSwapInterval(1);  // Enable vsync
-
-    // Set user pointer and callbacks
-    glfwSetWindowUserPointer(engine->window, engine);
-    glfwSetFramebufferSizeCallback(engine->window, framebuffer_size_callback);
 
     // Initialize resource manager
     engine->resource_manager = (ResourceManager*)malloc(sizeof(ResourceManager));
     if (!engine->resource_manager) {
         fprintf(stderr, "Failed to allocate resource manager\n");
-        glfwDestroyWindow(engine->window);
-        glfwTerminate();
+        platform_shutdown(engine->platform);
+        free(engine->platform);
         return -1;
     }
     resource_manager_init(engine->resource_manager, engine, "./assets/");
@@ -96,8 +80,8 @@ int init_engine(GLEngine* engine, int width, int height) {
     if (!engine->render_manager) {
         fprintf(stderr, "Failed to allocate render manager\n");
         free(engine->resource_manager);
-        glfwDestroyWindow(engine->window);
-        glfwTerminate();
+        platform_shutdown(engine->platform);
+        free(engine->platform);
         return -1;
     }
     init_render_manager(engine->render_manager, engine);
@@ -110,8 +94,8 @@ int init_engine(GLEngine* engine, int width, int height) {
         free(engine->render_manager);
         resource_manager_destroy(engine->resource_manager);
         free(engine->resource_manager);
-        glfwDestroyWindow(engine->window);
-        glfwTerminate();
+        platform_shutdown(engine->platform);
+        free(engine->platform);
         return -1;
     }
     init_input_manager(engine->input_manager, engine);
@@ -125,14 +109,38 @@ int init_engine(GLEngine* engine, int width, int height) {
         free(engine->render_manager);
         resource_manager_destroy(engine->resource_manager);
         free(engine->resource_manager);
-        glfwDestroyWindow(engine->window);
-        glfwTerminate();
+        platform_shutdown(engine->platform);
+        free(engine->platform);
         return -1;
     }
     world_init(engine->world, "main", engine);
 
+#ifdef ENABLE_AUDIO
+    // Initialize audio manager
+    engine->audio = (AudioManager*)malloc(sizeof(AudioManager));
+    if (engine->audio) {
+        if (audio_manager_init(engine->audio) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize audio manager\n");
+            free(engine->audio);
+            engine->audio = NULL;
+        }
+    }
+#endif
+
+#ifdef ENABLE_LUA
+    // Initialize Lua scripting manager
+    engine->lua = (LuaManager*)malloc(sizeof(LuaManager));
+    if (engine->lua) {
+        if (lua_manager_init(engine->lua, engine) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize Lua manager\n");
+            free(engine->lua);
+            engine->lua = NULL;
+        }
+    }
+#endif
+
     // Initialize timing
-    engine->time = glfwGetTime();
+    engine->time = platform_get_time(engine->platform);
     engine->last_frame_time = engine->time;
     engine->delta_time = 0.0;
 
@@ -152,13 +160,20 @@ int init_engine(GLEngine* engine, int width, int height) {
 
 void update_engine(GLEngine* engine) {
     // Update timing
-    double current_time = glfwGetTime();
+    double current_time = platform_get_time(engine->platform);
     engine->delta_time = current_time - engine->last_frame_time;
     engine->last_frame_time = current_time;
     engine->time = current_time;
     
     // Update input
     update_input_manager(engine->input_manager);
+
+#ifdef ENABLE_AUDIO
+    // Update audio (handles fades, cleanup)
+    if (engine->audio) {
+        audio_manager_update(engine->audio, (float)engine->delta_time);
+    }
+#endif
     
     // Handle camera input
     InputManager* im = engine->input_manager;
@@ -254,13 +269,13 @@ void render_engine(GLEngine* engine) {
     }
     
     // Swap buffers
-    glfwSwapBuffers(engine->window);
+    platform_swap_buffers(engine->platform);
     
     // Poll events
-    glfwPollEvents();
+    platform_poll_events(engine->platform);
     
     // Check if window should close
-    if (glfwWindowShouldClose(engine->window)) {
+    if (platform_should_close(engine->platform)) {
         engine->running = 0;
     }
 }
@@ -283,6 +298,22 @@ void engine_get_screen_size(GLEngine* engine, int* width, int* height) {
 
 void close_engine(GLEngine* engine) {
     printf("Closing Pixos Engine...\n");
+
+#ifdef ENABLE_LUA
+    if (engine->lua) {
+        lua_manager_destroy(engine->lua);
+        free(engine->lua);
+        engine->lua = NULL;
+    }
+#endif
+
+#ifdef ENABLE_AUDIO
+    if (engine->audio) {
+        audio_manager_destroy(engine->audio);
+        free(engine->audio);
+        engine->audio = NULL;
+    }
+#endif
     
     if (engine->world) {
         world_destroy(engine->world);
@@ -307,11 +338,11 @@ void close_engine(GLEngine* engine) {
         engine->resource_manager = NULL;
     }
     
-    if (engine->window) {
-        glfwDestroyWindow(engine->window);
-        engine->window = NULL;
+    if (engine->platform) {
+        platform_shutdown(engine->platform);
+        free(engine->platform);
+        engine->platform = NULL;
     }
     
-    glfwTerminate();
     printf("Pixos Engine closed\n");
 }

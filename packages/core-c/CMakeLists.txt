@@ -11,6 +11,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 option(PLATFORM_ARM_LINUX "Build for ARM Linux (RG353V, etc.)" OFF)
 option(USE_GLES3 "Use OpenGL ES 3.0 instead of 2.0" OFF)
 option(NETWORK_SUPPORT "Enable optional network support" ON)
+option(ENABLE_AUDIO "Enable audio support via miniaudio" ON)
+option(ENABLE_LUA "Enable Lua scripting support" ON)
 
 # Determine platform
 # Note: PLATFORM_ARM_LINUX must be explicitly set for cross-compilation
@@ -48,6 +50,22 @@ if(NETWORK_SUPPORT)
     message(STATUS "Network support enabled")
 else()
     message(STATUS "Network support disabled")
+endif()
+
+# Audio support
+if(ENABLE_AUDIO)
+    add_definitions(-DENABLE_AUDIO)
+    message(STATUS "Audio support enabled (miniaudio)")
+else()
+    message(STATUS "Audio support disabled")
+endif()
+
+# Lua scripting support
+if(ENABLE_LUA)
+    add_definitions(-DENABLE_LUA)
+    message(STATUS "Lua scripting enabled")
+else()
+    message(STATUS "Lua scripting disabled")
 endif()
 
 # ============================================
@@ -116,13 +134,16 @@ endif()
 include_directories(
     ${GRAPHICS_INCLUDE_DIRS}
     src
+    src/audio
     src/input
     src/math
     src/platform
     src/rendering
     src/resource
     src/scene
+    src/scripting
     src/vendor
+    src/vendor/lua-5.4
 )
 link_directories(${GRAPHICS_LIBRARY_DIRS})
 
@@ -149,6 +170,51 @@ set(CORE_SOURCES
     src/scene/world.c
     src/vendor/cJSON.c
 )
+
+# Audio sources (miniaudio)
+if(ENABLE_AUDIO)
+    list(APPEND CORE_SOURCES src/audio/audio_manager.c)
+endif()
+
+# Lua scripting sources
+if(ENABLE_LUA)
+    list(APPEND CORE_SOURCES
+        src/scripting/lua_manager.c
+        # Lua 5.4 core sources
+        src/vendor/lua-5.4/lapi.c
+        src/vendor/lua-5.4/lauxlib.c
+        src/vendor/lua-5.4/lbaselib.c
+        src/vendor/lua-5.4/lcode.c
+        src/vendor/lua-5.4/lcorolib.c
+        src/vendor/lua-5.4/lctype.c
+        src/vendor/lua-5.4/ldblib.c
+        src/vendor/lua-5.4/ldebug.c
+        src/vendor/lua-5.4/ldo.c
+        src/vendor/lua-5.4/ldump.c
+        src/vendor/lua-5.4/lfunc.c
+        src/vendor/lua-5.4/lgc.c
+        src/vendor/lua-5.4/linit.c
+        src/vendor/lua-5.4/liolib.c
+        src/vendor/lua-5.4/llex.c
+        src/vendor/lua-5.4/lmathlib.c
+        src/vendor/lua-5.4/lmem.c
+        src/vendor/lua-5.4/loadlib.c
+        src/vendor/lua-5.4/lobject.c
+        src/vendor/lua-5.4/lopcodes.c
+        src/vendor/lua-5.4/loslib.c
+        src/vendor/lua-5.4/lparser.c
+        src/vendor/lua-5.4/lstate.c
+        src/vendor/lua-5.4/lstring.c
+        src/vendor/lua-5.4/lstrlib.c
+        src/vendor/lua-5.4/ltable.c
+        src/vendor/lua-5.4/ltablib.c
+        src/vendor/lua-5.4/ltm.c
+        src/vendor/lua-5.4/lundump.c
+        src/vendor/lua-5.4/lutf8lib.c
+        src/vendor/lua-5.4/lvm.c
+        src/vendor/lua-5.4/lzio.c
+    )
+endif()
 
 # Platform-specific sources
 if(BUILD_ARM)
