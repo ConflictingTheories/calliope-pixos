@@ -16,8 +16,8 @@
 
 #include "../resource/texture.h"
 #include "../math/vector.h"
+#include "../rendering/gles_compat.h"
 #include <stdbool.h>
-#include <GL/glew.h>
 
 // Maximum frames per animation
 #define MAX_ANIM_FRAMES 32

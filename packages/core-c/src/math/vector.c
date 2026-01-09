@@ -1,5 +1,45 @@
 #include "vector.h"
 
+/* vec2 operations */
+
+vec2 vec2_new(float x, float y) {
+    vec2 v = {x, y};
+    return v;
+}
+
+vec2 vec2_add(vec2 a, vec2 b) {
+    vec2 result = {a.x + b.x, a.y + b.y};
+    return result;
+}
+
+vec2 vec2_sub(vec2 a, vec2 b) {
+    vec2 result = {a.x - b.x, a.y - b.y};
+    return result;
+}
+
+vec2 vec2_scale(vec2 v, float s) {
+    vec2 result = {v.x * s, v.y * s};
+    return result;
+}
+
+float vec2_dot(vec2 a, vec2 b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+float vec2_length(vec2 v) {
+    return sqrtf(v.x * v.x + v.y * v.y);
+}
+
+vec2 vec2_normalize(vec2 v) {
+    float len = vec2_length(v);
+    if (len > 0) {
+        return vec2_scale(v, 1.0f / len);
+    }
+    return v;
+}
+
+/* vec3 operations */
+
 vec3 vec3_new(float x, float y, float z) {
     vec3 v = {x, y, z};
     return v;
