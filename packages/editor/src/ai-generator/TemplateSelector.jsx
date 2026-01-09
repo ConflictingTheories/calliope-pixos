@@ -15,8 +15,8 @@ import {
   Tag,
   Input,
   InputGroup,
-  FlexboxGrid,
-} from 'rsuite';
+  Row,
+} from '../ui';
 
 import {
   GAME_TEMPLATES,

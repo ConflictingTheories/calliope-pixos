@@ -10,8 +10,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Panel, Button, Tag, Input, InputGroup, SelectPicker } from 'rsuite';
-import SearchIcon from '@rsuite/icons/Search';
+import { Panel, Button, Tag, Input, InputGroup, SelectPicker } from '../../ui';
 import templates from '../data/templates.json';
 
 /**

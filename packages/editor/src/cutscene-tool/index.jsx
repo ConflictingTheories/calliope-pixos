@@ -23,7 +23,7 @@ import {
   SelectPicker,
   ButtonGroup,
   Panel,
-} from 'rsuite';
+} from '../ui';
 import Editor, { loader } from '@monaco-editor/react';
 
 // Import Monaco with pre-configured web workers

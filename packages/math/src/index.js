@@ -13,6 +13,7 @@
 
 // Vector exports
 export {
+  V3,
   Coord,
   Vector,
   Vector4,
@@ -44,4 +45,7 @@ export {
   lookAt,
   multiply,
   scale,
+  identity,
+  mul,
+  invert,
 } from './matrix4.js';

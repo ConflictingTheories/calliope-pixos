@@ -19,7 +19,7 @@ import {
   ButtonGroup,
   Toggle,
   Nav,
-} from 'rsuite';
+} from '../ui';
 
 import {
   aiService,

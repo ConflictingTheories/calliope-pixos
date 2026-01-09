@@ -26,7 +26,7 @@ import {
   Input,
   Checkbox,
   ButtonGroup,
-} from 'rsuite';
+} from '../ui';
 
 import WebGL3DCanvas from '../shared/WebGL3DCanvas.jsx';
 import {

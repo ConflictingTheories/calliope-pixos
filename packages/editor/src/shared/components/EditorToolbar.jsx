@@ -24,7 +24,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { ButtonToolbar, IconButton, ButtonGroup, Tooltip, Whisper, Divider, Badge } from 'rsuite';
+import { ButtonToolbar, IconButton, ButtonGroup, Tooltip, Whisper, Divider, Badge } from '../../ui';
 
 // Icon components (using simple SVG icons for standalone use)
 const UndoIcon = () => (

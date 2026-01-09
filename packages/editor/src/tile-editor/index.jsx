@@ -21,7 +21,7 @@ import {
   Message,
   SelectPicker,
   Input,
-} from 'rsuite';
+} from '../ui';
 
 // Isometric tile preview with Z-up coordinate system (matching engine)
 // X: East/West, Y: North/South, Z: Up/Down

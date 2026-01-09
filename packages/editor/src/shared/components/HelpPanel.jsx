@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Modal, Panel, Nav, Input, Tag, Divider } from 'rsuite';
+import { Modal, Panel, Nav, Input, Tag, Divider } from '../../ui';
 
 import '../styles/help-panel.css';
 

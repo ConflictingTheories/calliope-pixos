@@ -324,3 +324,63 @@ export function scale(out, a, v) {
   out[12] = a[12]; out[13] = a[13]; out[14] = a[14]; out[15] = a[15];
   return out;
 }
+
+/**
+ * Returns a new identity matrix as a plain array.
+ * @returns {number[]} 16-element identity matrix
+ */
+export function identity() {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
+/**
+ * Multiplies two 4x4 matrices and returns a new array.
+ * Unlike multiply(), this creates and returns a new array instead of writing to an output parameter.
+ * @param {number[]} a - First matrix
+ * @param {number[]} b - Second matrix
+ * @returns {number[]} Result of a * b
+ */
+export function mul(a, b) {
+  const o = new Array(16);
+  for (let c = 0; c < 4; c++) {
+    const b0 = b[c * 4 + 0], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
+    o[c * 4 + 0] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+    o[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+    o[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+    o[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+  }
+  return o;
+}
+
+/**
+ * Inverts a 4x4 matrix.
+ * @param {number[]} m - Matrix to invert
+ * @returns {number[]} Inverted matrix, or identity if not invertible
+ */
+export function invert(m) {
+  const out = new Array(16);
+  const b00 = m[0] * m[5] - m[1] * m[4], b01 = m[0] * m[6] - m[2] * m[4], b02 = m[0] * m[7] - m[3] * m[4],
+    b03 = m[1] * m[6] - m[2] * m[5], b04 = m[1] * m[7] - m[3] * m[5], b05 = m[2] * m[7] - m[3] * m[6],
+    b06 = m[8] * m[13] - m[9] * m[12], b07 = m[8] * m[14] - m[10] * m[12], b08 = m[8] * m[15] - m[11] * m[12],
+    b09 = m[9] * m[14] - m[10] * m[13], b10 = m[9] * m[15] - m[11] * m[13], b11 = m[10] * m[15] - m[11] * m[14],
+    det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+  if (!det) return identity();
+  const id = 1 / det;
+  out[0] = (m[5] * b11 - m[6] * b10 + m[7] * b09) * id;
+  out[1] = (-m[1] * b11 + m[2] * b10 - m[3] * b09) * id;
+  out[2] = (m[13] * b05 - m[14] * b04 + m[15] * b03) * id;
+  out[3] = (-m[9] * b05 + m[10] * b04 - m[11] * b03) * id;
+  out[4] = (-m[4] * b11 + m[6] * b08 - m[7] * b07) * id;
+  out[5] = (m[0] * b11 - m[2] * b08 + m[3] * b07) * id;
+  out[6] = (-m[12] * b05 + m[14] * b02 - m[15] * b01) * id;
+  out[7] = (m[8] * b05 - m[10] * b02 + m[11] * b01) * id;
+  out[8] = (m[4] * b10 - m[5] * b08 + m[7] * b06) * id;
+  out[9] = (-m[0] * b10 + m[1] * b08 - m[3] * b06) * id;
+  out[10] = (m[12] * b04 - m[13] * b02 + m[15] * b00) * id;
+  out[11] = (-m[8] * b04 + m[9] * b02 - m[11] * b00) * id;
+  out[12] = (-m[4] * b09 + m[5] * b07 - m[6] * b06) * id;
+  out[13] = (m[0] * b09 - m[1] * b07 + m[2] * b06) * id;
+  out[14] = (-m[12] * b03 + m[13] * b01 - m[14] * b00) * id;
+  out[15] = (m[8] * b03 - m[9] * b01 + m[10] * b00) * id;
+  return out;
+}

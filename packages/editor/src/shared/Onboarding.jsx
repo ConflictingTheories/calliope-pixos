@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Modal, Button, Steps, Panel, Tag, Message } from 'rsuite';
+import { Modal, Button, Steps, Panel, Tag, Message } from '../ui';
 
 import './styles/onboarding.css';
 

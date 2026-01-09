@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Modal, Button, InputNumber, SelectPicker, Radio, RadioGroup } from 'rsuite';
+import { Modal, Button, InputNumber, SelectPicker, Radio, RadioGroup } from '../ui';
 import './canvas-size-dialog.css';
 
 // Preset canvas sizes

@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, ButtonGroup, Input, Modal, SelectPicker } from 'rsuite';
+import { Button, ButtonGroup, Input, Modal, SelectPicker } from '../ui';
 import './palette-manager.css';
 
 // Preset palettes for pixel art

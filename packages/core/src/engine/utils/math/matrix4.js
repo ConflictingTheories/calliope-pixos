@@ -12,52 +12,30 @@
 \*                                                 */
 
 /**
- * @typedef {Float32Array} Vector3 - A 3-component vector as a Float32Array.
+ * Re-export all matrix utilities from the shared pixospritz-math package.
+ * This file exists for backward compatibility with existing imports.
+ * 
+ * @module @Engine/utils/math/matrix4
+ * @see pixospritz-math
  */
 
-/**
- * @typedef {Float32Array} Vector4 - A 4-component vector as a Float32Array.
- */
-
-/**
- * @typedef {Float32Array} Matrix3 - A 3x3 matrix as a Float32Array.
- */
-
-/**
- * @typedef {Float32Array} Matrix4 - A 4x4 matrix as a Float32Array.
- */
-
-const EPSILON = 0.000001;
-
-/**
- * Creates a Matrix4 from an array of 16 numbers.
- * @param {number[]} mat - Array of 16 numbers representing the matrix.
- * @returns {Matrix4} The resulting 4x4 matrix.
- */
-const from = (mat) => {
-  let dest = new Float32Array(16);
-  dest[0] = mat[0];
-  dest[1] = mat[1];
-  dest[2] = mat[2];
-  dest[3] = mat[3];
-  dest[4] = mat[4];
-  dest[5] = mat[5];
-  dest[6] = mat[6];
-  dest[7] = mat[7];
-  dest[8] = mat[8];
-  dest[9] = mat[9];
-  dest[10] = mat[10];
-  dest[11] = mat[11];
-  dest[12] = mat[12];
-  dest[13] = mat[13];
-  dest[14] = mat[14];
-  dest[15] = mat[15];
-  return dest;
-};
-
-/**
- * Creates an identity Matrix4.
- * @returns {Matrix4} The identity 4x4 matrix.
+export {
+  from,
+  create,
+  create3,
+  perspective,
+  frustum,
+  translate,
+  rotate,
+  subtractVectors,
+  normalize,
+  normalFromMat4,
+  setMatrix as set,
+  isPowerOf2,
+  lookAt,
+  multiply,
+  scale,
+} from 'pixospritz-math';
  */
 const create = () => {
   let matrix = new Float32Array(16);

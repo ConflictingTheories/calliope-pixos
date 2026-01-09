@@ -30,7 +30,7 @@ import {
   Button,
   Message,
   Input,
-} from 'rsuite';
+} from '../ui';
 
 // 3D wireframe preview using Canvas 2D with Z-up coordinate system
 function GeometryPreview({ geometry, size = 280 }) {

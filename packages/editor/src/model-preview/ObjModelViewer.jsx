@@ -13,7 +13,7 @@
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Panel, Container, Message } from 'rsuite';
+import { Panel, Container, Message } from '../ui';
 
 const vertexShaderSource = `#version 300 es
 precision highp float;

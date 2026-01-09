@@ -30,7 +30,7 @@ import {
   Col,
   Button,
   Message,
-} from 'rsuite';
+} from '../ui';
 
 import { lookAt, perspective, invert, mul, identity, rotate } from '../math/matrix4.jsx';
 import { degToRad, V3 } from '../math/vector.jsx';

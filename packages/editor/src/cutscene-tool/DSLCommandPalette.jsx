@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Modal, Input, Button, InputNumber, SelectPicker, Toggle } from 'rsuite';
+import { Modal, Input, Button, InputNumber, SelectPicker, Toggle } from '../ui';
 import { EXTENDED_COMMANDS, getCommandsByCategory } from './ExtendedDSLCommands.js';
 import './dsl-command-palette.css';
 

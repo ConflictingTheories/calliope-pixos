@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Button, ButtonGroup, Input, Modal, SelectPicker } from 'rsuite';
+import { Button, ButtonGroup, Input, Modal, SelectPicker } from '../ui';
 import './branching-dialogue.css';
 
 // Node type definitions

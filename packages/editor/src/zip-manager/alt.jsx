@@ -25,7 +25,7 @@ import {
   Loader,
   Placeholder,
   Button,
-} from 'rsuite';
+} from '../ui';
 
 function ZipManager({ openFile, onZipLoaded }) {
   const [entries, setEntries] = useState([]);

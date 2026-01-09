@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collect } from 'react-recollect';
-import { Panel, ButtonToolbar, IconButton, ButtonGroup } from 'rsuite';
+import { Panel, ButtonToolbar, IconButton, ButtonGroup } from '../ui';
 
 /**
  * ImagePreview - Displays an image with zoom and info features.

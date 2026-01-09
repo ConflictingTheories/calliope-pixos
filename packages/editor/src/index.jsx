@@ -6,8 +6,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-// RSuite CSS must be imported before custom styles
-import 'rsuite/dist/rsuite-no-reset.min.css';
+// Custom UI component styles
+import './ui/theme.css';
 
 import './index.css';
 import './shared/editor-styles.css';

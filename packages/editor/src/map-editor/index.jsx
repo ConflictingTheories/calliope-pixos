@@ -24,7 +24,7 @@ import {
   Message,
   Input,
   Checkbox,
-} from 'rsuite';
+} from '../ui';
 import { debug } from '../shared/debug-logger.js';
 
 // Define a simple colour palette corresponding to tile indices.  In a

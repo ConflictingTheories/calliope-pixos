@@ -12,7 +12,7 @@
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Panel, Container, Row, Col, Button, Message, Slider, Checkbox, Input, InputNumber, SelectPicker } from 'rsuite';
+import { Panel, Container, Row, Col, Button, Message, Slider, Checkbox, Input, InputNumber, SelectPicker } from '../ui';
 
 const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 

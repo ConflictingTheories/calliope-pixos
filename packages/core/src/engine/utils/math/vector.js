@@ -12,52 +12,27 @@
 \*                                                 */
 
 /**
- * Coord - A 2D coordinate class with basic vector operations.
+ * Re-export all vector utilities from the shared pixospritz-math package.
+ * This file exists for backward compatibility with existing imports.
+ * 
+ * @module @Engine/utils/math/vector
+ * @see pixospritz-math
  */
-export class Coord {
-  /**
-   * Creates an instance of Coord.
-   * @param {number} x - The x coordinate.
-   * @param {number} y - The y coordinate.
-   * @param {number} z - The z coordinate (optional).
-   * @param {number} w - The w coordinate (optional).
-   */
-  constructor(x, y, z, w) {
-    /** @type {number} */
-    this.x = x;
-    /** @type {number} */
-    this.y = y;
-    /** @type {number} */
-    this.z = z;
-    /** @type {number} */
-    this.w = w;
-  }
 
-  /**
-   * Adds another Coord to this one.
-   * @param {Coord} vec - The vector to add.
-   * @returns {Coord} The resulting vector.
-   */
-  add(vec) {
-    return new Coord(this.x + vec.x, this.y + vec.y);
-  }
-
-  /**
-   * Subtracts another Coord from this one.
-   * @param {Coord} vec - The vector to subtract.
-   * @returns {Coord} The resulting vector.
-   */
-  sub(vec) {
-    return new Coord(this.x - vec.x, this.y - vec.y);
-  }
-
-  /**
-   * Multiplies this Coord by a scalar.
-   * @param {number} n - The scalar.
-   * @returns {Coord} The resulting vector.
-   */
-  mul(n) {
-    return new Coord(this.x * n, this.y * n);
+export {
+  Coord,
+  Vector,
+  Vector4,
+  vec3,
+  set,
+  negate,
+  lerp,
+  degToRad,
+  radToDeg,
+  lineRectCollide,
+  rectRectCollide,
+  pushQuad,
+} from 'pixospritz-math';
   }
 
   /**
