@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _index = require("@Engine/utils/loaders/index.js");
 var _PxcPlayer = _interopRequireDefault(require("@Engine/core/cutscene/PxcPlayer.js"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -51,8 +52,7 @@ function PixoScriptLibrary(pixoscript) {
    * Create Script Environment
    */
   _defineProperty(this, "getLibrary", function (engine, envScope) {
-    console.log({
-      msg: 'creating pixoscript library',
+    (0, _debugLogger.debug)('PixoScriptLibrary', 'creating library', {
       envScope: envScope
     });
     return new _this.pixoscript.Table(_objectSpread(_objectSpread({}, envScope), {}, {
@@ -99,7 +99,7 @@ function PixoScriptLibrary(pixoscript) {
       },
       has_flag: function has_flag(key) {
         var action = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        console.log('checking flag via lua', key, action);
+        (0, _debugLogger.debug)('PixoScript', 'checking flag via lua', key, action);
         var hasFlag = engine.store.keys().includes(key);
         if (action) return function () {
           return Promise.resolve(hasFlag);
@@ -108,7 +108,7 @@ function PixoScriptLibrary(pixoscript) {
       },
       set_flag: function set_flag(key, value) {
         var action = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-        console.log('setting flag via lua', key, action);
+        (0, _debugLogger.debug)('PixoScript', 'setting flag via lua', key, action);
         var flag = engine.store.set(key, value.toObject());
         if (action) return function () {
           return Promise.resolve(flag);
@@ -117,7 +117,7 @@ function PixoScriptLibrary(pixoscript) {
       },
       add_flag: function add_flag(key, value) {
         var action = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-        console.log('adding flag via lua', key, action);
+        (0, _debugLogger.debug)('PixoScript', 'adding flag via lua', key, action);
         engine.store.add(key, value.toObject());
         if (action) return function () {
           return Promise.resolve(true);
@@ -126,7 +126,7 @@ function PixoScriptLibrary(pixoscript) {
       },
       get_flag: function get_flag(key) {
         var action = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        console.log('getting flag via lua', key, action);
+        (0, _debugLogger.debug)('PixoScript', 'getting flag via lua', key, action);
         var flag = engine.store.get(key);
         if (action) return function () {
           return Promise.resolve(flag);
@@ -135,14 +135,11 @@ function PixoScriptLibrary(pixoscript) {
       },
       // world functions
       remove_all_zones: function remove_all_zones() {
-        console.log({
-          msg: 'removing all zones via lua'
-        });
+        (0, _debugLogger.debug)('PixoScript', 'removing all zones via lua');
         return engine.spritz.world.removeAllZones();
       },
       load_zone_from_zip: function load_zone_from_zip(z, zip) {
-        console.log({
-          msg: 'loading zone from zip via lua',
+        (0, _debugLogger.debug)('PixoScript', 'loading zone from zip via lua', {
           world: engine.spritz.world,
           z: z,
           zip: zip
@@ -414,8 +411,7 @@ function PixoScriptLibrary(pixoscript) {
         var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
         return function () {
           return new Promise(function (resolve) {
-            console.log({
-              msg: 'playing dialogue via lua',
+            (0, _debugLogger.debug)('PixoScript', 'playing dialogue via lua', {
               zone: envScope.zone,
               spriteId: spriteId,
               dialogue: dialogue
@@ -424,8 +420,7 @@ function PixoScriptLibrary(pixoscript) {
               return resolve();
             };
             return envScope.zone.spriteDialogue(spriteId, dialogue, options).then(function () {
-              console.log({
-                msg: 'played dialogue via lua',
+              (0, _debugLogger.debug)('PixoScript', 'played dialogue via lua', {
                 zone: envScope.zone,
                 spriteId: spriteId,
                 dialogue: dialogue
@@ -437,16 +432,14 @@ function PixoScriptLibrary(pixoscript) {
       move_sprite: function move_sprite(spriteId, location, running) {
         return function () {
           return new Promise(function (resolve) {
-            console.log({
-              msg: 'moving sprite via lua',
+            (0, _debugLogger.debug)('PixoScript', 'moving sprite via lua', {
               zone: envScope.zone,
               spriteId: spriteId,
               location: location,
               running: running
             });
             return envScope.zone.moveSprite(spriteId, _this.pixoscript.utils.ensureArray(location.toObject()), running).then(function () {
-              console.log({
-                msg: 'moved sprite via lua',
+              (0, _debugLogger.debug)('PixoScript', 'moved sprite via lua', {
                 zone: envScope.zone,
                 spriteId: spriteId,
                 location: location,
@@ -458,8 +451,7 @@ function PixoScriptLibrary(pixoscript) {
         };
       },
       load_scripts: function load_scripts(scripts) {
-        console.log({
-          msg: 'loading scripts via lua',
+        (0, _debugLogger.debug)('PixoScript', 'loading scripts via lua', {
           scripts: scripts,
           envScope: envScope
         });
@@ -482,9 +474,6 @@ function PixoScriptLibrary(pixoscript) {
                 while (1) switch (_context2.p = _context2.n) {
                   case 0:
                     _context2.p = 0;
-                    console.log('[PixoScript] Loading .pxc cutscene:', filePath);
-
-                    // Load the .pxc file from asset loader
                     _context2.n = 1;
                     return engine.assetLoader.load(filePath);
                   case 1:
@@ -500,13 +489,13 @@ function PixoScriptLibrary(pixoscript) {
                     // Create PxcPlayer instance with callbacks
                     callbacks = {
                       onDialogueShow: options.onDialogueShow || function (data) {
-                        console.log('[PxcPlayer] Dialogue:', data.actor, data.text);
+                        (0, _debugLogger.debug)('PxcPlayer', 'Dialogue:', data.actor, data.text);
                       },
                       onBackdropChange: options.onBackdropChange || function (url, opts) {
-                        console.log('[PxcPlayer] Backdrop:', url);
+                        (0, _debugLogger.debug)('PxcPlayer', 'Backdrop:', url);
                       },
                       onEnd: function onEnd() {
-                        console.log('[PxcPlayer] Cutscene ended');
+                        (0, _debugLogger.debug)('PxcPlayer', 'Cutscene ended');
                         if (options.onEnd) options.onEnd();
                         resolve();
                       }
@@ -556,18 +545,18 @@ function PixoScriptLibrary(pixoscript) {
                 while (1) switch (_context3.p = _context3.n) {
                   case 0:
                     _context3.p = 0;
-                    console.log('[PixoScript] Playing inline .pxc script');
+                    (0, _debugLogger.debug)('PixoScript', 'Playing inline .pxc script');
 
                     // Create PxcPlayer instance with callbacks
                     callbacks = {
                       onDialogueShow: options.onDialogueShow || function (data) {
-                        console.log('[PxcPlayer] Dialogue:', data.actor, data.text);
+                        (0, _debugLogger.debug)('PxcPlayer', 'Dialogue:', data.actor, data.text);
                       },
                       onBackdropChange: options.onBackdropChange || function (url, opts) {
-                        console.log('[PxcPlayer] Backdrop:', url);
+                        (0, _debugLogger.debug)('PxcPlayer', 'Backdrop:', url);
                       },
                       onEnd: function onEnd() {
-                        console.log('[PxcPlayer] Cutscene ended');
+                        (0, _debugLogger.debug)('PxcPlayer', 'Cutscene ended');
                         if (options.onEnd) options.onEnd();
                         resolve();
                       }
@@ -609,8 +598,7 @@ function PixoScriptLibrary(pixoscript) {
         engine.renderManager.camera.lookAt(position, target, upDir);
       },
       pan_camera: function pan_camera(from, to, duration) {
-        console.log({
-          msg: 'panning camera via lua',
+        (0, _debugLogger.debug)('PixoScript', 'panning camera via lua', {
           from: from,
           to: to,
           duration: duration
@@ -779,7 +767,7 @@ function PixoScriptLibrary(pixoscript) {
         return table;
       },
       log: function log(msg) {
-        console.log(msg);
+        (0, _debugLogger.debug)('PixoScript', msg);
       },
       to: function to(obj, tbl) {
         for (var _i2 = 0, _Object$entries2 = Object.entries(tbl.toObject()); _i2 < _Object$entries2.length; _i2++) {
@@ -792,7 +780,7 @@ function PixoScriptLibrary(pixoscript) {
       /** Mode API - allow Lua scripts to change or query current mode */
       set_mode: function set_mode(name, params) {
         try {
-          console.log('pixos.set_mode called ->', name, params);
+          (0, _debugLogger.debug)('PixoScript', 'pixos.set_mode called ->', name, params);
           var world = engine.spritz.world;
           if (world && world.modeManager) {
             // params may be a Lua table - convert if necessary
@@ -812,7 +800,7 @@ function PixoScriptLibrary(pixoscript) {
       },
       set_mode_mappings: function set_mode_mappings(name, params) {
         try {
-          console.log('pixos.set_mode_mappings called ->', name, params);
+          (0, _debugLogger.debug)('PixoScript', 'pixos.set_mode_mappings called ->', name, params);
           if (engine && engine.inputManager) {
             // params may be a Lua table - convert if necessary
             var p = params && typeof params.toObject === 'function' ? params.toObject() : params;
@@ -828,7 +816,7 @@ function PixoScriptLibrary(pixoscript) {
             console.warn('pixos.register_mode called with undefined name');
             return;
           }
-          console.log('pixos.register_mode called ->', name);
+          (0, _debugLogger.debug)('PixoScript', 'pixos.register_mode called ->', name);
           var world = engine.spritz.world;
           if (!world || !world.modeManager) return;
           // handlers may be a Lua table; convert to JS object safely
@@ -852,8 +840,7 @@ function PixoScriptLibrary(pixoscript) {
         return tbl.length || 0;
       },
       callback_finish: function callback_finish(success) {
-        console.log({
-          msg: 'callback finish',
+        (0, _debugLogger.debug)('PixoScript', 'callback finish', {
           success: success
         });
         if (envScope.finish) {
@@ -931,6 +918,251 @@ function PixoScriptLibrary(pixoscript) {
           console.warn('get_particle_count failed', e);
           return 0;
         }
+      },
+      // ==================== SAVE/LOAD SYSTEM ====================
+
+      /**
+       * Create a checkpoint (in-memory save point)
+       * @param {string} [label='auto'] - Label for the checkpoint
+       * @returns {number} Checkpoint index
+       */
+      save_checkpoint: function save_checkpoint() {
+        var label = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'auto';
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.checkpoint(label);
+          }
+          return -1;
+        } catch (e) {
+          console.warn('save_checkpoint failed', e);
+          return -1;
+        }
+      },
+      /**
+       * Restore from the latest checkpoint
+       * @param {number} [index=-1] - Checkpoint index (-1 for latest)
+       * @returns {function} Async action that resolves to success boolean
+       */
+      restore_checkpoint: function restore_checkpoint() {
+        var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : -1;
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+          var _t5;
+          return _regenerator().w(function (_context7) {
+            while (1) switch (_context7.p = _context7.n) {
+              case 0:
+                _context7.p = 0;
+                if (!engine.stateManager) {
+                  _context7.n = 2;
+                  break;
+                }
+                _context7.n = 1;
+                return engine.stateManager.restore(index);
+              case 1:
+                return _context7.a(2, _context7.v);
+              case 2:
+                return _context7.a(2, false);
+              case 3:
+                _context7.p = 3;
+                _t5 = _context7.v;
+                console.warn('restore_checkpoint failed', _t5);
+                return _context7.a(2, false);
+            }
+          }, _callee7, null, [[0, 3]]);
+        }));
+      },
+      /**
+       * Save game to a slot
+       * @param {string} slotId - Save slot ID (e.g., 'slot-1', 'slot-2')
+       * @param {string} [slotName] - Display name for the save
+       * @returns {function} Async action that resolves to success boolean
+       */
+      save_game: function save_game(slotId) {
+        var slotName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+          var _t6;
+          return _regenerator().w(function (_context8) {
+            while (1) switch (_context8.p = _context8.n) {
+              case 0:
+                _context8.p = 0;
+                if (!engine.stateManager) {
+                  _context8.n = 2;
+                  break;
+                }
+                _context8.n = 1;
+                return engine.stateManager.save(slotId, slotName);
+              case 1:
+                return _context8.a(2, _context8.v);
+              case 2:
+                return _context8.a(2, false);
+              case 3:
+                _context8.p = 3;
+                _t6 = _context8.v;
+                console.warn('save_game failed', _t6);
+                return _context8.a(2, false);
+            }
+          }, _callee8, null, [[0, 3]]);
+        }));
+      },
+      /**
+       * Load game from a slot
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to success boolean
+       */
+      load_game: function load_game(slotId) {
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+          var _t7;
+          return _regenerator().w(function (_context9) {
+            while (1) switch (_context9.p = _context9.n) {
+              case 0:
+                _context9.p = 0;
+                if (!engine.stateManager) {
+                  _context9.n = 2;
+                  break;
+                }
+                _context9.n = 1;
+                return engine.stateManager.load(slotId);
+              case 1:
+                return _context9.a(2, _context9.v);
+              case 2:
+                return _context9.a(2, false);
+              case 3:
+                _context9.p = 3;
+                _t7 = _context9.v;
+                console.warn('load_game failed', _t7);
+                return _context9.a(2, false);
+            }
+          }, _callee9, null, [[0, 3]]);
+        }));
+      },
+      /**
+       * Get all available save slots
+       * @returns {function} Async action that resolves to array of save info
+       */
+      get_save_slots: function get_save_slots() {
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+          var saves, _t8;
+          return _regenerator().w(function (_context0) {
+            while (1) switch (_context0.p = _context0.n) {
+              case 0:
+                _context0.p = 0;
+                if (!engine.stateManager) {
+                  _context0.n = 2;
+                  break;
+                }
+                _context0.n = 1;
+                return engine.stateManager.getAllSaves();
+              case 1:
+                saves = _context0.v;
+                return _context0.a(2, new _this.pixoscript.Table(saves.map(function (s) {
+                  var _s$player;
+                  return {
+                    slotId: s.slotId,
+                    slotName: s.slotName,
+                    timestamp: s.timestamp,
+                    playTime: s.playTime,
+                    zone: (_s$player = s.player) === null || _s$player === void 0 ? void 0 : _s$player.zone
+                  };
+                })));
+              case 2:
+                return _context0.a(2, new _this.pixoscript.Table([]));
+              case 3:
+                _context0.p = 3;
+                _t8 = _context0.v;
+                console.warn('get_save_slots failed', _t8);
+                return _context0.a(2, new _this.pixoscript.Table([]));
+            }
+          }, _callee0, null, [[0, 3]]);
+        }));
+      },
+      /**
+       * Delete a save slot
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to success boolean
+       */
+      delete_save: function delete_save(slotId) {
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+          var _t9;
+          return _regenerator().w(function (_context1) {
+            while (1) switch (_context1.p = _context1.n) {
+              case 0:
+                _context1.p = 0;
+                if (!engine.stateManager) {
+                  _context1.n = 2;
+                  break;
+                }
+                _context1.n = 1;
+                return engine.stateManager.deleteSave(slotId);
+              case 1:
+                return _context1.a(2, _context1.v);
+              case 2:
+                return _context1.a(2, false);
+              case 3:
+                _context1.p = 3;
+                _t9 = _context1.v;
+                console.warn('delete_save failed', _t9);
+                return _context1.a(2, false);
+            }
+          }, _callee1, null, [[0, 3]]);
+        }));
+      },
+      /**
+       * Get current play time in milliseconds
+       * @returns {number} Play time in ms
+       */
+      get_play_time: function get_play_time() {
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.getPlayTime();
+          }
+          return 0;
+        } catch (e) {
+          return 0;
+        }
+      },
+      /**
+       * Get formatted play time string
+       * @returns {string} Formatted time (e.g., "2h 30m")
+       */
+      get_play_time_formatted: function get_play_time_formatted() {
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.formatPlayTime();
+          }
+          return '0m 0s';
+        } catch (e) {
+          return '0m 0s';
+        }
+      },
+      /**
+       * Check if a save slot exists
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to boolean
+       */
+      has_save: function has_save(slotId) {
+        return /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+          var slot, _t0;
+          return _regenerator().w(function (_context10) {
+            while (1) switch (_context10.p = _context10.n) {
+              case 0:
+                _context10.p = 0;
+                if (!engine.stateManager) {
+                  _context10.n = 2;
+                  break;
+                }
+                _context10.n = 1;
+                return engine.stateManager.getSaveSlot(slotId);
+              case 1:
+                slot = _context10.v;
+                return _context10.a(2, slot !== null);
+              case 2:
+                return _context10.a(2, false);
+              case 3:
+                _context10.p = 3;
+                _t0 = _context10.v;
+                return _context10.a(2, false);
+            }
+          }, _callee10, null, [[0, 3]]);
+        }));
       }
     }));
   });

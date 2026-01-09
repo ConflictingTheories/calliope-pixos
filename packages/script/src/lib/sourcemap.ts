@@ -247,7 +247,7 @@ export class SourceMapGenerator {
    * Generate source map comment to append to generated code
    */
   toComment(): string {
-    return `//# sourceMappingURL=${this.toDataURL()}`
+    return "//# " + "sourceMappingURL=" + this.toDataURL()
   }
 }
 

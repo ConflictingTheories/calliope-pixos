@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 /*                                                 *\
 ** ----------------------------------------------- **
 **          Calliope - Pixos Game Engine   	       **
@@ -19,11 +20,9 @@ exports["default"] = void 0;
 // Animate a sprite without moving them
 var _default = exports["default"] = {
   init: function init(length, untilFrame, finish) {
-    console.log({
-      msg: 'initializing animation',
+    (0, _debugLogger.debug)('Animate', 'initializing animation', {
       length: length,
-      untilFrame: untilFrame,
-      finish: finish
+      untilFrame: untilFrame
     });
     this.length = length;
     this.untilFrame = untilFrame;

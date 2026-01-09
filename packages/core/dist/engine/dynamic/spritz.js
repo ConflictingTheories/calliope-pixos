@@ -7,6 +7,7 @@ exports["default"] = void 0;
 var _spritz = _interopRequireDefault(require("@Engine/core/scene/spritz.js"));
 var _world = _interopRequireDefault(require("@Engine/core/scene/world.js"));
 var _jszip = _interopRequireDefault(require("jszip"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -96,11 +97,11 @@ var ExampleDynamicSpritz = exports["default"] = /*#__PURE__*/function (_Spritz) 
                         return zip.file('manifest.json').async('string');
                       case 2:
                         manifest = _t.parse.call(_t, _context2.v);
-                        console.log(manifest);
+                        (0, _debugLogger.debug)('Spritz', 'loaded manifest', manifest);
 
                         // Connect to network if specified
                         if (manifest.network && manifest.network.url) {
-                          console.log('Network connection found -- attempting connectiong to server');
+                          (0, _debugLogger.debug)('Spritz', 'Network connection found -- attempting connection to server');
                           engine.networkManager.connect(manifest.network.url);
                         }
 

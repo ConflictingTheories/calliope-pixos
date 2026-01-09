@@ -80,7 +80,76 @@ function ParticleManager(renderManager) {
     var uvs = [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0];
     _this.vertexPosBuf = _this.renderManager.createBuffer(quad, gl.STATIC_DRAW, 3);
     _this.vertexTexBuf = _this.renderManager.createBuffer(uvs, gl.STATIC_DRAW, 2);
+
+    // Initialize instanced rendering buffers
+    _this.initInstancedBuffers();
     _this.initialized = true;
+  });
+  /**
+   * Initializes buffers for instanced rendering.
+   * @returns {void}
+   */
+  _defineProperty(this, "initInstancedBuffers", function () {
+    var gl = _this.engine.gl;
+    if (!gl) return;
+
+    // Pre-allocate typed arrays for instance data
+    _this.instancePositions = new Float32Array(_this.maxInstances * 3);
+    _this.instanceColors = new Float32Array(_this.maxInstances * 4);
+    _this.instanceSizes = new Float32Array(_this.maxInstances);
+
+    // Create instance buffers
+    _this.instancePositionBuf = gl.createBuffer();
+    _this.instanceColorBuf = gl.createBuffer();
+    _this.instanceSizeBuf = gl.createBuffer();
+  });
+  /**
+   * Updates instance buffers with current particle data.
+   * @returns {number} Number of particles to render.
+   */
+  _defineProperty(this, "updateInstanceBuffers", function () {
+    var gl = _this.engine.gl;
+    if (!gl || !_this.particles.length) return 0;
+    var count = Math.min(_this.particles.length, _this.maxInstances);
+
+    // Sort particles back-to-front for proper alpha blending
+    var cameraPos = _this.renderManager.camera.cameraPosition;
+    var sortedParticles = _toConsumableArray(_this.particles).sort(function (a, b) {
+      var distA = Math.pow(a.pos[0] - cameraPos.x, 2) + Math.pow(a.pos[1] - cameraPos.y, 2) + Math.pow(a.pos[2] - cameraPos.z, 2);
+      var distB = Math.pow(b.pos[0] - cameraPos.x, 2) + Math.pow(b.pos[1] - cameraPos.y, 2) + Math.pow(b.pos[2] - cameraPos.z, 2);
+      return distB - distA;
+    });
+
+    // Fill instance arrays
+    for (var i = 0; i < count; i++) {
+      var p = sortedParticles[i];
+      var lifeRatio = p.age / p.life;
+      var alpha = Math.max(0, 1.0 - lifeRatio * lifeRatio);
+
+      // Position (x, y, z)
+      _this.instancePositions[i * 3] = p.pos[0];
+      _this.instancePositions[i * 3 + 1] = p.pos[1];
+      _this.instancePositions[i * 3 + 2] = p.pos[2];
+
+      // Color (r, g, b, a)
+      _this.instanceColors[i * 4] = p.color[0];
+      _this.instanceColors[i * 4 + 1] = p.color[1];
+      _this.instanceColors[i * 4 + 2] = p.color[2];
+      _this.instanceColors[i * 4 + 3] = alpha;
+
+      // Size
+      _this.instanceSizes[i] = p.size;
+    }
+
+    // Upload to GPU
+    gl.bindBuffer(gl.ARRAY_BUFFER, _this.instancePositionBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, _this.instancePositions.subarray(0, count * 3), gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, _this.instanceColorBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, _this.instanceColors.subarray(0, count * 4), gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, _this.instanceSizeBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, _this.instanceSizes.subarray(0, count), gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return count;
   });
   /**
    * Emits particles based on a config object.
@@ -226,8 +295,8 @@ function ParticleManager(renderManager) {
     }
   });
   /**
-   * Renders particles using the dedicated particle shader as proper billboards.
-   * Particles are sorted back-to-front for correct alpha blending.
+   * Renders particles using instanced rendering for optimal performance.
+   * Falls back to individual draw calls if instancing is not available.
    * @returns {void}
    */
   _defineProperty(this, "render", function () {
@@ -242,6 +311,108 @@ function ParticleManager(renderManager) {
     /** @type {WebGLProgram} */
     var shader = rm.particleShaderProgram;
     if (!shader) return;
+
+    // Check for instanced rendering support (WebGL2)
+    var supportsInstancing = typeof gl.drawArraysInstanced === 'function';
+    if (supportsInstancing && _this.useInstancing && shader.aInstancePosition !== undefined) {
+      _this.renderInstanced();
+    } else {
+      _this.renderNonInstanced();
+    }
+  });
+  /**
+   * Renders particles using WebGL2 instanced rendering.
+   * Single draw call for all particles - massive performance improvement.
+   * @returns {void}
+   */
+  _defineProperty(this, "renderInstanced", function () {
+    var rm = _this.renderManager;
+    var gl = _this.engine.gl;
+    var shader = rm.particleShaderProgram;
+
+    // Update instance buffers with current particle data
+    var instanceCount = _this.updateInstanceBuffers();
+    if (instanceCount === 0) return;
+
+    // Reset vertex attrib arrays
+    for (var i = 0; i < 8; i++) {
+      gl.disableVertexAttribArray(i);
+    }
+    gl.useProgram(shader);
+
+    // Enable blending for transparency - additive blending for glow
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    gl.depthMask(false);
+
+    // Bind quad vertex data (shared for all instances)
+    gl.enableVertexAttribArray(shader.aVertexPosition);
+    rm.bindBuffer(_this.vertexPosBuf, shader.aVertexPosition);
+    gl.enableVertexAttribArray(shader.aTextureCoord);
+    rm.bindBuffer(_this.vertexTexBuf, shader.aTextureCoord);
+
+    // Bind instance position buffer
+    if (shader.aInstancePosition !== undefined) {
+      gl.enableVertexAttribArray(shader.aInstancePosition);
+      gl.bindBuffer(gl.ARRAY_BUFFER, _this.instancePositionBuf);
+      gl.vertexAttribPointer(shader.aInstancePosition, 3, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(shader.aInstancePosition, 1);
+    }
+
+    // Bind instance color buffer
+    if (shader.aInstanceColor !== undefined) {
+      gl.enableVertexAttribArray(shader.aInstanceColor);
+      gl.bindBuffer(gl.ARRAY_BUFFER, _this.instanceColorBuf);
+      gl.vertexAttribPointer(shader.aInstanceColor, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(shader.aInstanceColor, 1);
+    }
+
+    // Bind instance size buffer
+    if (shader.aInstanceSize !== undefined) {
+      gl.enableVertexAttribArray(shader.aInstanceSize);
+      gl.bindBuffer(gl.ARRAY_BUFFER, _this.instanceSizeBuf);
+      gl.vertexAttribPointer(shader.aInstanceSize, 1, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(shader.aInstanceSize, 1);
+    }
+
+    // Set projection/view matrices
+    if (shader.setMatrixUniforms) {
+      shader.setMatrixUniforms({});
+    }
+
+    // Draw all particles in a single instanced call
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);
+
+    // Reset divisors
+    if (shader.aInstancePosition !== undefined) {
+      gl.vertexAttribDivisor(shader.aInstancePosition, 0);
+      gl.disableVertexAttribArray(shader.aInstancePosition);
+    }
+    if (shader.aInstanceColor !== undefined) {
+      gl.vertexAttribDivisor(shader.aInstanceColor, 0);
+      gl.disableVertexAttribArray(shader.aInstanceColor);
+    }
+    if (shader.aInstanceSize !== undefined) {
+      gl.vertexAttribDivisor(shader.aInstanceSize, 0);
+      gl.disableVertexAttribArray(shader.aInstanceSize);
+    }
+
+    // Cleanup
+    gl.depthMask(true);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.disableVertexAttribArray(shader.aVertexPosition);
+    gl.disableVertexAttribArray(shader.aTextureCoord);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
+  });
+  /**
+   * Renders particles without instancing (fallback for older systems).
+   * @returns {void}
+   */
+  _defineProperty(this, "renderNonInstanced", function () {
+    var rm = _this.renderManager;
+    var gl = _this.engine.gl;
+    var shader = rm.particleShaderProgram;
 
     // Reset all vertex attrib arrays to prevent errors from other shaders
     for (var i = 0; i < 8; i++) {
@@ -321,6 +492,27 @@ function ParticleManager(renderManager) {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);
   });
+  /**
+   * Gets particle count for debugging/stats.
+   * @returns {number} Current particle count.
+   */
+  _defineProperty(this, "getParticleCount", function () {
+    return _this.particles.length;
+  });
+  /**
+   * Clears all particles.
+   * @returns {void}
+   */
+  _defineProperty(this, "clear", function () {
+    _this.particles = [];
+  });
+  /**
+   * Sets whether to use instanced rendering.
+   * @param {boolean} enabled - Whether to use instancing.
+   */
+  _defineProperty(this, "setInstancingEnabled", function (enabled) {
+    _this.useInstancing = enabled;
+  });
   /** @type {import('./manager.js').default} */
   this.renderManager = renderManager;
   /** @type {import('../index.js').default} */
@@ -335,4 +527,22 @@ function ParticleManager(renderManager) {
   this.vertexTexBuf = null;
   /** @type {number|null} */
   this.lastUpdateTime = null;
+
+  // Instanced rendering buffers
+  /** @type {WebGLBuffer|null} */
+  this.instancePositionBuf = null;
+  /** @type {WebGLBuffer|null} */
+  this.instanceColorBuf = null;
+  /** @type {WebGLBuffer|null} */
+  this.instanceSizeBuf = null;
+  /** @type {boolean} */
+  this.useInstancing = true;
+  /** @type {number} */
+  this.maxInstances = 10000;
+  /** @type {Float32Array|null} */
+  this.instancePositions = null;
+  /** @type {Float32Array|null} */
+  this.instanceColors = null;
+  /** @type {Float32Array|null} */
+  this.instanceSizes = null;
 });

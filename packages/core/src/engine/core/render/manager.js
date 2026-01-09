@@ -14,7 +14,13 @@
 // Absolute imports
 import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.js';
 import { Vector, degToRad } from '../../utils/math/vector.js';
-import { OBJ } from '../../utils/obj/index.js';
+
+// Layout attribute key constants (from OBJ loader, defined inline to avoid import)
+const LAYOUT_KEYS = {
+  POSITION: 'position',
+  NORMAL: 'normal',
+  UV: 'uv',
+};
 
 import CameraManager from './camera.js';
 import LightManager from './light.js';
@@ -25,6 +31,11 @@ import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
+import particleVertexShader from '../../shaders/particles/vs.js';
+import particleFragmentShader from '../../shaders/particles/fs.js';
+import pickerVertexShader from '../../shaders/picker/vs.js';
+import pickerFragmentShader from '../../shaders/picker/fs.js';
+import pickerInit from '../../shaders/picker/init.js';
 
 /**
  * @typedef {object} ShaderSource
@@ -176,6 +187,15 @@ export default class RenderManager {
     /** @type {import('../index.js').SpritzGame} */
     const { spritz, gl } = this.engine;
 
+    if (!gl) {
+      console.error('RenderManager.init called but engine.gl is null. Engine state:', {
+        engineExists: !!this.engine,
+        glExists: !!gl,
+        spritzExists: !!spritz,
+      });
+      throw new Error('RenderManager initialization failed: WebGL context is null');
+    }
+
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
     gl.clearDepth(1.0);
@@ -193,9 +213,9 @@ export default class RenderManager {
     // Initialize picker shader (special shader which allows for picking objects on screen)
     this.initShaderEffects({
       id: 'picker',
-      vs: require('../../shaders/picker/vs.js').default(),
-      fs: require('../../shaders/picker/fs.js').default(),
-      init: require('../../shaders/picker/init.js').default,
+      vs: pickerVertexShader(),
+      fs: pickerFragmentShader(),
+      init: pickerInit,
     });
 
     // Initialize Effects (TODO: Needs work, doesn't apply filter correctly)
@@ -361,9 +381,9 @@ export default class RenderManager {
     };
 
     const attrs = {
-      aVertexPosition: OBJ.Layout.POSITION.key,
-      aVertexNormal: OBJ.Layout.NORMAL.key,
-      aTextureCoord: OBJ.Layout.UV.key,
+      aVertexPosition: LAYOUT_KEYS.POSITION,
+      aVertexNormal: LAYOUT_KEYS.NORMAL,
+      aTextureCoord: LAYOUT_KEYS.UV,
     };
     /**
      * Applies attribute pointers for a given mesh, linking mesh buffer data to shader attributes.
@@ -401,8 +421,8 @@ export default class RenderManager {
     const { gl } = this.engine;
     const self = this;
 
-    const vsSource = require('../../shaders/particles/vs.js').default();
-    const fsSource = require('../../shaders/particles/fs.js').default();
+    const vsSource = particleVertexShader();
+    const fsSource = particleFragmentShader();
 
     /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);

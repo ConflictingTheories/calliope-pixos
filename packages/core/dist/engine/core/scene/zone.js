@@ -11,6 +11,7 @@ var _vector = require("@Engine/utils/math/vector.js");
 var _index2 = require("@Engine/utils/loaders/index.js");
 var _map = require("@Engine/dynamic/map.js");
 var _loadable = _interopRequireDefault(require("@Engine/core/queue/loadable.js"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 var _PixoScriptInterpreter = _interopRequireDefault(require("@Engine/scripting/PixoScriptInterpreter.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -414,7 +415,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
           while (1) switch (_context7.p = _context7.n) {
             case 0:
               _context7.p = 0;
-              console.log('Loading Game Mode From Zip');
+              (0, _debugLogger.debug)('Zone', 'Loading Game Mode From Zip');
               setupFile = zip.file("modes/".concat(modeName, "/setup.pxs"));
               updateFile = zip.file("modes/".concat(modeName, "/update.pxs"));
               teardownFile = zip.file("modes/".concat(modeName, "/teardown.pxs"));
@@ -436,7 +437,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
             case 1:
               script = _context7.v;
               // run the setup registration (it likely calls pixos.register_mode)
-              console.log('Zone.loadModeFromZip: running setup.pxs for mode', modeName);
+              (0, _debugLogger.debug)('Zone', 'loadModeFromZip: running setup.pxs for mode', modeName);
               _context7.n = 2;
               return interpreter.run(script);
             case 2:
@@ -698,13 +699,13 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
             case 7:
               heightsStr = _context10.v;
               heightsJson = JSON.parse(heightsStr);
-              console.log("[Zone] Loaded heights.json for ".concat(_this2.id, ":"), (_heightsJson = heightsJson) === null || _heightsJson === void 0 ? void 0 : _heightsJson.length, 'rows');
-              console.log("[Zone] First row heights:", (_heightsJson2 = heightsJson) === null || _heightsJson2 === void 0 ? void 0 : _heightsJson2[0]);
-              console.log("[Zone] Heights data sample:", JSON.stringify((_heightsJson3 = heightsJson) === null || _heightsJson3 === void 0 ? void 0 : _heightsJson3.slice(0, 3)));
+              (0, _debugLogger.debug)('Zone', "Loaded heights.json for ".concat(_this2.id, ":"), (_heightsJson = heightsJson) === null || _heightsJson === void 0 ? void 0 : _heightsJson.length, 'rows');
+              (0, _debugLogger.debug)('Zone', "First row heights:", (_heightsJson2 = heightsJson) === null || _heightsJson2 === void 0 ? void 0 : _heightsJson2[0]);
+              (0, _debugLogger.debug)('Zone', "Heights data sample:", JSON.stringify((_heightsJson3 = heightsJson) === null || _heightsJson3 === void 0 ? void 0 : _heightsJson3.slice(0, 3)));
               _context10.n = 9;
               break;
             case 8:
-              console.log("[Zone] No heights.json found for ".concat(_this2.id, ", using default geometry heights"));
+              (0, _debugLogger.debug)('Zone', "No heights.json found for ".concat(_this2.id, ", using default geometry heights"));
             case 9:
               _context10.n = 11;
               break;
@@ -1000,7 +1001,6 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
      */
     _defineProperty(_this2, "loadScripts", function () {
       var refresh = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      console.log('[Zone.loadScripts] ENTRY - zone:', _this2.id, 'refresh:', refresh, 'isPaused:', _this2.world.isPaused, 'scripts:', _this2.scripts.length);
       if (_this2.world.isPaused) return;
       // CRITICAL: Zone load scripts must run even when paused
       // They are responsible for initializing the zone state
@@ -1010,10 +1010,8 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var x = _step5.value;
-          console.log('[Zone.loadScripts] Checking script:', x.id, 'isLoadSpritz:', x.id === 'load-spritz', 'refresh:', refresh);
           if (x.id === 'load-spritz' && refresh) {
             // Call trigger immediately when loading/refreshing
-            console.log('[Zone.loadScripts] Calling load-spritz trigger for zone:', _this2.id);
             try {
               x.trigger.call(zone);
             } catch (e) {
@@ -1542,7 +1540,7 @@ var Zone = exports["default"] = /*#__PURE__*/function (_Loadable) {
                 _context18.n = 2;
                 break;
               }
-              console.log('Running Custom Select Handler');
+              (0, _debugLogger.debug)('Zone', 'Running Custom Select Handler');
               _context18.n = 1;
               return _this2.world.modeManager.handleSelect(_this2, row, cell, 'tile');
             case 1:

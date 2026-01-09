@@ -10,6 +10,10 @@ import { libTable } from './lib/table.js';
 import { libString, metatable as stringMetatable } from './lib/string.js';
 import { getLibOS } from './lib/os.js';
 import { getLibPackage } from './lib/package.js';
+import { libCoroutine } from './lib/coroutine.js';
+import { libDebug } from './lib/debug.js';
+import { libSourceMap } from './lib/sourcemap.js';
+import { getLibIO } from './lib/io.js';
 import { ensureArray } from './utils.js';
 import { parse as parseScript } from './parser.js';
 /**
@@ -86,6 +90,10 @@ function createEnv(config = {}) {
     loadLib('table', libTable);
     loadLib('string', libString);
     loadLib('os', getLibOS(cfg));
+    loadLib('coroutine', libCoroutine);
+    loadLib('debug', libDebug);
+    loadLib('sourcemap', libSourceMap);
+    loadLib('io', getLibIO(cfg));
     _G.rawset('require', _require);
     /**
      * Parse in-memory script text.

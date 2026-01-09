@@ -9,7 +9,6 @@ var _enums = require("@Engine/utils/enums.js");
 var _index = _interopRequireDefault(require("../queue/index.js"));
 var _index2 = require("@Engine/utils/loaders/index.js");
 var _matrix = require("@Engine/utils/math/matrix4.js");
-var _utils = require("@Engine/utils/obj/utils.js");
 var _loadable = _interopRequireDefault(require("@Engine/core/queue/loadable.js"));
 var _vector2 = require("../../utils/math/vector.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
@@ -49,6 +48,23 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */
+/**
+ * Build a WebGL buffer from data
+ * @param {WebGLRenderingContext} gl - WebGL context
+ * @param {number} type - Buffer type (gl.ARRAY_BUFFER or gl.ELEMENT_ARRAY_BUFFER)
+ * @param {number[]} data - Data to buffer
+ * @param {number} itemSize - Number of components per vertex
+ * @returns {WebGLBuffer} The created buffer with numItems property
+ */
+function _buildBuffer(gl, type, data, itemSize) {
+  var buffer = gl.createBuffer();
+  var TypedArray = type === gl.ELEMENT_ARRAY_BUFFER ? Uint16Array : Float32Array;
+  gl.bindBuffer(type, buffer);
+  gl.bufferData(type, new TypedArray(data), gl.STATIC_DRAW);
+  buffer.itemSize = itemSize;
+  buffer.numItems = data.length / itemSize;
+  return buffer;
+}
 var ModelObject = exports["default"] = /*#__PURE__*/function (_Loadable) {
   /**
    * 3D Model Objects
@@ -121,7 +137,7 @@ var ModelObject = exports["default"] = /*#__PURE__*/function (_Loadable) {
 
       // mesh buffers
       _this.mesh = mesh;
-      _this.engine.resourceManager.objLoader.initMeshBuffers(_this.engine.gl, _this.mesh);
+      _this.engine.resourceManager.objHelper.initBuffers([_this.mesh]);
 
       // Speech bubble
       if (_this.enableSpeech) {
@@ -209,7 +225,7 @@ var ModelObject = exports["default"] = /*#__PURE__*/function (_Loadable) {
 
               // mesh buffers
               _this.mesh = mesh;
-              _this.engine.resourceManager.objLoader.initMeshBuffers(_this.engine.gl, _this.mesh);
+              _this.engine.resourceManager.objHelper.initBuffers([_this.mesh]);
 
               // Speech bubble
               if (_this.enableSpeech) {
@@ -333,7 +349,7 @@ var ModelObject = exports["default"] = /*#__PURE__*/function (_Loadable) {
           }
 
           // indices
-          var bufferInfo = (0, _utils._buildBuffer)(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
+          var bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
           engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
           if (isPickerPass) {
             // During picker pass, only set picker shader uniforms

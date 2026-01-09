@@ -69,7 +69,7 @@ var ObjectLoader = exports.ObjectLoader = /*#__PURE__*/function () {
                 name: instance.id
               };
               _context.n = 1;
-              return this.engine.resourceManager.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
+              return this.engine.resourceManager.objHelper.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
             case 1:
               models = _context.v;
               instance.mesh = models[model.type];

@@ -9,6 +9,7 @@ var _index = require("@Engine/utils/loaders/index.js");
 var _enums = require("@Engine/utils/enums.js");
 var _sprite = _interopRequireDefault(require("@Engine/core/scene/sprite.js"));
 var _PixoScriptInterpreter = _interopRequireDefault(require("@Engine/scripting/PixoScriptInterpreter.js"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -88,7 +89,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                       return _this2.zip.file('sprites/' + file + '.json').async('string');
                     case 1:
                       stringD = _t.parse.call(_t, _context.v);
-                      console.log({
+                      (0, _debugLogger.debug)('DynamicSprite', 'extending', {
                         old: _this2.json,
                         "new": stringD
                       });
@@ -176,20 +177,14 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                         try {
                           for (_iterator.s(); !(_step = _iterator.n()).done;) {
                             action = _step.value;
-                            console.log({
-                              msg: 'loading action',
-                              action: action
-                            });
+                            (0, _debugLogger.debug)('DynamicSprite', 'loading action', action);
                           }
                         } catch (err) {
                           _iterator.e(err);
                         } finally {
                           _iterator.f();
                         }
-                        console.log({
-                          msg: 'switching state',
-                          state: state.name
-                        });
+                        (0, _debugLogger.debug)('DynamicSprite', 'switching state', state.name);
                         stateMachine[state.name] = {
                           next: state.next,
                           actions: actions
@@ -204,10 +199,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                 };
               }()));
             case 1:
-              console.log({
-                msg: 'loading stateMachine',
-                stateMachine: stateMachine
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'loading stateMachine', stateMachine);
 
               // run state actions
               ret = [];
@@ -265,9 +257,9 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
         return _regenerator().w(function (_context9) {
           while (1) switch (_context9.n) {
             case 0:
-              console.log({
-                sprite: sprite,
-                state: state
+              (0, _debugLogger.debug)('DynamicSprite', 'loadActionDynamically', {
+                sprite: sprite === null || sprite === void 0 ? void 0 : sprite.id,
+                state: state === null || state === void 0 ? void 0 : state.name
               });
               _context9.n = 1;
               return Promise.all(
@@ -278,10 +270,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                   return _regenerator().w(function (_context8) {
                     while (1) switch (_context8.n) {
                       case 0:
-                        console.log({
-                          msg: 'preping actions',
-                          action: action
-                        });
+                        (0, _debugLogger.debug)('DynamicSprite', 'preping actions', action);
                         if (!(action.callback && action.callback !== '')) {
                           _context8.n = 2;
                           break;
@@ -298,7 +287,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                         luaCallback = _t4;
                         // lua script callback is injected via function wrapper
                         callback = function callback() {
-                          console.log('calling callback');
+                          (0, _debugLogger.debug)('DynamicSprite', 'calling callback');
                           var interpreter = new _PixoScriptInterpreter["default"](_this2.engine);
                           interpreter.setScope({
                             _this: _this2,
@@ -314,29 +303,21 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                         _context8.n = _t5 === 'dialogue' ? 4 : _t5 === 'animate' ? 5 : 6;
                         break;
                       case 4:
-                        console.log({
-                          _this: _this2,
-                          finish: finish
-                        });
+                        (0, _debugLogger.debug)('DynamicSprite', 'preparing dialogue action');
                         return _context8.a(2, /*#__PURE__*/function () {
                           var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(_this, sprite, finish) {
                             var actionToLoad;
                             return _regenerator().w(function (_context5) {
                               while (1) switch (_context5.n) {
                                 case 0:
-                                  console.log({
-                                    msg: 'dialogue'
-                                  });
+                                  (0, _debugLogger.debug)('DynamicSprite', 'executing dialogue');
                                   actionToLoad = new _this.ActionLoader(_this.engine, 'dialogue', [JSON.stringify(action.dialogue), false, {
                                     autoclose: true,
                                     onClose: function onClose() {
                                       return finish(true);
                                     }
                                   }], _this, callback);
-                                  console.log({
-                                    msg: 'action to load',
-                                    actionToLoad: actionToLoad
-                                  });
+                                  (0, _debugLogger.debug)('DynamicSprite', 'action to load', actionToLoad);
                                   _this.addAction(actionToLoad);
                                 case 1:
                                   return _context5.a(2);
@@ -348,30 +329,20 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                           };
                         }());
                       case 5:
-                        console.log({
-                          _this: _this2,
-                          finish: finish
-                        });
+                        (0, _debugLogger.debug)('DynamicSprite', 'preparing animate action');
                         return _context8.a(2, /*#__PURE__*/function () {
                           var _ref8 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(_this, sprite, finish) {
                             var actionToLoad;
                             return _regenerator().w(function (_context6) {
                               while (1) switch (_context6.n) {
                                 case 0:
-                                  console.log({
-                                    msg: 'animate',
-                                    _this: _this,
-                                    sprite: sprite,
-                                    finish: finish,
+                                  (0, _debugLogger.debug)('DynamicSprite', 'executing animate', {
                                     action: action
                                   });
                                   actionToLoad = new _this.ActionLoader(_this.engine, 'animate', [].concat(_toConsumableArray(action.animate), [function () {
                                     return finish(true);
                                   }]), _this, callback);
-                                  console.log({
-                                    msg: 'action to load',
-                                    actionToLoad: actionToLoad
-                                  });
+                                  (0, _debugLogger.debug)('DynamicSprite', 'action to load', actionToLoad);
                                   _this.addAction(actionToLoad);
                                 case 1:
                                   return _context6.a(2);
@@ -388,12 +359,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
                             return _regenerator().w(function (_context7) {
                               while (1) switch (_context7.n) {
                                 case 0:
-                                  console.log({
-                                    msg: 'no action found',
-                                    _this: _this,
-                                    sprite: sprite,
-                                    _finish: _finish
-                                  });
+                                  (0, _debugLogger.debug)('DynamicSprite', 'no action found for type', action.type);
                                 case 1:
                                   return _context7.a(2);
                               }
@@ -449,9 +415,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               return _context0.a(2, _context0.v);
             case 3:
               _context0.p = 3;
-              console.log({
-                trigger: _this2.selectTrigger
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'onSelect trigger', _this2.selectTrigger);
               file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (file) {
@@ -464,10 +428,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               return file.async('string');
             case 5:
               luaScript = _context0.v;
-              console.log({
-                msg: 'trigger lua statement',
-                luaScript: luaScript
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'trigger lua statement', luaScript);
               interpreter = new _PixoScriptInterpreter["default"](_this2.engine);
               interpreter.setScope({
                 _this: _this2,
@@ -483,10 +444,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
             case 7:
               _context0.p = 7;
               _t6 = _context0.v;
-              console.log({
-                msg: 'no lua script found',
-                e: _t6
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'no lua script found', _t6.message);
             case 8:
               return _context0.a(2);
           }
@@ -515,9 +473,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               return _context1.a(2);
             case 1:
               _context1.p = 1;
-              console.log({
-                trigger: _this2.stepTrigger
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'onStep trigger', _this2.stepTrigger);
               file = _this2.zip.file("triggers/".concat(_this2.stepTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.stepTrigger, ".pxs"));
               if (file) {
@@ -530,10 +486,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
               return file.async('string');
             case 3:
               luaScript = _context1.v;
-              console.log({
-                msg: 'trigger lua statement',
-                luaScript: luaScript
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'trigger lua statement', luaScript);
               interpreter = new _PixoScriptInterpreter["default"](_this2.engine);
               interpreter.setScope({
                 _this: _this2,
@@ -549,10 +502,7 @@ var DynamicSprite = exports["default"] = /*#__PURE__*/function (_Sprite) {
             case 5:
               _context1.p = 5;
               _t7 = _context1.v;
-              console.log({
-                msg: 'no lua script found',
-                e: _t7
-              });
+              (0, _debugLogger.debug)('DynamicSprite', 'no lua script found', _t7.message);
             case 6:
               return _context1.a(2);
           }

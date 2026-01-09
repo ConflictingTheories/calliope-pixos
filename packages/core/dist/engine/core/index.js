@@ -14,7 +14,9 @@ var _manager3 = _interopRequireDefault(require("./cutscene/manager.js"));
 var _manager4 = _interopRequireDefault(require("./mode/manager.js"));
 var _manager5 = _interopRequireDefault(require("./input/manager.js"));
 var _manager6 = _interopRequireDefault(require("./net/manager.js"));
-var _index5 = require("./debug/index.js");
+var _index5 = require("./state/index.js");
+var _index6 = require("./input/gamepad/index.js");
+var _index7 = require("./debug/index.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
@@ -36,8 +38,7 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 **                                                 **
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
-\*                                                 */ // Import ModeManager
-// Import InputManager
+\\*                                                 */
 /**
  * @typedef {object} SpritzGame
  * @property {function(GLEngine): Promise<void>} init - Initializes the game.
@@ -116,6 +117,9 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
     /** @type {ModeManager} */
     this.modeManager = new _manager4["default"](this); // Initialize ModeManager
 
+    /** @type {StateManager} */
+    this.stateManager = new _index5.StateManager(this); // Initialize StateManager for save/load
+
     // Debug flags
     /** @type {boolean} */
     this.debug = false; // General debug mode (enables console logs)
@@ -160,11 +164,39 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
     key: "init",
     value: (function () {
       var _init = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(spritz) {
-        var _spritz$manifest;
-        var ctx, gl, gp;
+        var _spritz$manifest, _spritz$manifest2, _spritz$manifest3, _spritz$manifest4, _spritz$manifest5, _spritz$manifest6;
+        var canvasStyle, ctx, gl, gp;
         return _regenerator().w(function (_context) {
           while (1) switch (_context.n) {
             case 0:
+              if (!(this.canvas.clientWidth === 0 || this.canvas.clientHeight === 0)) {
+                _context.n = 1;
+                break;
+              }
+              console.warn('Canvas has invalid dimensions, waiting for layout...', {
+                width: this.canvas.clientWidth,
+                height: this.canvas.clientHeight
+              });
+              // Give browser time to layout
+              _context.n = 1;
+              return new Promise(function (resolve) {
+                return setTimeout(resolve, 50);
+              });
+            case 1:
+              // Re-check canvas visibility immediately before context creation
+              canvasStyle = window.getComputedStyle(this.canvas);
+              if (!(canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden')) {
+                _context.n = 2;
+                break;
+              }
+              throw new Error('Canvas is hidden and cannot receive WebGL context');
+            case 2:
+              if (!(this.canvas.clientWidth <= 0 || this.canvas.clientHeight <= 0)) {
+                _context.n = 3;
+                break;
+              }
+              throw new Error('Canvas has zero dimensions and cannot receive WebGL context');
+            case 3:
               /** @type {CanvasRenderingContext2D|null} */
               ctx = this.hudCanvas.getContext('2d');
               /** @type {WebGL2RenderingContext|null} */
@@ -176,23 +208,32 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
               /** @type {CanvasRenderingContext2D|null} */
               gp = this.gamepadCanvas.getContext('2d');
               if (gl) {
-                _context.n = 1;
+                _context.n = 4;
                 break;
               }
-              throw new Error('WebGL: unable to initialize');
-            case 1:
+              console.error('WebGL context creation failed. Canvas element:', this.canvas);
+              console.error('Canvas dimensions:', {
+                clientWidth: this.canvas.clientWidth,
+                clientHeight: this.canvas.clientHeight,
+                width: this.canvas.width,
+                height: this.canvas.height
+              });
+              throw new Error('WebGL: unable to initialize - context is null. Check canvas element visibility and size.');
+            case 4:
               if (ctx) {
-                _context.n = 2;
+                _context.n = 5;
                 break;
               }
-              throw new Error('Canvas: unable to initialize HUD');
-            case 2:
+              console.error('HUD context creation failed. Canvas element:', this.hudCanvas);
+              throw new Error('Canvas: unable to initialize HUD - 2D context is null.');
+            case 5:
               if (gp) {
-                _context.n = 3;
+                _context.n = 6;
                 break;
               }
-              throw new Error('Gamepad: unable to initialize Mobile Canvas');
-            case 3:
+              console.error('Gamepad context creation failed. Canvas element:', this.gamepadCanvas);
+              throw new Error('Gamepad: unable to initialize Mobile Canvas - 2D context is null.');
+            case 6:
               // Make HUD same size as canvas
               ctx.canvas.width = gl.canvas.clientWidth;
               ctx.canvas.height = gl.canvas.clientHeight;
@@ -235,27 +276,41 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
 
               // Initialize network if enabled
               if (!((_spritz$manifest = spritz.manifest) !== null && _spritz$manifest !== void 0 && (_spritz$manifest = _spritz$manifest.network) !== null && _spritz$manifest !== void 0 && _spritz$manifest.enabled)) {
-                _context.n = 5;
+                _context.n = 8;
                 break;
               }
-              _context.n = 4;
+              _context.n = 7;
               return this.networkManager.connect(spritz.manifest.network.url);
-            case 4:
+            case 7:
               if (spritz.manifest.network.authority) {
                 this.networkManager.setAuthority(spritz.manifest.network.authority);
               }
-            case 5:
-              _context.n = 6;
+            case 8:
+              _context.n = 9;
+              return this.stateManager.init({
+                gameId: ((_spritz$manifest2 = spritz.manifest) === null || _spritz$manifest2 === void 0 ? void 0 : _spritz$manifest2.id) || ((_spritz$manifest3 = spritz.manifest) === null || _spritz$manifest3 === void 0 ? void 0 : _spritz$manifest3.title) || 'unknown',
+                gameVersion: ((_spritz$manifest4 = spritz.manifest) === null || _spritz$manifest4 === void 0 ? void 0 : _spritz$manifest4.version) || '1.0.0',
+                autosaveInterval: (_spritz$manifest5 = spritz.manifest) !== null && _spritz$manifest5 !== void 0 && (_spritz$manifest5 = _spritz$manifest5.saveConfig) !== null && _spritz$manifest5 !== void 0 && _spritz$manifest5.autosaveInterval ? spritz.manifest.saveConfig.autosaveInterval * 1000 : 5 * 60 * 1000,
+                maxCheckpoints: 5
+              });
+            case 9:
+              // Start autosave if enabled
+              if (((_spritz$manifest6 = spritz.manifest) === null || _spritz$manifest6 === void 0 || (_spritz$manifest6 = _spritz$manifest6.saveConfig) === null || _spritz$manifest6 === void 0 ? void 0 : _spritz$manifest6.autosave) !== false) {
+                this.stateManager.startAutosave();
+              }
+
+              // Initialize Spritz game
+              _context.n = 10;
               return spritz.init(this);
-            case 6:
+            case 10:
               // Create and configure debug overlays. These overlays display
               // performance information such as FPS and draw counts (toggled by F3)
               // and flag information (toggled by F4). They are appended to the document body
               // once the engine has been initialized and the DOM is available. The overlays
               // remain hidden until toggled.
-              (0, _index5.attachWebglDebugInfo)(this);
-              (0, _index5.attachFlagDebugInfo)(this);
-            case 7:
+              (0, _index7.attachWebglDebugInfo)(this);
+              (0, _index7.attachFlagDebugInfo)(this);
+            case 11:
               return _context.a(2);
           }
         }, _callee, this);
@@ -356,12 +411,12 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
       }
 
       // Update debug overlay if enabled
-      (0, _index5.updateDebugInformation)(this);
+      (0, _index7.updateDebugInformation)(this);
       this.requestId = requestAnimationFrame(this.render);
     }
 
     /**
-     * Stops the main render loop.
+     * Stops the main render loop and cleans up singletons.
      */
   }, {
     key: "close",
@@ -369,6 +424,13 @@ var GLEngine = exports["default"] = /*#__PURE__*/function () {
       if (this.requestId) {
         cancelAnimationFrame(this.requestId);
         this.requestId = null;
+      }
+      // Clear singletons to allow proper re-initialization on remount
+      if (_index6.GamePad._instance === this.gamepad) {
+        _index6.GamePad._instance = null;
+      }
+      if (_manager2["default"]._instance === this.resourceManager) {
+        _manager2["default"]._instance = null;
       }
     }
 

@@ -6,12 +6,17 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _matrix = require("../../utils/math/matrix4.js");
 var _vector = require("../../utils/math/vector.js");
-var _index = require("../../utils/obj/index.js");
 var _camera = _interopRequireDefault(require("./camera.js"));
 var _light = _interopRequireDefault(require("./light.js"));
 var _skybox = _interopRequireDefault(require("./skybox.js"));
 var _shaders = require("./shaders.js");
 var _ParticleManager = _interopRequireDefault(require("./ParticleManager.js"));
+var _FrustumCuller = _interopRequireDefault(require("./FrustumCuller.js"));
+var _CameraEffects = _interopRequireDefault(require("./CameraEffects.js"));
+var _LODManager = _interopRequireDefault(require("./LODManager.js"));
+var _TextureAtlas = _interopRequireDefault(require("./TextureAtlas.js"));
+var _vs = _interopRequireDefault(require("../../shaders/particles/vs.js"));
+var _fs = _interopRequireDefault(require("../../shaders/particles/fs.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -37,6 +42,12 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
 \*                                                 */ // Absolute imports
+// Layout attribute key constants (from OBJ loader, defined inline to avoid import)
+var LAYOUT_KEYS = {
+  POSITION: 'position',
+  NORMAL: 'normal',
+  UV: 'uv'
+};
 /**
  * @typedef {object} ShaderSource
  * @property {string} vs - Vertex shader source code.
@@ -81,6 +92,14 @@ function RenderManager(engine) {
     var _this$engine = _this.engine,
       spritz = _this$engine.spritz,
       gl = _this$engine.gl;
+    if (!gl) {
+      console.error('RenderManager.init called but engine.gl is null. Engine state:', {
+        engineExists: !!_this.engine,
+        glExists: !!gl,
+        spritzExists: !!spritz
+      });
+      throw new Error('RenderManager initialization failed: WebGL context is null');
+    }
 
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
@@ -119,6 +138,9 @@ function RenderManager(engine) {
 
     // Initialize skybox
     _this.skyboxManager.init();
+
+    // Initialize texture atlas for batched rendering
+    _this.textureAtlas.init();
     _this.initializedWebGl = true;
   });
   /**
@@ -266,9 +288,9 @@ function RenderManager(engine) {
       self.lightManager.setMatrixUniforms();
     };
     var attrs = {
-      aVertexPosition: _index.OBJ.Layout.POSITION.key,
-      aVertexNormal: _index.OBJ.Layout.NORMAL.key,
-      aTextureCoord: _index.OBJ.Layout.UV.key
+      aVertexPosition: LAYOUT_KEYS.POSITION,
+      aVertexNormal: LAYOUT_KEYS.NORMAL,
+      aTextureCoord: LAYOUT_KEYS.UV
     };
     /**
      * Applies attribute pointers for a given mesh, linking mesh buffer data to shader attributes.
@@ -304,8 +326,8 @@ function RenderManager(engine) {
     /** @type {WebGL2RenderingContext} */
     var gl = _this.engine.gl;
     var self = _this;
-    var vsSource = require('../../shaders/particles/vs.js')["default"]();
-    var fsSource = require('../../shaders/particles/fs.js')["default"]();
+    var vsSource = (0, _vs["default"])();
+    var fsSource = (0, _fs["default"])();
 
     /** @type {WebGLShader} */
     var vertexShader = _this.loadShader(gl.VERTEX_SHADER, vsSource);
@@ -1011,6 +1033,9 @@ function RenderManager(engine) {
     /** @type {import('./camera.js').Camera} */
     this.camera = this.cameraManager.camera;
 
+    // Initialize camera effects after camera is created
+    this.cameraEffects = new _CameraEffects["default"](this.camera);
+
     // Lights
     /** @type {LightManager} */
     this.lightManager = new _light["default"](this);
@@ -1022,6 +1047,22 @@ function RenderManager(engine) {
     // Particle system
     /** @type {ParticleManager} */
     this.particleManager = new _ParticleManager["default"](this);
+
+    // Frustum culling for performance optimization
+    /** @type {FrustumCuller} */
+    this.frustumCuller = new _FrustumCuller["default"](this);
+
+    // Level of Detail manager for performance optimization
+    /** @type {LODManager} */
+    this.lodManager = new _LODManager["default"](this);
+
+    // Texture atlas for batched rendering
+    /** @type {TextureAtlas} */
+    this.textureAtlas = new _TextureAtlas["default"](this);
+
+    // Camera effects (shake, follow, fade, etc.)
+    /** @type {CameraEffects} */
+    this.cameraEffects = null; // Initialized after camera
 
     // Particle shader program
     /** @type {WebGLProgram|null} */

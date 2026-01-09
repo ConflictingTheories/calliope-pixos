@@ -2,10 +2,13 @@ const { override, addWebpackAlias, addBabelPlugin } = require('customize-cra');
 const webpack = require('webpack');
 const path = require('path');
 
+// Resolve React from the monorepo root where it's actually installed
+const monorepoRoot = path.resolve(__dirname, '..', '..');
+
 module.exports = override(
   addWebpackAlias({
-    'react': path.resolve('./node_modules/react'),
-    'react-dom': path.resolve('./node_modules/react-dom'),
+    'react': path.resolve(monorepoRoot, 'node_modules', 'react'),
+    'react-dom': path.resolve(monorepoRoot, 'node_modules', 'react-dom'),
     // Map package imports to local source for development so CRA uses a single React copy
     'pixospritz-core': path.resolve(__dirname, '..', 'core', 'src'),
     'pixospritz-math': path.resolve(__dirname, '..', 'math', 'src'),
@@ -50,6 +53,14 @@ module.exports = override(
             babelRule.include = [pixosSource, mathSource];
           }
         }
+
+        // Exclude script dist from source-map-loader to avoid warnings
+        oneOfRule.oneOf.unshift({
+          test: /\.js$/,
+          include: path.resolve(__dirname, '..', 'script', 'dist'),
+          use: [],
+          enforce: 'pre'
+        });
       }
     }
     return config;

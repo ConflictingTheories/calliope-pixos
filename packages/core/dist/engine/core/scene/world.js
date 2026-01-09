@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 var _zone = _interopRequireDefault(require("./zone.js"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 var _manager = _interopRequireDefault(require("../mode/manager.js"));
 var _index = _interopRequireDefault(require("../queue/index.js"));
 var _enums = require("@Engine/utils/enums.js");
@@ -183,7 +184,7 @@ var World = exports["default"] = /*#__PURE__*/function () {
                 duration: duration
               });
             case 2:
-              console.log('Loading Zone from Zip:', zoneId);
+              (0, _debugLogger.debug)('World', 'Loading Zone from Zip:', zoneId);
               _t = JSON;
               _context.n = 3;
               return zip.file('maps/' + zoneId + '/map.json').async('string');
@@ -657,7 +658,7 @@ var World = exports["default"] = /*#__PURE__*/function () {
         if (this.remoteAvatars.has(clientId)) {
           var existing = this.remoteAvatars.get(clientId);
           try {
-            console.log("Remote avatar for ".concat(clientId, " already exists, updating instead"));
+            (0, _debugLogger.debug)('World', "Remote avatar for ".concat(clientId, " already exists, updating instead"));
           } catch (e) {}
           if (avatarData.x != null) existing.pos.x = avatarData.x;
           if (avatarData.y != null) existing.pos.y = avatarData.y;
@@ -735,13 +736,13 @@ var World = exports["default"] = /*#__PURE__*/function () {
           zone.spriteDict[avatar.id] = avatar;
           if (!zone.spriteList.includes(avatar)) zone.spriteList.push(avatar);
           if (!this.spriteList.includes(avatar)) this.spriteList.push(avatar);
-          console.log("Added remote avatar for client ".concat(clientId, " as sprite '").concat(avatar.id, "' to zone ").concat(zone.id, " at (").concat(avatar.pos.x, ",").concat(avatar.pos.y, ",").concat(avatar.pos.z, ")"));
+          (0, _debugLogger.debug)('World', "Added remote avatar for client ".concat(clientId, " as sprite '").concat(avatar.id, "' to zone ").concat(zone.id, " at (").concat(avatar.pos.x, ",").concat(avatar.pos.y, ",").concat(avatar.pos.z, ")"));
         }
 
         // store mapping after registration
         this.remoteAvatars.set(clientId, avatar);
         try {
-          console.log("Remote avatar map now has ".concat(this.remoteAvatars.size, " entries"));
+          (0, _debugLogger.debug)('World', "Remote avatar map now has ".concat(this.remoteAvatars.size, " entries"));
         } catch (e) {}
         return avatar;
       } catch (e) {
@@ -775,7 +776,7 @@ var World = exports["default"] = /*#__PURE__*/function () {
       if (avatar) {
         try {
           var _avatar$pos, _avatar$pos2, _avatar$pos3, _avatar$zone;
-          console.log("updateRemoteAvatar: client=".concat(clientId, " pre pos=").concat((_avatar$pos = avatar.pos) === null || _avatar$pos === void 0 ? void 0 : _avatar$pos.x, ",").concat((_avatar$pos2 = avatar.pos) === null || _avatar$pos2 === void 0 ? void 0 : _avatar$pos2.y, ",").concat((_avatar$pos3 = avatar.pos) === null || _avatar$pos3 === void 0 ? void 0 : _avatar$pos3.z, " loaded=").concat(avatar.loaded, " id=").concat(avatar.id, " zone=").concat((_avatar$zone = avatar.zone) === null || _avatar$zone === void 0 ? void 0 : _avatar$zone.id));
+          (0, _debugLogger.debug)('World', "updateRemoteAvatar: client=".concat(clientId, " pre pos=").concat((_avatar$pos = avatar.pos) === null || _avatar$pos === void 0 ? void 0 : _avatar$pos.x, ",").concat((_avatar$pos2 = avatar.pos) === null || _avatar$pos2 === void 0 ? void 0 : _avatar$pos2.y, ",").concat((_avatar$pos3 = avatar.pos) === null || _avatar$pos3 === void 0 ? void 0 : _avatar$pos3.z, " loaded=").concat(avatar.loaded, " id=").concat(avatar.id, " zone=").concat((_avatar$zone = avatar.zone) === null || _avatar$zone === void 0 ? void 0 : _avatar$zone.id));
         } catch (e) {}
         if (typeof avatar.setPosition === 'function') {
           avatar.setPosition(avatarData.x, avatarData.y, avatarData.z);
@@ -803,7 +804,7 @@ var World = exports["default"] = /*#__PURE__*/function () {
         }
         try {
           var _avatar$pos4, _avatar$pos5, _avatar$pos6, _avatar$zone2;
-          console.log("updateRemoteAvatar: client=".concat(clientId, " post pos=").concat((_avatar$pos4 = avatar.pos) === null || _avatar$pos4 === void 0 ? void 0 : _avatar$pos4.x, ",").concat((_avatar$pos5 = avatar.pos) === null || _avatar$pos5 === void 0 ? void 0 : _avatar$pos5.y, ",").concat((_avatar$pos6 = avatar.pos) === null || _avatar$pos6 === void 0 ? void 0 : _avatar$pos6.z, " loaded=").concat(avatar.loaded, " id=").concat(avatar.id, " zone=").concat((_avatar$zone2 = avatar.zone) === null || _avatar$zone2 === void 0 ? void 0 : _avatar$zone2.id));
+          (0, _debugLogger.debug)('World', "updateRemoteAvatar: client=".concat(clientId, " post pos=").concat((_avatar$pos4 = avatar.pos) === null || _avatar$pos4 === void 0 ? void 0 : _avatar$pos4.x, ",").concat((_avatar$pos5 = avatar.pos) === null || _avatar$pos5 === void 0 ? void 0 : _avatar$pos5.y, ",").concat((_avatar$pos6 = avatar.pos) === null || _avatar$pos6 === void 0 ? void 0 : _avatar$pos6.z, " loaded=").concat(avatar.loaded, " id=").concat(avatar.id, " zone=").concat((_avatar$zone2 = avatar.zone) === null || _avatar$zone2 === void 0 ? void 0 : _avatar$zone2.id));
         } catch (e) {}
         return avatar;
       }

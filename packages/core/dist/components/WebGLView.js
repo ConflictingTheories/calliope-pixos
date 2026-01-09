@@ -51,6 +51,7 @@ var WebGLView = function WebGLView(_ref) {
   var gamepadRef = (0, _react.useRef)();
   var fileRef = (0, _react.useRef)();
   var mmRef = (0, _react.useRef)();
+  var engineInitialized = (0, _react.useRef)(false);
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   var onKeyEvent = function onKeyEvent(e) {
@@ -123,8 +124,8 @@ var WebGLView = function WebGLView(_ref) {
 
   // Resize
   var _useState = (0, _react.useState)({
-      dynamicWidth: window.innerWidth,
-      dynamicHeight: window.innerHeight
+      dynamicWidth: Math.max(window.innerWidth || 480, 480),
+      dynamicHeight: Math.max(window.innerHeight || 640, 640)
     }),
     _useState2 = _slicedToArray(_useState, 2),
     screenSize = _useState2[0],
@@ -133,10 +134,17 @@ var WebGLView = function WebGLView(_ref) {
   // window dimensions
   var setDimension = function setDimension() {
     getDimension({
-      dynamicWidth: window.innerWidth,
-      dynamicHeight: window.innerHeight
+      dynamicWidth: Math.max(window.innerWidth || 480, 480),
+      dynamicHeight: Math.max(window.innerHeight || 640, 640)
     });
   };
+
+  // Calculate canvas dimensions early (needed before useEffect initializes engine)
+  var wrapperHeight = screenSize.dynamicWidth * 3 / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
+  var canvasHeight = screenSize.dynamicWidth * 3 / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
+  var canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
+  var showGamepad = screenSize.dynamicWidth <= 900;
+  var gamepadHeight = 200;
 
   // load fonts
   function loadFonts() {
@@ -182,77 +190,131 @@ var WebGLView = function WebGLView(_ref) {
       passive: false
     });
   }
-  (0, _react.useEffect)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-    var canvas, hud, mipmap, gamepad, fileUpload, resizeObserver;
-    return _regenerator().w(function (_context) {
-      while (1) switch (_context.n) {
-        case 0:
-          // handle resize
-          window.addEventListener('resize', setDimension);
+  (0, _react.useLayoutEffect)(function () {
+    // This runs AFTER the DOM is rendered but BEFORE browser paint
+    // Ensures canvas elements are in the DOM with proper dimensions
 
-          // setup canvases
-          canvas = ref.current;
-          hud = hudRef.current;
-          mipmap = mmRef.current;
-          gamepad = gamepadRef.current;
-          fileUpload = fileRef.current; // Webgl Engine
-          engine = new _index["default"](canvas, hud, mipmap, gamepad, fileUpload, width, height);
+    // handle resize
+    window.addEventListener('resize', setDimension);
 
-          // load fonts
-          _context.n = 1;
-          return loadFonts();
-        case 1:
-          _context.n = 2;
-          return engine.init(SpritzProvider);
-        case 2:
-          // Create ResizeObserver for proper canvas resize handling
-          resizeObserver = null;
-          if (typeof ResizeObserver !== 'undefined') {
-            resizeObserver = new ResizeObserver(function (entries) {
-              var _iterator = _createForOfIteratorHelper(entries),
-                _step;
-              try {
-                for (_iterator.s(); !(_step = _iterator.n()).done;) {
-                  var entry = _step.value;
-                  if (entry.target === canvas || entry.target === hud) {
-                    // Notify engine of resize
-                    if (engine && engine.handleResize) {
-                      engine.handleResize();
-                    }
-                  }
-                }
-              } catch (err) {
-                _iterator.e(err);
-              } finally {
-                _iterator.f();
+    // setup canvases
+    var canvas = ref.current;
+    var hud = hudRef.current;
+    var mipmap = mmRef.current;
+    var gamepad = gamepadRef.current;
+    var fileUpload = fileRef.current;
+
+    // Validate canvas elements exist AND have valid dimensions
+    if (!canvas || !hud || !mipmap || !gamepad) {
+      console.error('Canvas initialization failed: One or more canvas refs are null');
+      return;
+    }
+
+    // Critical: Check that canvas has actual dimensions before proceeding
+    // This ensures the canvas is properly rendered in the DOM
+    if (canvas.width <= 0 || canvas.height <= 0 || canvas.clientWidth <= 0 || canvas.clientHeight <= 0) {
+      console.warn('Canvas not yet rendered with valid dimensions, deferring initialization');
+      return;
+    }
+
+    // Create ResizeObserver for proper canvas resize handling
+    var resizeObserver = null;
+
+    // Async initialization - defer engine creation until right before init to avoid race condition
+    var initEngine = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var canvasStyle;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.n) {
+            case 0:
+              if (!engineInitialized.current) {
+                _context.n = 1;
+                break;
               }
-            });
-            resizeObserver.observe(canvas);
-            resizeObserver.observe(hud);
+              return _context.a(2);
+            case 1:
+              engineInitialized.current = true;
+
+              // CRITICAL: Re-validate canvas state immediately before creating engine
+              // Canvas may have become hidden/resized between useLayoutEffect and now
+              canvasStyle = window.getComputedStyle(canvas);
+              if (!(canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden' || canvasStyle.opacity === '0')) {
+                _context.n = 2;
+                break;
+              }
+              throw new Error('Canvas became hidden between initialization check and async init');
+            case 2:
+              if (!(canvas.clientWidth <= 0 || canvas.clientHeight <= 0)) {
+                _context.n = 3;
+                break;
+              }
+              throw new Error('Canvas dimensions became invalid between initialization check and async init');
+            case 3:
+              // Create engine NOW (at init time, not in useLayoutEffect)
+              // This ensures canvas state is validated immediately before use
+              engine = new _index["default"](canvas, hud, mipmap, gamepad, fileUpload, width, height);
+
+              // load fonts
+              _context.n = 4;
+              return loadFonts();
+            case 4:
+              _context.n = 5;
+              return engine.init(SpritzProvider);
+            case 5:
+              // Setup ResizeObserver after init
+              if (typeof ResizeObserver !== 'undefined') {
+                resizeObserver = new ResizeObserver(function (entries) {
+                  var _iterator = _createForOfIteratorHelper(entries),
+                    _step;
+                  try {
+                    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                      var entry = _step.value;
+                      if (entry.target === canvas || entry.target === hud) {
+                        // Notify engine of resize
+                        if (engine && engine.handleResize) {
+                          engine.handleResize();
+                        }
+                      }
+                    }
+                  } catch (err) {
+                    _iterator.e(err);
+                  } finally {
+                    _iterator.f();
+                  }
+                });
+                resizeObserver.observe(canvas);
+                resizeObserver.observe(hud);
+              }
+
+              // render loop
+              engine.render();
+            case 6:
+              return _context.a(2);
           }
+        }, _callee);
+      }));
+      return function initEngine() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    initEngine()["catch"](function (err) {
+      console.error('Engine initialization failed:', err);
+    });
 
-          // render loop
-          engine.render();
-
-          // cleanup
-          return _context.a(2, function () {
-            stopTouchScrolling(canvas);
-            stopTouchScrolling(gamepad);
-            stopTouchScrolling(hud);
-            window.removeEventListener('resize', setDimension);
-            if (resizeObserver) {
-              resizeObserver.disconnect();
-            }
-            engine.close();
-          });
+    // cleanup
+    return function () {
+      stopTouchScrolling(canvas);
+      stopTouchScrolling(gamepad);
+      stopTouchScrolling(hud);
+      window.removeEventListener('resize', setDimension);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
       }
-    }, _callee);
-  })), [SpritzProvider]);
-  var wrapperHeight = screenSize.dynamicWidth * 3 / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
-  var canvasHeight = screenSize.dynamicWidth * 3 / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
-  var canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
-  var showGamepad = screenSize.dynamicWidth <= 900;
-  var gamepadHeight = 200;
+      if (engine) {
+        engine.close();
+      }
+    };
+  }, [SpritzProvider]);
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       marginLeft: 'auto',

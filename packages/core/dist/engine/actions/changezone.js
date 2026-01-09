@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _vector = require("@Engine/utils/math/vector.js");
 var _enums = require("@Engine/utils/enums.js");
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function _construct(t, e, r) { if (_isNativeReflectConstruct()) return Reflect.construct.apply(null, arguments); var o = [null]; o.push.apply(o, e); var p = new (t.bind.apply(t, o))(); return r && _setPrototypeOf(p, r.prototype), p; }
@@ -49,7 +50,7 @@ var _default = exports["default"] = {
               break;
             }
             // fade out
-            console.log('fading out...');
+            (0, _debugLogger.debug)('ChangeZone', 'fading out...');
             _context.n = 1;
             return engine.renderManager.startTransition({
               effect: 'cross',
@@ -87,7 +88,7 @@ var _default = exports["default"] = {
               // ignore and continue
             }
             if (this.preserveHeight && (_this$sprite3 = this.sprite) !== null && _this$sprite3 !== void 0 && (_this$sprite3 = _this$sprite3.zone) !== null && _this$sprite3 !== void 0 && (_this$sprite3 = _this$sprite3.engine) !== null && _this$sprite3 !== void 0 && _this$sprite3.debug) {
-              console.log('[changezone.init] preserveHeight true for transition from', (_this$from$toArray = (_this$from$toArray2 = (_this$from = this.from).toArray) === null || _this$from$toArray2 === void 0 ? void 0 : _this$from$toArray2.call(_this$from)) !== null && _this$from$toArray !== void 0 ? _this$from$toArray : this.from, 'to', (_this$to$toArray = (_this$to$toArray2 = (_this$to = this.to).toArray) === null || _this$to$toArray2 === void 0 ? void 0 : _this$to$toArray2.call(_this$to)) !== null && _this$to$toArray !== void 0 ? _this$to$toArray : this.to);
+              (0, _debugLogger.debug)('ChangeZone', 'preserveHeight true for transition from', (_this$from$toArray = (_this$from$toArray2 = (_this$from = this.from).toArray) === null || _this$from$toArray2 === void 0 ? void 0 : _this$from$toArray2.call(_this$from)) !== null && _this$from$toArray !== void 0 ? _this$from$toArray : this.from, 'to', (_this$to$toArray = (_this$to$toArray2 = (_this$to = this.to).toArray) === null || _this$to$toArray2 === void 0 ? void 0 : _this$to$toArray2.call(_this$to)) !== null && _this$to$toArray !== void 0 ? _this$to$toArray : this.to);
             }
             // Compute the z height for from/to so we interpolate vertically across zones
             try {
@@ -100,8 +101,7 @@ var _default = exports["default"] = {
             } catch (e) {
               if ((_this$sprite4 = this.sprite) !== null && _this$sprite4 !== void 0 && (_this$sprite4 = _this$sprite4.zone) !== null && _this$sprite4 !== void 0 && (_this$sprite4 = _this$sprite4.engine) !== null && _this$sprite4 !== void 0 && _this$sprite4.debug) console.warn('changezone.init failed to compute z for from/to', (e === null || e === void 0 ? void 0 : e.message) || e);
             }
-            console.log({
-              renderManager: engine === null || engine === void 0 ? void 0 : engine.renderManager,
+            (0, _debugLogger.debug)('ChangeZone', 'init', {
               fromZoneId: fromZoneId,
               toZoneId: toZoneId,
               from: from,
@@ -112,7 +112,7 @@ var _default = exports["default"] = {
               _context.n = 4;
               break;
             }
-            console.log('fading in...');
+            (0, _debugLogger.debug)('ChangeZone', 'fading in...');
             // fade in once the new zones are ready
             _context.n = 4;
             return engine.renderManager.startTransition({
@@ -159,7 +159,7 @@ var _default = exports["default"] = {
         this.sprite.pos.z = (_this$preserveHeightS = this.preserveHeightSourceZ) !== null && _this$preserveHeightS !== void 0 ? _this$preserveHeightS : this.sprite.pos.z;
         if ((_this$sprite$zone$eng = this.sprite.zone.engine) !== null && _this$sprite$zone$eng !== void 0 && _this$sprite$zone$eng.debug && !this.__preserveLog) {
           this.__preserveLog = true;
-          console.log('[changezone.tick] preserveHeight applied for sprite', this.sprite.id, 'sourceZ=', this.preserveHeightSourceZ);
+          (0, _debugLogger.debug)('ChangeZone', 'preserveHeight applied for sprite', this.sprite.id, 'sourceZ=', this.preserveHeightSourceZ);
         }
       } else {
         var _this$sprite$zone$eng2;
@@ -172,7 +172,7 @@ var _default = exports["default"] = {
         if ((_this$sprite$zone$eng2 = this.sprite.zone.engine) !== null && _this$sprite$zone$eng2 !== void 0 && _this$sprite$zone$eng2.debug && this.__tickLogCount < 3) {
           if (!this.__tickLogCount) this.__tickLogCount = 0;
           this.__tickLogCount++;
-          console.log('[changezone.tick] sprite', this.sprite.id, 'frac=', frac.toFixed(2), 'hx,hy=', hx.toFixed(2), hy.toFixed(2), 'zLerp=', zLerp === null || zLerp === void 0 ? void 0 : zLerp.toFixed(2), 'zZone=', zZone === null || zZone === void 0 ? void 0 : zZone.toFixed(2), 'pos.z=', this.sprite.pos.z.toFixed(2));
+          (0, _debugLogger.debug)('ChangeZone', 'tick sprite', this.sprite.id, 'frac=', frac.toFixed(2), 'hx,hy=', hx.toFixed(2), hy.toFixed(2), 'zLerp=', zLerp === null || zLerp === void 0 ? void 0 : zLerp.toFixed(2), 'zZone=', zZone === null || zZone === void 0 ? void 0 : zZone.toFixed(2), 'pos.z=', this.sprite.pos.z.toFixed(2));
         }
       }
     }

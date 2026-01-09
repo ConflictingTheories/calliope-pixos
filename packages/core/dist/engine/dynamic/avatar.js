@@ -7,6 +7,7 @@ exports["default"] = void 0;
 var _vector = require("@Engine/utils/math/vector.js");
 var _avatar = _interopRequireDefault(require("@Engine/core/scene/avatar.js"));
 var _PixoScriptInterpreter = _interopRequireDefault(require("@Engine/scripting/PixoScriptInterpreter.js"));
+var _debugLogger = require("@Engine/utils/debug-logger.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _construct(t, e, r) { if (_isNativeReflectConstruct()) return Reflect.construct.apply(null, arguments); var o = [null]; o.push.apply(o, e); var p = new (t.bind.apply(t, o))(); return r && _setPrototypeOf(p, r.prototype), p; }
@@ -150,9 +151,7 @@ var DynamicAvatar = exports["default"] = /*#__PURE__*/function (_Avatar) {
               return _context3.a(2, _context3.v);
             case 3:
               _context3.p = 3;
-              console.log({
-                trigger: _this2.selectTrigger
-              });
+              (0, _debugLogger.debug)('DynamicAvatar', 'onSelect trigger', _this2.selectTrigger);
               file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (!file) file = _this2.zip.file("triggers/".concat(_this2.selectTrigger, ".pxs"));
               if (file) {
@@ -165,10 +164,7 @@ var DynamicAvatar = exports["default"] = /*#__PURE__*/function (_Avatar) {
               return file.async('string');
             case 5:
               luaScript = _context3.v;
-              console.log({
-                msg: 'trigger lua statement',
-                luaScript: luaScript
-              });
+              (0, _debugLogger.debug)('DynamicAvatar', 'trigger lua statement', luaScript);
               interpreter = new _PixoScriptInterpreter["default"](_this2.engine);
               interpreter.setScope({
                 _this: _this,
@@ -184,10 +180,7 @@ var DynamicAvatar = exports["default"] = /*#__PURE__*/function (_Avatar) {
             case 7:
               _context3.p = 7;
               _t2 = _context3.v;
-              console.log({
-                msg: 'no lua script found',
-                e: _t2
-              });
+              (0, _debugLogger.debug)('DynamicAvatar', 'no lua script found', _t2.message);
             case 8:
               return _context3.a(2);
           }
