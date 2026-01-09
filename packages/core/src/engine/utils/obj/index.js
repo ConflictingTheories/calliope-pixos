@@ -1,49 +1,82 @@
-'use strict';
-exports.__esModule = true;
-exports.version =
-  exports.deleteMeshBuffers =
-  exports.initMeshBuffers =
-  exports.downloadMeshes =
-  exports.downloadModels =
-  exports.TYPES =
-  exports.Mesh =
-  exports.MaterialLibrary =
-  exports.Material =
-  exports.Layout =
-  exports.DuplicateAttributeException =
-  exports.Attribute =
-  exports.OBJ =
-    void 0;
-var mesh_1 = require('./mesh');
-exports.Mesh = mesh_1['default'];
-var material_1 = require('./material');
-exports.Material = material_1.Material;
-exports.MaterialLibrary = material_1.MaterialLibrary;
-var layout_1 = require('./layout');
-exports.Layout = layout_1.Layout;
-exports.TYPES = layout_1.TYPES;
-exports.DuplicateAttributeException = layout_1.DuplicateAttributeException;
-exports.Attribute = layout_1.Attribute;
-var utils_1 = require('./utils');
-exports.downloadModelsFromZip = utils_1.downloadModelsFromZip;
-exports.downloadModels = utils_1.downloadModels;
-exports.downloadMeshes = utils_1.downloadMeshes;
-exports.initMeshBuffers = utils_1.initMeshBuffers;
-exports.deleteMeshBuffers = utils_1.deleteMeshBuffers;
-var version = '2.0.3';
-exports.version = version;
-exports.OBJ = {
-  Attribute: layout_1.Attribute,
-  DuplicateAttributeException: layout_1.DuplicateAttributeException,
-  Layout: layout_1.Layout,
-  Material: material_1.Material,
-  MaterialLibrary: material_1.MaterialLibrary,
-  Mesh: mesh_1['default'],
-  TYPES: layout_1.TYPES,
-  downloadModelsFromZip: utils_1.downloadModelsFromZip,
-  downloadModels: utils_1.downloadModels,
-  downloadMeshes: utils_1.downloadMeshes,
-  initMeshBuffers: utils_1.initMeshBuffers,
-  deleteMeshBuffers: utils_1.deleteMeshBuffers,
-  version: version,
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine           **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
+/**
+ * OBJ/MTL file parser and loader for WebGL
+ * Based on webgl-obj-loader
+ *
+ * @module @Engine/utils/obj
+ */
+
+// Import CommonJS modules with namespace import for babel interop
+import * as meshModule from './mesh.js';
+import * as materialModule from './material.js';
+import * as layoutModule from './layout.js';
+import * as utilsModule from './utils.js';
+
+// Extract exports (handle both ESM default and CJS module.exports patterns)
+const Mesh = meshModule.default || meshModule;
+const Material = materialModule.Material;
+const MaterialLibrary = materialModule.MaterialLibrary;
+const Layout = layoutModule.Layout;
+const TYPES = layoutModule.TYPES;
+const DuplicateAttributeException = layoutModule.DuplicateAttributeException;
+const Attribute = layoutModule.Attribute;
+const downloadModelsFromZip = utilsModule.downloadModelsFromZip;
+const downloadModels = utilsModule.downloadModels;
+const downloadMeshes = utilsModule.downloadMeshes;
+const initMeshBuffers = utilsModule.initMeshBuffers;
+const deleteMeshBuffers = utilsModule.deleteMeshBuffers;
+const _buildBuffer = utilsModule._buildBuffer;
+
+const version = '2.0.3';
+
+// Create OBJ namespace object
+const OBJ = {
+  Attribute,
+  DuplicateAttributeException,
+  Layout,
+  Material,
+  MaterialLibrary,
+  Mesh,
+  TYPES,
+  downloadModelsFromZip,
+  downloadModels,
+  downloadMeshes,
+  initMeshBuffers,
+  deleteMeshBuffers,
+  _buildBuffer,
+  version,
 };
+
+// Named exports
+export {
+  Mesh,
+  Material,
+  MaterialLibrary,
+  Layout,
+  TYPES,
+  DuplicateAttributeException,
+  Attribute,
+  downloadModelsFromZip,
+  downloadModels,
+  downloadMeshes,
+  initMeshBuffers,
+  deleteMeshBuffers,
+  _buildBuffer,
+  version,
+  OBJ,
+};
+
+// Default export
+export default OBJ;

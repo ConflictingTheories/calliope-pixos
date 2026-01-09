@@ -37,14 +37,12 @@ var __read =
     }
     return ar;
   };
-exports.__esModule = true;
-exports.deleteMeshBuffers =
-  exports.initMeshBuffers =
-  exports._buildBuffer =
-  exports.downloadMeshes =
-  exports.downloadModels =
-  exports.downloadModelsFromZip =
-    void 0;
+/**
+ * Utility functions for OBJ/MTL loading and WebGL buffer management
+ * Based on webgl-obj-loader
+ *
+ * @module @Engine/utils/obj/utils
+ */
 var mesh_1 = require('./mesh');
 var material_1 = require('./material');
 function create1PixelTexture(gl, pixel) {

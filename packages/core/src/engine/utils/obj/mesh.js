@@ -62,8 +62,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-exports.__esModule = true;
-var layout_1 = require("./layout");
+import { Layout } from "./layout.js";
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data
  * and collect the vertex, vertex normal, texture, and face information. This
@@ -523,7 +522,7 @@ var Mesh = /** @class */ (function () {
                             dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);
                             dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);
                             break;
-                        case layout_1.Layout.UV.key:
+                        case Layout.UV.key:
                             dataView.setFloat32(offset, this.textures[i * 2], true);
                             dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);
                             break;
@@ -723,7 +722,7 @@ var Mesh = /** @class */ (function () {
     };
     return Mesh;
 }());
-exports["default"] = Mesh;
+export default Mesh;
 function triangulate(elements) {
     var i;
     return __generator(this, function (_a) {

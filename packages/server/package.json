@@ -28,7 +28,9 @@
   "author": "Kyle Derby MacInnis",
   "license": "CC-BY-NC-SA-4.0",
   "dependencies": {
-    "uuid": "^13.0.0",
     "ws": "^8.18.3"
+  },
+  "optionalDependencies": {
+    "redis": "^4.6.0"
   }
 }

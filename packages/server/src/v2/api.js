@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { WebSocketServer } from 'ws';
 import ClientManager from './clientManager.js';
 import ZoneHandler from './zoneHandler.js';
@@ -53,7 +53,7 @@ export default class API {
       }
       
       // Use authenticated userId or generate a new one
-      const clientId = authResult.userId || uuidv4();
+      const clientId = authResult.userId || randomUUID();
       
       // Security: Check connection limit per IP
       if (!this.connectionTracker.addConnection(clientId, ip)) {

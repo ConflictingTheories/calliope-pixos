@@ -26,8 +26,12 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-exports.__esModule = true;
-exports.MaterialLibrary = exports.Material = void 0;
+/**
+ * Material and MaterialLibrary classes for OBJ/MTL parsing
+ * Based on webgl-obj-loader
+ *
+ * @module @Engine/utils/obj/material
+ */
 /**
  * The Material class.
  */
@@ -89,7 +93,7 @@ var Material = /** @class */ (function () {
     }
     return Material;
 }());
-exports.Material = Material;
+export { Material };
 var SENTINEL_MATERIAL = new Material("sentinel");
 /**
  * https://en.wikipedia.org/wiki/Wavefront_.obj_file
@@ -688,7 +692,7 @@ var MaterialLibrary = /** @class */ (function () {
     };
     return MaterialLibrary;
 }());
-exports.MaterialLibrary = MaterialLibrary;
+export { MaterialLibrary };
 function emptyTextureOptions() {
     return {
         colorCorrection: false,

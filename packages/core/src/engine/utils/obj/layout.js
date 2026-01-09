@@ -25,8 +25,7 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-exports.__esModule = true;
-exports.Layout = exports.Attribute = exports.DuplicateAttributeException = exports.TYPES = void 0;
+// ESM exports will be declared at the end of the file
 var TYPES;
 (function (TYPES) {
     TYPES["BYTE"] = "BYTE";
@@ -34,7 +33,7 @@ var TYPES;
     TYPES["SHORT"] = "SHORT";
     TYPES["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";
     TYPES["FLOAT"] = "FLOAT";
-})(TYPES = exports.TYPES || (exports.TYPES = {}));
+})(TYPES || (TYPES = {}));
 /**
  * An exception for when two or more of the same attributes are found in the
  * same layout.
@@ -52,7 +51,7 @@ var DuplicateAttributeException = /** @class */ (function (_super) {
     }
     return DuplicateAttributeException;
 }(Error));
-exports.DuplicateAttributeException = DuplicateAttributeException;
+// DuplicateAttributeException will be exported below
 /**
  * Represents how a vertex attribute should be packed into an buffer.
  * @private
@@ -107,7 +106,7 @@ var Attribute = /** @class */ (function () {
     }
     return Attribute;
 }());
-exports.Attribute = Attribute;
+// Attribute will be exported below
 /**
  * A class to represent the memory layout for a vertex attribute array. Used by
  * {@link Mesh}'s TBD(...) method to generate a packed array from mesh data.
@@ -305,4 +304,4 @@ var Layout = /** @class */ (function () {
     Layout.MAP_EMISSIVE = new Attribute("mapEmissive", 1, TYPES.SHORT);
     return Layout;
 }());
-exports.Layout = Layout;
+export { Layout, Attribute, TYPES, DuplicateAttributeException };

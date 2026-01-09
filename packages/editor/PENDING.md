@@ -5,9 +5,9 @@
 - Improve documentation for all tools
 - Add more tests for asset editors
 - Enhance Monaco integration for scripting
-- Fix Deprecated Lifecycle in `ImagePreview.jsx`: Replace `componentWillReceiveProps` with a React hook.
-- Remove all debug `console.log` statements in `MapEditor.jsx` and `CutscenePlayer.jsx`.
-- Fix `mtlUrl` bug in `ObjModelViewer.jsx`: Add null-check for material file.
+- ~~Fix Deprecated Lifecycle in `ImagePreview.jsx`~~ ✅ DONE (already converted to hooks)
+- ~~Remove all debug `console.log` statements in `MapEditor.jsx` and `CutscenePlayer.jsx`.~~ ✅ DONE (cleaned up)
+- ~~Fix `mtlUrl` bug in `ObjModelViewer.jsx`~~ ✅ DONE (null-check exists at line 386)
 - Finalize OBJ Loader integration: Integrate `ObjHelper.js` with engine's `ResourceManager`.
 - Create a First-Time User Wizard for onboarding.
 - Develop Quick-Start Templates for new projects.
@@ -16,11 +16,11 @@
 - Create Core Component Library (`EditorToolbar`, `EditorPanel`, `WebGLCanvas`).
 - Extract Shared Hooks (e.g., `useHistory()`).
 - Implement Global Keyboard Shortcuts and help modal.
-- Unify 2D/3D Map Editors.
-- Implement core map editor tools (copy/paste, fill, layer toggles).
-- Auto-Tiling System for level design.
-- Animation Preview Panel for sprite editor.
-- Core Drawing Tools (line, rectangle, circle, flood-fill).
+- Unify 2D/3D Map Editors (index.jsx + MapEditor3D.jsx → single component).
+- ~~Implement core map editor tools (copy/paste, fill, layer toggles).~~ ✅ DONE (see map-editor/tools/)
+- ~~Auto-Tiling System for level design.~~ ✅ DONE (see systems/AutoTiler.js)
+- ~~Animation Preview Panel for sprite editor.~~ ✅ DONE (see sprite-editor/AnimationPreview.jsx)
+- ~~Core Drawing Tools (line, rectangle, circle, flood-fill).~~ ✅ DONE (see sprite-editor/tools/)
 - Customizable sprite sizes and color palettes.
 - Import/Export for PNG/GIF and spritesheets.
 - PixoScript Language Support in script editor (autocompletion, docs, lint).

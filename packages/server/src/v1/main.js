@@ -1,5 +1,5 @@
 const { WebSocketServer } = require('ws');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -10,7 +10,7 @@ const actionQueue = [];
 console.log('WebSocket server started on port 8080');
 
 wss.on('connection', (ws) => {
-  const clientId = uuidv4();
+  const clientId = randomUUID();
   clients.set(clientId, { ws });
   console.log(`Client ${clientId} connected`);
 
