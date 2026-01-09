@@ -1,0 +1,28 @@
+{
+  "name": "pixospritz-specs",
+  "version": "1.0.0",
+  "description": "Shared specifications, schemas, and constants for PixoSpritz engines",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./math/*": "./math/*.json",
+    "./formats/*": "./formats/*.json",
+    "./constants/*": "./constants/*.json",
+    "./shaders/*": "./shaders/*"
+  },
+  "files": [
+    "index.js",
+    "math/",
+    "formats/",
+    "constants/",
+    "shaders/"
+  ],
+  "keywords": [
+    "pixospritz",
+    "game-engine",
+    "specifications"
+  ],
+  "author": "ConflictingTheories",
+  "license": "MIT"
+}

@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/save.schema.json",
+  "title": "PixoSpritz Save File",
+  "description": "Schema for .pxsave game save files with cross-game compatibility",
+  "type": "object",
+  
+  "required": ["version", "format", "gameId", "timestamp", "player"],
+  
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Save format version (semver)",
+      "examples": ["1.0.0"]
+    },
+    "format": {
+      "type": "string",
+      "const": "pxsave",
+      "description": "File format identifier"
+    },
+    "gameId": {
+      "type": "string",
+      "description": "Unique identifier for the game package",
+      "examples": ["elemental-trials", "my-adventure"]
+    },
+    "gameVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the game that created this save"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when save was created"
+    },
+    "playTime": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total play time in milliseconds"
+    },
+    "slotId": {
+      "type": "string",
+      "description": "Save slot identifier",
+      "examples": ["slot-1", "autosave", "quicksave"]
+    },
+    "slotName": {
+      "type": "string",
+      "description": "User-friendly slot name",
+      "examples": ["Before Boss", "Village Start"]
+    },
+    "checksum": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 checksum for integrity verification"
+    },
+    "screenshot": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "contentMediaType": "image/png",
+      "description": "Base64-encoded screenshot thumbnail"
+    },
+    
+    "player": {
+      "type": "object",
+      "required": ["zone", "position"],
+      "description": "Player state",
+      "properties": {
+        "zone": {
+          "type": "string",
+          "description": "Current zone ID"
+        },
+        "position": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "[x, y, z] world position"
+        },
+        "facing": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "Direction index (0=N, 1=NE, 2=E, etc.)"
+        },
+        "sprite": {
+          "type": "string",
+          "description": "Current sprite/avatar ID"
+        },
+        "state": {
+          "type": "string",
+          "description": "Animation state",
+          "examples": ["idle", "walk", "run"]
+        },
+        "stats": {
+          "type": "object",
+          "description": "Player statistics",
+          "properties": {
+            "hp": { "type": "integer" },
+            "maxHp": { "type": "integer" },
+            "mp": { "type": "integer" },
+            "maxMp": { "type": "integer" },
+            "level": { "type": "integer" },
+            "exp": { "type": "integer" }
+          },
+          "additionalProperties": { "type": "number" }
+        },
+        "inventory": {
+          "type": "array",
+          "description": "Portable inventory items",
+          "items": {
+            "type": "object",
+            "required": ["id", "quantity"],
+            "properties": {
+              "id": { "type": "string" },
+              "quantity": { "type": "integer", "minimum": 1 },
+              "data": { "type": "object" }
+            }
+          }
+        },
+        "equipment": {
+          "type": "object",
+          "description": "Equipped items by slot",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    
+    "flags": {
+      "type": "object",
+      "description": "Game state flags (persistent variables)",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "boolean" },
+          { "type": "number" },
+          { "type": "string" }
+        ]
+      }
+    },
+    
+    "zones": {
+      "type": "object",
+      "description": "Per-zone state (opened chests, defeated enemies, etc.)",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "visited": { "type": "boolean" },
+          "cleared": { "type": "boolean" },
+          "entities": {
+            "type": "object",
+            "description": "Entity-specific state",
+            "additionalProperties": { "type": "object" }
+          },
+          "triggers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Triggered one-time events"
+          }
+        }
+      }
+    },
+    
+    "quests": {
+      "type": "array",
+      "description": "Quest progress tracking",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["active", "completed", "failed", "hidden"]
+          },
+          "progress": { "type": "object" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    
+    "portable": {
+      "type": "object",
+      "description": "Cross-game compatible data",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Namespace for portable items/flags"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string" },
+              "data": { "type": "object" }
+            }
+          }
+        },
+        "achievements": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "compatibleGames": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Game IDs that can import this save"
+        }
+      }
+    },
+    
+    "meta": {
+      "type": "object",
+      "description": "Additional metadata",
+      "properties": {
+        "difficulty": { "type": "string" },
+        "newGamePlus": { "type": "boolean" },
+        "deaths": { "type": "integer" },
+        "secrets": { "type": "integer" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

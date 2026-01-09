@@ -21,6 +21,7 @@ import CutsceneManager from './cutscene/manager.js';
 import ModeManager from './mode/manager.js'; // Import ModeManager
 import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
+import { StateManager } from './state/index.js';
 import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
 
 /**
@@ -100,6 +101,9 @@ export default class GLEngine {
 
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
+
+    /** @type {StateManager} */
+    this.stateManager = new StateManager(this); // Initialize StateManager for save/load
 
     // Debug flags
     /** @type {boolean} */
@@ -211,6 +215,21 @@ export default class GLEngine {
       if (spritz.manifest.network.authority) {
         this.networkManager.setAuthority(spritz.manifest.network.authority);
       }
+    }
+
+    // Initialize StateManager for save/load functionality
+    await this.stateManager.init({
+      gameId: spritz.manifest?.id || spritz.manifest?.title || 'unknown',
+      gameVersion: spritz.manifest?.version || '1.0.0',
+      autosaveInterval: spritz.manifest?.saveConfig?.autosaveInterval 
+        ? spritz.manifest.saveConfig.autosaveInterval * 1000 
+        : 5 * 60 * 1000,
+      maxCheckpoints: 5
+    });
+
+    // Start autosave if enabled
+    if (spritz.manifest?.saveConfig?.autosave !== false) {
+      this.stateManager.startAutosave();
     }
 
     // Initialize Spritz game

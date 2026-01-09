@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/vector.spec.json",
+  "title": "Vector Specification",
+  "description": "Shared vector math specifications for JS and C engines",
+  
+  "definitions": {
+    "Vector2": {
+      "description": "2D vector/coordinate",
+      "type": "object",
+      "properties": {
+        "x": { "type": "number", "default": 0 },
+        "y": { "type": "number", "default": 0 }
+      },
+      "required": ["x", "y"]
+    },
+    
+    "Vector3": {
+      "description": "3D vector",
+      "type": "object",
+      "properties": {
+        "x": { "type": "number", "default": 0 },
+        "y": { "type": "number", "default": 0 },
+        "z": { "type": "number", "default": 0 }
+      },
+      "required": ["x", "y", "z"]
+    },
+    
+    "Vector4": {
+      "description": "4D vector (homogeneous coordinates)",
+      "type": "object",
+      "properties": {
+        "x": { "type": "number", "default": 0 },
+        "y": { "type": "number", "default": 0 },
+        "z": { "type": "number", "default": 0 },
+        "w": { "type": "number", "default": 1 }
+      },
+      "required": ["x", "y", "z", "w"]
+    }
+  },
+  
+  "operations": {
+    "Vector3": {
+      "add": {
+        "signature": "(a: Vector3, b: Vector3) -> Vector3",
+        "description": "Component-wise addition",
+        "implementation": {
+          "js": "{ x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }",
+          "c": "vec3_add(a, b)"
+        }
+      },
+      "sub": {
+        "signature": "(a: Vector3, b: Vector3) -> Vector3",
+        "description": "Component-wise subtraction",
+        "implementation": {
+          "js": "{ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }",
+          "c": "vec3_sub(a, b)"
+        }
+      },
+      "scale": {
+        "signature": "(v: Vector3, s: number) -> Vector3",
+        "description": "Scalar multiplication",
+        "implementation": {
+          "js": "{ x: v.x * s, y: v.y * s, z: v.z * s }",
+          "c": "vec3_scale(v, s)"
+        }
+      },
+      "dot": {
+        "signature": "(a: Vector3, b: Vector3) -> number",
+        "description": "Dot product",
+        "implementation": {
+          "js": "a.x * b.x + a.y * b.y + a.z * b.z",
+          "c": "vec3_dot(a, b)"
+        }
+      },
+      "cross": {
+        "signature": "(a: Vector3, b: Vector3) -> Vector3",
+        "description": "Cross product",
+        "implementation": {
+          "js": "{ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }",
+          "c": "vec3_cross(a, b)"
+        }
+      },
+      "length": {
+        "signature": "(v: Vector3) -> number",
+        "description": "Vector magnitude",
+        "implementation": {
+          "js": "Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z)",
+          "c": "vec3_length(v)"
+        }
+      },
+      "normalize": {
+        "signature": "(v: Vector3) -> Vector3",
+        "description": "Unit vector",
+        "implementation": {
+          "js": "const len = length(v); return len > 0 ? scale(v, 1/len) : { x: 0, y: 0, z: 0 }",
+          "c": "vec3_normalize(v)"
+        }
+      },
+      "distance": {
+        "signature": "(a: Vector3, b: Vector3) -> number",
+        "description": "Euclidean distance between two points",
+        "implementation": {
+          "js": "length(sub(b, a))",
+          "c": "vec3_distance(a, b)"
+        }
+      },
+      "lerp": {
+        "signature": "(a: Vector3, b: Vector3, t: number) -> Vector3",
+        "description": "Linear interpolation",
+        "implementation": {
+          "js": "{ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t }",
+          "c": "vec3_lerp(a, b, t)"
+        }
+      },
+      "negate": {
+        "signature": "(v: Vector3) -> Vector3",
+        "description": "Negate all components",
+        "implementation": {
+          "js": "{ x: -v.x, y: -v.y, z: -v.z }",
+          "c": "vec3_negate(v)"
+        }
+      }
+    }
+  },
+  
+  "constants": {
+    "ZERO": { "x": 0, "y": 0, "z": 0 },
+    "ONE": { "x": 1, "y": 1, "z": 1 },
+    "UP": { "x": 0, "y": 1, "z": 0 },
+    "DOWN": { "x": 0, "y": -1, "z": 0 },
+    "LEFT": { "x": -1, "y": 0, "z": 0 },
+    "RIGHT": { "x": 1, "y": 0, "z": 0 },
+    "FORWARD": { "x": 0, "y": 0, "z": -1 },
+    "BACK": { "x": 0, "y": 0, "z": 1 }
+  }
+}

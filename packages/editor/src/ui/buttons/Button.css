@@ -1,0 +1,128 @@
+/**
+ * Button Styles
+ */
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+/* Sizes */
+.px-btn-xs { padding: 4px 8px; font-size: 12px; }
+.px-btn-sm { padding: 6px 12px; font-size: 13px; }
+.px-btn-md { padding: 8px 16px; font-size: 14px; }
+.px-btn-lg { padding: 10px 20px; font-size: 16px; }
+
+/* Appearances */
+.px-btn-default {
+  background: var(--btn-default-bg, #2a2a4a);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-btn-default:hover {
+  background: var(--btn-default-hover, #3a3a5a);
+}
+
+.px-btn-primary {
+  background: var(--btn-primary-bg, #5c6bc0);
+  color: white;
+}
+
+.px-btn-primary:hover {
+  background: var(--btn-primary-hover, #7986cb);
+}
+
+.px-btn-link {
+  background: transparent;
+  color: var(--btn-link-color, #5c6bc0);
+  padding: 0;
+}
+
+.px-btn-link:hover {
+  text-decoration: underline;
+}
+
+.px-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-color, #2a2a4a);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-btn-ghost:hover {
+  background: var(--btn-ghost-hover, rgba(255, 255, 255, 0.05));
+}
+
+.px-btn-subtle {
+  background: transparent;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-btn-subtle:hover {
+  background: var(--btn-subtle-hover, rgba(255, 255, 255, 0.1));
+}
+
+/* Colors */
+.px-btn-red { background: #e53935; }
+.px-btn-red:hover { background: #ef5350; }
+
+.px-btn-orange { background: #fb8c00; }
+.px-btn-orange:hover { background: #ffa726; }
+
+.px-btn-yellow { background: #fdd835; color: #000; }
+.px-btn-yellow:hover { background: #ffeb3b; }
+
+.px-btn-green { background: #43a047; }
+.px-btn-green:hover { background: #66bb6a; }
+
+.px-btn-cyan { background: #00acc1; }
+.px-btn-cyan:hover { background: #26c6da; }
+
+.px-btn-blue { background: #1e88e5; }
+.px-btn-blue:hover { background: #42a5f5; }
+
+.px-btn-violet { background: #8e24aa; }
+.px-btn-violet:hover { background: #ab47bc; }
+
+/* States */
+.px-btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.px-btn-disabled,
+.px-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.px-btn-active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.px-btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.px-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: px-spin 0.6s linear infinite;
+}
+
+@keyframes px-spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/sprite.schema.json",
+  "title": "PixoSpritz Sprite Definition",
+  "description": "Schema for sprite/avatar definition files",
+  "type": "object",
+  
+  "required": ["type", "src", "sheetSize", "tileSize"],
+  
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["sprite", "avatar", "npc", "object", "effect"],
+      "description": "Sprite category"
+    },
+    "src": {
+      "type": "string",
+      "description": "Path to spritesheet image"
+    },
+    "portraitSrc": {
+      "type": "string",
+      "description": "Path to portrait image for dialogue"
+    },
+    "sheetSize": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[width, height] of spritesheet in pixels"
+    },
+    "tileSize": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[width, height] of each frame in pixels"
+    },
+    "state": {
+      "type": "string",
+      "description": "Initial animation state",
+      "default": "idle"
+    },
+    "frames": {
+      "type": "object",
+      "description": "Animation frames by direction/state",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[x, y] position in spritesheet"
+        }
+      }
+    },
+    "animations": {
+      "type": "object",
+      "description": "Named animation sequences",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "frames": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Frame indices"
+          },
+          "speed": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Frames per second"
+          },
+          "loop": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    },
+    "drawOffset": {
+      "type": "object",
+      "description": "Render offset by direction [x, y, z]",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "number" },
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "hotspotOffset": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Collision/interaction point offset"
+    },
+    "boundingBox": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "depth": { "type": "number" },
+        "offset": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "bindCamera": {
+      "type": "boolean",
+      "description": "Whether camera follows this sprite",
+      "default": false
+    },
+    "enableSpeech": {
+      "type": "boolean",
+      "description": "Whether sprite can display speech bubbles",
+      "default": false
+    },
+    "cutouts": {
+      "type": "object",
+      "description": "Named cutout images for expressions/states",
+      "additionalProperties": { "type": "string" }
+    },
+    "billboard": {
+      "type": "boolean",
+      "description": "Always face camera (3D mode)",
+      "default": true
+    },
+    "castShadow": {
+      "type": "boolean",
+      "default": true
+    },
+    "receiveShadow": {
+      "type": "boolean",
+      "default": true
+    },
+    "layer": {
+      "type": "integer",
+      "description": "Render layer for sorting",
+      "default": 0
+    },
+    "collisionType": {
+      "type": "string",
+      "enum": ["none", "box", "circle", "polygon"],
+      "default": "box"
+    },
+    "interactable": {
+      "type": "boolean",
+      "description": "Can player interact with this sprite",
+      "default": false
+    },
+    "scripts": {
+      "type": "array",
+      "description": "Attached behavior scripts",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "trigger": { "type": "string" },
+          "params": { "type": "object" }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "AI/behavior actions",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "type": "string" },
+          "params": { "type": "object" }
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "Custom sprite data",
+      "additionalProperties": true
+    }
+  }
+}

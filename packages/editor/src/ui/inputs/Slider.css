@@ -1,0 +1,140 @@
+/**
+ * Slider Styles
+ */
+.px-slider {
+  position: relative;
+  height: 24px;
+  user-select: none;
+}
+
+.px-slider-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.px-slider-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 6px;
+  margin-top: -3px;
+  background: var(--slider-track-bg, #2a2a4a);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.px-slider-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--btn-primary-bg, #5c6bc0);
+  border-radius: 3px;
+}
+
+.px-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  margin-left: -8px;
+  background: white;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.px-slider-handle:hover,
+.px-slider-dragging .px-slider-handle {
+  transform: scale(1.2);
+}
+
+.px-slider-dragging .px-slider-handle {
+  cursor: grabbing;
+}
+
+.px-slider-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--panel-bg, #1a1a2e);
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-primary, #e0e0e0);
+  white-space: nowrap;
+}
+
+.px-slider-graduations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.px-slider-graduation-mark {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: var(--border-color, #2a2a4a);
+}
+
+/* Vertical */
+.px-slider-vertical {
+  width: 24px;
+  height: 200px;
+}
+
+.px-slider-vertical .px-slider-track {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  width: 6px;
+  height: auto;
+  margin-top: 0;
+  margin-left: -3px;
+}
+
+.px-slider-vertical .px-slider-progress {
+  width: 100%;
+  height: auto;
+  top: auto;
+  bottom: 0;
+}
+
+.px-slider-vertical .px-slider-handle {
+  top: auto;
+  left: 50%;
+  margin-top: 0;
+  margin-left: -8px;
+  margin-bottom: -8px;
+}
+
+.px-slider-vertical .px-slider-tooltip {
+  bottom: auto;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-bottom: 0;
+  margin-left: 8px;
+}
+
+/* Disabled */
+.px-slider-disabled {
+  opacity: 0.5;
+}
+
+.px-slider-disabled .px-slider-track,
+.px-slider-disabled .px-slider-handle {
+  cursor: not-allowed;
+}

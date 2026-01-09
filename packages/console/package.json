@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "PixoSpritz Console - Web player for running PixoSpritz games",
   "scripts": {
-    "dev": "NODE_OPTIONS=\"--openssl-legacy-provider --max_old_space_size=8192\" react-app-rewired start",
-    "start": "NODE_OPTIONS=\"--openssl-legacy-provider --max_old_space_size=8192\" react-app-rewired start",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider react-app-rewired build",
+    "dev": "react-app-rewired start",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
     "lint": "eslint src --ext .js,.jsx --max-warnings=9999",
     "test": "react-app-rewired test"
   },
@@ -29,14 +29,14 @@
   "dependencies": {
     "pixospritz-core": "*",
     "pixoscript": "*",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "typescript": "^4.8.4",
-    "web-vitals": "^1.0.1"
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^14.2.0",
+    "@testing-library/user-event": "^14.5.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-scripts": "5.0.1",
+    "typescript": "^5.4.0",
+    "web-vitals": "^3.5.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",

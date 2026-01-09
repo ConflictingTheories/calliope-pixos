@@ -699,6 +699,176 @@ export default class PixoScriptLibrary {
           return 0;
         }
       },
+
+      // ==================== SAVE/LOAD SYSTEM ====================
+
+      /**
+       * Create a checkpoint (in-memory save point)
+       * @param {string} [label='auto'] - Label for the checkpoint
+       * @returns {number} Checkpoint index
+       */
+      save_checkpoint: (label = 'auto') => {
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.checkpoint(label);
+          }
+          return -1;
+        } catch (e) {
+          console.warn('save_checkpoint failed', e);
+          return -1;
+        }
+      },
+
+      /**
+       * Restore from the latest checkpoint
+       * @param {number} [index=-1] - Checkpoint index (-1 for latest)
+       * @returns {function} Async action that resolves to success boolean
+       */
+      restore_checkpoint: (index = -1) => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              return await engine.stateManager.restore(index);
+            }
+            return false;
+          } catch (e) {
+            console.warn('restore_checkpoint failed', e);
+            return false;
+          }
+        };
+      },
+
+      /**
+       * Save game to a slot
+       * @param {string} slotId - Save slot ID (e.g., 'slot-1', 'slot-2')
+       * @param {string} [slotName] - Display name for the save
+       * @returns {function} Async action that resolves to success boolean
+       */
+      save_game: (slotId, slotName = '') => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              return await engine.stateManager.save(slotId, slotName);
+            }
+            return false;
+          } catch (e) {
+            console.warn('save_game failed', e);
+            return false;
+          }
+        };
+      },
+
+      /**
+       * Load game from a slot
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to success boolean
+       */
+      load_game: (slotId) => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              return await engine.stateManager.load(slotId);
+            }
+            return false;
+          } catch (e) {
+            console.warn('load_game failed', e);
+            return false;
+          }
+        };
+      },
+
+      /**
+       * Get all available save slots
+       * @returns {function} Async action that resolves to array of save info
+       */
+      get_save_slots: () => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              const saves = await engine.stateManager.getAllSaves();
+              return new this.pixoscript.Table(saves.map(s => ({
+                slotId: s.slotId,
+                slotName: s.slotName,
+                timestamp: s.timestamp,
+                playTime: s.playTime,
+                zone: s.player?.zone
+              })));
+            }
+            return new this.pixoscript.Table([]);
+          } catch (e) {
+            console.warn('get_save_slots failed', e);
+            return new this.pixoscript.Table([]);
+          }
+        };
+      },
+
+      /**
+       * Delete a save slot
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to success boolean
+       */
+      delete_save: (slotId) => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              return await engine.stateManager.deleteSave(slotId);
+            }
+            return false;
+          } catch (e) {
+            console.warn('delete_save failed', e);
+            return false;
+          }
+        };
+      },
+
+      /**
+       * Get current play time in milliseconds
+       * @returns {number} Play time in ms
+       */
+      get_play_time: () => {
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.getPlayTime();
+          }
+          return 0;
+        } catch (e) {
+          return 0;
+        }
+      },
+
+      /**
+       * Get formatted play time string
+       * @returns {string} Formatted time (e.g., "2h 30m")
+       */
+      get_play_time_formatted: () => {
+        try {
+          if (engine.stateManager) {
+            return engine.stateManager.formatPlayTime();
+          }
+          return '0m 0s';
+        } catch (e) {
+          return '0m 0s';
+        }
+      },
+
+      /**
+       * Check if a save slot exists
+       * @param {string} slotId - Save slot ID
+       * @returns {function} Async action that resolves to boolean
+       */
+      has_save: (slotId) => {
+        return async () => {
+          try {
+            if (engine.stateManager) {
+              const slot = await engine.stateManager.getSaveSlot(slotId);
+              return slot !== null;
+            }
+            return false;
+          } catch (e) {
+            return false;
+          }
+        };
+      },
     });
   };
 }

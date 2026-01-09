@@ -1,0 +1,115 @@
+/**
+ * Progress Styles
+ */
+.px-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.px-progress-track {
+  flex: 1;
+  background: var(--progress-track-bg, #2a2a4a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.px-progress-bar {
+  height: 100%;
+  background: var(--btn-primary-bg, #5c6bc0);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.px-progress-active .px-progress-bar {
+  background: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-progress-success .px-progress-bar {
+  background: #43a047;
+}
+
+.px-progress-fail .px-progress-bar {
+  background: #e53935;
+}
+
+.px-progress-info {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #e0e0e0);
+  min-width: 40px;
+  text-align: right;
+}
+
+.px-progress-success .px-progress-info {
+  color: #66bb6a;
+}
+
+.px-progress-fail .px-progress-info {
+  color: #ef5350;
+}
+
+/* Vertical */
+.px-progress-vertical {
+  flex-direction: column;
+  width: auto;
+  height: 200px;
+}
+
+.px-progress-vertical .px-progress-track {
+  width: 8px;
+  height: 100%;
+  flex: none;
+}
+
+.px-progress-vertical .px-progress-bar {
+  width: 100%;
+  height: auto;
+  transition: height 0.3s ease;
+}
+
+/* Circle */
+.px-progress-circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.px-progress-circle svg {
+  width: 100%;
+  height: 100%;
+}
+
+.px-progress-circle-track {
+  stroke: var(--progress-track-bg, #2a2a4a);
+}
+
+.px-progress-circle-bar {
+  stroke: var(--btn-primary-bg, #5c6bc0);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.px-progress-success .px-progress-circle-bar {
+  stroke: #43a047;
+}
+
+.px-progress-fail .px-progress-circle-bar {
+  stroke: #e53935;
+}
+
+.px-progress-circle-info {
+  position: absolute;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-progress-success .px-progress-circle-info {
+  color: #66bb6a;
+}
+
+.px-progress-fail .px-progress-circle-info {
+  color: #ef5350;
+}

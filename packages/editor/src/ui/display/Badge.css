@@ -1,0 +1,39 @@
+/**
+ * Badge Styles
+ */
+.px-badge-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.px-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9px;
+  color: white;
+}
+
+.px-badge-wrapper > .px-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
+/* Colors */
+.px-badge-red { background: #e53935; }
+.px-badge-orange { background: #fb8c00; }
+.px-badge-yellow { background: #fdd835; color: #000; }
+.px-badge-green { background: #43a047; }
+.px-badge-cyan { background: #00acc1; }
+.px-badge-blue { background: #1e88e5; }
+.px-badge-violet { background: #8e24aa; }
+
+.px-badge-standalone {
+  position: static;
+}

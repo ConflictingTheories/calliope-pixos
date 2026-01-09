@@ -1,0 +1,128 @@
+/**
+ * Steps Styles
+ */
+.px-steps {
+  display: flex;
+  width: 100%;
+}
+
+.px-steps-vertical {
+  flex-direction: column;
+}
+
+.px-steps-item {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.px-steps-item-tail {
+  position: absolute;
+  top: 12px;
+  left: 36px;
+  right: 0;
+  height: 2px;
+  background: var(--border-color, #2a2a4a);
+}
+
+.px-steps-item:last-child .px-steps-item-tail {
+  display: none;
+}
+
+.px-steps-item-finish .px-steps-item-tail {
+  background: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-steps-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--panel-shaded-bg, #15152a);
+  border: 2px solid var(--border-color, #2a2a4a);
+  color: var(--text-secondary, #888);
+  margin-right: 8px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.px-steps-item-process .px-steps-item-icon {
+  background: var(--btn-primary-bg, #5c6bc0);
+  border-color: var(--btn-primary-bg, #5c6bc0);
+  color: white;
+}
+
+.px-steps-item-finish .px-steps-item-icon {
+  background: var(--btn-primary-bg, #5c6bc0);
+  border-color: var(--btn-primary-bg, #5c6bc0);
+  color: white;
+}
+
+.px-steps-item-error .px-steps-item-icon {
+  background: transparent;
+  border-color: #e53935;
+  color: #e53935;
+}
+
+.px-steps-item-content {
+  padding-top: 2px;
+  padding-right: 16px;
+}
+
+.px-steps-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0e0);
+  line-height: 24px;
+}
+
+.px-steps-item-wait .px-steps-item-title {
+  color: var(--text-secondary, #888);
+}
+
+.px-steps-item-description {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  margin-top: 4px;
+}
+
+/* Vertical */
+.px-steps-vertical .px-steps-item {
+  flex-direction: row;
+  flex: none;
+  margin-bottom: 24px;
+}
+
+.px-steps-vertical .px-steps-item:last-child {
+  margin-bottom: 0;
+}
+
+.px-steps-vertical .px-steps-item-tail {
+  top: 36px;
+  left: 13px;
+  width: 2px;
+  height: calc(100% - 24px);
+  right: auto;
+}
+
+/* Small */
+.px-steps-small .px-steps-item-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+
+.px-steps-small .px-steps-item-title {
+  font-size: 13px;
+}
+
+.px-steps-small .px-steps-item-tail {
+  top: 10px;
+  left: 30px;
+}

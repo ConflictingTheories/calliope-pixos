@@ -15,7 +15,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
 import Editor, { loader } from '@monaco-editor/react';
-import { Button } from 'rsuite';
+import { Button } from '../ui';
 
 // Import Monaco with pre-configured web workers
 import { monaco } from '../monaco-setup.js';
