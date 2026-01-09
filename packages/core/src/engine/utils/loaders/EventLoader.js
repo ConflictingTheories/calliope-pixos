@@ -38,7 +38,7 @@ export class EventLoader {
     );
   }
   // Load Internal Action
-  async load(type) {
+  load(type) {
     let afterLoad = arguments[1];
     let runConfigure = arguments[2];
     if (!this.instances[type]) {
@@ -46,8 +46,7 @@ export class EventLoader {
     }
     // New Instance (assigns properties loaded by type)
     let instance = new Event(this.type, this.world, this.callback);
-    const module = await import(`@Engine/events/${type}.js`);
-    Object.assign(instance, module.default);
+    Object.assign(instance, require('@Engine/events/' + type + '.js')['default']);
     instance.templateLoaded = true;
     // Notify existing
     this.instances[type].forEach(function (instance) {

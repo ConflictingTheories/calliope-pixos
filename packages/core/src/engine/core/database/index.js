@@ -30,20 +30,6 @@ export default class Database {
       msg: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
       tmp: '++id, key, value, timestamp', // key-store
     });
-    // Version 2: Add saves table for game state persistence
-    this.db.version(2).stores({
-      tileset: '++id, name, creator, type, checksum, signature, timestamp',
-      inventory: '++id, name, creator, type, checksum, signature, timestamp',
-      spirits: '++id, name, creator, type, checksum, signature, timestamp',
-      abilities: '++id, name, creator, type checksum, signature, timestamp',
-      models: '++id, name, creator, type, checksum, signature, timestamp',
-      accounts: '++id, name, type, checksum, signature, timestamp',
-      dht: '++id, name, type, ip, checksum, signature, timestamp',
-      msg: '++id, name, type, ip, checksum, signature, timestamp',
-      tmp: '++id, key, value, timestamp',
-      // Save game slots - .pxsave format storage
-      saves: '++id, slotId, gameId, timestamp, playTime, checksum',
-    });
   }
 
   /**

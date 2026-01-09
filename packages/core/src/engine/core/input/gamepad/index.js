@@ -80,12 +80,6 @@ export class GamePad {
    * Initializes the gamepad with layout and controller setup.
    */
   init() {
-    // Guard: ensure engine and canvas are available
-    if (!this.engine || !this.engine.gp || !this.engine.gp.canvas) {
-      console.warn('GamePad.init: canvas not available, skipping initialization');
-      return;
-    }
-
     // Font
     this.fontSize = this.engine.gp.canvas.width / 12;
 

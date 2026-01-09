@@ -16,25 +16,8 @@ import { Direction } from '@Engine/utils/enums.js';
 import ActionQueue from '../queue/index.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { rotate, translate } from '@Engine/utils/math/matrix4.js';
+import { _buildBuffer } from '@Engine/utils/obj/utils.js';
 import Loadable from '@Engine/core/queue/loadable.js';
-
-/**
- * Build a WebGL buffer from data
- * @param {WebGLRenderingContext} gl - WebGL context
- * @param {number} type - Buffer type (gl.ARRAY_BUFFER or gl.ELEMENT_ARRAY_BUFFER)
- * @param {number[]} data - Data to buffer
- * @param {number} itemSize - Number of components per vertex
- * @returns {WebGLBuffer} The created buffer with numItems property
- */
-function _buildBuffer(gl, type, data, itemSize) {
-  const buffer = gl.createBuffer();
-  const TypedArray = type === gl.ELEMENT_ARRAY_BUFFER ? Uint16Array : Float32Array;
-  gl.bindBuffer(type, buffer);
-  gl.bufferData(type, new TypedArray(data), gl.STATIC_DRAW);
-  buffer.itemSize = itemSize;
-  buffer.numItems = data.length / itemSize;
-  return buffer;
-}
 import { degToRad } from '../../utils/math/vector.js';
 
 export default class ModelObject extends Loadable {
@@ -128,7 +111,7 @@ export default class ModelObject extends Loadable {
 
     // mesh buffers
     this.mesh = mesh;
-    this.engine.resourceManager.objHelper.initBuffers([this.mesh]);
+    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {
@@ -215,7 +198,7 @@ export default class ModelObject extends Loadable {
 
     // mesh buffers
     this.mesh = mesh;
-    this.engine.resourceManager.objHelper.initBuffers([this.mesh]);
+    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {

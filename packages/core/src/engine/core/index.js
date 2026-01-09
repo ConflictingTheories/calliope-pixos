@@ -9,7 +9,7 @@
 **                                                 **
 **               All Rights Reserved.              **
 ** ----------------------------------------------- **
-\\*                                                 */
+\*                                                 */
 
 import Utils from '../utils/index.js';
 import Database from './database/index.js';
@@ -18,11 +18,9 @@ import Hud from './hud/index.js';
 import RenderManager from './render/manager.js';
 import ResourceManager from './resource/manager.js';
 import CutsceneManager from './cutscene/manager.js';
-import ModeManager from './mode/manager.js';
-import InputManager from './input/manager.js';
+import ModeManager from './mode/manager.js'; // Import ModeManager
+import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
-import { StateManager } from './state/index.js';
-import { GamePad } from './input/gamepad/index.js';
 import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
 
 /**
@@ -103,9 +101,6 @@ export default class GLEngine {
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
 
-    /** @type {StateManager} */
-    this.stateManager = new StateManager(this); // Initialize StateManager for save/load
-
     // Debug flags
     /** @type {boolean} */
     this.debug = false; // General debug mode (enables console logs)
@@ -147,26 +142,6 @@ export default class GLEngine {
    * @throws {Error} If WebGL, HUD canvas, or Gamepad canvas cannot be initialized.
    */
   async init(spritz) {
-    // Ensure canvas elements have valid dimensions before getting contexts
-    // This prevents WebGL context creation failure when canvas has 0 width/height
-    if (this.canvas.clientWidth === 0 || this.canvas.clientHeight === 0) {
-      console.warn('Canvas has invalid dimensions, waiting for layout...', {
-        width: this.canvas.clientWidth,
-        height: this.canvas.clientHeight,
-      });
-      // Give browser time to layout
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-
-    // Re-check canvas visibility immediately before context creation
-    const canvasStyle = window.getComputedStyle(this.canvas);
-    if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden') {
-      throw new Error('Canvas is hidden and cannot receive WebGL context');
-    }
-    if (this.canvas.clientWidth <= 0 || this.canvas.clientHeight <= 0) {
-      throw new Error('Canvas has zero dimensions and cannot receive WebGL context');
-    }
-
     /** @type {CanvasRenderingContext2D|null} */
     const ctx = this.hudCanvas.getContext('2d');
     /** @type {WebGL2RenderingContext|null} */
@@ -179,22 +154,13 @@ export default class GLEngine {
     const gp = this.gamepadCanvas.getContext('2d');
 
     if (!gl) {
-      console.error('WebGL context creation failed. Canvas element:', this.canvas);
-      console.error('Canvas dimensions:', {
-        clientWidth: this.canvas.clientWidth,
-        clientHeight: this.canvas.clientHeight,
-        width: this.canvas.width,
-        height: this.canvas.height,
-      });
-      throw new Error('WebGL: unable to initialize - context is null. Check canvas element visibility and size.');
+      throw new Error('WebGL: unable to initialize');
     }
     if (!ctx) {
-      console.error('HUD context creation failed. Canvas element:', this.hudCanvas);
-      throw new Error('Canvas: unable to initialize HUD - 2D context is null.');
+      throw new Error('Canvas: unable to initialize HUD');
     }
     if (!gp) {
-      console.error('Gamepad context creation failed. Canvas element:', this.gamepadCanvas);
-      throw new Error('Gamepad: unable to initialize Mobile Canvas - 2D context is null.');
+      throw new Error('Gamepad: unable to initialize Mobile Canvas');
     }
 
     // Make HUD same size as canvas
@@ -245,21 +211,6 @@ export default class GLEngine {
       if (spritz.manifest.network.authority) {
         this.networkManager.setAuthority(spritz.manifest.network.authority);
       }
-    }
-
-    // Initialize StateManager for save/load functionality
-    await this.stateManager.init({
-      gameId: spritz.manifest?.id || spritz.manifest?.title || 'unknown',
-      gameVersion: spritz.manifest?.version || '1.0.0',
-      autosaveInterval: spritz.manifest?.saveConfig?.autosaveInterval 
-        ? spritz.manifest.saveConfig.autosaveInterval * 1000 
-        : 5 * 60 * 1000,
-      maxCheckpoints: 5
-    });
-
-    // Start autosave if enabled
-    if (spritz.manifest?.saveConfig?.autosave !== false) {
-      this.stateManager.startAutosave();
     }
 
     // Initialize Spritz game
@@ -359,19 +310,12 @@ export default class GLEngine {
   }
 
   /**
-   * Stops the main render loop and cleans up singletons.
+   * Stops the main render loop.
    */
   close() {
     if (this.requestId) {
       cancelAnimationFrame(this.requestId);
       this.requestId = null;
-    }
-    // Clear singletons to allow proper re-initialization on remount
-    if (GamePad._instance === this.gamepad) {
-      GamePad._instance = null;
-    }
-    if (ResourceManager._instance === this.resourceManager) {
-      ResourceManager._instance = null;
     }
   }
 

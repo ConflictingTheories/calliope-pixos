@@ -19,6 +19,7 @@ import { Texture, ColorTexture } from './texture.js';
 import Speech from '../scene/speech.js';
 
 // Absolute imports
+import { OBJ } from '../../utils/obj/index.js';
 import ObjHelper from '../../utils/ObjHelper.js';
 import GLEngine from '../index.js';
 
@@ -36,6 +37,8 @@ export default class ResourceManager {
       /** @type {GLEngine} */
       this.engine = engine;
 
+      /** @type {OBJ} */
+      this.objLoader = OBJ;
       /** @type {ObjHelper} */
       this.objHelper = new ObjHelper(engine.gl);
       /** @type {AudioLoader} */

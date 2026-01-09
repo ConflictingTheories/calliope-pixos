@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import glEngine from '@Engine/core/index.js';
@@ -24,7 +24,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   const gamepadRef = useRef();
   const fileRef = useRef();
   const mmRef = useRef();
-  const engineInitialized = useRef(false);
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   const onKeyEvent = (e) => {
@@ -101,24 +100,17 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
 
   // Resize
   const [screenSize, getDimension] = useState({
-    dynamicWidth: Math.max(window.innerWidth || 480, 480),
-    dynamicHeight: Math.max(window.innerHeight || 640, 640),
+    dynamicWidth: window.innerWidth,
+    dynamicHeight: window.innerHeight,
   });
 
   // window dimensions
   const setDimension = () => {
     getDimension({
-      dynamicWidth: Math.max(window.innerWidth || 480, 480),
-      dynamicHeight: Math.max(window.innerHeight || 640, 640),
+      dynamicWidth: window.innerWidth,
+      dynamicHeight: window.innerHeight,
     });
   };
-
-  // Calculate canvas dimensions early (needed before useEffect initializes engine)
-  const wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
-  const canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
-  const canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
-  const showGamepad = screenSize.dynamicWidth <= 900;
-  const gamepadHeight = 200;
 
   // load fonts
   async function loadFonts() {
@@ -157,10 +149,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     );
   }
 
-  useLayoutEffect(() => {
-    // This runs AFTER the DOM is rendered but BEFORE browser paint
-    // Ensures canvas elements are in the DOM with proper dimensions
-    
+  useEffect(async () => {
     // handle resize
     window.addEventListener('resize', setDimension);
 
@@ -171,71 +160,34 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     const gamepad = gamepadRef.current;
     const fileUpload = fileRef.current;
 
-    // Validate canvas elements exist AND have valid dimensions
-    if (!canvas || !hud || !mipmap || !gamepad) {
-      console.error('Canvas initialization failed: One or more canvas refs are null');
-      return;
-    }
+    // Webgl Engine
+    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
 
-    // Critical: Check that canvas has actual dimensions before proceeding
-    // This ensures the canvas is properly rendered in the DOM
-    if (canvas.width <= 0 || canvas.height <= 0 || canvas.clientWidth <= 0 || canvas.clientHeight <= 0) {
-      console.warn('Canvas not yet rendered with valid dimensions, deferring initialization');
-      return;
-    }
+    // load fonts
+    await loadFonts();
+
+    // Initialize Spritz
+    await engine.init(SpritzProvider);
 
     // Create ResizeObserver for proper canvas resize handling
     let resizeObserver = null;
-
-    // Async initialization - defer engine creation until right before init to avoid race condition
-    const initEngine = async () => {
-      if (engineInitialized.current) return;
-
-      engineInitialized.current = true;
-
-      // CRITICAL: Re-validate canvas state immediately before creating engine
-      // Canvas may have become hidden/resized between useLayoutEffect and now
-      const canvasStyle = window.getComputedStyle(canvas);
-      if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden' || canvasStyle.opacity === '0') {
-        throw new Error('Canvas became hidden between initialization check and async init');
-      }
-      if (canvas.clientWidth <= 0 || canvas.clientHeight <= 0) {
-        throw new Error('Canvas dimensions became invalid between initialization check and async init');
-      }
-
-      // Create engine NOW (at init time, not in useLayoutEffect)
-      // This ensures canvas state is validated immediately before use
-      engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
-
-      // load fonts
-      await loadFonts();
-
-      // Initialize Spritz
-      await engine.init(SpritzProvider);
-
-      // Setup ResizeObserver after init
-      if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver((entries) => {
-          for (const entry of entries) {
-            if (entry.target === canvas || entry.target === hud) {
-              // Notify engine of resize
-              if (engine && engine.handleResize) {
-                engine.handleResize();
-              }
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.target === canvas || entry.target === hud) {
+            // Notify engine of resize
+            if (engine && engine.handleResize) {
+              engine.handleResize();
             }
           }
-        });
-        resizeObserver.observe(canvas);
-        resizeObserver.observe(hud);
-      }
+        }
+      });
+      resizeObserver.observe(canvas);
+      resizeObserver.observe(hud);
+    }
 
-      // render loop
-      engine.render();
-    };
-
-    initEngine().catch((err) => {
-      console.error('Engine initialization failed:', err);
-    });
+    // render loop
+    engine.render();
 
     // cleanup
     return () => {
@@ -246,11 +198,15 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       if (resizeObserver) {
         resizeObserver.disconnect();
       }
-      if (engine) {
-        engine.close();
-      }
+      engine.close();
     };
   }, [SpritzProvider]);
+
+  let wrapperHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? 1080 : screenSize.dynamicHeight;
+  let canvasHeight = (screenSize.dynamicWidth * 3) / 4 > 1080 ? wrapperHeight : wrapperHeight - 200;
+  let canvasWidth = screenSize.dynamicWidth > 1920 ? 1920 : screenSize.dynamicWidth;
+  let showGamepad = screenSize.dynamicWidth <= 900;
+  let gamepadHeight = 200;
 
   return (
     <div style={{ marginLeft: 'auto', marginRight: 'auto' }}>

@@ -42,7 +42,7 @@ export class ObjectLoader {
       name: instance.id,
     };
 
-    let models = await this.engine.resourceManager.objHelper.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
+    let models = await this.engine.resourceManager.objLoader.downloadModelsFromZip(this.engine.gl, [modelreq], zip);
 
     instance.mesh = models[model.type];
     instance.templateLoaded = true;

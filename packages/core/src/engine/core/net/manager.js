@@ -11,8 +11,6 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { ActionLoader } from '@Engine/utils/loaders/ActionLoader.js';
-
 /**
  * NetworkManager - Handles WebSocket connections for multiplayer functionality.
  * Manages client-server communication, zone joining, player synchronization, and action broadcasting.
@@ -413,7 +411,7 @@ export default class NetworkManager {
       }
       // Fallback: use ActionLoader to construct action if factory missing
       if (!Action) {
-        if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = ActionLoader;
+        if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = require('@Engine/utils/loaders/ActionLoader.js').ActionLoader;
         const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => { });
         // loader.load returns an instance of Action (synchronously in our loader implementation)
         const instance = loader;
