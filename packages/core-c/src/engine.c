@@ -16,6 +16,8 @@
 #include "resource/resource_manager.h"
 #include "scene/world.h"
 #include "rendering/gles_compat.h"
+#include "hud/hud_manager.h"
+#include "cutscene/cutscene_manager.h"
 
 #ifdef ENABLE_AUDIO
 #include "audio/audio_manager.h"
@@ -139,6 +141,44 @@ int init_engine(GLEngine* engine, int width, int height) {
     }
 #endif
 
+    // Initialize HUD manager
+    engine->hud = (HudManager*)malloc(sizeof(HudManager));
+    if (engine->hud) {
+        if (hud_manager_init(engine->hud, engine) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize HUD manager\n");
+            free(engine->hud);
+            engine->hud = NULL;
+        } else {
+            // Try to load a default font
+            const char* font_paths[] = {
+                "./assets/fonts/minecraftia.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/System/Library/Fonts/Helvetica.ttc",
+                NULL
+            };
+            bool font_loaded = false;
+            for (int i = 0; font_paths[i] && !font_loaded; i++) {
+                if (hud_manager_load_font(engine->hud, &engine->hud->primary_font, 
+                                          font_paths[i], 24.0f) == 0) {
+                    font_loaded = true;
+                }
+            }
+            if (!font_loaded) {
+                fprintf(stderr, "Warning: Could not load any fonts\n");
+            }
+        }
+    }
+
+    // Initialize cutscene manager
+    engine->cutscene = (CutsceneManager*)malloc(sizeof(CutsceneManager));
+    if (engine->cutscene) {
+        if (cutscene_manager_init(engine->cutscene, engine) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize cutscene manager\n");
+            free(engine->cutscene);
+            engine->cutscene = NULL;
+        }
+    }
+
     // Initialize timing
     engine->time = platform_get_time(engine->platform);
     engine->last_frame_time = engine->time;
@@ -237,6 +277,11 @@ void update_engine(GLEngine* engine) {
     if (engine->world) {
         world_update(engine->world, engine->time);
     }
+
+    // Update cutscenes
+    if (engine->cutscene) {
+        cutscene_manager_update(engine->cutscene, engine->delta_time);
+    }
 }
 
 void render_engine(GLEngine* engine) {
@@ -257,6 +302,12 @@ void render_engine(GLEngine* engine) {
     // Render world (tiles, sprites, objects)
     if (engine->world) {
         world_render(engine->world, engine->render_manager);
+    }
+    
+    // Render HUD overlay (on top of 3D scene)
+    if (engine->hud) {
+        hud_manager_update(engine->hud, engine->delta_time);
+        hud_manager_render(engine->hud);
     }
     
     // Debug output every 60 frames
@@ -298,6 +349,20 @@ void engine_get_screen_size(GLEngine* engine, int* width, int* height) {
 
 void close_engine(GLEngine* engine) {
     printf("Closing Pixos Engine...\n");
+
+    // Destroy cutscene manager
+    if (engine->cutscene) {
+        cutscene_manager_destroy(engine->cutscene);
+        free(engine->cutscene);
+        engine->cutscene = NULL;
+    }
+
+    // Destroy HUD manager
+    if (engine->hud) {
+        hud_manager_destroy(engine->hud);
+        free(engine->hud);
+        engine->hud = NULL;
+    }
 
 #ifdef ENABLE_LUA
     if (engine->lua) {

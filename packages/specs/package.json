@@ -11,12 +11,20 @@
     "./constants/*": "./constants/*.json",
     "./shaders/*": "./shaders/*"
   },
+  "bin": {
+    "generate-c-headers": "./generate-c-headers.cjs"
+  },
+  "scripts": {
+    "generate": "node generate-c-headers.cjs",
+    "generate:core-c": "node generate-c-headers.cjs --output-dir ../core-c/src/generated"
+  },
   "files": [
     "index.js",
     "math/",
     "formats/",
     "constants/",
-    "shaders/"
+    "shaders/",
+    "generate-c-headers.cjs"
   ],
   "keywords": [
     "pixospritz",

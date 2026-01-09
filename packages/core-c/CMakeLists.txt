@@ -135,6 +135,9 @@ include_directories(
     ${GRAPHICS_INCLUDE_DIRS}
     src
     src/audio
+    src/cutscene
+    src/generated
+    src/hud
     src/input
     src/math
     src/platform
@@ -156,6 +159,8 @@ set(CORE_SOURCES
     src/render_manager.c
     src/input_manager.c
     src/camera.c
+    src/cutscene/cutscene_manager.c
+    src/hud/hud_manager.c
     src/input/input_actions.c
     src/math/vector.c
     src/math/matrix4.c
@@ -164,11 +169,13 @@ set(CORE_SOURCES
     src/resource/texture.c
     src/resource/resource_manager.c
     src/resource/json_loader.c
+    src/resource/archive_loader.c
     src/scene/tileset.c
     src/scene/sprite.c
     src/scene/zone.c
     src/scene/world.c
     src/vendor/cJSON.c
+    src/vendor/miniz.c
 )
 
 # Audio sources (miniaudio)

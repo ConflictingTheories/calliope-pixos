@@ -69,8 +69,16 @@ void shader_set_mat4(Shader* shader, const char* name, float* value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, value);
 }
 
+void shader_set_vec2(Shader* shader, const char* name, float x, float y) {
+    glUniform2f(glGetUniformLocation(shader->program_id, name), x, y);
+}
+
 void shader_set_vec3(Shader* shader, const char* name, float x, float y, float z) {
     glUniform3f(glGetUniformLocation(shader->program_id, name), x, y, z);
+}
+
+void shader_set_vec4(Shader* shader, const char* name, float x, float y, float z, float w) {
+    glUniform4f(glGetUniformLocation(shader->program_id, name), x, y, z, w);
 }
 
 void shader_set_float(Shader* shader, const char* name, float value) {

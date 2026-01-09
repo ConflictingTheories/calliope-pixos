@@ -109,9 +109,9 @@ export default class ModelObject extends Loadable {
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
 
-    // mesh buffers
+    // mesh buffers - using modern ObjHelper
     this.mesh = mesh;
-    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    this.engine.resourceManager.objHelper.initLegacyBuffers(this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {
@@ -196,9 +196,9 @@ export default class ModelObject extends Loadable {
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
 
-    // mesh buffers
+    // mesh buffers - using modern ObjHelper
     this.mesh = mesh;
-    this.engine.resourceManager.objLoader.initMeshBuffers(this.engine.gl, this.mesh);
+    this.engine.resourceManager.objHelper.initLegacyBuffers(this.mesh);
 
     // Speech bubble
     if (this.enableSpeech) {

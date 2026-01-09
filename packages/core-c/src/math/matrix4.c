@@ -127,3 +127,38 @@ mat4 mat4_multiply(mat4 a, mat4 b) {
 void mat4_set(mat4* dest, mat4 src) {
     memcpy(dest->m, src.m, sizeof(float) * 16);
 }
+
+mat4 mat4_ortho(float left, float right, float bottom, float top, float near, float far) {
+    mat4 out = mat4_identity();
+    
+    float lr = 1.0f / (left - right);
+    float bt = 1.0f / (bottom - top);
+    float nf = 1.0f / (near - far);
+    
+    out.m[0] = -2.0f * lr;
+    out.m[5] = -2.0f * bt;
+    out.m[10] = 2.0f * nf;
+    out.m[12] = (left + right) * lr;
+    out.m[13] = (top + bottom) * bt;
+    out.m[14] = (far + near) * nf;
+    out.m[15] = 1.0f;
+    
+    return out;
+}
+
+mat4 mat4_scale(mat4 m, vec3 v) {
+    mat4 out = m;
+    out.m[0] *= v.x;
+    out.m[1] *= v.x;
+    out.m[2] *= v.x;
+    out.m[3] *= v.x;
+    out.m[4] *= v.y;
+    out.m[5] *= v.y;
+    out.m[6] *= v.y;
+    out.m[7] *= v.y;
+    out.m[8] *= v.z;
+    out.m[9] *= v.z;
+    out.m[10] *= v.z;
+    out.m[11] *= v.z;
+    return out;
+}

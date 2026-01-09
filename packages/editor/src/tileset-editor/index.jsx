@@ -16,10 +16,9 @@
  * object will be emitted via the optional onSave callback.
  */
 
-// TODO - FIX NEEDED - NOT RENDERING CORRECTLY INTO THE CANVASES
 // DEPRECATED: This entire component will be removed. Use Map Editor + Geometry Editor instead.
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { debug } from '../shared/debug-logger.js';
 import TilesetAtlasEditor from './tileset-atlas.jsx';
 import { collect } from 'react-recollect';
@@ -66,6 +65,8 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const glC = useRef();
   const thC = useRef();
   const hud = useRef();
+  const statL = useRef();
+  const statR = useRef();
   const tilePick = useRef();
   const layerPick = useRef();
   const texPick = useRef();
@@ -99,6 +100,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   const [gl, setGl] = useState(null),
     [uvx, setUvx] = useState(null),
     [ctx, setCtx] = useState(null);
+
+  // Ref to track if component is mounted for animation loop cleanup
+  const isMountedRef = useRef(true);
+  const animFrameRef = useRef(null);
 
   let [lx, setLx] = useState(0.7),
     [ly, setLy] = useState(0.7),
@@ -319,28 +324,43 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   }
 
 
+  // Resize handler - uses refs to avoid stale closures
+  const resizeRef = useRef({ W: 1, H: 1, aspect: 1 });
+  
   function resize() {
-    const r = glC.current?.getBoundingClientRect();
+    if (!glC.current || !gl) return;
+    const r = glC.current.getBoundingClientRect();
     if (r) {
-      setW(Math.max(1, Math.floor(r.width * dpr)));
-      setH(Math.max(1, Math.floor(r.height * dpr)));
-      setAspect(W / H);
-      if (glC.current.width !== W || glC.current.height !== H) {
-        glC.current.width = W;
-        glC.current.height = H;
+      const newW = Math.max(1, Math.floor(r.width * dpr));
+      const newH = Math.max(1, Math.floor(r.height * dpr));
+      const newAspect = newW / newH;
+      
+      resizeRef.current = { W: newW, H: newH, aspect: newAspect };
+      setW(newW);
+      setH(newH);
+      setAspect(newAspect);
+      
+      if (glC.current.width !== newW || glC.current.height !== newH) {
+        glC.current.width = newW;
+        glC.current.height = newH;
       }
-      gl.viewport(0, 0, W, H);
-    };
+      gl.viewport(0, 0, newW, newH);
+    }
   }
 
 
-  // Render Loop
+  // Render Loop - properly handles mounting state and cleanup
   function animationFrame() {
+    if (!isMountedRef.current || !gl || !prog) return;
+    
     resize();
+
+    // Use refs for current dimensions to avoid stale state
+    const { W: currentW, H: currentH } = resizeRef.current;
 
     // clear screen
     const bg = bgColor.map(v => v / 255);
-    gl.viewport(0, 0, W, H);
+    gl.viewport(0, 0, currentW, currentH);
     gl.clearColor(bg[0] * 0.25, bg[1] * 0.25, bg[2] * 0.25, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const v = view(), p = proj();
@@ -355,10 +375,12 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     // thumbnail
     drawThumb();
 
-    // update
-    hud.textContent = `${glC.current?.width}×${glC.current?.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+    // update HUD status display
+    if (hud.current) {
+      hud.current.textContent = `${glC.current?.width}×${glC.current?.height} · ${layers.length} layer(s) · err ${gl.getError()}`;
+    }
 
-    requestAnimationFrame(animationFrame);
+    animFrameRef.current = requestAnimationFrame(animationFrame);
   }
 
   // Push a snapshot of the current tileset into history
@@ -407,9 +429,10 @@ function TilesetEditor({ content, onSave, assets = [] }) {
   };
 
   /* ===== Helpers ===== */
-  const setStatusL = s => statL.textContent = s;
-  const setStatusR = s => statR.textContent = s;
+  const setStatusL = s => { if (statL.current) statL.current.textContent = s; };
+  const setStatusR = s => { if (statR.current) statR.current.textContent = s; };
   function fillSelect(sel, pairs) {
+    if (!sel) return;
     sel.innerHTML = '';
     for (const [v, t] of pairs) {
       const o = document.createElement('option');
@@ -633,62 +656,95 @@ function TilesetEditor({ content, onSave, assets = [] }) {
     }
   }, [uvC]);
 
-  // Parse incoming JSON into state
+  // Track mount state for animation loop cleanup
   useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
+  // WebGL context initialization - runs once on mount
+  useEffect(() => {
+    if (!glC.current || !uvC.current) return;
+    
     if (!gl) {
       const glContext = glC.current.getContext('webgl2');
       const uvContext = uvC.current.getContext('2d');
 
       if (!glContext) {
-        throw new Error('WebGL : unable to initialize Preview');
+        console.error('WebGL : unable to initialize Preview');
+        setError('WebGL2 not supported');
+        return;
       }
       if (!uvContext) {
-        throw new Error('Canvas : unable to initialize UV');
+        console.error('Canvas : unable to initialize UV');
+        setError('2D Canvas not supported');
+        return;
       }
 
       setGl(glContext);
       setUvx(uvContext);
-
       debug('TilesetEditor', { glContext, uvContext });
     }
+  }, [glC, uvC, gl]);
 
-    if (gl) {
-      gl.enable(gl.DEPTH_TEST);
-      gl.disable(gl.CULL_FACE);
-      setOES(gl.getExtension('OES_element_index_uint'));
+  // Shader program initialization - runs after GL context is ready
+  useEffect(() => {
+    if (!gl) return;
+    
+    gl.enable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    setOES(gl.getExtension('OES_element_index_uint'));
 
-      if (!prog) {
-        let bufferObj = gl.createBuffer();
-        setProg(program(VS, FS));
-        setGridVBO(bufferObj);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferObj);
-        gl.bufferData(gl.ARRAY_BUFFER, gridVerts, gl.STATIC_DRAW);
-      } else {
-        animationFrame();
-      }
+    if (!prog) {
+      const bufferObj = gl.createBuffer();
+      setProg(program(VS, FS));
+      setGridVBO(bufferObj);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bufferObj);
+      gl.bufferData(gl.ARRAY_BUFFER, gridVerts, gl.STATIC_DRAW);
     }
-    // todo -- needs to load in 3 files (tileset, tiles, and geometry, and it should autoload atlas from tileset)
-    if (content) {
-      try {
-        const obj = JSON.parse(content);
-        setTileset(obj);
-        setTileset(obj);
-        setGeom(obj.geometry || {});
-        setTiles(obj.tiles || []);
-        ingestTileset();
-        rebuildTilePicker();
-        setError(null);
+  }, [gl, prog]);
 
-        // TODO -- FIX THIS - Initialize history with parsed tileset
-        // const initialSnapshot = JSON.parse(JSON.stringify({ tiles: [...tiles], geometry: [...geometry] }));
-        // setHistory([initialSnapshot]);
-        // setHistoryIndex(0);
-      } catch (err) {
-        console.warn('Failed to parse tileset JSON', err);
-        setError('Invalid tileset JSON');
+  // Start animation loop after program is ready
+  useEffect(() => {
+    if (!gl || !prog) return;
+    
+    // Start the render loop
+    animFrameRef.current = requestAnimationFrame(animationFrame);
+    
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
       }
+    };
+  }, [gl, prog]);
+
+  // Parse incoming JSON into state - separate from initialization
+  useEffect(() => {
+    if (!content) return;
+    
+    try {
+      const obj = JSON.parse(content);
+      setTileset(obj);
+      setGeom(obj.geometry || {});
+      setTiles(obj.tiles || []);
+      ingestTileset();
+      rebuildTilePicker();
+      setError(null);
+
+      // Initialize history with parsed tileset
+      const initialSnapshot = JSON.parse(JSON.stringify(obj));
+      setHistory([initialSnapshot]);
+      setHistoryIndex(0);
+    } catch (err) {
+      console.warn('Failed to parse tileset JSON', err);
+      setError('Invalid tileset JSON');
     }
-  }, [content, glC, uvC, thC, gl, uvx, ctx, prog]);
+  }, [content]);
 
 
   useEffect(() => {
@@ -980,7 +1036,7 @@ function TilesetEditor({ content, onSave, assets = [] }) {
                 </div>
               </aside>
 
-              <div id="status"><span id="statL">ready</span><span id="statR" className={'mono'}>—</span></div>
+              <div id="status"><span ref={statL}>ready</span><span ref={statR} className={'mono'}>—</span></div>
             </div>
           </Panel>
         </Col>

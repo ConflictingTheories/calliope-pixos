@@ -28,4 +28,10 @@ mat4 mat4_multiply(mat4 a, mat4 b);
 // Copies a matrix
 void mat4_set(mat4* dest, mat4 src);
 
+// Creates an orthographic projection matrix
+mat4 mat4_ortho(float left, float right, float bottom, float top, float near, float far);
+
+// Scales a matrix by a vector
+mat4 mat4_scale(mat4 m, vec3 v);
+
 #endif // MATRIX4_H
