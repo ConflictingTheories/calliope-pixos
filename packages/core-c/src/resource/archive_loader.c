@@ -13,6 +13,7 @@
 
 #include "archive_loader.h"
 #include "../engine.h"
+#include "../hud/hud_manager.h"
 #include "../vendor/cJSON.h"
 
 #include <stdio.h>
@@ -166,15 +167,9 @@ void archive_close(ArchiveHandle* archive) {
     if (archive->zip_archive) {
         mz_zip_archive* zip = (mz_zip_archive*)archive->zip_archive;
         
-        // Get the memory buffer to free it
-        void* mem = mz_zip_get_heap_archive_buf(zip);
-        
+        // miniz manages the memory buffer internally, just end the reader
         mz_zip_reader_end(zip);
         free(zip);
-        
-        if (mem) {
-            free(mem);
-        }
         
         archive->zip_archive = NULL;
     }

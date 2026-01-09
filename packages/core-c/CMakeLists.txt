@@ -176,6 +176,9 @@ set(CORE_SOURCES
     src/scene/world.c
     src/vendor/cJSON.c
     src/vendor/miniz.c
+    src/vendor/miniz_tdef.c
+    src/vendor/miniz_tinfl.c
+    src/vendor/miniz_zip.c
 )
 
 # Audio sources (miniaudio)

@@ -20,6 +20,8 @@
 struct GLEngine;
 struct HudManager;
 
+typedef struct CutsceneManager CutsceneManager;
+
 // Maximum values
 #define CUTSCENE_MAX_STEPS 64
 #define CUTSCENE_MAX_SCENES 32
@@ -166,7 +168,7 @@ typedef struct {
 // Cutscene Manager
 // ============================================
 
-typedef struct CutsceneManager {
+struct CutsceneManager {
     struct GLEngine* engine;
     
     // Registered cutscenes
@@ -201,7 +203,7 @@ typedef struct CutsceneManager {
     bool dialogue_active;
     
     bool initialized;
-} CutsceneManager;
+};
 
 // ============================================
 // Cutscene Manager Functions
@@ -256,7 +258,7 @@ bool cutscene_is_running(CutsceneManager* cm);
  * @param cm Cutscene manager
  * @param delta_time Time since last frame in seconds
  */
-void cutscene_update(CutsceneManager* cm, double delta_time);
+void cutscene_manager_update(CutsceneManager* cm, double delta_time);
 
 /**
  * Render cutscene elements (backdrop, cutouts, transitions)

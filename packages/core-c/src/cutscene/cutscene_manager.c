@@ -11,19 +11,20 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-#include "cutscene_manager.h"
+#include "../platform/platform.h"
 #include "../engine.h"
 #include "../hud/hud_manager.h"
 #include "../platform/platform.h"
 #include "../vendor/cJSON.h"
+#include "cutscene_manager.h"
 
 #ifdef ENABLE_AUDIO
 #include "../audio/audio_manager.h"
 #endif
 
-#ifdef ENABLE_LUA
-#include "../scripting/lua_manager.h"
-#endif
+// #ifdef ENABLE_LUA
+// #include "../scripting/lua_manager.h"
+// #endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@
 // Cutscene Manager Implementation
 // ============================================
 
-int cutscene_manager_init(CutsceneManager* cm, struct GLEngine* engine) {
+int cutscene_manager_init(struct CutsceneManager* cm, struct GLEngine* engine) {
     if (!cm || !engine) return -1;
     
     memset(cm, 0, sizeof(CutsceneManager));
@@ -45,7 +46,7 @@ int cutscene_manager_init(CutsceneManager* cm, struct GLEngine* engine) {
     return 0;
 }
 
-void cutscene_manager_destroy(CutsceneManager* cm) {
+void cutscene_manager_destroy(struct CutsceneManager* cm) {
     if (!cm || !cm->initialized) return;
     
     // Clean up textures
@@ -65,7 +66,7 @@ void cutscene_manager_destroy(CutsceneManager* cm) {
     printf("Cutscene Manager destroyed\n");
 }
 
-int cutscene_register(CutsceneManager* cm, const char* name, 
+int cutscene_register(struct CutsceneManager* cm, const char* name, 
                       CutsceneStep* steps, int step_count) {
     if (!cm || !name || !steps || step_count <= 0) return -1;
     if (cm->scene_count >= CUTSCENE_MAX_SCENES) {
@@ -99,7 +100,7 @@ int cutscene_register(CutsceneManager* cm, const char* name,
     return 0;
 }
 
-bool cutscene_is_registered(CutsceneManager* cm, const char* name) {
+bool cutscene_is_registered(struct CutsceneManager* cm, const char* name) {
     if (!cm || !name) return false;
     
     for (int i = 0; i < cm->scene_count; i++) {
@@ -110,7 +111,7 @@ bool cutscene_is_registered(CutsceneManager* cm, const char* name) {
     return false;
 }
 
-int cutscene_start(CutsceneManager* cm, const char* name) {
+int cutscene_start(struct CutsceneManager* cm, const char* name) {
     if (!cm || !name) return -1;
     
     // Find the cutscene
@@ -144,7 +145,7 @@ int cutscene_start(CutsceneManager* cm, const char* name) {
     return 0;
 }
 
-void cutscene_skip(CutsceneManager* cm) {
+void cutscene_skip(struct CutsceneManager* cm) {
     if (!cm) return;
     
     cm->active = false;
@@ -159,7 +160,7 @@ void cutscene_skip(CutsceneManager* cm) {
     printf("Cutscene skipped\n");
 }
 
-bool cutscene_is_running(CutsceneManager* cm) {
+bool cutscene_is_running(struct CutsceneManager* cm) {
     return cm && cm->active;
 }
 
@@ -167,7 +168,7 @@ bool cutscene_is_running(CutsceneManager* cm) {
 // Step Execution
 // ============================================
 
-static void execute_step(CutsceneManager* cm, CutsceneStep* step) {
+static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
     switch (step->type) {
         case CUTSCENE_STEP_WAIT:
             cm->step_duration = step->params.wait.wait_ms / 1000.0;
@@ -248,9 +249,9 @@ static void execute_step(CutsceneManager* cm, CutsceneStep* step) {
 #ifdef ENABLE_AUDIO
             if (cm->engine->audio) {
                 audio_manager_play_bgm(cm->engine->audio,
-                                       step->params.audio.sound_path,
-                                       step->params.audio.volume,
-                                       step->params.audio.loop);
+                                        step->params.audio.sound_path,
+                                        step->params.audio.loop,
+                                        step->params.audio.volume);
             }
 #endif
             cm->waiting_for_step = false;
@@ -266,8 +267,8 @@ static void execute_step(CutsceneManager* cm, CutsceneStep* step) {
         case CUTSCENE_STEP_ACTION:
 #ifdef ENABLE_LUA
             if (cm->engine->lua) {
-                lua_manager_call_callback(cm->engine->lua, 
-                                          step->params.action.callback_name);
+                // lua_manager_call_function(cm->engine->lua, 
+                //                           step->params.action.callback_name, NULL);
             }
 #endif
             cm->waiting_for_step = false;
@@ -287,7 +288,7 @@ static void execute_step(CutsceneManager* cm, CutsceneStep* step) {
     }
 }
 
-static bool check_step_complete(CutsceneManager* cm, CutsceneStep* step) {
+static bool check_step_complete(struct CutsceneManager* cm, CutsceneStep* step) {
     double elapsed = cm->engine->time - cm->step_start_time;
     
     switch (step->type) {
@@ -301,7 +302,7 @@ static bool check_step_complete(CutsceneManager* cm, CutsceneStep* step) {
                 if (hud_is_dialogue_complete(cm->engine->hud)) {
                     // Check for confirm input
                     InputManager* im = cm->engine->input_manager;
-                    if (im && input_manager_is_action_pressed(im, ACTION_CONFIRM)) {
+                    if (im && input_manager_is_action_pressed(im, ACTION_INTERACT)) {
                         hud_close_dialogue(cm->engine->hud);
                         cm->dialogue_active = false;
                         return true;
@@ -313,7 +314,7 @@ static bool check_step_complete(CutsceneManager* cm, CutsceneStep* step) {
         case CUTSCENE_STEP_WAIT_INPUT:
             // Check for any confirm input
             if (cm->engine->input_manager) {
-                return input_manager_is_action_pressed(cm->engine->input_manager, ACTION_CONFIRM);
+                return input_manager_is_action_pressed(cm->engine->input_manager, ACTION_INTERACT);
             }
             return false;
             
@@ -322,7 +323,7 @@ static bool check_step_complete(CutsceneManager* cm, CutsceneStep* step) {
     }
 }
 
-void cutscene_update(CutsceneManager* cm, double delta_time) {
+void cutscene_manager_update(struct CutsceneManager* cm, double delta_time) {
     if (!cm || !cm->active) return;
     
     CutsceneDefinition* scene = &cm->scenes[cm->current_scene_index];
@@ -366,7 +367,7 @@ void cutscene_update(CutsceneManager* cm, double delta_time) {
     }
 }
 
-void cutscene_render(CutsceneManager* cm) {
+void cutscene_render(struct CutsceneManager* cm) {
     if (!cm || !cm->engine->hud) return;
     
     HudManager* hud = cm->engine->hud;
@@ -580,8 +581,8 @@ static TransitionEffect parse_transition_effect(const char* effect_str) {
     return TRANSITION_FADE;
 }
 
-int cutscene_load_from_json_string(CutsceneManager* cm, const char* name, 
-                                    const char* json_string) {
+int cutscene_load_from_json_string(struct CutsceneManager* cm, const char* name, 
+                                   const char* json_string) {
     if (!cm || !name || !json_string) return -1;
     
     cJSON* json = cJSON_Parse(json_string);
@@ -720,7 +721,7 @@ int cutscene_load_from_json_string(CutsceneManager* cm, const char* name,
     return cutscene_register(cm, name, steps, step_count);
 }
 
-int cutscene_load_from_json(CutsceneManager* cm, const char* json_path) {
+int cutscene_load_from_json(struct CutsceneManager* cm, const char* json_path) {
     if (!cm || !json_path) return -1;
     
     // Read file
