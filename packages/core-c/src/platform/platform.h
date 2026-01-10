@@ -180,6 +180,25 @@ void platform_make_current(PlatformContext* ctx);
  */
 void platform_set_vsync(PlatformContext* ctx, bool enabled);
 
+/**
+ * Check if platform is in dumb buffer (software framebuffer) mode.
+ * In this mode, there's no OpenGL ES - only CPU rendering to a raw framebuffer.
+ * @param ctx Platform context
+ * @return true if in dumb buffer mode
+ */
+bool platform_is_dumb_mode(PlatformContext* ctx);
+
+/**
+ * Get the dumb buffer for CPU rendering.
+ * Only valid when platform_is_dumb_mode() returns true.
+ * @param ctx Platform context
+ * @param width Output: buffer width
+ * @param height Output: buffer height
+ * @param pitch Output: buffer pitch in bytes
+ * @return Pointer to ARGB8888 pixel buffer, or NULL if not in dumb mode
+ */
+uint32_t* platform_get_dumb_buffer(PlatformContext* ctx, int* width, int* height, int* pitch);
+
 #ifdef USE_GLFW
 /**
  * Get GLFW window handle (desktop platforms only).

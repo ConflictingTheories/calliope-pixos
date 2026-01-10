@@ -66,6 +66,13 @@ struct PlatformContext {
     EGLSurface egl_surface;
     EGLConfig egl_config;
     
+    /* DRM dumb buffer mode (software rendering, visible output) */
+    uint32_t dumb_handle;
+    uint32_t dumb_pitch;
+    uint32_t dumb_fb_id;
+    uint32_t* dumb_buffer;  /* mmap'd framebuffer */
+    size_t dumb_size;
+    
     /* Display info */
     int width;
     int height;
@@ -86,6 +93,8 @@ struct PlatformContext {
     
     /* Software rendering mode (for QEMU/testing) */
     bool software_mode;
+    /* Dumb buffer mode (DRM dumb buffer, visible but no GL) */
+    bool dumb_mode;
     /* Headless mode (no graphics at all, for testing) */
     bool headless_mode;
     int frame_count;
@@ -98,6 +107,7 @@ static int init_drm(PlatformContext* ctx);
 static int init_gbm(PlatformContext* ctx);
 static int init_egl(PlatformContext* ctx);
 static int init_software_egl(PlatformContext* ctx);
+static int init_dumb_buffer(PlatformContext* ctx);
 static void init_input_devices(PlatformContext* ctx);
 static void mount_filesystems(void);
 
@@ -413,6 +423,77 @@ static int init_software_egl(PlatformContext* ctx) {
     return 0;
 }
 
+/* Initialize DRM dumb buffer for software rendering with visible output */
+/* This works in QEMU without Mesa drivers */
+static int init_dumb_buffer(PlatformContext* ctx) {
+    /* DRM should already be initialized */
+    if (ctx->drm_fd < 0) {
+        fprintf(stderr, "[Platform] Dumb: No DRM device\n");
+        return -1;
+    }
+    
+    printf("[Platform] Creating DRM dumb buffer for software rendering...\n");
+    
+    /* Create dumb buffer */
+    struct drm_mode_create_dumb create = {0};
+    create.width = ctx->width;
+    create.height = ctx->height;
+    create.bpp = 32;
+    
+    if (drmIoctl(ctx->drm_fd, DRM_IOCTL_MODE_CREATE_DUMB, &create) < 0) {
+        fprintf(stderr, "[Platform] Dumb: drmIoctl CREATE_DUMB failed: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    ctx->dumb_handle = create.handle;
+    ctx->dumb_pitch = create.pitch;
+    ctx->dumb_size = create.size;
+    
+    printf("[Platform] Dumb buffer: %dx%d, pitch=%u, size=%zu\n",
+           ctx->width, ctx->height, ctx->dumb_pitch, ctx->dumb_size);
+    
+    /* Create framebuffer object */
+    if (drmModeAddFB(ctx->drm_fd, ctx->width, ctx->height, 24, 32,
+                     ctx->dumb_pitch, ctx->dumb_handle, &ctx->dumb_fb_id) < 0) {
+        fprintf(stderr, "[Platform] Dumb: drmModeAddFB failed: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    /* Map dumb buffer to userspace */
+    struct drm_mode_map_dumb map = {0};
+    map.handle = ctx->dumb_handle;
+    
+    if (drmIoctl(ctx->drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &map) < 0) {
+        fprintf(stderr, "[Platform] Dumb: drmIoctl MAP_DUMB failed: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    ctx->dumb_buffer = mmap(NULL, ctx->dumb_size, PROT_READ | PROT_WRITE,
+                            MAP_SHARED, ctx->drm_fd, map.offset);
+    
+    if (ctx->dumb_buffer == MAP_FAILED) {
+        fprintf(stderr, "[Platform] Dumb: mmap failed: %s\n", strerror(errno));
+        ctx->dumb_buffer = NULL;
+        return -1;
+    }
+    
+    /* Clear buffer to dark blue */
+    for (size_t i = 0; i < ctx->dumb_size / 4; i++) {
+        ctx->dumb_buffer[i] = 0xFF000033;  /* ARGB dark blue */
+    }
+    
+    /* Set the CRTC to display our dumb buffer */
+    if (drmModeSetCrtc(ctx->drm_fd, ctx->crtc_id, ctx->dumb_fb_id, 0, 0,
+                       &ctx->connector_id, 1, &ctx->drm_mode) < 0) {
+        fprintf(stderr, "[Platform] Dumb: drmModeSetCrtc failed: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    printf("[Platform] Dumb buffer mode active - visible software rendering\n");
+    
+    return 0;
+}
+
 /* Initialize input devices (evdev) */
 static void init_input_devices(PlatformContext* ctx) {
     ctx->input_fd_count = 0;
@@ -521,12 +602,14 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
     
     /* Try hardware rendering first (unless forced software) */
     bool hw_init_ok = false;
+    bool drm_available = false;
     
     if (!force_software) {
         printf("[Platform] Trying DRM/GBM/EGL hardware path...\n");
         
         printf("[Platform] Initializing DRM...\n");
         if (init_drm(ctx) >= 0) {
+            drm_available = true;
             printf("[Platform] Initializing GBM...\n");
             if (init_gbm(ctx) >= 0) {
                 printf("[Platform] Initializing EGL...\n");
@@ -536,32 +619,56 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
                 } else {
                     gbm_surface_destroy(ctx->gbm_surf);
                     gbm_device_destroy(ctx->gbm_dev);
-                    close(ctx->drm_fd);
-                    ctx->drm_fd = -1;
+                    ctx->gbm_surf = NULL;
+                    ctx->gbm_dev = NULL;
+                    /* Keep DRM open for dumb buffer fallback */
                 }
-            } else {
-                close(ctx->drm_fd);
-                ctx->drm_fd = -1;
             }
+            /* Keep DRM open for dumb buffer fallback */
         }
     }
     
-    /* Fall back to software rendering if hardware failed */
+    /* Fall back to DRM dumb buffer if GBM/EGL failed but DRM works */
+    if (!hw_init_ok && drm_available) {
+        printf("[Platform] GBM/EGL failed, trying DRM dumb buffer mode...\n");
+        printf("[Platform] (This provides visible output without Mesa/OpenGL)\n");
+        
+        if (init_dumb_buffer(ctx) >= 0) {
+            ctx->dumb_mode = true;
+            printf("[Platform] Dumb buffer mode active - visible software rendering\n");
+            /* Note: No EGL/GL available in this mode! */
+            
+            /* Initialize input devices */
+            init_input_devices(ctx);
+            
+            /* Record start time */
+            clock_gettime(CLOCK_MONOTONIC, &ctx->start_time);
+            
+            ctx->initialized = true;
+            ctx->should_close = false;
+            
+            printf("[Platform] ARM platform initialized (DUMB BUFFER MODE)\n");
+            printf("[Platform] Display: %dx%d\n", ctx->width, ctx->height);
+            printf("[Platform] WARNING: No OpenGL ES - only CPU rendering available!\n");
+            
+            return ctx;
+        } else {
+            /* Dumb buffer also failed, clean up DRM */
+            close(ctx->drm_fd);
+            ctx->drm_fd = -1;
+        }
+    }
+    
+    /* Fall back to headless software mode if everything else failed */
     if (!hw_init_ok) {
-        printf("[Platform] Hardware init failed, falling back to software rendering...\n");
-        printf("[Platform] (This is normal in QEMU - games will run but display is off-screen)\n");
+        printf("[Platform] All graphics init failed, falling back to headless mode...\n");
         
         ctx->software_mode = true;
+        ctx->headless_mode = true;
         ctx->width = (width > 0) ? width : 640;
         ctx->height = (height > 0) ? height : 480;
         
-        if (init_software_egl(ctx) < 0) {
-            fprintf(stderr, "[Platform] Software EGL initialization also failed!\n");
-            free(ctx);
-            return NULL;
-        }
-        
-        printf("[Platform] Software rendering mode active\n");
+        printf("[Platform] Headless mode active (no display output)\n");
     }
     
     /* Initialize input devices */
@@ -630,7 +737,34 @@ void platform_shutdown(PlatformContext* ctx) {
     }
     
     /* Headless mode - nothing else to clean up */
-    if (ctx->headless_mode) {
+    if (ctx->headless_mode && !ctx->dumb_mode) {
+        free(ctx);
+        return;
+    }
+    
+    /* Clean up dumb buffer mode */
+    if (ctx->dumb_mode) {
+        if (ctx->dumb_buffer && ctx->dumb_buffer != MAP_FAILED) {
+            munmap(ctx->dumb_buffer, ctx->dumb_size);
+        }
+        if (ctx->dumb_fb_id) {
+            drmModeRmFB(ctx->drm_fd, ctx->dumb_fb_id);
+        }
+        if (ctx->dumb_handle) {
+            struct drm_mode_destroy_dumb destroy = { .handle = ctx->dumb_handle };
+            drmIoctl(ctx->drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy);
+        }
+        /* Restore original CRTC */
+        if (ctx->saved_crtc) {
+            drmModeSetCrtc(ctx->drm_fd, ctx->saved_crtc->crtc_id,
+                           ctx->saved_crtc->buffer_id,
+                           ctx->saved_crtc->x, ctx->saved_crtc->y,
+                           &ctx->connector_id, 1, &ctx->saved_crtc->mode);
+            drmModeFreeCrtc(ctx->saved_crtc);
+        }
+        if (ctx->drm_fd >= 0) {
+            close(ctx->drm_fd);
+        }
         free(ctx);
         return;
     }
@@ -688,12 +822,26 @@ void platform_swap_buffers(PlatformContext* ctx) {
     if (!ctx || !ctx->initialized) return;
     
     /* Headless mode: no rendering, just simulate vsync */
-    if (ctx->headless_mode) {
+    if (ctx->headless_mode && !ctx->dumb_mode) {
         ctx->frame_count++;
         
         /* Print progress occasionally */
         if (ctx->frame_count % 60 == 0) {
             printf("[Platform] Headless mode: Frame %d (no display)\n", ctx->frame_count);
+        }
+        
+        /* Simulate vsync delay (~16ms for 60fps) */
+        usleep(16000);
+        return;
+    }
+    
+    /* Dumb buffer mode: framebuffer already visible, just wait for vsync */
+    if (ctx->dumb_mode) {
+        ctx->frame_count++;
+        
+        /* Print progress occasionally */
+        if (ctx->frame_count % 60 == 0) {
+            printf("[Platform] Dumb buffer mode: Frame %d (visible)\n", ctx->frame_count);
         }
         
         /* Simulate vsync delay (~16ms for 60fps) */
@@ -851,7 +999,22 @@ void platform_make_current(PlatformContext* ctx) {
 
 void platform_set_vsync(PlatformContext* ctx, bool enabled) {
     if (!ctx) return;
+    if (ctx->dumb_mode || ctx->headless_mode) return;  /* No EGL in these modes */
     eglSwapInterval(ctx->egl_display, enabled ? 1 : 0);
+}
+
+bool platform_is_dumb_mode(PlatformContext* ctx) {
+    return ctx && ctx->dumb_mode;
+}
+
+uint32_t* platform_get_dumb_buffer(PlatformContext* ctx, int* width, int* height, int* pitch) {
+    if (!ctx || !ctx->dumb_mode || !ctx->dumb_buffer) {
+        return NULL;
+    }
+    if (width) *width = ctx->width;
+    if (height) *height = ctx->height;
+    if (pitch) *pitch = (int)ctx->dumb_pitch;
+    return ctx->dumb_buffer;
 }
 
 #endif /* USE_EGL_GBM */
