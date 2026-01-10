@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
+#include <math.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
@@ -34,6 +35,7 @@
 #include <sys/select.h>
 #include <dirent.h>
 #include <linux/input.h>
+#include <linux/fb.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -73,6 +75,12 @@ struct PlatformContext {
     uint32_t* dumb_buffer;  /* mmap'd framebuffer */
     size_t dumb_size;
     
+    /* Linux framebuffer fallback (/dev/fb0) */
+    int fb_fd;
+    uint32_t* fb_buffer;
+    size_t fb_size;
+    int fb_pitch;
+    
     /* Display info */
     int width;
     int height;
@@ -108,6 +116,7 @@ static int init_gbm(PlatformContext* ctx);
 static int init_egl(PlatformContext* ctx);
 static int init_software_egl(PlatformContext* ctx);
 static int init_dumb_buffer(PlatformContext* ctx);
+static int init_linux_fb(PlatformContext* ctx);
 static void init_input_devices(PlatformContext* ctx);
 static void mount_filesystems(void);
 
@@ -494,6 +503,64 @@ static int init_dumb_buffer(PlatformContext* ctx) {
     return 0;
 }
 
+/* Initialize Linux framebuffer as fallback for QEMU */
+static int init_linux_fb(PlatformContext* ctx) {
+    printf("[Platform] Trying Linux framebuffer (/dev/fb0)...\n");
+    
+    ctx->fb_fd = open("/dev/fb0", O_RDWR);
+    if (ctx->fb_fd < 0) {
+        fprintf(stderr, "[Platform] Cannot open /dev/fb0: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    /* Get variable screen info */
+    struct fb_var_screeninfo vinfo;
+    if (ioctl(ctx->fb_fd, FBIOGET_VSCREENINFO, &vinfo) < 0) {
+        fprintf(stderr, "[Platform] FBIOGET_VSCREENINFO failed: %s\n", strerror(errno));
+        close(ctx->fb_fd);
+        ctx->fb_fd = -1;
+        return -1;
+    }
+    
+    printf("[Platform] FB: %dx%d, %d bpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+    
+    /* Get fixed screen info */
+    struct fb_fix_screeninfo finfo;
+    if (ioctl(ctx->fb_fd, FBIOGET_FSCREENINFO, &finfo) < 0) {
+        fprintf(stderr, "[Platform] FBIOGET_FSCREENINFO failed: %s\n", strerror(errno));
+        close(ctx->fb_fd);
+        ctx->fb_fd = -1;
+        return -1;
+    }
+    
+    printf("[Platform] FB: line_length=%d, smem_len=%d\n", finfo.line_length, finfo.smem_len);
+    
+    /* Store dimensions */
+    ctx->width = vinfo.xres;
+    ctx->height = vinfo.yres;
+    ctx->fb_size = finfo.smem_len;
+    
+    /* mmap the framebuffer */
+    ctx->fb_buffer = mmap(NULL, ctx->fb_size, PROT_READ | PROT_WRITE, MAP_SHARED, ctx->fb_fd, 0);
+    if (ctx->fb_buffer == MAP_FAILED) {
+        fprintf(stderr, "[Platform] FB mmap failed: %s\n", strerror(errno));
+        close(ctx->fb_fd);
+        ctx->fb_fd = -1;
+        ctx->fb_buffer = NULL;
+        return -1;
+    }
+    
+    /* Clear to dark blue as initial test */
+    size_t pixel_count = ctx->width * ctx->height;
+    for (size_t i = 0; i < pixel_count; i++) {
+        ctx->fb_buffer[i] = 0xFF000033;  /* ARGB dark blue */
+    }
+    
+    printf("[Platform] Linux framebuffer mode active at %dx%d\n", ctx->width, ctx->height);
+    
+    return 0;
+}
+
 /* Initialize input devices (evdev) */
 static void init_input_devices(PlatformContext* ctx) {
     ctx->input_fd_count = 0;
@@ -584,6 +651,8 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
     }
     
     ctx->drm_fd = -1;
+    ctx->fb_fd = -1;
+    ctx->fb_buffer = NULL;
     ctx->fullscreen = true;
     ctx->software_mode = false;
     ctx->frame_count = 0;
@@ -653,9 +722,37 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
             
             return ctx;
         } else {
-            /* Dumb buffer also failed, clean up DRM */
-            close(ctx->drm_fd);
-            ctx->drm_fd = -1;
+            /* Dumb buffer also failed, try Linux FB next */
+            printf("[Platform] Dumb buffer failed, trying Linux framebuffer...\n");
+        }
+    }
+    
+    /* Try Linux framebuffer if DRM/dumb buffer failed */
+    if (!hw_init_ok && !ctx->dumb_mode) {
+        if (init_linux_fb(ctx) >= 0) {
+            ctx->dumb_mode = true;  /* Reuse dumb_mode flag for software rendering */
+            printf("[Platform] Linux framebuffer mode active\n");
+            
+            /* Close DRM if it was open */
+            if (ctx->drm_fd >= 0) {
+                close(ctx->drm_fd);
+                ctx->drm_fd = -1;
+            }
+            
+            /* Initialize input devices */
+            init_input_devices(ctx);
+            
+            /* Record start time */
+            clock_gettime(CLOCK_MONOTONIC, &ctx->start_time);
+            
+            ctx->initialized = true;
+            ctx->should_close = false;
+            
+            printf("[Platform] ARM platform initialized (LINUX FB MODE)\n");
+            printf("[Platform] Display: %dx%d\n", ctx->width, ctx->height);
+            printf("[Platform] WARNING: No OpenGL ES - only CPU rendering available!\n");
+            
+            return ctx;
         }
     }
     
@@ -744,6 +841,15 @@ void platform_shutdown(PlatformContext* ctx) {
     
     /* Clean up dumb buffer mode */
     if (ctx->dumb_mode) {
+        /* Clean up Linux FB if used */
+        if (ctx->fb_buffer && ctx->fb_buffer != MAP_FAILED) {
+            munmap(ctx->fb_buffer, ctx->fb_size);
+        }
+        if (ctx->fb_fd >= 0) {
+            close(ctx->fb_fd);
+        }
+        
+        /* Clean up DRM dumb buffer if used */
         if (ctx->dumb_buffer && ctx->dumb_buffer != MAP_FAILED) {
             munmap(ctx->dumb_buffer, ctx->dumb_size);
         }
@@ -835,9 +941,69 @@ void platform_swap_buffers(PlatformContext* ctx) {
         return;
     }
     
-    /* Dumb buffer mode: framebuffer already visible, just wait for vsync */
+    /* Dumb buffer mode: draw test pattern and wait for vsync */
     if (ctx->dumb_mode) {
         ctx->frame_count++;
+        
+        /* Choose the right buffer (Linux FB or DRM dumb buffer) */
+        uint32_t* buffer = ctx->fb_buffer ? ctx->fb_buffer : ctx->dumb_buffer;
+        int stride = ctx->fb_buffer ? ctx->width : (int)(ctx->dumb_pitch / 4);
+        
+        if (!buffer) {
+            printf("[Platform] ERROR: No buffer available!\n");
+            usleep(16000);
+            return;
+        }
+        
+        /* Draw a simple animated test pattern */
+        int cx = ctx->width / 2;
+        int cy = ctx->height / 2;
+        int radius = (ctx->width < ctx->height ? ctx->width : ctx->height) / 4;
+        float angle = (float)ctx->frame_count * 0.02f;
+        
+        /* Clear to dark blue */
+        for (int y = 0; y < ctx->height; y++) {
+            for (int x = 0; x < ctx->width; x++) {
+                buffer[y * stride + x] = 0xFF001133;
+            }
+        }
+        
+        /* Draw a spinning "Pixos" indicator (simple box) */
+        int bx = cx + (int)(cosf(angle) * radius);
+        int by = cy + (int)(sinf(angle) * radius);
+        for (int dy = -20; dy <= 20; dy++) {
+            for (int dx = -20; dx <= 20; dx++) {
+                int px = bx + dx;
+                int py = by + dy;
+                if (px >= 0 && px < ctx->width && py >= 0 && py < ctx->height) {
+                    buffer[py * stride + px] = 0xFFFF0000;  /* Red */
+                }
+            }
+        }
+        
+        /* Draw center circle (yellow) */
+        for (int dy = -10; dy <= 10; dy++) {
+            for (int dx = -10; dx <= 10; dx++) {
+                if (dx*dx + dy*dy <= 100) {
+                    int px = cx + dx;
+                    int py = cy + dy;
+                    if (px >= 0 && px < ctx->width && py >= 0 && py < ctx->height) {
+                        buffer[py * stride + px] = 0xFFFFFF00;  /* Yellow */
+                    }
+                }
+            }
+        }
+        
+        /* Mark the entire frame as dirty so virtio-gpu refreshes */
+        if (ctx->dumb_fb_id && ctx->drm_fd >= 0) {
+            struct drm_clip_rect clip = {
+                .x1 = 0,
+                .y1 = 0,
+                .x2 = (uint16_t)ctx->width,
+                .y2 = (uint16_t)ctx->height
+            };
+            drmModeDirtyFB(ctx->drm_fd, ctx->dumb_fb_id, &clip, 1);
+        }
         
         /* Print progress occasionally */
         if (ctx->frame_count % 60 == 0) {
