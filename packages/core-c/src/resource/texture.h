@@ -14,7 +14,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <GL/glew.h>
+#include "rendering/gles_compat.h"
 #include <stdbool.h>
 
 /**

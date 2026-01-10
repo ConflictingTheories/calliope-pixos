@@ -13,7 +13,7 @@
 
 #include "tileset.h"
 #include "../resource/resource_manager.h"
-#include <GL/glew.h>
+#include "../rendering/gles_compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

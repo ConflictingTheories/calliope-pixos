@@ -14,7 +14,7 @@
 #include "engine.h"
 #include "render_manager.h"
 #include "rendering/shaders.h"
-#include <GLFW/glfw3.h>
+#include "platform/platform.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

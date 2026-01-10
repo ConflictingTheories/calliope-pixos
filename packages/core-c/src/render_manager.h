@@ -14,7 +14,7 @@
 #ifndef RENDER_MANAGER_H
 #define RENDER_MANAGER_H
 
-#include <GL/glew.h>
+#include "rendering/gles_compat.h"
 
 typedef struct GLEngine GLEngine;
 

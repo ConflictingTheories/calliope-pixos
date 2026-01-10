@@ -44,76 +44,76 @@ void input_action_init(InputActionManager* manager) {
     /* Set up default keyboard bindings */
     
     /* Movement - WASD + Arrows */
-    add_binding(manager, ACTION_MOVE_UP, BINDING_KEY, KEY_W);
-    add_binding(manager, ACTION_MOVE_UP, BINDING_KEY, KEY_UP);
-    add_binding(manager, ACTION_MOVE_DOWN, BINDING_KEY, KEY_S);
-    add_binding(manager, ACTION_MOVE_DOWN, BINDING_KEY, KEY_DOWN);
-    add_binding(manager, ACTION_MOVE_LEFT, BINDING_KEY, KEY_A);
-    add_binding(manager, ACTION_MOVE_LEFT, BINDING_KEY, KEY_LEFT);
-    add_binding(manager, ACTION_MOVE_RIGHT, BINDING_KEY, KEY_D);
-    add_binding(manager, ACTION_MOVE_RIGHT, BINDING_KEY, KEY_RIGHT);
+    add_binding(manager, GAME_ACTION_MOVE_UP, BINDING_KEY, KEY_W);
+    add_binding(manager, GAME_ACTION_MOVE_UP, BINDING_KEY, KEY_UP);
+    add_binding(manager, GAME_ACTION_MOVE_DOWN, BINDING_KEY, KEY_S);
+    add_binding(manager, GAME_ACTION_MOVE_DOWN, BINDING_KEY, KEY_DOWN);
+    add_binding(manager, GAME_ACTION_MOVE_LEFT, BINDING_KEY, KEY_A);
+    add_binding(manager, GAME_ACTION_MOVE_LEFT, BINDING_KEY, KEY_LEFT);
+    add_binding(manager, GAME_ACTION_MOVE_RIGHT, BINDING_KEY, KEY_D);
+    add_binding(manager, GAME_ACTION_MOVE_RIGHT, BINDING_KEY, KEY_RIGHT);
     
     /* Face buttons */
-    add_binding(manager, ACTION_CONFIRM, BINDING_KEY, KEY_SPACE);
-    add_binding(manager, ACTION_CONFIRM, BINDING_KEY, KEY_ENTER);
-    add_binding(manager, ACTION_CANCEL, BINDING_KEY, KEY_ESCAPE);
-    add_binding(manager, ACTION_MENU, BINDING_KEY, KEY_TAB);
-    add_binding(manager, ACTION_MAP, BINDING_KEY, KEY_M);
+    add_binding(manager, GAME_ACTION_CONFIRM, BINDING_KEY, KEY_SPACE);
+    add_binding(manager, GAME_ACTION_CONFIRM, BINDING_KEY, KEY_ENTER);
+    add_binding(manager, GAME_ACTION_CANCEL, BINDING_KEY, KEY_ESCAPE);
+    add_binding(manager, GAME_ACTION_MENU, BINDING_KEY, KEY_TAB);
+    add_binding(manager, GAME_ACTION_MAP, BINDING_KEY, KEY_M);
     
     /* Shoulder buttons */
-    add_binding(manager, ACTION_PREV, BINDING_KEY, KEY_Q);
-    add_binding(manager, ACTION_NEXT, BINDING_KEY, KEY_E);
-    add_binding(manager, ACTION_ZOOM_IN, BINDING_KEY, KEY_EQUAL);
-    add_binding(manager, ACTION_ZOOM_OUT, BINDING_KEY, KEY_MINUS);
+    add_binding(manager, GAME_ACTION_PREV, BINDING_KEY, KEY_Q);
+    add_binding(manager, GAME_ACTION_NEXT, BINDING_KEY, KEY_E);
+    add_binding(manager, GAME_ACTION_ZOOM_IN, BINDING_KEY, KEY_EQUAL);
+    add_binding(manager, GAME_ACTION_ZOOM_OUT, BINDING_KEY, KEY_MINUS);
     
     /* Debug */
-    add_binding(manager, ACTION_DEBUG_TOGGLE, BINDING_KEY, KEY_F1);
-    add_binding(manager, ACTION_FULLSCREEN, BINDING_KEY, KEY_F11);
+    add_binding(manager, GAME_ACTION_DEBUG_TOGGLE, BINDING_KEY, KEY_F1);
+    add_binding(manager, GAME_ACTION_FULLSCREEN, BINDING_KEY, KEY_F11);
     
 #ifdef PLATFORM_ARM_LINUX
     /* Add gamepad bindings for RG353V */
     
     /* D-pad movement */
-    add_binding(manager, ACTION_MOVE_UP, BINDING_KEY, RG353V_DPAD_UP);
-    add_binding(manager, ACTION_MOVE_DOWN, BINDING_KEY, RG353V_DPAD_DOWN);
-    add_binding(manager, ACTION_MOVE_LEFT, BINDING_KEY, RG353V_DPAD_LEFT);
-    add_binding(manager, ACTION_MOVE_RIGHT, BINDING_KEY, RG353V_DPAD_RIGHT);
+    add_binding(manager, GAME_ACTION_MOVE_UP, BINDING_KEY, RG353V_DPAD_UP);
+    add_binding(manager, GAME_ACTION_MOVE_DOWN, BINDING_KEY, RG353V_DPAD_DOWN);
+    add_binding(manager, GAME_ACTION_MOVE_LEFT, BINDING_KEY, RG353V_DPAD_LEFT);
+    add_binding(manager, GAME_ACTION_MOVE_RIGHT, BINDING_KEY, RG353V_DPAD_RIGHT);
     
     /* Left stick movement */
-    add_binding(manager, ACTION_MOVE_RIGHT, BINDING_AXIS_POSITIVE, RG353V_AXIS_LEFT_X);
-    add_binding(manager, ACTION_MOVE_LEFT, BINDING_AXIS_NEGATIVE, RG353V_AXIS_LEFT_X);
-    add_binding(manager, ACTION_MOVE_DOWN, BINDING_AXIS_POSITIVE, RG353V_AXIS_LEFT_Y);
-    add_binding(manager, ACTION_MOVE_UP, BINDING_AXIS_NEGATIVE, RG353V_AXIS_LEFT_Y);
+    add_binding(manager, GAME_ACTION_MOVE_RIGHT, BINDING_AXIS_POSITIVE, RG353V_AXIS_LEFT_X);
+    add_binding(manager, GAME_ACTION_MOVE_LEFT, BINDING_AXIS_NEGATIVE, RG353V_AXIS_LEFT_X);
+    add_binding(manager, GAME_ACTION_MOVE_DOWN, BINDING_AXIS_POSITIVE, RG353V_AXIS_LEFT_Y);
+    add_binding(manager, GAME_ACTION_MOVE_UP, BINDING_AXIS_NEGATIVE, RG353V_AXIS_LEFT_Y);
     
     /* Face buttons */
-    add_binding(manager, ACTION_CONFIRM, BINDING_BUTTON, RG353V_A);
-    add_binding(manager, ACTION_CANCEL, BINDING_BUTTON, RG353V_B);
-    add_binding(manager, ACTION_MENU, BINDING_BUTTON, RG353V_START);
-    add_binding(manager, ACTION_MAP, BINDING_BUTTON, RG353V_SELECT);
+    add_binding(manager, GAME_ACTION_CONFIRM, BINDING_BUTTON, RG353V_A);
+    add_binding(manager, GAME_ACTION_CANCEL, BINDING_BUTTON, RG353V_B);
+    add_binding(manager, GAME_ACTION_MENU, BINDING_BUTTON, RG353V_START);
+    add_binding(manager, GAME_ACTION_MAP, BINDING_BUTTON, RG353V_SELECT);
     
     /* Shoulder buttons */
-    add_binding(manager, ACTION_PREV, BINDING_BUTTON, RG353V_L1);
-    add_binding(manager, ACTION_NEXT, BINDING_BUTTON, RG353V_R1);
-    add_binding(manager, ACTION_ZOOM_OUT, BINDING_BUTTON, RG353V_L2);
-    add_binding(manager, ACTION_ZOOM_IN, BINDING_BUTTON, RG353V_R2);
+    add_binding(manager, GAME_ACTION_PREV, BINDING_BUTTON, RG353V_L1);
+    add_binding(manager, GAME_ACTION_NEXT, BINDING_BUTTON, RG353V_R1);
+    add_binding(manager, GAME_ACTION_ZOOM_OUT, BINDING_BUTTON, RG353V_L2);
+    add_binding(manager, GAME_ACTION_ZOOM_IN, BINDING_BUTTON, RG353V_R2);
     
     /* Right stick for camera */
     /* These are handled specially in input_action_get_camera */
     
 #else
     /* Add gamepad bindings for desktop (GLFW gamepad codes) */
-    add_binding(manager, ACTION_MOVE_UP, BINDING_BUTTON, GAMEPAD_DPAD_UP);
-    add_binding(manager, ACTION_MOVE_DOWN, BINDING_BUTTON, GAMEPAD_DPAD_DOWN);
-    add_binding(manager, ACTION_MOVE_LEFT, BINDING_BUTTON, GAMEPAD_DPAD_LEFT);
-    add_binding(manager, ACTION_MOVE_RIGHT, BINDING_BUTTON, GAMEPAD_DPAD_RIGHT);
+    add_binding(manager, GAME_ACTION_MOVE_UP, BINDING_BUTTON, GAMEPAD_DPAD_UP);
+    add_binding(manager, GAME_ACTION_MOVE_DOWN, BINDING_BUTTON, GAMEPAD_DPAD_DOWN);
+    add_binding(manager, GAME_ACTION_MOVE_LEFT, BINDING_BUTTON, GAMEPAD_DPAD_LEFT);
+    add_binding(manager, GAME_ACTION_MOVE_RIGHT, BINDING_BUTTON, GAMEPAD_DPAD_RIGHT);
     
-    add_binding(manager, ACTION_CONFIRM, BINDING_BUTTON, GAMEPAD_A);
-    add_binding(manager, ACTION_CANCEL, BINDING_BUTTON, GAMEPAD_B);
-    add_binding(manager, ACTION_MENU, BINDING_BUTTON, GAMEPAD_START);
-    add_binding(manager, ACTION_MAP, BINDING_BUTTON, GAMEPAD_SELECT);
+    add_binding(manager, GAME_ACTION_CONFIRM, BINDING_BUTTON, GAMEPAD_A);
+    add_binding(manager, GAME_ACTION_CANCEL, BINDING_BUTTON, GAMEPAD_B);
+    add_binding(manager, GAME_ACTION_MENU, BINDING_BUTTON, GAMEPAD_START);
+    add_binding(manager, GAME_ACTION_MAP, BINDING_BUTTON, GAMEPAD_SELECT);
     
-    add_binding(manager, ACTION_PREV, BINDING_BUTTON, GAMEPAD_L1);
-    add_binding(manager, ACTION_NEXT, BINDING_BUTTON, GAMEPAD_R1);
+    add_binding(manager, GAME_ACTION_PREV, BINDING_BUTTON, GAMEPAD_L1);
+    add_binding(manager, GAME_ACTION_NEXT, BINDING_BUTTON, GAMEPAD_R1);
 #endif
     
     printf("[Input] Action manager initialized with default bindings\n");
@@ -124,7 +124,7 @@ void input_action_update(InputActionManager* manager) {
     memcpy(manager->prev_actions, manager->actions, sizeof(manager->actions));
     
     /* Update just_pressed and just_released flags */
-    for (int i = 0; i < ACTION_COUNT; i++) {
+    for (int i = 0; i < GAME_ACTION_COUNT; i++) {
         ActionState* curr = &manager->actions[i];
         ActionState* prev = &manager->prev_actions[i];
         
@@ -172,7 +172,7 @@ void input_action_process_event(InputActionManager* manager, PlatformInputEvent*
     }
     
     /* Find matching bindings for this event */
-    for (int a = 0; a < ACTION_COUNT; a++) {
+    for (int a = 0; a < GAME_ACTION_COUNT; a++) {
         ActionMapping* mapping = &manager->mappings[a];
         
         for (int b = 0; b < mapping->binding_count; b++) {
@@ -237,22 +237,22 @@ void input_action_process_event(InputActionManager* manager, PlatformInputEvent*
 }
 
 bool input_action_pressed(InputActionManager* manager, GameAction action) {
-    if (!manager || action >= ACTION_COUNT) return false;
+    if (!manager || action >= GAME_ACTION_COUNT) return false;
     return manager->actions[action].pressed;
 }
 
 bool input_action_just_pressed(InputActionManager* manager, GameAction action) {
-    if (!manager || action >= ACTION_COUNT) return false;
+    if (!manager || action >= GAME_ACTION_COUNT) return false;
     return manager->actions[action].just_pressed;
 }
 
 bool input_action_just_released(InputActionManager* manager, GameAction action) {
-    if (!manager || action >= ACTION_COUNT) return false;
+    if (!manager || action >= GAME_ACTION_COUNT) return false;
     return manager->actions[action].just_released;
 }
 
 float input_action_value(InputActionManager* manager, GameAction action) {
-    if (!manager || action >= ACTION_COUNT) return 0.0f;
+    if (!manager || action >= GAME_ACTION_COUNT) return 0.0f;
     return manager->actions[action].value;
 }
 
@@ -263,10 +263,10 @@ void input_action_get_movement(InputActionManager* manager, float* x, float* y) 
     *y = 0.0f;
     
     /* Digital movement from d-pad/keyboard */
-    if (manager->actions[ACTION_MOVE_RIGHT].pressed) *x += 1.0f;
-    if (manager->actions[ACTION_MOVE_LEFT].pressed) *x -= 1.0f;
-    if (manager->actions[ACTION_MOVE_DOWN].pressed) *y += 1.0f;
-    if (manager->actions[ACTION_MOVE_UP].pressed) *y -= 1.0f;
+    if (manager->actions[GAME_ACTION_MOVE_RIGHT].pressed) *x += 1.0f;
+    if (manager->actions[GAME_ACTION_MOVE_LEFT].pressed) *x -= 1.0f;
+    if (manager->actions[GAME_ACTION_MOVE_DOWN].pressed) *y += 1.0f;
+    if (manager->actions[GAME_ACTION_MOVE_UP].pressed) *y -= 1.0f;
     
     /* Add analog stick movement */
     *x += manager->axis_left_x;
@@ -293,12 +293,12 @@ void input_action_get_camera(InputActionManager* manager, float* x, float* y) {
 
 void input_action_bind(InputActionManager* manager, GameAction action,
                        InputBindingType type, int code) {
-    if (!manager || action >= ACTION_COUNT) return;
+    if (!manager || action >= GAME_ACTION_COUNT) return;
     add_binding(manager, action, type, code);
 }
 
 void input_action_clear_bindings(InputActionManager* manager, GameAction action) {
-    if (!manager || action >= ACTION_COUNT) return;
+    if (!manager || action >= GAME_ACTION_COUNT) return;
     manager->mappings[action].binding_count = 0;
 }
 

@@ -18,7 +18,13 @@
 /* This header normalizes differences between desktop GL and GLES */
 
 #include <stdio.h>
-#include "platform/platform.h"
+
+/* Platform detection for GL includes */
+#if defined(PLATFORM_ARM_LINUX) || defined(USE_GLES)
+    #ifndef USE_GLES
+        #define USE_GLES 1
+    #endif
+#endif
 
 #ifdef USE_GLES
     /* OpenGL ES 2.0/3.0 */
@@ -32,22 +38,27 @@
     /* GLES doesn't have these - provide stubs or alternatives */
     #define GL_CLAMP_TO_BORDER GL_CLAMP_TO_EDGE
     
+    /* GL_RED is not in GLES2 - use GL_LUMINANCE for single-channel textures */
+    #ifndef GL_RED
+        #define GL_RED GL_LUMINANCE
+    #endif
+    
     /* VAO extensions (available in GLES3 or via extension) */
     #ifdef USE_GLES3
-        #define glGenVertexArrays glGenVertexArrays
-        #define glBindVertexArray glBindVertexArray
-        #define glDeleteVertexArrays glDeleteVertexArrays
+        /* GLES3 has native VAO support */
     #else
-        /* Use OES extension for GLES2 */
-        #ifdef GL_OES_vertex_array_object
-            #define glGenVertexArrays glGenVertexArraysOES
-            #define glBindVertexArray glBindVertexArrayOES
-            #define glDeleteVertexArrays glDeleteVertexArraysOES
-        #else
-            /* Fallback: No VAO support - manage VBOs directly */
-            #define PIXOS_NO_VAO 1
-            static inline void glGenVertexArrays(GLsizei n, GLuint* arrays) { (void)n; (void)arrays; }
+        /* GLES2: VAO support is optional via OES extension */
+        /* For simplicity, provide no-op stubs - VBOs still work */
+        #define PIXOS_NO_VAO 1
+        #ifndef glGenVertexArrays
+            static inline void glGenVertexArrays(GLsizei n, GLuint* arrays) { 
+                for (GLsizei i = 0; i < n; i++) arrays[i] = 0; 
+            }
+        #endif
+        #ifndef glBindVertexArray
             static inline void glBindVertexArray(GLuint array) { (void)array; }
+        #endif
+        #ifndef glDeleteVertexArrays
             static inline void glDeleteVertexArrays(GLsizei n, const GLuint* arrays) { (void)n; (void)arrays; }
         #endif
     #endif

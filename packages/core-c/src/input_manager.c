@@ -206,20 +206,20 @@ void update_input_manager(InputManager* input_manager) {
     input_action_update(&arm_action_manager);
     
     // Map InputActionManager states to InputManager action states
-    input_manager->action_states[ACTION_MOVE_UP] = input_action_pressed(&arm_action_manager, ACTION_MOVE_UP);
-    input_manager->action_states[ACTION_MOVE_DOWN] = input_action_pressed(&arm_action_manager, ACTION_MOVE_DOWN);
-    input_manager->action_states[ACTION_MOVE_LEFT] = input_action_pressed(&arm_action_manager, ACTION_MOVE_LEFT);
-    input_manager->action_states[ACTION_MOVE_RIGHT] = input_action_pressed(&arm_action_manager, ACTION_MOVE_RIGHT);
-    input_manager->action_states[ACTION_INTERACT] = input_action_pressed(&arm_action_manager, ACTION_CONFIRM);
-    input_manager->action_states[ACTION_MENU] = input_action_pressed(&arm_action_manager, ACTION_MENU);
-    input_manager->action_states[ACTION_ESCAPE] = input_action_pressed(&arm_action_manager, ACTION_CANCEL);
-    input_manager->action_states[ACTION_CAMERA_ZOOM_IN] = input_action_pressed(&arm_action_manager, ACTION_ZOOM_IN);
-    input_manager->action_states[ACTION_CAMERA_ZOOM_OUT] = input_action_pressed(&arm_action_manager, ACTION_ZOOM_OUT);
-    input_manager->action_states[ACTION_DEBUG_TOGGLE] = input_action_pressed(&arm_action_manager, ACTION_DEBUG_TOGGLE);
+    input_manager->action_states[ACTION_MOVE_UP] = input_action_pressed(&arm_action_manager, GAME_ACTION_MOVE_UP);
+    input_manager->action_states[ACTION_MOVE_DOWN] = input_action_pressed(&arm_action_manager, GAME_ACTION_MOVE_DOWN);
+    input_manager->action_states[ACTION_MOVE_LEFT] = input_action_pressed(&arm_action_manager, GAME_ACTION_MOVE_LEFT);
+    input_manager->action_states[ACTION_MOVE_RIGHT] = input_action_pressed(&arm_action_manager, GAME_ACTION_MOVE_RIGHT);
+    input_manager->action_states[ACTION_INTERACT] = input_action_pressed(&arm_action_manager, GAME_ACTION_CONFIRM);
+    input_manager->action_states[ACTION_MENU] = input_action_pressed(&arm_action_manager, GAME_ACTION_MENU);
+    input_manager->action_states[ACTION_ESCAPE] = input_action_pressed(&arm_action_manager, GAME_ACTION_CANCEL);
+    input_manager->action_states[ACTION_CAMERA_ZOOM_IN] = input_action_pressed(&arm_action_manager, GAME_ACTION_ZOOM_IN);
+    input_manager->action_states[ACTION_CAMERA_ZOOM_OUT] = input_action_pressed(&arm_action_manager, GAME_ACTION_ZOOM_OUT);
+    input_manager->action_states[ACTION_DEBUG_TOGGLE] = input_action_pressed(&arm_action_manager, GAME_ACTION_DEBUG_TOGGLE);
     
     // Check for soft reset combo (Start + Select held for SOFT_RESET_HOLD_TIME)
-    bool start_pressed = input_action_pressed(&arm_action_manager, ACTION_MENU);
-    bool select_pressed = input_action_pressed(&arm_action_manager, ACTION_MAP);
+    bool start_pressed = input_action_pressed(&arm_action_manager, GAME_ACTION_MENU);
+    bool select_pressed = input_action_pressed(&arm_action_manager, GAME_ACTION_MAP);
     
     if (start_pressed && select_pressed) {
         if (!soft_reset_start_held || !soft_reset_select_held) {

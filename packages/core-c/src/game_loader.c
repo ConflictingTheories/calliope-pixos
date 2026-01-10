@@ -259,9 +259,9 @@ void game_loader_render_selector(GameLoader* loader, struct GLEngine* engine) {
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Title
-    hud_manager_draw_text(hud, "Select a Game", 
+    hud_draw_text(hud, "Select a Game", 
                           engine->width / 2.0f - 100.0f, 30.0f,
-                          1.5f, (float[]){1.0f, 0.8f, 0.2f, 1.0f});
+                          1.5f, (HudColor){1.0f, 0.8f, 0.2f, 1.0f});
     
     // Game list
     float y_offset = 100.0f;
@@ -278,27 +278,27 @@ void game_loader_render_selector(GameLoader* loader, struct GLEngine* engine) {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // Simple quad would go here - using HUD for now
             
-            hud_manager_draw_text(hud, "> ", 20.0f, y, 1.2f, 
-                                  (float[]){1.0f, 0.5f, 0.8f, 1.0f});
+            hud_draw_text(hud, "> ", 20.0f, y, 1.2f, 
+                                  (HudColor){1.0f, 0.5f, 0.8f, 1.0f});
         }
         
         // Game name
-        hud_manager_draw_text(hud, game->name, 50.0f, y, 1.0f,
-                              (float[]){1.0f, 1.0f, 1.0f, 1.0f});
+        hud_draw_text(hud, game->name, 50.0f, y, 1.0f,
+                              HUD_COLOR_WHITE);
         
         // Author/version if available
         if (game->author[0] != '\0') {
             char info[128];
             snprintf(info, 128, "by %s", game->author);
-            hud_manager_draw_text(hud, info, 50.0f, y + 20.0f, 0.6f,
-                                  (float[]){0.7f, 0.7f, 0.7f, 1.0f});
+            hud_draw_text(hud, info, 50.0f, y + 20.0f, 0.6f,
+                                  (HudColor){0.7f, 0.7f, 0.7f, 1.0f});
         }
     }
     
     // Instructions
-    hud_manager_draw_text(hud, "Up/Down: Navigate   A/Enter: Select", 
+    hud_draw_text(hud, "Up/Down: Navigate   A/Enter: Select", 
                           20.0f, engine->height - 40.0f, 0.7f,
-                          (float[]){0.5f, 0.5f, 0.6f, 1.0f});
+                          (HudColor){0.5f, 0.5f, 0.6f, 1.0f});
 }
 
 void game_loader_select_prev(GameLoader* loader) {

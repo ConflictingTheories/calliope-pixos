@@ -33,33 +33,33 @@
 
 typedef enum GameAction {
     /* Movement */
-    ACTION_MOVE_UP = 0,
-    ACTION_MOVE_DOWN,
-    ACTION_MOVE_LEFT,
-    ACTION_MOVE_RIGHT,
+    GAME_ACTION_MOVE_UP = 0,
+    GAME_ACTION_MOVE_DOWN,
+    GAME_ACTION_MOVE_LEFT,
+    GAME_ACTION_MOVE_RIGHT,
     
     /* Face buttons */
-    ACTION_CONFIRM,         /* A / Enter / Space */
-    ACTION_CANCEL,          /* B / Escape */
-    ACTION_MENU,            /* Start / Tab */
-    ACTION_MAP,             /* Select / M */
+    GAME_ACTION_CONFIRM,         /* A / Enter / Space */
+    GAME_ACTION_CANCEL,          /* B / Escape */
+    GAME_ACTION_MENU,            /* Start / Tab */
+    GAME_ACTION_MAP,             /* Select / M */
     
     /* Shoulder buttons */
-    ACTION_PREV,            /* L1 / Q */
-    ACTION_NEXT,            /* R1 / E */
-    ACTION_ZOOM_IN,         /* R2 / + */
-    ACTION_ZOOM_OUT,        /* L2 / - */
+    GAME_ACTION_PREV,            /* L1 / Q */
+    GAME_ACTION_NEXT,            /* R1 / E */
+    GAME_ACTION_ZOOM_IN,         /* R2 / + */
+    GAME_ACTION_ZOOM_OUT,        /* L2 / - */
     
     /* Analog sticks */
-    ACTION_CAMERA_X,        /* Right stick X */
-    ACTION_CAMERA_Y,        /* Right stick Y */
+    GAME_ACTION_CAMERA_X,        /* Right stick X */
+    GAME_ACTION_CAMERA_Y,        /* Right stick Y */
     
     /* Debug/system */
-    ACTION_DEBUG_TOGGLE,    /* F1 */
-    ACTION_FULLSCREEN,      /* F11 */
-    ACTION_QUIT,            /* Alt+F4 / Escape (hold) */
+    GAME_ACTION_DEBUG_TOGGLE,    /* F1 */
+    GAME_ACTION_FULLSCREEN,      /* F11 */
+    GAME_ACTION_QUIT,            /* Alt+F4 / Escape (hold) */
     
-    ACTION_COUNT
+    GAME_ACTION_COUNT
 } GameAction;
 
 /* Action state */
@@ -97,9 +97,9 @@ typedef struct ActionMapping {
 
 /* Input action manager */
 typedef struct InputActionManager {
-    ActionState actions[ACTION_COUNT];
-    ActionState prev_actions[ACTION_COUNT];
-    ActionMapping mappings[ACTION_COUNT];
+    ActionState actions[GAME_ACTION_COUNT];
+    ActionState prev_actions[GAME_ACTION_COUNT];
+    ActionMapping mappings[GAME_ACTION_COUNT];
     
     /* Analog axis raw values */
     float axis_left_x;
