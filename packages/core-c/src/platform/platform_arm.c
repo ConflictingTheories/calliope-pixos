@@ -83,6 +83,12 @@ struct PlatformContext {
     /* State */
     bool should_close;
     bool initialized;
+    
+    /* Software rendering mode (for QEMU/testing) */
+    bool software_mode;
+    /* Headless mode (no graphics at all, for testing) */
+    bool headless_mode;
+    int frame_count;
 };
 
 /* Forward declarations */
@@ -91,6 +97,7 @@ static DrmFramebuffer* drm_fb_get(PlatformContext* ctx, struct gbm_bo* bo);
 static int init_drm(PlatformContext* ctx);
 static int init_gbm(PlatformContext* ctx);
 static int init_egl(PlatformContext* ctx);
+static int init_software_egl(PlatformContext* ctx);
 static void init_input_devices(PlatformContext* ctx);
 static void mount_filesystems(void);
 
@@ -318,6 +325,94 @@ static int init_egl(PlatformContext* ctx) {
     return 0;
 }
 
+/* Initialize EGL with software rendering (for QEMU/testing) */
+static int init_software_egl(PlatformContext* ctx) {
+    static const EGLint config_attribs[] = {
+        EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_DEPTH_SIZE, 24,
+        EGL_STENCIL_SIZE, 0,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_NONE
+    };
+    
+    static const EGLint context_attribs[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+    
+    EGLint pbuffer_attribs[] = {
+        EGL_WIDTH, ctx->width,
+        EGL_HEIGHT, ctx->height,
+        EGL_NONE
+    };
+    
+    /* Get default display (Mesa software renderer) */
+    ctx->egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (ctx->egl_display == EGL_NO_DISPLAY) {
+        fprintf(stderr, "[Platform] Software: eglGetDisplay failed\n");
+        return -1;
+    }
+    
+    EGLint major, minor;
+    if (!eglInitialize(ctx->egl_display, &major, &minor)) {
+        fprintf(stderr, "[Platform] Software: eglInitialize failed (0x%x)\n", eglGetError());
+        return -1;
+    }
+    
+    printf("[Platform] Software EGL version: %d.%d\n", major, minor);
+    printf("[Platform] EGL vendor: %s\n", eglQueryString(ctx->egl_display, EGL_VENDOR));
+    printf("[Platform] EGL extensions: %s\n", eglQueryString(ctx->egl_display, EGL_EXTENSIONS));
+    
+    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+        fprintf(stderr, "[Platform] Software: eglBindAPI failed\n");
+        return -1;
+    }
+    
+    EGLint num_configs;
+    if (!eglChooseConfig(ctx->egl_display, config_attribs, &ctx->egl_config, 1, &num_configs) ||
+        num_configs == 0) {
+        fprintf(stderr, "[Platform] Software: eglChooseConfig failed\n");
+        return -1;
+    }
+    
+    printf("[Platform] Software: Found %d EGL configs\n", num_configs);
+    
+    ctx->egl_context = eglCreateContext(
+        ctx->egl_display,
+        ctx->egl_config,
+        EGL_NO_CONTEXT,
+        context_attribs
+    );
+    
+    if (ctx->egl_context == EGL_NO_CONTEXT) {
+        fprintf(stderr, "[Platform] Software: eglCreateContext failed (0x%x)\n", eglGetError());
+        return -1;
+    }
+    
+    /* Create a pbuffer surface for off-screen rendering */
+    ctx->egl_surface = eglCreatePbufferSurface(ctx->egl_display, ctx->egl_config, pbuffer_attribs);
+    
+    if (ctx->egl_surface == EGL_NO_SURFACE) {
+        fprintf(stderr, "[Platform] Software: eglCreatePbufferSurface failed (0x%x)\n", eglGetError());
+        return -1;
+    }
+    
+    if (!eglMakeCurrent(ctx->egl_display, ctx->egl_surface, ctx->egl_surface, ctx->egl_context)) {
+        fprintf(stderr, "[Platform] Software: eglMakeCurrent failed (0x%x)\n", eglGetError());
+        return -1;
+    }
+    
+    printf("[Platform] Software GL vendor: %s\n", glGetString(GL_VENDOR));
+    printf("[Platform] Software GL renderer: %s\n", glGetString(GL_RENDERER));
+    printf("[Platform] Software GL version: %s\n", glGetString(GL_VERSION));
+    
+    return 0;
+}
+
 /* Initialize input devices (evdev) */
 static void init_input_devices(PlatformContext* ctx) {
     ctx->input_fd_count = 0;
@@ -398,8 +493,6 @@ static void page_flip_handler(int fd, unsigned int frame,
 /* Public API implementation */
 
 PlatformContext* platform_init(int width, int height, const char* title, bool fullscreen) {
-    (void)width;   /* Ignored on ARM - we use native resolution */
-    (void)height;
     (void)title;   /* No window title on framebuffer */
     (void)fullscreen; /* Always fullscreen */
     
@@ -411,8 +504,14 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
     
     ctx->drm_fd = -1;
     ctx->fullscreen = true;
+    ctx->software_mode = false;
+    ctx->frame_count = 0;
     
-    printf("[Platform] Initializing ARM platform (EGL + GBM + DRM/KMS)...\n");
+    /* Check for software rendering mode (QEMU testing) */
+    const char* sw_mode = getenv("PIXOS_SOFTWARE");
+    bool force_software = (sw_mode && strcmp(sw_mode, "1") == 0);
+    
+    printf("[Platform] Initializing ARM platform...\n");
     
     /* Mount filesystems if running as init */
     if (getpid() == 1) {
@@ -420,30 +519,49 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
         mount_filesystems();
     }
     
-    /* Initialize graphics stack */
-    printf("[Platform] Initializing DRM...\n");
-    if (init_drm(ctx) < 0) {
-        fprintf(stderr, "[Platform] Failed to initialize DRM\n");
-        free(ctx);
-        return NULL;
+    /* Try hardware rendering first (unless forced software) */
+    bool hw_init_ok = false;
+    
+    if (!force_software) {
+        printf("[Platform] Trying DRM/GBM/EGL hardware path...\n");
+        
+        printf("[Platform] Initializing DRM...\n");
+        if (init_drm(ctx) >= 0) {
+            printf("[Platform] Initializing GBM...\n");
+            if (init_gbm(ctx) >= 0) {
+                printf("[Platform] Initializing EGL...\n");
+                if (init_egl(ctx) >= 0) {
+                    hw_init_ok = true;
+                    printf("[Platform] Hardware rendering initialized!\n");
+                } else {
+                    gbm_surface_destroy(ctx->gbm_surf);
+                    gbm_device_destroy(ctx->gbm_dev);
+                    close(ctx->drm_fd);
+                    ctx->drm_fd = -1;
+                }
+            } else {
+                close(ctx->drm_fd);
+                ctx->drm_fd = -1;
+            }
+        }
     }
     
-    printf("[Platform] Initializing GBM...\n");
-    if (init_gbm(ctx) < 0) {
-        fprintf(stderr, "[Platform] Failed to initialize GBM\n");
-        close(ctx->drm_fd);
-        free(ctx);
-        return NULL;
-    }
-    
-    printf("[Platform] Initializing EGL...\n");
-    if (init_egl(ctx) < 0) {
-        fprintf(stderr, "[Platform] Failed to initialize EGL\n");
-        gbm_surface_destroy(ctx->gbm_surf);
-        gbm_device_destroy(ctx->gbm_dev);
-        close(ctx->drm_fd);
-        free(ctx);
-        return NULL;
+    /* Fall back to software rendering if hardware failed */
+    if (!hw_init_ok) {
+        printf("[Platform] Hardware init failed, falling back to software rendering...\n");
+        printf("[Platform] (This is normal in QEMU - games will run but display is off-screen)\n");
+        
+        ctx->software_mode = true;
+        ctx->width = (width > 0) ? width : 640;
+        ctx->height = (height > 0) ? height : 480;
+        
+        if (init_software_egl(ctx) < 0) {
+            fprintf(stderr, "[Platform] Software EGL initialization also failed!\n");
+            free(ctx);
+            return NULL;
+        }
+        
+        printf("[Platform] Software rendering mode active\n");
     }
     
     /* Initialize input devices */
@@ -455,8 +573,48 @@ PlatformContext* platform_init(int width, int height, const char* title, bool fu
     ctx->initialized = true;
     ctx->should_close = false;
     
-    printf("[Platform] ARM platform initialized successfully\n");
+    printf("[Platform] ARM platform initialized successfully%s\n", 
+           ctx->software_mode ? " (SOFTWARE MODE)" : "");
     printf("[Platform] Display: %dx%d\n", ctx->width, ctx->height);
+    
+    return ctx;
+}
+
+/* Headless mode - no graphics at all, for testing game logic */
+PlatformContext* platform_init_headless(int width, int height) {
+    PlatformContext* ctx = (PlatformContext*)calloc(1, sizeof(PlatformContext));
+    if (!ctx) {
+        fprintf(stderr, "[Platform] Failed to allocate platform context\n");
+        return NULL;
+    }
+    
+    printf("[Platform] Initializing ARM platform in HEADLESS mode...\n");
+    
+    ctx->drm_fd = -1;
+    ctx->fullscreen = true;
+    ctx->software_mode = false;
+    ctx->headless_mode = true;
+    ctx->frame_count = 0;
+    ctx->width = (width > 0) ? width : 640;
+    ctx->height = (height > 0) ? height : 480;
+    
+    /* Mount filesystems if running as init */
+    if (getpid() == 1) {
+        printf("[Platform] Running as PID 1, mounting filesystems...\n");
+        mount_filesystems();
+    }
+    
+    /* Initialize input devices (still useful for testing) */
+    init_input_devices(ctx);
+    
+    /* Record start time */
+    clock_gettime(CLOCK_MONOTONIC, &ctx->start_time);
+    
+    ctx->initialized = true;
+    ctx->should_close = false;
+    
+    printf("[Platform] HEADLESS mode active - no display output\n");
+    printf("[Platform] Virtual display: %dx%d\n", ctx->width, ctx->height);
     
     return ctx;
 }
@@ -471,8 +629,14 @@ void platform_shutdown(PlatformContext* ctx) {
         close(ctx->input_fds[i]);
     }
     
-    /* Restore original CRTC */
-    if (ctx->saved_crtc) {
+    /* Headless mode - nothing else to clean up */
+    if (ctx->headless_mode) {
+        free(ctx);
+        return;
+    }
+    
+    /* Restore original CRTC (only in hardware mode) */
+    if (!ctx->software_mode && ctx->saved_crtc) {
         drmModeSetCrtc(ctx->drm_fd, ctx->saved_crtc->crtc_id,
                        ctx->saved_crtc->buffer_id,
                        ctx->saved_crtc->x, ctx->saved_crtc->y,
@@ -492,16 +656,18 @@ void platform_shutdown(PlatformContext* ctx) {
         eglTerminate(ctx->egl_display);
     }
     
-    /* Cleanup GBM */
-    if (ctx->gbm_surf) {
-        gbm_surface_destroy(ctx->gbm_surf);
-    }
-    if (ctx->gbm_dev) {
-        gbm_device_destroy(ctx->gbm_dev);
+    /* Cleanup GBM (only in hardware mode) */
+    if (!ctx->software_mode) {
+        if (ctx->gbm_surf) {
+            gbm_surface_destroy(ctx->gbm_surf);
+        }
+        if (ctx->gbm_dev) {
+            gbm_device_destroy(ctx->gbm_dev);
+        }
     }
     
-    /* Close DRM */
-    if (ctx->drm_fd >= 0) {
+    /* Close DRM (only in hardware mode) */
+    if (!ctx->software_mode && ctx->drm_fd >= 0) {
         close(ctx->drm_fd);
     }
     
@@ -515,13 +681,42 @@ void platform_get_display_info(PlatformContext* ctx, PlatformDisplayInfo* info) 
     info->height = ctx->height;
     info->fullscreen = ctx->fullscreen;
     info->aspect_ratio = (float)ctx->width / (float)ctx->height;
-    info->refresh_rate = ctx->drm_mode.vrefresh;
+    info->refresh_rate = (ctx->software_mode || ctx->headless_mode) ? 60 : ctx->drm_mode.vrefresh;
 }
 
 void platform_swap_buffers(PlatformContext* ctx) {
     if (!ctx || !ctx->initialized) return;
     
-    /* Swap EGL buffers */
+    /* Headless mode: no rendering, just simulate vsync */
+    if (ctx->headless_mode) {
+        ctx->frame_count++;
+        
+        /* Print progress occasionally */
+        if (ctx->frame_count % 60 == 0) {
+            printf("[Platform] Headless mode: Frame %d (no display)\n", ctx->frame_count);
+        }
+        
+        /* Simulate vsync delay (~16ms for 60fps) */
+        usleep(16000);
+        return;
+    }
+    
+    /* Software mode: just swap EGL buffers (no actual display) */
+    if (ctx->software_mode) {
+        eglSwapBuffers(ctx->egl_display, ctx->egl_surface);
+        ctx->frame_count++;
+        
+        /* Print progress occasionally */
+        if (ctx->frame_count % 60 == 0) {
+            printf("[Platform] Software mode: Frame %d rendered (off-screen)\n", ctx->frame_count);
+        }
+        
+        /* Simulate vsync delay (~16ms for 60fps) */
+        usleep(16000);
+        return;
+    }
+    
+    /* Hardware mode: Swap EGL buffers and page flip */
     eglSwapBuffers(ctx->egl_display, ctx->egl_surface);
     
     /* Get front buffer for scanout */

@@ -72,6 +72,9 @@ struct GLEngine {
     
     // Fullscreen state
     bool fullscreen;
+    
+    // Headless mode (no graphics, for testing)
+    bool headless;
 };
 
 #include "render_manager.h"
@@ -87,6 +90,16 @@ struct GLEngine {
  * @return 0 on success, -1 on failure.
  */
 int init_engine(GLEngine* engine, int width, int height);
+
+/**
+ * Initializes the game engine in headless mode (no graphics).
+ * Used for testing game logic without display hardware.
+ * @param engine Pointer to GLEngine struct.
+ * @param width Virtual display width.
+ * @param height Virtual display height.
+ * @return 0 on success, -1 on failure.
+ */
+int init_engine_headless(GLEngine* engine, int width, int height);
 
 /**
  * Main render loop for the game engine.

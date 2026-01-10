@@ -208,6 +208,79 @@ int init_engine(GLEngine* engine, int width, int height) {
     return 0;
 }
 
+/* Headless mode initialization - no graphics, for testing game logic */
+int init_engine_headless(GLEngine* engine, int width, int height) {
+    memset(engine, 0, sizeof(GLEngine));
+    engine->width = width;
+    engine->height = height;
+    engine->running = 1;
+    engine->debug = false;
+    engine->debug_height_overlay = false;
+    engine->fullscreen = false;
+    engine->frame_count = 0;
+    engine->headless = true;
+    
+    printf("Initializing Pixos Engine (HEADLESS MODE)...\n");
+    
+    // Initialize platform in headless mode
+    engine->platform = platform_init_headless(width, height);
+    if (!engine->platform) {
+        fprintf(stderr, "Failed to initialize platform (headless)\n");
+        return -1;
+    }
+    
+    // Initialize resource manager
+    engine->resource_manager = (ResourceManager*)malloc(sizeof(ResourceManager));
+    if (!engine->resource_manager) {
+        fprintf(stderr, "Failed to allocate resource manager\n");
+        platform_shutdown(engine->platform);
+        return -1;
+    }
+    resource_manager_init(engine->resource_manager, engine, "./assets/");
+    
+    // Initialize input manager
+    engine->input_manager = (InputManager*)malloc(sizeof(InputManager));
+    if (!engine->input_manager) {
+        fprintf(stderr, "Failed to allocate input manager\n");
+        resource_manager_destroy(engine->resource_manager);
+        free(engine->resource_manager);
+        platform_shutdown(engine->platform);
+        return -1;
+    }
+    init_input_manager(engine->input_manager, engine);
+    
+    // Initialize world
+    engine->world = (World*)malloc(sizeof(World));
+    if (!engine->world) {
+        fprintf(stderr, "Failed to allocate world\n");
+        free(engine->input_manager);
+        resource_manager_destroy(engine->resource_manager);
+        free(engine->resource_manager);
+        platform_shutdown(engine->platform);
+        return -1;
+    }
+    world_init(engine->world, "main", engine);
+    
+    // Initialize game loader (for embedded device game selection)
+    engine->game_loader = (GameLoader*)malloc(sizeof(GameLoader));
+    if (engine->game_loader) {
+        if (game_loader_init(engine->game_loader, engine) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize game loader\n");
+        }
+    }
+    
+    // Initialize timing (use simple time since we don't have platform timing in headless)
+    engine->time = 0.0;
+    engine->last_frame_time = 0.0;
+    engine->delta_time = 0.0;
+    
+    printf("Pixos Engine initialized in HEADLESS mode\n");
+    printf("Virtual display: %dx%d\n", width, height);
+    printf("No graphics rendering - logic testing only\n");
+    
+    return 0;
+}
+
 void update_engine(GLEngine* engine) {
     // Update timing
     double current_time = platform_get_time(engine->platform);

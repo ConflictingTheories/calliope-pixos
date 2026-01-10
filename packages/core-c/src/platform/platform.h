@@ -106,6 +106,15 @@ typedef void (*PlatformInputCallback)(PlatformInputEvent* event, void* user_data
 PlatformContext* platform_init(int width, int height, const char* title, bool fullscreen);
 
 /**
+ * Initialize the platform layer in headless mode (no graphics).
+ * Used for testing game logic without display hardware.
+ * @param width Virtual display width
+ * @param height Virtual display height
+ * @return Platform context or NULL on failure
+ */
+PlatformContext* platform_init_headless(int width, int height);
+
+/**
  * Shutdown the platform layer and free resources.
  * @param ctx Platform context
  */
