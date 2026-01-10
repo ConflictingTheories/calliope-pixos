@@ -1,6 +1,6 @@
 {
   "name": "pixospritz-specs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared specifications, schemas, and constants for PixoSpritz engines",
   "type": "module",
   "main": "index.js",

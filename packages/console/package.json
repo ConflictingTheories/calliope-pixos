@@ -1,6 +1,6 @@
 {
   "name": "pixospritz-console",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PixoSpritz Console - Web player for running PixoSpritz games",
   "scripts": {
     "dev": "vite",

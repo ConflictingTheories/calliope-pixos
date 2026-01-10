@@ -1,6 +1,6 @@
 {
   "name": "pixospritz-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PixoSpritz Server - WebSocket multiplayer server for PixoSpritz games",
   "type": "module",
   "main": "src/main.js",

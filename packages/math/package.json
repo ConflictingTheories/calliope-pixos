@@ -1,6 +1,6 @@
 {
   "name": "pixospritz-math",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Math utilities for PixoSpritz - vectors, matrices, and geometric operations",
   "type": "module",
   "main": "src/index.js",
