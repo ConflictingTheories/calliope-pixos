@@ -26,6 +26,7 @@ struct AudioManager;
 struct LuaManager;
 struct HudManager;
 struct CutsceneManager;
+struct GameLoader;
 
 // Engine typedef for scripting compatibility
 typedef struct GLEngine Engine;
@@ -42,7 +43,12 @@ struct GLEngine {
     struct InputManager* input_manager;
     struct ResourceManager* resource_manager;
     struct HudManager* hud;         // HUD/UI manager
+    // Cutscene manager
     struct CutsceneManager* cutscene;  // Cutscene manager
+    
+    // Game loader (for embedded device game selection)
+    struct GameLoader* game_loader;
+    
     struct World* world;
     
     // Audio manager (optional, enabled via ENABLE_AUDIO)

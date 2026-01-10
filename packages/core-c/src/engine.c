@@ -18,6 +18,7 @@
 #include "rendering/gles_compat.h"
 #include "hud/hud_manager.h"
 #include "cutscene/cutscene_manager.h"
+#include "game_loader.h"
 
 #ifdef ENABLE_AUDIO
 #include "audio/audio_manager.h"
@@ -179,6 +180,15 @@ int init_engine(GLEngine* engine, int width, int height) {
         }
     }
 
+    // Initialize game loader (for embedded device game selection)
+    engine->game_loader = (GameLoader*)malloc(sizeof(GameLoader));
+    if (engine->game_loader) {
+        if (game_loader_init(engine->game_loader, engine) != 0) {
+            fprintf(stderr, "Warning: Failed to initialize game loader\n");
+            // Non-fatal - continue without game loader
+        }
+    }
+
     // Initialize timing
     engine->time = platform_get_time(engine->platform);
     engine->last_frame_time = engine->time;
@@ -293,6 +303,23 @@ void render_engine(GLEngine* engine) {
     // Update game state
     update_engine(engine);
     
+    // Check if game loader is showing selector
+    if (engine->game_loader && engine->game_loader->show_selector) {
+        // Update and render game selector UI
+        game_loader_update_selector(engine->game_loader, engine);
+        game_loader_render_selector(engine->game_loader, engine);
+        
+        // Swap buffers and poll events
+        platform_swap_buffers(engine->platform);
+        platform_poll_events(engine->platform);
+        
+        // Check if window should close
+        if (platform_should_close(engine->platform)) {
+            engine->running = 0;
+        }
+        return;
+    }
+    
     // Clear screen
     render_manager_clear_screen(engine->render_manager);
     
@@ -349,6 +376,13 @@ void engine_get_screen_size(GLEngine* engine, int* width, int* height) {
 
 void close_engine(GLEngine* engine) {
     printf("Closing Pixos Engine...\n");
+
+    // Destroy game loader first (unloads any loaded game)
+    if (engine->game_loader) {
+        game_loader_destroy(engine->game_loader, engine);
+        free(engine->game_loader);
+        engine->game_loader = NULL;
+    }
 
     // Destroy cutscene manager
     if (engine->cutscene) {

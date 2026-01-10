@@ -17,6 +17,10 @@
 #ifdef USE_GLFW
 #include <GLFW/glfw3.h>
 #endif
+#ifdef PLATFORM_ARM_LINUX
+#include "input/input_actions.h"
+#include <linux/input.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -38,6 +42,25 @@ static const char* ACTION_NAMES[ACTION_COUNT] = {
 // Scroll callback accumulator (static for GLFW callback)
 static double scroll_accumulator_x = 0.0;
 static double scroll_accumulator_y = 0.0;
+
+#ifdef PLATFORM_ARM_LINUX
+// ARM input action manager (shared with platform layer)
+static InputActionManager arm_action_manager;
+static bool arm_action_manager_initialized = false;
+
+// Soft reset combo state (Start + Select held for 2 seconds)
+static bool soft_reset_start_held = false;
+static bool soft_reset_select_held = false;
+static double soft_reset_combo_start_time = 0.0;
+#define SOFT_RESET_HOLD_TIME 2.0
+
+// ARM platform input callback - processes evdev events
+static void arm_input_callback(PlatformInputEvent* event, void* user_data) {
+    (void)user_data;
+    if (!arm_action_manager_initialized) return;
+    input_action_process_event(&arm_action_manager, event);
+}
+#endif
 
 #ifdef USE_GLFW
 // GLFW scroll callback
@@ -116,6 +139,16 @@ void init_input_manager(InputManager* input_manager, struct GLEngine* engine) {
 #else
     input_manager->mouse_x = 0;
     input_manager->mouse_y = 0;
+    
+#ifdef PLATFORM_ARM_LINUX
+    // Initialize InputActionManager and register callback for ARM
+    if (!arm_action_manager_initialized) {
+        input_action_init(&arm_action_manager);
+        arm_action_manager_initialized = true;
+    }
+    platform_set_input_callback(engine->platform, arm_input_callback, input_manager);
+    printf("ARM evdev input callback registered\\n");
+#endif
 #endif
     input_manager->prev_mouse_x = input_manager->mouse_x;
     input_manager->prev_mouse_y = input_manager->mouse_y;
@@ -158,8 +191,57 @@ void update_input_manager(InputManager* input_manager) {
         }
     }
 #else
-    // ARM: TODO - poll evdev input here
+    // ARM: Poll evdev input via platform layer and InputActionManager
+#ifdef PLATFORM_ARM_LINUX
+    // Initialize action manager on first use
+    if (!arm_action_manager_initialized) {
+        input_action_init(&arm_action_manager);
+        arm_action_manager_initialized = true;
+    }
+    
+    // Platform poll_events will invoke our callback which updates arm_action_manager
+    platform_poll_events(input_manager->engine->platform);
+    
+    // Update action manager for edge detection
+    input_action_update(&arm_action_manager);
+    
+    // Map InputActionManager states to InputManager action states
+    input_manager->action_states[ACTION_MOVE_UP] = input_action_pressed(&arm_action_manager, ACTION_MOVE_UP);
+    input_manager->action_states[ACTION_MOVE_DOWN] = input_action_pressed(&arm_action_manager, ACTION_MOVE_DOWN);
+    input_manager->action_states[ACTION_MOVE_LEFT] = input_action_pressed(&arm_action_manager, ACTION_MOVE_LEFT);
+    input_manager->action_states[ACTION_MOVE_RIGHT] = input_action_pressed(&arm_action_manager, ACTION_MOVE_RIGHT);
+    input_manager->action_states[ACTION_INTERACT] = input_action_pressed(&arm_action_manager, ACTION_CONFIRM);
+    input_manager->action_states[ACTION_MENU] = input_action_pressed(&arm_action_manager, ACTION_MENU);
+    input_manager->action_states[ACTION_ESCAPE] = input_action_pressed(&arm_action_manager, ACTION_CANCEL);
+    input_manager->action_states[ACTION_CAMERA_ZOOM_IN] = input_action_pressed(&arm_action_manager, ACTION_ZOOM_IN);
+    input_manager->action_states[ACTION_CAMERA_ZOOM_OUT] = input_action_pressed(&arm_action_manager, ACTION_ZOOM_OUT);
+    input_manager->action_states[ACTION_DEBUG_TOGGLE] = input_action_pressed(&arm_action_manager, ACTION_DEBUG_TOGGLE);
+    
+    // Check for soft reset combo (Start + Select held for SOFT_RESET_HOLD_TIME)
+    bool start_pressed = input_action_pressed(&arm_action_manager, ACTION_MENU);
+    bool select_pressed = input_action_pressed(&arm_action_manager, ACTION_MAP);
+    
+    if (start_pressed && select_pressed) {
+        if (!soft_reset_start_held || !soft_reset_select_held) {
+            // Combo just started
+            soft_reset_combo_start_time = platform_get_time(input_manager->engine->platform);
+        }
+        soft_reset_start_held = true;
+        soft_reset_select_held = true;
+        
+        double held_time = platform_get_time(input_manager->engine->platform) - soft_reset_combo_start_time;
+        if (held_time >= SOFT_RESET_HOLD_TIME) {
+            printf("[Input] Soft reset combo detected - requesting restart\n");
+            input_manager->engine->running = 0;  // Signal engine to stop
+            // Note: The init wrapper script will restart us
+        }
+    } else {
+        soft_reset_start_held = start_pressed;
+        soft_reset_select_held = select_pressed;
+    }
+#else
     memset(input_manager->action_states, 0, sizeof(input_manager->action_states));
+#endif
 #endif
     
     // Calculate pressed/released states

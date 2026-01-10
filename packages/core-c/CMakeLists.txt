@@ -159,6 +159,7 @@ set(CORE_SOURCES
     src/render_manager.c
     src/input_manager.c
     src/camera.c
+    src/game_loader.c
     src/cutscene/cutscene_manager.c
     src/hud/hud_manager.c
     src/input/input_actions.c
