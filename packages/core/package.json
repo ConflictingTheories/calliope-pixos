@@ -16,23 +16,9 @@
     "build": "cross-env NODE_ENV=production babel src --out-dir dist --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
     "webpack": "webpack",
     "dev": "webpack --watch",
-    "test": "jest",
-    "test:watch": "jest --watch"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
-    ],
-    "moduleNameMapper": {
-      "^@Components/(.*)$": "<rootDir>/src/components/$1",
-      "^@Spritz/(.*)$": "<rootDir>/src/spritz/$1",
-      "^@Engine/(.*)$": "<rootDir>/src/engine/$1",
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-    },
-    "transform": {
-      "^.+\\.(js|jsx)$": "babel-jest"
-    }
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "files": [
     "dist",

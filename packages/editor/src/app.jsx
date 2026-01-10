@@ -21,7 +21,6 @@ import AudioPreview from './audio-preview/index.jsx';
 import ModelPreview from './model-preview/index.jsx';
 import MapEditor3D from './map-editor/MapEditor3D.jsx';
 import TileEditor from './tile-editor/index.jsx';
-import TilesetEditor from './tileset-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
 import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
@@ -1075,58 +1074,6 @@ const App = () => {
     ]);
   }, [getData, zip]);
 
-  const renderTilesetEditor = useCallback(async (entry) => {
-    const tilesetContent = await getData(entry, true);
-    debug('App', '[TilesetEditor] Loading tileset:', entry.name);
-
-    // Gather image assets from the ZIP for the tileset editor
-    const imageAssets = [];
-    try {
-      const collectImages = async (node, path = '') => {
-        if (!node) return;
-        if (node.children) {
-          for (const child of node.children) {
-            const childPath = path ? `${path}/${child.name}` : child.name;
-            if (child.directory) {
-              await collectImages(child, childPath);
-            } else if (/\.(png|jpg|jpeg|gif|bmp)$/i.test(child.name)) {
-              try {
-                const dataUri = await toDataUri(child);
-                imageAssets.push({ name: childPath, uri: dataUri });
-              } catch (e) {
-                console.warn('[TilesetEditor] Could not load image:', childPath);
-              }
-            }
-          }
-        }
-      };
-      await collectImages(zip);
-      debug('App', '[TilesetEditor] Loaded', imageAssets.length, 'image assets');
-    } catch (err) {
-      console.warn('[TilesetEditor] Error loading assets:', err);
-    }
-
-    setContents([
-      <TilesetEditor
-        key={Date.now()}
-        content={tilesetContent}
-        assets={imageAssets}
-        onSave={async (obj) => {
-          try {
-            const fullPath = getEntryFullPath(entry);
-            const data = JSON.stringify(obj, null, 2);
-            await writeFile(fullPath, data);
-            debug('App', '[TilesetEditor] Saved:', fullPath);
-            alert('Tileset saved successfully!');
-          } catch (err) {
-            console.error('[TilesetEditor] Save failed:', err);
-            alert('Failed to save tileset: ' + err.message);
-          }
-        }}
-      />
-    ]);
-  }, [getData, zip, toDataUri]);
-
   const renderGeometryEditor = useCallback(async (entry) => {
     const geoContent = await getData(entry, true);
 
@@ -1430,11 +1377,6 @@ const App = () => {
         renderGeometryEditor(entry);
         return;
       }
-      // Check for 'tileset' first since it also contains 'tile'
-      if (name.includes('tileset')) {
-        renderTilesetEditor(entry);
-        return;
-      }
       if (name.includes('tiles')) {
         renderTileEditor(entry);
         return;
@@ -1464,7 +1406,7 @@ const App = () => {
     }
     // Unknown file types fallback
     setContents([<div key="unknown">No registered viewer for {name}</div>]);
-  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTileEditor, renderTilesetEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
+  }, [renderScriptEditor, renderMapEditor, renderGeometryEditor, renderTileEditor, renderCutsceneTool, renderImagePreview, renderAudioPreview, renderModelPreview, zip]);
 
   const hasContent = contents.length > 0;
   const errorCount = validationReport?.errors?.length ?? 0;

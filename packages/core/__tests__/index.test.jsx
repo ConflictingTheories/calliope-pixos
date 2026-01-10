@@ -1,18 +1,23 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import Pixos from '../src/index.jsx';
 
 // Mock the WebGLView component since it uses WebGL
-jest.mock('../src/components/WebGLView.jsx', () => {
-  return function MockWebGLView({ width, height }) {
-    return <div data-testid="webgl-view" style={{ width, height }}>WebGL View</div>;
+vi.mock('../src/components/WebGLView.jsx', () => {
+  return {
+    default: function MockWebGLView({ width, height }) {
+      return <div data-testid="webgl-view" style={{ width, height }}>WebGL View</div>;
+    }
   };
 });
 
 // Mock the SpritzProvider
-jest.mock('../src/spritz/player.js', () => {
-  return function MockSpritzProvider() {
-    return {};
+vi.mock('../src/spritz/player.js', () => {
+  return {
+    default: function MockSpritzProvider() {
+      return {};
+    }
   };
 });
 

@@ -135,13 +135,8 @@ function getHighlightedEntriesFeatures({
       filename: entry.name,
     };
 
-    // todo -- this is where we can add additional
-    // functionality to handle the various file types
-    // and their locations.
-
-    // ex) if lua - open in lua editor
-    // ex) if image - open in image viewer
-    // etc.
+    // File type routing is now handled by app.jsx based on file extension
+    // This provides a centralized location for all file type handlers
 
     // prompt to save file
     if (filesystemService.savePickersSupported()) {

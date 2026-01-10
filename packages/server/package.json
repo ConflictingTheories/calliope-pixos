@@ -6,7 +6,6 @@
   "main": "src/main.js",
   "scripts": {
     "start": "node src/main.js",
-    "start:legacy": "node src/v1/main.js",
     "dev": "node --watch src/main.js"
   },
   "files": [

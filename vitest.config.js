@@ -12,7 +12,7 @@ export default defineConfig({
     environment: 'jsdom',
     
     // Setup files to run before each test file
-    setupFiles: ['./vitest.setup.js'],
+    setupFiles: ['./vitest.setup.js', './packages/core/vitest.setup.js'],
     
     // Include patterns for test files
     include: [

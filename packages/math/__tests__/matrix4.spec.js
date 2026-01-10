@@ -1,5 +1,4 @@
-import { test, describe } from 'node:test';
-import assert from 'node:assert';
+import { test, describe, expect } from 'vitest';
 import { 
   create, 
   create3,
@@ -23,31 +22,31 @@ import {
 describe('Matrix4 creation', () => {
   test('create returns identity matrix', () => {
     const matrix = create();
-    assert.strictEqual(matrix[0], 1);
-    assert.strictEqual(matrix[5], 1);
-    assert.strictEqual(matrix[10], 1);
-    assert.strictEqual(matrix[15], 1);
-    assert.strictEqual(matrix[1], 0);
-    assert.strictEqual(matrix[2], 0);
-    assert.strictEqual(matrix.length, 16);
+    expect(matrix[0]).toBe(1);
+    expect(matrix[5]).toBe(1);
+    expect(matrix[10]).toBe(1);
+    expect(matrix[15]).toBe(1);
+    expect(matrix[1]).toBe(0);
+    expect(matrix[2]).toBe(0);
+    expect(matrix.length).toBe(16);
   });
 
   test('create3 returns 3x3 identity matrix', () => {
     const matrix = create3();
-    assert.strictEqual(matrix[0], 1);
-    assert.strictEqual(matrix[4], 1);
-    assert.strictEqual(matrix[8], 1);
-    assert.strictEqual(matrix.length, 9);
+    expect(matrix[0]).toBe(1);
+    expect(matrix[4]).toBe(1);
+    expect(matrix[8]).toBe(1);
+    expect(matrix.length).toBe(9);
   });
 
   test('from copies matrix values', () => {
     const src = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
     const dest = from(src);
     for (let i = 0; i < 16; i++) {
-      assert.strictEqual(dest[i], src[i]);
+      expect(dest[i]).toBe(src[i]);
     }
     // Ensure it's a new array
-    assert(dest !== src);
+    expect(dest !== src).toBeTruthy();
   });
 });
 
@@ -60,10 +59,10 @@ describe('Matrix4 projection', () => {
     const matrix = perspective(fovy, aspect, near, far);
     
     // Check that diagonal elements are non-zero
-    assert(matrix[0] !== 0);
-    assert(matrix[5] !== 0);
-    assert(matrix[10] !== 0);
-    assert.strictEqual(matrix[15], 0);
+    expect(matrix[0] !== 0).toBeTruthy();
+    expect(matrix[5] !== 0).toBeTruthy();
+    expect(matrix[10] !== 0).toBeTruthy();
+    expect(matrix[15]).toBe(0);
   });
 
   test('perspective with infinite far plane', () => {
@@ -72,14 +71,14 @@ describe('Matrix4 projection', () => {
     const near = 0.1;
     const matrix = perspective(fovy, aspect, near, Infinity);
     
-    assert.strictEqual(matrix[10], -1);
+    expect(matrix[10]).toBe(-1);
   });
 
   test('frustum creates valid projection matrix', () => {
     const matrix = frustum(-1, 1, -1, 1, 0.1, 100);
-    assert(matrix[0] !== 0);
-    assert(matrix[5] !== 0);
-    assert.strictEqual(matrix[14], -1);
+    expect(matrix[0] !== 0).toBeTruthy();
+    expect(matrix[5] !== 0).toBeTruthy();
+    expect(matrix[14]).toBe(-1);
   });
 });
 
@@ -89,9 +88,9 @@ describe('Matrix4 transforms', () => {
     const result = create();
     translate(result, identity, [5, 10, 15]);
     
-    assert.strictEqual(result[12], 5);
-    assert.strictEqual(result[13], 10);
-    assert.strictEqual(result[14], 15);
+    expect(result[12]).toBe(5);
+    expect(result[13]).toBe(10);
+    expect(result[14]).toBe(15);
   });
 
   test('rotate around Z axis by 90 degrees', () => {
@@ -102,10 +101,10 @@ describe('Matrix4 transforms', () => {
     rotate(result, identity, angle, [0, 0, 1]);
     
     // After 90 degree Z rotation, x -> y and y -> -x
-    assert(Math.abs(result[0]) < 0.0001); // cos(90) ≈ 0
-    assert(Math.abs(result[1] - 1) < 0.0001); // sin(90) = 1
-    assert(Math.abs(result[4] + 1) < 0.0001); // -sin(90) = -1
-    assert(Math.abs(result[5]) < 0.0001); // cos(90) ≈ 0
+    expect(Math.abs(result[0]) < 0.0001).toBeTruthy(); // cos(90) ≈ 0
+    expect(Math.abs(result[1] - 1) < 0.0001).toBeTruthy(); // sin(90) = 1
+    expect(Math.abs(result[4] + 1) < 0.0001).toBeTruthy(); // -sin(90) = -1
+    expect(Math.abs(result[5]) < 0.0001).toBeTruthy(); // cos(90) ≈ 0
   });
 
   test('scale scales diagonal elements', () => {
@@ -113,9 +112,9 @@ describe('Matrix4 transforms', () => {
     const result = create();
     scale(result, identity, [2, 3, 4]);
     
-    assert.strictEqual(result[0], 2);
-    assert.strictEqual(result[5], 3);
-    assert.strictEqual(result[10], 4);
+    expect(result[0]).toBe(2);
+    expect(result[5]).toBe(3);
+    expect(result[10]).toBe(4);
   });
 });
 
@@ -128,10 +127,10 @@ describe('Matrix4 operations', () => {
     multiply(result, identity1, identity2);
     
     // Should be identity
-    assert.strictEqual(result[0], 1);
-    assert.strictEqual(result[5], 1);
-    assert.strictEqual(result[10], 1);
-    assert.strictEqual(result[15], 1);
+    expect(result[0]).toBe(1);
+    expect(result[5]).toBe(1);
+    expect(result[10]).toBe(1);
+    expect(result[15]).toBe(1);
   });
 
   test('invert identity matrix equals identity', () => {
@@ -140,10 +139,10 @@ describe('Matrix4 operations', () => {
     
     invert(result, identity);
     
-    assert.strictEqual(result[0], 1);
-    assert.strictEqual(result[5], 1);
-    assert.strictEqual(result[10], 1);
-    assert.strictEqual(result[15], 1);
+    expect(result[0]).toBe(1);
+    expect(result[5]).toBe(1);
+    expect(result[10]).toBe(1);
+    expect(result[15]).toBe(1);
   });
 
   test('transpose swaps elements correctly', () => {
@@ -158,10 +157,10 @@ describe('Matrix4 operations', () => {
     transpose(result, matrix);
     
     // Check transposed positions
-    assert.strictEqual(result[1], 5);
-    assert.strictEqual(result[4], 2);
-    assert.strictEqual(result[2], 9);
-    assert.strictEqual(result[8], 3);
+    expect(result[1]).toBe(5);
+    expect(result[4]).toBe(2);
+    expect(result[2]).toBe(9);
+    expect(result[8]).toBe(3);
   });
 
   test('set copies matrix values', () => {
@@ -171,7 +170,7 @@ describe('Matrix4 operations', () => {
     set(src, dest);
     
     for (let i = 0; i < 16; i++) {
-      assert.strictEqual(dest[i], src[i]);
+      expect(dest[i]).toBe(src[i]);
     }
   });
 });
@@ -185,9 +184,9 @@ describe('lookAt', () => {
     const matrix = lookAt(eye, center, up);
     
     // Should be a valid 4x4 matrix
-    assert.strictEqual(matrix.length, 16);
+    expect(matrix.length).toBe(16);
     // Eye looking down -Z, so Z component should be negative
-    assert(matrix[14] < 0);
+    expect(matrix[14] < 0).toBeTruthy();
   });
 
   test('lookAt with same eye and center returns identity', () => {
@@ -198,10 +197,10 @@ describe('lookAt', () => {
     const matrix = lookAt(eye, center, up);
     
     // Should return identity when eye == center
-    assert.strictEqual(matrix[0], 1);
-    assert.strictEqual(matrix[5], 1);
-    assert.strictEqual(matrix[10], 1);
-    assert.strictEqual(matrix[15], 1);
+    expect(matrix[0]).toBe(1);
+    expect(matrix[5]).toBe(1);
+    expect(matrix[10]).toBe(1);
+    expect(matrix[15]).toBe(1);
   });
 });
 
@@ -213,9 +212,9 @@ describe('normalFromMat4', () => {
     normalFromMat4(normal, identity);
     
     // Normal matrix of identity should be identity
-    assert.strictEqual(normal[0], 1);
-    assert.strictEqual(normal[4], 1);
-    assert.strictEqual(normal[8], 1);
+    expect(normal[0]).toBe(1);
+    expect(normal[4]).toBe(1);
+    expect(normal[8]).toBe(1);
   });
 });
 
@@ -225,14 +224,14 @@ describe('Vector operations', () => {
     const b = [1, 2, 3];
     const result = subtractVectors(a, b);
     
-    assert.deepStrictEqual(result, [4, 8, 12]);
+    expect(result).toEqual([4, 8, 12]);
   });
 
   test('normalize creates unit vector', () => {
     const v = [0, 0, 5];
     const result = normalize(v);
     
-    assert.deepStrictEqual(result, [0, 0, 1]);
+    expect(result).toEqual([0, 0, 1]);
   });
 
   test('normalize handles zero vector', () => {
@@ -240,7 +239,7 @@ describe('Vector operations', () => {
     const result = normalize(v);
     
     // Should return default direction
-    assert.deepStrictEqual(result, [0, 0, 1]);
+    expect(result).toEqual([0, 0, 1]);
   });
 
   test('normalize handles small vectors', () => {
@@ -248,33 +247,33 @@ describe('Vector operations', () => {
     const result = normalize(v);
     
     // Should handle very small vectors gracefully
-    assert(result[0] !== Infinity);
+    expect(result[0] !== Infinity).toBeTruthy();
   });
 });
 
 describe('Utility functions', () => {
   test('isPowerOf2 checks power of 2', () => {
-    assert.strictEqual(isPowerOf2(1), true);
-    assert.strictEqual(isPowerOf2(2), true);
-    assert.strictEqual(isPowerOf2(4), true);
-    assert.strictEqual(isPowerOf2(8), true);
-    assert.strictEqual(isPowerOf2(16), true);
-    assert.strictEqual(isPowerOf2(32), true);
-    assert.strictEqual(isPowerOf2(64), true);
-    assert.strictEqual(isPowerOf2(128), true);
-    assert.strictEqual(isPowerOf2(256), true);
-    assert.strictEqual(isPowerOf2(512), true);
-    assert.strictEqual(isPowerOf2(1024), true);
+    expect(isPowerOf2(1)).toBe(true);
+    expect(isPowerOf2(2)).toBe(true);
+    expect(isPowerOf2(4)).toBe(true);
+    expect(isPowerOf2(8)).toBe(true);
+    expect(isPowerOf2(16)).toBe(true);
+    expect(isPowerOf2(32)).toBe(true);
+    expect(isPowerOf2(64)).toBe(true);
+    expect(isPowerOf2(128)).toBe(true);
+    expect(isPowerOf2(256)).toBe(true);
+    expect(isPowerOf2(512)).toBe(true);
+    expect(isPowerOf2(1024)).toBe(true);
   });
 
   test('isPowerOf2 returns false for non-powers', () => {
-    assert.strictEqual(isPowerOf2(0), true); // Edge case: 0 & -1 = 0
-    assert.strictEqual(isPowerOf2(3), false);
-    assert.strictEqual(isPowerOf2(5), false);
-    assert.strictEqual(isPowerOf2(6), false);
-    assert.strictEqual(isPowerOf2(7), false);
-    assert.strictEqual(isPowerOf2(9), false);
-    assert.strictEqual(isPowerOf2(15), false);
-    assert.strictEqual(isPowerOf2(100), false);
+    expect(isPowerOf2(0)).toBe(true); // Edge case: 0 & -1 = 0
+    expect(isPowerOf2(3)).toBe(false);
+    expect(isPowerOf2(5)).toBe(false);
+    expect(isPowerOf2(6)).toBe(false);
+    expect(isPowerOf2(7)).toBe(false);
+    expect(isPowerOf2(9)).toBe(false);
+    expect(isPowerOf2(15)).toBe(false);
+    expect(isPowerOf2(100)).toBe(false);
   });
 });

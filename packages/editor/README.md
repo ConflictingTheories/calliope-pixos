@@ -36,8 +36,7 @@ npm run serve
 src/
 ├── app.jsx                # Main application
 ├── sprite-editor/         # Sprite editing tools
-├── tile-editor/           # Tileset editor
-├── tileset-editor/        # Tileset management
+├── tile-editor/           # Individual tile editing
 ├── map-editor/            # Map building tools
 ├── cutscene-tool/         # Cutscene editor
 ├── geometry-editor/       # Geometry tools

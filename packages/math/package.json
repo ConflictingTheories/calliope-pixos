@@ -11,8 +11,9 @@
     "./matrix4": "./src/matrix4.js"
   },
   "scripts": {
-    "test": "node --test __tests__/*.spec.js",
-    "test:watch": "node --test --watch __tests__/*.spec.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "files": [
     "src",

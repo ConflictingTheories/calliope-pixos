@@ -423,7 +423,9 @@ function jsSID(bufferlen, background_noise) {
   //Thanks to the hardware being in my mind when coding this, more of the illegal instructions can be added fairly easily...
 
   function CPU() {
-    //the CPU emulation for SID/PRG playback (ToDo: CIA/VIC-IRQ/NMI/RESET vectors, BCD-mode)
+    // NOTE: CPU emulation for SID/PRG playback is partial.
+    // Missing features: CIA/VIC-IRQ/NMI/RESET vectors, BCD-mode
+    // See https://github.com/ConflictingTheories/calliope-pixos/issues for enhancement requests
     //'IR' is the instruction-register, naming after the hardware-equivalent
     IR = memory[PC];
     cycles = 2;

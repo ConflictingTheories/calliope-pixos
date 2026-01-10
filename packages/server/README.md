@@ -23,9 +23,6 @@ npm run start
 
 # Start with file watching (development)
 npm run dev
-
-# Start legacy v1 server
-npm run start:legacy
 ```
 
 ## API
@@ -45,12 +42,12 @@ The server accepts JSON messages over WebSocket:
 ```
 src/
 ├── main.js           # Server entry point
-├── v2/
-│   ├── api.js           # WebSocket API handler
-│   ├── clientManager.js # Client session management
-│   └── zoneHandler.js   # Zone/room management
-└── v1/
-    └── main.js          # Legacy server
+├── auth/             # Authentication utilities
+├── utils/            # Shared utilities
+└── v2/
+    ├── api.js           # WebSocket API handler
+    ├── clientManager.js # Client session management
+    └── zoneHandler.js   # Zone/room management
 ```
 
 ## Configuration
