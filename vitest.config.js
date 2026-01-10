@@ -79,7 +79,9 @@ export default defineConfig({
       '@Engine': path.resolve(__dirname, 'packages/core/src/engine'),
       '@Editor': path.resolve(__dirname, 'packages/editor/src'),
       '@Script': path.resolve(__dirname, 'packages/script/src'),
-      '@Math': path.resolve(__dirname, 'packages/math/src')
+      '@Math': path.resolve(__dirname, 'packages/math/src'),
+      '@Components': path.resolve(__dirname, 'packages/core/src/components'),
+      '@Spritz': path.resolve(__dirname, 'packages/core/src/spritz')
     }
   },
   
@@ -88,7 +90,9 @@ export default defineConfig({
       '@Engine': path.resolve(__dirname, 'packages/core/src/engine'),
       '@Editor': path.resolve(__dirname, 'packages/editor/src'),
       '@Script': path.resolve(__dirname, 'packages/script/src'),
-      '@Math': path.resolve(__dirname, 'packages/math/src')
+      '@Math': path.resolve(__dirname, 'packages/math/src'),
+      '@Components': path.resolve(__dirname, 'packages/core/src/components'),
+      '@Spritz': path.resolve(__dirname, 'packages/core/src/spritz')
     }
   }
 });

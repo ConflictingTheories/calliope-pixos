@@ -5,8 +5,7 @@
  * Tests for security utilities: RateLimiter, MessageValidator, ConnectionTracker
  */
 
-import { test, describe, beforeEach } from 'node:test';
-import assert from 'node:assert';
+import { test, describe, expect, beforeEach } from 'vitest';
 import { RateLimiter, MessageValidator, ConnectionTracker } from '../src/utils/security.js';
 
 describe('RateLimiter', () => {
@@ -21,7 +20,7 @@ describe('RateLimiter', () => {
     
     for (let i = 0; i < 5; i++) {
       const result = limiter.check(clientId);
-      assert.strictEqual(result.allowed, true);
+      expect(result.allowed).toBe(true);
     }
   });
 
@@ -35,8 +34,8 @@ describe('RateLimiter', () => {
     
     // Next request should be blocked
     const result = limiter.check(clientId);
-    assert.strictEqual(result.allowed, false);
-    assert(result.retryAfter > 0);
+    expect(result.allowed).toBe(false);
+    expect(result.retryAfter > 0).toBeTruthy();
   });
 
   test('removes client tracking', () => {
@@ -47,7 +46,7 @@ describe('RateLimiter', () => {
     
     // After removal, client should start fresh
     const result = limiter.check(clientId);
-    assert.strictEqual(result.allowed, true);
+    expect(result.allowed).toBe(true);
   });
 
   test('cleanup removes old entries', () => {
@@ -59,12 +58,12 @@ describe('RateLimiter', () => {
     
     // Recent entries should still exist
     const result = limiter.check(clientId);
-    assert.strictEqual(result.allowed, true);
+    expect(result.allowed).toBe(true);
   });
 
   test('destroy clears interval', () => {
     limiter.destroy();
-    assert(true); // No error thrown
+    expect(true).toBeTruthy(); // No error thrown
   });
 });
 
@@ -79,23 +78,23 @@ describe('MessageValidator', () => {
     const payload = { zoneId: 'test-zone' };
     const result = validator.validate('load-zone', payload);
     
-    assert.strictEqual(result.valid, true);
-    assert.deepStrictEqual(result.errors, []);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
   });
 
   test('rejects load-zone without zoneId', () => {
     const payload = {};
     const result = validator.validate('load-zone', payload);
     
-    assert.strictEqual(result.valid, false);
-    assert(result.errors.length > 0);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length > 0).toBeTruthy();
   });
 
   test('validates join-zone message', () => {
     const payload = { zoneId: 'test-zone' };
     const result = validator.validate('join-zone', payload);
     
-    assert.strictEqual(result.valid, true);
+    expect(result.valid).toBe(true);
   });
 
   test('validates update-avatar message', () => {
@@ -108,7 +107,7 @@ describe('MessageValidator', () => {
     };
     const result = validator.validate('update-avatar', payload);
     
-    assert.strictEqual(result.valid, true);
+    expect(result.valid).toBe(true);
   });
 
   test('validates action message', () => {
@@ -119,22 +118,23 @@ describe('MessageValidator', () => {
     };
     const result = validator.validate('action', payload);
     
-    assert.strictEqual(result.valid, true);
+    expect(result.valid).toBe(true);
   });
 
   test('rejects oversized string', () => {
     const payload = { zoneId: 'a'.repeat(500) }; // Exceeds maxLength of 256
     const result = validator.validate('load-zone', payload);
     
-    assert.strictEqual(result.valid, false);
+    expect(result.valid).toBe(false);
   });
 
   test('allows unknown message types', () => {
     const payload = { foo: 'bar' };
     const result = validator.validate('unknown-type', payload);
     
-    // Unknown types should pass (no schema to validate against)
-    assert.strictEqual(result.valid, true);
+    // Unknown types should fail validation
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toBe('Unknown message type: unknown-type');
   });
 
   test('sanitize removes dangerous characters', () => {
@@ -146,8 +146,8 @@ describe('MessageValidator', () => {
     const sanitized = validator.sanitize(payload);
     
     // Should escape or remove script tags
-    assert(!sanitized.text.includes('<script>'));
-    assert.strictEqual(sanitized.normal, 'hello world');
+    expect(!sanitized.text.includes('<script>')).toBeTruthy();
+    expect(sanitized.normal).toBe('hello world');
   });
 
   test('sanitize handles nested objects', () => {
@@ -160,7 +160,7 @@ describe('MessageValidator', () => {
     const sanitized = validator.sanitize(payload);
     
     // Should handle nested objects
-    assert(sanitized.nested);
+    expect(sanitized.nested).toBeTruthy();
   });
 });
 
@@ -172,9 +172,9 @@ describe('ConnectionTracker', () => {
   });
 
   test('allows connections under the limit', () => {
-    assert.strictEqual(tracker.addConnection('client-1', '192.168.1.1'), true);
-    assert.strictEqual(tracker.addConnection('client-2', '192.168.1.1'), true);
-    assert.strictEqual(tracker.addConnection('client-3', '192.168.1.1'), true);
+    expect(tracker.addConnection('client-1', '192.168.1.1')).toBe(true);
+    expect(tracker.addConnection('client-2', '192.168.1.1')).toBe(true);
+    expect(tracker.addConnection('client-3', '192.168.1.1')).toBe(true);
   });
 
   test('blocks connections over the limit', () => {
@@ -183,7 +183,7 @@ describe('ConnectionTracker', () => {
     tracker.addConnection('client-3', '192.168.1.1');
     
     // Fourth connection from same IP should be blocked
-    assert.strictEqual(tracker.addConnection('client-4', '192.168.1.1'), false);
+    expect(tracker.addConnection('client-4', '192.168.1.1')).toBe(false);
   });
 
   test('allows connections from different IPs', () => {
@@ -192,7 +192,7 @@ describe('ConnectionTracker', () => {
     tracker.addConnection('client-3', '192.168.1.1');
     
     // Different IP should be allowed
-    assert.strictEqual(tracker.addConnection('client-4', '192.168.1.2'), true);
+    expect(tracker.addConnection('client-4', '192.168.1.2')).toBe(true);
   });
 
   test('removes connection frees up slot', () => {
@@ -204,17 +204,17 @@ describe('ConnectionTracker', () => {
     tracker.removeConnection('client-1', '192.168.1.1');
     
     // New connection should be allowed
-    assert.strictEqual(tracker.addConnection('client-4', '192.168.1.1'), true);
+    expect(tracker.addConnection('client-4', '192.168.1.1')).toBe(true);
   });
 
   test('getConnectionCount returns correct count', () => {
     tracker.addConnection('client-1', '192.168.1.1');
     tracker.addConnection('client-2', '192.168.1.1');
     
-    assert.strictEqual(tracker.getConnectionCount('192.168.1.1'), 2);
+    expect(tracker.getConnectionCount('192.168.1.1')).toBe(2);
   });
 
   test('getConnectionCount returns 0 for unknown IP', () => {
-    assert.strictEqual(tracker.getConnectionCount('10.0.0.1'), 0);
+    expect(tracker.getConnectionCount('10.0.0.1')).toBe(0);
   });
 });

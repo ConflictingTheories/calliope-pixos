@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import TextureAtlas from '../../../src/engine/core/render/TextureAtlas.js';
+import TextureAtlas from '../../src/engine/core/render/TextureAtlas.js';
 
 // Mock render manager
 const createMockRenderManager = () => ({

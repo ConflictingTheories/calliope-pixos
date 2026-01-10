@@ -5,8 +5,7 @@
  * Tests for RedisStore with in-memory fallback
  */
 
-import { test, describe, beforeEach, afterEach } from 'node:test';
-import assert from 'node:assert';
+import { test, describe, expect, beforeEach, afterEach } from 'vitest';
 import { RedisStore } from '../src/utils/redis-store.js';
 
 describe('RedisStore (in-memory fallback)', () => {
@@ -33,12 +32,12 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.saveZoneState(zoneId, state);
       const loaded = await store.loadZoneState(zoneId);
       
-      assert.deepStrictEqual(loaded, state);
+      expect(loaded).toEqual(state);
     });
 
     test('loadZoneState returns null for non-existent zone', async () => {
       const loaded = await store.loadZoneState('non-existent');
-      assert.strictEqual(loaded, null);
+      expect(loaded).toBe(null);
     });
 
     test('deleteZoneState removes zone', async () => {
@@ -48,7 +47,7 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.deleteZoneState(zoneId);
       const loaded = await store.loadZoneState(zoneId);
       
-      assert.strictEqual(loaded, null);
+      expect(loaded).toBe(null);
     });
   });
 
@@ -60,14 +59,14 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.saveSession(clientId, sessionData);
       const loaded = await store.loadSession(clientId);
       
-      assert.strictEqual(loaded.zoneId, 'zone-1');
-      assert.deepStrictEqual(loaded.avatar, { x: 10, y: 20 });
-      assert(loaded.savedAt); // Should have timestamp
+      expect(loaded.zoneId).toBe('zone-1');
+      expect(loaded.avatar).toEqual({ x: 10, y: 20 });
+      expect(loaded.savedAt).toBeTruthy(); // Should have timestamp
     });
 
     test('loadSession returns null for non-existent session', async () => {
       const loaded = await store.loadSession('non-existent');
-      assert.strictEqual(loaded, null);
+      expect(loaded).toBe(null);
     });
 
     test('deleteSession removes session', async () => {
@@ -77,7 +76,7 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.deleteSession(clientId);
       const loaded = await store.loadSession(clientId);
       
-      assert.strictEqual(loaded, null);
+      expect(loaded).toBe(null);
     });
 
     test('extendSession updates TTL', async () => {
@@ -85,12 +84,12 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.saveSession(clientId, { test: true });
       
       const result = await store.extendSession(clientId);
-      assert.strictEqual(result, true);
+      expect(result).toBe(true);
     });
 
     test('extendSession returns false for non-existent session', async () => {
       const result = await store.extendSession('non-existent');
-      assert.strictEqual(result, false);
+      expect(result).toBe(false);
     });
   });
 
@@ -103,7 +102,7 @@ describe('RedisStore (in-memory fallback)', () => {
       const players = await store.getZonePlayers(zoneId);
       
       // In memory fallback, this is stored in zone state
-      assert(players);
+      expect(players).toBeTruthy();
     });
 
     test('removePlayerFromZone removes player', async () => {
@@ -113,12 +112,12 @@ describe('RedisStore (in-memory fallback)', () => {
       await store.removePlayerFromZone(zoneId, 'player-1');
       
       // Should succeed without error
-      assert(true);
+      expect(true).toBeTruthy();
     });
 
     test('getZonePlayers returns empty object for empty zone', async () => {
       const players = await store.getZonePlayers('empty-zone');
-      assert.deepStrictEqual(players, {});
+      expect(players).toEqual({});
     });
   });
 
@@ -129,27 +128,27 @@ describe('RedisStore (in-memory fallback)', () => {
       
       const stats = await store.getStats();
       
-      assert.strictEqual(stats.connected, false); // No Redis connection
-      assert(stats.memoryEntries >= 2);
+      expect(stats.connected).toBe(false); // No Redis connection
+      expect(stats.memoryEntries >= 2).toBeTruthy();
     });
 
     test('cleanupExpired removes old entries', async () => {
       // This is hard to test without time manipulation
       // Just verify it doesn't throw
       store.cleanupExpired();
-      assert(true);
+      expect(true).toBeTruthy();
     });
 
     test('key generates correct prefix', () => {
       const key = store.key('zone', 'test-id');
-      assert.strictEqual(key, 'test:zone:test-id');
+      expect(key).toBe('test:zone:test-id');
     });
   });
 
   describe('Connection', () => {
     test('connect returns false without Redis URL', async () => {
       const result = await store.connect();
-      assert.strictEqual(result, false);
+      expect(result).toBe(false);
     });
   });
 });
@@ -158,14 +157,14 @@ describe('RedisStore key prefixing', () => {
   test('uses custom prefix', () => {
     const store = new RedisStore({ prefix: 'custom:' });
     const key = store.key('session', 'test');
-    assert.strictEqual(key, 'custom:session:test');
+    expect(key).toBe('custom:session:test');
     store.destroy();
   });
 
   test('uses default prefix', () => {
     const store = new RedisStore({});
     const key = store.key('zone', 'test');
-    assert.strictEqual(key, 'pixospritz:zone:test');
+    expect(key).toBe('pixospritz:zone:test');
     store.destroy();
   });
 });

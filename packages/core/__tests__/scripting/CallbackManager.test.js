@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import CallbackManager from '../../../src/engine/scripting/CallbackManager.js';
+import CallbackManager from '../../src/engine/scripting/CallbackManager.js';
 
 // Mock engine
 const createMockEngine = () => ({
