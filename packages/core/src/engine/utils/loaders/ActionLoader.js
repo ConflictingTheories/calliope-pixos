@@ -50,7 +50,8 @@ export class ActionLoader {
     debug('Loader', {afterLoad, runConfigure})
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
-    Object.assign(instance, require('@Engine/actions/' + type + '.js')['default']);
+    const actionModule = await import('../../actions/' + type + '.js');
+    Object.assign(instance, actionModule.default);
     instance.templateLoaded = true;
     debug('Loader', 'Notifying in Action: ' + type);
 

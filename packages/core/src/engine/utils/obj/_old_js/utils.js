@@ -1,45 +1,50 @@
 'use strict';
-
-var __values = void 0 && (void 0).__values || function (o) {
-  var s = typeof Symbol === 'function' && Symbol.iterator,
-    m = s && o[s],
-    i = 0;
-  if (m) return m.call(o);
-  if (o && typeof o.length === 'number') return {
-    next: function next() {
-      if (o && i >= o.length) o = void 0;
+var __values =
+  (this && this.__values) ||
+  function (o) {
+    var s = typeof Symbol === 'function' && Symbol.iterator,
+      m = s && o[s],
+      i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === 'number')
       return {
-        value: o && o[i++],
-        done: !o
+        next: function () {
+          if (o && i >= o.length) o = void 0;
+          return { value: o && o[i++], done: !o };
+        },
       };
-    }
+    throw new TypeError(s ? 'Object is not iterable.' : 'Symbol.iterator is not defined.');
   };
-  throw new TypeError(s ? 'Object is not iterable.' : 'Symbol.iterator is not defined.');
-};
-var __read = void 0 && (void 0).__read || function (o, n) {
-  var m = typeof Symbol === 'function' && o[Symbol.iterator];
-  if (!m) return o;
-  var i = m.call(o),
-    r,
-    ar = [],
-    e;
-  try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-  } catch (error) {
-    e = {
-      error: error
-    };
-  } finally {
+var __read =
+  (this && this.__read) ||
+  function (o, n) {
+    var m = typeof Symbol === 'function' && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o),
+      r,
+      ar = [],
+      e;
     try {
-      if (r && !r.done && (m = i['return'])) m.call(i);
+      while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    } catch (error) {
+      e = { error: error };
     } finally {
-      if (e) throw e.error;
+      try {
+        if (r && !r.done && (m = i['return'])) m.call(i);
+      } finally {
+        if (e) throw e.error;
+      }
     }
-  }
-  return ar;
-};
+    return ar;
+  };
 exports.__esModule = true;
-exports.deleteMeshBuffers = exports.initMeshBuffers = exports._buildBuffer = exports.downloadMeshes = exports.downloadModels = exports.downloadModelsFromZip = void 0;
+exports.deleteMeshBuffers =
+  exports.initMeshBuffers =
+  exports._buildBuffer =
+  exports.downloadMeshes =
+  exports.downloadModels =
+  exports.downloadModelsFromZip =
+    void 0;
 var mesh_1 = require('./mesh');
 var material_1 = require('./material');
 function create1PixelTexture(gl, pixel) {
@@ -60,62 +65,70 @@ function downloadMtlTextures(gl, mtl, root) {
       continue;
     }
     var material = mtl.materials[materialName];
-    var _loop_1 = function _loop_1(attr) {
+    var _loop_1 = function (attr) {
       var mapData = material[attr];
       if (!mapData || !mapData.filename) {
         return 'continue';
       }
       var url = root + mapData.filename;
-      textures.push(fetch(url).then(function (response) {
-        if (!response.ok) {
-          throw new Error();
-        }
-        return response.blob();
-      }).then(function (data) {
-        var image = new Image();
-        image.src = URL.createObjectURL(data);
-        mapData.texture = image;
-        var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
-        mapData.glTexture = texture;
-
-        // Upload the image into the texture with proper settings
-        image.onload = function () {
-          gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
-          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
-
-          // Check if power of 2 for mipmap support (like the demo viewer)
-          var isPowerOf2 = function isPowerOf2(value) {
-            return (value & value - 1) === 0 && value > 0;
-          };
-          if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-            gl.generateMipmap(gl.TEXTURE_2D);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-          } else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-          }
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        };
-        return new Promise(function (resolve) {
-          return image.onload = function () {
-            return resolve(mapData);
-          };
-        });
-      })['catch'](function () {
-        console.error('Unable to download texture: '.concat(url));
-      }));
+      textures.push(
+        fetch(url)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error();
+            }
+            return response.blob();
+          })
+          .then(function (data) {
+            var image = new Image();
+            image.src = URL.createObjectURL(data);
+            mapData.texture = image;
+            var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
+            mapData.glTexture = texture;
+            
+            // Upload the image into the texture with proper settings
+            image.onload = function () {
+              gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
+              
+              // Check if power of 2 for mipmap support (like the demo viewer)
+              var isPowerOf2 = function(value) {
+                return (value & (value - 1)) === 0 && value > 0;
+              };
+              
+              if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+              } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+              }
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            };
+            return new Promise(function (resolve) {
+              return (image.onload = function () {
+                return resolve(mapData);
+              });
+            });
+          })
+          ['catch'](function () {
+            console.error('Unable to download texture: '.concat(url));
+          })
+      );
     };
     try {
-      for (var mapAttributes_1 = (e_1 = void 0, __values(mapAttributes)), mapAttributes_1_1 = mapAttributes_1.next(); !mapAttributes_1_1.done; mapAttributes_1_1 = mapAttributes_1.next()) {
+      for (
+        var mapAttributes_1 = ((e_1 = void 0), __values(mapAttributes)), mapAttributes_1_1 = mapAttributes_1.next();
+        !mapAttributes_1_1.done;
+        mapAttributes_1_1 = mapAttributes_1.next()
+      ) {
         var attr = mapAttributes_1_1.value;
         _loop_1(attr);
       }
     } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
-      };
+      e_1 = { error: e_1_1 };
     } finally {
       try {
         if (mapAttributes_1_1 && !mapAttributes_1_1.done && (_a = mapAttributes_1['return'])) _a.call(mapAttributes_1);
@@ -138,60 +151,70 @@ function downloadMtlTexturesFromZip(gl, mtl, root, zip) {
       continue;
     }
     var material = mtl.materials[materialName];
-    var _loop_1 = function _loop_1(attr) {
+    var _loop_1 = function (attr) {
       var mapData = material[attr];
       if (!mapData || !mapData.filename) {
         return 'continue';
       }
       var url = root + mapData.filename;
-      textures.push(zip.file(url).async('arrayBuffer').then(function (imageData) {
-        var buffer = new Uint8Array(imageData);
-        return new Blob([buffer.buffer]);
-      }).then(function (data) {
-        var image = new Image();
-        image.src = URL.createObjectURL(data);
-        mapData.texture = image;
-        var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
-        mapData.glTexture = texture;
-
-        // Upload the image into the texture with proper settings
-        image.onload = function () {
-          gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
-          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
-
-          // Check if power of 2 for mipmap support (like the demo viewer)
-          var isPowerOf2 = function isPowerOf2(value) {
-            return (value & value - 1) === 0 && value > 0;
-          };
-          if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-            gl.generateMipmap(gl.TEXTURE_2D);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-          } else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-          }
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        };
-        return new Promise(function (resolve) {
-          return image.onload = function () {
-            return resolve(mapData);
-          };
-        });
-      })['catch'](function () {
-        console.error('Unable to download texture from zip: '.concat(url));
-      }));
+      textures.push(
+        zip
+          .file(url)
+          .async('arrayBuffer')
+          .then(function (imageData) {
+            let buffer = new Uint8Array(imageData);
+            return new Blob([buffer.buffer]);
+          })
+          .then(function (data) {
+            var image = new Image();
+            image.src = URL.createObjectURL(data);
+            mapData.texture = image;
+            var texture = create1PixelTexture(gl, [128, 192, 86, 255]);
+            mapData.glTexture = texture;
+            
+            // Upload the image into the texture with proper settings
+            image.onload = function () {
+              gl.bindTexture(gl.TEXTURE_2D, mapData.glTexture);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapData.texture);
+              
+              // Check if power of 2 for mipmap support (like the demo viewer)
+              var isPowerOf2 = function(value) {
+                return (value & (value - 1)) === 0 && value > 0;
+              };
+              
+              if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+              } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+              }
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            };
+            return new Promise(function (resolve) {
+              return (image.onload = function () {
+                return resolve(mapData);
+              });
+            });
+          })
+          ['catch'](function () {
+            console.error('Unable to download texture from zip: '.concat(url));
+          })
+      );
     };
     try {
-      for (var mapAttributes_1 = (e_1 = void 0, __values(mapAttributes)), mapAttributes_1_1 = mapAttributes_1.next(); !mapAttributes_1_1.done; mapAttributes_1_1 = mapAttributes_1.next()) {
+      for (
+        var mapAttributes_1 = ((e_1 = void 0), __values(mapAttributes)), mapAttributes_1_1 = mapAttributes_1.next();
+        !mapAttributes_1_1.done;
+        mapAttributes_1_1 = mapAttributes_1.next()
+      ) {
         var attr = mapAttributes_1_1.value;
         _loop_1(attr);
       }
     } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
-      };
+      e_1 = { error: e_1_1 };
     } finally {
       try {
         if (mapAttributes_1_1 && !mapAttributes_1_1.done && (_a = mapAttributes_1['return'])) _a.call(mapAttributes_1);
@@ -254,13 +277,13 @@ function getMtl(modelOptions) {
 function downloadModels(gl, models) {
   var e_2, _a;
   var finished = [];
-  var _loop_2 = function _loop_2(model) {
+  var _loop_2 = function (model) {
     if (!model.obj) {
       throw new Error('"obj" attribute of model object not set. The .obj file is required to be set ' + 'in order to use downloadModels()');
     }
     var options = {
       indicesPerMaterial: !!model.indicesPerMaterial,
-      calcTangentsAndBitangents: !!model.calcTangentsAndBitangents
+      calcTangentsAndBitangents: !!model.calcTangentsAndBitangents,
     };
     // if the name is not provided, dervive it from the given OBJ
     var name_1 = model.name;
@@ -269,35 +292,40 @@ function downloadModels(gl, models) {
       name_1 = parts[parts.length - 1].replace('.obj', '');
     }
     var namePromise = Promise.resolve(name_1);
-    var meshPromise = fetch(model.obj).then(function (response) {
-      return response.text();
-    }).then(function (data) {
-      return new mesh_1['default'](data, options);
-    });
+    var meshPromise = fetch(model.obj)
+      .then(function (response) {
+        return response.text();
+      })
+      .then(function (data) {
+        return new mesh_1['default'](data, options);
+      });
     var mtlPromise = void 0;
     // Download MaterialLibrary file?
     if (model.mtl) {
       var mtl_1 = getMtl(model);
-      mtlPromise = fetch(mtl_1).then(function (response) {
-        return response.text();
-      }).then(function (data) {
-        var material = new material_1.MaterialLibrary(data);
-        if (model.downloadMtlTextures !== false) {
-          var root = model.mtlTextureRoot;
-          if (!root) {
-            // get the directory of the MTL file as default
-            root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+      mtlPromise = fetch(mtl_1)
+        .then(function (response) {
+          return response.text();
+        })
+        .then(function (data) {
+          var material = new material_1.MaterialLibrary(data);
+          if (model.downloadMtlTextures !== false) {
+            var root = model.mtlTextureRoot;
+            if (!root) {
+              // get the directory of the MTL file as default
+              root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+            }
+            // downloadMtlTextures returns a Promise that
+            // is resolved once all of the images it
+            // contains are downloaded. These are then
+            // attached to the map data objects
+            return Promise.all([Promise.resolve(material), downloadMtlTextures(gl, material, root)]);
           }
-          // downloadMtlTextures returns a Promise that
-          // is resolved once all of the images it
-          // contains are downloaded. These are then
-          // attached to the map data objects
-          return Promise.all([Promise.resolve(material), downloadMtlTextures(gl, material, root)]);
-        }
-        return Promise.all([Promise.resolve(material), undefined]);
-      }).then(function (value) {
-        return value;
-      });
+          return Promise.all([Promise.resolve(material), undefined]);
+        })
+        .then(function (value) {
+          return value;
+        });
     }
     var parsed = [namePromise, meshPromise, mtlPromise];
     finished.push(Promise.all(parsed));
@@ -308,9 +336,7 @@ function downloadModels(gl, models) {
       _loop_2(model);
     }
   } catch (e_2_1) {
-    e_2 = {
-      error: e_2_1
-    };
+    e_2 = { error: e_2_1 };
   } finally {
     try {
       if (models_1_1 && !models_1_1.done && (_a = models_1['return'])) _a.call(models_1);
@@ -338,9 +364,7 @@ function downloadModels(gl, models) {
         models[name_2] = mesh;
       }
     } catch (e_3_1) {
-      e_3 = {
-        error: e_3_1
-      };
+      e_3 = { error: e_3_1 };
     } finally {
       try {
         if (ms_1_1 && !ms_1_1.done && (_a = ms_1['return'])) _a.call(ms_1);
@@ -354,54 +378,60 @@ function downloadModels(gl, models) {
 function downloadModelsFromZip(gl, models, zip) {
   var e_2, _a;
   var finished = [];
-  var _loop_2 = function _loop_2(model) {
+  var _loop_2 = function (model) {
     if (!model.obj) {
       throw new Error('"obj" attribute of model object not set. The .obj file is required to be set ' + 'in order to use downloadModels()');
     }
     var options = {
       indicesPerMaterial: !!model.indicesPerMaterial,
-      calcTangentsAndBitangents: !!model.calcTangentsAndBitangents
+      calcTangentsAndBitangents: !!model.calcTangentsAndBitangents,
     };
     // if the name is not provided, dervive it from the given OBJ
     var parts = model.obj.split('/');
     var name_1 = parts[parts.length - 1].replace('.obj', '');
     var namePromise = Promise.resolve(name_1);
-
+    
     // Check if OBJ file exists in zip
-    var objFile = zip.file("models/".concat(name_1, ".obj"));
+    var objFile = zip.file(`models/${name_1}.obj`);
     if (!objFile) {
-      console.warn("[downloadModelsFromZip] Model file not found: models/".concat(name_1, ".obj"));
+      console.warn(`[downloadModelsFromZip] Model file not found: models/${name_1}.obj`);
       return "continue";
     }
-    var meshPromise = objFile.async('string').then(function (data) {
-      return new mesh_1['default'](data, options);
-    });
+    
+    var meshPromise = objFile
+      .async('string')
+      .then(function (data) {
+        return new mesh_1['default'](data, options);
+      });
     var mtlPromise = void 0;
     // Download MaterialLibrary file?
     if (model.mtl) {
       var mtl_1 = getMtl(model);
-      var mtlFile = zip.file("models/".concat(name_1, ".mtl"));
+      var mtlFile = zip.file(`models/${name_1}.mtl`);
       if (mtlFile) {
-        mtlPromise = mtlFile.async('string').then(function (data) {
-          var material = new material_1.MaterialLibrary(data);
-          if (model.downloadMtlTextures !== false) {
-            var root = model.mtlTextureRoot;
-            if (!root) {
-              // get the directory of the MTL file as default
-              root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+        mtlPromise = mtlFile
+          .async('string')
+          .then(function (data) {
+            var material = new material_1.MaterialLibrary(data);
+            if (model.downloadMtlTextures !== false) {
+              var root = model.mtlTextureRoot;
+              if (!root) {
+                // get the directory of the MTL file as default
+                root = mtl_1.substr(0, mtl_1.lastIndexOf('/'));
+              }
+              // downloadMtlTextures returns a Promise that
+              // is resolved once all of the images it
+              // contains are downloaded. These are then
+              // attached to the map data objects
+              return Promise.all([Promise.resolve(material), downloadMtlTexturesFromZip(gl, material, root, zip)]);
             }
-            // downloadMtlTextures returns a Promise that
-            // is resolved once all of the images it
-            // contains are downloaded. These are then
-            // attached to the map data objects
-            return Promise.all([Promise.resolve(material), downloadMtlTexturesFromZip(gl, material, root, zip)]);
-          }
-          return Promise.all([Promise.resolve(material), undefined]);
-        }).then(function (value) {
-          return value;
-        });
+            return Promise.all([Promise.resolve(material), undefined]);
+          })
+          .then(function (value) {
+            return value;
+          });
       } else {
-        console.warn("[downloadModelsFromZip] MTL file not found: models/".concat(name_1, ".mtl"));
+        console.warn(`[downloadModelsFromZip] MTL file not found: models/${name_1}.mtl`);
       }
     }
     var parsed = [namePromise, meshPromise, mtlPromise];
@@ -413,9 +443,7 @@ function downloadModelsFromZip(gl, models, zip) {
       _loop_2(model);
     }
   } catch (e_2_1) {
-    e_2 = {
-      error: e_2_1
-    };
+    e_2 = { error: e_2_1 };
   } finally {
     try {
       if (models_1_1 && !models_1_1.done && (_a = models_1['return'])) _a.call(models_1);
@@ -443,9 +471,7 @@ function downloadModelsFromZip(gl, models, zip) {
         models[name_2] = mesh;
       }
     } catch (e_3_1) {
-      e_3 = {
-        error: e_3_1
-      };
+      e_3 = { error: e_3_1 };
     } finally {
       try {
         if (ms_1_1 && !ms_1_1.done && (_a = ms_1['return'])) _a.call(ms_1);
@@ -480,16 +506,20 @@ function downloadMeshes(nameAndURLs, completionCallback, meshes) {
     meshes = {};
   }
   var completed = [];
-  var _loop_3 = function _loop_3(mesh_name) {
+  var _loop_3 = function (mesh_name) {
     if (!nameAndURLs.hasOwnProperty(mesh_name)) {
       return 'continue';
     }
     var url = nameAndURLs[mesh_name];
-    completed.push(fetch(url).then(function (response) {
-      return response.text();
-    }).then(function (data) {
-      return [mesh_name, new mesh_1['default'](data)];
-    }));
+    completed.push(
+      fetch(url)
+        .then(function (response) {
+          return response.text();
+        })
+        .then(function (data) {
+          return [mesh_name, new mesh_1['default'](data)];
+        })
+    );
   };
   for (var mesh_name in nameAndURLs) {
     _loop_3(mesh_name);
@@ -504,9 +534,7 @@ function downloadMeshes(nameAndURLs, completionCallback, meshes) {
         meshes[name_3] = mesh;
       }
     } catch (e_4_1) {
-      e_4 = {
-        error: e_4_1
-      };
+      e_4 = { error: e_4_1 };
     } finally {
       try {
         if (ms_2_1 && !ms_2_1.done && (_a = ms_2['return'])) _a.call(ms_2);

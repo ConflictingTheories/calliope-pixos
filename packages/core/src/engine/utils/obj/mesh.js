@@ -1,76 +1,11 @@
-"use strict";
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-exports.__esModule = true;
-var layout_1 = require("./layout");
+import { Layout } from "./layout";
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data
  * and collect the vertex, vertex normal, texture, and face information. This
  * information can then be used later on when creating your VBOs. See
  * OBJ.initMeshBuffers for an example of how to use the newly created Mesh
  */
-var Mesh = /** @class */ (function () {
+export default class Mesh {
     /**
      * Create a Mesh
      * @param {String} objectData - a string representation of an OBJ file with
@@ -90,8 +25,7 @@ var Mesh = /** @class */ (function () {
      *     and bitangents when loading of the OBJ is completed. This adds two new
      *     attributes to the Mesh instance: `tangents` and `bitangents`.
      */
-    function Mesh(objectData, options) {
-        var e_1, _a, e_2, _b;
+    constructor(objectData, options) {
         this.name = "";
         this.indicesPerMaterial = [];
         this.materialsByIndex = {};
@@ -179,181 +113,183 @@ var Mesh = /** @class */ (function () {
             exists in the hashindices object, its corresponding value is the index of
             that group and is appended to the unpacked indices array.
            */
-        var verts = [];
-        var vertNormals = [];
-        var textures = [];
-        var materialNamesByIndex = [];
-        var materialIndicesByName = {};
+        const verts = [];
+        const vertNormals = [];
+        const textures = [];
+        const materialNamesByIndex = [];
+        const materialIndicesByName = {};
         // keep track of what material we've seen last
-        var currentMaterialIndex = -1;
-        var currentObjectByMaterialIndex = 0;
+        let currentMaterialIndex = -1;
+        let currentObjectByMaterialIndex = 0;
         // unpacking stuff
-        var unpacked = {
+        const unpacked = {
             verts: [],
             norms: [],
             textures: [],
             hashindices: {},
             indices: [[]],
             materialIndices: [],
-            index: 0
+            index: 0,
         };
-        var VERTEX_RE = /^v\s/;
-        var NORMAL_RE = /^vn\s/;
-        var TEXTURE_RE = /^vt\s/;
-        var FACE_RE = /^f\s/;
-        var WHITESPACE_RE = /\s+/;
-        var USE_MATERIAL_RE = /^usemtl/;
+        const VERTEX_RE = /^v\s/;
+        const NORMAL_RE = /^vn\s/;
+        const TEXTURE_RE = /^vt\s/;
+        const FACE_RE = /^f\s/;
+        const WHITESPACE_RE = /\s+/;
+        const USE_MATERIAL_RE = /^usemtl/;
         // array of lines separated by the newline
-        var lines = objectData.split("\n");
-        try {
-            for (var lines_1 = __values(lines), lines_1_1 = lines_1.next(); !lines_1_1.done; lines_1_1 = lines_1.next()) {
-                var line = lines_1_1.value;
-                line = line.trim();
-                if (!line || line.startsWith("#")) {
-                    continue;
+        const lines = objectData.split("\n");
+        for (let line of lines) {
+            line = line.trim();
+            if (!line || line.startsWith("#")) {
+                continue;
+            }
+            const elements = line.split(WHITESPACE_RE);
+            elements.shift();
+            if (VERTEX_RE.test(line)) {
+                // if this is a vertex
+                verts.push(...elements);
+            }
+            else if (NORMAL_RE.test(line)) {
+                // if this is a vertex normal
+                vertNormals.push(...elements);
+            }
+            else if (TEXTURE_RE.test(line)) {
+                // Parse UV coordinates and flip V for WebGL (like the demo viewer)
+                const u = parseFloat(elements[0]);
+                const v = elements.length > 1 ? 1.0 - parseFloat(elements[1]) : 0.0; // Flip V coordinate for WebGL
+                if (options.enableWTextureCoord) {
+                    const w = elements.length > 2 ? parseFloat(elements[2]) : 0.0;
+                    textures.push(u.toString(), v.toString(), w.toString());
                 }
-                var elements = line.split(WHITESPACE_RE);
-                elements.shift();
-                if (VERTEX_RE.test(line)) {
-                    // if this is a vertex
-                    verts.push.apply(verts, __spreadArray([], __read(elements), false));
+                else {
+                    textures.push(u.toString(), v.toString());
                 }
-                else if (NORMAL_RE.test(line)) {
-                    // if this is a vertex normal
-                    vertNormals.push.apply(vertNormals, __spreadArray([], __read(elements), false));
-                }
-                else if (TEXTURE_RE.test(line)) {
-                    // Parse UV coordinates and flip V for WebGL (like the demo viewer)
-                    var u = parseFloat(elements[0]);
-                    var v = elements.length > 1 ? 1.0 - parseFloat(elements[1]) : 0.0; // Flip V coordinate for WebGL
-                    
-                    if (options.enableWTextureCoord) {
-                        var w = elements.length > 2 ? parseFloat(elements[2]) : 0.0;
-                        textures.push(u.toString(), v.toString(), w.toString());
-                    } else {
-                        textures.push(u.toString(), v.toString());
+            }
+            else if (USE_MATERIAL_RE.test(line)) {
+                const materialName = elements[0];
+                // check to see if we've ever seen it before
+                if (!(materialName in materialIndicesByName)) {
+                    // new material we've never seen
+                    materialNamesByIndex.push(materialName);
+                    materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
+                    // push new array into indices
+                    // already contains an array at index zero, don't add
+                    if (materialIndicesByName[materialName] > 0) {
+                        unpacked.indices.push([]);
                     }
                 }
-                else if (USE_MATERIAL_RE.test(line)) {
-                    var materialName = elements[0];
-                    // check to see if we've ever seen it before
-                    if (!(materialName in materialIndicesByName)) {
-                        // new material we've never seen
-                        materialNamesByIndex.push(materialName);
-                        materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
-                        // push new array into indices
-                        // already contains an array at index zero, don't add
-                        if (materialIndicesByName[materialName] > 0) {
-                            unpacked.indices.push([]);
+                // keep track of the current material index
+                currentMaterialIndex = materialIndicesByName[materialName];
+                // update current index array
+                currentObjectByMaterialIndex = currentMaterialIndex;
+            }
+            else if (FACE_RE.test(line)) {
+                // if this is a face
+                /*
+                        split this face into an array of Vertex groups
+                        for example:
+                           f 16/92/11 14/101/22 1/69/1
+                        becomes:
+                          ['16/92/11', '14/101/22', '1/69/1'];
+                        */
+                const triangles = triangulate(elements);
+                for (const triangle of triangles) {
+                    for (let j = 0, eleLen = triangle.length; j < eleLen; j++) {
+                        const hash = triangle[j] + "," + currentMaterialIndex;
+                        if (hash in unpacked.hashindices) {
+                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
                         }
-                    }
-                    // keep track of the current material index
-                    currentMaterialIndex = materialIndicesByName[materialName];
-                    // update current index array
-                    currentObjectByMaterialIndex = currentMaterialIndex;
-                }
-                else if (FACE_RE.test(line)) {
-                    // if this is a face
-                    /*
-                            split this face into an array of Vertex groups
-                            for example:
-                               f 16/92/11 14/101/22 1/69/1
-                            becomes:
-                              ['16/92/11', '14/101/22', '1/69/1'];
-                            */
-                    var triangles = triangulate(elements);
-                    try {
-                        for (var triangles_1 = (e_2 = void 0, __values(triangles)), triangles_1_1 = triangles_1.next(); !triangles_1_1.done; triangles_1_1 = triangles_1.next()) {
-                            var triangle = triangles_1_1.value;
-                            for (var j = 0, eleLen = triangle.length; j < eleLen; j++) {
-                                var hash = triangle[j] + "," + currentMaterialIndex;
-                                if (hash in unpacked.hashindices) {
-                                    unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
+                        else {
+                            /*
+                                      Each element of the face line array is a Vertex which has its
+                                      attributes delimited by a forward slash. This will separate
+                                      each attribute into another array:
+                                          '19/92/11'
+                                      becomes:
+                                          Vertex = ['19', '92', '11'];
+                                      where
+                                          Vertex[0] is the vertex index
+                                          Vertex[1] is the texture index
+                                          Vertex[2] is the normal index
+                                       Think of faces having Vertices which are comprised of the
+                                       attributes location (v), texture (vt), and normal (vn).
+                                       */
+                            const vertex = triangle[j].split("/");
+                            // it's possible for faces to only specify the vertex
+                            // and the normal. In this case, vertex will only have
+                            // a length of 2 and not 3 and the normal will be the
+                            // second item in the list with an index of 1.
+                            const normalIndex = vertex.length - 1;
+                            /*
+                                       The verts, textures, and vertNormals arrays each contain a
+                                       flattend array of coordinates.
+              
+                                       Because it gets confusing by referring to Vertex and then
+                                       vertex (both are different in my descriptions) I will explain
+                                       what's going on using the vertexNormals array:
+              
+                                       vertex[2] will contain the one-based index of the vertexNormals
+                                       section (vn). One is subtracted from this index number to play
+                                       nice with javascript's zero-based array indexing.
+              
+                                       Because vertexNormal is a flattened array of x, y, z values,
+                                       simple pointer arithmetic is used to skip to the start of the
+                                       vertexNormal, then the offset is added to get the correct
+                                       component: +0 is x, +1 is y, +2 is z.
+              
+                                       This same process is repeated for verts and textures.
+                                       */
+                            // Vertex position
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
+                            // Vertex textures
+                            if (textures.length && vertex[1] && vertex[1] !== "") {
+                                const stride = options.enableWTextureCoord ? 3 : 2;
+                                const texIndex = +vertex[1] - 1;
+                                // Bounds check and clamp UV coordinates to 0-1 range
+                                if (texIndex >= 0 && texIndex < textures.length / stride) {
+                                    const u = Math.max(0, Math.min(1, +textures[texIndex * stride + 0]));
+                                    const v = Math.max(0, Math.min(1, +textures[texIndex * stride + 1]));
+                                    unpacked.textures.push(u);
+                                    unpacked.textures.push(v);
+                                    if (options.enableWTextureCoord) {
+                                        unpacked.textures.push(+textures[texIndex * stride + 2]);
+                                    }
                                 }
                                 else {
-                                    /*
-                                              Each element of the face line array is a Vertex which has its
-                                              attributes delimited by a forward slash. This will separate
-                                              each attribute into another array:
-                                                  '19/92/11'
-                                              becomes:
-                                                  Vertex = ['19', '92', '11'];
-                                              where
-                                                  Vertex[0] is the vertex index
-                                                  Vertex[1] is the texture index
-                                                  Vertex[2] is the normal index
-                                               Think of faces having Vertices which are comprised of the
-                                               attributes location (v), texture (vt), and normal (vn).
-                                               */
-                                    var vertex = triangle[j].split("/");
-                                    // it's possible for faces to only specify the vertex
-                                    // and the normal. In this case, vertex will only have
-                                    // a length of 2 and not 3 and the normal will be the
-                                    // second item in the list with an index of 1.
-                                    var normalIndex = vertex.length - 1;
-                                    /*
-                                               The verts, textures, and vertNormals arrays each contain a
-                                               flattend array of coordinates.
-                      
-                                               Because it gets confusing by referring to Vertex and then
-                                               vertex (both are different in my descriptions) I will explain
-                                               what's going on using the vertexNormals array:
-                      
-                                               vertex[2] will contain the one-based index of the vertexNormals
-                                               section (vn). One is subtracted from this index number to play
-                                               nice with javascript's zero-based array indexing.
-                      
-                                               Because vertexNormal is a flattened array of x, y, z values,
-                                               simple pointer arithmetic is used to skip to the start of the
-                                               vertexNormal, then the offset is added to get the correct
-                                               component: +0 is x, +1 is y, +2 is z.
-                      
-                                               This same process is repeated for verts and textures.
-                                               */
-                                    // Vertex position
-                                    unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);
-                                    unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
-                                    unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
-                                    // Vertex textures
-                                    if (textures.length) {
-                                        var stride = options.enableWTextureCoord ? 3 : 2;
-                                        unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);
-                                        unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);
-                                        if (options.enableWTextureCoord) {
-                                            unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);
-                                        }
+                                    // Default UV coordinates if index is out of bounds
+                                    unpacked.textures.push(0);
+                                    unpacked.textures.push(0);
+                                    if (options.enableWTextureCoord) {
+                                        unpacked.textures.push(0);
                                     }
-                                    // Vertex normals
-                                    unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);
-                                    unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);
-                                    unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);
-                                    // Vertex material indices
-                                    unpacked.materialIndices.push(currentMaterialIndex);
-                                    // add the newly created Vertex to the list of indices
-                                    unpacked.hashindices[hash] = unpacked.index;
-                                    unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
-                                    // increment the counter
-                                    unpacked.index += 1;
                                 }
                             }
+                            else if (textures.length) {
+                                // No texture index specified, use default
+                                unpacked.textures.push(0);
+                                unpacked.textures.push(0);
+                                if (options.enableWTextureCoord) {
+                                    unpacked.textures.push(0);
+                                }
+                            }
+                            // Vertex normals
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);
+                            // Vertex material indices
+                            unpacked.materialIndices.push(currentMaterialIndex);
+                            // add the newly created Vertex to the list of indices
+                            unpacked.hashindices[hash] = unpacked.index;
+                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
+                            // increment the counter
+                            unpacked.index += 1;
                         }
-                    }
-                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                    finally {
-                        try {
-                            if (triangles_1_1 && !triangles_1_1.done && (_b = triangles_1["return"])) _b.call(triangles_1);
-                        }
-                        finally { if (e_2) throw e_2.error; }
                     }
                 }
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (lines_1_1 && !lines_1_1.done && (_a = lines_1["return"])) _a.call(lines_1);
-            }
-            finally { if (e_1) throw e_1.error; }
         }
         this.vertices = unpacked.verts;
         this.vertexNormals = unpacked.norms;
@@ -377,104 +313,104 @@ var Mesh = /** @class */ (function () {
      * This method requires the normals and texture coordinates to be parsed and set up correctly.
      * Adds the tangents and bitangents as members of the class instance.
      */
-    Mesh.prototype.calculateTangentsAndBitangents = function () {
+    calculateTangentsAndBitangents() {
         console.assert(!!(this.vertices &&
             this.vertices.length &&
             this.vertexNormals &&
             this.vertexNormals.length &&
             this.textures &&
             this.textures.length), "Missing attributes for calculating tangents and bitangents");
-        var unpacked = {
-            tangents: __spreadArray([], __read(new Array(this.vertices.length)), false).map(function (_) { return 0; }),
-            bitangents: __spreadArray([], __read(new Array(this.vertices.length)), false).map(function (_) { return 0; })
+        const unpacked = {
+            tangents: [...new Array(this.vertices.length)].map((_) => 0),
+            bitangents: [...new Array(this.vertices.length)].map((_) => 0),
         };
         // Loop through all faces in the whole mesh
-        var indices = this.indices;
-        var vertices = this.vertices;
-        var normals = this.vertexNormals;
-        var uvs = this.textures;
-        for (var i = 0; i < indices.length; i += 3) {
-            var i0 = indices[i + 0];
-            var i1 = indices[i + 1];
-            var i2 = indices[i + 2];
-            var x_v0 = vertices[i0 * 3 + 0];
-            var y_v0 = vertices[i0 * 3 + 1];
-            var z_v0 = vertices[i0 * 3 + 2];
-            var x_uv0 = uvs[i0 * 2 + 0];
-            var y_uv0 = uvs[i0 * 2 + 1];
-            var x_v1 = vertices[i1 * 3 + 0];
-            var y_v1 = vertices[i1 * 3 + 1];
-            var z_v1 = vertices[i1 * 3 + 2];
-            var x_uv1 = uvs[i1 * 2 + 0];
-            var y_uv1 = uvs[i1 * 2 + 1];
-            var x_v2 = vertices[i2 * 3 + 0];
-            var y_v2 = vertices[i2 * 3 + 1];
-            var z_v2 = vertices[i2 * 3 + 2];
-            var x_uv2 = uvs[i2 * 2 + 0];
-            var y_uv2 = uvs[i2 * 2 + 1];
-            var x_deltaPos1 = x_v1 - x_v0;
-            var y_deltaPos1 = y_v1 - y_v0;
-            var z_deltaPos1 = z_v1 - z_v0;
-            var x_deltaPos2 = x_v2 - x_v0;
-            var y_deltaPos2 = y_v2 - y_v0;
-            var z_deltaPos2 = z_v2 - z_v0;
-            var x_uvDeltaPos1 = x_uv1 - x_uv0;
-            var y_uvDeltaPos1 = y_uv1 - y_uv0;
-            var x_uvDeltaPos2 = x_uv2 - x_uv0;
-            var y_uvDeltaPos2 = y_uv2 - y_uv0;
-            var rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;
-            var r = 1.0 / Math.abs(rInv < 0.0001 ? 1.0 : rInv);
+        const indices = this.indices;
+        const vertices = this.vertices;
+        const normals = this.vertexNormals;
+        const uvs = this.textures;
+        for (let i = 0; i < indices.length; i += 3) {
+            const i0 = indices[i + 0];
+            const i1 = indices[i + 1];
+            const i2 = indices[i + 2];
+            const x_v0 = vertices[i0 * 3 + 0];
+            const y_v0 = vertices[i0 * 3 + 1];
+            const z_v0 = vertices[i0 * 3 + 2];
+            const x_uv0 = uvs[i0 * 2 + 0];
+            const y_uv0 = uvs[i0 * 2 + 1];
+            const x_v1 = vertices[i1 * 3 + 0];
+            const y_v1 = vertices[i1 * 3 + 1];
+            const z_v1 = vertices[i1 * 3 + 2];
+            const x_uv1 = uvs[i1 * 2 + 0];
+            const y_uv1 = uvs[i1 * 2 + 1];
+            const x_v2 = vertices[i2 * 3 + 0];
+            const y_v2 = vertices[i2 * 3 + 1];
+            const z_v2 = vertices[i2 * 3 + 2];
+            const x_uv2 = uvs[i2 * 2 + 0];
+            const y_uv2 = uvs[i2 * 2 + 1];
+            const x_deltaPos1 = x_v1 - x_v0;
+            const y_deltaPos1 = y_v1 - y_v0;
+            const z_deltaPos1 = z_v1 - z_v0;
+            const x_deltaPos2 = x_v2 - x_v0;
+            const y_deltaPos2 = y_v2 - y_v0;
+            const z_deltaPos2 = z_v2 - z_v0;
+            const x_uvDeltaPos1 = x_uv1 - x_uv0;
+            const y_uvDeltaPos1 = y_uv1 - y_uv0;
+            const x_uvDeltaPos2 = x_uv2 - x_uv0;
+            const y_uvDeltaPos2 = y_uv2 - y_uv0;
+            const rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;
+            const r = 1.0 / Math.abs(rInv < 0.0001 ? 1.0 : rInv);
             // Tangent
-            var x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;
-            var y_tangent = (y_deltaPos1 * y_uvDeltaPos2 - y_deltaPos2 * y_uvDeltaPos1) * r;
-            var z_tangent = (z_deltaPos1 * y_uvDeltaPos2 - z_deltaPos2 * y_uvDeltaPos1) * r;
+            const x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;
+            const y_tangent = (y_deltaPos1 * y_uvDeltaPos2 - y_deltaPos2 * y_uvDeltaPos1) * r;
+            const z_tangent = (z_deltaPos1 * y_uvDeltaPos2 - z_deltaPos2 * y_uvDeltaPos1) * r;
             // Bitangent
-            var x_bitangent = (x_deltaPos2 * x_uvDeltaPos1 - x_deltaPos1 * x_uvDeltaPos2) * r;
-            var y_bitangent = (y_deltaPos2 * x_uvDeltaPos1 - y_deltaPos1 * x_uvDeltaPos2) * r;
-            var z_bitangent = (z_deltaPos2 * x_uvDeltaPos1 - z_deltaPos1 * x_uvDeltaPos2) * r;
+            const x_bitangent = (x_deltaPos2 * x_uvDeltaPos1 - x_deltaPos1 * x_uvDeltaPos2) * r;
+            const y_bitangent = (y_deltaPos2 * x_uvDeltaPos1 - y_deltaPos1 * x_uvDeltaPos2) * r;
+            const z_bitangent = (z_deltaPos2 * x_uvDeltaPos1 - z_deltaPos1 * x_uvDeltaPos2) * r;
             // Gram-Schmidt orthogonalize
             //t = glm::normalize(t - n * glm:: dot(n, t));
-            var x_n0 = normals[i0 * 3 + 0];
-            var y_n0 = normals[i0 * 3 + 1];
-            var z_n0 = normals[i0 * 3 + 2];
-            var x_n1 = normals[i1 * 3 + 0];
-            var y_n1 = normals[i1 * 3 + 1];
-            var z_n1 = normals[i1 * 3 + 2];
-            var x_n2 = normals[i2 * 3 + 0];
-            var y_n2 = normals[i2 * 3 + 1];
-            var z_n2 = normals[i2 * 3 + 2];
+            const x_n0 = normals[i0 * 3 + 0];
+            const y_n0 = normals[i0 * 3 + 1];
+            const z_n0 = normals[i0 * 3 + 2];
+            const x_n1 = normals[i1 * 3 + 0];
+            const y_n1 = normals[i1 * 3 + 1];
+            const z_n1 = normals[i1 * 3 + 2];
+            const x_n2 = normals[i2 * 3 + 0];
+            const y_n2 = normals[i2 * 3 + 1];
+            const z_n2 = normals[i2 * 3 + 2];
             // Tangent
-            var n0_dot_t = x_tangent * x_n0 + y_tangent * y_n0 + z_tangent * z_n0;
-            var n1_dot_t = x_tangent * x_n1 + y_tangent * y_n1 + z_tangent * z_n1;
-            var n2_dot_t = x_tangent * x_n2 + y_tangent * y_n2 + z_tangent * z_n2;
-            var x_resTangent0 = x_tangent - x_n0 * n0_dot_t;
-            var y_resTangent0 = y_tangent - y_n0 * n0_dot_t;
-            var z_resTangent0 = z_tangent - z_n0 * n0_dot_t;
-            var x_resTangent1 = x_tangent - x_n1 * n1_dot_t;
-            var y_resTangent1 = y_tangent - y_n1 * n1_dot_t;
-            var z_resTangent1 = z_tangent - z_n1 * n1_dot_t;
-            var x_resTangent2 = x_tangent - x_n2 * n2_dot_t;
-            var y_resTangent2 = y_tangent - y_n2 * n2_dot_t;
-            var z_resTangent2 = z_tangent - z_n2 * n2_dot_t;
-            var magTangent0 = Math.sqrt(x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0);
-            var magTangent1 = Math.sqrt(x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1);
-            var magTangent2 = Math.sqrt(x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2);
+            const n0_dot_t = x_tangent * x_n0 + y_tangent * y_n0 + z_tangent * z_n0;
+            const n1_dot_t = x_tangent * x_n1 + y_tangent * y_n1 + z_tangent * z_n1;
+            const n2_dot_t = x_tangent * x_n2 + y_tangent * y_n2 + z_tangent * z_n2;
+            const x_resTangent0 = x_tangent - x_n0 * n0_dot_t;
+            const y_resTangent0 = y_tangent - y_n0 * n0_dot_t;
+            const z_resTangent0 = z_tangent - z_n0 * n0_dot_t;
+            const x_resTangent1 = x_tangent - x_n1 * n1_dot_t;
+            const y_resTangent1 = y_tangent - y_n1 * n1_dot_t;
+            const z_resTangent1 = z_tangent - z_n1 * n1_dot_t;
+            const x_resTangent2 = x_tangent - x_n2 * n2_dot_t;
+            const y_resTangent2 = y_tangent - y_n2 * n2_dot_t;
+            const z_resTangent2 = z_tangent - z_n2 * n2_dot_t;
+            const magTangent0 = Math.sqrt(x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0);
+            const magTangent1 = Math.sqrt(x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1);
+            const magTangent2 = Math.sqrt(x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2);
             // Bitangent
-            var n0_dot_bt = x_bitangent * x_n0 + y_bitangent * y_n0 + z_bitangent * z_n0;
-            var n1_dot_bt = x_bitangent * x_n1 + y_bitangent * y_n1 + z_bitangent * z_n1;
-            var n2_dot_bt = x_bitangent * x_n2 + y_bitangent * y_n2 + z_bitangent * z_n2;
-            var x_resBitangent0 = x_bitangent - x_n0 * n0_dot_bt;
-            var y_resBitangent0 = y_bitangent - y_n0 * n0_dot_bt;
-            var z_resBitangent0 = z_bitangent - z_n0 * n0_dot_bt;
-            var x_resBitangent1 = x_bitangent - x_n1 * n1_dot_bt;
-            var y_resBitangent1 = y_bitangent - y_n1 * n1_dot_bt;
-            var z_resBitangent1 = z_bitangent - z_n1 * n1_dot_bt;
-            var x_resBitangent2 = x_bitangent - x_n2 * n2_dot_bt;
-            var y_resBitangent2 = y_bitangent - y_n2 * n2_dot_bt;
-            var z_resBitangent2 = z_bitangent - z_n2 * n2_dot_bt;
-            var magBitangent0 = Math.sqrt(x_resBitangent0 * x_resBitangent0 + y_resBitangent0 * y_resBitangent0 + z_resBitangent0 * z_resBitangent0);
-            var magBitangent1 = Math.sqrt(x_resBitangent1 * x_resBitangent1 + y_resBitangent1 * y_resBitangent1 + z_resBitangent1 * z_resBitangent1);
-            var magBitangent2 = Math.sqrt(x_resBitangent2 * x_resBitangent2 + y_resBitangent2 * y_resBitangent2 + z_resBitangent2 * z_resBitangent2);
+            const n0_dot_bt = x_bitangent * x_n0 + y_bitangent * y_n0 + z_bitangent * z_n0;
+            const n1_dot_bt = x_bitangent * x_n1 + y_bitangent * y_n1 + z_bitangent * z_n1;
+            const n2_dot_bt = x_bitangent * x_n2 + y_bitangent * y_n2 + z_bitangent * z_n2;
+            const x_resBitangent0 = x_bitangent - x_n0 * n0_dot_bt;
+            const y_resBitangent0 = y_bitangent - y_n0 * n0_dot_bt;
+            const z_resBitangent0 = z_bitangent - z_n0 * n0_dot_bt;
+            const x_resBitangent1 = x_bitangent - x_n1 * n1_dot_bt;
+            const y_resBitangent1 = y_bitangent - y_n1 * n1_dot_bt;
+            const z_resBitangent1 = z_bitangent - z_n1 * n1_dot_bt;
+            const x_resBitangent2 = x_bitangent - x_n2 * n2_dot_bt;
+            const y_resBitangent2 = y_bitangent - y_n2 * n2_dot_bt;
+            const z_resBitangent2 = z_bitangent - z_n2 * n2_dot_bt;
+            const magBitangent0 = Math.sqrt(x_resBitangent0 * x_resBitangent0 + y_resBitangent0 * y_resBitangent0 + z_resBitangent0 * z_resBitangent0);
+            const magBitangent1 = Math.sqrt(x_resBitangent1 * x_resBitangent1 + y_resBitangent1 * y_resBitangent1 + z_resBitangent1 * z_resBitangent1);
+            const magBitangent2 = Math.sqrt(x_resBitangent2 * x_resBitangent2 + y_resBitangent2 * y_resBitangent2 + z_resBitangent2 * z_resBitangent2);
             unpacked.tangents[i0 * 3 + 0] += x_resTangent0 / magTangent0;
             unpacked.tangents[i0 * 3 + 1] += y_resTangent0 / magTangent0;
             unpacked.tangents[i0 * 3 + 2] += z_resTangent0 / magTangent0;
@@ -497,265 +433,225 @@ var Mesh = /** @class */ (function () {
         }
         this.tangents = unpacked.tangents;
         this.bitangents = unpacked.bitangents;
-    };
+    }
     /**
      * @param layout - A {@link Layout} object that describes the
      * desired memory layout of the generated buffer
      * @return The packed array in the ... TODO
      */
-    Mesh.prototype.makeBufferData = function (layout) {
-        var e_3, _a;
-        var numItems = this.vertices.length / 3;
-        var buffer = new ArrayBuffer(layout.stride * numItems);
+    makeBufferData(layout) {
+        const numItems = this.vertices.length / 3;
+        const buffer = new ArrayBuffer(layout.stride * numItems);
         buffer.numItems = numItems;
-        var dataView = new DataView(buffer);
-        for (var i = 0, vertexOffset = 0; i < numItems; i++) {
+        const dataView = new DataView(buffer);
+        for (let i = 0, vertexOffset = 0; i < numItems; i++) {
             vertexOffset = i * layout.stride;
-            try {
-                // copy in the vertex data in the order and format given by the
-                // layout param
-                for (var _b = (e_3 = void 0, __values(layout.attributes)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var attribute = _c.value;
-                    var offset = vertexOffset + layout.attributeMap[attribute.key].offset;
-                    switch (attribute.key) {
-                        case layout_1.Layout.POSITION.key:
-                            dataView.setFloat32(offset, this.vertices[i * 3], true);
-                            dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);
-                            dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);
-                            break;
-                        case layout_1.Layout.UV.key:
-                            dataView.setFloat32(offset, this.textures[i * 2], true);
-                            dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);
-                            break;
-                        case layout_1.Layout.NORMAL.key:
-                            dataView.setFloat32(offset, this.vertexNormals[i * 3], true);
-                            dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);
-                            dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);
-                            break;
-                        case layout_1.Layout.MATERIAL_INDEX.key:
-                            dataView.setInt16(offset, this.vertexMaterialIndices[i], true);
-                            break;
-                        case layout_1.Layout.AMBIENT.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.ambient[0], true);
-                            dataView.setFloat32(offset + 4, material.ambient[1], true);
-                            dataView.setFloat32(offset + 8, material.ambient[2], true);
+            // copy in the vertex data in the order and format given by the
+            // layout param
+            for (const attribute of layout.attributes) {
+                const offset = vertexOffset + layout.attributeMap[attribute.key].offset;
+                switch (attribute.key) {
+                    case Layout.POSITION.key:
+                        dataView.setFloat32(offset, this.vertices[i * 3], true);
+                        dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);
+                        dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);
+                        break;
+                    case Layout.UV.key:
+                        dataView.setFloat32(offset, this.textures[i * 2], true);
+                        dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);
+                        break;
+                    case Layout.NORMAL.key:
+                        dataView.setFloat32(offset, this.vertexNormals[i * 3], true);
+                        dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);
+                        dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);
+                        break;
+                    case Layout.MATERIAL_INDEX.key:
+                        dataView.setInt16(offset, this.vertexMaterialIndices[i], true);
+                        break;
+                    case Layout.AMBIENT.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.DIFFUSE.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.diffuse[0], true);
-                            dataView.setFloat32(offset + 4, material.diffuse[1], true);
-                            dataView.setFloat32(offset + 8, material.diffuse[2], true);
+                        dataView.setFloat32(offset, material.ambient[0], true);
+                        dataView.setFloat32(offset + 4, material.ambient[1], true);
+                        dataView.setFloat32(offset + 8, material.ambient[2], true);
+                        break;
+                    }
+                    case Layout.DIFFUSE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.SPECULAR.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.specular[0], true);
-                            dataView.setFloat32(offset + 4, material.specular[1], true);
-                            dataView.setFloat32(offset + 8, material.specular[2], true);
+                        dataView.setFloat32(offset, material.diffuse[0], true);
+                        dataView.setFloat32(offset + 4, material.diffuse[1], true);
+                        dataView.setFloat32(offset + 8, material.diffuse[2], true);
+                        break;
+                    }
+                    case Layout.SPECULAR.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.SPECULAR_EXPONENT.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.specularExponent, true);
+                        dataView.setFloat32(offset, material.specular[0], true);
+                        dataView.setFloat32(offset + 4, material.specular[1], true);
+                        dataView.setFloat32(offset + 8, material.specular[2], true);
+                        break;
+                    }
+                    case Layout.SPECULAR_EXPONENT.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.EMISSIVE.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.emissive[0], true);
-                            dataView.setFloat32(offset + 4, material.emissive[1], true);
-                            dataView.setFloat32(offset + 8, material.emissive[2], true);
+                        dataView.setFloat32(offset, material.specularExponent, true);
+                        break;
+                    }
+                    case Layout.EMISSIVE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.TRANSMISSION_FILTER.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.transmissionFilter[0], true);
-                            dataView.setFloat32(offset + 4, material.transmissionFilter[1], true);
-                            dataView.setFloat32(offset + 8, material.transmissionFilter[2], true);
+                        dataView.setFloat32(offset, material.emissive[0], true);
+                        dataView.setFloat32(offset + 4, material.emissive[1], true);
+                        dataView.setFloat32(offset + 8, material.emissive[2], true);
+                        break;
+                    }
+                    case Layout.TRANSMISSION_FILTER.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.DISSOLVE.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.dissolve, true);
+                        dataView.setFloat32(offset, material.transmissionFilter[0], true);
+                        dataView.setFloat32(offset + 4, material.transmissionFilter[1], true);
+                        dataView.setFloat32(offset + 8, material.transmissionFilter[2], true);
+                        break;
+                    }
+                    case Layout.DISSOLVE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.ILLUMINATION.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setInt16(offset, material.illumination, true);
+                        dataView.setFloat32(offset, material.dissolve, true);
+                        break;
+                    }
+                    case Layout.ILLUMINATION.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.REFRACTION_INDEX.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.refractionIndex, true);
+                        dataView.setInt16(offset, material.illumination, true);
+                        break;
+                    }
+                    case Layout.REFRACTION_INDEX.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.SHARPNESS.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setFloat32(offset, material.sharpness, true);
+                        dataView.setFloat32(offset, material.refractionIndex, true);
+                        break;
+                    }
+                    case Layout.SHARPNESS.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
-                        case layout_1.Layout.ANTI_ALIASING.key: {
-                            var materialIndex = this.vertexMaterialIndices[i];
-                            var material = this.materialsByIndex[materialIndex];
-                            if (!material) {
-                                console.warn('Material "' +
-                                    this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
-                                break;
-                            }
-                            dataView.setInt16(offset, material.antiAliasing ? 1 : 0, true);
+                        dataView.setFloat32(offset, material.sharpness, true);
+                        break;
+                    }
+                    case Layout.ANTI_ALIASING.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' +
+                                this.materialNames[materialIndex] +
+                                '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
                             break;
                         }
+                        dataView.setInt16(offset, material.antiAliasing ? 1 : 0, true);
+                        break;
                     }
                 }
             }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
         }
         return buffer;
-    };
-    Mesh.prototype.makeIndexBufferData = function () {
-        var buffer = new Uint16Array(this.indices);
+    }
+    makeIndexBufferData() {
+        const buffer = new Uint16Array(this.indices);
         buffer.numItems = this.indices.length;
         return buffer;
-    };
-    Mesh.prototype.makeIndexBufferDataForMaterials = function () {
-        var _a;
-        var _this = this;
-        var materialIndices = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            materialIndices[_i] = arguments[_i];
-        }
-        var indices = (_a = new Array()).concat.apply(_a, __spreadArray([], __read(materialIndices.map(function (mtlIdx) { return _this.indicesPerMaterial[mtlIdx]; })), false));
-        var buffer = new Uint16Array(indices);
+    }
+    makeIndexBufferDataForMaterials(...materialIndices) {
+        const indices = new Array().concat(...materialIndices.map((mtlIdx) => this.indicesPerMaterial[mtlIdx]));
+        const buffer = new Uint16Array(indices);
         buffer.numItems = indices.length;
         return buffer;
-    };
-    Mesh.prototype.addMaterialLibrary = function (mtl) {
-        for (var name_1 in mtl.materials) {
-            if (!(name_1 in this.materialIndices)) {
+    }
+    addMaterialLibrary(mtl) {
+        for (const name in mtl.materials) {
+            if (!(name in this.materialIndices)) {
                 // This material is not referenced by the mesh
                 continue;
             }
-            var material = mtl.materials[name_1];
+            const material = mtl.materials[name];
             // Find the material index for this material
-            var materialIndex = this.materialIndices[material.name];
+            const materialIndex = this.materialIndices[material.name];
             // Put the material into the materialsByIndex object at the right
             // spot as determined when the obj file was parsed
             this.materialsByIndex[materialIndex] = material;
         }
-    };
-    return Mesh;
-}());
-exports["default"] = Mesh;
-function triangulate(elements) {
-    var i;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                if (!(elements.length <= 3)) return [3 /*break*/, 2];
-                return [4 /*yield*/, elements];
-            case 1:
-                _a.sent();
-                return [3 /*break*/, 9];
-            case 2:
-                if (!(elements.length === 4)) return [3 /*break*/, 5];
-                return [4 /*yield*/, [elements[0], elements[1], elements[2]]];
-            case 3:
-                _a.sent();
-                return [4 /*yield*/, [elements[2], elements[3], elements[0]]];
-            case 4:
-                _a.sent();
-                return [3 /*break*/, 9];
-            case 5:
-                i = 1;
-                _a.label = 6;
-            case 6:
-                if (!(i < elements.length - 1)) return [3 /*break*/, 9];
-                return [4 /*yield*/, [elements[0], elements[i], elements[i + 1]]];
-            case 7:
-                _a.sent();
-                _a.label = 8;
-            case 8:
-                i++;
-                return [3 /*break*/, 6];
-            case 9: return [2 /*return*/];
+    }
+}
+function* triangulate(elements) {
+    if (elements.length <= 3) {
+        yield elements;
+    }
+    else if (elements.length === 4) {
+        yield [elements[0], elements[1], elements[2]];
+        yield [elements[2], elements[3], elements[0]];
+    }
+    else {
+        for (let i = 1; i < elements.length - 1; i++) {
+            yield [elements[0], elements[i], elements[i + 1]];
         }
-    });
+    }
 }

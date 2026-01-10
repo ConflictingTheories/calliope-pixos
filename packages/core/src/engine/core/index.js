@@ -73,12 +73,13 @@ export default class GLEngine {
 
     /** @type {NetworkManager} */
     this.networkManager = new NetworkManager(this);
+    // ResourceManager and RenderManager depend on a valid WebGL context
+    // and are initialized in `init()` after `this.gl` is created.
+    /** @type {ResourceManager|null} */
+    this.resourceManager = null;
 
-    /** @type {ResourceManager} */
-    this.resourceManager = new ResourceManager(this);
-
-    /** @type {RenderManager} */
-    this.renderManager = new RenderManager(this);
+    /** @type {RenderManager|null} */
+    this.renderManager = null;
 
     /** @type {Hud} */
     this.hud = new Hud(this);
@@ -187,7 +188,15 @@ export default class GLEngine {
     // Initialize HUD
     this.hud.init();
 
-    // Initialize render manager
+    // Initialize render manager and resource manager now that `this.gl` exists
+    if (!this.resourceManager) {
+      this.resourceManager = new ResourceManager(this);
+    }
+
+    if (!this.renderManager) {
+      this.renderManager = new RenderManager(this);
+    }
+
     this.renderManager.init();
 
     // Configure Gamepad & touch - now handled through InputManager

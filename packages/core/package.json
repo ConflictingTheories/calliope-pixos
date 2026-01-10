@@ -3,19 +3,19 @@
   "version": "1.0.0",
   "description": "PixoSpritz Core Engine - WebGL-based game engine",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.js",
   "exports": {
-    ".": "./dist/index.js",
+    ".": "./dist/bundle.js",
     "./engine/*": "./src/engine/*",
     "./components/*": "./src/components/*",
     "./spritz/*": "./src/spritz/*"
   },
   "scripts": {
     "clean": "rimraf dist build",
-    "build": "cross-env NODE_ENV=production babel src --out-dir dist --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
-    "webpack": "webpack",
-    "dev": "webpack --watch",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

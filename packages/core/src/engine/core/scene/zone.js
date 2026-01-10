@@ -193,7 +193,8 @@ export default class Zone extends Loadable {
    */
   load = async () => {
     try {
-      const data = require('@Spritz/' + this.spritzName + '/maps/' + this.id + '/map.js').default;
+      const mapModule = await import('../../../../spritz/' + this.spritzName + '/maps/' + this.id + '/map.js');
+      const data = mapModule.default;
       Object.assign(this, data);
 
       // dynamic cells (such as randomly generated)

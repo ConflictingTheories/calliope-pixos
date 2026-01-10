@@ -240,7 +240,7 @@ export function downloadModels(gl, models: DownloadModelsOptions[]): Promise<Mes
     }
 
     const parsed: ModelPromises = [namePromise, meshPromise, mtlPromise];
-    finished.push(Promise.all<string, Mesh, MaterialLibrary | undefined>(parsed));
+    finished.push(Promise.all(parsed));
   }
 
   return Promise.all(finished).then((ms) => {
@@ -315,7 +315,7 @@ export function downloadModelsFromZip(gl, models: DownloadModelsOptions[], zip: 
     }
 
     const parsed: ModelPromises = [namePromise, meshPromise, mtlPromise];
-    finished.push(Promise.all<string, Mesh, MaterialLibrary | undefined>(parsed));
+    finished.push(Promise.all(parsed));
   }
 
   return Promise.all(finished).then((ms) => {

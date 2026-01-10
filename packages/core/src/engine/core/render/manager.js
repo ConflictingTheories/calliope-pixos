@@ -26,6 +26,13 @@ import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
 
+// Shader imports
+import particlesVs from '../../shaders/particles/vs.js';
+import particlesFs from '../../shaders/particles/fs.js';
+import pickerVs from '../../shaders/picker/vs.js';
+import pickerFs from '../../shaders/picker/fs.js';
+import pickerInit from '../../shaders/picker/init.js';
+
 /**
  * @typedef {object} ShaderSource
  * @property {string} vs - Vertex shader source code.
@@ -193,9 +200,9 @@ export default class RenderManager {
     // Initialize picker shader (special shader which allows for picking objects on screen)
     this.initShaderEffects({
       id: 'picker',
-      vs: require('../../shaders/picker/vs.js').default(),
-      fs: require('../../shaders/picker/fs.js').default(),
-      init: require('../../shaders/picker/init.js').default,
+      vs: pickerVs(),
+      fs: pickerFs(),
+      init: pickerInit,
     });
 
     // Initialize Effects (TODO: Needs work, doesn't apply filter correctly)
@@ -401,8 +408,8 @@ export default class RenderManager {
     const { gl } = this.engine;
     const self = this;
 
-    const vsSource = require('../../shaders/particles/vs.js').default();
-    const fsSource = require('../../shaders/particles/fs.js').default();
+    const vsSource = particlesVs();
+    const fsSource = particlesFs();
 
     /** @type {WebGLShader} */
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);

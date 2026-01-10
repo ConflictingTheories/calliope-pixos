@@ -11,6 +11,32 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+// Transition shader imports
+import crossVs from '../../shaders/transition/cross/vs.js';
+import crossFs from '../../shaders/transition/cross/fs.js';
+import crossBlurVs from '../../shaders/transition/crossBlur/vs.js';
+import crossBlurFs from '../../shaders/transition/crossBlur/fs.js';
+import swirlVs from '../../shaders/transition/swirl/vs.js';
+import swirlFs from '../../shaders/transition/swirl/fs.js';
+import blurVs from '../../shaders/transition/blur/vs.js';
+import blurFs from '../../shaders/transition/blur/fs.js';
+import fadeVs from '../../shaders/transition/fade/vs.js';
+import fadeFs from '../../shaders/transition/fade/fs.js';
+
+// Skybox shader imports
+import morningVs from '../../shaders/skybox/morning/vs.js';
+import morningFs from '../../shaders/skybox/morning/fs.js';
+import skyVs from '../../shaders/skybox/sky/vs.js';
+import skyFs from '../../shaders/skybox/sky/fs.js';
+import sunsetVs from '../../shaders/skybox/sunset/vs.js';
+import sunsetFs from '../../shaders/skybox/sunset/fs.js';
+import matrixVs from '../../shaders/skybox/matrix/vs.js';
+import matrixFs from '../../shaders/skybox/matrix/fs.js';
+import neonVs from '../../shaders/skybox/neon/vs.js';
+import neonFs from '../../shaders/skybox/neon/fs.js';
+import cosmicVs from '../../shaders/skybox/cosmic/vs.js';
+import cosmicFs from '../../shaders/skybox/cosmic/fs.js';
+
 /**
  * Fetches vertex and fragment shader source code for transition effects.
  * @param {string} type - The type of transition effect (e.g., 'fade', 'cross', 'swirl').
@@ -25,21 +51,21 @@ export function fetchTransitionShaderFiles(type) {
   const t = (type || '').toLowerCase();
 
   if (t === 'cross') {
-    vsSource = require('../../shaders/transition/cross/vs.js').default();
-    fsSource = require('../../shaders/transition/cross/fs.js').default();
+    vsSource = crossVs();
+    fsSource = crossFs();
   } else if (t === 'crossblur' || t === 'cross-blur') {
-    vsSource = require('../../shaders/transition/crossBlur/vs.js').default();
-    fsSource = require('../../shaders/transition/crossBlur/fs.js').default();
+    vsSource = crossBlurVs();
+    fsSource = crossBlurFs();
   } else if (t === 'swirl') {
-    vsSource = require('../../shaders/transition/swirl/vs.js').default();
-    fsSource = require('../../shaders/transition/swirl/fs.js').default();
+    vsSource = swirlVs();
+    fsSource = swirlFs();
   } else if (t === 'blur' || t === 'blur-in' || t === 'blur-out') {
-    vsSource = require('../../shaders/transition/blur/vs.js').default();
-    fsSource = require('../../shaders/transition/blur/fs.js').default();
+    vsSource = blurVs();
+    fsSource = blurFs();
   } else {
     // Default to fade transition; also handles 'fade', 'fade-in', 'fade-out'.
-    vsSource = require('../../shaders/transition/fade/vs.js').default();
-    fsSource = require('../../shaders/transition/fade/fs.js').default();
+    vsSource = fadeVs();
+    fsSource = fadeFs();
   }
 
   return [vsSource, fsSource];
@@ -60,24 +86,24 @@ export function fetchSkyboxShaderFiles(type) {
   const t = (type || '').toLowerCase();
 
   if (t === 'morning') {
-    vsSource = require('../../shaders/skybox/morning/vs.js').default();
-    fsSource = require('../../shaders/skybox/morning/fs.js').default();
+    vsSource = morningVs();
+    fsSource = morningFs();
   } else if (t === 'sky') {
-    vsSource = require('../../shaders/skybox/sky/vs.js').default();
-    fsSource = require('../../shaders/skybox/sky/fs.js').default();
+    vsSource = skyVs();
+    fsSource = skyFs();
   } else if (t === 'sunset') {
-    vsSource = require('../../shaders/skybox/sunset/vs.js').default();
-    fsSource = require('../../shaders/skybox/sunset/fs.js').default();
+    vsSource = sunsetVs();
+    fsSource = sunsetFs();
   } else if (t === 'matrix') {
-    vsSource = require('../../shaders/skybox/matrix/vs.js').default();
-    fsSource = require('../../shaders/skybox/matrix/fs.js').default();
+    vsSource = matrixVs();
+    fsSource = matrixFs();
   } else if (t === 'neon') {
-    vsSource = require('../../shaders/skybox/neon/vs.js').default();
-    fsSource = require('../../shaders/skybox/neon/fs.js').default();
+    vsSource = neonVs();
+    fsSource = neonFs();
   } else {
     // Default to cosmic.
-    vsSource = require('../../shaders/skybox/cosmic/vs.js').default();
-    fsSource = require('../../shaders/skybox/cosmic/fs.js').default();
+    vsSource = cosmicVs();
+    fsSource = cosmicFs();
   }
 
   return [vsSource, fsSource];
