@@ -298,56 +298,58 @@ void update_engine(GLEngine* engine) {
     }
 #endif
     
-    // Handle camera input
+    // Handle camera input (skip if no render_manager - headless mode)
     InputManager* im = engine->input_manager;
     RenderManager* rm = engine->render_manager;
     
-    float camera_speed = 5.0f * (float)engine->delta_time;
-    float rotate_speed = 1.0f * (float)engine->delta_time;
-    float zoom_speed = 10.0f * (float)engine->delta_time;
-    
-    // Camera panning
-    if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_LEFT)) {
-        camera_pan(&rm->camera, -camera_speed, 0.0f);
-    }
-    if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_RIGHT)) {
-        camera_pan(&rm->camera, camera_speed, 0.0f);
-    }
-    if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_UP)) {
-        camera_pan(&rm->camera, 0.0f, camera_speed);
-    }
-    if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_DOWN)) {
-        camera_pan(&rm->camera, 0.0f, -camera_speed);
-    }
-    
-    // Camera zoom
-    if (input_manager_is_action_held(im, ACTION_CAMERA_ZOOM_IN)) {
-        camera_zoom(&rm->camera, zoom_speed);
-    }
-    if (input_manager_is_action_held(im, ACTION_CAMERA_ZOOM_OUT)) {
-        camera_zoom(&rm->camera, -zoom_speed);
-    }
-    
-    // Camera rotation
-    if (input_manager_is_action_held(im, ACTION_CAMERA_ROTATE_LEFT)) {
-        camera_rotate(&rm->camera, rotate_speed, 0.0f);
-    }
-    if (input_manager_is_action_held(im, ACTION_CAMERA_ROTATE_RIGHT)) {
-        camera_rotate(&rm->camera, -rotate_speed, 0.0f);
-    }
-    
-    // Mouse scroll for zoom
-    double scroll_x, scroll_y;
-    input_manager_get_scroll(im, &scroll_x, &scroll_y);
-    if (scroll_y != 0.0) {
-        camera_zoom(&rm->camera, (float)scroll_y * 2.0f);
-    }
-    
-    // Middle mouse button for camera rotation
-    if (input_manager_is_mouse_button_held(im, 2)) {
-        double dx, dy;
-        input_manager_get_mouse_delta(im, &dx, &dy);
-        camera_rotate(&rm->camera, (float)dx * 0.005f, (float)dy * 0.005f);
+    if (rm) {
+        float camera_speed = 5.0f * (float)engine->delta_time;
+        float rotate_speed = 1.0f * (float)engine->delta_time;
+        float zoom_speed = 10.0f * (float)engine->delta_time;
+        
+        // Camera panning
+        if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_LEFT)) {
+            camera_pan(&rm->camera, -camera_speed, 0.0f);
+        }
+        if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_RIGHT)) {
+            camera_pan(&rm->camera, camera_speed, 0.0f);
+        }
+        if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_UP)) {
+            camera_pan(&rm->camera, 0.0f, camera_speed);
+        }
+        if (input_manager_is_action_held(im, ACTION_CAMERA_PAN_DOWN)) {
+            camera_pan(&rm->camera, 0.0f, -camera_speed);
+        }
+        
+        // Camera zoom
+        if (input_manager_is_action_held(im, ACTION_CAMERA_ZOOM_IN)) {
+            camera_zoom(&rm->camera, zoom_speed);
+        }
+        if (input_manager_is_action_held(im, ACTION_CAMERA_ZOOM_OUT)) {
+            camera_zoom(&rm->camera, -zoom_speed);
+        }
+        
+        // Camera rotation
+        if (input_manager_is_action_held(im, ACTION_CAMERA_ROTATE_LEFT)) {
+            camera_rotate(&rm->camera, rotate_speed, 0.0f);
+        }
+        if (input_manager_is_action_held(im, ACTION_CAMERA_ROTATE_RIGHT)) {
+            camera_rotate(&rm->camera, -rotate_speed, 0.0f);
+        }
+        
+        // Mouse scroll for zoom
+        double scroll_x, scroll_y;
+        input_manager_get_scroll(im, &scroll_x, &scroll_y);
+        if (scroll_y != 0.0) {
+            camera_zoom(&rm->camera, (float)scroll_y * 2.0f);
+        }
+        
+        // Middle mouse button for camera rotation
+        if (input_manager_is_mouse_button_held(im, 2)) {
+            double dx, dy;
+            input_manager_get_mouse_delta(im, &dx, &dy);
+            camera_rotate(&rm->camera, (float)dx * 0.005f, (float)dy * 0.005f);
+        }
     }
     
     // Toggle debug with F3
