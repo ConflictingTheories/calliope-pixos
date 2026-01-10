@@ -57,7 +57,7 @@ export class EventLoader {
     if (runConfigure) runConfigure(instance);
     // load
     if (afterLoad) {
-      if (instance.templateLoaded) afterLoad(instance);
+      if (instance.templateLoaded) await afterLoad(instance);
       else this.instances[type].push({ instance, afterLoad });
     }
 

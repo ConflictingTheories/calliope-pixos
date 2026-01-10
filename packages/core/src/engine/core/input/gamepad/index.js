@@ -373,20 +373,22 @@ export class GamePad {
       }
 
       if (e.type == 'touchend') {
-        var id = e.changedTouches[0].identifier;
-        if (touches[id].id == 'stick') {
-          controller.stick.reset();
-        }
-        for (var n = 0; n < buttonsLayout.length; n++) {
-          if (touches[id].id == buttonsLayout[n].name) {
-            controller.buttons.reset(n);
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          var id = e.changedTouches[0].identifier;
+          if (touches[id] && touches[id].id == 'stick') {
+            controller.stick.reset();
+          }
+          for (var n = 0; n < buttonsLayout.length; n++) {
+            if (touches[id] && touches[id].id == buttonsLayout[n].name) {
+              controller.buttons.reset(n);
+            }
+          }
+          if (touches[id]) {
+            delete touches[id];
           }
         }
-        if (touches[id]) {
-          delete touches[id];
-        }
 
-        if (e.changedTouches.length > e.touches.length) {
+        if (e.changedTouches && e.touches && e.changedTouches.length > e.touches.length) {
           var length = 0;
           var delta = e.changedTouches.length - e.touches.length;
           for (var id in touches) {
