@@ -14,12 +14,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@Components': path.resolve(__dirname, '../core/src/components'),
-      '@Engine': path.resolve(__dirname, '../core/src/engine'),
-      '@Sprites': path.resolve(__dirname, '../core/src/sprites'),
-      '@Tilesets': path.resolve(__dirname, '../core/src/tilesets'),
-      '@Spritz': path.resolve(__dirname, '../core/src/spritz'),
-      'pixospritz-core': path.resolve(__dirname, '../core/src/index.jsx'),
+      '@Components': path.resolve(__dirname, '../core-js/src/components'),
+      '@Engine': path.resolve(__dirname, '../core-js/src/engine'),
+      '@Sprites': path.resolve(__dirname, '../core-js/src/sprites'),
+      '@Tilesets': path.resolve(__dirname, '../core-js/src/tilesets'),
+      '@Spritz': path.resolve(__dirname, '../core-js/src/spritz'),
+      'pixospritz-core': path.resolve(__dirname, '../core-js/src/index.jsx'),
     }
   },
   

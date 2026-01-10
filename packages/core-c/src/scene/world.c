@@ -208,7 +208,7 @@ void world_update(World* world, double timestamp) {
 void world_render(World* world, struct RenderManager* render_manager) {
     if (!world || !render_manager) return;
     
-    // Render active zone tiles
+    // Render active zone tiles (TODO - Add support for multiple zones ->active_zones)
     if (world->active_zone) {
         zone_draw_tiles(world->active_zone, render_manager);
         zone_draw_sprites(world->active_zone, render_manager);

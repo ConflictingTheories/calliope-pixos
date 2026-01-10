@@ -144,5 +144,5 @@ sprite:set_uniform("uGlowIntensity", 0.5)
 
 ## Resources
 
-- See `packages/core/src/engine/shaders/pxsl/README.md` for full PXSL documentation
+- See `packages/core-js/src/engine/shaders/pxsl/README.md` for full PXSL documentation
 - Editor shader preview: `demos/tile-editor.html`

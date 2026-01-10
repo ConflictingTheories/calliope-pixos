@@ -84,7 +84,7 @@ export default [EditorName];
 ### Engine System Structure
 
 ```javascript
-// packages/core/src/engine/systems/[SystemName].js
+// packages/core-js/src/engine/systems/[SystemName].js
 export class [SystemName] {
   constructor(config = {}) {
     this.config = {
@@ -275,9 +275,9 @@ export const useSelection = () => {
 ### Integration Points When Adding Features
 
 **When adding to core:**
-- Update `packages/core/src/index.js` to export new classes
-- Add tests in `packages/core/__tests__/`
-- Document API in `packages/core/documentation/`
+- Update `packages/core-js/src/index.js` to export new classes
+- Add tests in `packages/core-js/__tests__/`
+- Document API in `packages/core-js/documentation/`
 - Update `PENDING.md` with completion
 
 **When adding to script:**
@@ -510,7 +510,7 @@ showModal({
 
 2. **System-based structure** (preferred for engine)
    ```
-   packages/core/src/engine/
+   packages/core-js/src/engine/
    ├── systems/
    │   ├── RenderSystem.js
    │   ├── AudioSystem.js
@@ -531,7 +531,7 @@ showModal({
 
 **Index files** - Re-export public API:
 ```javascript
-// packages/core/src/engine/index.js
+// packages/core-js/src/engine/index.js
 export { RenderManager } from './systems/RenderManager';
 export { AudioSystem } from './systems/AudioSystem';
 export { Entity } from './entities/Entity';
@@ -555,7 +555,7 @@ export const COLORS = {
 
 **Utils files** - Helper functions:
 ```javascript
-// packages/core/src/engine/utils/mathUtils.js
+// packages/core-js/src/engine/utils/mathUtils.js
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const lerp = (a, b, t) => a + (b - a) * t;
 export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);

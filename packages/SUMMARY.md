@@ -5,7 +5,7 @@ This document summarizes the purpose, structure, and conceptual breakdown of eac
 
 ---
 
-### packages/core
+### packages/core-js
 **Purpose:**
 - The main WebGL-based game engine for PixoSpritz, handling rendering, entity management, events, audio, and scripting.
 

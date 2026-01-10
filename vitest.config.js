@@ -12,7 +12,7 @@ export default defineConfig({
     environment: 'jsdom',
     
     // Setup files to run before each test file
-    setupFiles: ['./vitest.setup.js', './packages/core/vitest.setup.js'],
+    setupFiles: ['./vitest.setup.js', './packages/core-js/vitest.setup.js'],
     
     // Include patterns for test files
     include: [
@@ -76,23 +76,23 @@ export default defineConfig({
     
     // Alias resolution for imports
     alias: {
-      '@Engine': path.resolve(__dirname, 'packages/core/src/engine'),
+      '@Engine': path.resolve(__dirname, 'packages/core-js/src/engine'),
       '@Editor': path.resolve(__dirname, 'packages/editor/src'),
       '@Script': path.resolve(__dirname, 'packages/script/src'),
       '@Math': path.resolve(__dirname, 'packages/math/src'),
-      '@Components': path.resolve(__dirname, 'packages/core/src/components'),
-      '@Spritz': path.resolve(__dirname, 'packages/core/src/spritz')
+      '@Components': path.resolve(__dirname, 'packages/core-js/src/components'),
+      '@Spritz': path.resolve(__dirname, 'packages/core-js/src/spritz')
     }
   },
   
   resolve: {
     alias: {
-      '@Engine': path.resolve(__dirname, 'packages/core/src/engine'),
+      '@Engine': path.resolve(__dirname, 'packages/core-js/src/engine'),
       '@Editor': path.resolve(__dirname, 'packages/editor/src'),
       '@Script': path.resolve(__dirname, 'packages/script/src'),
       '@Math': path.resolve(__dirname, 'packages/math/src'),
-      '@Components': path.resolve(__dirname, 'packages/core/src/components'),
-      '@Spritz': path.resolve(__dirname, 'packages/core/src/spritz')
+      '@Components': path.resolve(__dirname, 'packages/core-js/src/components'),
+      '@Spritz': path.resolve(__dirname, 'packages/core-js/src/spritz')
     }
   }
 });
