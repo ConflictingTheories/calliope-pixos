@@ -52,7 +52,7 @@ export default {
     // Draw Active Menus to Screen
     Object.keys(this.menuDict)
       .filter((key) => this.activeMenus.includes(key))
-      .map((id) => {
+      .forEach((id) => {
         let section = this.menuDict[id];
         let colors = section.colours;
         if (section.active) {

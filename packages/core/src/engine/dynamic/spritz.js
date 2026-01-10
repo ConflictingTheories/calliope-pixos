@@ -102,6 +102,7 @@ export default class ExampleDynamicSpritz extends Spritz {
           top: '#333',
           bottom: '#777',
           background: '#999',
+          text: '#fff',
         },
         onEnter: true,
         onOpen: (menu) => {
