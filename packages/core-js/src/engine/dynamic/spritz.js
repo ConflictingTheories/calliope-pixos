@@ -35,7 +35,7 @@ export default class ExampleDynamicSpritz extends Spritz {
     let world = (Spritz._instance.world = new World(Spritz._instance, 'dynamic'));
 
     // If a manifest URL is provided, load from it directly
-    if (engine.manifestUrl) {
+    if (engine.manifestUrl && !engine.manifestUrl.endsWith('/null')) {
       await this.loadFromManifest(engine.manifestUrl);
       return;
     }

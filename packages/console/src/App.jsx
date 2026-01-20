@@ -9,8 +9,11 @@ function App() {
   const [preMountClient, setPreMountClient] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
-  const isNetworked = urlParams.get('network') === 'true';
-  const manifest = isNetworked ? 'manifest.network.json' : 'manifest.local.json';
+  const networkParam = urlParams.get('network');
+  const manifestParam = urlParams.get('manifest');
+
+  // Only auto-load if explicitly requested via manifest or network params
+  const manifest = manifestParam || (networkParam === 'true' ? 'manifest.network.json' : (networkParam === 'local' ? 'manifest.local.json' : null));
 
   useEffect(() => {
     // Simulate loading progress
@@ -64,7 +67,7 @@ function App() {
 
         <div className="screen-container">
           <ErrorBoundary>
-            {(preMountClient || !loading) && <PixosClient manifest={`/spritz/${manifest}`} loading={loading} />}
+            {(preMountClient || !loading) && <PixosClient manifest={manifest ? `/spritz/${manifest}` : null} loading={loading} />}
           </ErrorBoundary>
         </div>
       </div>

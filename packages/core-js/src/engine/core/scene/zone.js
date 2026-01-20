@@ -151,12 +151,19 @@ export default class Zone extends Loadable {
   loadRemote = async () => {
     const res = await fetch(Resources.zoneRequestUrl(this.id));
     if (!res.ok) return;
+    const cellRes = await fetch(Resources.cellsRequestUrl(this.id));
+    if (!cellRes.ok) return;
+
     try {
       const data = await res.json();
+      const cellData = await cellRes.json();
       this.bounds = data.bounds;
       this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
 
-      this.cells = typeof data.cells === 'function' ? data.cells(this.bounds, this) : data.cells;
+      // Cells can be an array directly or a function (old format)
+      const rawCells = cellData.cells ? cellData.cells : cellData;
+      this.cells = typeof rawCells === 'function' ? rawCells(this.bounds, this) : rawCells;
+
       this.sprites = typeof data.sprites === 'function' ? data.sprites(this.bounds, this) : data.sprites || [];
       this.objects = typeof data.objects === 'function' ? data.objects(this.bounds, this) : data.objects || [];
 
