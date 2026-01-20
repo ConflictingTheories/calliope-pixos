@@ -7,7 +7,6 @@
  * Unified shader management system that supports:
  *   - PXSL (.pxsl) - PixoSpritz Shader Language
  *   - GLSL (.glsl, .vert, .frag) - Standard WebGL shaders
- *   - JavaScript shader functions (legacy support)
  *
  * Features:
  *   - Automatic format detection

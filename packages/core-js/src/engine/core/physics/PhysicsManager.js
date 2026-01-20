@@ -13,24 +13,41 @@
 
 import { AABB } from '../../utils/math/collision.js';
 import { Vector } from '../../utils/math/vector.js';
+import SpatialHash from './SpatialHash.js';
+import CollisionMask from './CollisionMask.js';
 
 /**
  * PhysicsManager - Handles collisions and simple physics simulation.
+ * Uses spatial hashing for efficient broad-phase collision detection.
  */
 export default class PhysicsManager {
     constructor(engine) {
         this.engine = engine;
         this.bodies = [];
         this.staticBodies = [];
+        /** @type {SpatialHash} */
+        this.spatialHash = new SpatialHash(32); // 32px cells
+        /** @type {Map<Object, Set<Object>>} */
+        this.currentCollisions = new Map(); // Track ongoing collisions for events
     }
 
     /**
      * Adds a dynamic body to the physics simulation.
      * @param {object} body - Object with position, velocity, and getAABB()
+     * @param {number} width - Body width (if getAABB not available).
+     * @param {number} height - Body height (if getAABB not available).
+     * @param {number} layer - Collision layer (default: CollisionMask.Layers.DEFAULT).
+     * @param {number} mask - Collision mask (default: CollisionMask.Layers.ALL).
      */
-    addBody(body) {
+    addBody(body, width = null, height = null, layer = CollisionMask.Layers.DEFAULT, mask = CollisionMask.Layers.ALL) {
         if (!this.bodies.includes(body)) {
             this.bodies.push(body);
+            // Set collision properties
+            body.collisionLayer = layer;
+            body.collisionMask = mask;
+            body.isTrigger = body.isTrigger || false;
+            // Add to spatial hash
+            this.spatialHash.insert(body);
         }
     }
 
@@ -39,14 +56,23 @@ export default class PhysicsManager {
      */
     removeBody(body) {
         this.bodies = this.bodies.filter(b => b !== body);
+        this.spatialHash.remove(body);
+        this.currentCollisions.delete(body);
     }
 
     /**
      * Adds a static body (e.g., wall, floor).
+     * @param {object} body - Static body object.
+     * @param {number} layer - Collision layer (default: CollisionMask.Layers.WALL).
+     * @param {number} mask - Collision mask (default: CollisionMask.Layers.ALL).
      */
-    addStaticBody(body) {
+    addStaticBody(body, layer = CollisionMask.Layers.WALL, mask = CollisionMask.Layers.ALL) {
         if (!this.staticBodies.includes(body)) {
             this.staticBodies.push(body);
+            body.collisionLayer = layer;
+            body.collisionMask = mask;
+            body.isTrigger = body.isTrigger || false;
+            this.spatialHash.insert(body);
         }
     }
 
@@ -56,6 +82,8 @@ export default class PhysicsManager {
     clear() {
         this.bodies = [];
         this.staticBodies = [];
+        this.spatialHash.clear();
+        this.currentCollisions.clear();
     }
 
     /**
@@ -63,6 +91,15 @@ export default class PhysicsManager {
      * @param {number} deltaTime - Time since last update in seconds.
      */
     update(deltaTime) {
+        // Rebuild spatial hash
+        this.spatialHash.clear();
+        for (const body of [...this.bodies, ...this.staticBodies]) {
+            this.spatialHash.insert(body);
+        }
+
+        // Track collisions for event system
+        const newCollisions = new Map();
+
         for (const body of this.bodies) {
             // Get position property (some objects use 'pos', others 'position')
             const position = body.position || body.pos;
@@ -80,41 +117,80 @@ export default class PhysicsManager {
                 position.z += body.velocity.z * deltaTime;
             }
 
-            // Collision resolution
-            this._resolveCollisions(body);
+            // Collision detection and resolution
+            const collisions = this._detectCollisions(body);
+            newCollisions.set(body, collisions);
+
+            // Resolve collisions
+            this._resolveCollisions(body, collisions);
         }
+
+        // Emit collision events
+        this._emitCollisionEvents(newCollisions);
     }
 
     /**
-     * Resolves collisions for a given body against all other bodies.
+     * Detects collisions for a body using spatial hashing.
      * @private
+     * @param {Object} body - Body to check collisions for.
+     * @returns {Set<Object>} Set of colliding bodies.
      */
-    _resolveCollisions(body) {
-        if (!body.getAABB) return;
+    _detectCollisions(body) {
+        if (!body.getAABB) return new Set();
 
         const aabb = body.getAABB();
-        if (!aabb) return;
+        if (!aabb) return new Set();
 
-        // Check against static bodies
-        for (const staticBody of this.staticBodies) {
-            if (!staticBody.getAABB) continue;
-            const staticAABB = staticBody.getAABB();
-            if (!staticAABB) continue;
+        const collisions = new Set();
+        const candidates = this.spatialHash.getPotentialCollisions(body);
 
-            if (aabb.intersects(staticAABB)) {
-                this._resolveAABBCollision(body, aabb, staticBody, staticAABB);
+        for (const other of candidates) {
+            if (!other.getAABB) continue;
+
+            const layerA = body.collisionLayer || CollisionMask.Layers.DEFAULT;
+            const maskA = body.collisionMask || CollisionMask.Layers.ALL;
+            const layerB = other.collisionLayer || CollisionMask.Layers.DEFAULT;
+            const maskB = other.collisionMask || CollisionMask.Layers.ALL;
+
+            // Check collision mask
+            if (!CollisionMask.shouldCollide(layerA, maskA, layerB, maskB)) {
+                continue;
             }
-        }
 
-        // Check against other dynamic bodies
-        for (const other of this.bodies) {
-            if (body === other || !other.getAABB) continue;
             const otherAABB = other.getAABB();
             if (!otherAABB) continue;
 
             if (aabb.intersects(otherAABB)) {
-                this._resolveAABBCollision(body, aabb, other, otherAABB);
+                collisions.add(other);
             }
+        }
+
+        return collisions;
+    }
+
+    /**
+     * Resolves collisions for a given body.
+     * @private
+     * @param {Object} body - Body to resolve collisions for.
+     * @param {Set<Object>} collisions - Set of colliding bodies.
+     */
+    _resolveCollisions(body, collisions) {
+        if (!body.getAABB || !collisions) return;
+
+        const aabb = body.getAABB();
+        if (!aabb) return;
+
+        for (const other of collisions) {
+            if (!other.getAABB) continue;
+            const otherAABB = other.getAABB();
+            if (!otherAABB) continue;
+
+            // Skip resolution for triggers
+            if (body.isTrigger || other.isTrigger) {
+                continue;
+            }
+
+            this._resolveAABBCollision(body, aabb, other, otherAABB);
         }
     }
 
@@ -235,5 +311,53 @@ export default class PhysicsManager {
         if (tzmax < tmax) tmax = tzmax;
 
         return tmin >= 0 ? tmin : null;
+    }
+
+    /**
+     * Emits collision events (onCollisionEnter, onCollisionStay, onCollisionExit).
+     * @private
+     * @param {Map<Object, Set<Object>>} newCollisions - Current frame collisions.
+     */
+    _emitCollisionEvents(newCollisions) {
+        // Check for new collisions (enter)
+        for (const [body, collisions] of newCollisions.entries()) {
+            const previousCollisions = this.currentCollisions.get(body) || new Set();
+
+            for (const other of collisions) {
+                if (!previousCollisions.has(other)) {
+                    // onCollisionEnter
+                    if (typeof body.onCollisionEnter === 'function') {
+                        body.onCollisionEnter(other);
+                    }
+                    if (typeof other.onCollisionEnter === 'function') {
+                        other.onCollisionEnter(body);
+                    }
+                } else {
+                    // onCollisionStay
+                    if (typeof body.onCollisionStay === 'function') {
+                        body.onCollisionStay(other);
+                    }
+                    if (typeof other.onCollisionStay === 'function') {
+                        other.onCollisionStay(body);
+                    }
+                }
+            }
+
+            // Check for exited collisions
+            for (const other of previousCollisions) {
+                if (!collisions.has(other)) {
+                    // onCollisionExit
+                    if (typeof body.onCollisionExit === 'function') {
+                        body.onCollisionExit(other);
+                    }
+                    if (typeof other.onCollisionExit === 'function') {
+                        other.onCollisionExit(body);
+                    }
+                }
+            }
+        }
+
+        // Update current collisions
+        this.currentCollisions = newCollisions;
     }
 }

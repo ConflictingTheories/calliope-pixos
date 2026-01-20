@@ -827,6 +827,103 @@ export default class PixoScriptLibrary {
           envScope.finish(success > 0);
         }
       },
+      // Save/Load API
+      save: async (slotId, name, action = false) => {
+        try {
+          const slot = typeof slotId === 'number' ? slotId : parseInt(slotId) || 1;
+          const saveName = name || `Slot ${slot}`;
+          const result = await engine.saveManager.saveGame(slot, saveName);
+          if (action) {
+            return () => Promise.resolve(result);
+          }
+          return result;
+        } catch (e) {
+          console.warn('pixos.save failed', e);
+          if (action) {
+            return () => Promise.resolve(false);
+          }
+          return false;
+        }
+      },
+      load: async (slotId, action = false) => {
+        try {
+          const slot = typeof slotId === 'number' ? slotId : parseInt(slotId) || 1;
+          const result = await engine.saveManager.loadGame(slot);
+          if (action) {
+            return () => Promise.resolve(result);
+          }
+          return result;
+        } catch (e) {
+          console.warn('pixos.load failed', e);
+          if (action) {
+            return () => Promise.resolve(false);
+          }
+          return false;
+        }
+      },
+      delete_save: async (slotId, action = false) => {
+        try {
+          const slot = typeof slotId === 'number' ? slotId : parseInt(slotId) || 1;
+          const result = await engine.saveManager.deleteSave(slot);
+          if (action) {
+            return () => Promise.resolve(result);
+          }
+          return result;
+        } catch (e) {
+          console.warn('pixos.delete_save failed', e);
+          if (action) {
+            return () => Promise.resolve(false);
+          }
+          return false;
+        }
+      },
+      has_save: async (slotId, action = false) => {
+        try {
+          const slot = typeof slotId === 'number' ? slotId : parseInt(slotId) || 1;
+          const result = await engine.saveManager.hasSave(slot);
+          if (action) {
+            return () => Promise.resolve(result);
+          }
+          return result;
+        } catch (e) {
+          console.warn('pixos.has_save failed', e);
+          if (action) {
+            return () => Promise.resolve(false);
+          }
+          return false;
+        }
+      },
+      get_save_slots: () => {
+        try {
+          const slots = engine.saveManager.getSlots();
+          return slots.map(slot => ({
+            id: slot.id,
+            name: slot.name,
+            timestamp: slot.timestamp,
+            zone: slot.zone,
+            gameId: slot.gameId,
+            version: slot.version,
+          }));
+        } catch (e) {
+          console.warn('pixos.get_save_slots failed', e);
+          return [];
+        }
+      },
+      quick_save: async (action = false) => {
+        try {
+          const result = await engine.saveManager.quickSave();
+          if (action) {
+            return () => Promise.resolve(result);
+          }
+          return result;
+        } catch (e) {
+          console.warn('pixos.quick_save failed', e);
+          if (action) {
+            return () => Promise.resolve(false);
+          }
+          return false;
+        }
+      },
       // skybox shader switching
       set_skybox_shader: async (shaderName) => {
         if (engine.renderManager?.skyboxManager?.setSkyboxShader) {

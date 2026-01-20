@@ -337,6 +337,11 @@ export default class GLEngine {
       try { this.hud.drawHeightDebugOverlay(); } catch (e) { console.warn('drawHeightDebugOverlay failed', e); }
     }
 
+    // Render inventory UI if visible
+    if (this.hud.renderInventory) {
+      try { this.hud.renderInventory(); } catch (e) { console.warn('renderInventory failed', e); }
+    }
+
     // Update debug overlay if enabled
     updateDebugInformation(this);
 
@@ -464,19 +469,14 @@ export default class GLEngine {
 
   /**
    * Sets a greeting text.
-   * @deprecated This method should be moved to a more appropriate class, e.g., `Hud` or a new `DialogueManager`.
+   * @deprecated Use hud.setGreeting() instead.
    * @param {string} text - The greeting text to set.
    */
   setGreeting(text) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Setting GREETING:', text);
+      console.warn('engine.setGreeting() is deprecated. Use engine.hud.setGreeting() instead.');
     }
-    // Assuming globalStore exists and is the correct place for this
-    if (this.globalStore) {
-      this.globalStore.greeting = text;
-    } else {
-      console.warn('globalStore is not available to set greeting.');
-    }
+    this.hud.setGreeting(text);
   }
 
   /**

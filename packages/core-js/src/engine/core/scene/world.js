@@ -25,6 +25,7 @@ import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
 import NetworkAvatarManager from './NetworkAvatarManager.js';
 import { Vector } from '@Engine/utils/math/vector.js';
+import Pathfinder from './Pathfinder.js';
 /**
  * @typedef {object} MenuConfig
  * @property {object} start - Start menu configuration.
@@ -444,12 +445,65 @@ export default class World {
   };
 
   /**
-   * Finds a path between two points.
+   * Finds a path between two points using A* pathfinding.
+   * @param {Array<number>} from - The starting point [x, y] or [x, y, z].
+   * @param {Array<number>} to - The ending point [x, y] or [x, y, z].
+   * @param {Object} options - Pathfinding options.
+   * @param {boolean} options.allowDiagonal - Allow diagonal movement (default: true).
+   * @param {boolean} options.smoothPath - Apply path smoothing (default: true).
+   * @param {boolean} options.useLegacy - Use legacy pathfinding algorithm (default: false).
+   * @returns {Array<Array<number>>|null} The path as array of [x, y, z] coordinates, or null if no path found.
+   */
+  pathFind = (from, to, options = {}) => {
+    const {
+      allowDiagonal = true,
+      smoothPath = true,
+      useLegacy = false,
+    } = options;
+
+    // Use legacy algorithm if requested (for backward compatibility)
+    if (useLegacy) {
+      return this.pathFindLegacy(from, to);
+    }
+
+    // Find the zone containing the start point
+    const zone = this.zoneContaining(from[0], from[1]);
+    if (!zone || !zone.loaded) {
+      debug('World', 'pathFind: No zone found for start point', from);
+      return null;
+    }
+
+    // Create pathfinder for this zone
+    const pathfinder = new Pathfinder(zone);
+
+    // Find path using A*
+    const path = pathfinder.findPath(from[0], from[1], to[0], to[1], {
+      allowDiagonal,
+      smoothPath,
+    });
+
+    if (!path || path.length === 0) {
+      return null;
+    }
+
+    // Ensure path includes timing information for compatibility with action system
+    // Legacy format: [x, y, z, time]
+    return path.map((point, index) => {
+      if (point.length === 3) {
+        return [...point, 600]; // Add default timing
+      }
+      return point;
+    });
+  };
+
+  /**
+   * Legacy pathfinding implementation (kept for backward compatibility).
+   * @private
    * @param {Array<number>} from - The starting point.
    * @param {Array<number>} to - The ending point.
    * @returns {Array} The path.
    */
-  pathFind = (from, to) => {
+  pathFindLegacy = (from, to) => {
     // memory
     let steps = [],
       visited = [],

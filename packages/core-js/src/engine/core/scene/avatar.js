@@ -21,6 +21,7 @@ import { Direction } from '@Engine/utils/enums.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Sprite from '@Engine/core/scene/sprite.js';
+import Inventory from '../inventory/Inventory.js';
 
 /**
  * @typedef {object} AvatarData
@@ -62,6 +63,8 @@ export default class Avatar extends Sprite {
     this.isLit = true;
     /** @type {boolean} */
     this.isSelected = true;
+    /** @type {Inventory} */
+    this.inventory = new Inventory(30); // 30 slot inventory
   }
 
   /**

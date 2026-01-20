@@ -78,12 +78,12 @@ export default {
         if (this.options.from && this.options.to) {
           const from = this.options.from;
           const to = this.options.to;
-          // Interpolate cameraVector for legacy camera system
+          // Interpolate cameraVector
           const newVector = lerp(from, to, progress, new Vector(0, 0, 0));
           camera.cameraVector.x = newVector.x;
           camera.cameraVector.y = newVector.y;
           camera.cameraVector.z = newVector.z;
-          // Update cameraDir based on cameraVector.z for sprite rendering
+          // Update cameraDir for sprite rendering
           camera.cameraDir = Direction.adjustCameraDirection(camera.cameraVector);
         }
         break;

@@ -18,13 +18,14 @@ import { Vector, degToRad } from '../../utils/math/vector.js';
 import CameraManager from './camera.js';
 import LightManager from './light.js';
 import SkyboxManager from './skybox.js';
-import { fetchTransitionShaderFiles } from './shaders.js';
 import ParticleManager from './ParticleManager.js';
 import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
 import EffectManager from './EffectManager.js';
+import TransitionManager from './TransitionManager.js';
+import ShaderManager from './ShaderManager.js';
 
 // Shader imports
 import particlesVs from '../../shaders/particles/vs.js';
@@ -103,21 +104,13 @@ export default class RenderManager {
       /** @type {boolean} */
       this.isPickerPass = false;
 
-      // Transitions
-      /** @type {boolean} */
-      this.isTransitioning = false;
-      /** @type {string|null} */
-      this.transitionEffect = null;
-      /** @type {'out'|'in'} */
-      this.transitionDirection = 'out';
-      /** @type {number} */
-      this.transitionDuration = 0;
-      /** @type {number} */
-      this.transitionStartTime = 0;
-      /** @type {function(): void|null} */
-      this.transitionCallback = null;
-      /** @type {Object.<string, {program: WebGLProgram, buffer: WebGLBuffer, uProgress: WebGLUniformLocation, uDirection: WebGLUniformLocation}>} */
-      this.transitionGL = {}; // Stores compiled transition shader programs and buffers
+      // Transition Manager
+      /** @type {TransitionManager} */
+      this.transitionManager = new TransitionManager(this);
+
+      // Shader Manager
+      /** @type {ShaderManager} */
+      this.shaderManager = new ShaderManager(this);
 
       /** @type {{tilesDrawn: number, spritesDrawn: number, objectsDrawn: number}} */
       this.debug = {
@@ -198,14 +191,18 @@ export default class RenderManager {
     // Initialize Optimized Picker FBO (1x1 pixel for efficient picking)
     this._initPickerFBO();
 
+    // Store particle shader sources for ShaderManager
+    this.particleVsSource = particlesVs();
+    this.particleFsSource = particlesFs();
+
     // Initialize Main Shader Program
-    this.initShaderProgram(spritz.shaders);
+    this.shaderProgram = this.shaderManager.initMainShader(spritz.shaders);
 
     // Initialize Particle Shader Program
-    this.initParticleShaderProgram();
+    this.particleShaderProgram = this.shaderManager.initParticleShader(this.particleVsSource, this.particleFsSource);
 
     // Initialize picker shader (special shader which allows for picking objects on screen)
-    this.initShaderEffects({
+    this.effectPrograms['picker'] = this.shaderManager.initEffectShader({
       id: 'picker',
       vs: pickerVs(),
       fs: pickerFs(),
@@ -304,12 +301,17 @@ export default class RenderManager {
 
   /**
    * Initializes the main shader program used for rendering game objects.
-   * Compiles vertex and fragment shaders, links them into a program, and retrieves all attribute and uniform locations.
+   * Delegates to ShaderManager for actual implementation.
    * @param {ShaderSource} shaders - An object containing vertex and fragment shader source.
    * @returns {WebGLProgram} The initialized shader program.
    * @throws {Error} If the shader program fails to link.
    */
   initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
+    // Delegate to ShaderManager but keep full implementation for backward compatibility
+    // TODO: Fully migrate to ShaderManager
+    if (this.shaderManager && this.shaderManager.mainShaderProgram) {
+      return this.shaderManager.mainShaderProgram;
+    }
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;
@@ -410,7 +412,7 @@ export default class RenderManager {
       gl.uniform1f(this.useSampler, sampler);
 
       // Transition state
-      gl.uniform1f(this.runTransition, self.isTransitioning ? 1.0 : 0.0);
+      gl.uniform1f(this.runTransition, self.transitionManager.isTransitioning ? 1.0 : 0.0);
 
       // Camera position for lighting calculations
       gl.uniform3fv(this.cameraPosition, self.camera.cameraPosition.toArray());
@@ -631,12 +633,17 @@ export default class RenderManager {
 
   /**
    * Initializes a shader effect program.
-   * Compiles the shaders for a given effect, links them, and calls an initialization callback to set up any effect-specific uniforms or attributes.
+   * Delegates to ShaderManager for actual implementation.
    * @param {EffectShaderConfig} config - Configuration object for the effect shader.
    * @returns {WebGLProgram} The initialized effect shader program.
    * @throws {Error} If the shader effect program fails to link.
    */
   initShaderEffects = ({ vs: vsSource, fs: fsSource, id: id, init: init }) => {
+    // Delegate to ShaderManager
+    if (this.shaderManager) {
+      return this.shaderManager.initEffectShader({ vs: vsSource, fs: fsSource, id, init });
+    }
+    // Fallback to original implementation for backward compatibility
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;
@@ -892,161 +899,39 @@ export default class RenderManager {
   }
 
   /**
-   * Begins a custom screen transition. Overlays an effect (fade, cross, or swirl) on top of the current scene for the specified duration.
-   * When the effect completes, the returned Promise resolves. If another transition is already running, this will queue a new one once the current one finishes.
+   * Begins a custom screen transition. Delegates to TransitionManager.
    * @param {{effect?: string, direction?: 'out'|'in', duration?: number}} params - Transition parameters.
    * @returns {Promise<void>} Resolves when the transition has completed.
    */
   startTransition = (params = {}) => {
-    const { effect = 'fade', direction = 'out', duration = 1000 } = params;
-    // If another transition is currently active, we create a chained Promise that
-    // will run after the existing one. This avoids overlapping transitions.
-    const schedule = () => {
-      this.isTransitioning = true;
-      this.transitionEffect = effect;
-      this.transitionDirection = direction;
-      this.transitionDuration = duration;
-      this.transitionStartTime = performance.now();
-      return new Promise((resolve) => {
-        this.transitionCallback = resolve;
-      });
-    };
-    if (this.isTransitioning) {
-      // Chain onto the existing callback
-      const prevCallback = this.transitionCallback;
-      return new Promise((resolve) => {
-        this.transitionCallback = () => {
-          prevCallback?.();
-          schedule().then(resolve);
-        };
-      });
-    }
-    return schedule();
+    return this.transitionManager.start(params);
   }
 
   /**
-   * Updates an in-progress transition. Should be called once per frame from the engine render loop.
-   * When the transition ends, it cleans up and calls the stored callback.
+   * Updates an in-progress transition. Delegates to TransitionManager.
    * @returns {void}
    */
   updateTransition = () => {
-    if (!this.isTransitioning) {
-      return;
-    }
-    const now = performance.now();
-    let progress = (now - this.transitionStartTime) / this.transitionDuration;
-    if (progress >= 1.0) {
-      progress = 1.0;
-    }
-    // Draw the overlay using a GPU full-screen quad. Each effect has its own
-    // compiled shader. We lazily compile the program on first use via
-    // `initTransitionProgram()` and then draw a quad using the effect.
-    this.renderTransition(progress);
-    if (progress >= 1.0) {
-      // Finalize
-      this.isTransitioning = false;
-      const cb = this.transitionCallback;
-      this.transitionCallback = null;
-      cb && cb();
-    }
+    this.transitionManager.update();
   }
 
   /**
-   * Compiles and caches a WebGL shader program for the requested transition effect.
-   * The program draws a full-screen quad with a fragment shader specific to the effect (fade, cross, or swirl).
-   * This function is called automatically by `renderTransition()` the first time an effect is used.
+   * @deprecated Use transitionManager.initProgram() instead.
    * @param {string} effect - Name of the transition effect.
-   * @throws {Error} If the transition shader program fails to link.
    * @returns {void}
    */
   initTransitionProgram = (effect) => {
-    /** @type {WebGL2RenderingContext} */
-    const { gl } = this.engine;
-    // If already initialized, do nothing.
-    if (this.transitionGL[effect]) return;
-    // Load shader sources from the transition shader files. We normalize
-    // effect names that start with "fade" to the base "fade" directory.
-    let effectName = effect;
-    if (effectName.startsWith('fade')) {
-      effectName = 'fade';
-    }
-
-    // Require the vertex and fragment shaders for the selected effect.
-    let [vsSource, fsSource] = fetchTransitionShaderFiles(effectName);
-
-    // Compile and link the program.
-    /** @type {WebGLShader} */
-    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
-    /** @type {WebGLShader} */
-    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
-    /** @type {WebGLProgram} */
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.bindAttribLocation(program, 0, 'aPosition'); // Assuming 'aPosition' for fullscreen quad
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(`Could not link transition shader program for effect "${effect}": ${gl.getProgramInfoLog(program)}`);
-    }
-    // Create a buffer for the quad vertices (-1 to 1). We'll use a
-    // triangle strip with four vertices.
-    /** @type {WebGLBuffer} */
-    const quadBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
-    // Four corners: bottom-left, top-left, bottom-right, top-right.
-    const vertices = new Float32Array([
-      -1.0, -1.0,
-      -1.0, 1.0,
-      1.0, -1.0,
-      1.0, 1.0,
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    // Get uniform locations.
-    const uProgress = gl.getUniformLocation(program, 'uProgress');
-    const uDirection = gl.getUniformLocation(program, 'uDirection');
-    // Store compiled resources.
-    this.transitionGL[effect] = {
-      program: program,
-      buffer: quadBuffer,
-      uProgress: uProgress,
-      uDirection: uDirection,
-    };
-    // No need to keep shaders after linking.
-    gl.deleteShader(vertexShader);
-    gl.deleteShader(fragmentShader);
+    this.transitionManager.initProgram(effect);
   }
 
   /**
-   * Renders the transition overlay. Draws a full-screen quad with the precompiled shader corresponding to the current transition effect.
-   * @param {number} progress - A value between 0 and 1 indicating the progress of the transition.
+   * @deprecated Use transitionManager.render() instead.
+   * @param {number} progress - Progress value between 0 and 1.
    * @returns {void}
    */
   renderTransition = (progress) => {
-    if (!this.engine.spritz.loaded) return; // Only render if game is loaded
-    /** @type {WebGL2RenderingContext} */
-    const { gl } = this.engine;
-    const effect = this.transitionEffect || 'fade';
-    // Ensure the program is compiled.
-    this.initTransitionProgram(effect);
-    const trans = this.transitionGL[effect];
-    if (!trans) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`Transition effect "${effect}" program not found.`);
-      }
-      return;
-    }
-    // Save WebGL state that we'll modify. We need to disable the depth test and
-    // set blending appropriately so the overlay blends over the 3D scene.
-    const depthEnabled = gl.isEnabled(gl.DEPTH_TEST);
-    const blendEnabled = gl.isEnabled(gl.BLEND);
-    const prevBlendSrc = gl.getParameter(gl.BLEND_SRC_RGB);
-    const prevBlendDst = gl.getParameter(gl.BLEND_DST_RGB);
-
-    // Draw the quad.
-    gl.useProgram(trans.program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, trans.buffer);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    this.transitionManager.render(progress);
+  }
     // Set uniforms: progress and direction (0 for out, 1 for in).
     gl.uniform1f(trans.uProgress, progress);
     const directionVal = this.transitionDirection === 'in' ? 1.0 : 0.0;

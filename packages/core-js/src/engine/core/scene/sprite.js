@@ -704,7 +704,23 @@ export default class Sprite extends Loadable {
    * @param {string} greeting
    * @returns
    */
+  /**
+   * Sets a greeting text for this sprite.
+   * Also stores the greeting in the engine's globalStore via hud.setGreeting().
+   * @param {string} greeting - The greeting text.
+   * @returns {ActionLoader} A greeting action loader.
+   */
   setGreeting = (greeting) => {
+    // Store greeting in globalStore via hud
+    this.engine.hud.setGreeting(greeting);
+    
+    // Original sprite greeting behavior
+    if (this.speech.clearHud) {
+      this.speech.clearHud();
+    }
+    this.speech.writeText(greeting);
+    this.speech.loadImage();
+    return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
     if (this.speech.clearHud) {
       this.speech.clearHud();
     }

@@ -12,6 +12,7 @@
 \*                                                 */
 
 import GLEngine from '../index.js';
+import InventoryUI from './InventoryUI.js';
 
 export const minecraftia = new FontFace('minecraftia', 'url(/pixospritz/font/minecraftia.ttf)');
 
@@ -33,6 +34,8 @@ export default class Hud {
       this.backdropImage = null;
       /** @type {Array} */
       this.cutoutImages = []; // Array of {image, position} objects
+      /** @type {InventoryUI} */
+      this.inventoryUI = new InventoryUI(engine);
       Hud._instance = this;
     }
     return Hud._instance;
@@ -100,6 +103,15 @@ export default class Hud {
    */
   clearHud = () => {
     this.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
+  }
+
+  /**
+   * Renders the inventory UI if visible.
+   */
+  renderInventory = () => {
+    if (this.inventoryUI) {
+      this.inventoryUI.render();
+    }
   }
 
   /**
@@ -365,6 +377,22 @@ export default class Hud {
   clearTextboxCache = () => {
     this._cachedTextbox = null;
     this._cachedTextboxKey = null;
+  }
+
+  /**
+   * Sets a greeting text.
+   * @param {string} text - The greeting text to set.
+   */
+  setGreeting(text) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Setting GREETING:', text);
+    }
+    // Store greeting in globalStore if available
+    if (this.engine.globalStore) {
+      this.engine.globalStore.greeting = text;
+    } else {
+      console.warn('globalStore is not available to set greeting.');
+    }
   }
 }
 
