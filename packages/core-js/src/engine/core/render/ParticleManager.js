@@ -62,7 +62,7 @@ export default class ParticleManager {
     this.vertexTexBuf = null;
     /** @type {number|null} */
     this.lastUpdateTime = null;
-    
+
     // Instanced rendering buffers
     /** @type {WebGLBuffer|null} */
     this.instancePositionBuf = null;
@@ -112,10 +112,10 @@ export default class ParticleManager {
 
     this.vertexPosBuf = this.renderManager.createBuffer(quad, gl.STATIC_DRAW, 3);
     this.vertexTexBuf = this.renderManager.createBuffer(uvs, gl.STATIC_DRAW, 2);
-    
+
     // Initialize instanced rendering buffers
     this.initInstancedBuffers();
-    
+
     this.initialized = true;
   };
 
@@ -147,16 +147,16 @@ export default class ParticleManager {
     if (!gl || !this.particles.length) return 0;
 
     const count = Math.min(this.particles.length, this.maxInstances);
-    
+
     // Sort particles back-to-front for proper alpha blending
     const cameraPos = this.renderManager.camera.cameraPosition;
     const sortedParticles = [...this.particles].sort((a, b) => {
-      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) + 
-                    Math.pow(a.pos[1] - cameraPos.y, 2) + 
-                    Math.pow(a.pos[2] - cameraPos.z, 2);
-      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) + 
-                    Math.pow(b.pos[1] - cameraPos.y, 2) + 
-                    Math.pow(b.pos[2] - cameraPos.z, 2);
+      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) +
+        Math.pow(a.pos[1] - cameraPos.y, 2) +
+        Math.pow(a.pos[2] - cameraPos.z, 2);
+      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) +
+        Math.pow(b.pos[1] - cameraPos.y, 2) +
+        Math.pow(b.pos[2] - cameraPos.z, 2);
       return distB - distA;
     });
 
@@ -328,8 +328,8 @@ export default class ParticleManager {
 
     // Check for instanced rendering support (WebGL2)
     const supportsInstancing = typeof gl.drawArraysInstanced === 'function';
-    
-    if (supportsInstancing && this.useInstancing && shader.aInstancePosition !== undefined) {
+
+    if (supportsInstancing && this.useInstancing && shader.aInstancePosition >= 0) {
       this.renderInstanced();
     } else {
       this.renderNonInstanced();
@@ -370,7 +370,7 @@ export default class ParticleManager {
     rm.bindBuffer(this.vertexTexBuf, shader.aTextureCoord);
 
     // Bind instance position buffer
-    if (shader.aInstancePosition !== undefined) {
+    if (shader.aInstancePosition >= 0) {
       gl.enableVertexAttribArray(shader.aInstancePosition);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.instancePositionBuf);
       gl.vertexAttribPointer(shader.aInstancePosition, 3, gl.FLOAT, false, 0, 0);
@@ -378,7 +378,7 @@ export default class ParticleManager {
     }
 
     // Bind instance color buffer
-    if (shader.aInstanceColor !== undefined) {
+    if (shader.aInstanceColor >= 0) {
       gl.enableVertexAttribArray(shader.aInstanceColor);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceColorBuf);
       gl.vertexAttribPointer(shader.aInstanceColor, 4, gl.FLOAT, false, 0, 0);
@@ -386,7 +386,7 @@ export default class ParticleManager {
     }
 
     // Bind instance size buffer
-    if (shader.aInstanceSize !== undefined) {
+    if (shader.aInstanceSize >= 0) {
       gl.enableVertexAttribArray(shader.aInstanceSize);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceSizeBuf);
       gl.vertexAttribPointer(shader.aInstanceSize, 1, gl.FLOAT, false, 0, 0);
@@ -395,22 +395,22 @@ export default class ParticleManager {
 
     // Set projection/view matrices
     if (shader.setMatrixUniforms) {
-      shader.setMatrixUniforms({});
+      shader.setMatrixUniforms({ instanced: true });
     }
 
     // Draw all particles in a single instanced call
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);
 
     // Reset divisors
-    if (shader.aInstancePosition !== undefined) {
+    if (shader.aInstancePosition >= 0) {
       gl.vertexAttribDivisor(shader.aInstancePosition, 0);
       gl.disableVertexAttribArray(shader.aInstancePosition);
     }
-    if (shader.aInstanceColor !== undefined) {
+    if (shader.aInstanceColor >= 0) {
       gl.vertexAttribDivisor(shader.aInstanceColor, 0);
       gl.disableVertexAttribArray(shader.aInstanceColor);
     }
-    if (shader.aInstanceSize !== undefined) {
+    if (shader.aInstanceSize >= 0) {
       gl.vertexAttribDivisor(shader.aInstanceSize, 0);
       gl.disableVertexAttribArray(shader.aInstanceSize);
     }
@@ -444,7 +444,7 @@ export default class ParticleManager {
     // Enable blending for transparency - additive blending for glow effects
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    
+
     // Disable depth writing (but keep depth test) for proper transparency
     gl.depthMask(false);
 
@@ -455,18 +455,18 @@ export default class ParticleManager {
     // Sort particles back-to-front based on distance from camera
     const cameraPos = rm.camera.cameraPosition;
     const sortedParticles = [...this.particles].sort((a, b) => {
-      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) + 
-                    Math.pow(a.pos[1] - cameraPos.y, 2) + 
-                    Math.pow(a.pos[2] - cameraPos.z, 2);
-      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) + 
-                    Math.pow(b.pos[1] - cameraPos.y, 2) + 
-                    Math.pow(b.pos[2] - cameraPos.z, 2);
+      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) +
+        Math.pow(a.pos[1] - cameraPos.y, 2) +
+        Math.pow(a.pos[2] - cameraPos.z, 2);
+      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) +
+        Math.pow(b.pos[1] - cameraPos.y, 2) +
+        Math.pow(b.pos[2] - cameraPos.z, 2);
       return distB - distA; // Back to front
     });
 
     for (const p of sortedParticles) {
       rm.mvPushMatrix();
-      
+
       // Set model matrix translation only (billboarding handled in shader)
       const m = rm.uModelMat;
       // Reset to identity
@@ -482,7 +482,7 @@ export default class ParticleManager {
 
       // Set scale and matrix uniforms with alpha
       const scaleVec = new Vector(p.size, p.size, p.size);
-      shader.setMatrixUniforms({ scale: scaleVec, color: p.color, alpha: alpha });
+      shader.setMatrixUniforms({ scale: scaleVec, color: p.color, alpha: alpha, instanced: false });
 
       // Bind buffers and draw
       rm.bindBuffer(this.vertexPosBuf, shader.aVertexPosition);
@@ -495,11 +495,11 @@ export default class ParticleManager {
     // Restore depth mask and blending
     gl.depthMask(true);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    
+
     // Disable vertex attrib arrays to prevent WebGL state issues
     gl.disableVertexAttribArray(shader.aVertexPosition);
     gl.disableVertexAttribArray(shader.aTextureCoord);
-    
+
     // cleanup
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);

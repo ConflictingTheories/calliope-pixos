@@ -487,6 +487,12 @@ export default class RenderManager {
     particleShaderProgram.scaleUniform = gl.getUniformLocation(particleShaderProgram, 'uScale');
     particleShaderProgram.particleColorUniform = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
     particleShaderProgram.alphaUniform = gl.getUniformLocation(particleShaderProgram, 'uAlpha');
+    particleShaderProgram.instancedUniform = gl.getUniformLocation(particleShaderProgram, 'uInstanced');
+
+    // Get instanced attribute locations
+    particleShaderProgram.aInstancePosition = gl.getAttribLocation(particleShaderProgram, 'aInstancePosition');
+    particleShaderProgram.aInstanceColor = gl.getAttribLocation(particleShaderProgram, 'aInstanceColor');
+    particleShaderProgram.aInstanceSize = gl.getAttribLocation(particleShaderProgram, 'aInstanceSize');
 
     /**
      * Sets the matrix and other common uniforms for the particle shader program.
@@ -494,15 +500,19 @@ export default class RenderManager {
      * @param {Vector|null} [options.scale=null] - The scale vector for the particle.
      * @param {number[]|null} [options.color=null] - The color of the particle.
      * @param {number} [options.alpha=1.0] - The alpha transparency of the particle.
+     * @param {boolean} [options.instanced=false] - Whether instancing is active.
      * @returns {void}
      */
-    particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null, alpha = 1.0 }) {
+    particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null, alpha = 1.0, instanced = false }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(particleShaderProgram);
 
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
+
+      // Instanced toggle
+      gl.uniform1i(this.instancedUniform, instanced ? 1 : 0);
 
       // Scale
       gl.uniform3fv(this.scaleUniform, scale ? scale.toArray() : self.scale.toArray());

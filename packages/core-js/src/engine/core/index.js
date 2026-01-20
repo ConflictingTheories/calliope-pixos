@@ -21,6 +21,7 @@ import CutsceneManager from './cutscene/manager.js';
 import ModeManager from './mode/manager.js'; // Import ModeManager
 import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
+import SaveManager from './persistence/SaveManager.js';
 import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
 
 /**
@@ -101,6 +102,9 @@ export default class GLEngine {
 
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
+
+    /** @type {SaveManager} */
+    this.saveManager = new SaveManager(this);
 
     // Debug flags
     /** @type {boolean} */

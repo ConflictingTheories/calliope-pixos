@@ -29,6 +29,7 @@ export default class Database {
       dht: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
       msg: '++id, name, type, ip, checksum, signature, timestamp', // Primary key and indexed props
       tmp: '++id, key, value, timestamp', // key-store
+      saves: '++id, slotId, gameId, timestamp', // save-store
     });
   }
 
