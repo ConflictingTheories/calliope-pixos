@@ -141,6 +141,7 @@ void sprite_load(Sprite* sprite, struct Zone* zone, const char* id, vec3 pos, Di
     strncpy(sprite->id, id, MAX_SPRITE_ID - 1);
     sprite->pos = pos;
     sprite->facing = facing;
+    sprite_update_aabb(sprite);
 }
 
 void sprite_update(Sprite* sprite, float delta_time) {
@@ -155,6 +156,29 @@ void sprite_update(Sprite* sprite, float delta_time) {
         sprite->anim_timer -= anim->frame_duration;
         sprite->anim_frame = (sprite->anim_frame + 1) % anim->frame_count;
     }
+
+    // Always update AABB in case position or scale changed
+    sprite_update_aabb(sprite);
+}
+
+void sprite_update_aabb(Sprite* sprite) {
+    if (!sprite || !sprite->definition) return;
+    SpriteDefinition* def = sprite->definition;
+    
+    float width = (float)def->tile_width / 32.0f * sprite->scale.x;
+    float depth = (float)def->tile_height / 32.0f * sprite->scale.z;
+    float height = 1.0f * sprite->scale.y; // Assume 1 unit height scaled
+    
+    float half_w = width * 0.5f;
+    float half_d = depth * 0.5f;
+    
+    // AABB based on position and scale
+    // Parity with zone.c mesh generation: 
+    // positions[0] = MapX (pos.x)
+    // positions[1] = Altitude (pos.z)
+    // positions[2] = MapY (pos.y)
+    sprite->aabb.min = vec3_new(sprite->pos.x - half_w, sprite->pos.z, sprite->pos.y - half_d);
+    sprite->aabb.max = vec3_new(sprite->pos.x + half_w, sprite->pos.z + height, sprite->pos.y + half_d);
 }
 
 void sprite_get_tex_coords(Sprite* sprite, Direction camera_dir, float* out_coords) {
@@ -212,6 +236,7 @@ void sprite_move(Sprite* sprite, Direction direction, float speed, float delta_t
     sprite->pos.x += dir_vec.x * speed * delta_time;
     sprite->pos.y += dir_vec.y * speed * delta_time;
     sprite->facing = direction;
+    sprite_update_aabb(sprite);
 }
 
 void sprite_set_facing(Sprite* sprite, Direction direction) {

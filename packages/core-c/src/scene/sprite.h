@@ -16,6 +16,7 @@
 
 #include "../resource/texture.h"
 #include "../math/vector.h"
+#include "../math/aabb.h"
 #include "../rendering/gles_compat.h"
 #include <stdbool.h>
 
@@ -92,6 +93,9 @@ typedef struct Sprite {
     bool blocking;
     bool loaded;
     
+    // Bounding Box
+    AABB aabb;
+    
     // Zone reference (forward declared)
     struct Zone* zone;
     
@@ -155,6 +159,12 @@ void sprite_load(Sprite* sprite, struct Zone* zone, const char* id, vec3 pos, Di
  * @param delta_time Time since last update in seconds
  */
 void sprite_update(Sprite* sprite, float delta_time);
+
+/**
+ * Updates the sprite's AABB based on its current position and scale.
+ * @param sprite Pointer to the sprite
+ */
+void sprite_update_aabb(Sprite* sprite);
 
 /**
  * Gets the current texture coordinates for the sprite.

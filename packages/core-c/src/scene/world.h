@@ -104,6 +104,14 @@ Zone* world_get_zone(World* world, const char* zone_id);
 void world_set_active_zone(World* world, Zone* zone);
 
 /**
+ * Loads a zone from file and sets it as active.
+ * @param world Pointer to the world
+ * @param zone_name Name of the zone to load
+ * @return Pointer to the loaded zone or NULL
+ */
+Zone* world_load_zone(World* world, const char* zone_name);
+
+/**
  * Loads and adds a tileset to the world.
  * @param world Pointer to the world
  * @param texture_path Path to tileset texture

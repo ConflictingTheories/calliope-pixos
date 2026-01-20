@@ -198,9 +198,10 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
             break;
             
         case CUTSCENE_STEP_LOAD_ZONE:
-            // TODO: Implement zone loading
-            printf("Cutscene: Load zone '%s'\n", step->params.load_zone.zone_name);
-            cm->waiting_for_step = false;  // Continue immediately for now
+            if (cm->engine->world) {
+                world_load_zone(cm->engine->world, step->params.load_zone.zone_name);
+            }
+            cm->waiting_for_step = false;
             break;
             
         case CUTSCENE_STEP_SET_BACKDROP:

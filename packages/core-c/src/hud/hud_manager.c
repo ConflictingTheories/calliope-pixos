@@ -763,7 +763,8 @@ static void textbox_reflow(HudManager* hud, TextScrollBox* box) {
         box->line_count++;
     }
     
-    box->max_scroll = (box->line_count * (box->font_size * 1.25f)) - box->height;
+    float line_height = hud->primary_font.line_height * (box->font_size / hud->primary_font.font_size);
+    box->max_scroll = (box->line_count * line_height) - (box->height - 20.0f);
     if (box->max_scroll < 0) box->max_scroll = 0;
     
     box->dirty = false;
@@ -834,7 +835,7 @@ void textbox_render(HudManager* hud, TextScrollBox* box) {
     // Draw text with typewriter effect
     float text_x = box_x + 10.0f;
     float text_y = box->y + 10.0f - box->scroll_y;
-    float line_height = box->font_size * 1.25f;
+    float line_height = hud->primary_font.line_height * (box->font_size / hud->primary_font.font_size);
     
     int chars_shown = 0;
     int chars_to_show = box->typewriter_enabled ? box->typewriter_index : box->total_chars;

@@ -218,6 +218,27 @@ void world_render(World* world, struct RenderManager* render_manager) {
     particle_manager_render(&render_manager->particle_manager);
 }
 
+Zone* world_load_zone(World* world, const char* zone_name) {
+    if (!world || !zone_name) return NULL;
+    
+    // Check if zone is already loaded
+    Zone* zone = world_get_zone(world, zone_name);
+    if (zone) {
+        world_set_active_zone(world, zone);
+        return zone;
+    }
+    
+    // If not loaded, create a new one
+    // Note: In a real game engine, this would trigger an async load from disk/network
+    // For now we create a placeholder and expect data to be loaded later
+    zone = world_create_zone(world, zone_name);
+    if (zone) {
+        world_set_active_zone(world, zone);
+    }
+    
+    return zone;
+}
+
 void world_destroy(World* world) {
     if (!world) return;
     

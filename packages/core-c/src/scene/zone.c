@@ -324,7 +324,7 @@ void zone_draw_sprites(Zone* zone, struct RenderManager* render_manager) {
         Sprite* sprite = zone->sprites[i];
         // Frustum culling
         if (render_manager) {
-            if (!frustum_contains_sphere(&render_manager->frustum, sprite->pos, 2.0f)) {
+            if (!frustum_contains_aabb(&render_manager->frustum, sprite->aabb.min, sprite->aabb.max)) {
                 continue;
             }
         }
