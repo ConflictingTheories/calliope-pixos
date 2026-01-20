@@ -1,6 +1,7 @@
 import './App.css';
 import { useState, useEffect } from 'react';
 import PixosClient from 'pixospritz-core';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -62,7 +63,9 @@ function App() {
         </div>
 
         <div className="screen-container">
-          {(preMountClient || !loading) && <PixosClient manifest={`/spritz/${manifest}`} loading={loading} />}
+          <ErrorBoundary>
+            {(preMountClient || !loading) && <PixosClient manifest={`/spritz/${manifest}`} loading={loading} />}
+          </ErrorBoundary>
         </div>
       </div>
     </div>

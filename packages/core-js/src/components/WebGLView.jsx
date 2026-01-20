@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import glEngine from '@Engine/core/index.js';
 import { minecraftia } from '@Engine/core/hud/index.js';
 //
-const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) => {
+const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, manifest }) => {
   // Canvas
   const ref = useRef();
   const hudRef = useRef();
@@ -26,6 +26,12 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   const mmRef = useRef();
 
   let engine = null;
+
+  const [error, setError] = useState(null);
+
+  if (error) {
+    throw error;
+  }
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   const onKeyEvent = (e) => {
@@ -207,99 +213,113 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   }
 
   useEffect(async () => {
-    // handle resize
-    window.addEventListener('resize', setDimension);
+    try {
+      // handle resize
+      window.addEventListener('resize', setDimension);
 
-    // setup canvases
-    const canvas = ref.current;
-    const hud = hudRef.current;
-    const mipmap = mmRef.current;
-    const gamepad = gamepadRef.current;
-    const fileUpload = fileRef.current;
+      // setup canvases
+      const canvas = ref.current;
+      const hud = hudRef.current;
+      const mipmap = mmRef.current;
+      const gamepad = gamepadRef.current;
+      const fileUpload = fileRef.current;
 
-    // Webgl Engine
-    engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
+      // Webgl Engine
+      engine = new glEngine(canvas, hud, mipmap, gamepad, fileUpload, width, height);
 
-    // load fonts
-    await loadFonts();
+      // Pass manifest
+      engine.manifestUrl = manifest;
 
-    // Initialize Spritz
-    await engine.init(SpritzProvider);
+      // Connect error handler
+      engine.triggerError = (err) => {
+        console.error("Engine Triggered Error:", err);
+        setError(err);
+      };
 
-    // Create ResizeObserver for proper canvas resize handling
-    let resizeObserver = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.target === canvas || entry.target === hud) {
-            // Notify engine of resize
-            if (engine && engine.handleResize) {
-              engine.handleResize();
+      // load fonts
+      await loadFonts();
+
+      // Initialize Spritz
+      await engine.init(SpritzProvider);
+
+      // Create ResizeObserver for proper canvas resize handling
+      let resizeObserver = null;
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.target === canvas || entry.target === hud) {
+              // Notify engine of resize
+              if (engine && engine.handleResize) {
+                engine.handleResize();
+              }
             }
           }
-        }
-      });
-      resizeObserver.observe(canvas);
-      resizeObserver.observe(hud);
-    }
+        });
+        resizeObserver.observe(canvas);
+        resizeObserver.observe(hud);
+      }
 
-    // Add native event listeners with { passive: false } to allow preventDefault
-    // These must be native listeners, not React synthetic events
-    if (hud) {
-      hud.addEventListener('touchstart', onTouchEvent, { passive: false });
-      hud.addEventListener('touchmove', onTouchEvent, { passive: false });
-      hud.addEventListener('touchend', onTouchEvent, { passive: false });
-      hud.addEventListener('touchcancel', onTouchEvent, { passive: false });
-      hud.addEventListener('mousedown', onTouchEvent, { passive: false });
-      hud.addEventListener('mouseup', onTouchEvent, { passive: false });
-      hud.addEventListener('mousemove', onTouchEvent, { passive: false });
-    }
-
-    if (gamepad) {
-      gamepad.addEventListener('touchstart', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('touchmove', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('touchend', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('touchcancel', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('mousedown', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('mouseup', onGamepadTouchEvent, { passive: false });
-      gamepad.addEventListener('mousemove', onGamepadTouchEvent, { passive: false });
-    }
-
-    // render loop
-    engine.render();
-
-    // cleanup
-    return () => {
-      stopTouchScrolling(canvas);
-      stopTouchScrolling(gamepad);
-      stopTouchScrolling(hud);
-      window.removeEventListener('resize', setDimension);
-      
-      // Remove native event listeners
+      // Add native event listeners with { passive: false } to allow preventDefault
+      // These must be native listeners, not React synthetic events
       if (hud) {
-        hud.removeEventListener('touchstart', onTouchEvent);
-        hud.removeEventListener('touchmove', onTouchEvent);
-        hud.removeEventListener('touchend', onTouchEvent);
-        hud.removeEventListener('touchcancel', onTouchEvent);
-        hud.removeEventListener('mousedown', onTouchEvent);
-        hud.removeEventListener('mouseup', onTouchEvent);
-        hud.removeEventListener('mousemove', onTouchEvent);
+        hud.addEventListener('touchstart', onTouchEvent, { passive: false });
+        hud.addEventListener('touchmove', onTouchEvent, { passive: false });
+        hud.addEventListener('touchend', onTouchEvent, { passive: false });
+        hud.addEventListener('touchcancel', onTouchEvent, { passive: false });
+        hud.addEventListener('mousedown', onTouchEvent, { passive: false });
+        hud.addEventListener('mouseup', onTouchEvent, { passive: false });
+        hud.addEventListener('mousemove', onTouchEvent, { passive: false });
       }
 
       if (gamepad) {
-        gamepad.removeEventListener('touchstart', onGamepadTouchEvent);
-        gamepad.removeEventListener('touchmove', onGamepadTouchEvent);
-        gamepad.removeEventListener('touchend', onGamepadTouchEvent);
-        gamepad.removeEventListener('touchcancel', onGamepadTouchEvent);
-        gamepad.removeEventListener('mousedown', onGamepadTouchEvent);
-        gamepad.removeEventListener('mouseup', onGamepadTouchEvent);
-        gamepad.removeEventListener('mousemove', onGamepadTouchEvent);
+        gamepad.addEventListener('touchstart', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('touchmove', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('touchend', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('touchcancel', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('mousedown', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('mouseup', onGamepadTouchEvent, { passive: false });
+        gamepad.addEventListener('mousemove', onGamepadTouchEvent, { passive: false });
       }
-      
-      if (resizeObserver) {
-        resizeObserver.disconnect();
+
+      // render loop
+      engine.render();
+    } catch (e) {
+      console.error("WebGLView initialization error:", e);
+      setError(e);
+    }
+
+    // cleanup
+    return () => {
+      stopTouchScrolling(ref.current);
+      stopTouchScrolling(gamepadRef.current);
+      stopTouchScrolling(hudRef.current);
+      window.removeEventListener('resize', setDimension);
+
+      // Remove native event listeners
+      if (hudRef.current) {
+        hudRef.current.removeEventListener('touchstart', onTouchEvent);
+        hudRef.current.removeEventListener('touchmove', onTouchEvent);
+        hudRef.current.removeEventListener('touchend', onTouchEvent);
+        hudRef.current.removeEventListener('touchcancel', onTouchEvent);
+        hudRef.current.removeEventListener('mousedown', onTouchEvent);
+        hudRef.current.removeEventListener('mouseup', onTouchEvent);
+        hudRef.current.removeEventListener('mousemove', onTouchEvent);
       }
-      engine.close();
+
+      if (gamepadRef.current) {
+        gamepadRef.current.removeEventListener('touchstart', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('touchmove', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('touchend', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('touchcancel', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('mousedown', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('mouseup', onGamepadTouchEvent);
+        gamepadRef.current.removeEventListener('mousemove', onGamepadTouchEvent);
+      }
+
+      // if (resizeObserver) {
+      //   resizeObserver.disconnect();
+      // }
+      if (engine) engine.close();
     };
   }, [SpritzProvider]);
 
@@ -400,6 +420,7 @@ WebGLView.propTypes = {
   height: PropTypes.number.isRequired,
   SpritzProvider: PropTypes.object.isRequired,
   class: PropTypes.string.isRequired,
+  manifest: PropTypes.string,
 };
 
 export default WebGLView;

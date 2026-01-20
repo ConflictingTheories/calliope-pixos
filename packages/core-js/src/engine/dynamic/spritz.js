@@ -71,6 +71,9 @@ export default class ExampleDynamicSpritz extends Spritz {
         Spritz._instance.loaded = true;
       } catch (e) {
         console.error(e);
+        if (engine.triggerError) {
+          engine.triggerError(e);
+        }
         return;
       }
     }

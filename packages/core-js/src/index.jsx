@@ -46,7 +46,7 @@ class Pixos extends Component {
     const { updated, spritz, zipData } = this.state;
     return (
       <div style={{ margin: 0, minHeight: '480px', maxHeight: '1080px' }}>
-        <WebGLView class="pixos" key={`pixos-${updated}`} width={480} height={640} SpritzProvider={spritz} zipData={zipData ?? ''} />
+        <WebGLView class="pixos" key={`pixos-${updated}`} width={480} height={640} SpritzProvider={spritz} zipData={zipData ?? ''} manifest={this.props.manifest} />
       </div>
     );
   }
