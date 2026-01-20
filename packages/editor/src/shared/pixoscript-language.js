@@ -176,6 +176,49 @@ export const PIXOS_API = {
     params: ['from: Start position', 'to: End position', 'duration: Animation duration in ms'],
     category: 'Camera'
   },
+  'pixos.focus_camera': {
+    signature: 'focus_camera(target: table, mode: string, speed?: number)',
+    description: 'Focuses camera on a specific target with a mode (default, follow, topdown, isometric, fps).',
+    params: ['target: {x, y} or {x, y, z}', 'mode: Camera mode', 'speed: Lerp speed'],
+    category: 'Camera'
+  },
+  'pixos.zoom_camera': {
+    signature: 'zoom_camera(level: number, duration?: number)',
+    description: 'Zooms the camera to a specific level.',
+    params: ['level: Zoom scale (1.0 = default)', 'duration: Time in ms'],
+    category: 'Camera'
+  },
+
+  // Audio
+  'pixos.play_sound': {
+    signature: 'play_sound(name: string, loop?: boolean, volume?: number)',
+    description: 'Plays a sound effect.',
+    params: ['name: Audio resource name', 'loop: Whether to loop', 'volume: 0.0 - 1.0'],
+    category: 'Audio'
+  },
+  'pixos.play_music': {
+    signature: 'play_music(name: string, loop?: boolean, volume?: number)',
+    description: 'Plays background music.',
+    params: ['name: Audio resource name', 'loop: Whether to loop', 'volume: 0.0 - 1.0'],
+    category: 'Audio'
+  },
+  'pixos.stop_music': {
+    signature: 'stop_music()',
+    description: 'Stops the background music.',
+    category: 'Audio'
+  },
+  'pixos.stop_audio': {
+    signature: 'stop_audio(name?: string)',
+    description: 'Stops a specific audio track or all audio if name omitted.',
+    params: ['name: Optional audio resource name'],
+    category: 'Audio'
+  },
+  'pixos.set_volume': {
+    signature: 'set_volume(level: number)',
+    description: 'Sets the master volume.',
+    params: ['level: 0.0 - 1.0'],
+    category: 'Audio'
+  },
 
   // Transitions
   'pixos.run_transition': {
@@ -183,6 +226,12 @@ export const PIXOS_API = {
     description: 'Runs a screen transition effect.',
     params: ['effect: "fade", "blur", "cross", etc.', 'direction: "in" or "out"', 'duration: Milliseconds'],
     example: 'pixos.sync({ pixos.run_transition("fade", "out", 500) })',
+    category: 'Effects'
+  },
+  'pixos.screen_shake': {
+    signature: 'screen_shake(intensity: number, duration: number)',
+    description: 'Shakes the camera/screen.',
+    params: ['intensity: Shake magnitude', 'duration: Time in ms'],
     category: 'Effects'
   },
 
@@ -224,6 +273,11 @@ export const PIXOS_API = {
     signature: 'load_scripts(scripts: table)',
     description: 'Loads additional script modules.',
     params: ['scripts: Array of script paths'],
+    category: 'Utility'
+  },
+  'pixos.reload_scripts': {
+    signature: 'reload_scripts()',
+    description: 'Reloads all scripts in the current zone (Hot Reload).',
     category: 'Utility'
   },
 };

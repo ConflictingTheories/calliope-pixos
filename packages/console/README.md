@@ -45,3 +45,16 @@ public/
 - `pixospritz-core` - Core engine
 - `pixoscript` - Scripting engine
 - React 17
+
+## Game Loading Modes
+
+The console supports two ways to load games:
+
+1. **Manifest Mode (Default)**: Loads a specific game configuration from a URL.
+   - Configure via URL parameter: `?network=true` (loads `manifest.network.json`) or default (loads `manifest.local.json`).
+   - The manifest JSON specifies the initial zones and assets to load.
+   - Core engine fetches assets relative to the manifest URL.
+
+2. **Zip Mode (Legacy/Development)**: Allows uploading a single `.zip` file containing all game assets.
+   - Used when no manifest is provided or when triggering "Load Game File" from the internal menu.
+   - The zip must contain a `manifest.json` at root.

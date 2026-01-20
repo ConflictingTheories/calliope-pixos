@@ -27,7 +27,7 @@
 const isDebugMode = () => {
   if (typeof window !== 'undefined') {
     return window.PIXOS_DEBUG === true ||
-           (typeof localStorage !== 'undefined' && localStorage.getItem('pixos_debug') === 'true');
+      (typeof localStorage !== 'undefined' && localStorage.getItem('pixos_debug') === 'true');
   }
   return typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development';
 };
@@ -61,6 +61,43 @@ export function isDebugEnabled() {
   return _debugEnabled;
 }
 
+// Listeners for log events (e.g. for Editor Console)
+const listeners = [];
+
+/**
+ * Add a log listener
+ * @param {function} callback 
+ */
+export function addLogListener(callback) {
+  if (!listeners.includes(callback)) {
+    listeners.push(callback);
+  }
+}
+
+/**
+ * Remove a log listener
+ * @param {function} callback 
+ */
+export function removeLogListener(callback) {
+  const idx = listeners.indexOf(callback);
+  if (idx >= 0) {
+    listeners.splice(idx, 1);
+  }
+}
+
+function notifyListeners(level, component, args) {
+  if (listeners.length > 0) {
+    const message = {
+      level,
+      component,
+      args,
+      timestamp: Date.now(),
+      text: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+    };
+    listeners.forEach(fn => fn(message));
+  }
+}
+
 /**
  * Log a debug message with component prefix
  * @param {string} component - Component name (e.g., 'Zone', 'Sprite')
@@ -70,6 +107,7 @@ export function debug(component, ...args) {
   if (_debugEnabled) {
     console.log(`[${component}]`, ...args);
   }
+  notifyListeners('debug', component, args);
 }
 
 /**
@@ -81,6 +119,7 @@ export function debugWarn(component, ...args) {
   if (_debugEnabled) {
     console.warn(`[${component}]`, ...args);
   }
+  notifyListeners('warn', component, args);
 }
 
 /**
@@ -90,6 +129,7 @@ export function debugWarn(component, ...args) {
  */
 export function debugError(component, ...args) {
   console.error(`[${component}]`, ...args);
+  notifyListeners('error', component, args);
 }
 
 // Expose to window for runtime debugging
@@ -107,4 +147,6 @@ export default {
   debugError,
   setDebugEnabled,
   isDebugEnabled,
+  addLogListener,
+  removeLogListener,
 };

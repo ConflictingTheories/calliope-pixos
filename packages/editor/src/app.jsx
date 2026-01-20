@@ -31,6 +31,8 @@ import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/exte
 import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
 import './onboarding/FirstTimeWizard.css';
 import { debug, debugWarn, debugError } from './shared/debug-logger.js';
+import ConsolePanel, { useConsole } from './script-editor/ConsolePanel.jsx';
+import { addLogListener, removeLogListener } from 'pixospritz-core/engine/utils/debug-logger.js';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -69,6 +71,26 @@ const App = () => {
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const supportFabRef = useRef(null);
+
+  // Console State
+  const consoleState = useConsole();
+  const [showConsole, setShowConsole] = useState(false);
+  const [consoleHeight, setConsoleHeight] = useState(250);
+
+  // Hook up core logger to console
+  useEffect(() => {
+    const handleLog = (msg) => {
+      // msg = { level, component, args, timestamp, text }
+      switch (msg.level) {
+        case 'error': consoleState.error(`[${msg.component}] ${msg.text}`); break;
+        case 'warn': consoleState.warn(`[${msg.component}] ${msg.text}`); break;
+        case 'debug': consoleState.debug(`[${msg.component}] ${msg.text}`); break;
+        default: consoleState.info(`[${msg.component}] ${msg.text}`); break;
+      }
+    };
+    addLogListener(handleLog);
+    return () => removeLogListener(handleLog);
+  }, [consoleState]);
 
   const handleOptionsChange = useCallback((options) => {
     if (!options) {
@@ -1440,7 +1462,7 @@ const App = () => {
           validationReport={validationReport}
           onOptionsChange={handleOptionsChange}
         />
-        <section className="editor-main">
+        <section className="editor-main" style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
           {!hideTitleBar && (
             <header className="editor-main-header">
               <div className="editor-main-title">
@@ -1457,6 +1479,16 @@ const App = () => {
                   <span className="editor-ai-icon">✨</span>
                   <span>AI Generate</span>
                 </button>
+                <button
+                  type="button"
+                  className={`editor-ai-button ${showConsole ? 'is-active' : ''}`}
+                  onClick={() => setShowConsole(!showConsole)}
+                  title="Toggle Console Panel"
+                  style={{ marginLeft: '8px' }}
+                >
+                  <span className="editor-ai-icon">📝</span>
+                  <span>Console</span>
+                </button>
                 {validationReport && (
                   <div className="editor-pill">
                     <span>{errorCount} errors</span>
@@ -1466,7 +1498,7 @@ const App = () => {
               </div>
             </header>
           )}
-          <div className="editor-main-content">
+          <div className="editor-main-content" style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
             {hasContent ? (
               contents.map((component) => component)
             ) : (
@@ -1476,6 +1508,27 @@ const App = () => {
               </div>
             )}
           </div>
+          {showConsole && (
+            <div
+              className="editor-console-pane"
+              style={{
+                height: consoleHeight,
+                borderTop: '1px solid #333',
+                background: '#111',
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <ConsolePanel
+                messages={consoleState.messages}
+                onCommand={consoleState.command}
+                onClear={consoleState.clear}
+                isRunning={consoleState.isRunning}
+                onStop={consoleState.stopExecution}
+              />
+            </div>
+          )}
         </section>
       </div>
       {supportPanelVisible && (

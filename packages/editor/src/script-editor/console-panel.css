@@ -11,11 +11,11 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #0a0f1a;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 13px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
   overflow: hidden;
 }
 
@@ -24,9 +24,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
 }
 
@@ -40,8 +40,8 @@
 
 .console-title {
   font-weight: 600;
-  color: #e6eef8;
-  font-size: 12px;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -50,8 +50,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #4ec9b0;
-  font-size: 11px;
+  color: var(--brand-primary);
+  font-size: var(--text-xs);
 }
 
 .console-running .spinner {
@@ -64,7 +64,9 @@
 }
 
 @keyframes console-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .console-filter {
@@ -93,11 +95,11 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: #e6eef8;
-  font-size: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
 }
@@ -193,7 +195,7 @@
 
 .console-text {
   flex: 1;
-  color: #e6eef8;
+  color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
 }
@@ -308,13 +310,13 @@
 
 .console-input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
-  color: #e6eef8;
+  color: var(--text-primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -340,18 +342,18 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  background: #4ec9b0;
+  background: var(--brand-primary);
   border: none;
-  border-radius: 4px;
-  color: #0a0f1a;
-  font-size: 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
   flex-shrink: 0;
 }
 
 .console-run-btn:hover:not(:disabled) {
-  background: #5dd5bc;
+  background: var(--brand-primary-hover);
 }
 
 .console-run-btn:active:not(:disabled) {
@@ -359,7 +361,7 @@
 }
 
 .console-run-btn:disabled {
-  background: #333;
-  color: #666;
+  background: var(--bg-hover);
+  color: var(--text-tertiary);
   cursor: not-allowed;
 }

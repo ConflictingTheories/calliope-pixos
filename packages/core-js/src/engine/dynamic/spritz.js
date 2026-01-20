@@ -16,6 +16,7 @@ import Spritz from '@Engine/core/scene/spritz.js';
 import World from '@Engine/core/scene/world.js';
 import JSZip from 'jszip';
 import { debug } from '@Engine/utils/debug-logger.js';
+import Resources from '@Engine/utils/resources.js';
 
 /**
  * ExampleDynamicSpritz - A dynamic Spritz implementation for loading games from zip files.
@@ -32,6 +33,12 @@ export default class ExampleDynamicSpritz extends Spritz {
     Spritz._instance.engine = engine;
     // Init Game Engine Components
     let world = (Spritz._instance.world = new World(Spritz._instance, 'dynamic'));
+
+    // If a manifest URL is provided, load from it directly
+    if (engine.manifestUrl) {
+      await this.loadFromManifest(engine.manifestUrl);
+      return;
+    }
 
     // load spritz
     async function loadSpritz(menu) {
@@ -67,7 +74,7 @@ export default class ExampleDynamicSpritz extends Spritz {
         world.isPaused = false;
 
         // Exit Menu
-        menu.completed = true;
+        if (menu) menu.completed = true;
         Spritz._instance.loaded = true;
       } catch (e) {
         console.error(e);
@@ -118,5 +125,47 @@ export default class ExampleDynamicSpritz extends Spritz {
         },
       },
     });
+  };
+
+  /**
+   * Load game from a remote manifest URL.
+   * @param {string} url - The URL to the manifest.json
+   */
+  loadFromManifest = async (url) => {
+    try {
+      debug('Spritz', 'Loading from manifest URL:', url);
+
+      // Set Base Path for Resources
+      const basePath = url.substring(0, url.lastIndexOf('/'));
+      Resources.setBasePath(basePath);
+
+      // Fetch Manifest
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.statusText}`);
+
+      const manifest = await response.json();
+      debug('Spritz', 'loaded manifest', manifest);
+
+      // Connect Network
+      if (manifest.network && manifest.network.url) {
+        debug('Spritz', 'Network connection found -- attempting connection to server');
+        this.engine.networkManager.connect(manifest.network.url);
+      }
+
+      // Load Zones
+      const world = this.world;
+      for (const zone of manifest.initialZones) {
+        // Load remotely (true)
+        await world.loadZone(zone, true, false, { effect: 'cross', duration: 500 });
+      }
+
+      // Start Game
+      world.isPaused = false;
+      this.loaded = true;
+
+    } catch (e) {
+      console.error("Failed to load from manifest:", e);
+      if (this.engine.triggerError) this.engine.triggerError(e);
+    }
   };
 }

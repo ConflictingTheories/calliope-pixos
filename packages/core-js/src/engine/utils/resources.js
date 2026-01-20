@@ -11,8 +11,12 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-export default {
-  tilesetRequestUrl: (id) => '/pixospritz/tilesets/' + id + '/tileset.json',
-  zoneRequestUrl: (id) => '/pixospritz/maps/' + id + '/map.json',
-  artResourceUrl: (art) => '/pixospritz/art/' + art,
+const Resources = {
+  basePath: '/pixospritz',
+  setBasePath: (path) => { Resources.basePath = path.replace(/\/$/, ''); },
+  tilesetRequestUrl: (id) => `${Resources.basePath}/tilesets/${id}/tileset.json`,
+  zoneRequestUrl: (id) => `${Resources.basePath}/maps/${id}/map.json`,
+  artResourceUrl: (art) => `${Resources.basePath}/art/${art}`,
 };
+
+export default Resources;
