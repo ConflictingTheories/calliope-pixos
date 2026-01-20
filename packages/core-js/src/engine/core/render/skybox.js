@@ -27,9 +27,8 @@ export default class SkyboxManager {
     async setSkyboxShader(shaderName) {
         if (!this.engine.gl) return;
         this.gl = this.engine.gl;
-        // Dynamically import shader sources
-        const vs = (await import(`../../shaders/skybox/${shaderName}/vs.js`)).default();
-        const fs = (await import(`../../shaders/skybox/${shaderName}/fs.js`)).default();
+        // Use static imports via fetchSkyboxShaderFiles
+        const [vs, fs] = fetchSkyboxShaderFiles(shaderName);
         this.shaderProgram = this.initSkyboxShaderProgram(vs, fs);
         // Optionally re-init buffer/cubemap if needed
     }
@@ -66,9 +65,8 @@ export default class SkyboxManager {
             this.texture = await this.engine.resourceManager.loadTextureFromZip(textureSrc, this.engine.spritz.zip);
             this.texture.runWhenLoaded(this.createTextureSkyboxProgram);
         } else {
-            // default - cosmic
-            const vsCosmic = (await import('../../shaders/skybox/' + shaderName + '/vs.js')).default();
-            const fsCosmic = (await import('../../shaders/skybox/' + shaderName + '/fs.js')).default();
+            // default - cosmic (via static imports)
+            const [vsCosmic, fsCosmic] = fetchSkyboxShaderFiles(shaderName);
             this.shaderProgram = this.initSkyboxShaderProgram(vsCosmic, fsCosmic);
         }
 

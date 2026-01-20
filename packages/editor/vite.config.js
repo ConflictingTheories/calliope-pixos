@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // This configuration mirrors the upstream editor setup.  It
 // specifies a relative base path for correct asset resolution and
@@ -26,6 +30,18 @@ export default defineConfig(() => {
     // Optimize Monaco dependencies
     optimizeDeps: {
       include: ['monaco-editor'],
+    },
+    resolve: {
+      alias: {
+        'pixospritz-core': path.resolve(__dirname, '../core-js/src'),
+        'pixospritz-math': path.resolve(__dirname, '../math/src/index.js'),
+        '@Components': path.resolve(__dirname, '../core-js/src/components'),
+        '@Engine': path.resolve(__dirname, '../core-js/src/engine'),
+        '@Sprites': path.resolve(__dirname, '../core-js/src/sprites'),
+        '@Tilesets': path.resolve(__dirname, '../core-js/src/tilesets'),
+        '@Spritz': path.resolve(__dirname, '../core-js/src/spritz'),
+      },
+      extensions: ['.js', '.jsx', '.json'],
     },
     plugins: [
       react(),

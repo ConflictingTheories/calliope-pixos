@@ -15,6 +15,7 @@ import {
   createMat4,
   identity,
   perspective,
+  ortho,
   lookAt,
   multiply,
   translate,
@@ -37,6 +38,7 @@ export default function WebGL3DCanvas({
   onCellHover,
   style = {},
   showControls = true,
+  viewMode = '3D', // '2D' or '3D'
 }) {
   const canvasRef = useRef(null);
   const glRef = useRef(null);
@@ -104,20 +106,42 @@ export default function WebGL3DCanvas({
     // Calculate matrices
     const projectionMatrix = createMat4();
     const aspect = canvas.width / canvas.height;
-    perspective(projectionMatrix, Math.PI / 4, aspect, 0.1, 1000.0);
+
+    if (viewMode === '2D') {
+      const size = camera.distance * 0.5;
+      ortho(projectionMatrix, -size * aspect, size * aspect, -size, size, 0.1, 1000.0);
+    } else {
+      perspective(projectionMatrix, Math.PI / 4, aspect, 0.1, 1000.0);
+    }
 
     // Calculate camera position
-    const camX = camera.centerX + camera.distance * Math.cos(camera.angleX) * Math.cos(camera.angleY);
-    const camY = camera.centerY + camera.distance * Math.cos(camera.angleX) * Math.sin(camera.angleY);
-    const camZ = camera.centerZ + camera.distance * Math.sin(camera.angleX);
+    let camX, camY, camZ;
+    if (viewMode === '2D') {
+      camX = camera.centerX;
+      camY = camera.centerY;
+      camZ = camera.distance;
+    } else {
+      camX = camera.centerX + camera.distance * Math.cos(camera.angleX) * Math.cos(camera.angleY);
+      camY = camera.centerY + camera.distance * Math.cos(camera.angleX) * Math.sin(camera.angleY);
+      camZ = camera.centerZ + camera.distance * Math.sin(camera.angleX);
+    }
 
     const viewMatrix = createMat4();
-    lookAt(
-      viewMatrix,
-      [camX, camY, camZ],
-      [camera.centerX, camera.centerY, camera.centerZ],
-      [0, 0, 1]
-    );
+    if (viewMode === '2D') {
+      lookAt(
+        viewMatrix,
+        [camX, camY, camZ],
+        [camera.centerX, camera.centerY, 0],
+        [0, 1, 0]
+      );
+    } else {
+      lookAt(
+        viewMatrix,
+        [camX, camY, camZ],
+        [camera.centerX, camera.centerY, camera.centerZ],
+        [0, 0, 1]
+      );
+    }
 
     // Call render callback
     if (onRender) {
@@ -151,7 +175,7 @@ export default function WebGL3DCanvas({
         onCellClick(x, y, camera, mouseEvent);
         return;
       }
-      
+
       setIsDragging(true);
       setIsPanning(e.button === 1); // Middle mouse for panning
       setLastMousePos({ x: e.clientX, y: e.clientY });
@@ -175,16 +199,23 @@ export default function WebGL3DCanvas({
       const deltaY = e.clientY - lastMousePos.y;
       setLastMousePos({ x: e.clientX, y: e.clientY });
 
-      if (isPanning) {
+      if (isPanning || viewMode === '2D') {
         // Pan camera
-        const panSpeed = camera.distance * 0.01;
-        const right = Math.cos(camera.angleY + Math.PI / 2);
-        const forward = Math.sin(camera.angleY + Math.PI / 2);
+        const panSpeed = viewMode === '2D' ? camera.distance * 0.002 : camera.distance * 0.01;
+
+        let right, forward;
+        if (viewMode === '2D') {
+          right = 1;
+          forward = 0;
+        } else {
+          right = Math.cos(camera.angleY + Math.PI / 2);
+          forward = Math.sin(camera.angleY + Math.PI / 2);
+        }
 
         setCamera((prev) => ({
           ...prev,
-          centerX: prev.centerX - (right * deltaX + forward * deltaY) * panSpeed,
-          centerY: prev.centerY - (forward * deltaX - right * deltaY) * panSpeed,
+          centerX: prev.centerX - (right * deltaX) * panSpeed,
+          centerY: prev.centerY + (viewMode === '2D' ? deltaY : (forward * deltaY)) * panSpeed,
         }));
       } else {
         // Rotate camera

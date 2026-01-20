@@ -19,7 +19,7 @@ import ScriptEditor from './script-editor/index.jsx';
 import ImagePreview from './image-preview/index.jsx';
 import AudioPreview from './audio-preview/index.jsx';
 import ModelPreview from './model-preview/index.jsx';
-import MapEditor3D from './map-editor/MapEditor3D.jsx';
+import UnifiedMapEditor from './map-editor/UnifiedMapEditor.jsx';
 import TileEditor from './tile-editor/index.jsx';
 import CutsceneTool from './cutscene-tool/index.jsx';
 import GeometryEditor from './geometry-editor/index.jsx';
@@ -969,7 +969,7 @@ const App = () => {
     });
 
     setContents([
-      <MapEditor3D
+      <UnifiedMapEditor
         key={Date.now()}
         content={combinedContent}
         tileset={tileset}

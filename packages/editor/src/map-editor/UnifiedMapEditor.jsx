@@ -33,42 +33,45 @@ import {
 /**
  * Enhanced MapEditor with 3D rendering
  */
-function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zip }) {
+function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zip, entryName }) {
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
   const [heights, setHeights] = useState([]);
-  
+
   // Available sprite/object types from package
   const [availableSprites, setAvailableSprites] = useState([]);
   const [availableObjects, setAvailableObjects] = useState([]);
-  
+
   // New: Sprites, Objects, Triggers state
   const [sprites, setSprites] = useState([]);
   const [objects, setObjects] = useState([]);
   const [triggers, setTriggers] = useState({ selectTrigger: '', scripts: [] });
   const [lights, setLights] = useState([]);
   const [animatedTiles, setAnimatedTiles] = useState([]);
-  
+
   // UI state
   const [selectedTile, setSelectedTile] = useState('FLOOR');
   const [currentTool, setCurrentTool] = useState('paint'); // 'paint', 'erase', 'pick', 'sprite', 'object', 'animatedTile'
   const [currentHeight, setCurrentHeight] = useState(0);
   const [showGrid, setShowGrid] = useState(true);
   const [error, setError] = useState(null);
-  const [editorMode, setEditorMode] = useState('tiles'); // 'tiles', 'sprites', 'objects', 'triggers', 'lights', 'animatedTiles'
-  
+  const [editorMode, setEditorMode] = useState('tiles'); // 'tiles', 'sprites', 'objects', 'triggers', 'lights', 'animatedTiles', 'attributes'
+  const [viewMode, setViewMode] = useState('3D'); // '2D' or '3D'
+  const [attributes, setAttributes] = useState([]);
+  const [selectedCell, setSelectedCell] = useState(null);
+
   // Painting state
   const [isPainting, setIsPainting] = useState(false);
   const [lastPaintedCell, setLastPaintedCell] = useState(null);
-  
+
   // Sprite/Object editing state
   const [selectedSprite, setSelectedSprite] = useState(null);
   const [spriteTypeInput, setSpriteTypeInput] = useState('');
   const [spriteIdInput, setSpriteIdInput] = useState('');
   const [spriteFacing, setSpriteFacing] = useState('Down');
   const [selectedObject, setSelectedObject] = useState(null);
-  
+
   // Dialog state
   const [showTileEditor, setShowTileEditor] = useState(false);
   const [showGeometryEditor, setShowGeometryEditor] = useState(false);
@@ -77,11 +80,11 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   const [showMapSettings, setShowMapSettings] = useState(false);
   const [newMapWidth, setNewMapWidth] = useState(17);
   const [newMapHeight, setNewMapHeight] = useState(19);
-  
+
   // History
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  
+
   // WebGL state
   const glRef = useRef(null);
   const shaderProgramRef = useRef(null);
@@ -91,10 +94,10 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   // Discover available sprite and object types from the package
   useEffect(() => {
     if (!zip) return;
-    
+
     const spriteTypes = new Set();
     const objectTypes = new Set();
-    
+
     try {
       // Get all entries from zip
       let entries = [];
@@ -116,20 +119,20 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         };
         entries = buildList(zip.root);
       }
-      
+
       // Filter sprite and object JSON files
       entries.forEach(entry => {
         const fullPath = entry.fullName || entry.name;
-        
+
         // Skip macOS metadata
         if (fullPath.includes('__MACOSX') || fullPath.includes('/.')) return;
-        
+
         if (fullPath.startsWith('sprites/') && fullPath.endsWith('.json')) {
           // Extract type path (e.g., "sprites/characters/male.json" -> "characters/male")
           const typePath = fullPath
             .replace('sprites/', '')
             .replace('.json', '');
-          
+
           // Categorize as object or sprite based on path
           if (typePath.startsWith('objects/') || typePath.startsWith('furniture/')) {
             objectTypes.add(typePath);
@@ -138,24 +141,24 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           }
         }
       });
-      
+
       setAvailableSprites(Array.from(spriteTypes).sort());
       setAvailableObjects(Array.from(objectTypes).sort());
-      
+
       debug('MapEditor3D', ' Discovered sprite types:', spriteTypes.size);
       debug('MapEditor3D', ' Discovered object types:', objectTypes.size);
     } catch (err) {
       console.error('[MapEditor3D] Failed to discover sprite/object types:', err);
     }
   }, [zip]);
-  
+
   // Parse incoming map data
   useEffect(() => {
     if (!content) return;
-    
+
     try {
       let parsedMap, parsedCells;
-      
+
       if (typeof content === 'string') {
         const data = JSON.parse(content);
         if (data.cells) {
@@ -175,21 +178,21 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
       setMap(parsedMap);
       setCells(parsedCells || []);
-      
+
       // Load sprites if present
       if (parsedMap?.sprites && Array.isArray(parsedMap.sprites)) {
         setSprites(parsedMap.sprites);
       } else {
         setSprites([]);
       }
-      
+
       // Load objects if present
       if (parsedMap?.objects && Array.isArray(parsedMap.objects)) {
         setObjects(parsedMap.objects);
       } else {
         setObjects([]);
       }
-      
+
       // Load triggers if present
       if (parsedMap) {
         setTriggers({
@@ -197,27 +200,27 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           scripts: parsedMap.scripts || []
         });
       }
-      
+
       // Load lights if present
       if (parsedMap?.lights && Array.isArray(parsedMap.lights)) {
         setLights(parsedMap.lights);
       } else {
         setLights([]);
       }
-      
+
       // Load animated tiles if present
       if (parsedMap?.animatedTiles && Array.isArray(parsedMap.animatedTiles)) {
         setAnimatedTiles(parsedMap.animatedTiles);
       } else {
         setAnimatedTiles([]);
       }
-      
+
       // Set map dimensions for resize dialog
       if (parsedCells && parsedCells.length > 0) {
         setNewMapWidth(parsedCells[0]?.length || 17);
         setNewMapHeight(parsedCells.length || 19);
       }
-      
+
       // Initialize or load heights
       let currentHeights;
       if (parsedMap?.heights) {
@@ -231,10 +234,24 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         currentHeights = [];
         setHeights([]);
       }
-      
+
+      // Initialize or load attributes
+      let currentAttributes;
+      if (parsedMap?.attributes) {
+        currentAttributes = parsedMap.attributes;
+        setAttributes(parsedMap.attributes);
+      } else if (parsedCells && parsedCells.length > 0) {
+        // Create empty attributes map
+        currentAttributes = parsedCells.map(row => row.map(() => ({})));
+        setAttributes(currentAttributes);
+      } else {
+        currentAttributes = [];
+        setAttributes([]);
+      }
+
       // Initialize history
       if (parsedCells) {
-        pushHistory(parsedCells, currentHeights);
+        pushHistory(parsedCells, currentHeights, currentAttributes);
       }
       setError(null);
     } catch (err) {
@@ -249,12 +266,12 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       debug('MapEditor3D', ' No texture atlas provided');
       return;
     }
-    
+
     if (!glRef.current) {
       debug('MapEditor3D', ' GL context not ready, waiting...');
       return;
     }
-    
+
     debug('MapEditor3D', ' Loading texture atlas:', textureAtlas.substring(0, 50) + '...');
     const img = new Image();
     img.onload = () => {
@@ -263,7 +280,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
         const texture = createTextureFromImage(glRef.current, img);
         textureRef.current = texture;
         debug('MapEditor3D', ' WebGL texture created:', texture);
-        
+
         // Verify texture was created successfully
         if (!texture) {
           console.error('[MapEditor3D] Failed to create WebGL texture object!');
@@ -284,30 +301,30 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-      
-      switch(e.key.toLowerCase()) {
-      case 'p':
-        setCurrentTool('paint');
-        break;
-      case 'e':
-        setCurrentTool('erase');
-        break;
-      case 'i':
-        setCurrentTool('pick');
-        break;
-      case 'r':
-        // Reset camera - would need to expose this from WebGL3DCanvas
-        break;
-      default:
-        break;
+
+      switch (e.key.toLowerCase()) {
+        case 'p':
+          setCurrentTool('paint');
+          break;
+        case 'e':
+          setCurrentTool('erase');
+          break;
+        case 'i':
+          setCurrentTool('pick');
+          break;
+        case 'r':
+          // Reset camera - would need to expose this from WebGL3DCanvas
+          break;
+        default:
+          break;
       }
     };
-    
+
     const handleMouseUp = () => {
       setIsPainting(false);
       setLastPaintedCell(null);
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('mouseup', handleMouseUp);
     return () => {
@@ -320,13 +337,13 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   const handleWebGLInit = useCallback((gl) => {
     debug('MapEditor3D', ' WebGL initialized');
     glRef.current = gl;
-    
+
     // Create shader program
     const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
     if (program) {
       shaderProgramRef.current = program;
       debug('MapEditor3D', ' Shader program created');
-      
+
       // If we already have a texture atlas, load it now
       if (textureAtlas && !textureRef.current) {
         debug('MapEditor3D', ' Texture atlas available, loading now...');
@@ -418,7 +435,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           );
         }
       }
-      
+
       // Render sprites as visual markers
       sprites.forEach((sprite, idx) => {
         renderMarker(
@@ -434,7 +451,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           [0.2, 0.8, 0.2] // Green for sprites
         );
       });
-      
+
       // Render objects as visual markers
       objects.forEach((obj, idx) => {
         renderMarker(
@@ -450,7 +467,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           [0.2, 0.2, 0.8] // Blue for objects
         );
       });
-      
+
       // Render animated tiles as visual markers
       animatedTiles.forEach((tile, idx) => {
         renderMarker(
@@ -487,7 +504,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     if (!tiles || !tiles[tileType]) return;
 
     const tileData = tiles[tileType];
-    
+
     // Model matrix for this tile - use cellHeight as base Z offset
     const modelMatrix = createMat4();
     identity(modelMatrix);
@@ -656,7 +673,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   ) {
     const size = 0.3; // Marker size
     const height = 0.6; // Marker height
-    
+
     // Model matrix for marker
     const modelMatrix = createMat4();
     identity(modelMatrix);
@@ -670,47 +687,47 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     // Create a simple cube
     const vertices = [
       // Front face
-      -size, -size,  size,
-      size, -size,  size,
-      size,  size,  size,
-      -size, -size,  size,
-      size,  size,  size,
-      -size,  size,  size,
+      -size, -size, size,
+      size, -size, size,
+      size, size, size,
+      -size, -size, size,
+      size, size, size,
+      -size, size, size,
       // Back face
       -size, -size, -size,
-      -size,  size, -size,
-      size,  size, -size,
+      -size, size, -size,
+      size, size, -size,
       -size, -size, -size,
-      size,  size, -size,
+      size, size, -size,
       size, -size, -size,
       // Top face
-      -size,  size, -size,
-      -size,  size,  size,
-      size,  size,  size,
-      -size,  size, -size,
-      size,  size,  size,
-      size,  size, -size,
+      -size, size, -size,
+      -size, size, size,
+      size, size, size,
+      -size, size, -size,
+      size, size, size,
+      size, size, -size,
       // Bottom face
       -size, -size, -size,
       size, -size, -size,
-      size, -size,  size,
+      size, -size, size,
       -size, -size, -size,
-      size, -size,  size,
-      -size, -size,  size,
+      size, -size, size,
+      -size, -size, size,
       // Right face
       size, -size, -size,
-      size,  size, -size,
-      size,  size,  size,
+      size, size, -size,
+      size, size, size,
       size, -size, -size,
-      size,  size,  size,
-      size, -size,  size,
+      size, size, size,
+      size, -size, size,
       // Left face
       -size, -size, -size,
-      -size, -size,  size,
-      -size,  size,  size,
+      -size, -size, size,
+      -size, size, size,
       -size, -size, -size,
-      -size,  size,  size,
-      -size,  size, -size,
+      -size, size, size,
+      -size, size, -size,
     ];
 
     const normals = [];
@@ -764,7 +781,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current?.canvas);
       setHoveredCell(cellCoords);
-      
+
       // Drag painting: only works in tile mode with shift key held and mouse down
       if (editorMode === 'tiles' && event?.shiftKey && isPainting && cellCoords) {
         const { x, y } = cellCoords;
@@ -814,16 +831,16 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
           addSprite(x, y);
         }
         return; // Don't process any other actions in sprite mode
-      } 
-      
+      }
+
       if (editorMode === 'objects') {
         if (event.type === 'click' && event.button === 0) {
           debug('MapEditor3D', ' Placing object at:', x, y);
           addObject(x, y);
         }
         return; // Don't process any other actions in object mode
-      } 
-      
+      }
+
       if (editorMode === 'animatedTiles') {
         if (event.type === 'click' && event.button === 0) {
           debug('MapEditor3D', ' Placing animated tile at:', x, y);
@@ -947,9 +964,13 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     const newHeights = heights.map((row, rowIdx) =>
       row.map((h, colIdx) => (rowIdx === y && colIdx === x ? currentHeight : h))
     );
+    const newAttributes = attributes.map((row, rowIdx) =>
+      row.map((attr, colIdx) => (rowIdx === y && colIdx === x ? {} : attr))
+    );
     setCells(newCells);
     setHeights(newHeights);
-    pushHistory(newCells, newHeights);
+    setAttributes(newAttributes);
+    pushHistory(newCells, newHeights, newAttributes);
   }
 
   // Erase cell
@@ -960,9 +981,13 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     const newHeights = heights.map((row, rowIdx) =>
       row.map((h, colIdx) => (rowIdx === y && colIdx === x ? 0 : h))
     );
+    const newAttributes = attributes.map((row, rowIdx) =>
+      row.map((attr, colIdx) => (rowIdx === y && colIdx === x ? {} : attr))
+    );
     setCells(newCells);
     setHeights(newHeights);
-    pushHistory(newCells, newHeights);
+    setAttributes(newAttributes);
+    pushHistory(newCells, newHeights, newAttributes);
   }
 
   // Pick cell
@@ -971,56 +996,66 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
     if (pickedTile && pickedTile !== 'EMPTY') {
       setSelectedTile(pickedTile);
       setCurrentHeight(heights[y]?.[x] || 0);
+      setSelectedCell({ x, y });
     }
   }
-  
+
   // Resize map
   function resizeMap(width, height) {
     const newCells = [];
     const newHeights = [];
-    
+    const newAttributes = [];
+
     for (let y = 0; y < height; y++) {
       const row = [];
       const heightRow = [];
+      const attrRow = [];
       for (let x = 0; x < width; x++) {
         // Copy existing data if within bounds, otherwise use EMPTY
-        if (y < cells.length && x < cells[0]?.length) {
+        if (y < cells.length && x < (cells[0]?.length || 0)) {
           row.push(cells[y][x]);
           heightRow.push(heights[y]?.[x] || 0);
+          attrRow.push(attributes[y]?.[x] || {});
         } else {
           row.push('EMPTY');
           heightRow.push(0);
+          attrRow.push({});
         }
       }
       newCells.push(row);
       newHeights.push(heightRow);
+      newAttributes.push(attrRow);
     }
-    
+
     setCells(newCells);
     setHeights(newHeights);
-    pushHistory(newCells, newHeights);
-    
+    setAttributes(newAttributes);
+    pushHistory(newCells, newHeights, newAttributes);
+
     // Update map bounds
     if (map) {
       setMap({ ...map, bounds: [0, 0, width, height] });
     }
   }
-  
+
   // Clear map
   function clearMap() {
     const newCells = cells.map(row => row.map(() => 'EMPTY'));
     const newHeights = heights.map(row => row.map(() => 0));
+    const newAttributes = attributes.map(row => row.map(() => ({})));
     setCells(newCells);
     setHeights(newHeights);
+    setAttributes(newAttributes);
     setCurrentHeight(0);
-    pushHistory(newCells, newHeights);
+    pushHistory(newCells, newHeights, newAttributes);
   }
 
   // History management
-  function pushHistory(newCells, newHeights) {
+  function pushHistory(newCells, newHeights, newAttributes) {
     const snapshot = {
       cells: JSON.parse(JSON.stringify(newCells)),
       heights: JSON.parse(JSON.stringify(newHeights)),
+      attributes: JSON.parse(JSON.stringify(newAttributes)),
     };
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(snapshot);
@@ -1033,6 +1068,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       const prevState = history[historyIndex - 1];
       setCells(prevState.cells);
       setHeights(prevState.heights);
+      setAttributes(prevState.attributes);
       setHistoryIndex(historyIndex - 1);
     }
   }
@@ -1042,6 +1078,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       const nextState = history[historyIndex + 1];
       setCells(nextState.cells);
       setHeights(nextState.heights);
+      setAttributes(nextState.attributes);
       setHistoryIndex(historyIndex + 1);
     }
   }
@@ -1052,6 +1089,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       ...map,
       cells,
       heights,
+      attributes,
       sprites,
       objects,
       lights,
@@ -1059,97 +1097,97 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
       selectTrigger: triggers.selectTrigger || undefined,
       scripts: triggers.scripts.length > 0 ? triggers.scripts : undefined,
     };
-    
+
     // Clean up undefined values
     Object.keys(mapData).forEach(key => {
       if (mapData[key] === undefined) {
         delete mapData[key];
       }
     });
-    
+
     if (onSave) {
       onSave(mapData);
     }
   }
-  
+
   // Add sprite to map
   function addSprite(x, y) {
     if (!spriteTypeInput || !spriteIdInput) {
       alert('Please enter both Sprite ID and Type');
       return;
     }
-    
+
     const newSprite = {
       id: spriteIdInput,
       type: spriteTypeInput,
       pos: [x, y, currentHeight],
       facing: spriteFacing
     };
-    
+
     setSprites([...sprites, newSprite]);
     alert(`Sprite "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
   }
-  
+
   // Remove sprite
   function removeSprite(index) {
     const newSprites = sprites.filter((_, i) => i !== index);
     setSprites(newSprites);
   }
-  
+
   // Update sprite
   function updateSprite(index, updates) {
     const newSprites = [...sprites];
     newSprites[index] = { ...newSprites[index], ...updates };
     setSprites(newSprites);
   }
-  
+
   // Add object to map
   function addObject(x, y) {
     if (!spriteTypeInput || !spriteIdInput) {
       alert('Please enter both Object ID and Type');
       return;
     }
-    
+
     const newObject = {
       id: spriteIdInput,
       type: spriteTypeInput,
       pos: [x, y, currentHeight],
       facing: spriteFacing
     };
-    
+
     setObjects([...objects, newObject]);
     alert(`Object "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
   }
-  
+
   // Remove object
   function removeObject(index) {
     const newObjects = objects.filter((_, i) => i !== index);
     setObjects(newObjects);
   }
-  
+
   // Update object
   function updateObject(index, updates) {
     const newObjects = [...objects];
     newObjects[index] = { ...newObjects[index], ...updates };
     setObjects(newObjects);
   }
-  
+
   // Add animated tile
   function addAnimatedTile(x, y) {
     if (!spriteTypeInput) {
       alert('Please enter the Sprite Type for the animated tile');
       return;
     }
-    
+
     const newAnimatedTile = {
       type: spriteTypeInput,
       pos: [x, y, currentHeight]
     };
-    
+
     setAnimatedTiles([...animatedTiles, newAnimatedTile]);
     alert(`Animated tile added at [${x}, ${y}, ${currentHeight}]`);
   }
-  
+
   // Remove animated tile
   function removeAnimatedTile(index) {
     const newTiles = animatedTiles.filter((_, i) => i !== index);
@@ -1209,9 +1247,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   }
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      height: '100vh', 
+    <div style={{
+      display: 'flex',
+      height: '100vh',
       background: '#1e1e1e',
       color: '#d4d4d4',
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
@@ -1429,6 +1467,44 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 ↷ Redo
               </button>
             </div>
+
+            <div style={{ marginTop: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+                View Projection:
+              </label>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <button
+                  style={{
+                    flex: 1,
+                    background: viewMode === '2D' ? '#1177bb' : '#3e3e42',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                  onClick={() => setViewMode('2D')}
+                >
+                  📐 2D
+                </button>
+                <button
+                  style={{
+                    flex: 1,
+                    background: viewMode === '3D' ? '#1177bb' : '#3e3e42',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                  onClick={() => setViewMode('3D')}
+                >
+                  🧊 3D
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1499,6 +1575,22 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             </button>
             <button
               style={{
+                background: editorMode === 'attributes' ? '#1177bb' : '#3e3e42',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}
+              onClick={() => setEditorMode('attributes')}
+            >
+              <div>📝 Attribute Mode</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click a cell to edit walkable/events</div>
+            </button>
+            <button
+              style={{
                 background: editorMode === 'animatedTiles' ? '#1177bb' : '#3e3e42',
                 color: 'white',
                 border: 'none',
@@ -1565,10 +1657,10 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             </div>
             <div style={{ padding: '10px' }}>
               <div style={{ marginBottom: '10px', fontSize: '11px', color: '#4ec9b0', background: '#1e3a32', padding: '8px', borderRadius: '3px', border: '1px solid #2d5a4a' }}>
-                <strong>➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}</strong><br/>
+                <strong>➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}</strong><br />
                 <span style={{ fontSize: '10px', color: '#8ec9b0' }}>• Select type and facing below, then click on any tile</span>
               </div>
-              
+
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>ID:</label>
                 <input
@@ -1587,7 +1679,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   }}
                 />
               </div>
-              
+
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Type:</label>
                 {availableSprites.length > 0 || editorMode === 'objects' && availableObjects.length > 0 ? (
@@ -1632,7 +1724,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   </>
                 )}
               </div>
-              
+
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Facing:</label>
                 <select
@@ -1654,7 +1746,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   <option value="Right">Right</option>
                 </select>
               </div>
-              
+
               <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
                 <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
                   Placed {editorMode === 'sprites' ? 'Sprites' : 'Objects'}:
@@ -1719,10 +1811,10 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             </div>
             <div style={{ padding: '10px' }}>
               <div style={{ marginBottom: '10px', fontSize: '11px', color: '#ce9178', background: '#3a2a1e', padding: '8px', borderRadius: '3px', border: '1px solid #5a4a3e' }}>
-                <strong>➤ Click on map to place animated tile</strong><br/>
+                <strong>➤ Click on map to place animated tile</strong><br />
                 <span style={{ fontSize: '10px', color: '#daa178' }}>• Select sprite type below, then click on any tile</span>
               </div>
-              
+
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Sprite Type:</label>
                 {availableSprites.length > 0 ? (
@@ -1767,7 +1859,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   </>
                 )}
               </div>
-              
+
               <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
                 <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
                   Placed Animated Tiles:
@@ -1808,6 +1900,111 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Attribute Editor */}
+        {editorMode === 'attributes' && (
+          <div style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42'
+            }}>
+              📝 Cell Attributes
+            </div>
+            <div style={{ padding: '10px' }}>
+              {!selectedCell ? (
+                <div style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>
+                  Click a cell on the map to edit its attributes.
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '10px', fontSize: '11px', color: '#4ec9b0' }}>
+                    <strong>Selected:</strong> x:{selectedCell.x}, y:{selectedCell.y}
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={!!attributes[selectedCell.y]?.[selectedCell.x]?.walkable}
+                        onChange={(e) => {
+                          const next = attributes.map((row, j) =>
+                            row.map((attr, i) => {
+                              if (j === selectedCell.y && i === selectedCell.x) {
+                                return { ...attr, walkable: e.target.checked };
+                              }
+                              return attr;
+                            })
+                          );
+                          setAttributes(next);
+                          pushHistory(cells, heights, next);
+                        }}
+                      />
+                      <span style={{ fontSize: '12px' }}>Walkable</span>
+                    </label>
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Event / Script:</label>
+                    <input
+                      type="text"
+                      value={attributes[selectedCell.y]?.[selectedCell.x]?.event || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const next = attributes.map((row, j) =>
+                          row.map((attr, i) => {
+                            if (j === selectedCell.y && i === selectedCell.x) {
+                              return { ...attr, event: val };
+                            }
+                            return attr;
+                          })
+                        );
+                        setAttributes(next);
+                        pushHistory(cells, heights, next);
+                      }}
+                      placeholder="e.g., door_open, trigger_cutscene"
+                      style={{
+                        width: '100%',
+                        background: '#3c3c3c',
+                        color: '#d4d4d4',
+                        border: '1px solid #3e3e42',
+                        padding: '6px 8px',
+                        borderRadius: '3px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                      Triggered when player enters or interacts
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedCell(null)}
+                    style={{
+                      width: '100%',
+                      background: '#3e3e42',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                      fontSize: '11px'
+                    }}
+                  >
+                    Done
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -1853,7 +2050,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   Lua script path (relative to triggers/)
                 </div>
               </div>
-              
+
               <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Scripts (on load):</div>
@@ -2002,9 +2199,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 padding: '10px',
                 marginBottom: '10px'
               }}>
-                <div style={{ 
-                  fontWeight: 'bold', 
-                  color: '#7dd3fc', 
+                <div style={{
+                  fontWeight: 'bold',
+                  color: '#7dd3fc',
                   marginBottom: '8px',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -2030,7 +2227,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                     const arr = tiles[editingTileName];
                     const layers = [];
                     for (let i = 0; i < arr.length; i += 3) {
-                      layers.push({ geom: arr[i], tex: arr[i+1], z: arr[i+2] });
+                      layers.push({ geom: arr[i], tex: arr[i + 1], z: arr[i + 2] });
                     }
                     return layers.map((layer, idx) => (
                       <div key={idx} style={{
@@ -2095,9 +2292,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   }}
                 >
                   <div>{tileName}</div>
-                  <div style={{ 
-                    fontSize: '8px', 
-                    color: '#888', 
+                  <div style={{
+                    fontSize: '8px',
+                    color: '#888',
                     marginTop: '2px'
                   }}>
                     {Math.floor(tiles[tileName].length / 3)} parts
@@ -2140,9 +2337,9 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 padding: '10px',
                 marginBottom: '10px'
               }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: '10px',
                   borderBottom: '1px solid #3e3e42',
@@ -2155,8 +2352,8 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                   >×</button>
                 </div>
                 <div style={{ fontSize: '11px', color: '#aaa' }}>
-                  Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} | 
-                  Surfaces: {geometry[editingGeometryName]?.surfaces?.length || 0} | 
+                  Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} |
+                  Surfaces: {geometry[editingGeometryName]?.surfaces?.length || 0} |
                   Type: {geometry[editingGeometryName]?.type_bitmask || 0}
                 </div>
                 {geometry[editingGeometryName]?.vertices && (
@@ -2251,7 +2448,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
                 />
               </div>
               <div style={{ fontSize: '10px', color: '#888', marginTop: '5px' }}>
-                Tile size: {tileset?.tileSize || 16}px | 
+                Tile size: {tileset?.tileSize || 16}px |
                 Sheet: {tileset?.sheetSize?.[0] || 512}×{tileset?.sheetSize?.[1] || 512}
               </div>
             </div>
@@ -2464,13 +2661,14 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             onInit={handleWebGLInit}
             onCellClick={handleCellClick}
             onCellHover={handleCellHover}
+            viewMode={viewMode}
             showControls={false}
             initialCamera={{
               distance: 25,
               angleX: -0.6,
               angleY: 0.5,
-              centerX: (cells[0]?.length || 0) / 2,
-              centerY: cells.length / 2,
+              centerX: (cells[0]?.length || 16) / 2,
+              centerY: (cells.length || 16) / 2,
               centerZ: 0,
             }}
           />
@@ -2490,7 +2688,7 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
             Mode: {editorMode} | Tool: {currentTool} | Tile: {selectedTile} | Height: {currentHeight.toFixed(1)}
           </span>
           <span>
-            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'} | 
+            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'} |
             Sprites: {sprites.length} | Objects: {objects.length} | Animated: {animatedTiles.length}
           </span>
         </div>
@@ -2499,4 +2697,4 @@ function MapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zi
   );
 }
 
-export default collect(MapEditor);
+export default collect(UnifiedMapEditor);
