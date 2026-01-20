@@ -260,11 +260,11 @@ export default class GLEngine {
 
     // Object picking pass (for selection) - only if mode has picker enabled
     if (this.modeManager.hasPicker()) {
-      // Enable picker shader (Todo - Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen).
-      this.renderManager.activatePickerShaderProgram(false);
+      // Enable picker shader - Optimized with 1x1 pixel framebuffer
+      this.renderManager.activatePickerShaderProgram();
       this.spritz.render(this, timestamp); // Render scene for picking pass
-      // Read pixel data immediately after picking render, before clearing screen
-      this.getSelectedObject('sprite|object|tile', false);
+      // Read pixel data using optimized path
+      this.getSelectedObject('sprite|object|tile');
     }
 
     // Update and render based on the active game mode
@@ -336,7 +336,7 @@ export default class GLEngine {
    * @param {boolean} [useFrustum=false] - Whether to use a 1x1 pixel frustum for picking (performance optimization).
    * @returns {number|null} The ID of the selected object, or null if no object is selected or freecam is active.
    */
-  getSelectedObject(type = 'sprite|object|tile', useFrustum = false) {
+  getSelectedObject(type = 'sprite|object|tile') {
     // When FreeCam is active, suppress picking to avoid interfering with camera controls
     if (this._freecamActive) return null;
     if (this.spritz.world?.spriteList?.length <= 0 && this.spritz.world?.objectList?.length <= 0 && this.spritz.world?.zoneList?.length <= 0) {
@@ -345,10 +345,10 @@ export default class GLEngine {
 
     const gl = this.gl;
     const data = new Uint8Array(4);
-    const mouseX = this.gamepad.x || 0;
-    const mouseY = this.gamepad.y || 0;
-    const pixelX = useFrustum ? 0 : (mouseX * gl.canvas.width) / gl.canvas.clientWidth;
-    const pixelY = useFrustum ? 0 : gl.canvas.height - (mouseY * gl.canvas.height) / gl.canvas.clientHeight - 1;
+
+    // Always read from 0,0 since we render to a 1x1 FBO using frustum picking
+    const pixelX = 0;
+    const pixelY = 0;
 
     gl.readPixels(
       pixelX, // x
@@ -507,7 +507,7 @@ export default class GLEngine {
       // Update canvas internal dimensions to match display size
       this.canvas.width = displayWidth;
       this.canvas.height = displayHeight;
-      
+
       // Update HUD canvas
       if (this.hudCanvas) {
         this.hudCanvas.width = displayWidth;

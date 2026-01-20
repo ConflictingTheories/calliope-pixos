@@ -865,13 +865,17 @@ export default class Zone extends Loadable {
       rm.bindBuffer(vTex, shaderProgram.aTextureCoord);
 
       const id = pickingRow[cell];
-      pickerProgram.setMatrixUniforms({ id });
-      shaderProgram.setMatrixUniforms({
-        id,
-        isSelected: selectedSet ? selectedSet.has(`${row},${cell}`) : false,
-        sampler: 1.0,
-        colorMultiplier: highlight,
-      });
+
+      if (rm.isPickerPass) {
+        pickerProgram.setMatrixUniforms({ id });
+      } else {
+        shaderProgram.setMatrixUniforms({
+          id,
+          isSelected: selectedSet ? selectedSet.has(`${row},${cell}`) : false,
+          sampler: 1.0,
+          colorMultiplier: highlight,
+        });
+      }
       gl.drawArrays(gl.TRIANGLES, 0, vPos.numItems);
       if (rm.debug) rm.debug.tilesDrawn++;
     }

@@ -190,6 +190,9 @@ export default class RenderManager {
 
     this.framebuffer = gl.createFramebuffer();
 
+    // Initialize Optimized Picker FBO (1x1 pixel for efficient picking)
+    this._initPickerFBO();
+
     // Initialize Main Shader Program
     this.initShaderProgram(spritz.shaders);
 
@@ -224,6 +227,48 @@ export default class RenderManager {
     this.textureAtlas.init();
 
     this.initializedWebGl = true;
+  }
+
+  /**
+   * Initializes the optimized 1x1 pixel picker framebuffer.
+   * This FBO is used for efficient object picking by rendering only a narrow
+   * frustum around the mouse cursor to a tiny buffer.
+   * @private
+   * @returns {void}
+   */
+  _initPickerFBO = () => {
+    const { gl } = this.engine;
+
+    // Create the picker framebuffer
+    this.pickerFBO = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickerFBO);
+
+    // Create color texture for picker (1x1 pixel RGBA)
+    this.pickerTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.pickerTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickerTexture, 0);
+
+    // Create depth renderbuffer for picker (1x1 pixel)
+    this.pickerDepthBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.pickerDepthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 1, 1);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.pickerDepthBuffer);
+
+    // Check framebuffer is complete
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      console.warn('Picker FBO is not complete:', status);
+    }
+
+    // Unbind
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
   }
 
   /**
@@ -335,7 +380,7 @@ export default class RenderManager {
     shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(shaderProgram);
-      
+
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -454,7 +499,7 @@ export default class RenderManager {
     particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null, alpha = 1.0 }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(particleShaderProgram);
-      
+
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
       gl.uniformMatrix4fv(this.vMatrixUniform, false, self.camera.uViewMat);
@@ -464,7 +509,7 @@ export default class RenderManager {
 
       // Color
       gl.uniform3fv(this.particleColorUniform, color ? color : [1.0, 1.0, 1.0]);
-      
+
       // Alpha
       gl.uniform1f(this.alphaUniform, alpha);
     };
@@ -517,13 +562,13 @@ export default class RenderManager {
   activateShaderProgram = () => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
-    
+
     // Clear picker pass flag - back to normal rendering
     this.isPickerPass = false;
-    
+
     // Reset vertex attrib state before switching shader
     this.resetVertexAttribArrays();
-    
+
     gl.useProgram(this.shaderProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Render to screen
     this.initProjection(); // Re-initialize projection in case canvas size changed
@@ -532,28 +577,27 @@ export default class RenderManager {
   /**
    * Activates the picker shader program for object selection.
    * Renders objects with unique color IDs for picking.
-   * @param {boolean} useFrustum - If true, a 1x1 pixel frustum is used for optimized picking.
    * @returns {void}
    */
-  activatePickerShaderProgram = (useFrustum) => {
+  activatePickerShaderProgram = () => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
-    
+
     // Set picker pass flag - objects will check this to use picker uniforms only
     this.isPickerPass = true;
-    
+
     gl.useProgram(this.effectPrograms['picker']);
 
-    // TODO: Improve performance - make it only 1x1 pixel framebuffer - and avoid needing to reclear screen.
-    if (useFrustum) {
-      // Bind frame buffer (TODO: Not working as expected, needs investigation)
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-      this.initProjection(); // Re-initialize projection for the frustum
-      this.applyPixelFrustum();
-    } else {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Render to screen for full-screen picking pass
-      this.initProjection(); // Re-initialize projection for full screen
-    }
+    // Use the optimized 1x1 pixel FBO
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickerFBO);
+
+    // Clear the FBO (both color and depth)
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Setup 1x1 pixel frustum projection
+    this.initProjection(); // Reset base state
+    this.applyPixelFrustum();
   };
 
   /**
@@ -1051,16 +1095,16 @@ export default class RenderManager {
   handleResize = (width, height) => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
-    
+
     // Update viewport
     gl.viewport(0, 0, width, height);
-    
+
     // Recalculate projection matrix with new aspect ratio
     const fieldOfView = degToRad(this.camera.fov);
     const aspect = width / height;
     const zNear = 0.1;
     const zFar = 100.0;
-    
+
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
     // Maintain Y-flip for coordinate system compatibility
     this.uProjMat[5] *= -1;

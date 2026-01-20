@@ -121,9 +121,116 @@ export default {
         }
         break;
       case 'focus':
-        // TODO: Implement focus logic (e.g., move camera target to a specific point)
-        // needs to support top-down, iso, fps - todo - looks into binding as well.
-        console.warn('Camera action "focus" not yet implemented.');
+        // Focus camera on a target position with support for different camera modes
+        // Options:
+        //   - target: {x, y, z} or Vector - position to focus on
+        //   - mode: 'top-down' | 'isometric' | 'fps' | 'orbital' (default)
+        //   - distance: number - distance from target (for orbital/isometric/top-down)
+        //   - yaw: number - yaw angle in radians (for orbital/isometric)
+        //   - pitch: number - pitch angle in radians (for orbital)
+        //   - bind: string - sprite ID to follow (enables binding mode)
+        //   - instant: boolean - if true, snap to position without interpolation
+        if (this.options.target) {
+          const target = this.options.target;
+          const targetVec = target.toArray ? target : new Vector(target.x || 0, target.y || 0, target.z || 0);
+          const mode = this.options.mode || 'orbital';
+          const distance = this.options.distance || camera.cameraDistance;
+          const instant = this.options.instant || false;
+
+          // Calculate target camera state based on mode
+          let targetYaw, targetPitch;
+          switch (mode) {
+            case 'top-down':
+              // Camera directly above looking down
+              targetYaw = camera.yaw; // Keep current yaw
+              targetPitch = Math.PI / 2 - 0.01; // Almost straight down
+              break;
+            case 'isometric':
+              // Classic isometric angle (45° yaw, ~35° pitch)
+              targetYaw = this.options.yaw !== undefined ? this.options.yaw : Math.PI / 4;
+              targetPitch = this.options.pitch !== undefined ? this.options.pitch : Math.PI / 6;
+              break;
+            case 'fps':
+              // First-person: camera at target position, looking forward
+              // For FPS, we place camera AT the target with zero distance
+              if (instant || progress >= 1.0) {
+                camera.cameraTarget = targetVec;
+                camera.cameraDistance = 0.1; // Very close for FPS view
+                if (this.options.yaw !== undefined) camera.yaw = this.options.yaw;
+                if (this.options.pitch !== undefined) camera.pitch = this.options.pitch;
+                camera.updateViewFromAngles();
+                this.completed = true;
+              } else {
+                // Interpolate to FPS position
+                const startTarget = this.options._startTarget || camera.cameraTarget;
+                if (!this.options._startTarget) this.options._startTarget = camera.cameraTarget;
+
+                camera.cameraTarget = new Vector(
+                  lerp(startTarget.x, targetVec.x, progress),
+                  lerp(startTarget.y, targetVec.y, progress),
+                  lerp(startTarget.z, targetVec.z, progress)
+                );
+                camera.cameraDistance = lerp(camera.cameraDistance, 0.1, progress);
+                camera.updateViewFromAngles();
+              }
+              break;
+            case 'orbital':
+            default:
+              // Orbital camera around target
+              targetYaw = this.options.yaw !== undefined ? this.options.yaw : camera.yaw;
+              targetPitch = this.options.pitch !== undefined ? this.options.pitch : camera.pitch;
+              break;
+          }
+
+          // Handle non-FPS modes with interpolation
+          if (mode !== 'fps') {
+            if (instant || progress >= 1.0) {
+              camera.cameraTarget = targetVec;
+              camera.cameraDistance = distance;
+              if (targetYaw !== undefined) camera.yaw = targetYaw;
+              if (targetPitch !== undefined) camera.pitch = targetPitch;
+              camera.updateViewFromAngles();
+              this.completed = true;
+            } else {
+              // Interpolate camera state
+              const startTarget = this.options._startTarget || camera.cameraTarget;
+              const startDistance = this.options._startDistance !== undefined ? this.options._startDistance : camera.cameraDistance;
+              const startYaw = this.options._startYaw !== undefined ? this.options._startYaw : camera.yaw;
+              const startPitch = this.options._startPitch !== undefined ? this.options._startPitch : camera.pitch;
+
+              // Store start values on first tick
+              if (!this.options._startTarget) {
+                this.options._startTarget = camera.cameraTarget;
+                this.options._startDistance = camera.cameraDistance;
+                this.options._startYaw = camera.yaw;
+                this.options._startPitch = camera.pitch;
+              }
+
+              camera.cameraTarget = new Vector(
+                lerp(startTarget.x, targetVec.x, progress),
+                lerp(startTarget.y, targetVec.y, progress),
+                lerp(startTarget.z, targetVec.z, progress)
+              );
+              camera.cameraDistance = lerp(startDistance, distance, progress);
+              if (targetYaw !== undefined) camera.yaw = lerp(startYaw, targetYaw, progress);
+              if (targetPitch !== undefined) camera.pitch = lerp(startPitch, targetPitch, progress);
+              camera.updateViewFromAngles();
+            }
+          }
+
+          // Handle sprite binding for follow mode
+          if (this.options.bind) {
+            const zone = this.engine.spritz?.world?.currentZone;
+            const sprite = zone?.sprites?.[this.options.bind];
+            if (sprite) {
+              camera.cameraTarget = new Vector(sprite.pos.x, sprite.pos.y, sprite.pos.z || 0);
+              camera.updateViewFromAngles();
+            }
+          }
+        } else {
+          console.warn('Camera action "focus" requires a target position in options.');
+          this.completed = true;
+        }
         break;
       default:
         break;

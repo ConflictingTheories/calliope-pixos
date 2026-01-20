@@ -32,7 +32,7 @@ export default {
   // Update & Scroll
   tick: function (time) {
     if (!this.loaded) return;
-    // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
+    // Check for autoclose (manual triggers and sections implemented in dialogue.js)
     if (this.options && this.options.autoclose) {
       this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
       if (time > this.endTime) {
@@ -97,7 +97,7 @@ export default {
       }
       return [];
     };
-    
+
     let touchstart = (e) => {
       const touches = normalizeTouches(e);
       this.isTouched = true;

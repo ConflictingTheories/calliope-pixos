@@ -26,7 +26,7 @@ export default {
   // Update & Scroll
   tick: function (time) {
     if (!this.loaded) return;
-    // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
+    // Check for Dialogue Completion (See dialogue.js for full section/scroll support)
     if (this.options && this.options.autoclose) {
       this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
       if (time > this.endTime) {

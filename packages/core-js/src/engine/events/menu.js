@@ -46,7 +46,7 @@ export default {
     this.listenerId = this.engine.gamepad.attachListener(this.hookListener());
     this.speechOutput = true;
     // load voices and then play
-    window.speechSynthesis.onvoiceschanged = () => {};
+    window.speechSynthesis.onvoiceschanged = () => { };
   },
   /**
    * Updates the menu state and renders active menu sections.
@@ -55,7 +55,7 @@ export default {
    */
   tick: function (time) {
     if (!this.loaded) return;
-    // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)
+    // Check for autoclose (manual triggers and sections implemented in dialogue.js)
     if (this.options && this.options.autoclose) {
       this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
       if (time > this.endTime) {
@@ -101,7 +101,7 @@ export default {
   hookListener: function () {
     // open hook
     if (this.onOpen) this.onOpen(this);
-    
+
     /**
      * Normalize event to extract touches array.
      * Works with mouse events, touch events, and pre-processed events from WebGLView.
@@ -129,7 +129,7 @@ export default {
       }
       return [];
     };
-    
+
     // attach handler
     let touchstart = (e) => {
       const touches = normalizeTouches(e);

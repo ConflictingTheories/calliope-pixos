@@ -495,6 +495,114 @@ export default class PixoScriptLibrary {
         }
       },
 
+      /**
+       * Focus camera on a target position with support for different camera modes.
+       * Returns a function that can be yielded in a Lua script.
+       * 
+       * Example Lua:
+       *   pixos.sync({ pixos.focus_camera({ x = 10, y = 10, z = 0 }, { mode = 'isometric', duration = 1.0 }) })
+       *   pixos.focus_camera({ x = 5, y = 5, z = 0 }, { mode = 'top-down', instant = true })
+       * 
+       * @param {table} target - Target position { x, y, z }
+       * @param {table} options - Options: mode ('orbital', 'top-down', 'isometric', 'fps'), duration, distance, yaw, pitch, bind, instant
+       * @returns {function} Async function that resolves when focus completes
+       */
+      focus_camera: (target, options = {}) => {
+        const targetObj = target && typeof target.toObject === 'function' ? target.toObject() : target || { x: 0, y: 0, z: 0 };
+        const opts = options && typeof options.toObject === 'function' ? options.toObject() : options || {};
+
+        // If instant, apply immediately
+        if (opts.instant) {
+          const camera = engine.renderManager.camera;
+          const Vector = engine.utils.Vector;
+          camera.cameraTarget = new Vector(targetObj.x || 0, targetObj.y || 0, targetObj.z || 0);
+          if (opts.distance !== undefined) camera.cameraDistance = opts.distance;
+          if (opts.yaw !== undefined) camera.yaw = opts.yaw;
+          if (opts.pitch !== undefined) camera.pitch = opts.pitch;
+
+          // Handle mode presets
+          if (opts.mode === 'top-down') {
+            camera.pitch = Math.PI / 2 - 0.01;
+          } else if (opts.mode === 'isometric') {
+            camera.yaw = opts.yaw !== undefined ? opts.yaw : Math.PI / 4;
+            camera.pitch = opts.pitch !== undefined ? opts.pitch : Math.PI / 6;
+          } else if (opts.mode === 'fps') {
+            camera.cameraDistance = 0.1;
+          }
+
+          camera.updateViewFromAngles();
+          return () => Promise.resolve();
+        }
+
+        // Animated transition via camera event
+        return () =>
+          new Promise((resolve) => {
+            debug('PixoScript', 'focusing camera via lua', { target: targetObj, options: opts });
+            engine.spritz.world.addEvent(
+              new EventLoader(
+                engine,
+                'camera',
+                [
+                  'focus',
+                  {
+                    target: targetObj,
+                    mode: opts.mode || 'orbital',
+                    distance: opts.distance,
+                    yaw: opts.yaw,
+                    pitch: opts.pitch,
+                    bind: opts.bind,
+                    instant: opts.instant,
+                    duration: opts.duration || 1.0,
+                  },
+                ],
+                engine.spritz.world,
+                async () => {
+                  resolve();
+                }
+              )
+            );
+          });
+      },
+
+      /**
+       * Zoom camera in or out.
+       * 
+       * Example Lua:
+       *   pixos.zoom_camera(5.0) -- zoom to distance 5
+       *   pixos.zoom_camera(-2.0, true) -- zoom delta (closer by 2)
+       * 
+       * @param {number} value - Zoom value (distance or delta)
+       * @param {boolean} isDelta - If true, value is delta; if false, absolute distance
+       */
+      zoom_camera: (value, isDelta = false) => {
+        const camera = engine.renderManager.camera;
+        const numValue = this.pixoscript.utils.coerceToNumber(value);
+
+        if (isDelta) {
+          camera.zoom(numValue);
+        } else {
+          camera.cameraDistance = Math.max(0.1, numValue);
+          camera.updateViewFromAngles();
+        }
+      },
+
+      /**
+       * Get current camera state for debugging or state management.
+       * 
+       * @returns {table} Camera state: { target, position, yaw, pitch, distance, direction }
+       */
+      get_camera_state: () => {
+        const camera = engine.renderManager.camera;
+        return new this.pixoscript.Table({
+          target: { x: camera.cameraTarget.x, y: camera.cameraTarget.y, z: camera.cameraTarget.z },
+          position: { x: camera.cameraPosition.x, y: camera.cameraPosition.y, z: camera.cameraPosition.z },
+          yaw: camera.yaw,
+          pitch: camera.pitch,
+          distance: camera.cameraDistance,
+          direction: camera.cameraDir,
+        });
+      },
+
       // input functions
       bind_action: (action, inputType, inputValue) => {
         try {
