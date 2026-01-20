@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { Vector, set } from '@Engine/utils/math/vector.js';
+import { AABB } from '../../utils/math/collision.js';
 import { Direction } from '@Engine/utils/enums.js';
 import ActionQueue from '../queue/index.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
@@ -259,6 +260,7 @@ export default class ModelObject extends Loadable {
       }
     }
     this.loaded = true;
+    this.engine.physicsManager.addStaticBody(this); // Objects are usually static
     this.onLoadActions.run();
   }
 
@@ -406,6 +408,17 @@ export default class ModelObject extends Loadable {
       255,
     ];
     return id;
+  }
+
+  /**
+   * Returns the AABB for this object.
+   * @returns {AABB}
+   */
+  getAABB = () => {
+    const halfSize = this.size.mul3(this.scale).mul(0.5);
+    const min = this.pos.sub(halfSize);
+    const max = this.pos.add(halfSize);
+    return new AABB(min, max);
   }
 
   /**

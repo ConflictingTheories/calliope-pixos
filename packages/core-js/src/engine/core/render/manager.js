@@ -24,6 +24,7 @@ import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
+import EffectManager from './EffectManager.js';
 
 // Shader imports
 import particlesVs from '../../shaders/particles/vs.js';
@@ -169,6 +170,10 @@ export default class RenderManager {
       /** @type {WebGLProgram|null} */
       this.shaderProgram = null; // The main shader program for rendering game objects
 
+      // Effect Manager for post-processing
+      /** @type {EffectManager} */
+      this.effectManager = new EffectManager(this);
+
       RenderManager._instance = this;
     }
     return RenderManager._instance;
@@ -225,6 +230,9 @@ export default class RenderManager {
 
     // Initialize texture atlas for batched rendering
     this.textureAtlas.init();
+
+    // Initialize effect manager
+    this.effectManager.init();
 
     this.initializedWebGl = true;
   }
@@ -1095,6 +1103,24 @@ export default class RenderManager {
     this.uProjMat = perspective(fieldOfView, aspect, zNear, zFar);
     // Maintain Y-flip for coordinate system compatibility
     this.uProjMat[5] *= -1;
+
+    // Update effect manager
+    this.effectManager.handleResize(width, height);
+  }
+
+  /**
+   * Internal pass for beginning a scene render (for post-processing).
+   */
+  beginScene = () => {
+    this.effectManager.beginScene();
+  }
+
+  /**
+   * Internal pass for ending a scene render (for post-processing).
+   * @param {number} timestamp - Current timestamp.
+   */
+  endScene = (timestamp) => {
+    this.effectManager.endScene(timestamp);
   }
 
   /**

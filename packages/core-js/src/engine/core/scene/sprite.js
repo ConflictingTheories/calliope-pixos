@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { Vector, set } from '@Engine/utils/math/vector.js';
+import { AABB } from '../../utils/math/collision.js';
 import { Direction } from '@Engine/utils/enums.js';
 import ActionQueue from '../queue/index.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
@@ -285,6 +286,7 @@ export default class Sprite extends Loadable {
       }
     }
     this.loaded = true;
+    this.engine.physicsManager.addBody(this);
     this.onLoadActions.run();
   }
 
@@ -365,7 +367,7 @@ export default class Sprite extends Loadable {
     }
 
     rm.mvPushMatrix();
-    
+
     // Get the draw offset for the current camera direction
     // Handle both formats: drawOffset as a Vector or as an object with direction keys
     let drawOffsetVec;
@@ -381,7 +383,7 @@ export default class Sprite extends Loadable {
       drawOffsetVec = new Vector(0, 0, 0);
     }
     const drawOffsetArr = drawOffsetVec.toArray ? drawOffsetVec.toArray() : [0, 0, 0];
-    
+
     // Position the sprite at its world position
     translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
 
@@ -394,7 +396,7 @@ export default class Sprite extends Loadable {
           scale: new Vector(1, Math.cos(rm.camera.cameraAngle / 180), 1),
         });
       }
-      
+
       // Apply camera rotation for sprite billboarding
       translate(rm.uModelMat, rm.uModelMat, [
         0.5 * rm.camera.cameraVector.x,
@@ -412,7 +414,7 @@ export default class Sprite extends Loadable {
         -0.5 * rm.camera.cameraVector.y,
         0,
       ]);
-      
+
       // Apply draw offset AFTER rotation so it's in screen-space
       // This keeps the sprite at a consistent screen position regardless of camera angle
       translate(rm.uModelMat, rm.uModelMat, drawOffsetArr);
@@ -504,6 +506,17 @@ export default class Sprite extends Loadable {
       255
     ];
     return id;
+  }
+
+  /**
+   * Returns the AABB for this sprite.
+   * @returns {AABB}
+   */
+  getAABB = () => {
+    const halfSize = new Vector(0.5, 0.5, 0.5); // Default sprite size in world units
+    const min = this.pos.sub(halfSize.mul3(this.scale));
+    const max = this.pos.add(halfSize.mul3(this.scale));
+    return new AABB(min, max);
   }
 
   /**

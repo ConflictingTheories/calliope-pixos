@@ -16,6 +16,7 @@ import Database from './database/index.js';
 import Store from './store/index.js';
 import Hud from './hud/index.js';
 import RenderManager from './render/manager.js';
+import PhysicsManager from './physics/PhysicsManager.js';
 import ResourceManager from './resource/manager.js';
 import CutsceneManager from './cutscene/manager.js';
 import ModeManager from './mode/manager.js'; // Import ModeManager
@@ -103,6 +104,9 @@ export default class GLEngine {
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this); // Initialize ModeManager
 
+    /** @type {PhysicsManager} */
+    this.physicsManager = new PhysicsManager(this);
+
     /** @type {SaveManager} */
     this.saveManager = new SaveManager(this);
 
@@ -130,6 +134,8 @@ export default class GLEngine {
     this.fullscreen = false;
     /** @type {number} */
     this.time = 0;
+    /** @type {object} */
+    this.timer = {};
     /** @type {number|null} */
     this.requestId = null; // For requestAnimationFrame
 
@@ -259,6 +265,10 @@ export default class GLEngine {
 
     const timestamp = new Date().getTime();
 
+    // Calculate deltaTime
+    this.timer.deltaTime = timestamp - this.time;
+    this.time = timestamp;
+
     // Update Input Manager
     this.inputManager.update();
 
@@ -283,9 +293,17 @@ export default class GLEngine {
       this.inputManager.setMode(currentMode);
     }
 
+    // Run physics update
+    const deltaTime = this.timer.deltaTime / 1000;
+    this.physicsManager.update(deltaTime);
+
     // Core render loop (actually render scene to screen)
     const gl = this.renderManager.engine.gl;
     this.renderManager.clearScreen();
+
+    // Begin Post-Processing Pass
+    this.renderManager.beginScene();
+
     // Draw skybox first, with depth writes disabled
     gl.depthMask(false);
     this.renderManager.renderSkybox();
@@ -301,6 +319,9 @@ export default class GLEngine {
     }
 
     this.spritz.render(this); // Render scene (might be overridden by mode)
+
+    // End Post-Processing Pass (renders to screen with effects)
+    this.renderManager.endScene(timestamp);
 
     this.cutsceneManager.update(); // Update cutscene (if applicable)
     this.renderManager.updateTransition(); // Update transitions
