@@ -18,8 +18,7 @@ import { AudioLoader } from '../../utils/loaders/AudioLoader.js';
 import { Texture, ColorTexture } from './texture.js';
 import Speech from '../scene/speech.js';
 
-// Absolute imports
-import { OBJ } from '../../utils/obj/index.js';
+// ObjHelper - modern OBJ/MTL loader
 import ObjHelper from '../../utils/ObjHelper.js';
 import GLEngine from '../index.js';
 
@@ -37,8 +36,6 @@ export default class ResourceManager {
       /** @type {GLEngine} */
       this.engine = engine;
 
-      /** @type {OBJ} */
-      this.objLoader = OBJ;
       /** @type {ObjHelper} */
       this.objHelper = new ObjHelper(engine.gl);
       /** @type {AudioLoader} */
@@ -52,13 +49,18 @@ export default class ResourceManager {
       /** @type {Object.<string, Speech>} */
       this.speeches = {};
 
+      // NOTE: Future centralization targets include:
+      // - Tilesets (currently managed by TilesetLoader in zones)
+      // - Fonts (currently loaded ad-hoc)
+      // - Shaders (currently managed by RenderManager)
+      // - Sound effects and music (expanding AudioLoader coverage)
+      // This centralization will improve resource lifecycle management and reduce duplication.
+
       ResourceManager._instance = this;
     }
 
     return ResourceManager._instance;
   }
-
-  // TODO: Move all resources into this class (tilesets, textures, audio, models, fonts, shaders).
 
   /**
    * Loads an OBJ model using ObjHelper (modern loader).

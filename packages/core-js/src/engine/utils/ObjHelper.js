@@ -531,6 +531,65 @@ export default class ObjHelper {
   }
 
   /**
+   * Load textures for materials from zip file
+   * @param {ParsedMesh[]} meshes - Meshes with material props
+   * @param {object} options - Options with zip and root
+   * @param {object} options.zip - JSZip instance
+   * @param {string} [options.root='textures'] - Texture root path in zip
+   * @returns {Promise<void>}
+   */
+  async loadTextures(meshes, { zip, root = 'textures' }) {
+    const gl = this.gl;
+    const texturePromises = [];
+
+    // Collect unique texture filenames
+    const textureFiles = new Set();
+    meshes.forEach(mesh => {
+      if (mesh.materialProps && mesh.materialProps.map_Kd) {
+        const filename = mesh.materialProps.map_Kd.split('/').pop();
+        textureFiles.add(filename);
+      }
+    });
+
+    // Load each texture
+    for (const filename of textureFiles) {
+      const promise = zip.file(`${root}/${filename}`)
+        .async('arraybuffer')
+        .then(buffer => new Blob([buffer]))
+        .then(blob => this.loadTexture(blob))
+        .then(texture => {
+          // Assign to meshes that use this texture
+          meshes.forEach(mesh => {
+            if (mesh.materialProps && mesh.materialProps.map_Kd) {
+              const meshFilename = mesh.materialProps.map_Kd.split('/').pop();
+              if (meshFilename === filename) {
+                mesh.texture = texture;
+                mesh.hasTexture = true;
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.warn(`Failed to load texture ${filename}:`, err);
+          // Assign placeholder
+          const placeholder = this.createPlaceholderTexture();
+          meshes.forEach(mesh => {
+            if (mesh.materialProps && mesh.materialProps.map_Kd) {
+              const meshFilename = mesh.materialProps.map_Kd.split('/').pop();
+              if (meshFilename === filename) {
+                mesh.texture = placeholder;
+                mesh.hasTexture = false;
+              }
+            }
+          });
+        });
+      texturePromises.push(promise);
+    }
+
+    await Promise.all(texturePromises);
+  }
+
+  /**
    * Clean up WebGL resources for meshes
    * @param {ParsedMesh[]} meshes - Meshes to clean up
    */

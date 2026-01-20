@@ -16,7 +16,6 @@ import { Direction } from '@Engine/utils/enums.js';
 import ActionQueue from '../queue/index.js';
 import { ActionLoader } from '@Engine/utils/loaders/index.js';
 import { rotate, translate } from '@Engine/utils/math/matrix4.js';
-import { _buildBuffer } from '@Engine/utils/obj/utils.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import { degToRad } from '../../utils/math/vector.js';
 
@@ -170,6 +169,12 @@ export default class ModelObject extends Loadable {
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
     if (instanceData.zones && instanceData.zones !== null) this.zones = instanceData.zones;
     let mesh = instanceData.mesh;
+
+    // Validate mesh exists before processing
+    if (!mesh || !mesh.vertices) {
+      console.warn(`ModelObject.onLoadFromZip: No valid mesh data for object ${this.id}`);
+      return;
+    }
 
     // Mesh bounds
     let maxX,
@@ -336,9 +341,11 @@ export default class ModelObject extends Loadable {
           engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         }
         
-        // indices
-        let bufferInfo = _buildBuffer(engine.gl, engine.gl.ELEMENT_ARRAY_BUFFER, x, 1);
-        engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, bufferInfo);
+        // Create and bind element buffer for indices
+        const buffer = engine.gl.createBuffer();
+        engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, buffer);
+        engine.gl.bufferData(engine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(x), engine.gl.STATIC_DRAW);
+        const numItems = x.length;
         
         if (isPickerPass) {
           // During picker pass, only set picker shader uniforms
@@ -352,7 +359,7 @@ export default class ModelObject extends Loadable {
             sampler: 0.0,
           });
         }
-        engine.gl.drawElements(engine.gl.TRIANGLES, bufferInfo.numItems, engine.gl.UNSIGNED_SHORT, 0);
+        engine.gl.drawElements(engine.gl.TRIANGLES, numItems, engine.gl.UNSIGNED_SHORT, 0);
       });
     } else {
       // no materials
@@ -457,6 +464,10 @@ export default class ModelObject extends Loadable {
         ]);
     }
     // Draw Object
+    if (!mesh || !mesh.textures) {
+      console.warn(`ModelObject.draw: No valid mesh data`);
+      return;
+    }
     if (!mesh.textures.length) {
       this.drawObj();
     } else {

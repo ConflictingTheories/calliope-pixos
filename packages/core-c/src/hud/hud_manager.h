@@ -201,6 +201,20 @@ typedef struct HudManager {
     int screen_width;
     int screen_height;
     
+    // Flash effect
+    bool flash_active;
+    HudColor flash_color;
+    float flash_duration;
+    float flash_timer;
+    
+    // Fade effect
+    bool fade_active;
+    HudColor fade_color;
+    float fade_duration;
+    float fade_timer;
+    float fade_target_alpha;
+    float fade_start_alpha;
+    
     bool initialized;
 } HudManager;
 

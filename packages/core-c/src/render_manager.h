@@ -15,15 +15,22 @@
 #define RENDER_MANAGER_H
 
 #include "rendering/gles_compat.h"
+#include "rendering/shaders.h"
+#include "rendering/lighting.h"
+#include "math/vector.h"
+#include "math/matrix4.h"
+#include "math/frustum.h"
+#include "camera.h"
+#include "rendering/shader.h"
+#include "rendering/light_manager.h"
+#include "rendering/particle_manager.h"
+#include "rendering/lod_manager.h"
 
 typedef struct GLEngine GLEngine;
 
 /**
  * RenderManager - Manages all OpenGL rendering operations.
  */
-#include "camera.h"
-#include "rendering/shader.h"
-#include "rendering/light_manager.h"
 
 // Matrix stack size
 #define MATRIX_STACK_SIZE 32
@@ -35,23 +42,31 @@ typedef struct RenderManager {
     Camera camera;
     
     // Matrices
-    mat4 projection_matrix;
     mat4 model_matrix;
     mat4 view_matrix;
+    mat4 projection_matrix;
     
-    // Matrix stack for hierarchical transformations
+    // Frustum for culling
+    Frustum frustum;
+    
+    // Matrix stack
+    // for hierarchical transformations
     mat4 model_matrix_stack[MATRIX_STACK_SIZE];
     int matrix_stack_index;
     
     // Shaders
+    Shader shader;
     Shader main_shader;
     Shader sprite_shader;
     Shader tile_shader;
     Shader picker_shader;
+    Shader particle_shader;
     Shader* current_shader;
     
-    // Light manager
+    // Managers
     LightManager light_manager;
+    ParticleManager particle_manager;
+    LodManager lod_manager;
     
     // Legacy - for backward compatibility
     Shader shader;

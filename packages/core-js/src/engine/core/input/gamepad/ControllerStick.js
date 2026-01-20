@@ -103,6 +103,14 @@ export class ControllerStick {
   state = (id, type) => {
     let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
+    
+    // Ensure touch exists before processing
+    if (!touches[id]) {
+      return;
+    }
+    
+    // Touch coordinates are already in canvas pixel space from gamepad listen()
+    // No need for additional scaling here
     var touch = {
       x: touches[id].x,
       y: touches[id].y,

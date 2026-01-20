@@ -53,6 +53,9 @@ export class GamePad {
       /** @type {number} */
       this.y = 0;
 
+      // Bind preventDefault to this instance
+      this.preventDefault = this.preventDefault.bind(this);
+
       // Button Colours
       /** @type {Object.<string, string>} */
       this.colours = {
@@ -162,15 +165,30 @@ export class GamePad {
     this.listeners.splice(id - 1, 1);
   }
 
-  // check input status
+  /**
+   * Checks the current input state map.
+   * @returns {Object.<string, any>} The current input map.
+   */
   checkInput() {
     return this.map;
   }
 
-  // Handle resize (TODO - needs work)
+  /**
+   * Handles canvas resize events. Updates dimensions and reinitializes controller.
+   * This ensures that touch hit detection and controller positioning remain accurate
+   * after window or canvas size changes.
+   */
   resize() {
     this.width = this.engine.gp.canvas.width;
     this.height = this.engine.gp.canvas.height;
+    
+    // Recalculate joystick radius based on new canvas width
+    this.radius = this.width / 12;
+    
+    // Recalculate button offset
+    this.buttonOffset = { x: this.radius * 2.5, y: 105 };
+    
+    // Reinitialize controller with new dimensions
     this.controller.init();
   }
 
@@ -398,7 +416,7 @@ export class GamePad {
             length++;
           }
         }
-        if (e.touches.length == 0) {
+        if (e.touches && e.touches.length == 0) {
           touches = {};
           for (var n = 0; n < buttonsLayout.length; n++) {
             controller.buttons.reset(n);
@@ -514,7 +532,9 @@ export class GamePad {
 
   // Draw
   render() {
-    this.engine.gp.clearRect(0, 0, this.engine.gp.canvas.width, this.engine.gp.canvas.height);
+    // Don't clear the entire HUD canvas - menus and other HUD elements are already drawn
+    // Only redraw the gamepad controls on top of existing HUD content
+    // this.engine.gp.clearRect(0, 0, this.engine.gp.canvas.width, this.engine.gp.canvas.height);
     if (this.showDebug) {
       this.debug();
     }
@@ -577,11 +597,20 @@ export class GamePad {
   // disable scroll while touching canvas
   enableScroll() {
     document.body.removeEventListener('touchmove', this.preventDefault);
+    if (this.engine.gp && this.engine.gp.canvas) {
+      this.engine.gp.canvas.removeEventListener('touchmove', this.preventDefault);
+      this.engine.gp.canvas.removeEventListener('touchstart', this.preventDefault);
+    }
   }
 
   // reenable once done
   disableScroll() {
     document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
+    // Also prevent scrolling on the canvas itself
+    if (this.engine.gp && this.engine.gp.canvas) {
+      this.engine.gp.canvas.addEventListener('touchmove', this.preventDefault, { passive: false });
+      this.engine.gp.canvas.addEventListener('touchstart', this.preventDefault, { passive: false });
+    }
   }
 
   // stop event

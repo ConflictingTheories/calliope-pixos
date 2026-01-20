@@ -213,6 +213,9 @@ void world_render(World* world, struct RenderManager* render_manager) {
         zone_draw_tiles(world->active_zone, render_manager);
         zone_draw_sprites(world->active_zone, render_manager);
     }
+    
+    // Render particles
+    particle_manager_render(&render_manager->particle_manager);
 }
 
 void world_destroy(World* world) {

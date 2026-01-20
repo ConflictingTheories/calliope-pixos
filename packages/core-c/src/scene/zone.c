@@ -321,7 +321,14 @@ void zone_draw_sprites(Zone* zone, struct RenderManager* render_manager) {
     if (!zone || !zone->loaded) return;
     
     for (int i = 0; i < zone->sprite_count; i++) {
-        sprite_draw(zone->sprites[i], render_manager);
+        Sprite* sprite = zone->sprites[i];
+        // Frustum culling
+        if (render_manager) {
+            if (!frustum_contains_sphere(&render_manager->frustum, sprite->pos, 2.0f)) {
+                continue;
+            }
+        }
+        sprite_draw(sprite, render_manager);
     }
 }
 

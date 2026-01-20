@@ -173,13 +173,18 @@ export class ControllerButtons {
   state(id, n, type) {
     let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
-    if (touches[id].id != 'stick') {
-      var touch = {
-        x: touches[id].x,
-        y: touches[id].y,
-      };
-      var button = this.gamepad.buttonsLayout[n];
-      var name = button.name;
+    
+    // Ensure touch exists and is not assigned to stick before processing
+    if (!touches[id] || touches[id].id === 'stick') {
+      return;
+    }
+    
+    var touch = {
+      x: touches[id].x,
+      y: touches[id].y,
+    };
+    var button = this.gamepad.buttonsLayout[n];
+    var name = button.name;
 
       var dx = parseInt(touch.x - button.dx);
       var dy = parseInt(touch.y - button.dy);
@@ -218,7 +223,6 @@ export class ControllerButtons {
           this.gamepad.checkInput();
         }
       }
-    }
   }
   /**
    * Resets the state of a button.

@@ -14,7 +14,6 @@
 // Absolute imports
 import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.js';
 import { Vector, degToRad } from '../../utils/math/vector.js';
-import { OBJ } from '../../utils/obj/index.js';
 
 import CameraManager from './camera.js';
 import LightManager from './light.js';
@@ -367,10 +366,12 @@ export default class RenderManager {
       self.lightManager.setMatrixUniforms();
     };
 
+    // Attribute layout keys for vertex data
+    // These correspond to the standard vertex attribute names used in OBJ mesh layouts
     const attrs = {
-      aVertexPosition: OBJ.Layout.POSITION.key,
-      aVertexNormal: OBJ.Layout.NORMAL.key,
-      aTextureCoord: OBJ.Layout.UV.key,
+      aVertexPosition: 'position',
+      aVertexNormal: 'normal',
+      aTextureCoord: 'uv',
     };
     /**
      * Applies attribute pointers for a given mesh, linking mesh buffer data to shader attributes.

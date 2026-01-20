@@ -12,6 +12,17 @@ typedef struct {
     float yaw;
     float pitch;
     float distance;
+    
+    // Shake state
+    float shake_intensity;
+    float shake_duration;
+    float shake_timer;
+    vec3 shake_offset;
+    
+    // Follow state
+    vec3* follow_target;
+    float follow_smooth;
+    bool is_following;
 } Camera;
 
 // Creates a new camera
@@ -31,5 +42,14 @@ void camera_zoom(Camera* camera, float delta);
 
 // Pans the camera (moves the target)
 void camera_pan(Camera* camera, float dx, float dy);
+
+// Starts a camera shake
+void camera_start_shake(Camera* camera, float intensity, float duration);
+
+// Sets a target for the camera to follow
+void camera_follow(Camera* camera, vec3* target, float smooth);
+
+// Updates the camera state (call each frame)
+void camera_update(Camera* camera, float delta_time);
 
 #endif // CAMERA_H

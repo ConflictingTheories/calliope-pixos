@@ -388,6 +388,25 @@ void hud_manager_update(HudManager* hud, double delta_time) {
             textbox_update(&hud->textboxes[i], delta_time);
         }
     }
+    
+    // Update flash effect
+    if (hud->flash_active) {
+        hud->flash_timer -= (float)delta_time;
+        if (hud->flash_timer <= 0) {
+            hud->flash_active = false;
+        }
+    }
+    
+    // Update fade effect
+    if (hud->fade_active) {
+        hud->fade_timer -= (float)delta_time;
+        if (hud->fade_timer <= 0) {
+            hud->fade_timer = 0;
+            hud->fade_active = false;
+        }
+        float progress = 1.0f - (hud->fade_timer / hud->fade_duration);
+        hud->fade_color.a = hud->fade_start_alpha + (hud->fade_target_alpha - hud->fade_start_alpha) * progress;
+    }
 }
 
 void hud_manager_render(HudManager* hud) {
@@ -439,6 +458,19 @@ void hud_manager_render(HudManager* hud) {
     // Draw mode label
     if (hud->show_mode_label && hud->primary_font.loaded) {
         hud_draw_text(hud, hud->mode_label, 12.0f, 12.0f, 18.0f, HUD_COLOR_YELLOW);
+    }
+    
+    // Draw flash
+    if (hud->flash_active) {
+        float alpha = (hud->flash_timer / hud->flash_duration) * hud->flash_color.a;
+        HudColor c = hud->flash_color;
+        c.a = alpha;
+        hud_draw_rect(hud, 0, 0, (float)hud->screen_width, (float)hud->screen_height, c);
+    }
+    
+    // Draw fade
+    if (hud->fade_active || hud->fade_color.a > 0.001f) {
+        hud_draw_rect(hud, 0, 0, (float)hud->screen_width, (float)hud->screen_height, hud->fade_color);
     }
     
     // Restore OpenGL state
@@ -1065,5 +1097,36 @@ void hud_set_mode_label(HudManager* hud, const char* mode) {
 }
 
 void hud_show_mode_label(HudManager* hud, bool show) {
-    hud->show_mode_label = show;
+    if (hud) hud->show_mode_label = show;
+}
+
+// ============================================
+// Transition Effects Implementation
+// ============================================
+
+void hud_flash(HudManager* hud, HudColor color, float duration) {
+    if (!hud) return;
+    hud->flash_active = true;
+    hud->flash_color = color;
+    hud->flash_duration = duration;
+    hud->flash_timer = duration;
+}
+
+void hud_fade(HudManager* hud, HudColor color, float target_alpha, float duration) {
+    if (!hud) return;
+    hud->fade_active = true;
+    hud->fade_color = color;
+    hud->fade_target_alpha = target_alpha;
+    hud->fade_start_alpha = hud->fade_color.a;
+    hud->fade_duration = duration;
+    hud->fade_timer = duration;
+}
+
+void hud_fade_to_black(HudManager* hud, float duration) {
+    hud_fade(hud, (HudColor){0, 0, 0, 0}, 1.0f, duration);
+}
+
+void hud_fade_from_black(HudManager* hud, float duration) {
+    hud->fade_color = (HudColor){0, 0, 0, 1.0f};
+    hud_fade(hud, (HudColor){0, 0, 0, 1.0f}, 0.0f, duration);
 }

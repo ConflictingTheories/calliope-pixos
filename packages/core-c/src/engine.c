@@ -350,6 +350,9 @@ void update_engine(GLEngine* engine) {
             input_manager_get_mouse_delta(im, &dx, &dy);
             camera_rotate(&rm->camera, (float)dx * 0.005f, (float)dy * 0.005f);
         }
+        
+        camera_update(&rm->camera, (float)engine->delta_time);
+        particle_manager_update(&rm->particle_manager, engine->delta_time);
     }
     
     // Toggle debug with F3

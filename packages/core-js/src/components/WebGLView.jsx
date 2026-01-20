@@ -25,6 +25,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
   const fileRef = useRef();
   const mmRef = useRef();
 
+  let engine = null;
+
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
   const onKeyEvent = (e) => {
     try {
@@ -96,7 +98,62 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
     }
   };
 
-  let engine = null;
+  /**
+   * Handles touch/mouse events for gamepad canvas with proper coordinate transformation.
+   */
+  const onGamepadTouchEvent = (e) => {
+    try {
+      const canvas = gamepadRef.current;
+      if (!canvas) {
+        return;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+
+      // Handle both mouse and touch events
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      // Calculate scale factors between internal canvas size and displayed size
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      // Calculate position relative to canvas with proper scaling
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
+
+      // Create adjusted event with canvas-relative coordinates
+      const adjustedEvent = {
+        ...e,
+        type: e.type,
+        clientX: clientX,
+        clientY: clientY,
+        // Pre-computed canvas coordinates for the engine
+        canvasX: canvasX,
+        canvasY: canvasY,
+        pageX: canvasX + rect.left,
+        pageY: canvasY + rect.top,
+        _canvasRect: rect,
+        _scaleX: scaleX,
+        _scaleY: scaleY
+      };
+
+      if (engine && engine.inputManager && engine.inputManager.gamepad) {
+        engine.inputManager.gamepad.listen(adjustedEvent);
+      }
+    } catch (err) {
+      console.warn('onGamepadTouchEvent error:', err);
+    }
+  };
 
   // Resize
   const [screenSize, getDimension] = useState({
@@ -186,6 +243,28 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       resizeObserver.observe(hud);
     }
 
+    // Add native event listeners with { passive: false } to allow preventDefault
+    // These must be native listeners, not React synthetic events
+    if (hud) {
+      hud.addEventListener('touchstart', onTouchEvent, { passive: false });
+      hud.addEventListener('touchmove', onTouchEvent, { passive: false });
+      hud.addEventListener('touchend', onTouchEvent, { passive: false });
+      hud.addEventListener('touchcancel', onTouchEvent, { passive: false });
+      hud.addEventListener('mousedown', onTouchEvent, { passive: false });
+      hud.addEventListener('mouseup', onTouchEvent, { passive: false });
+      hud.addEventListener('mousemove', onTouchEvent, { passive: false });
+    }
+
+    if (gamepad) {
+      gamepad.addEventListener('touchstart', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('touchmove', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('touchend', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('touchcancel', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('mousedown', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('mouseup', onGamepadTouchEvent, { passive: false });
+      gamepad.addEventListener('mousemove', onGamepadTouchEvent, { passive: false });
+    }
+
     // render loop
     engine.render();
 
@@ -195,6 +274,28 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
       stopTouchScrolling(gamepad);
       stopTouchScrolling(hud);
       window.removeEventListener('resize', setDimension);
+      
+      // Remove native event listeners
+      if (hud) {
+        hud.removeEventListener('touchstart', onTouchEvent);
+        hud.removeEventListener('touchmove', onTouchEvent);
+        hud.removeEventListener('touchend', onTouchEvent);
+        hud.removeEventListener('touchcancel', onTouchEvent);
+        hud.removeEventListener('mousedown', onTouchEvent);
+        hud.removeEventListener('mouseup', onTouchEvent);
+        hud.removeEventListener('mousemove', onTouchEvent);
+      }
+
+      if (gamepad) {
+        gamepad.removeEventListener('touchstart', onGamepadTouchEvent);
+        gamepad.removeEventListener('touchmove', onGamepadTouchEvent);
+        gamepad.removeEventListener('touchend', onGamepadTouchEvent);
+        gamepad.removeEventListener('touchcancel', onGamepadTouchEvent);
+        gamepad.removeEventListener('mousedown', onGamepadTouchEvent);
+        gamepad.removeEventListener('mouseup', onGamepadTouchEvent);
+        gamepad.removeEventListener('mousemove', onGamepadTouchEvent);
+      }
+      
       if (resizeObserver) {
         resizeObserver.disconnect();
       }
@@ -256,14 +357,6 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
             width={canvasWidth}
             height={canvasHeight}
             className={string}
-            onMouseUp={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onMouseDown={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onMouseMove={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onClick={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onTouchStart={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onTouchEnd={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onTouchMove={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
-            onTouchCancel={(e) => { e.stopPropagation(); onTouchEvent(e.nativeEvent); }}
           />
           {/* MIPMAP - For Sprite Text / Speech / Titles */}
           <canvas style={{ display: 'none' }} ref={mmRef} width={256} height={256} />
@@ -287,18 +380,12 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData }) =>
             width: '100%',
             height: '100%',
             display: showGamepad ? 'block' : 'none',
+            touchAction: 'none', // Prevent browser gestures and scrolling
           }}
           ref={gamepadRef}
           width={canvasWidth}
           height={gamepadHeight}
           className={string}
-          onMouseUp={(e) => onTouchEvent(e.nativeEvent)}
-          onMouseDown={(e) => onTouchEvent(e.nativeEvent)}
-          onMouseMove={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchMoveCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchCancelCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchStartCapture={(e) => onTouchEvent(e.nativeEvent)}
-          onTouchEndCapture={(e) => onTouchEvent(e.nativeEvent)}
         />
       </div>
       <div>

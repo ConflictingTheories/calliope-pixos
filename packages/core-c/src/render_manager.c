@@ -41,6 +41,10 @@ void render_manager_init_shaders(RenderManager* render_manager) {
     render_manager->picker_shader = shader_create(PICKER_VERTEX_SHADER, PICKER_FRAGMENT_SHADER);
     printf("Picker shader created (ID: %u)\n", render_manager->picker_shader.program_id);
     
+    // Particle shader
+    render_manager->particle_shader = shader_create(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER); // Re-use sprite for now
+    printf("Particle shader created (ID: %u)\n", render_manager->particle_shader.program_id);
+    
     // Set current shader to main
     render_manager->current_shader = &render_manager->main_shader;
 }
@@ -69,6 +73,12 @@ void init_render_manager(RenderManager* render_manager, GLEngine* engine) {
 
     // Initialize light manager
     light_manager_init(&render_manager->light_manager);
+
+    // Initialize particle manager
+    particle_manager_init(&render_manager->particle_manager, engine);
+    
+    // Initialize LOD manager
+    lod_manager_init(&render_manager->lod_manager, engine);
     
     // Add a default ambient light
     vec3 light_pos = vec3_new(5.0f, 10.0f, 5.0f);
@@ -122,6 +132,10 @@ void render_manager_clear_screen(RenderManager* render_manager) {
     
     // Update view matrix from camera
     render_manager->view_matrix = render_manager->camera.view_matrix;
+    
+    // Extract frustum
+    mat4 vp = mat4_multiply(render_manager->projection_matrix, render_manager->view_matrix);
+    frustum_extract(&render_manager->frustum, vp);
     
     // Reset model matrix
     render_manager->model_matrix = mat4_identity();

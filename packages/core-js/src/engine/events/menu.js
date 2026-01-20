@@ -11,8 +11,20 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
+/**
+ * Menu event handler for displaying interactive menus with touch and keyboard support.
+ * Handles menu rendering, input processing, and navigation through menu sections.
+ */
 export default {
-  // Initialize Dialogue Object
+  /**
+   * Initializes the menu event with configuration and input handling.
+   * @param {object} menu - Menu configuration object with sections.
+   * @param {string[]} activeMenus - Array of active menu IDs to display.
+   * @param {boolean} [scrolling=true] - Whether text should scroll.
+   * @param {object} [options={}] - Additional options for menu behavior.
+   * @param {boolean} [options.autoclose=false] - Auto-close after timeout.
+   * @param {boolean} [options.closeOnEnter=false] - Close on Enter key.
+   */
   init: function (menu, activeMenus, scrolling = true, options = { autoclose: false, closeOnEnter: false }) {
     this.engine = this.world.engine;
     this.text = '';
@@ -36,7 +48,11 @@ export default {
     // load voices and then play
     window.speechSynthesis.onvoiceschanged = () => {};
   },
-  // Update & Scroll
+  /**
+   * Updates the menu state and renders active menu sections.
+   * @param {number} time - Current timestamp for timing operations.
+   * @returns {boolean} True if the menu event is completed.
+   */
   tick: function (time) {
     if (!this.loaded) return;
     // Check for Dialogue Completion (TODO - manual triggers + scroll / sections)

@@ -27,6 +27,8 @@ typedef struct CutsceneManager CutsceneManager;
 #define CUTSCENE_MAX_SCENES 32
 #define CUTSCENE_MAX_NAME_LENGTH 64
 #define CUTSCENE_MAX_CUTOUTS 4
+#define CUTSCENE_MAX_CHARACTERS 16
+#define CUTSCENE_MAX_PATH_LENGTH 128
 
 // ============================================
 // Cutscene Step Types
@@ -165,6 +167,18 @@ typedef struct {
 } CutoutState;
 
 // ============================================
+// Character Definition
+// ============================================
+
+typedef struct {
+    char name[CUTSCENE_MAX_NAME_LENGTH];
+    char sprite_path[CUTSCENE_MAX_PATH_LENGTH];
+    char portrait_path[CUTSCENE_MAX_PATH_LENGTH];
+    unsigned int portrait_texture;
+    bool registered;
+} CharacterDefinition;
+
+// ============================================
 // Cutscene Manager
 // ============================================
 
@@ -201,6 +215,10 @@ struct CutsceneManager {
     
     // Dialogue state (points to HUD's textbox)
     bool dialogue_active;
+    
+    // Character registry
+    CharacterDefinition characters[CUTSCENE_MAX_CHARACTERS];
+    int character_count;
     
     bool initialized;
 };
@@ -354,5 +372,34 @@ int cutscene_load_from_json(CutsceneManager* cm, const char* json_path);
  */
 int cutscene_load_from_json_string(CutsceneManager* cm, const char* name, 
                                     const char* json_string);
+
+/**
+ * Load a cutscene from PXC (.pxc) DSL script
+ * @param cm Cutscene manager
+ * @param pxc_path Path to PXC file
+ * @return 0 on success, -1 on failure
+ */
+int cutscene_load_from_pxc(CutsceneManager* cm, const char* pxc_path);
+
+/**
+ * Load a cutscene from PXC (.pxc) DSL string
+ * @param cm Cutscene manager
+ * @param name Cutscene name
+ * @param pxc_string PXC script content
+ * @return 0 on success, -1 on failure
+ */
+int cutscene_load_from_pxc_string(CutsceneManager* cm, const char* name, 
+                                   const char* pxc_string);
+
+/**
+ * Register a character definition
+ */
+int cutscene_register_character(CutsceneManager* cm, const char* name,
+                                const char* sprite, const char* portrait);
+
+/**
+ * Get a character definition by name
+ */
+CharacterDefinition* cutscene_get_character(CutsceneManager* cm, const char* name);
 
 #endif // CUTSCENE_MANAGER_H

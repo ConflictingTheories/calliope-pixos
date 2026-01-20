@@ -82,9 +82,9 @@ export default class World {
     /** @type {MenuConfig} */
     this.menuConfig = {
       start: {
-        onOpen: (menu) => {
-          menu.completed = true;
-        },
+        // onOpen: (menu) => {
+        //   menu.completed = true;
+        // },
       },
     };
   }

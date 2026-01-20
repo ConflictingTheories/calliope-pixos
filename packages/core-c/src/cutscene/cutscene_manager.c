@@ -30,6 +30,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
+
+// Helper to trim whitespace
+static char* trim(char* str) {
+    if (!str) return NULL;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == 0) return str;
+    char* end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    end[1] = '\0';
+    return str;
+}
 
 // ============================================
 // Cutscene Manager Implementation
@@ -176,12 +188,11 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
             break;
             
         case CUTSCENE_STEP_TRANSITION:
-            cm->transitioning = true;
-            cm->transition_effect = step->params.transition.effect;
-            cm->transition_direction = step->params.transition.direction;
-            cm->transition_start_time = cm->engine->time;
-            cm->transition_duration = step->duration_ms / 1000.0;
-            cm->transition_progress = 0.0f;
+            if (cm->engine->hud) {
+                HudColor c = {0, 0, 0, 1.0f};
+                float target_alpha = (step->params.transition.direction == TRANSITION_DIR_IN) ? 0.0f : 1.0f;
+                hud_fade(cm->engine->hud, c, target_alpha, step->duration_ms / 1000.0f);
+            }
             cm->step_duration = step->duration_ms / 1000.0;
             cm->waiting_for_step = true;
             break;
@@ -193,21 +204,25 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
             break;
             
         case CUTSCENE_STEP_SET_BACKDROP:
-            // TODO: Load texture from path
-            printf("Cutscene: Set backdrop '%s'\n", step->params.backdrop.texture_path);
-            cm->has_backdrop = true;
+            if (cm->engine->resource_manager) {
+                Texture* tex = resource_manager_load_texture(cm->engine->resource_manager, step->params.backdrop.texture_path);
+                if (tex) {
+                    cm->backdrop_texture = tex->id;
+                    cm->has_backdrop = true;
+                }
+            }
             cm->waiting_for_step = false;
             break;
             
         case CUTSCENE_STEP_SHOW_CUTOUT:
-            if (cm->cutout_count < CUTSCENE_MAX_CUTOUTS) {
-                // TODO: Load texture from path
-                printf("Cutscene: Show cutout '%s' at %s\n", 
-                       step->params.cutout.texture_path,
-                       step->params.cutout.position == 0 ? "left" : "right");
-                cm->cutouts[cm->cutout_count].position = step->params.cutout.position;
-                cm->cutouts[cm->cutout_count].active = true;
-                cm->cutout_count++;
+            if (cm->cutout_count < CUTSCENE_MAX_CUTOUTS && cm->engine->resource_manager) {
+                Texture* tex = resource_manager_load_texture(cm->engine->resource_manager, step->params.cutout.texture_path);
+                if (tex) {
+                    cm->cutouts[cm->cutout_count].texture = tex->id;
+                    cm->cutouts[cm->cutout_count].position = step->params.cutout.position;
+                    cm->cutouts[cm->cutout_count].active = true;
+                    cm->cutout_count++;
+                }
             }
             cm->waiting_for_step = false;
             break;
@@ -219,10 +234,16 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
             
         case CUTSCENE_STEP_DIALOGUE:
             if (cm->engine->hud) {
+                unsigned int portrait_id = 0;
+                if (step->params.dialogue.portrait_path[0] && cm->engine->resource_manager) {
+                    Texture* tex = resource_manager_load_texture(cm->engine->resource_manager, step->params.dialogue.portrait_path);
+                    if (tex) portrait_id = tex->id;
+                }
+                
                 hud_show_dialogue(cm->engine->hud,
                                   step->params.dialogue.text,
                                   step->params.dialogue.speaker[0] ? step->params.dialogue.speaker : NULL,
-                                  0);  // TODO: Load portrait texture
+                                  portrait_id);
                 cm->dialogue_active = true;
                 cm->waiting_for_step = true;
                 // Dialogue completion is checked in update
@@ -258,7 +279,13 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
             break;
             
         case CUTSCENE_STEP_SET_FLAG:
-            // TODO: Implement game flags
+#ifdef ENABLE_LUA
+            if (cm->engine->lua) {
+                lua_manager_set_global_int(cm->engine->lua, 
+                                           step->params.flag.flag_name, 
+                                           step->params.flag.value);
+            }
+#endif
             printf("Cutscene: Set flag '%s' = %d\n", 
                    step->params.flag.flag_name, step->params.flag.value);
             cm->waiting_for_step = false;
@@ -267,8 +294,8 @@ static void execute_step(struct CutsceneManager* cm, CutsceneStep* step) {
         case CUTSCENE_STEP_ACTION:
 #ifdef ENABLE_LUA
             if (cm->engine->lua) {
-                // lua_manager_call_function(cm->engine->lua, 
-                //                           step->params.action.callback_name, NULL);
+                lua_manager_call_function(cm->engine->lua, 
+                                           step->params.action.callback_name, NULL);
             }
 #endif
             cm->waiting_for_step = false;
@@ -293,7 +320,12 @@ static bool check_step_complete(struct CutsceneManager* cm, CutsceneStep* step) 
     
     switch (step->type) {
         case CUTSCENE_STEP_WAIT:
+            return elapsed >= cm->step_duration;
+            
         case CUTSCENE_STEP_TRANSITION:
+            if (cm->engine->hud) {
+                return !cm->engine->hud->fade_active && (elapsed >= cm->step_duration);
+            }
             return elapsed >= cm->step_duration;
             
         case CUTSCENE_STEP_DIALOGUE:
@@ -400,28 +432,12 @@ void cutscene_render(struct CutsceneManager* cm) {
         }
     }
     
-    // Render transition overlay
+    // Render transition overlay (Obsolete: Handled by HUD)
+    /*
     if (cm->transitioning) {
-        float alpha = 0.0f;
-        
-        switch (cm->transition_effect) {
-            case TRANSITION_FADE:
-                if (cm->transition_direction == TRANSITION_DIR_OUT) {
-                    alpha = cm->transition_progress;
-                } else {
-                    alpha = 1.0f - cm->transition_progress;
-                }
-                hud_draw_rect(hud, 0, 0, 
-                              (float)hud->screen_width, 
-                              (float)hud->screen_height,
-                              (HudColor){0.0f, 0.0f, 0.0f, alpha});
-                break;
-                
-            // TODO: Implement other transition effects
-            default:
-                break;
-        }
+        ...
     }
+    */
 }
 
 // ============================================
@@ -758,5 +774,215 @@ int cutscene_load_from_json(struct CutsceneManager* cm, const char* json_path) {
     int result = cutscene_load_from_json_string(cm, name, buffer);
     free(buffer);
     
+    return result;
+}
+
+// ============================================
+// Character Registration
+// ============================================
+
+int cutscene_register_character(CutsceneManager* cm, const char* name,
+                                const char* sprite, const char* portrait) {
+    if (!cm || !name) return -1;
+    
+    // Check if already registered
+    for (int i = 0; i < cm->character_count; i++) {
+        if (strcmp(cm->characters[i].name, name) == 0) {
+            if (sprite) strncpy(cm->characters[i].sprite_path, sprite, CUTSCENE_MAX_PATH_LENGTH - 1);
+            if (portrait) strncpy(cm->characters[i].portrait_path, portrait, CUTSCENE_MAX_PATH_LENGTH - 1);
+            return 0;
+        }
+    }
+    
+    if (cm->character_count >= CUTSCENE_MAX_CHARACTERS) return -1;
+    
+    CharacterDefinition* def = &cm->characters[cm->character_count++];
+    strncpy(def->name, name, CUTSCENE_MAX_NAME_LENGTH - 1);
+    if (sprite) strncpy(def->sprite_path, sprite, CUTSCENE_MAX_PATH_LENGTH - 1);
+    if (portrait) strncpy(def->portrait_path, portrait, CUTSCENE_MAX_PATH_LENGTH - 1);
+    def->registered = true;
+    
+    return 0;
+}
+
+CharacterDefinition* cutscene_get_character(CutsceneManager* cm, const char* name) {
+    if (!cm || !name) return NULL;
+    for (int i = 0; i < cm->character_count; i++) {
+        if (strcmp(cm->characters[i].name, name) == 0) {
+            return &cm->characters[i];
+        }
+    }
+    return NULL;
+}
+
+// ============================================
+// PXC DSL Parsing
+// ============================================
+
+static void parse_pxc_brackets(const char* bracket_content, char* effect, int* duration, char* voice, char* sprite, char* portrait) {
+    if (!bracket_content) return;
+    
+    char content[256];
+    strncpy(content, bracket_content, sizeof(content)-1);
+    content[sizeof(content)-1] = '\0';
+    
+    char* token = strtok(content, ",");
+    while (token) {
+        char* trimmed = trim(token);
+        if (strstr(trimmed, "effect=")) {
+            if (effect) strcpy(effect, strchr(trimmed, '=') + 1);
+        } else if (strstr(trimmed, "duration=")) {
+            if (duration) *duration = atoi(strchr(trimmed, '=') + 1);
+        } else if (strstr(trimmed, "voice=")) {
+            if (voice) strcpy(voice, strchr(trimmed, '=') + 1);
+        } else if (strstr(trimmed, "sprite=")) {
+            if (sprite) strcpy(sprite, strchr(trimmed, '=') + 1);
+        } else if (strstr(trimmed, "portrait=")) {
+            if (portrait) strcpy(portrait, strchr(trimmed, '=') + 1);
+        } else if (strstr(trimmed, "fadeIn=")) {
+            if (duration) *duration = atoi(strchr(trimmed, '=') + 1);
+        }
+        token = strtok(NULL, ",");
+    }
+}
+
+int cutscene_load_from_pxc_string(CutsceneManager* cm, const char* name, const char* pxc_string) {
+    if (!cm || !name || !pxc_string) return -1;
+
+    CutsceneStep steps[CUTSCENE_MAX_STEPS] = {0};
+    int step_count = 0;
+
+    char* script_copy = strdup(pxc_string);
+    char* line = strtok(script_copy, "\n");
+
+    while (line && step_count < CUTSCENE_MAX_STEPS) {
+        char* trimmed_line = trim(line);
+        if (strlen(trimmed_line) == 0 || trimmed_line[0] == '#') {
+            line = strtok(NULL, "\n");
+            continue;
+        }
+
+        // Commands
+        if (trimmed_line[0] == '@') {
+            char cmd[32];
+            char rest[256];
+            int n = sscanf(trimmed_line, "@%s %[^\n]", cmd, rest);
+            
+            if (strcmp(cmd, "backdrop") == 0) {
+                steps[step_count++] = cutscene_step_set_backdrop(rest);
+            } else if (strcmp(cmd, "char") == 0) {
+                char char_name[64];
+                char sprite[128] = {0}, portrait[128] = {0};
+                sscanf(rest, "%s", char_name);
+                char* bracket = strchr(rest, '[');
+                if (bracket) {
+                    bracket[strlen(bracket)-1] = '\0'; // Remove ]
+                    parse_pxc_brackets(bracket + 1, NULL, NULL, NULL, sprite, portrait);
+                }
+                cutscene_register_character(cm, char_name, sprite[0] ? sprite : NULL, portrait[0] ? portrait : NULL);
+            } else if (strcmp(cmd, "action") == 0 || strcmp(cmd, "do") == 0) {
+                steps[step_count++] = cutscene_step_action(rest);
+            } else if (strcmp(cmd, "set") == 0) {
+                char flag[64];
+                int val;
+                sscanf(rest, "%s = %d", flag, &val);
+                steps[step_count++] = cutscene_step_set_flag(flag, val);
+            } else if (strcmp(cmd, "transition") == 0) {
+                char effect_name[32] = "fade";
+                int duration = 500;
+                char direction_str[16] = "out";
+                char* bracket = strchr(rest, '[');
+                if (bracket) {
+                    bracket[strlen(bracket)-1] = '\0';
+                    parse_pxc_brackets(bracket+1, effect_name, &duration, NULL, NULL, NULL);
+                    if (strstr(bracket, "direction=in")) strcpy(direction_str, "in");
+                } else if (strlen(rest) > 0) {
+                    strcpy(effect_name, rest);
+                }
+                steps[step_count++] = cutscene_step_transition(
+                    parse_transition_effect(effect_name),
+                    strcmp(direction_str, "in") == 0 ? TRANSITION_DIR_IN : TRANSITION_DIR_OUT,
+                    duration
+                );
+            } else if (strcmp(cmd, "end") == 0) {
+                break;
+            }
+        }
+        // Wait commands
+        else if (strncmp(trimmed_line, "wait ", 5) == 0) {
+            steps[step_count++] = cutscene_step_wait(atoi(trimmed_line + 5));
+        } else if (strcmp(trimmed_line, "waitInput") == 0 || strcmp(trimmed_line, "wait_input") == 0) {
+            steps[step_count++] = cutscene_step_wait_input();
+        }
+        // Dialogue
+        else if (strchr(trimmed_line, ':')) {
+            bool is_cutin = (trimmed_line[0] == '*');
+            char* dialogue_line = is_cutin ? trimmed_line + 1 : trimmed_line;
+            char speaker[64];
+            char text[512];
+            char* colon = strchr(dialogue_line, ':');
+            *colon = '\0';
+            strncpy(speaker, trim(dialogue_line), 63);
+            
+            char* rest = trim(colon + 1);
+            char portrait_path[128] = {0};
+            char voice_path[128] = {0};
+            
+            if (rest[0] == '[') {
+                char* end_bracket = strchr(rest, ']');
+                if (end_bracket) {
+                    *end_bracket = '\0';
+                    parse_pxc_brackets(rest + 1, NULL, NULL, voice_path, NULL, portrait_path);
+                    rest = trim(end_bracket + 1);
+                }
+            }
+            
+            // If no explicit portrait, look up character
+            if (!portrait_path[0]) {
+                CharacterDefinition* char_def = cutscene_get_character(cm, speaker);
+                if (char_def) {
+                    strncpy(portrait_path, char_def->portrait_path[0] ? char_def->portrait_path : char_def->sprite_path, 127);
+                }
+            }
+
+            if (voice_path[0]) {
+                steps[step_count++] = cutscene_step_play_sound(voice_path, 1.0f);
+            }
+            
+            steps[step_count++] = cutscene_step_dialogue(rest, speaker, portrait_path[0] ? portrait_path : NULL);
+        }
+
+        line = strtok(NULL, "\n");
+    }
+
+    free(script_copy);
+    return cutscene_register(cm, name, steps, step_count);
+}
+
+int cutscene_load_from_pxc(CutsceneManager* cm, const char* pxc_path) {
+    if (!cm || !pxc_path) return -1;
+    
+    FILE* file = fopen(pxc_path, "rb");
+    if (!file) return -1;
+    
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    
+    char* buffer = malloc(size + 1);
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+    fclose(file);
+    
+    // Extract name
+    char name[64];
+    const char* filename = strrchr(pxc_path, '/');
+    filename = filename ? filename + 1 : pxc_path;
+    strncpy(name, filename, 63);
+    char* dot = strrchr(name, '.');
+    if (dot) *dot = '\0';
+    
+    int result = cutscene_load_from_pxc_string(cm, name, buffer);
+    free(buffer);
     return result;
 }
