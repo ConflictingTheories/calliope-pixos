@@ -62,7 +62,7 @@ export default class PixoScriptInterpreter {
         return content;
       }
     };
-    
+
     this.env = this.pixoscript.createEnv(config);
     return this.env;
   };
@@ -76,6 +76,28 @@ export default class PixoScriptInterpreter {
   run = async (script) => {
     if (!this.env) this.createEnv();
     if (!this.library) this.initLibrary();
-    return this.env.parse(script).exec();
+    try {
+      return await this.env.parse(script).exec();
+    } catch (e) {
+      console.error('[PixoScript] Runtime Error:', e.message);
+
+      // Attempt to extract line number from typical Lua error format: [string "..."]:line: message
+      const match = e.message && typeof e.message === 'string' ? e.message.match(/:(\d+):/) : null;
+      if (match) {
+        const lineNum = parseInt(match[1]);
+        const lines = script.split('\n');
+        console.error(`Error at line ${lineNum}:`);
+
+        // Print context (previous line, error line, next line)
+        const start = Math.max(0, lineNum - 2);
+        const end = Math.min(lines.length, lineNum + 1);
+
+        for (let i = start; i < end; i++) {
+          const marker = i === (lineNum - 1) ? '> ' : '  ';
+          console.error(`${marker}${i + 1}: ${lines[i]}`);
+        }
+      }
+      throw e;
+    }
   };
 }

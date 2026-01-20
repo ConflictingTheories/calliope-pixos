@@ -340,6 +340,12 @@ export default class PixoScriptLibrary {
         debug('PixoScript', 'loading scripts via lua', { scripts, envScope });
         return envScope.zone.loadScripts(scripts);
       },
+      reload_scripts: () => {
+        debug('PixoScript', 'reloading zone scripts via lua');
+        if (envScope.zone && typeof envScope.zone.loadScripts === 'function') {
+          return envScope.zone.loadScripts(true);
+        }
+      },
 
       /**
        * Play a .pxc cutscene file
@@ -649,7 +655,76 @@ export default class PixoScriptLibrary {
       },
 
       // audio functions
-      // ...
+      play_sound: (src, loop = false) => {
+        try {
+          debug('PixoScript', `play_sound: ${src}, loop: ${loop}`);
+          const loader = engine.resourceManager.audioLoader || engine.audioLoader;
+          if (loader) {
+            const instance = loader.load(src, loop);
+            instance.playAudio();
+          }
+        } catch (e) {
+          console.warn('pixos.play_sound failed', e);
+        }
+      },
+      play_music: (src) => {
+        try {
+          debug('PixoScript', `play_music: ${src}`);
+          const loader = engine.resourceManager.audioLoader || engine.audioLoader;
+          if (loader) {
+            // loop defaults to true for music via loader logic if we pass true? 
+            // Loader.load(src, loop). If loop is true, it stops others.
+            const instance = loader.load(src, true);
+            instance.playAudio();
+          }
+        } catch (e) {
+          console.warn('pixos.play_music failed', e);
+        }
+      },
+      stop_music: () => {
+        try {
+          const loader = engine.resourceManager.audioLoader || engine.audioLoader;
+          if (loader && loader.instances) {
+            Object.values(loader.instances).forEach(track => {
+              // Heuristic: if it's looping, it's likely music? 
+              // Or just stop everything? The user asked for stop_music.
+              // The loader logic stops others when a new loop starts.
+              // We'll pause all looping tracks.
+              // Checking implementation of AudioTrack... it doesn't expose 'loop' property publicly 
+              // but we passed it to constructor.
+              // Let's just pause all for now or check if we can identify music.
+              track.pauseAudio();
+            });
+          }
+        } catch (e) {
+          console.warn('pixos.stop_music failed', e);
+        }
+      },
+      stop_audio: (src) => {
+        try {
+          const loader = engine.resourceManager.audioLoader || engine.audioLoader;
+          if (loader && loader.instances[src]) {
+            loader.instances[src].pauseAudio();
+          }
+        } catch (e) {
+          console.warn('pixos.stop_audio failed', e);
+        }
+      },
+      set_volume: (volume) => {
+        // TODO: Implement global volume control in AudioSystem/Loader
+        debug('PixoScript', 'set_volume not fully implemented', volume);
+      },
+
+      // Effect functions
+      set_effect: (name, active, params) => {
+        try {
+          if (engine.renderManager) {
+            // TODO: specific implementation when effects pipeline is audited
+            debug('PixoScript', `set_effect ${name} ${active}`, params);
+            // Example: engine.renderManager.setEffect(name, active, params);
+          }
+        } catch (e) { console.warn('pixos.set_effect failed', e); }
+      },
 
       // sprite functions
       // ...

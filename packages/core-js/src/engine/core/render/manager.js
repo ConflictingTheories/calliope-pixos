@@ -823,30 +823,7 @@ export default class RenderManager {
     [this.uModelMat, this.camera.uViewMat] = this.modelViewMatrixStack.pop();
   }
 
-  /**
-   * @deprecated This method seems to be an older transition implementation and is likely superseded by `startTransition` and `updateTransition`. It should be removed or refactored.
-   * Renders a frame of the old transition system.
-   * @returns {void}
-   */
-  transition = () => {
-    let now = new Date().getMilliseconds();
-    // This `this.transition.draw` call refers to an external object/API not defined here.
-    // It's likely part of an older system.
-    // this.transition.draw(
-    //   ((this.transitionTime - now) / this.transitionDuration) % 1,
-    //   this.transitionTexture,
-    //   this.transitionTexture,
-    //   this.engine.gl.canvas.width,
-    //   this.engine.gl.canvas.height,
-    //   this.transitionParams
-    // );
-    if (now >= this.transitionTime) {
-      this.isTransitioning = false;
-    }
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Deprecated `RenderManager.transition()` method called. Use `startTransition()` and `updateTransition()` instead.');
-    }
-  }
+
 
   /**
    * Creates a new WebGL buffer.
