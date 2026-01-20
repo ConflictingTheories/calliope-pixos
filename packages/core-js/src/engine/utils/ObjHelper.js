@@ -308,8 +308,8 @@ export default class ObjHelper {
       // Look for texture
       let tex = null;
       if (mesh.materialProps.map_Kd) {
-        // Extract filename from path
-        const texName = mesh.materialProps.map_Kd.split('/').pop();
+        // Extract filename from path (handle both / and \)
+        const texName = mesh.materialProps.map_Kd.split(/[/\\]/).pop();
         tex = textures[texName] || null;
       }
       mesh.texture = tex;
@@ -327,7 +327,7 @@ export default class ObjHelper {
 
     return new Promise((resolve, reject) => {
       const img = new Image();
-      
+
       img.onload = () => {
         const tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -546,22 +546,35 @@ export default class ObjHelper {
     const textureFiles = new Set();
     meshes.forEach(mesh => {
       if (mesh.materialProps && mesh.materialProps.map_Kd) {
-        const filename = mesh.materialProps.map_Kd.split('/').pop();
+        const filename = mesh.materialProps.map_Kd.split(/[/\\]/).pop();
         textureFiles.add(filename);
       }
     });
 
     // Load each texture
     for (const filename of textureFiles) {
-      const promise = zip.file(`${root}/${filename}`)
-        .async('arraybuffer')
+      // Possible paths in ZIP: root, textures/, models/, or raw path
+      const paths = [
+        filename,
+        `${root}/${filename}`,
+        `textures/${filename}`,
+        `models/${filename}`,
+      ];
+
+      let file = null;
+      for (const p of paths) {
+        file = zip.file(p);
+        if (file) break;
+      }
+
+      const promise = (file ? file.async('arraybuffer') : Promise.reject(new Error(`File ${filename} not found in any expected paths`)))
         .then(buffer => new Blob([buffer]))
         .then(blob => this.loadTexture(blob))
         .then(texture => {
           // Assign to meshes that use this texture
           meshes.forEach(mesh => {
             if (mesh.materialProps && mesh.materialProps.map_Kd) {
-              const meshFilename = mesh.materialProps.map_Kd.split('/').pop();
+              const meshFilename = mesh.materialProps.map_Kd.split(/[/\\]/).pop();
               if (meshFilename === filename) {
                 mesh.texture = texture;
                 mesh.hasTexture = true;
@@ -575,7 +588,7 @@ export default class ObjHelper {
           const placeholder = this.createPlaceholderTexture();
           meshes.forEach(mesh => {
             if (mesh.materialProps && mesh.materialProps.map_Kd) {
-              const meshFilename = mesh.materialProps.map_Kd.split('/').pop();
+              const meshFilename = mesh.materialProps.map_Kd.split(/[/\\]/).pop();
               if (meshFilename === filename) {
                 mesh.texture = placeholder;
                 mesh.hasTexture = false;

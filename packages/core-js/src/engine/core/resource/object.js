@@ -372,7 +372,7 @@ export default class ModelObject extends Loadable {
       if (!isPickerPass) {
         // Only set material properties during normal render
         // Diffuse
-        engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, [0.6, 0.3, 0.6]);
+        engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, [0.7, 0.7, 0.7]);
         // Specular
         engine.gl.uniform3fv(rm.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
         engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, 2);
