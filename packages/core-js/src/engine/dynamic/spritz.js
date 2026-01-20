@@ -120,7 +120,7 @@ export default class ExampleDynamicSpritz extends Spritz {
           this.isPaused = true;
           // loadZipFile(true);
         },
-        trigger: async (menu) => {
+        trigger: (menu) => {
           loadZipFile(menu);
         },
       },

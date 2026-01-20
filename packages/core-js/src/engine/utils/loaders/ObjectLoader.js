@@ -100,11 +100,11 @@ export class ObjectLoader {
           allVertices.push(...mesh.vertices);
           allNormals.push(...(mesh.vertexNormals || []));
           allTextures.push(...(mesh.textures || []));
-          
+
           // Add indices with offset
           const meshIndices = mesh.indices || new Array(mesh.vertices.length / 3).fill(0).map((_, i) => i);
           allIndices.push(...meshIndices.map(i => i + vertexOffset));
-          
+
           totalVertices += mesh.vertices.length / 3;
         }
       });
@@ -114,7 +114,32 @@ export class ObjectLoader {
         vertexNormals: allNormals,
         textures: allTextures,
         indices: allIndices,
-        materials: materials
+        materials: materials,
+        indicesPerMaterial: [allIndices],
+        materialsByIndex: { 0: { diffuse: [0.8, 0.8, 0.8], specular: [1, 1, 1], specularExponent: 50 } }
+      };
+
+      // If we have a single set of materials from the OBJ/MTL, use the first one if available
+      const materialKeys = Object.keys(materials);
+      if (materialKeys.length > 0) {
+        const firstMat = materials[materialKeys[0]];
+        compositeMesh.materialsByIndex[0] = {
+          diffuse: firstMat.Kd || [0.8, 0.8, 0.8],
+          specular: firstMat.Ks || [1, 1, 1],
+          specularExponent: firstMat.Ns || 50,
+          mapDiffuse: firstMat.map_Kd ? { glTexture: meshes[0].texture } : null
+        };
+      }
+    } else if (meshes.length === 1) {
+      // Single mesh - ensure it has the expected properties
+      compositeMesh.indicesPerMaterial = meshes[0].indicesPerMaterial || [meshes[0].indices];
+      compositeMesh.materialsByIndex = meshes[0].materialsByIndex || {
+        0: {
+          diffuse: meshes[0].materialProps?.Kd || [0.8, 0.8, 0.8],
+          specular: meshes[0].materialProps?.Ks || [1, 1, 1],
+          specularExponent: meshes[0].materialProps?.Ns || 50,
+          mapDiffuse: meshes[0].texture ? { glTexture: meshes[0].texture } : null
+        }
       };
     }
 

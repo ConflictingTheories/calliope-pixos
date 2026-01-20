@@ -86,9 +86,9 @@ export default class ModelObject extends Loadable {
     let mesh = instanceData.mesh;
 
     // Mesh bounds
-    let maxX,minX = null;
-    let maxY,minY = null;
-    let maxZ,minZ = null;
+    let maxX, minX = null;
+    let maxY, minY = null;
+    let maxZ, minZ = null;
 
     for (let i = 0; i < mesh.vertices.length; i = i + 3) {
       let v = mesh.vertices.slice(i, i + 3);
@@ -310,9 +310,9 @@ export default class ModelObject extends Loadable {
     let { engine, mesh } = this;
     const rm = engine.renderManager;
     const isPickerPass = rm.isPickerPass;
-    
+
     // draw each piece of the object (per material)
-    if (mesh.indicesPerMaterial.length >= 1 && Object.keys(mesh.materialsByIndex).length > 0) {
+    if (mesh && mesh.indicesPerMaterial && mesh.indicesPerMaterial.length >= 1 && mesh.materialsByIndex && Object.keys(mesh.materialsByIndex).length > 0) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
         rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
@@ -320,13 +320,13 @@ export default class ModelObject extends Loadable {
         rm.bindBuffer(mesh.textureBuffer, rm.shaderProgram.aTextureCoord);
         // normal
         rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
-        
+
         if (!isPickerPass) {
           // Only set material properties during normal render
           // Diffuse material properties
           engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
           engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
-          
+
           // Bind texture if available
           const hasTexture = mesh.materialsByIndex[i]?.mapDiffuse?.glTexture;
           if (hasTexture) {
@@ -335,18 +335,18 @@ export default class ModelObject extends Loadable {
           } else {
             engine.gl.uniform1f(rm.shaderProgram.useDiffuse, 0.0);
           }
-          
+
           // Specular
           engine.gl.uniform3fv(rm.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
           engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
         }
-        
+
         // Create and bind element buffer for indices
         const buffer = engine.gl.createBuffer();
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, buffer);
         engine.gl.bufferData(engine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(x), engine.gl.STATIC_DRAW);
         const numItems = x.length;
-        
+
         if (isPickerPass) {
           // During picker pass, only set picker shader uniforms
           rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
@@ -368,7 +368,7 @@ export default class ModelObject extends Loadable {
       rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
       rm.bindBuffer(mesh.textureBuffer, rm.shaderProgram.aTextureCoord);
       engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-      
+
       if (!isPickerPass) {
         // Only set material properties during normal render
         // Diffuse
@@ -377,7 +377,7 @@ export default class ModelObject extends Loadable {
         engine.gl.uniform3fv(rm.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
         engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, 2);
       }
-      
+
       if (isPickerPass) {
         // During picker pass, only set picker shader uniforms
         rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
@@ -415,7 +415,7 @@ export default class ModelObject extends Loadable {
     let { engine, mesh } = this;
     const rm = engine.renderManager;
     const isPickerPass = rm.isPickerPass;
-    
+
     engine.gl.disableVertexAttribArray(rm.shaderProgram.aTextureCoord);
     rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
     rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);

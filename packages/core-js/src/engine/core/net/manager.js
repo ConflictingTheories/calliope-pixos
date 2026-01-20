@@ -47,6 +47,11 @@ export default class NetworkManager {
    * @returns {Promise<void>} A promise that resolves when the connection is established.
    */
   async connect(url) {
+    if (!url || typeof url !== 'string') {
+      console.log('[NetworkManager] No valid WebSocket URL provided, skipping connection.');
+      return;
+    }
+
     if (this.ws) {
       this.disconnect();
     }
