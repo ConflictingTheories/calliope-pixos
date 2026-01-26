@@ -26,6 +26,7 @@ export class ObjectLoader {
   async loadFromZip(zip, model) {
     let afterLoad = arguments[2];
     let runConfigure = arguments[3];
+    console.log(`ObjectLoader: Loading model ${model.id} from zip`);
     if (!this.instances[model.id]) {
       this.instances[model.id] = [];
     }
@@ -117,6 +118,24 @@ export class ObjectLoader {
         materials: materials
       };
     }
+
+    // Set materialsByIndex for compatibility with drawTexturedObj
+    compositeMesh.materialsByIndex = {};
+    const matKeys = Object.keys(materials);
+    if (matKeys.length > 0) {
+      compositeMesh.materialsByIndex[0] = materials[matKeys[0]];
+      // Assign texture from first mesh if available
+      if (meshes[0] && meshes[0].texture) {
+        compositeMesh.materialsByIndex[0].glTexture = meshes[0].texture;
+      }
+    } else {
+      compositeMesh.materialsByIndex[0] = {
+        Kd: [0.7, 0.7, 0.7],
+        Ks: [0.1, 0.1, 0.2],
+        Ns: 2
+      };
+    }
+    compositeMesh.indicesPerMaterial = [compositeMesh.indices];
 
     // Initialize WebGL buffers
     this.engine.resourceManager.objHelper.initLegacyBuffers(compositeMesh);

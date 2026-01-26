@@ -141,6 +141,7 @@ export default class ModelObject extends Loadable {
    * @returns
    */
   onLoadFromZip = async (instanceData, zip) => {
+    console.log(`Loading object ${instanceData.id} from zip`);
     if (this.loaded) return;
 
     // Zone Information
@@ -251,6 +252,7 @@ export default class ModelObject extends Loadable {
   onTilesetOrTextureLoaded = () => {
     if (!this || this.loaded || (this.enableSpeech && this.speech && !this.speech.loaded) || (this.portrait && !this.portrait.loaded)) return;
 
+    console.log(`Object ${this.id} loaded successfully, adding to physics manager`);
     this.init(); // Hook for sprite implementations
     if (this.enableSpeech && this.speech) {
       if (this.speech.clearHud) {
@@ -326,21 +328,22 @@ export default class ModelObject extends Loadable {
         if (!isPickerPass) {
           // Only set material properties during normal render
           // Diffuse material properties
-          engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, mesh.materialsByIndex[i].diffuse);
-          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+          const mat = mesh.materialsByIndex[i];
+          engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, mat.Kd || [0.7, 0.7, 0.7]);
+          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mat.Ns || 2);
 
           // Bind texture if available
-          const hasTexture = mesh.materialsByIndex[i]?.mapDiffuse?.glTexture;
+          const hasTexture = mat.map_Kd && mat.glTexture;
           if (hasTexture) {
-            this.attach(mesh.materialsByIndex[i].mapDiffuse.glTexture);
+            this.attach(mat.glTexture);
             engine.gl.uniform1f(rm.shaderProgram.useDiffuse, 1.0);
           } else {
             engine.gl.uniform1f(rm.shaderProgram.useDiffuse, 0.0);
           }
 
           // Specular
-          engine.gl.uniform3fv(rm.shaderProgram.uSpecular, mesh.materialsByIndex[i].specular);
-          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mesh.materialsByIndex[i].specularExponent);
+          engine.gl.uniform3fv(rm.shaderProgram.uSpecular, mat.Ks || [0.1, 0.1, 0.2]);
+          engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, mat.Ns || 2);
         }
 
         // Create and bind element buffer for indices
@@ -434,6 +437,13 @@ export default class ModelObject extends Loadable {
     rm.bindBuffer(mesh.normalBuffer, rm.shaderProgram.aVertexNormal);
     engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
 
+    if (!isPickerPass) {
+      // Set material properties for non-textured objects
+      engine.gl.uniform3fv(rm.shaderProgram.uDiffuse, [0.7, 0.7, 0.7]);
+      engine.gl.uniform3fv(rm.shaderProgram.uSpecular, [0.1, 0.1, 0.2]);
+      engine.gl.uniform1f(rm.shaderProgram.uSpecularExponent, 2);
+    }
+
     if (isPickerPass) {
       // During picker pass, only set picker shader uniforms
       rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 1.0 });
@@ -456,6 +466,9 @@ export default class ModelObject extends Loadable {
     if (this.engine && this.engine.renderManager && this.engine.renderManager.debug) {
       this.engine.renderManager.debug.objectsDrawn++;
     }
+    // Debug logging for invisible objects
+    console.log(`Drawing object ${this.id}, scale: ${this.scale.toArray()}, pos: ${this.pos.toArray()}, size: ${this.size.toArray()}`);
+    console.log(`Model matrix before: ${this.engine.renderManager.uModelMat}`);
     let { engine, mesh } = this;
     // setup obj attributes
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);
@@ -476,6 +489,7 @@ export default class ModelObject extends Loadable {
           this.rotation.z / rotation,
         ]);
     }
+    console.log(`Model matrix after transforms: ${this.engine.renderManager.uModelMat}`);
     // Draw Object
     if (!mesh || !mesh.textures) {
       console.warn(`ModelObject.draw: No valid mesh data`);

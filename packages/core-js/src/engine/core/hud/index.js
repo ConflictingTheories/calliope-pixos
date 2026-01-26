@@ -36,6 +36,8 @@ export default class Hud {
       this.cutoutImages = []; // Array of {image, position} objects
       /** @type {InventoryUI} */
       this.inventoryUI = new InventoryUI(engine);
+      /** @type {Map<string, Object>} - Track active HUD elements */
+      this.activeElements = new Map();
       Hud._instance = this;
     }
     return Hud._instance;
@@ -48,6 +50,42 @@ export default class Hud {
     // setup anything needed at the start (run once)
     /** @type {CanvasRenderingContext2D} */
     this.ctx = this.engine.ctx;
+  }
+
+  /**
+   * Registers an active HUD element to be re-rendered each frame.
+   * @param {string} id - Unique identifier for the element.
+   * @param {Object} element - Element object with render() method.
+   */
+  registerElement = (id, element) => {
+    if (element && typeof element.render === 'function') {
+      this.activeElements.set(id, element);
+    }
+  }
+
+  /**
+   * Unregisters a HUD element.
+   * @param {string} id - Unique identifier for the element.
+   */
+  unregisterElement = (id) => {
+    this.activeElements.delete(id);
+  }
+
+  /**
+   * Re-renders all active HUD elements.
+   * Called after the game updates to ensure UI elements are visible.
+   */
+  renderActiveElements = () => {
+    // Iterate through all active elements and call their render method
+    for (const [id, element] of this.activeElements) {
+      try {
+        if (element && typeof element.render === 'function') {
+          element.render();
+        }
+      } catch (e) {
+        console.warn(`Error rendering HUD element ${id}:`, e);
+      }
+    }
   }
 
   /**

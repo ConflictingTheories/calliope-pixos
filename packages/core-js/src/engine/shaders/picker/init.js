@@ -47,7 +47,7 @@ export default function init(shaderProgram) {
   }) => {
     // NOTE: Caller (RenderManager.activatePickerShaderProgram) ensures this program is active.
     // Do NOT call gl.useProgram here - it would interfere with render pass state management.
-    
+
     gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, self.uProjMat);
     gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, self.uModelMat);
     gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, self.camera.uViewMat);

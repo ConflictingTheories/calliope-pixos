@@ -342,6 +342,12 @@ export default class GLEngine {
       try { this.hud.renderInventory(); } catch (e) { console.warn('renderInventory failed', e); }
     }
 
+    // Re-render all active HUD elements (dialogues, menus, buttons, etc.)
+    // This ensures they remain visible even after HUD canvas is cleared at start of frame
+    if (this.hud.renderActiveElements) {
+      try { this.hud.renderActiveElements(); } catch (e) { console.warn('renderActiveElements failed', e); }
+    }
+
     // Update debug overlay if enabled
     updateDebugInformation(this);
 

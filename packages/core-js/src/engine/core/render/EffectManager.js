@@ -249,8 +249,11 @@ export default class EffectManager {
      * Prepares the engine for scene rendering by binding the scene FBO.
      */
     beginScene() {
+        console.log(`EffectManager.beginScene: activeEffects=${this.activeEffects.length}, effects: ${this.activeEffects.join(', ')}`);
+        // Temporarily disable effects to test if FBO is causing issues
         if (this.activeEffects.length === 0) return;
         const gl = this.gl;
+        console.log(`EffectManager: Binding sceneFBO for off-screen rendering`);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.sceneFBO);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
@@ -260,6 +263,7 @@ export default class EffectManager {
      * @param {number} timestamp - Current timestamp for animations.
      */
     endScene(timestamp) {
+        console.log(`EffectManager.endScene: activeEffects=${this.activeEffects.length}`);
         if (this.activeEffects.length === 0) return;
 
         const gl = this.gl;
@@ -272,12 +276,16 @@ export default class EffectManager {
             const effectId = this.activeEffects[i];
             const isLast = i === this.activeEffects.length - 1;
 
+            console.log(`EffectManager: Applying effect ${effectId}, isLast=${isLast}`);
             // Render to screen if last, otherwise to currentDest
             gl.bindFramebuffer(gl.FRAMEBUFFER, isLast ? null : currentDest);
             gl.viewport(0, 0, this.width, this.height);
 
             const program = this.programs[effectId];
-            if (!program) continue;
+            if (!program) {
+                console.warn(`EffectManager: No program for effect ${effectId}`);
+                continue;
+            }
 
             gl.useProgram(program);
 
@@ -301,6 +309,7 @@ export default class EffectManager {
                 gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
             }
 
+            console.log(`EffectManager: Drawing quad for effect ${effectId}`);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
 
             // Swap for next iteration
@@ -310,6 +319,7 @@ export default class EffectManager {
             }
         }
 
+        console.log(`EffectManager: Unbinding framebuffer, rendering complete`);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 

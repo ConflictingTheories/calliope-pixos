@@ -657,9 +657,11 @@ export default class Zone extends Loadable {
    * @param {object} zip - The zip archive.
    */
   loadObjectFromZip = async (data, zip) => {
+    console.log(`Zone: Loading object ${data.id} from zip`);
     data.zone = this;
     if (!this.objectDict[data.id]) {
       const obj = await this.objectLoader.loadFromZip(zip, data, async (o) => o.onLoadFromZip(o, zip));
+      console.log(`Zone: Object ${data.id} loaded successfully, loaded=${obj.loaded}`);
       this.world.objectDict[data.id] = this.objectDict[data.id] = obj;
       this.objectList.push(obj);
       this.world.objectList.push(obj);

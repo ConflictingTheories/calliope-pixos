@@ -54,6 +54,9 @@ export default {
     if (this.options.sections && this.displayText) {
       this._initSections(this.displayText);
     }
+
+    // Register this dialogue as an active HUD element so it gets re-rendered each frame
+    this.engine.hud.registerElement(`dialogue-${this.sprite.id}-${Date.now()}`, this);
   },
 
   /**
@@ -137,6 +140,17 @@ export default {
       }
     }
     return this.completed;
+  },
+
+  /**
+   * Renders the dialogue UI without processing input.
+   * This is called by the HUD rendering system each frame to ensure dialogue stays visible.
+   */
+  render: function () {
+    if (!this.engine || !this.sprite || !this.displayText) return;
+    
+    // Re-render dialogue text
+    this.sprite.speak(this.displayText, false, this);
   },
 
   // Handle Keyboard

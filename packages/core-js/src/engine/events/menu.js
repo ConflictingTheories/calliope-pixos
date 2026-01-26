@@ -47,6 +47,9 @@ export default {
     this.speechOutput = true;
     // load voices and then play
     window.speechSynthesis.onvoiceschanged = () => { };
+    
+    // Register this menu as an active HUD element so it gets re-rendered each frame
+    this.engine.hud.registerElement(`menu-${Date.now()}`, this);
   },
   /**
    * Updates the menu state and renders active menu sections.
@@ -90,6 +93,29 @@ export default {
       window.speechSynthesis.cancel();
     }
     return this.completed;
+  },
+  /**
+   * Renders the menu UI elements without processing input.
+   * This is called by the HUD rendering system each frame to ensure UI stays visible.
+   */
+  render: function () {
+    if (!this.engine || !this.menuDict) return;
+    
+    // Draw Active Menus to Screen
+    Object.keys(this.menuDict)
+      .filter((key) => this.activeMenus.includes(key))
+      .forEach((id) => {
+        let section = this.menuDict[id];
+        let colors = section.colours;
+        if (section.active) {
+          colors['background'] = '#555';
+        }
+        this.engine.hud.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        if (section.prompt && !this.speechOutput) {
+          // Re-render textbox without speech synthesis on every frame
+          this.textbox = this.engine.hud.scrollText(section.prompt, this.scrolling, this.options);
+        }
+      });
   },
   // Unhook from the Touch & mouse handler
   unhookListener: function () {

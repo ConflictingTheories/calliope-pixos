@@ -71,6 +71,7 @@ export default class RenderManager {
    */
   constructor(engine) {
     if (!RenderManager._instance) {
+      RenderManager._instance = this;
       /** @type {import('../index.js').default} */
       this.engine = engine;
       /** @type {boolean} */
@@ -124,6 +125,7 @@ export default class RenderManager {
       this.cameraManager = new CameraManager(this);
       /** @type {import('./camera.js').Camera} */
       this.camera = this.cameraManager.camera;
+      this.camera.setCamera(); // Initialize camera view matrix for legacy compatibility
 
       // Initialize camera effects after camera is created
       this.cameraEffects = new CameraEffects(this.camera);
@@ -166,8 +168,6 @@ export default class RenderManager {
       // Effect Manager for post-processing
       /** @type {EffectManager} */
       this.effectManager = new EffectManager(this);
-
-      RenderManager._instance = this;
     }
     return RenderManager._instance;
   }
@@ -931,30 +931,6 @@ export default class RenderManager {
    */
   renderTransition = (progress) => {
     this.transitionManager.render(progress);
-  }
-    // Set uniforms: progress and direction (0 for out, 1 for in).
-    gl.uniform1f(trans.uProgress, progress);
-    const directionVal = this.transitionDirection === 'in' ? 1.0 : 0.0;
-    gl.uniform1f(trans.uDirection, directionVal);
-    // Configure blending and disable depth to ensure the overlay draws on top.
-    gl.disable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    // Draw the quad as a triangle strip (4 vertices -> 2 triangles).
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    // Restore previous state.
-    if (depthEnabled) {
-      gl.enable(gl.DEPTH_TEST);
-    } else {
-      gl.disable(gl.DEPTH_TEST);
-    }
-    if (!blendEnabled) {
-      gl.disable(gl.BLEND);
-    }
-    gl.blendFunc(prevBlendSrc, prevBlendDst); // Restore previous blend function
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.useProgram(null);
   }
 
   /**
