@@ -65,7 +65,6 @@ export default class Sprite extends Loadable {
       console.error('Invalid sprite definition');
       return;
     }
-    console.log({ msg: 'sprite load', instanceData, objId: this.objId });
     // Zone Information
     this.zone = instanceData.zone;
     if (instanceData.id) this.id = instanceData.id;

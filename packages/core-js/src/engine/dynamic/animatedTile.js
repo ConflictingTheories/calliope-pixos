@@ -14,6 +14,7 @@
 import { translate, rotate } from '@Engine/utils/math/matrix4.js';
 import DynamicSprite from '@Engine/dynamic/sprite.js';
 import { degToRad } from '../utils/math/vector.js';
+import { Direction } from '@Engine/utils/enums.js';
 
 /**
  * DynamicAnimatedTile - A dynamic tile with animation capabilities.
@@ -34,10 +35,16 @@ export default class DynamicAnimatedTile extends DynamicSprite {
    * Initializes the animated tile, setting up framerate.
    */
   init = () => {
+    // Initialize timing variables for animation loop
+    this.lastTime = 0;
+    this.accumTime = 0;
+    // frameTime = milliseconds per frame. Default: 100ms = 10 FPS
+    this.frameTime = this.json.frameTime ?? 100;
+    // triggerTime = delay before first animation loop starts
     if (this.json.randomJitter) {
       this.triggerTime = this.json.triggerTime + Math.floor(Math.random() * this.json.randomJitter);
     } else {
-      this.triggerTime = this.json.triggerTime;
+      this.triggerTime = this.json.triggerTime ?? 1000; // Default: 1 second
     }
   };
 
@@ -55,17 +62,28 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     if (
       this.accumTime < this.frameTime ||
       (this.animFrame == 0 && this.accumTime < this.triggerTime)
-    )
+    ) {
+      this.lastTime = time;
       return;
+    }
+    
+    // Get the frame count for current facing direction
+    const sequence = Direction.spriteSequence(
+      this.facing,
+      this.engine.renderManager.camera.cameraDir
+    );
+    const frames = this.frames[sequence] ?? this.frames['N'];
+    const maxFrame = frames.length - 1;
+    
     // reset animation
-    if (this.animFrame == 4) {
+    if (this.animFrame >= maxFrame) {
       this.setFrame(0);
       this.triggerTime = 2000 + Math.floor(Math.random() * 4000);
     } else {
       this.setFrame(this.animFrame + 1);
-      this.accumTime = 0;
-      this.lastTime = time;
     }
+    this.accumTime = 0;
+    this.lastTime = time;
   };
 
   /**

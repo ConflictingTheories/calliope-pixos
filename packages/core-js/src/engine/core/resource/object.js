@@ -523,23 +523,18 @@ export default class ModelObject extends Loadable {
    */
   draw = () => {
     if (!this.loaded) return;
-    // Increment object draw counter for debug metrics. Only increment if the
-    // render manager's debug object is available. This helps track how
-    // many 3D objects are drawn each frame in the debug overlay.
+    // Increment object draw counter for debug metrics
     if (this.engine && this.engine.renderManager && this.engine.renderManager.debug) {
       this.engine.renderManager.debug.objectsDrawn++;
     }
-    // Debug logging for invisible objects
-    console.log(
-      `Drawing object ${this.id}, scale: ${this.scale.toArray()}, pos: ${this.pos.toArray()}, size: ${this.size.toArray()}`
-    );
-    console.log(`Model matrix before: ${this.engine.renderManager.uModelMat}`);
+
     let { engine, mesh } = this;
     // setup obj attributes
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
     // initialize buffers
     engine.renderManager.mvPushMatrix();
+    
     // position object
     translate(
       this.engine.renderManager.uModelMat,
@@ -568,10 +563,11 @@ export default class ModelObject extends Loadable {
           [this.rotation.x / rotation, this.rotation.y / rotation, this.rotation.z / rotation]
         );
     }
-    console.log(`Model matrix after transforms: ${this.engine.renderManager.uModelMat}`);
+
     // Draw Object
     if (!mesh || !mesh.textures) {
       console.warn(`ModelObject.draw: No valid mesh data`);
+      engine.renderManager.mvPopMatrix();
       return;
     }
     if (!mesh.textures.length) {
