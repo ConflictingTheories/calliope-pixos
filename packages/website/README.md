@@ -38,26 +38,31 @@ website/
 ## Sections
 
 ### 1. Hero Section
+
 - Eye-catching title with gradient effect and glow animation
 - Call-to-action buttons (Try Demo, Get Started, GitHub)
 - Animated pixel grid background
 
 ### 2. About Section
+
 - Overview of PixoSpritz features
 - 6 feature cards with icons
 - Placeholder for demo video
 
 ### 3. Demo Section
+
 - Links to online player
 - Link to editor
 - Download option for desktop version
 
 ### 4. Games Catalog
+
 - Dynamic loading from `games.json`
 - Card-based layout with screenshots
 - Easy to add new games
 
 ### 5. Documentation Section
+
 - Links to getting started guide
 - API reference
 - Tutorials
@@ -65,11 +70,13 @@ website/
 - Community links
 
 ### 6. Support/Donation Section
+
 - Information about the solo developer
 - Multiple donation platform links (GitHub Sponsors, Patreon, Ko-fi, PayPal)
 - Alternative ways to support (stars, contributions, sharing)
 
 ### 7. Footer
+
 - Quick links to all sections
 - Resources and documentation
 - Community and developer links
@@ -145,11 +152,11 @@ Edit CSS variables in `css/styles.css`:
 
 ```css
 :root {
-    --color-primary: #ff6b9d;      /* Main accent color */
-    --color-secondary: #4ecdc4;    /* Secondary accent */
-    --color-accent: #ffd93d;       /* Highlight color */
-    --color-bg: #0f0f1e;           /* Main background */
-    /* ... more variables */
+  --color-primary: #ff6b9d; /* Main accent color */
+  --color-secondary: #4ecdc4; /* Secondary accent */
+  --color-accent: #ffd93d; /* Highlight color */
+  --color-bg: #0f0f1e; /* Main background */
+  /* ... more variables */
 }
 ```
 
@@ -163,26 +170,29 @@ Edit the support section in `index.html` and replace placeholder URLs with your 
 
 ```html
 <a href="https://github.com/sponsors/YOUR_USERNAME" target="_blank" class="support-link">
-    <span class="support-icon">❤️</span>
-    <span>GitHub Sponsors</span>
+  <span class="support-icon">❤️</span>
+  <span>GitHub Sponsors</span>
 </a>
 ```
 
 ## Features Deep Dive
 
 ### Responsive Navigation
+
 - Hamburger menu on mobile
 - Smooth scroll to sections
 - Active state based on scroll position
 - Sticky navbar with blur effect
 
 ### Animations
+
 - Fade-in on scroll for cards and sections
 - Glitch effect on hero title (with hover interaction)
 - Smooth transitions on all interactive elements
 - Easter egg: Konami code activates rainbow effect!
 
 ### Performance Optimizations
+
 - CSS variables for consistent theming
 - Debounced scroll events
 - Lazy loading for images (via onerror fallback)
@@ -190,6 +200,7 @@ Edit the support section in `index.html` and replace placeholder URLs with your 
 - Optimized SVG placeholders
 
 ### Accessibility
+
 - Semantic HTML5 elements
 - ARIA labels for interactive elements
 - Keyboard navigation support
@@ -204,6 +215,7 @@ Edit the support section in `index.html` and replace placeholder URLs with your 
 - Opera (latest)
 
 Tested on:
+
 - Desktop: macOS, Windows, Linux
 - Mobile: iOS Safari, Chrome Android
 

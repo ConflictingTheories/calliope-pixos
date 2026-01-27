@@ -48,13 +48,16 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
   // Early return if no content
   if (!content) {
     return (
-      <div className="editor-tool-container" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        color: '#888'
-      }}>
+      <div
+        className="editor-tool-container"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          color: '#888',
+        }}
+      >
         No model content to preview.
       </div>
     );
@@ -86,14 +89,17 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
   }, []);
 
   return (
-    <div className="editor-tool-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      minHeight: 0,
-      overflow: 'hidden',
-      padding: '1rem'
-    }}>
+    <div
+      className="editor-tool-container"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        overflow: 'hidden',
+        padding: '1rem',
+      }}
+    >
       <model-viewer
         src={content}
         style={{
@@ -101,13 +107,13 @@ function ModelPreview({ content, mtlContent, textureBasePath, textures }) {
           width: '100%',
           minHeight: 0,
           borderRadius: '4px',
-          background: '#1a1a1a'
+          background: '#1a1a1a',
         }}
         autoplay
         auto-rotate
         camera-controls
-        exposure='1.0'
-        background-color='#1a1a1a'
+        exposure="1.0"
+        background-color="#1a1a1a"
       >
         <span style={{ padding: '1rem', color: '#888' }}>Loading 3D model…</span>
       </model-viewer>

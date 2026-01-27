@@ -33,6 +33,7 @@ This guide walks you through using the PixoSpritz visual editor to create games.
 ### First-Time Setup
 
 On first launch, the editor will guide you through:
+
 - Project name and location
 - Initial asset setup
 - Basic configuration
@@ -93,18 +94,21 @@ The map editor has several modes accessible via the toolbar:
 ### Tools
 
 #### Paint Tool
+
 - **Left-click**: Paint selected tile
 - **Right-click**: Erase tile
 - **Shift + Drag**: Draw straight lines
 - **Ctrl + Click**: Pick tile from map
 
 #### Sprite/Object Placement
+
 1. Select Sprite/Object mode
 2. Choose sprite/object type from palette
 3. Click on map to place
 4. Right-click to remove
 
 #### Height Editing (3D Mode)
+
 1. Switch to 3D view
 2. Select height tool
 3. Click and drag to adjust height
@@ -120,6 +124,7 @@ Toggle between views using the view mode button.
 ### Layers
 
 Maps support multiple layers:
+
 - **Base Layer**: Ground tiles
 - **Overlay Layer**: Decorative tiles
 - **Object Layer**: Interactive objects
@@ -184,6 +189,7 @@ The sprite editor includes:
 ### Exporting Sprites
 
 Sprites are automatically saved to the project. Export options:
+
 - PNG sequence
 - GIF animation
 - Sprite sheet
@@ -224,6 +230,7 @@ Auto-tiling automatically selects tile variants based on neighbors:
 ### Tile Variants
 
 Tiles can have multiple variants:
+
 - Different visual styles
 - Seasonal variants
 - Damaged/broken states
@@ -270,18 +277,21 @@ Cutscenes support various event types:
 ### Event Properties
 
 #### Dialogue Event
+
 - **Speaker**: Character name
 - **Text**: Dialogue content
 - **Portrait**: Character portrait
 - **Duration**: Display duration
 
 #### Camera Event
+
 - **Type**: Pan, zoom, shake, follow
 - **Target**: Position or entity
 - **Duration**: Animation duration
 - **Easing**: Easing function
 
 #### Transition Event
+
 - **Effect**: Fade, wipe, pixelate, dissolve
 - **Direction**: In/out
 - **Duration**: Transition duration
@@ -389,6 +399,7 @@ The left sidebar shows the project file tree:
 4. Asset is added to project
 
 Supported formats:
+
 - **Images**: PNG, GIF, JPEG, BMP
 - **Audio**: MP3, OGG, WAV
 - **Models**: OBJ
@@ -404,6 +415,7 @@ Supported formats:
 ### Asset Properties
 
 Right-click any asset → "Properties":
+
 - File size
 - Dimensions (images)
 - Duration (audio)
@@ -512,21 +524,25 @@ Right-click any asset → "Properties":
 ### Common Issues
 
 **Map not saving:**
+
 - Check file permissions
 - Ensure project archive is writable
 - Try saving to different location
 
 **Sprites not appearing:**
+
 - Verify sprite is in correct folder
 - Check sprite JSON definition
 - Ensure texture path is correct
 
 **Scripts not running:**
+
 - Check syntax errors in console
 - Verify script is attached to trigger/sprite
 - Ensure script file extension is `.pxs`
 
 **Editor slow:**
+
 - Reduce map size
 - Close unused panels
 - Clear browser cache
@@ -541,4 +557,4 @@ Right-click any asset → "Properties":
 
 ---
 
-*Happy game making!*
+_Happy game making!_

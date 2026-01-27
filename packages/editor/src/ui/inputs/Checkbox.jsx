@@ -4,7 +4,7 @@
 import React from 'react';
 import './Checkbox.css';
 
-export function Checkbox({ 
+export function Checkbox({
   children,
   checked,
   defaultChecked,
@@ -15,7 +15,7 @@ export function Checkbox({
   className = '',
   onChange,
   style,
-  ...props 
+  ...props
 }) {
   const inputRef = React.useRef(null);
 
@@ -25,13 +25,11 @@ export function Checkbox({
     }
   }, [indeterminate]);
 
-  const classes = [
-    'px-checkbox',
-    disabled && 'px-checkbox-disabled',
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ['px-checkbox', disabled && 'px-checkbox-disabled', className]
+    .filter(Boolean)
+    .join(' ');
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     onChange?.(value, e.target.checked, e);
   };
 

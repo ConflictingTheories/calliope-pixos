@@ -21,7 +21,7 @@
     }
   ],
   "mode": "tactics",
-   "scripts": [
+  "scripts": [
     {
       "id": "load-spritz",
       "trigger": "sprite/npc_quest_giver"

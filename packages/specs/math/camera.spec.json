@@ -3,7 +3,7 @@
   "$id": "https://pixospritz.dev/schemas/camera.spec.json",
   "title": "Camera Specification",
   "description": "Shared camera system specifications for JS and C engines",
-  
+
   "definitions": {
     "Camera": {
       "description": "Orbital camera with position, target, and view parameters",
@@ -65,7 +65,7 @@
       }
     }
   },
-  
+
   "operations": {
     "updateFromAngles": {
       "signature": "(camera: Camera) -> void",
@@ -135,7 +135,7 @@
       ]
     }
   },
-  
+
   "defaults": {
     "position": { "x": 0, "y": 10, "z": 10 },
     "target": { "x": 0, "y": 0, "z": 0 },
@@ -148,7 +148,7 @@
     "far": 1000,
     "aspect": 1.7777777777777777
   },
-  
+
   "pitchLimits": {
     "min": -1.5607963,
     "max": 1.5607963,

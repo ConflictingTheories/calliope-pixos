@@ -7,7 +7,7 @@
  * The TileEditor allows composition of tiles from multiple geometry
  * pieces. Tiles are defined in tiles.json as named entries, where each
  * tile is an array of triplets: [geometry, texture, zOffset, ...]
- * 
+ *
  * Example format:
  *   "FLOOR": ["FLAT_ALL", "FLOOR", 0],
  *   "N_WALL": ["WALL_T", "WALL", 2, "FLAT_ALL", "EMPTY_B", 2]
@@ -15,13 +15,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
-import {
-  InputNumber,
-  Button,
-  Message,
-  SelectPicker,
-  Input,
-} from '../ui';
+import { InputNumber, Button, Message, SelectPicker, Input } from '../ui';
 
 // Isometric tile preview with Z-up coordinate system (matching engine)
 // X: East/West, Y: North/South, Z: Up/Down
@@ -87,7 +81,12 @@ function TilePreview({ components, geometryData, size = 180 }) {
     ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    const corners = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
+    const corners = [
+      [0, 0, 0],
+      [1, 0, 0],
+      [1, 1, 0],
+      [0, 1, 0],
+    ];
     corners.forEach((c, i) => {
       const [px, py] = project(c[0], c[1], c[2]);
       if (i === 0) ctx.moveTo(px, py);
@@ -100,8 +99,8 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const layerColors = [
       'rgba(125, 211, 252, 0.4)', // cyan
       'rgba(167, 139, 250, 0.4)', // purple
-      'rgba(74, 222, 128, 0.4)',  // green
-      'rgba(251, 191, 36, 0.4)',  // amber
+      'rgba(74, 222, 128, 0.4)', // green
+      'rgba(251, 191, 36, 0.4)', // amber
       'rgba(244, 114, 182, 0.4)', // pink
     ];
 
@@ -202,7 +201,6 @@ function TilePreview({ components, geometryData, size = 180 }) {
     ctx.fillText(`${components.length} layer(s)`, 6, height - 6);
     ctx.textAlign = 'right';
     ctx.fillText('Z-up', width - 6, height - 6);
-
   }, [components, geometryData, rotation, size]);
 
   // Auto-rotate
@@ -241,8 +239,11 @@ function parseTileComponents(arr) {
     i += 3;
     // Check if next value is a number (flag) before another geometry name
     let flags = null;
-    if (i < arr.length && typeof arr[i] === 'number' &&
-      (i + 1 >= arr.length || typeof arr[i + 1] !== 'string')) {
+    if (
+      i < arr.length &&
+      typeof arr[i] === 'number' &&
+      (i + 1 >= arr.length || typeof arr[i + 1] !== 'string')
+    ) {
       flags = arr[i];
       i++;
     }
@@ -320,46 +321,55 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const components = selectedTileArray ? parseTileComponents(selectedTileArray) : [];
 
   // Update a component
-  const updateComponent = useCallback((compIdx, field, value) => {
-    if (!selectedTileName) return;
+  const updateComponent = useCallback(
+    (compIdx, field, value) => {
+      if (!selectedTileName) return;
 
-    const newComponents = [...components];
-    newComponents[compIdx] = { ...newComponents[compIdx], [field]: value };
+      const newComponents = [...components];
+      newComponents[compIdx] = { ...newComponents[compIdx], [field]: value };
 
-    setTiles(prev => ({
-      ...prev,
-      [selectedTileName]: componentsToArray(newComponents)
-    }));
-  }, [selectedTileName, components]);
+      setTiles(prev => ({
+        ...prev,
+        [selectedTileName]: componentsToArray(newComponents),
+      }));
+    },
+    [selectedTileName, components]
+  );
 
   // Add a component
   const addComponent = useCallback(() => {
     if (!selectedTileName) return;
 
-    const newComponents = [...components, {
-      geometry: geometryNames[0] || 'FLAT_ALL',
-      texture: 'FLOOR',
-      zOffset: 0,
-      flags: null
-    }];
+    const newComponents = [
+      ...components,
+      {
+        geometry: geometryNames[0] || 'FLAT_ALL',
+        texture: 'FLOOR',
+        zOffset: 0,
+        flags: null,
+      },
+    ];
 
     setTiles(prev => ({
       ...prev,
-      [selectedTileName]: componentsToArray(newComponents)
+      [selectedTileName]: componentsToArray(newComponents),
     }));
   }, [selectedTileName, components, geometryNames]);
 
   // Remove a component
-  const removeComponent = useCallback((compIdx) => {
-    if (!selectedTileName) return;
+  const removeComponent = useCallback(
+    compIdx => {
+      if (!selectedTileName) return;
 
-    const newComponents = components.filter((_, i) => i !== compIdx);
+      const newComponents = components.filter((_, i) => i !== compIdx);
 
-    setTiles(prev => ({
-      ...prev,
-      [selectedTileName]: componentsToArray(newComponents)
-    }));
-  }, [selectedTileName, components]);
+      setTiles(prev => ({
+        ...prev,
+        [selectedTileName]: componentsToArray(newComponents),
+      }));
+    },
+    [selectedTileName, components]
+  );
 
   // Add a new tile
   const addTile = useCallback(() => {
@@ -372,7 +382,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
     setTiles(prev => ({
       ...prev,
-      [name]: ['FLAT_ALL', 'FLOOR', 0]
+      [name]: ['FLAT_ALL', 'FLOOR', 0],
     }));
     setTileNames(prev => [...prev, name]);
     setSelectedTileName(name);
@@ -381,58 +391,67 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   }, [newTileName, tiles]);
 
   // Delete a tile
-  const deleteTile = useCallback((name) => {
-    const newTiles = { ...tiles };
-    delete newTiles[name];
-    setTiles(newTiles);
-    setTileNames(prev => prev.filter(n => n !== name));
-    if (selectedTileName === name) {
-      const remaining = Object.keys(newTiles);
-      setSelectedTileName(remaining.length > 0 ? remaining[0] : null);
-    }
-  }, [tiles, selectedTileName]);
+  const deleteTile = useCallback(
+    name => {
+      const newTiles = { ...tiles };
+      delete newTiles[name];
+      setTiles(newTiles);
+      setTileNames(prev => prev.filter(n => n !== name));
+      if (selectedTileName === name) {
+        const remaining = Object.keys(newTiles);
+        setSelectedTileName(remaining.length > 0 ? remaining[0] : null);
+      }
+    },
+    [tiles, selectedTileName]
+  );
 
   // Rename a tile
-  const renameTile = useCallback((oldName) => {
-    const newName = renameValue.trim().toUpperCase().replace(/\s+/g, '_');
-    if (!newName || newName === oldName) {
+  const renameTile = useCallback(
+    oldName => {
+      const newName = renameValue.trim().toUpperCase().replace(/\s+/g, '_');
+      if (!newName || newName === oldName) {
+        setRenamingTile(null);
+        return;
+      }
+      if (tiles[newName]) {
+        setError(`Tile "${newName}" already exists`);
+        return;
+      }
+
+      const newTiles = { ...tiles };
+      newTiles[newName] = newTiles[oldName];
+      delete newTiles[oldName];
+
+      setTiles(newTiles);
+      setTileNames(prev => prev.map(n => (n === oldName ? newName : n)));
+      if (selectedTileName === oldName) {
+        setSelectedTileName(newName);
+      }
       setRenamingTile(null);
-      return;
-    }
-    if (tiles[newName]) {
-      setError(`Tile "${newName}" already exists`);
-      return;
-    }
-
-    const newTiles = { ...tiles };
-    newTiles[newName] = newTiles[oldName];
-    delete newTiles[oldName];
-
-    setTiles(newTiles);
-    setTileNames(prev => prev.map(n => n === oldName ? newName : n));
-    if (selectedTileName === oldName) {
-      setSelectedTileName(newName);
-    }
-    setRenamingTile(null);
-    setRenameValue('');
-    setError(null);
-  }, [tiles, renameValue, selectedTileName]);
+      setRenameValue('');
+      setError(null);
+    },
+    [tiles, renameValue, selectedTileName]
+  );
 
   // Duplicate a tile
-  const duplicateTile = useCallback((name) => {
-    let newName = `${name}_COPY`;
-    let counter = 1;
-    while (tiles[newName]) {
-      newName = `${name}_COPY_${counter++}`;
-    }
+  const duplicateTile = useCallback(
+    name => {
+      let newName = `${name}_COPY`;
+      let counter = 1;
+      while (tiles[newName]) {
+        newName = `${name}_COPY_${counter++}`;
+      }
 
-    setTiles(prev => ({
-      ...prev,
-      [newName]: [...prev[name]]
-    }));
-    setTileNames(prev => [...prev, newName]);
-    setSelectedTileName(newName);
-  }, [tiles]);
+      setTiles(prev => ({
+        ...prev,
+        [newName]: [...prev[name]],
+      }));
+      setTileNames(prev => [...prev, newName]);
+      setSelectedTileName(newName);
+    },
+    [tiles]
+  );
 
   // Save handler
   const handleSave = useCallback(() => {
@@ -455,29 +474,35 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   }));
 
   return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      overflow: 'hidden',
-      background: 'linear-gradient(135deg, rgba(7,20,38,0.98), rgba(4,12,20,0.98))',
-    }}>
-      {/* Left panel - Tile list */}
-      <div style={{
-        width: '240px',
-        minWidth: '240px',
-        borderRight: '1px solid rgba(255,255,255,0.1)',
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
         display: 'flex',
-        flexDirection: 'column',
         overflow: 'hidden',
-        background: 'rgba(0,0,0,0.2)',
-      }}>
+        background: 'linear-gradient(135deg, rgba(7,20,38,0.98), rgba(4,12,20,0.98))',
+      }}
+    >
+      {/* Left panel - Tile list */}
+      <div
+        style={{
+          width: '240px',
+          minWidth: '240px',
+          borderRight: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: 'rgba(0,0,0,0.2)',
+        }}
+      >
         {/* Header */}
-        <div style={{
-          padding: '12px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-        }}>
+        <div
+          style={{
+            padding: '12px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
           <h4 style={{ margin: '0 0 10px 0', color: '#7dd3fc', fontSize: '14px', fontWeight: 600 }}>
             🧩 Tiles ({Object.keys(tiles).length})
           </h4>
@@ -497,97 +522,129 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
               placeholder="NEW_TILE"
               size="xs"
               style={{ flex: 1 }}
-              onKeyDown={(e) => e.key === 'Enter' && addTile()}
+              onKeyDown={e => e.key === 'Enter' && addTile()}
             />
-            <Button appearance='primary' size="xs" onClick={addTile}>+</Button>
+            <Button appearance="primary" size="xs" onClick={addTile}>
+              +
+            </Button>
           </div>
         </div>
 
         {/* Tile list */}
         <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
-          {tileNames.filter(n => !searchFilter || n.toLowerCase().includes(searchFilter.toLowerCase())).map((name) => {
-            const tileArr = tiles[name];
-            const compCount = parseTileComponents(tileArr || []).length;
+          {tileNames
+            .filter(n => !searchFilter || n.toLowerCase().includes(searchFilter.toLowerCase()))
+            .map(name => {
+              const tileArr = tiles[name];
+              const compCount = parseTileComponents(tileArr || []).length;
 
-            return (
-              <div
-                key={name}
-                onClick={() => setSelectedTileName(name)}
-                style={{
-                  padding: '10px',
-                  marginBottom: '4px',
-                  background: selectedTileName === name ? 'rgba(125,211,252,0.2)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${selectedTileName === name ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {renamingTile === name ? (
-                    <Input
-                      value={renameValue}
-                      onChange={setRenameValue}
-                      size="xs"
-                      autoFocus
-                      onBlur={() => renameTile(name)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') renameTile(name);
-                        if (e.key === 'Escape') setRenamingTile(null);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ width: '120px' }}
-                    />
-                  ) : (
-                    <div
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        setRenamingTile(name);
-                        setRenameValue(name);
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      <div style={{ color: '#e6eef8', fontSize: '12px', fontWeight: 500 }}>{name}</div>
-                      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>
-                        {compCount} layer{compCount !== 1 ? 's' : ''}
+              return (
+                <div
+                  key={name}
+                  onClick={() => setSelectedTileName(name)}
+                  style={{
+                    padding: '10px',
+                    marginBottom: '4px',
+                    background:
+                      selectedTileName === name
+                        ? 'rgba(125,211,252,0.2)'
+                        : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${selectedTileName === name ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {renamingTile === name ? (
+                      <Input
+                        value={renameValue}
+                        onChange={setRenameValue}
+                        size="xs"
+                        autoFocus
+                        onBlur={() => renameTile(name)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') renameTile(name);
+                          if (e.key === 'Escape') setRenamingTile(null);
+                        }}
+                        onClick={e => e.stopPropagation()}
+                        style={{ width: '120px' }}
+                      />
+                    ) : (
+                      <div
+                        onDoubleClick={e => {
+                          e.stopPropagation();
+                          setRenamingTile(name);
+                          setRenameValue(name);
+                        }}
+                        style={{ flex: 1 }}
+                      >
+                        <div style={{ color: '#e6eef8', fontSize: '12px', fontWeight: 500 }}>
+                          {name}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>
+                          {compCount} layer{compCount !== 1 ? 's' : ''}
+                        </div>
                       </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          duplicateTile(name);
+                        }}
+                        style={{
+                          background: 'rgba(125,211,252,0.1)',
+                          border: '1px solid rgba(125,211,252,0.2)',
+                          color: '#7dd3fc',
+                          padding: '2px 6px',
+                          borderRadius: '3px',
+                          cursor: 'pointer',
+                          fontSize: '9px',
+                        }}
+                        title="Duplicate"
+                      >
+                        ⧉
+                      </button>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          deleteTile(name);
+                        }}
+                        style={{
+                          background: 'rgba(239,68,68,0.1)',
+                          border: '1px solid rgba(239,68,68,0.2)',
+                          color: '#ef4444',
+                          padding: '2px 6px',
+                          borderRadius: '3px',
+                          cursor: 'pointer',
+                          fontSize: '9px',
+                        }}
+                        title="Delete"
+                      >
+                        ✕
+                      </button>
                     </div>
-                  )}
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); duplicateTile(name); }}
-                      style={{
-                        background: 'rgba(125,211,252,0.1)',
-                        border: '1px solid rgba(125,211,252,0.2)',
-                        color: '#7dd3fc',
-                        padding: '2px 6px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '9px',
-                      }}
-                      title="Duplicate"
-                    >⧉</button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteTile(name); }}
-                      style={{
-                        background: 'rgba(239,68,68,0.1)',
-                        border: '1px solid rgba(239,68,68,0.2)',
-                        color: '#ef4444',
-                        padding: '2px 6px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '9px',
-                      }}
-                      title="Delete"
-                    >✕</button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
           {tileNames.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '20px',
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '12px',
+              }}
+            >
               No tiles defined.
             </div>
           )}
@@ -595,41 +652,62 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
         {/* Save button */}
         <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <Button appearance='primary' block onClick={handleSave}>💾 Save Tiles</Button>
+          <Button appearance="primary" block onClick={handleSave}>
+            💾 Save Tiles
+          </Button>
         </div>
       </div>
 
       {/* Main panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          minWidth: 0,
+        }}
+      >
         {error && (
           <div style={{ padding: '8px 12px', flexShrink: 0 }}>
-            <Message type='error' description={error} closable onClose={() => setError(null)} />
+            <Message type="error" description={error} closable onClose={() => setError(null)} />
           </div>
         )}
 
         {selectedTileName && selectedTileArray ? (
           <>
             {/* Header with preview */}
-            <div style={{
-              padding: '16px',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex',
-              gap: '20px',
-              alignItems: 'flex-start',
-              flexShrink: 0,
-              background: 'rgba(0,0,0,0.15)',
-            }}>
+            <div
+              style={{
+                padding: '16px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                gap: '20px',
+                alignItems: 'flex-start',
+                flexShrink: 0,
+                background: 'rgba(0,0,0,0.15)',
+              }}
+            >
               {/* Preview */}
               <TilePreview components={components} geometryData={geometryData} />
 
               {/* Info */}
               <div style={{ flex: 1 }}>
-                <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>{selectedTileName}</h4>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginBottom: '12px', fontFamily: 'monospace' }}>
-                  [{selectedTileArray.map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')}]
+                <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>
+                  {selectedTileName}
+                </h4>
+                <div
+                  style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '11px',
+                    marginBottom: '12px',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  [{selectedTileArray.map(v => (typeof v === 'string' ? `"${v}"` : v)).join(', ')}]
                 </div>
                 <Button
-                  appearance='ghost'
+                  appearance="ghost"
                   size="sm"
                   onClick={addComponent}
                   style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}
@@ -657,17 +735,21 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       padding: '14px',
                     }}
                   >
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                    }}>
-                      <span style={{
-                        color: '#a78bfa',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                      }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: '#a78bfa',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                        }}
+                      >
                         Layer {compIdx + 1}
                       </span>
                       <button
@@ -686,27 +768,31 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       </button>
                     </div>
 
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                      gap: '12px',
-                    }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                        gap: '12px',
+                      }}
+                    >
                       {/* Geometry selector */}
                       <div>
-                        <label style={{
-                          display: 'block',
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: '11px',
-                          marginBottom: '4px',
-                          fontWeight: 500,
-                        }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '11px',
+                            marginBottom: '4px',
+                            fontWeight: 500,
+                          }}
+                        >
                           Geometry
                         </label>
                         {geometryNames.length > 0 ? (
                           <SelectPicker
                             data={geometryOptions}
                             value={comp.geometry}
-                            onChange={(val) => updateComponent(compIdx, 'geometry', val)}
+                            onChange={val => updateComponent(compIdx, 'geometry', val)}
                             size="sm"
                             block
                             placeholder="Select geometry..."
@@ -716,7 +802,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                         ) : (
                           <Input
                             value={comp.geometry || ''}
-                            onChange={(val) => updateComponent(compIdx, 'geometry', val)}
+                            onChange={val => updateComponent(compIdx, 'geometry', val)}
                             size="sm"
                             placeholder="FLAT_ALL"
                           />
@@ -725,20 +811,22 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Texture input */}
                       <div>
-                        <label style={{
-                          display: 'block',
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: '11px',
-                          marginBottom: '4px',
-                          fontWeight: 500,
-                        }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '11px',
+                            marginBottom: '4px',
+                            fontWeight: 500,
+                          }}
+                        >
                           Texture
                         </label>
                         {textureList.length > 0 ? (
                           <SelectPicker
                             data={textureOptions}
                             value={comp.texture}
-                            onChange={(val) => updateComponent(compIdx, 'texture', val)}
+                            onChange={val => updateComponent(compIdx, 'texture', val)}
                             size="sm"
                             block
                             placeholder="Select texture..."
@@ -747,7 +835,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                         ) : (
                           <Input
                             value={comp.texture || ''}
-                            onChange={(val) => updateComponent(compIdx, 'texture', val)}
+                            onChange={val => updateComponent(compIdx, 'texture', val)}
                             size="sm"
                             placeholder="FLOOR"
                           />
@@ -756,18 +844,20 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Z Offset */}
                       <div>
-                        <label style={{
-                          display: 'block',
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: '11px',
-                          marginBottom: '4px',
-                          fontWeight: 500,
-                        }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '11px',
+                            marginBottom: '4px',
+                            fontWeight: 500,
+                          }}
+                        >
                           Z Offset
                         </label>
                         <InputNumber
                           value={comp.zOffset ?? 0}
-                          onChange={(val) => updateComponent(compIdx, 'zOffset', val)}
+                          onChange={val => updateComponent(compIdx, 'zOffset', val)}
                           size="sm"
                           step={0.5}
                           style={{ width: '100%' }}
@@ -776,18 +866,22 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
                       {/* Flags (optional) */}
                       <div>
-                        <label style={{
-                          display: 'block',
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: '11px',
-                          marginBottom: '4px',
-                          fontWeight: 500,
-                        }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '11px',
+                            marginBottom: '4px',
+                            fontWeight: 500,
+                          }}
+                        >
                           Flags (optional)
                         </label>
                         <InputNumber
                           value={comp.flags ?? ''}
-                          onChange={(val) => updateComponent(compIdx, 'flags', val === '' ? null : val)}
+                          onChange={val =>
+                            updateComponent(compIdx, 'flags', val === '' ? null : val)
+                          }
                           size="sm"
                           style={{ width: '100%' }}
                           placeholder="—"
@@ -798,15 +892,18 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                 ))}
 
                 {components.length === 0 && (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '50px 20px',
-                    color: 'rgba(255,255,255,0.4)',
-                    fontSize: '12px',
-                    background: 'rgba(0,0,0,0.2)',
-                    borderRadius: '8px',
-                  }}>
-                    No layers defined for this tile.<br />
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '50px 20px',
+                      color: 'rgba(255,255,255,0.4)',
+                      fontSize: '12px',
+                      background: 'rgba(0,0,0,0.2)',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    No layers defined for this tile.
+                    <br />
                     Click "+ Add Layer" to add geometry components.
                   </div>
                 )}
@@ -814,18 +911,21 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             </div>
           </>
         ) : (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(255,255,255,0.4)',
-            fontSize: '14px',
-            textAlign: 'center',
-          }}>
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'rgba(255,255,255,0.4)',
+              fontSize: '14px',
+              textAlign: 'center',
+            }}
+          >
             <div>
               <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>🧩</div>
-              Select a tile from the list<br />
+              Select a tile from the list
+              <br />
               or create a new one to begin editing.
             </div>
           </div>

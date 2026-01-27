@@ -1,10 +1,13 @@
 # Pixospritz - Callbacks Specification
 
 ## Introduction
+
 Callbacks are reusable code snippets or functions that can be invoked from actions, events, triggers, or scripts. They help avoid duplication and centralize logic for common behaviors. Callbacks can be organized in namespaces for modularity and maintainability.
 
 ## Lua Scripting Integration
+
 Pixospritz supports Lua scripting for callbacks, allowing game logic to be written in Lua and executed by the engine. Lua callbacks can:
+
 - Access and modify game state (zones, sprites, objects, etc.)
 - Trigger actions, events, and transitions
 - Change skybox shaders (`engine:set_skybox_shader("shaderName")`)
@@ -15,6 +18,7 @@ Pixospritz supports Lua scripting for callbacks, allowing game logic to be writt
 - Communicate with other scripts and engine modules
 
 ### Example Lua Callback
+
 ```lua
 function door_opened(zone, player)
   zone:openDoor()
@@ -24,6 +28,7 @@ end
 ```
 
 ### Supported Lua Features
+
 - Full access to engine API via the Lua environment
 - Table-based data structures for game objects
 - Custom functions for actions, events, triggers, and callbacks
@@ -32,6 +37,7 @@ end
 - Error handling and notifications
 
 ## Format & Template
+
 A callback is defined as:
 
 ```json
@@ -50,6 +56,7 @@ end
 ```
 
 ## Engine Features
+
 - Callbacks can be global or namespaced for modularity.
 - Callbacks are invoked from actions, events, triggers, or scripts.
 - Callbacks support Lua, JS, or engine API code.
@@ -57,6 +64,7 @@ end
 - Lua callbacks have full access to engine features and game state.
 
 ## Tips
+
 - Use namespaces to organize callbacks and avoid global conflicts.
 - Centralize common logic in callbacks for maintainability.
 - Document callback IDs and usage for clarity.

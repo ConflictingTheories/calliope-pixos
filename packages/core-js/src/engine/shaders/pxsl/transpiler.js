@@ -21,15 +21,15 @@ import {
  * Token types for the PXSL lexer
  */
 const TokenType = {
-  DIRECTIVE: 'DIRECTIVE',       // @vertex, @fragment, @shader, @effect
-  KEYWORD: 'KEYWORD',           // input, output, uniform, const, let, main
-  IDENTIFIER: 'IDENTIFIER',     // Variable/function names
-  TYPE: 'TYPE',                 // vec3, float, mat4, etc.
-  NUMBER: 'NUMBER',             // 1.0, 42, etc.
-  STRING: 'STRING',             // "shader_name"
-  OPERATOR: 'OPERATOR',         // =, +, -, *, /, etc.
-  PUNCTUATION: 'PUNCTUATION',   // :, {, }, (, ), etc.
-  COMMENT: 'COMMENT',           // // or /* */
+  DIRECTIVE: 'DIRECTIVE', // @vertex, @fragment, @shader, @effect
+  KEYWORD: 'KEYWORD', // input, output, uniform, const, let, main
+  IDENTIFIER: 'IDENTIFIER', // Variable/function names
+  TYPE: 'TYPE', // vec3, float, mat4, etc.
+  NUMBER: 'NUMBER', // 1.0, 42, etc.
+  STRING: 'STRING', // "shader_name"
+  OPERATOR: 'OPERATOR', // =, +, -, *, /, etc.
+  PUNCTUATION: 'PUNCTUATION', // :, {, }, (, ), etc.
+  COMMENT: 'COMMENT', // // or /* */
   NEWLINE: 'NEWLINE',
   EOF: 'EOF',
 };
@@ -105,16 +105,16 @@ class PXSLLexer {
   readNumber() {
     let value = '';
     const startCol = this.col;
-    
+
     // Handle negative numbers
     if (this.peek() === '-') {
       value += this.advance();
     }
-    
+
     while (!this.isAtEnd() && (this.isDigit(this.peek()) || this.peek() === '.')) {
       value += this.advance();
     }
-    
+
     // Handle scientific notation
     if (this.peek() === 'e' || this.peek() === 'E') {
       value += this.advance();
@@ -125,28 +125,42 @@ class PXSLLexer {
         value += this.advance();
       }
     }
-    
+
     return { type: TokenType.NUMBER, value, line: this.line, col: startCol };
   }
 
   readIdentifier() {
     let value = '';
     const startCol = this.col;
-    
+
     while (!this.isAtEnd() && this.isAlphaNumeric(this.peek())) {
       value += this.advance();
     }
 
     // Check for keywords
-    const keywords = ['input', 'output', 'uniform', 'const', 'let', 'main', 'if', 'else', 'for', 'while', 'return', 'discard', 'struct'];
+    const keywords = [
+      'input',
+      'output',
+      'uniform',
+      'const',
+      'let',
+      'main',
+      'if',
+      'else',
+      'for',
+      'while',
+      'return',
+      'discard',
+      'struct',
+    ];
     const types = Object.keys(PXSL_TYPE_ALIASES);
-    
+
     if (keywords.includes(value)) {
       return { type: TokenType.KEYWORD, value, line: this.line, col: startCol };
     } else if (types.includes(value)) {
       return { type: TokenType.TYPE, value, line: this.line, col: startCol };
     }
-    
+
     return { type: TokenType.IDENTIFIER, value, line: this.line, col: startCol };
   }
 
@@ -220,7 +234,11 @@ class PXSLLexer {
       }
 
       // Numbers
-      if (this.isDigit(char) || (char === '-' && this.isDigit(this.peek(1))) || (char === '.' && this.isDigit(this.peek(1)))) {
+      if (
+        this.isDigit(char) ||
+        (char === '-' && this.isDigit(this.peek(1))) ||
+        (char === '.' && this.isDigit(this.peek(1)))
+      ) {
         this.tokens.push(this.readNumber());
         continue;
       }
@@ -235,7 +253,12 @@ class PXSLLexer {
       const twoChar = char + (this.peek(1) || '');
       const multiOps = ['==', '!=', '<=', '>=', '&&', '||', '++', '--', '+=', '-=', '*=', '/='];
       if (multiOps.includes(twoChar)) {
-        this.tokens.push({ type: TokenType.OPERATOR, value: twoChar, line: this.line, col: this.col });
+        this.tokens.push({
+          type: TokenType.OPERATOR,
+          value: twoChar,
+          line: this.line,
+          col: this.col,
+        });
         this.advance();
         this.advance();
         continue;
@@ -252,7 +275,12 @@ class PXSLLexer {
       // Punctuation
       const punct = '{}[]():;,.';
       if (punct.includes(char)) {
-        this.tokens.push({ type: TokenType.PUNCTUATION, value: char, line: this.line, col: this.col });
+        this.tokens.push({
+          type: TokenType.PUNCTUATION,
+          value: char,
+          line: this.line,
+          col: this.col,
+        });
         this.advance();
         continue;
       }
@@ -296,7 +324,9 @@ class PXSLParser {
   expect(type, value = null) {
     const token = this.peek();
     if (token.type !== type || (value !== null && token.value !== value)) {
-      throw new Error(`PXSL Parse Error at line ${token.line}: Expected ${type}${value ? ` '${value}'` : ''}, got ${token.type} '${token.value}'`);
+      throw new Error(
+        `PXSL Parse Error at line ${token.line}: Expected ${type}${value ? ` '${value}'` : ''}, got ${token.type} '${token.value}'`
+      );
     }
     return this.advance();
   }
@@ -328,24 +358,24 @@ class PXSLParser {
     const directive = this.advance();
 
     switch (directive.value) {
-    case '@shader':
-      this.ast.shaderName = this.expect(TokenType.STRING).value;
-      break;
+      case '@shader':
+        this.ast.shaderName = this.expect(TokenType.STRING).value;
+        break;
 
-    case '@vertex':
-      this.ast.vertex = this.parseShaderBlock('vertex');
-      break;
+      case '@vertex':
+        this.ast.vertex = this.parseShaderBlock('vertex');
+        break;
 
-    case '@fragment':
-      this.ast.fragment = this.parseShaderBlock('fragment');
-      break;
+      case '@fragment':
+        this.ast.fragment = this.parseShaderBlock('fragment');
+        break;
 
-    case '@effect':
-      this.ast.effects.push(this.parseEffectBlock());
-      break;
+      case '@effect':
+        this.ast.effects.push(this.parseEffectBlock());
+        break;
 
-    default:
-      throw new Error(`Unknown directive: ${directive.value}`);
+      default:
+        throw new Error(`Unknown directive: ${directive.value}`);
     }
   }
 
@@ -371,26 +401,26 @@ class PXSLParser {
 
       if (token.type === TokenType.KEYWORD) {
         switch (token.value) {
-        case 'input':
-          block.inputs.push(this.parseVariableDecl('input'));
-          break;
-        case 'output':
-          block.outputs.push(this.parseVariableDecl('output'));
-          break;
-        case 'uniform':
-          block.uniforms.push(this.parseVariableDecl('uniform'));
-          break;
-        case 'const':
-          block.constants.push(this.parseConstDecl());
-          break;
-        case 'let':
-          block.locals.push(this.parseVariableDecl('local'));
-          break;
-        case 'main':
-          block.mainBody = this.parseMainBlock();
-          break;
-        default:
-          this.advance();
+          case 'input':
+            block.inputs.push(this.parseVariableDecl('input'));
+            break;
+          case 'output':
+            block.outputs.push(this.parseVariableDecl('output'));
+            break;
+          case 'uniform':
+            block.uniforms.push(this.parseVariableDecl('uniform'));
+            break;
+          case 'const':
+            block.constants.push(this.parseConstDecl());
+            break;
+          case 'let':
+            block.locals.push(this.parseVariableDecl('local'));
+            break;
+          case 'main':
+            block.mainBody = this.parseMainBlock();
+            break;
+          default:
+            this.advance();
         }
       } else {
         this.advance();
@@ -406,7 +436,7 @@ class PXSLParser {
     this.expect(TokenType.PUNCTUATION, ':');
     const typeToken = this.advance();
     const type = typeToken.value;
-    
+
     // Check for array notation
     let arraySize = null;
     if (this.match(TokenType.PUNCTUATION, '[')) {
@@ -434,13 +464,13 @@ class PXSLParser {
   parseMainBlock() {
     this.advance(); // consume 'main'
     this.expect(TokenType.PUNCTUATION, '{');
-    
+
     let body = '';
     let braceDepth = 1;
 
     while (!this.isAtEnd() && braceDepth > 0) {
       const token = this.advance();
-      
+
       if (token.type === TokenType.PUNCTUATION && token.value === '{') {
         braceDepth++;
         body += '{ ';
@@ -491,13 +521,13 @@ class PXSLParser {
   parseEffectBlock() {
     const name = this.expect(TokenType.STRING).value;
     this.expect(TokenType.PUNCTUATION, '{');
-    
+
     const properties = {};
     let braceDepth = 1;
 
     while (!this.isAtEnd() && braceDepth > 0) {
       const token = this.peek();
-      
+
       if (token.type === TokenType.PUNCTUATION && token.value === '}') {
         braceDepth--;
         this.advance();
@@ -572,7 +602,7 @@ class PXSLCodeGenerator {
     for (const input of block.inputs) {
       const glslType = PXSL_TYPE_ALIASES[input.type] || input.type;
       const glslName = PXSL_INPUT_MAPPINGS[input.name] || input.name;
-      
+
       if (type === 'vertex') {
         // Vertex shader inputs are attributes
         lines.push(`attribute ${glslType} ${glslName};`);
@@ -586,7 +616,7 @@ class PXSLCodeGenerator {
     // Generate outputs (varyings for vertex, nothing special for fragment)
     for (const output of block.outputs) {
       const glslType = PXSL_TYPE_ALIASES[output.type] || output.type;
-      
+
       if (type === 'vertex') {
         // Vertex outputs become varyings
         lines.push(`varying ${glslType} ${output.name};`);
@@ -598,7 +628,9 @@ class PXSLCodeGenerator {
     // Generate uniforms
     for (const uniform of block.uniforms) {
       const glslType = PXSL_TYPE_ALIASES[uniform.type] || uniform.type;
-      const glslName = PXSL_UNIFORM_MAPPINGS[uniform.name] || `u${uniform.name.charAt(0).toUpperCase()}${uniform.name.slice(1)}`;
+      const glslName =
+        PXSL_UNIFORM_MAPPINGS[uniform.name] ||
+        `u${uniform.name.charAt(0).toUpperCase()}${uniform.name.slice(1)}`;
       const arrayPart = uniform.arraySize ? `[${uniform.arraySize}]` : '';
       lines.push(`uniform ${glslType} ${glslName}${arrayPart};`);
     }
@@ -622,13 +654,13 @@ class PXSLCodeGenerator {
   scanForBuiltins(code) {
     // List of PXSL builtin function names
     const builtinNames = Object.keys(PXSL_BUILTINS);
-    
+
     for (const name of builtinNames) {
       // Check if function is called in the code
       const regex = new RegExp(`\\b${name}\\s*\\(`, 'g');
       if (regex.test(code)) {
         this.usedBuiltins.add(name);
-        
+
         // fbm depends on noise
         if (name === 'fbm') {
           this.usedBuiltins.add('noise');
@@ -639,16 +671,20 @@ class PXSLCodeGenerator {
 
   generateBuiltins() {
     const code = [];
-    
+
     // Order matters for dependencies
-    const ordered = ['noise', 'fbm', ...Array.from(this.usedBuiltins).filter(n => n !== 'noise' && n !== 'fbm')];
-    
+    const ordered = [
+      'noise',
+      'fbm',
+      ...Array.from(this.usedBuiltins).filter(n => n !== 'noise' && n !== 'fbm'),
+    ];
+
     for (const name of ordered) {
       if (this.usedBuiltins.has(name) && PXSL_BUILTINS[name]) {
         code.push(PXSL_BUILTINS[name]);
       }
     }
-    
+
     return code.join('\n\n');
   }
 
@@ -667,7 +703,9 @@ class PXSLCodeGenerator {
 
     // Replace uniform names with GLSL conventions
     for (const uniform of block.uniforms) {
-      const glslName = PXSL_UNIFORM_MAPPINGS[uniform.name] || `u${uniform.name.charAt(0).toUpperCase()}${uniform.name.slice(1)}`;
+      const glslName =
+        PXSL_UNIFORM_MAPPINGS[uniform.name] ||
+        `u${uniform.name.charAt(0).toUpperCase()}${uniform.name.slice(1)}`;
       if (glslName !== uniform.name) {
         code = code.replace(new RegExp(`\\b${uniform.name}\\b`, 'g'), glslName);
       }
@@ -681,7 +719,10 @@ class PXSLCodeGenerator {
     // Handle fragment output (fragColor -> gl_FragColor)
     if (type === 'fragment') {
       for (const output of block.outputs) {
-        if (output.name.toLowerCase().includes('color') || output.name.toLowerCase().includes('frag')) {
+        if (
+          output.name.toLowerCase().includes('color') ||
+          output.name.toLowerCase().includes('frag')
+        ) {
           code = code.replace(new RegExp(`\\b${output.name}\\b`, 'g'), 'gl_FragColor');
         }
       }
@@ -693,7 +734,10 @@ class PXSLCodeGenerator {
     }
 
     // Indent each line
-    return code.split('\n').map(line => '  ' + line.trim()).join('\n');
+    return code
+      .split('\n')
+      .map(line => '  ' + line.trim())
+      .join('\n');
   }
 }
 
@@ -736,7 +780,7 @@ export class PXSLTranspiler {
    */
   static validate(source) {
     const errors = [];
-    
+
     try {
       const lexer = new PXSLLexer(source);
       const tokens = lexer.tokenize();

@@ -1,9 +1,9 @@
 /**
  * PixoSpritz Shared Specifications
- * 
+ *
  * This package provides shared specifications, schemas, and constants
  * that are used by both the JavaScript (WebGL) and C (OpenGL) engines.
- * 
+ *
  * This ensures consistency across:
  * - Math operations (vector, matrix, camera)
  * - File formats (saves, sprites, maps, manifests)
@@ -31,20 +31,20 @@ import shaderTypes from './constants/shader-types.json' assert { type: 'json' };
 export const math = {
   vector: vectorSpec,
   matrix: matrixSpec,
-  camera: cameraSpec
+  camera: cameraSpec,
 };
 
 export const formats = {
   save: saveSchema,
   sprite: spriteSchema,
   map: mapSchema,
-  manifest: manifestSchema
+  manifest: manifestSchema,
 };
 
 export const constants = {
   directions,
   events,
-  shaderTypes
+  shaderTypes,
 };
 
 // Validation helpers
@@ -70,7 +70,7 @@ export function validateManifest(data) {
  */
 function validateAgainstSchema(data, schema) {
   const errors = [];
-  
+
   // Check required fields
   if (schema.required) {
     for (const field of schema.required) {
@@ -79,23 +79,26 @@ function validateAgainstSchema(data, schema) {
       }
     }
   }
-  
+
   // Check property types
   if (schema.properties) {
     for (const [key, prop] of Object.entries(schema.properties)) {
       if (key in data) {
         const value = data[key];
         const expectedType = prop.type;
-        
+
         if (expectedType === 'array' && !Array.isArray(value)) {
           errors.push(`Field ${key} should be an array`);
-        } else if (expectedType === 'object' && (typeof value !== 'object' || Array.isArray(value))) {
+        } else if (
+          expectedType === 'object' &&
+          (typeof value !== 'object' || Array.isArray(value))
+        ) {
           errors.push(`Field ${key} should be an object`);
         } else if (expectedType === 'string' && typeof value !== 'string') {
           errors.push(`Field ${key} should be a string`);
         } else if (expectedType === 'number' && typeof value !== 'number') {
           errors.push(`Field ${key} should be a number`);
-        } else if (expectedType === 'integer' && (!Number.isInteger(value))) {
+        } else if (expectedType === 'integer' && !Number.isInteger(value)) {
           errors.push(`Field ${key} should be an integer`);
         } else if (expectedType === 'boolean' && typeof value !== 'boolean') {
           errors.push(`Field ${key} should be a boolean`);
@@ -103,10 +106,10 @@ function validateAgainstSchema(data, schema) {
       }
     }
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -117,5 +120,5 @@ export default {
   validateSave,
   validateSprite,
   validateMap,
-  validateManifest
+  validateManifest,
 };

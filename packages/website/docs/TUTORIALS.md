@@ -271,6 +271,7 @@ Learn to create multiplayer games with synchronized player movement.
 ### Server Setup
 
 1. Install the PixoSpritz server:
+
    ```bash
    npm install -g pixospritz-server
    ```
@@ -331,6 +332,7 @@ end
 ### Zone Synchronization
 
 Zones are synchronized automatically:
+
 - Player enters/exits trigger events
 - Sprite positions sync across clients
 - Flags sync for shared state
@@ -377,7 +379,7 @@ Create a save menu script (`scripts/save_menu.pxs`):
 ```lua
 function show_save_menu()
   local slots = pixos.get_save_slots()
-  
+
   for i, slot in ipairs(slots) do
     pixos.log("Slot " .. i .. ": " .. slot.name)
     pixos.log("  Zone: " .. slot.zone)
@@ -400,6 +402,7 @@ end
 ### What Gets Saved
 
 The save system automatically saves:
+
 - Player position and zone
 - Game flags (all `pixos.set_flag()` values)
 - Zone states (visited, cleared, etc.)
@@ -478,7 +481,10 @@ const sprite = world.getSprite('enemy');
 sprite.velocity = { x: 0, y: 0, z: 0 };
 sprite.useGravity = true;
 
-engine.physicsManager.addBody(sprite, 32, 32,
+engine.physicsManager.addBody(
+  sprite,
+  32,
+  32,
   CollisionMask.Layers.ENEMY,
   CollisionMask.Layers.WALL | CollisionMask.Layers.PLAYER
 );
@@ -544,10 +550,10 @@ function use_potion()
   local avatar = pixos.get_world().avatar
   local health = pixos.get_flag("player_health") or 100
   local maxHealth = pixos.get_flag("player_max_health") or 100
-  
+
   health = math.min(health + 50, maxHealth)
   pixos.set_flag("player_health", health)
-  
+
   pixos.play_sfx("audio/potion.wav")
   pixos.sprite_dialogue("system", "Restored 50 HP!")
 end
@@ -572,7 +578,7 @@ engine.hud.inventoryUI.toggle()
 
 ## Tutorial 8: Pathfinding for NPCs
 
-Learn to make NPCs navigate using A* pathfinding.
+Learn to make NPCs navigate using A\* pathfinding.
 
 ### Basic Pathfinding
 
@@ -588,7 +594,7 @@ function move_npc_to(npcId, targetX, targetY)
       smoothPath = true
     }
   )
-  
+
   if path then
     -- Follow path
     for i, point in ipairs(path) do
@@ -627,15 +633,15 @@ function follow_player(npcId, distance)
   while true do
     local player = pixos.get_world().avatar
     local npc = world.getEntity(npcId)
-    
+
     local dx = player.x - npc.x
     local dy = player.y - npc.y
     local dist = math.sqrt(dx*dx + dy*dy)
-    
+
     if dist > distance then
       move_npc_to(npcId, player.x, player.y)
     end
-    
+
     pixos.wait(100)  -- Update every 100ms
   end
 end

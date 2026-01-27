@@ -4,7 +4,7 @@
 import React from 'react';
 import './Message.css';
 
-export function Message({ 
+export function Message({
   type = 'info',
   showIcon = true,
   closable = false,
@@ -13,7 +13,7 @@ export function Message({
   className = '',
   onClose,
   style,
-  ...props 
+  ...props
 }) {
   const [visible, setVisible] = React.useState(true);
 
@@ -28,32 +28,27 @@ export function Message({
     info: 'ℹ️',
     success: '✓',
     warning: '⚠️',
-    error: '✕'
+    error: '✕',
   };
 
   const classes = [
     'px-message',
     `px-message-${type}`,
     showIcon && 'px-message-with-icon',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style} role="alert" {...props}>
-      {showIcon && (
-        <span className="px-message-icon">{icons[type]}</span>
-      )}
+      {showIcon && <span className="px-message-icon">{icons[type]}</span>}
       <div className="px-message-content">
         {header && <div className="px-message-header">{header}</div>}
         {children && <div className="px-message-body">{children}</div>}
       </div>
       {closable && (
-        <button 
-          type="button"
-          className="px-message-close" 
-          onClick={handleClose}
-          aria-label="Close"
-        >
+        <button type="button" className="px-message-close" onClick={handleClose} aria-label="Close">
           ×
         </button>
       )}

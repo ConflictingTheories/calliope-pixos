@@ -27,7 +27,7 @@ export default class ExampleDynamicSpritz extends Spritz {
    * @param {GLEngine} engine - The game engine instance.
    * @returns {Promise<void>}
    */
-  init = async (engine) => {
+  init = async engine => {
     Spritz._instance.loaded = false;
     // game Engine & Timing
     Spritz._instance.engine = engine;
@@ -89,7 +89,7 @@ export default class ExampleDynamicSpritz extends Spritz {
     function loadZipFile(menu, skipClick = false) {
       if (!skipClick || engine.fileUpload.files.length === 0) {
         engine.fileUpload.click();
-        engine.fileUpload.onchange = (e) => loadSpritz(menu);
+        engine.fileUpload.onchange = e => loadSpritz(menu);
         return;
       } else {
         // autoload if passed in
@@ -115,12 +115,12 @@ export default class ExampleDynamicSpritz extends Spritz {
           text: '#fff',
         },
         onEnter: true,
-        onOpen: (menu) => {
+        onOpen: menu => {
           // tood - needs a way to trigger on open
           this.isPaused = true;
           // loadZipFile(true);
         },
-        trigger: (menu) => {
+        trigger: menu => {
           loadZipFile(menu);
         },
       },
@@ -131,7 +131,7 @@ export default class ExampleDynamicSpritz extends Spritz {
    * Load game from a remote manifest URL.
    * @param {string} url - The URL to the manifest.json
    */
-  loadFromManifest = async (url) => {
+  loadFromManifest = async url => {
     try {
       debug('Spritz', 'Loading from manifest URL:', url);
 
@@ -162,9 +162,8 @@ export default class ExampleDynamicSpritz extends Spritz {
       // Start Game
       world.isPaused = false;
       this.loaded = true;
-
     } catch (e) {
-      console.error("Failed to load from manifest:", e);
+      console.error('Failed to load from manifest:', e);
       if (this.engine.triggerError) this.engine.triggerError(e);
     }
   };

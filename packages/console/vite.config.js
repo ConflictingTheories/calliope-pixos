@@ -10,7 +10,7 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: false,
-    minify: 'terser'
+    minify: 'terser',
   },
 
   resolve: {
@@ -22,15 +22,15 @@ export default defineConfig({
       '@Tilesets': path.resolve(__dirname, '../core-js/src/tilesets'),
       '@Spritz': path.resolve(__dirname, '../core-js/src/spritz'),
       'pixospritz-core': path.resolve(__dirname, '../core-js/src/index.jsx'),
-    }
+    },
   },
 
   server: {
     port: 3000,
     open: true,
     fs: {
-      allow: ['..']
-    }
+      allow: ['..'],
+    },
   },
 
   plugins: [
@@ -49,8 +49,8 @@ export default defineConfig({
           }
           next();
         });
-      }
-    }
+      },
+    },
   ],
 });
 
@@ -73,4 +73,3 @@ function getContentType(filePath) {
   };
   return map[ext] || 'application/octet-stream';
 }
-

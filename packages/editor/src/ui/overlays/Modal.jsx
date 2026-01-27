@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './Modal.css';
 
-export function Modal({ 
+export function Modal({
   open,
   onClose,
   backdrop = true,
@@ -15,18 +15,18 @@ export function Modal({
   full = false,
   className = '',
   children,
-  ...props 
+  ...props
 }) {
   // Handle escape key
   useEffect(() => {
     if (!keyboard || !open) return;
-    
-    const handleKeyDown = (e) => {
+
+    const handleKeyDown = e => {
       if (e.key === 'Escape') {
         onClose?.();
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [keyboard, open, onClose]);
@@ -45,7 +45,7 @@ export function Modal({
 
   if (!open) return null;
 
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = e => {
     if (backdrop && e.target === e.currentTarget) {
       onClose?.();
     }
@@ -56,8 +56,10 @@ export function Modal({
     `px-modal-${size}`,
     full && 'px-modal-full',
     overflow && 'px-modal-overflow',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const modal = (
     <div className="px-modal-backdrop" onClick={handleBackdropClick}>
@@ -70,23 +72,18 @@ export function Modal({
   return createPortal(modal, document.body);
 }
 
-Modal.Header = function ModalHeader({ 
-  children, 
-  closeButton = true, 
+Modal.Header = function ModalHeader({
+  children,
+  closeButton = true,
   onClose,
   className = '',
-  ...props 
+  ...props
 }) {
   return (
     <div className={`px-modal-header ${className}`} {...props}>
       <div className="px-modal-title">{children}</div>
       {closeButton && (
-        <button 
-          type="button"
-          className="px-modal-close" 
-          onClick={onClose}
-          aria-label="Close"
-        >
+        <button type="button" className="px-modal-close" onClick={onClose} aria-label="Close">
           ×
         </button>
       )}

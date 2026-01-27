@@ -144,7 +144,15 @@ export class GamePad {
 
     // setup controller
     this.buttonsLayout = buttonsLayout;
-    this.controller = new Controller(this.engine.gp, this.buttonOffset, this.touches, this.start, this.select, this.colours, this);
+    this.controller = new Controller(
+      this.engine.gp,
+      this.buttonOffset,
+      this.touches,
+      this.start,
+      this.select,
+      this.colours,
+      this
+    );
     this.initOptions();
   }
 
@@ -181,13 +189,13 @@ export class GamePad {
   resize() {
     this.width = this.engine.gp.canvas.width;
     this.height = this.engine.gp.canvas.height;
-    
+
     // Recalculate joystick radius based on new canvas width
     this.radius = this.width / 12;
-    
+
     // Recalculate button offset
     this.buttonOffset = { x: this.radius * 2.5, y: 105 };
-    
+
     // Reinitialize controller with new dimensions
     this.controller.init();
   }
@@ -210,7 +218,7 @@ export class GamePad {
 
   // Apply options
   setOptions(options) {
-    Object.keys(this).forEach((key) => {
+    Object.keys(this).forEach(key => {
       if (options[key] !== undefined) {
         this[key] = options[key];
         this.dirty = true;
@@ -224,7 +232,7 @@ export class GamePad {
     let t = this.lastKey;
     this.lastKey = new Date().getTime() + 100;
     // todo - clear key
-    for (var n = 0; n < buttonsLayout.length; n++) {
+    for (let n = 0; n < buttonsLayout.length; n++) {
       controller.buttons.reset(n);
     }
     return t < this.lastKey;
@@ -239,22 +247,24 @@ export class GamePad {
   listen(e) {
     let { touches, controller, buttonsLayout } = this;
     if (e.type) {
-      var type = e.type;
-      
+      let type = e.type;
+
       // Normalize event to always have a touches-like array
       // Handle mouse events (click, mousedown, mouseup, mousemove)
       let eventTouches;
       if (e.type.indexOf('mouse') !== -1 || e.type === 'click') {
         // Mouse/click events - wrap in array
-        eventTouches = [{
-          identifier: 'desktop',
-          clientX: e.clientX,
-          clientY: e.clientY,
-          pageX: e.pageX,
-          pageY: e.pageY,
-          canvasX: e.canvasX,
-          canvasY: e.canvasY
-        }];
+        eventTouches = [
+          {
+            identifier: 'desktop',
+            clientX: e.clientX,
+            clientY: e.clientY,
+            pageX: e.pageX,
+            pageY: e.pageY,
+            canvasX: e.canvasX,
+            canvasY: e.canvasY,
+          },
+        ];
       } else if (e.touches && e.touches.length > 0) {
         // Touch events with active touches
         eventTouches = Array.from(e.touches).map(t => ({
@@ -264,7 +274,7 @@ export class GamePad {
           pageX: t.pageX,
           pageY: t.pageY,
           canvasX: e.canvasX, // Use pre-computed from WebGLView
-          canvasY: e.canvasY
+          canvasY: e.canvasY,
         }));
       } else if (e.changedTouches && e.changedTouches.length > 0) {
         // Touch end events - use changedTouches
@@ -275,32 +285,34 @@ export class GamePad {
           pageX: t.pageX,
           pageY: t.pageY,
           canvasX: e.canvasX,
-          canvasY: e.canvasY
+          canvasY: e.canvasY,
         }));
       } else if (e.canvasX !== undefined) {
         // Adjusted event from WebGLView with pre-computed coordinates
-        eventTouches = [{
-          identifier: 'desktop',
-          clientX: e.clientX,
-          clientY: e.clientY,
-          pageX: e.pageX,
-          pageY: e.pageY,
-          canvasX: e.canvasX,
-          canvasY: e.canvasY
-        }];
+        eventTouches = [
+          {
+            identifier: 'desktop',
+            clientX: e.clientX,
+            clientY: e.clientY,
+            pageX: e.pageX,
+            pageY: e.pageY,
+            canvasX: e.canvasX,
+            canvasY: e.canvasY,
+          },
+        ];
       } else {
         // Fallback - no valid touch data
         return;
       }
-      
+
       // Get canvas offset using getBoundingClientRect for accuracy
       const canvas = this.engine.gp.canvas;
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
+
       // run against attached listeners
-      this.listeners.map((l) => {
+      this.listeners.map(l => {
         if (l[type]) {
           return l[type](e);
         }
@@ -309,7 +321,7 @@ export class GamePad {
       const touchCount = Math.min(eventTouches.length, 5);
       for (var n = 0; n < touchCount; n++) {
         var id = eventTouches[n].identifier;
-        
+
         // Use pre-computed canvas coordinates if available, otherwise calculate
         let x, y;
         if (eventTouches[n].canvasX !== undefined) {
@@ -322,7 +334,7 @@ export class GamePad {
           x = (clientX - rect.left) * scaleX;
           y = (clientY - rect.top) * scaleY;
         }
-        
+
         if (!touches[id]) {
           touches[id] = {
             x: x,
@@ -356,7 +368,8 @@ export class GamePad {
             }
             break;
           case 'mousemove':
-            if (touches[id].leftClick) { // camera move - needs work - not aligned with camera
+            if (touches[id].leftClick) {
+              // camera move - needs work - not aligned with camera
               // let rotateSpeed = 0.01;
               // let angleChange = [touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed + touches[id].y * rotateSpeed, -touches[id].x * rotateSpeed - touches[id].y * rotateSpeed,];
               // this.engine.renderManager.camera.changeAngle(angleChange);
@@ -407,8 +420,8 @@ export class GamePad {
         }
 
         if (e.changedTouches && e.touches && e.changedTouches.length > e.touches.length) {
-          var length = 0;
-          var delta = e.changedTouches.length - e.touches.length;
+          let length = 0;
+          let delta = e.changedTouches.length - e.touches.length;
           for (var id in touches) {
             if (length >= delta) {
               delete touches[id];
@@ -428,9 +441,9 @@ export class GamePad {
         this.enableScroll();
       }
     } else {
-      var keys = e;
-      var dir = 0;
-      for (var prop in keys) {
+      let keys = e;
+      let dir = 0;
+      for (let prop in keys) {
         switch (prop) {
           case '%': //left
             if (keys[prop]) {
@@ -556,7 +569,7 @@ export class GamePad {
     this.engine.gp.fillText('debug', 10, this.dy);
     this.engine.gp.font = 'minecraftia 14px';
     this.dy += 5;
-    for (var prop in touches) {
+    for (let prop in touches) {
       this.dy += 10;
       let text = prop + ' : ' + JSON.stringify(touches[prop]).slice(1, -1);
       this.engine.gp.fillText(text, 10, this.dy);
@@ -574,7 +587,7 @@ export class GamePad {
     this.engine.gp.fillText('trace', this.width - 10, this.dy);
     this.engine.gp.font = 'minecraftia 14px';
     this.dy += 5;
-    for (var prop in map) {
+    for (let prop in map) {
       this.dy += 10;
       let text = prop + ' : ' + map[prop];
       this.engine.gp.fillText(text, this.width - 10, this.dy);
@@ -583,8 +596,8 @@ export class GamePad {
 
   // get position with correct offset
   getPosition(element) {
-    var xPosition = 0;
-    var yPosition = 0;
+    let xPosition = 0;
+    let yPosition = 0;
 
     while (element) {
       xPosition += element.offsetLeft - element.scrollLeft + element.clientLeft;

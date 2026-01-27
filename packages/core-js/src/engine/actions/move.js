@@ -21,7 +21,9 @@ export default {
     this.to = new Vector(...to);
     this.facing = Direction.fromOffset([Math.round(to.x - from.x), Math.round(to.y - from.y)]);
     this.length = length;
-    this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y);
+    this.spriteList = this.zone.spriteList.filter(
+      sprite => sprite.pos.x === this.to.x && sprite.pos.y === this.to.y
+    );
   },
   // move
   tick: function (time) {
@@ -59,7 +61,7 @@ export default {
   onStep: async function () {
     if (this.spriteList.length === 0) this.completed = true;
     await Promise.all(
-      this.spriteList.map(async (sprite) => {
+      this.spriteList.map(async sprite => {
         return sprite.onStep ? await sprite.onStep(sprite, sprite) : null;
       })
     );

@@ -39,13 +39,13 @@ export default class FillTool extends BaseTool {
 
   _fill(x, y, imageData, options) {
     const { color, width, height } = options;
-    
+
     if (x < 0 || x >= width || y < 0 || y >= height) {
       return [];
     }
 
     const targetColor = this.getPixelColor(imageData, x, y);
-    
+
     // Don't fill if target color matches fill color
     if (this.colorsMatch(targetColor, color, 0)) {
       return [];

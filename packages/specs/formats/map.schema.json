@@ -4,9 +4,9 @@
   "title": "PixoSpritz Map Definition",
   "description": "Schema for map/zone definition files",
   "type": "object",
-  
+
   "required": ["tileset", "bounds"],
-  
+
   "properties": {
     "id": {
       "type": "string",

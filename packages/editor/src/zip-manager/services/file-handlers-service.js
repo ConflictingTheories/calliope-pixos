@@ -2,7 +2,7 @@
 
 function onOpenWith(callback) {
   if ('launchQueue' in window) {
-    launchQueue.setConsumer((launchParams) => {
+    launchQueue.setConsumer(launchParams => {
       getLaunchQueueConsumer(launchParams, callback);
     });
   }
@@ -10,7 +10,7 @@ function onOpenWith(callback) {
 
 async function getLaunchQueueConsumer(launchParams, callback) {
   if (launchParams.files.length) {
-    await Promise.all(launchParams.files.map(async (handle) => callback(await handle.getFile())));
+    await Promise.all(launchParams.files.map(async handle => callback(await handle.getFile())));
   }
 }
 

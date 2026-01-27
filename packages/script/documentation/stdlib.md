@@ -25,6 +25,7 @@
 Global functions available without requiring a module.
 
 ### `assert(v, message)`
+
 Raises an error if `v` is falsy.
 
 ```lua
@@ -32,6 +33,7 @@ assert(x > 0, "x must be positive")
 ```
 
 ### `error(message, level)`
+
 Raises an error with the given message.
 
 ```lua
@@ -41,9 +43,11 @@ end
 ```
 
 ### `getmetatable(object)`
+
 Returns the metatable of the given object, or nil.
 
 ### `setmetatable(table, metatable)`
+
 Sets the metatable for a table. Returns the table.
 
 ```lua
@@ -52,6 +56,7 @@ setmetatable(t, { __tostring = function() return "custom" end })
 ```
 
 ### `ipairs(t)`
+
 Returns an iterator for array-style tables.
 
 ```lua
@@ -61,6 +66,7 @@ end
 ```
 
 ### `pairs(t)`
+
 Returns an iterator for all key-value pairs.
 
 ```lua
@@ -70,9 +76,11 @@ end
 ```
 
 ### `next(table, index)`
+
 Returns the next key-value pair in a table.
 
 ### `pcall(f, ...)`
+
 Calls a function in protected mode. Returns success boolean and results.
 
 ```lua
@@ -83,21 +91,27 @@ end
 ```
 
 ### `xpcall(f, errHandler, ...)`
+
 Like pcall but with a custom error handler.
 
 ### `print(...)`
+
 Prints values to the output.
 
 ### `rawequal(v1, v2)`
+
 Compares values without invoking metamethods.
 
 ### `rawget(table, index)`
+
 Gets a table value without invoking `__index`.
 
 ### `rawset(table, index, value)`
+
 Sets a table value without invoking `__newindex`.
 
 ### `select(index, ...)`
+
 Returns values from a vararg list.
 
 ```lua
@@ -106,12 +120,15 @@ local third = select(3, ...)    -- Get third element
 ```
 
 ### `tonumber(e, base)`
+
 Converts a value to a number.
 
 ### `tostring(e)`
+
 Converts a value to a string.
 
 ### `type(v)`
+
 Returns the type of a value as a string.
 
 ```lua
@@ -234,25 +251,25 @@ string.gsub(s, pattern, repl, n)      -- Replace pattern
 
 #### Pattern Syntax
 
-| Pattern | Meaning |
-|---------|---------|
-| `.` | Any character |
-| `%a` | Letter |
-| `%d` | Digit |
-| `%s` | Whitespace |
-| `%w` | Alphanumeric |
-| `%p` | Punctuation |
-| `%c` | Control character |
-| `%x` | Hexadecimal digit |
-| `[set]` | Character class |
+| Pattern  | Meaning             |
+| -------- | ------------------- |
+| `.`      | Any character       |
+| `%a`     | Letter              |
+| `%d`     | Digit               |
+| `%s`     | Whitespace          |
+| `%w`     | Alphanumeric        |
+| `%p`     | Punctuation         |
+| `%c`     | Control character   |
+| `%x`     | Hexadecimal digit   |
+| `[set]`  | Character class     |
 | `[^set]` | Complement of class |
-| `*` | 0 or more (greedy) |
-| `+` | 1 or more (greedy) |
-| `-` | 0 or more (lazy) |
-| `?` | 0 or 1 |
-| `^` | Start of string |
-| `$` | End of string |
-| `%b()` | Balanced brackets |
+| `*`      | 0 or more (greedy)  |
+| `+`      | 1 or more (greedy)  |
+| `-`      | 0 or more (lazy)    |
+| `?`      | 0 or 1              |
+| `^`      | Start of string     |
+| `$`      | End of string       |
+| `%b()`   | Balanced brackets   |
 
 ### Formatting
 
@@ -306,18 +323,18 @@ os.clock()           -- CPU time
 
 ### Date Format Specifiers
 
-| Code | Meaning |
-|------|---------|
-| `%Y` | Full year |
-| `%m` | Month (01-12) |
-| `%d` | Day (01-31) |
-| `%H` | Hour (00-23) |
-| `%M` | Minute (00-59) |
-| `%S` | Second (00-59) |
-| `%w` | Weekday (0-6) |
-| `%j` | Day of year |
+| Code | Meaning             |
+| ---- | ------------------- |
+| `%Y` | Full year           |
+| `%m` | Month (01-12)       |
+| `%d` | Day (01-31)         |
+| `%H` | Hour (00-23)        |
+| `%M` | Minute (00-59)      |
+| `%S` | Second (00-59)      |
+| `%w` | Weekday (0-6)       |
+| `%j` | Day of year         |
 | `%a` | Abbreviated weekday |
-| `%b` | Abbreviated month |
+| `%b` | Abbreviated month   |
 
 ---
 
@@ -346,13 +363,13 @@ file:lines()         -- Line iterator
 
 ### Read Formats
 
-| Format | Meaning |
-|--------|---------|
-| `"*a"` | Read all |
-| `"*l"` | Read line (no newline) |
+| Format | Meaning                  |
+| ------ | ------------------------ |
+| `"*a"` | Read all                 |
+| `"*l"` | Read line (no newline)   |
 | `"*L"` | Read line (with newline) |
-| `"*n"` | Read number |
-| `n` | Read n bytes |
+| `"*n"` | Read number              |
+| `n`    | Read n bytes             |
 
 ### Quick Functions
 
@@ -450,14 +467,14 @@ debug.getinfo(f, what)           -- Get function info
 
 ### Info Fields
 
-| Field | What | Description |
-|-------|------|-------------|
-| `name` | `n` | Function name |
-| `source` | `S` | Source file |
-| `linedefined` | `S` | Line where defined |
-| `what` | `S` | "Lua", "C", "main" |
-| `currentline` | `l` | Current line |
-| `nups` | `u` | Number of upvalues |
+| Field         | What | Description        |
+| ------------- | ---- | ------------------ |
+| `name`        | `n`  | Function name      |
+| `source`      | `S`  | Source file        |
+| `linedefined` | `S`  | Line where defined |
+| `what`        | `S`  | "Lua", "C", "main" |
+| `currentline` | `l`  | Current line       |
+| `nups`        | `u`  | Number of upvalues |
 
 ### Variable Access
 
@@ -560,14 +577,14 @@ end
 
 PixoScript supports these types:
 
-| Type | Example |
-|------|---------|
-| `nil` | `nil` |
-| `boolean` | `true`, `false` |
-| `number` | `42`, `3.14`, `0xFF` |
-| `string` | `"hello"`, `'world'` |
-| `table` | `{}`, `{1, 2, 3}` |
-| `function` | `function() end` |
+| Type       | Example              |
+| ---------- | -------------------- |
+| `nil`      | `nil`                |
+| `boolean`  | `true`, `false`      |
+| `number`   | `42`, `3.14`, `0xFF` |
+| `string`   | `"hello"`, `'world'` |
+| `table`    | `{}`, `{1, 2, 3}`    |
+| `function` | `function() end`     |
 
 ### Truthiness
 
@@ -611,4 +628,4 @@ error("Fatal error", 2)  -- Level 2 = caller's context
 
 ---
 
-*PixoScript is a Lua 5.3 compatible scripting language for the PixoSpritz game engine.*
+_PixoScript is a Lua 5.3 compatible scripting language for the PixoSpritz game engine._

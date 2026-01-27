@@ -5,7 +5,9 @@ This directory contains tileset definitions used for rendering game maps. Each t
 ## Available Tilesets
 
 ### common
+
 General-purpose tiles suitable for outdoor environments and basic floors.
+
 - Standard floor tiles (FLOOR)
 - Water tiles (WATER)
 - Wall tiles (N_WALL, S_WALL, L_WALL, R_WALL)
@@ -14,7 +16,9 @@ General-purpose tiles suitable for outdoor environments and basic floors.
 - Transition tiles (stairs, walkways)
 
 ### sewer
+
 Dark, dungeon-style tiles for underground areas.
+
 - Stone floor tiles
 - Dark water/lava tiles
 - Dungeon walls with moss/damage
@@ -22,7 +26,9 @@ Dark, dungeon-style tiles for underground areas.
 - Grate and drain tiles
 
 ### village
+
 Warm, rustic tiles for town and village environments.
+
 - Wooden floor tiles
 - Stone pathways
 - Wooden walls and fences
@@ -32,6 +38,7 @@ Warm, rustic tiles for town and village environments.
 ## Tileset Structure
 
 Each tileset directory should contain:
+
 ```
 tileset-name/
 ├── tileset.json    # Configuration (tile size, animation data)
@@ -41,23 +48,24 @@ tileset-name/
 
 ## Tile Types
 
-| Type | Description |
-|------|-------------|
-| `EMPTY` | Non-rendered void space |
-| `FLOOR` | Walkable floor tile |
-| `WATER` | Water tile (may be walkable or blocking) |
-| `N_WALL` | North-facing wall |
-| `S_WALL` | South-facing wall |
-| `L_WALL` | Left (west) wall |
-| `R_WALL` | Right (east) wall |
-| `*_CORNER` | Corner pieces (NLW, NRW, SLW, SRW) |
-| `*_COLUMN` | Decorative columns |
-| `*_STAIR` | Stair tiles for transitions |
-| `*_WALKWAY` | Bridge/walkway tiles over water |
+| Type        | Description                              |
+| ----------- | ---------------------------------------- |
+| `EMPTY`     | Non-rendered void space                  |
+| `FLOOR`     | Walkable floor tile                      |
+| `WATER`     | Water tile (may be walkable or blocking) |
+| `N_WALL`    | North-facing wall                        |
+| `S_WALL`    | South-facing wall                        |
+| `L_WALL`    | Left (west) wall                         |
+| `R_WALL`    | Right (east) wall                        |
+| `*_CORNER`  | Corner pieces (NLW, NRW, SLW, SRW)       |
+| `*_COLUMN`  | Decorative columns                       |
+| `*_STAIR`   | Stair tiles for transitions              |
+| `*_WALKWAY` | Bridge/walkway tiles over water          |
 
 ## Usage
 
 Tilesets are referenced in map.json files:
+
 ```json
 {
   "tileset": "village",

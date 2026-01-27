@@ -12,11 +12,13 @@
 ### Week 1-2: Code Cleanup & Standardization
 
 #### Task 1.1: Remove Deprecated Core-JS Code
+
 **Effort**: 3-4 days  
 **Priority**: P0  
 **Impact**: Code quality, maintainability
 
 **Files to address**:
+
 - ✅ `src/engine/actions/patrol.js` - Remove manual triggers
 - ✅ `src/engine/actions/changezone.js` - Reimplement or remove
 - ✅ `src/engine/actions/dialogue.js` - Legacy format cleanup
@@ -28,6 +30,7 @@
 - ✅ `src/engine/shaders/skybox/sunset/fs.js` - Audit color palette logic
 
 **Subtasks**:
+
 1. Identify all references to deprecated code
 2. Decide: remove or reimplement each
 3. Update tests/documentation
@@ -35,6 +38,7 @@
 5. Commit and document changes
 
 **Success Criteria**:
+
 - All deprecated code removed or reimplemented
 - Zero references in remaining codebase
 - All tests still pass
@@ -42,6 +46,7 @@
 ---
 
 #### Task 1.2: Event System Standardization
+
 **Effort**: 4-5 days  
 **Priority**: P0  
 **Impact**: Code consistency, maintainability
@@ -49,11 +54,13 @@
 **Objective**: Standardize event handling interfaces across core-js
 
 **Files to modify**:
+
 - `src/engine/core/index.js` - Main event loop
 - `src/engine/core/events/` - Event handlers
 - `src/engine/actions/` - Action system
 
 **Changes needed**:
+
 ```javascript
 // Before: Inconsistent interfaces
 menuEvent.tick(world, dt, engine);
@@ -67,6 +74,7 @@ eventHandler.process();
 ```
 
 **Subtasks**:
+
 1. Define standard event interface (abstract class or mixin)
 2. Audit all event handlers
 3. Refactor inconsistent ones
@@ -74,6 +82,7 @@ eventHandler.process();
 5. Update tests
 
 **Success Criteria**:
+
 - All event handlers follow same pattern
 - JSDoc complete for all event interfaces
 - Tests passing
@@ -81,6 +90,7 @@ eventHandler.process();
 ---
 
 #### Task 1.3: OBJ/MTL Loader Integration
+
 **Effort**: 2-3 days  
 **Priority**: P1  
 **Impact**: Consistent asset loading
@@ -88,11 +98,13 @@ eventHandler.process();
 **Objective**: Integrate ObjHelper with ResourceManager
 
 **Current state**:
+
 - Editor has `ObjHelper.js` (parser)
 - Engine has separate loading system
 - Inconsistency between platforms
 
 **Changes**:
+
 1. Update `src/engine/core/resource/manager.js`:
    - Import ObjHelper
    - Add `loadOBJ(url, options)` method
@@ -106,6 +118,7 @@ eventHandler.process();
 3. Document OBJ/MTL loading pipeline
 
 **Subtasks**:
+
 1. Review ObjHelper implementation
 2. Create standard loading interface
 3. Update ResourceManager
@@ -113,6 +126,7 @@ eventHandler.process();
 5. Add tests
 
 **Success Criteria**:
+
 - ResourceManager handles OBJ/MTL
 - Editor uses ResourceManager
 - No duplicate loading code
@@ -120,6 +134,7 @@ eventHandler.process();
 ---
 
 #### Task 1.4: Console.log Cleanup
+
 **Effort**: 2-3 days  
 **Priority**: P1  
 **Impact**: Code cleanliness, production readiness
@@ -127,12 +142,14 @@ eventHandler.process();
 **Objective**: Remove all debug console.log statements
 
 **Files to clean** (from PENDING):
+
 - `src/map-editor/MapEditor.jsx` - ✅ Already cleaned
 - `src/cutscene-tool/CutscenePlayer.jsx` - ✅ Already cleaned
 - Other editor files with debug output
 - Core engine debug logs
 
 **Process**:
+
 1. Search all files for `console.log`, `console.warn`, etc.
 2. Remove or convert to debug flag:
    ```javascript
@@ -142,12 +159,14 @@ eventHandler.process();
 4. Verify production build
 
 **Subtasks**:
+
 1. Global search for console statements
 2. Categorize: debug vs. important
 3. Remove/convert as appropriate
 4. Update build scripts to set DEBUG=false
 
 **Success Criteria**:
+
 - Zero unnecessary console.log in production
 - Production build is clean
 
@@ -156,6 +175,7 @@ eventHandler.process();
 ### Week 3-4: Testing Infrastructure
 
 #### Task 1.5: Vitest Configuration & Setup
+
 **Effort**: 3 days  
 **Priority**: P0  
 **Impact**: Foundation for all testing
@@ -163,11 +183,13 @@ eventHandler.process();
 **Objective**: Set up comprehensive testing infrastructure
 
 **Current state**:
+
 - Vitest config exists
 - Only 9 test files
 - No consistent patterns
 
 **Setup tasks**:
+
 1. **vitest.config.js** - Review and extend
    - Add coverage configuration
    - Setup test paths
@@ -179,6 +201,7 @@ eventHandler.process();
    - Test database setup (for server)
 
 3. **Test structure** - Standardize
+
    ```
    packages/
    ├── core-js/
@@ -201,6 +224,7 @@ eventHandler.process();
    - Use husky + lint-staged
 
 **Subtasks**:
+
 1. Extend vitest.config.js
 2. Create test utilities/helpers
 3. Standardize test structure
@@ -208,6 +232,7 @@ eventHandler.process();
 5. Setup husky hooks
 
 **Success Criteria**:
+
 - Tests run with single command
 - Coverage reports generated
 - CI/CD pipeline working
@@ -215,6 +240,7 @@ eventHandler.process();
 ---
 
 #### Task 1.6: Unit Test Suite - Math Package
+
 **Effort**: 3-4 days  
 **Priority**: P1  
 **Impact**: Foundation for other tests
@@ -224,6 +250,7 @@ eventHandler.process();
 **Current**: ~40% coverage
 
 **Test categories**:
+
 1. **Vector operations** (Vec2, Vec3, Vec4)
    - Construction, arithmetic
    - Dot/cross products
@@ -244,6 +271,7 @@ eventHandler.process();
 **Target**: 90%+ coverage
 
 **Subtasks**:
+
 1. Audit existing tests
 2. Identify gaps
 3. Write new tests
@@ -251,6 +279,7 @@ eventHandler.process();
 5. Document edge cases
 
 **Success Criteria**:
+
 - 90%+ coverage
 - All edge cases tested
 - Performance acceptable
@@ -258,6 +287,7 @@ eventHandler.process();
 ---
 
 #### Task 1.7: Unit Test Suite - Server
+
 **Effort**: 3-4 days  
 **Priority**: P1  
 **Impact**: Server stability
@@ -267,6 +297,7 @@ eventHandler.process();
 **Current**: ~15% coverage
 
 **Test categories**:
+
 1. **Authentication**
    - JWT generation/validation
    - Token refresh
@@ -290,6 +321,7 @@ eventHandler.process();
 **Target**: 60%+ coverage
 
 **Subtasks**:
+
 1. Identify critical paths
 2. Write tests for each
 3. Mock external dependencies
@@ -297,6 +329,7 @@ eventHandler.process();
 5. Document test coverage
 
 **Success Criteria**:
+
 - 60%+ coverage
 - All critical paths tested
 - Error cases handled
@@ -304,6 +337,7 @@ eventHandler.process();
 ---
 
 #### Task 1.8: Integration Test Framework
+
 **Effort**: 2-3 days  
 **Priority**: P2  
 **Impact**: End-to-end validation
@@ -311,6 +345,7 @@ eventHandler.process();
 **Objective**: Set up integration test infrastructure
 
 **What to test**:
+
 1. Editor → Console workflow
    - Create game in editor
    - Export as zip
@@ -329,16 +364,19 @@ eventHandler.process();
    - State updates
 
 **Tools**:
+
 - Playwright for UI testing
 - Custom test helpers for engine
 
 **Subtasks**:
+
 1. Create integration test harness
 2. Define test scenarios
 3. Implement Playwright tests
 4. Document test procedures
 
 **Success Criteria**:
+
 - Integration tests run
 - Common workflows verified
 
@@ -347,6 +385,7 @@ eventHandler.process();
 ### Week 5-6: Documentation
 
 #### Task 1.9: API Reference Documentation
+
 **Effort**: 8-12 days  
 **Priority**: P0  
 **Impact**: Adoption enabler
@@ -354,6 +393,7 @@ eventHandler.process();
 **Objective**: Auto-generate and publish complete API docs
 
 **Approach**:
+
 1. **JSDoc standardization**
    - Add/improve JSDoc comments
    - Use consistent format
@@ -373,12 +413,14 @@ eventHandler.process();
    - Specs
 
 **Deliverables**:
+
 - Online documentation site
 - Searchable reference
 - Code examples
 - API changelog
 
 **Subtasks**:
+
 1. Standardize JSDoc across packages
 2. Configure documentation tool
 3. Generate docs
@@ -386,6 +428,7 @@ eventHandler.process();
 5. Verify all APIs documented
 
 **Success Criteria**:
+
 - All public APIs documented
 - Online docs published
 - Links in README
@@ -393,6 +436,7 @@ eventHandler.process();
 ---
 
 #### Task 1.10: Architecture Guide
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Contributor onboarding
@@ -400,6 +444,7 @@ eventHandler.process();
 **Objective**: Document system architecture
 
 **Topics**:
+
 1. **Render Pipeline**
    - WebGL initialization
    - Shader compilation
@@ -437,12 +482,14 @@ eventHandler.process();
    - Format support
 
 **Deliverables**:
+
 - Architecture.md (comprehensive)
 - Sequence diagrams
 - Component diagrams
 - Decision records (ADRs)
 
 **Subtasks**:
+
 1. Outline architecture
 2. Create diagrams
 3. Write descriptions
@@ -450,6 +497,7 @@ eventHandler.process();
 5. Add decision records
 
 **Success Criteria**:
+
 - Complete architecture documented
 - Clear contribution guidelines
 - Example contributed code
@@ -457,6 +505,7 @@ eventHandler.process();
 ---
 
 #### Task 1.11: Getting Started Guides
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Creator onboarding
@@ -464,6 +513,7 @@ eventHandler.process();
 **Objective**: Write comprehensive "how-to" guides
 
 **Guides needed**:
+
 1. **First Game Tutorial**
    - Setup
    - Sprite creation
@@ -497,12 +547,14 @@ eventHandler.process();
    - Debugging
 
 **Deliverables**:
+
 - Step-by-step tutorials (markdown)
 - Screenshots/videos
 - Code examples
 - Sample projects
 
 **Subtasks**:
+
 1. Plan tutorial structure
 2. Write tutorials
 3. Create screenshots
@@ -510,6 +562,7 @@ eventHandler.process();
 5. Publish on website
 
 **Success Criteria**:
+
 - 5+ tutorials published
 - Video walkthrough available
 - Covers all common use cases
@@ -517,6 +570,7 @@ eventHandler.process();
 ---
 
 #### Task 1.12: Changelog & Migration Guides
+
 **Effort**: 2-3 days  
 **Priority**: P2  
 **Impact**: Developer communication
@@ -524,6 +578,7 @@ eventHandler.process();
 **Objective**: Document breaking changes and migrations
 
 **Content**:
+
 1. **CHANGELOG.md** (main repo)
    - Version history
    - Breaking changes
@@ -542,6 +597,7 @@ eventHandler.process();
    - Known issues
 
 **Subtasks**:
+
 1. Create changelog template
 2. Document recent changes
 3. Write migration guides
@@ -549,6 +605,7 @@ eventHandler.process();
 5. Document known issues
 
 **Success Criteria**:
+
 - Changelog up-to-date
 - Migration guides clear
 - Release process documented
@@ -558,6 +615,7 @@ eventHandler.process();
 ### Week 7-8: Design System & Code Standards
 
 #### Task 1.13: Design System Migration (Editor)
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: UI/UX quality
@@ -565,6 +623,7 @@ eventHandler.process();
 **Objective**: Modernize and standardize editor UI
 
 **Current state**:
+
 - design-system.css exists but incomplete
 - Inconsistent component styling
 - Some ugly gradients and effects
@@ -601,12 +660,14 @@ eventHandler.process();
    - Responsive breakpoints
 
 **Deliverables**:
+
 - Updated design-system.css
 - Component library documentation
 - Style guide
 - Light/dark theme support
 
 **Subtasks**:
+
 1. Audit current design
 2. Define design tokens
 3. Create component library
@@ -614,6 +675,7 @@ eventHandler.process();
 5. Document design system
 
 **Success Criteria**:
+
 - All components styled consistently
 - No ugly gradients
 - Light/dark theme working
@@ -622,6 +684,7 @@ eventHandler.process();
 ---
 
 #### Task 1.14: Code Standards & Linting
+
 **Effort**: 2-3 days  
 **Priority**: P1  
 **Impact**: Code consistency
@@ -629,6 +692,7 @@ eventHandler.process();
 **Objective**: Enforce consistent code standards
 
 **Setup**:
+
 1. **ESLint configuration**
    - Update .eslintrc
    - JavaScript/JSX rules
@@ -650,6 +714,7 @@ eventHandler.process();
    - `check` - Verify without changes
 
 **Subtasks**:
+
 1. Update ESLint config
 2. Update Prettier config
 3. Setup husky hooks
@@ -657,6 +722,7 @@ eventHandler.process();
 5. Document standards
 
 **Success Criteria**:
+
 - All code passes linting
 - Consistent formatting
 - Pre-commit checks working
@@ -664,6 +730,7 @@ eventHandler.process();
 ---
 
 #### Task 1.15: Security Audit
+
 **Effort**: 2-3 days  
 **Priority**: P1  
 **Impact**: Production readiness
@@ -671,6 +738,7 @@ eventHandler.process();
 **Objective**: Identify and fix security issues
 
 **Areas to audit**:
+
 1. **Dependencies**
    - Outdated packages
    - Known vulnerabilities
@@ -694,12 +762,14 @@ eventHandler.process();
    - Access control
 
 **Tools**:
+
 - npm audit
 - Snyk
 - Manual code review
 - OWASP guidelines
 
 **Subtasks**:
+
 1. Run dependency audit
 2. Review security-critical code
 3. Fix identified issues
@@ -707,6 +777,7 @@ eventHandler.process();
 5. Document security practices
 
 **Success Criteria**:
+
 - No known vulnerabilities
 - Security audit passed
 - Best practices followed
@@ -720,6 +791,7 @@ eventHandler.process();
 ### Week 9-10: Physics System
 
 #### Task 2.1: Physics System Design
+
 **Effort**: 2 days  
 **Priority**: P1  
 **Impact**: Foundation for physics implementation
@@ -727,6 +799,7 @@ eventHandler.process();
 **Objective**: Design physics system architecture
 
 **Design decisions**:
+
 1. **Collision shapes**
    - AABB (primary)
    - Circles (optional)
@@ -748,11 +821,13 @@ eventHandler.process();
    - Batch processing
 
 **Deliverables**:
+
 - PhysicsWorld architecture document
 - Data structure diagrams
 - Performance estimates
 
 **Subtasks**:
+
 1. Research physics libraries
 2. Design architecture
 3. Document design decisions
@@ -760,6 +835,7 @@ eventHandler.process();
 5. Get feedback
 
 **Success Criteria**:
+
 - Clear architecture
 - Performance estimates reasonable
 - Implementation plan detailed
@@ -767,6 +843,7 @@ eventHandler.process();
 ---
 
 #### Task 2.2: Implement Core Physics Classes
+
 **Effort**: 4-5 days  
 **Priority**: P1  
 **Impact**: Physics system foundation
@@ -776,6 +853,7 @@ eventHandler.process();
 **Classes to create**:
 
 1. **AABB.js** - Bounding box
+
    ```javascript
    class AABB {
      constructor(x, y, width, height) {}
@@ -786,6 +864,7 @@ eventHandler.process();
    ```
 
 2. **PhysicsBody.js** - Physics component
+
    ```javascript
    class PhysicsBody {
      constructor(entity, width, height, options) {}
@@ -795,6 +874,7 @@ eventHandler.process();
    ```
 
 3. **SpatialHash.js** - Broad phase optimization
+
    ```javascript
    class SpatialHash {
      constructor(cellSize) {}
@@ -815,6 +895,7 @@ eventHandler.process();
    ```
 
 **Subtasks**:
+
 1. Create AABB class with tests
 2. Create PhysicsBody class with tests
 3. Create SpatialHash class with tests
@@ -822,6 +903,7 @@ eventHandler.process();
 5. Integrate with engine
 
 **Success Criteria**:
+
 - All classes implemented
 - Unit tests passing
 - 80%+ coverage
@@ -829,6 +911,7 @@ eventHandler.process();
 ---
 
 #### Task 2.3: Collision Event System
+
 **Effort**: 2-3 days  
 **Priority**: P1  
 **Impact**: Physics usability
@@ -836,19 +919,22 @@ eventHandler.process();
 **Objective**: Implement collision callbacks
 
 **Callbacks needed**:
+
 ```javascript
-entity.onCollisionEnter = (other) => {}
-entity.onCollisionStay = (other) => {}
-entity.onCollisionExit = (other) => {}
+entity.onCollisionEnter = other => {};
+entity.onCollisionStay = other => {};
+entity.onCollisionExit = other => {};
 ```
 
 **Implementation**:
+
 1. Track active collisions per frame
 2. Compare with previous frame
 3. Fire appropriate callbacks
 4. Integrate with event system
 
 **Subtasks**:
+
 1. Design callback system
 2. Implement collision tracking
 3. Fire events
@@ -856,6 +942,7 @@ entity.onCollisionExit = (other) => {}
 5. Write tests
 
 **Success Criteria**:
+
 - Callbacks fire correctly
 - Events reach PixoScript
 - Test coverage complete
@@ -863,6 +950,7 @@ entity.onCollisionExit = (other) => {}
 ---
 
 #### Task 2.4: Physics + Scripting Integration
+
 **Effort**: 2 days  
 **Priority**: P1  
 **Impact**: Creator usability
@@ -870,6 +958,7 @@ entity.onCollisionExit = (other) => {}
 **Objective**: Expose physics to PixoScript
 
 **API in PixoScript**:
+
 ```lua
 -- Create physics body
 entity:addPhysicsBody(width, height, layer, mask)
@@ -884,6 +973,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ```
 
 **Subtasks**:
+
 1. Define PixoScript API
 2. Implement bindings
 3. Document API
@@ -891,6 +981,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 5. Write tests
 
 **Success Criteria**:
+
 - Physics API accessible from PixoScript
 - Examples working
 - Tests passing
@@ -898,6 +989,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ---
 
 #### Task 2.5: Tile Collision Integration
+
 **Effort**: 2-3 days  
 **Priority**: P2  
 **Impact**: Map-based collision
@@ -905,12 +997,14 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Objective**: Support collision with tile maps
 
 **Implementation**:
+
 1. Parse tile collision data from map
 2. Create AABB for each collision tile
 3. Broad phase optimization
 4. Efficient query system
 
 **Subtasks**:
+
 1. Design tile collision format
 2. Parse collision data
 3. Create broad phase optimization
@@ -918,6 +1012,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 5. Write tests
 
 **Success Criteria**:
+
 - Tile collisions working
 - Performance acceptable
 - Tests passing
@@ -927,6 +1022,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ### Week 11-12: Rendering Optimization
 
 #### Task 2.6: Instanced Rendering Implementation
+
 **Effort**: 4-5 days  
 **Priority**: P1  
 **Impact**: 10-100x performance gain for particles
@@ -934,6 +1030,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Objective**: Implement WebGL2 instanced rendering
 
 **Current state**:
+
 - Particles rendered individually
 - Each is separate draw call
 - Performance limited to ~100 particles
@@ -941,6 +1038,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Implementation**:
 
 1. **Instance buffer setup**
+
    ```javascript
    // Per-instance data
    // vec4: position.xyz + scale
@@ -963,6 +1061,7 @@ local bodies = pixos.physics_query(x, y, width, height)
    - Update instance buffer
 
 **Subtasks**:
+
 1. Write instanced shaders
 2. Create InstancedRenderer class
 3. Refactor particle system
@@ -970,6 +1069,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 5. Performance benchmarking
 
 **Success Criteria**:
+
 - Instanced rendering working
 - 1000+ particles at 60fps
 - Draw calls reduced 100x
@@ -977,6 +1077,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ---
 
 #### Task 2.7: Frustum Culling
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Performance for large scenes
@@ -984,6 +1085,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Objective**: Cull off-screen objects
 
 **Implementation**:
+
 1. **Frustum class**
    - Extract planes from projection matrix
    - AABB vs. frustum test
@@ -998,6 +1100,7 @@ local bodies = pixos.physics_query(x, y, width, height)
    - Incremental updates
 
 **Subtasks**:
+
 1. Implement frustum math
 2. Integrate with renderer
 3. Performance testing
@@ -1005,6 +1108,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 5. Document performance impact
 
 **Success Criteria**:
+
 - Frustum culling working
 - 2-3x performance improvement
 - No visual artifacts
@@ -1012,6 +1116,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ---
 
 #### Task 2.8: Level of Detail (LOD) System
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Complex scene performance
@@ -1019,6 +1124,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Objective**: Reduce quality of distant objects
 
 **Implementation**:
+
 1. **LOD levels**
    - Distance-based selection
    - Simplified geometry/textures
@@ -1035,6 +1141,7 @@ local bodies = pixos.physics_query(x, y, width, height)
    - Smooth transitions
 
 **Subtasks**:
+
 1. Design LOD system
 2. Create LOD data structures
 3. Implement selection logic
@@ -1042,6 +1149,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 5. Performance benchmarking
 
 **Success Criteria**:
+
 - LOD system working
 - Performance improvements measurable
 - Smooth transitions
@@ -1051,6 +1159,7 @@ local bodies = pixos.physics_query(x, y, width, height)
 ### Week 13-14: Scripting Enhancements
 
 #### Task 2.9: Coroutines/Async Support
+
 **Effort**: 4-5 days  
 **Priority**: P1  
 **Impact**: Game logic expressiveness
@@ -1058,12 +1167,14 @@ local bodies = pixos.physics_query(x, y, width, height)
 **Objective**: Implement Lua-style coroutines
 
 **Current limitation**:
+
 ```lua
 -- Can't express async operations cleanly
 -- Must use action queue
 ```
 
 **With coroutines**:
+
 ```lua
 function main()
   pixos.delay(1000)  -- Async delay
@@ -1079,12 +1190,14 @@ end
 ```
 
 **Implementation**:
+
 1. Async/await generator support
 2. yield keyword
 3. Event integration
 4. Timing system
 
 **Subtasks**:
+
 1. Research async patterns in Lua
 2. Implement generator/yield support
 3. Integrate with action queue
@@ -1092,6 +1205,7 @@ end
 5. Document API
 
 **Success Criteria**:
+
 - Coroutines working
 - Examples functional
 - Tests passing
@@ -1099,6 +1213,7 @@ end
 ---
 
 #### Task 2.10: Source Maps & Error Reporting
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Developer experience
@@ -1106,24 +1221,28 @@ end
 **Objective**: Improve PixoScript error messages
 
 **Current limitation**:
+
 ```
 Error: undefined variable 'x'
   at script.js:1 (compiled code)
 ```
 
 **With source maps**:
+
 ```
 Error: undefined variable 'x'
   at myGame.pxs:45 (original code)
 ```
 
 **Implementation**:
+
 1. Source map generation
 2. Stack trace mapping
 3. Error position reporting
 4. Line number accuracy
 
 **Subtasks**:
+
 1. Implement source map generation
 2. Parse and apply source maps
 3. Improve stack traces
@@ -1131,6 +1250,7 @@ Error: undefined variable 'x'
 5. Document error handling
 
 **Success Criteria**:
+
 - Source maps generated
 - Stack traces accurate
 - Errors traceable to source
@@ -1138,6 +1258,7 @@ Error: undefined variable 'x'
 ---
 
 #### Task 2.11: Debug Library
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Developer tooling
@@ -1145,6 +1266,7 @@ Error: undefined variable 'x'
 **Objective**: Implement debug API
 
 **Debug functions**:
+
 ```lua
 debug.sethook(function) -- Breakpoints, profiling
 debug.getinfo(func) -- Function metadata
@@ -1153,12 +1275,14 @@ debug.getlocal(level, n) -- Local variables
 ```
 
 **Implementation**:
+
 1. Hook system for execution
 2. Stack introspection
 3. Variable inspection
 4. Performance profiling
 
 **Subtasks**:
+
 1. Design debug API
 2. Implement hook system
 3. Implement introspection
@@ -1166,6 +1290,7 @@ debug.getlocal(level, n) -- Local variables
 5. Create debug tools (future)
 
 **Success Criteria**:
+
 - Debug API implemented
 - Stack traces complete
 - Profiling working
@@ -1173,6 +1298,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 2.12: PixoScript Editor Support
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Creator experience
@@ -1180,10 +1306,12 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Enhanced PixoScript support in editor
 
 **Current state**:
+
 - Basic Monaco integration
 - No language-specific features
 
 **Enhancements**:
+
 1. **Syntax highlighting**
    - PixoScript-specific tokens
    - Keywords, functions, types
@@ -1204,6 +1332,7 @@ debug.getlocal(level, n) -- Local variables
    - Watch variables (future)
 
 **Implementation**:
+
 1. Monaco language definition
 2. Language server (LSP) optional
 3. Autocompletion provider
@@ -1211,6 +1340,7 @@ debug.getlocal(level, n) -- Local variables
 5. Documentation provider
 
 **Subtasks**:
+
 1. Create Monaco language definition
 2. Implement autocompletion
 3. Implement diagnostics
@@ -1218,6 +1348,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document configuration
 
 **Success Criteria**:
+
 - Syntax highlighting working
 - Autocompletion functional
 - Linting active
@@ -1227,6 +1358,7 @@ debug.getlocal(level, n) -- Local variables
 ### Week 15-16: Platform & UX
 
 #### Task 2.13: Mobile Browser Support
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Market reach
@@ -1234,6 +1366,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Optimize for mobile browsers
 
 **Current issues**:
+
 - Fullscreen not working well (Safari, Android)
 - Touch input edge cases
 - Performance not optimized
@@ -1265,6 +1398,7 @@ debug.getlocal(level, n) -- Local variables
    - Readable text (no zoom)
 
 **Subtasks**:
+
 1. Test on iOS Safari (iPhone/iPad)
 2. Test on Android Chrome
 3. Fix identified issues
@@ -1272,6 +1406,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document mobile support
 
 **Success Criteria**:
+
 - Works on iOS Safari
 - Works on Android Chrome
 - 60fps on mobile hardware
@@ -1280,6 +1415,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 2.14: First-Time User Wizard
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Creator onboarding
@@ -1287,6 +1423,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Guide new users through initial setup
 
 **Wizard screens**:
+
 1. Welcome screen
 2. Project setup (name, template)
 3. First sprite creation
@@ -1296,6 +1433,7 @@ debug.getlocal(level, n) -- Local variables
 7. Next steps
 
 **Implementation**:
+
 1. Modal-based wizard
 2. Step progression
 3. Skip/back navigation
@@ -1303,6 +1441,7 @@ debug.getlocal(level, n) -- Local variables
 5. Sample templates
 
 **Subtasks**:
+
 1. Design wizard flow
 2. Create modal component
 3. Implement steps
@@ -1310,6 +1449,7 @@ debug.getlocal(level, n) -- Local variables
 5. Collect feedback
 
 **Success Criteria**:
+
 - Wizard guides new users
 - Covers essential features
 - Helps create first game
@@ -1317,6 +1457,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 2.15: Quick-Start Templates
+
 **Effort**: 3-4 days  
 **Priority**: P1  
 **Impact**: Creator productivity
@@ -1324,6 +1465,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Provide starter templates
 
 **Templates to create**:
+
 1. Empty project
 2. Top-down adventure
 3. Platformer
@@ -1331,6 +1473,7 @@ debug.getlocal(level, n) -- Local variables
 5. Multiplayer arena
 
 **For each template**:
+
 - Pre-built maps
 - Sample sprites
 - Basic scripts
@@ -1338,6 +1481,7 @@ debug.getlocal(level, n) -- Local variables
 - README
 
 **Implementation**:
+
 1. Create template projects
 2. Package as ZIP files
 3. Add to templates menu
@@ -1345,6 +1489,7 @@ debug.getlocal(level, n) -- Local variables
 5. Provide tutorials per template
 
 **Subtasks**:
+
 1. Design template projects
 2. Build each template
 3. Package templates
@@ -1352,6 +1497,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document usage
 
 **Success Criteria**:
+
 - Templates load correctly
 - Provide good starting point
 - Documentation clear
@@ -1359,6 +1505,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 2.16: Unified Map Editor
+
 **Effort**: 5-7 days  
 **Priority**: P2  
 **Impact**: Developer experience
@@ -1366,17 +1513,20 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Merge 2D and 3D map editors
 
 **Current state**:
+
 - Two separate editors
 - UI inconsistency
 - Duplicate code
 
 **Goal**:
+
 - Single unified interface
 - Toggle 2D/3D view
 - Consistent tools
 - No code duplication
 
 **Implementation**:
+
 1. Analyze both editors
 2. Extract common logic
 3. Create unified component
@@ -1384,6 +1534,7 @@ debug.getlocal(level, n) -- Local variables
 5. Migrate tools
 
 **Subtasks**:
+
 1. Compare editor UIs
 2. Design unified interface
 3. Extract common code
@@ -1391,6 +1542,7 @@ debug.getlocal(level, n) -- Local variables
 5. Test both modes
 
 **Success Criteria**:
+
 - Single editor works in both modes
 - No code duplication
 - Same feature set as before
@@ -1398,6 +1550,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 2.17: Delta Synchronization (Server)
+
 **Effort**: 5-7 days  
 **Priority**: P1  
 **Impact**: Server scalability
@@ -1405,16 +1558,19 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Reduce network traffic
 
 **Current state**:
+
 - Full state sent each update
 - High bandwidth usage
 - Network bottleneck
 
 **With delta sync**:
+
 - Only changes sent
 - 10-100x less traffic
 - Supports more players
 
 **Implementation**:
+
 1. **Diff algorithm**
    - Detect what changed
    - Pack changes efficiently
@@ -1431,6 +1587,7 @@ debug.getlocal(level, n) -- Local variables
    - Reconciliation
 
 **Subtasks**:
+
 1. Design delta format
 2. Implement diff algorithm
 3. Update server protocol
@@ -1438,6 +1595,7 @@ debug.getlocal(level, n) -- Local variables
 5. Performance testing
 
 **Success Criteria**:
+
 - Delta sync working
 - 10x less bandwidth
 - No synchronization issues
@@ -1451,6 +1609,7 @@ debug.getlocal(level, n) -- Local variables
 ### Week 17-18: Rendering Polish
 
 #### Task 3.1: Enhanced Transition System
+
 **Effort**: 3 days  
 **Priority**: P2  
 **Impact**: Visual polish
@@ -1460,6 +1619,7 @@ debug.getlocal(level, n) -- Local variables
 **Current**: Basic fade transitions
 
 **New transitions**:
+
 1. Wipe effects (left, right, up, down)
 2. Pixelate/mosaic
 3. Dissolve
@@ -1468,12 +1628,14 @@ debug.getlocal(level, n) -- Local variables
 6. Custom easing
 
 **Implementation**:
+
 1. Transition shader system
 2. DSL commands: `@wipe`, `@pixelate`, `@dissolve`
 3. Easing functions
 4. Duration configuration
 
 **Subtasks**:
+
 1. Create transition shaders
 2. Implement transition manager
 3. Add DSL commands
@@ -1481,6 +1643,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document usage
 
 **Success Criteria**:
+
 - Multiple transitions working
 - Smooth animations
 - DSL integration complete
@@ -1488,6 +1651,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.2: Screen Shake & Camera Effects
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Game feel
@@ -1495,6 +1659,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Implement camera effects
 
 **Effects**:
+
 1. Screen shake (amplitude, duration)
 2. Smooth camera follow
 3. Zoom effects
@@ -1502,7 +1667,9 @@ debug.getlocal(level, n) -- Local variables
 5. Blur effect
 
 **Implementation**:
+
 1. **CameraEffects class**
+
    ```javascript
    camera.shake(intensity, duration);
    camera.pan(from, to, duration);
@@ -1515,6 +1682,7 @@ debug.getlocal(level, n) -- Local variables
    - `@pan direction`
 
 **Subtasks**:
+
 1. Create CameraEffects class
 2. Implement effects
 3. Add DSL commands
@@ -1522,6 +1690,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document usage
 
 **Success Criteria**:
+
 - Effects working smoothly
 - DSL commands functional
 - Performance acceptable
@@ -1529,6 +1698,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.3: Post-Processing Pipeline
+
 **Effort**: 4-5 days (optional, high-impact)  
 **Priority**: P3  
 **Impact**: Visual quality
@@ -1536,6 +1706,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Add post-processing effects
 
 **Effects**:
+
 1. Bloom/glow
 2. Color grading
 3. Vignette
@@ -1543,12 +1714,14 @@ debug.getlocal(level, n) -- Local variables
 5. Depth of field (optional)
 
 **Implementation**:
+
 1. Secondary framebuffer
 2. Effect shaders
 3. Effect composition
 4. Configuration UI
 
 **Subtasks**:
+
 1. Create post-process framebuffer
 2. Implement effect shaders
 3. Create effect composition
@@ -1556,6 +1729,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document configuration
 
 **Success Criteria**:
+
 - Effects applied correctly
 - Good visual quality
 - Performance acceptable
@@ -1565,6 +1739,7 @@ debug.getlocal(level, n) -- Local variables
 ### Week 19-20: Documentation & Content
 
 #### Task 3.4: Complete Tutorial Series
+
 **Effort**: 10-15 days  
 **Priority**: P1  
 **Impact**: Creator success
@@ -1619,6 +1794,7 @@ debug.getlocal(level, n) -- Local variables
 **Format**: Written + video
 
 **Subtasks**:
+
 1. Write tutorial scripts
 2. Create project files
 3. Record videos
@@ -1626,6 +1802,7 @@ debug.getlocal(level, n) -- Local variables
 5. Publish tutorials
 
 **Success Criteria**:
+
 - 7 complete tutorials
 - Videos published
 - Projects available for download
@@ -1633,6 +1810,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.5: Website Content Completion
+
 **Effort**: 8-12 days  
 **Priority**: P1  
 **Impact**: Marketing & discovery
@@ -1680,6 +1858,7 @@ debug.getlocal(level, n) -- Local variables
    - Community spotlights
 
 **Subtasks**:
+
 1. Create content strategy
 2. Write content
 3. Create graphics/videos
@@ -1687,6 +1866,7 @@ debug.getlocal(level, n) -- Local variables
 5. Publish and promote
 
 **Success Criteria**:
+
 - All sections complete
 - Links working
 - Engaging content
@@ -1694,6 +1874,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.6: Community Channels Setup
+
 **Effort**: 3-4 days  
 **Priority**: P2  
 **Impact**: Community building
@@ -1701,6 +1882,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Establish community presence
 
 **Channels**:
+
 1. **Discord server**
    - #announcements
    - #help & support
@@ -1728,6 +1910,7 @@ debug.getlocal(level, n) -- Local variables
    - Tips & tricks
 
 **Subtasks**:
+
 1. Create Discord server
 2. Configure channels
 3. Setup GitHub discussions
@@ -1735,6 +1918,7 @@ debug.getlocal(level, n) -- Local variables
 5. Write community guidelines
 
 **Success Criteria**:
+
 - Channels active
 - Community engaged
 - Guidelines clear
@@ -1744,6 +1928,7 @@ debug.getlocal(level, n) -- Local variables
 ### Week 21-22: Performance & Release Prep
 
 #### Task 3.7: Performance Optimization & Benchmarking
+
 **Effort**: 6-8 days  
 **Priority**: P2  
 **Impact**: Production quality
@@ -1751,12 +1936,14 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Meet performance targets
 
 **Targets**:
+
 - 60fps on target hardware
 - <100ms input latency
 - <500ms load time
 - <50MB memory usage
 
 **Optimization areas**:
+
 1. **Rendering**
    - Batch calls
    - State changes
@@ -1779,6 +1966,7 @@ debug.getlocal(level, n) -- Local variables
    - Caching
 
 **Subtasks**:
+
 1. Profile application
 2. Identify bottlenecks
 3. Implement optimizations
@@ -1786,6 +1974,7 @@ debug.getlocal(level, n) -- Local variables
 5. Document findings
 
 **Success Criteria**:
+
 - Performance targets met
 - Benchmarks documented
 - No regressions
@@ -1793,6 +1982,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.8: Beta Testing Program
+
 **Effort**: 5 days (management)  
 **Priority**: P1  
 **Impact**: Quality assurance
@@ -1800,11 +1990,13 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Get external feedback
 
 **Beta participants**:
+
 - Target: 50-100 testers
 - Mix: Game devs, artists, casual users
 - Duration: 2-4 weeks
 
 **Feedback areas**:
+
 1. UX/usability
 2. Feature gaps
 3. Performance issues
@@ -1812,6 +2004,7 @@ debug.getlocal(level, n) -- Local variables
 5. Community needs
 
 **Process**:
+
 1. Recruit testers (Discord, itch.io, forums)
 2. Provide feedback form
 3. Collect issues
@@ -1819,6 +2012,7 @@ debug.getlocal(level, n) -- Local variables
 5. Iterate based on feedback
 
 **Subtasks**:
+
 1. Recruit beta testers
 2. Create feedback form
 3. Build beta distribution
@@ -1826,6 +2020,7 @@ debug.getlocal(level, n) -- Local variables
 5. Implement critical fixes
 
 **Success Criteria**:
+
 - 50+ beta testers
 - Significant feedback gathered
 - Critical issues fixed
@@ -1833,6 +2028,7 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 3.9: Release Preparation
+
 **Effort**: 3-4 days  
 **Priority**: P1  
 **Impact**: Launch readiness
@@ -1840,6 +2036,7 @@ debug.getlocal(level, n) -- Local variables
 **Objective**: Prepare for v1.0 release
 
 **Checklist**:
+
 1. **Version bumps**
    - Update all package.json files
    - Update documentation
@@ -1869,6 +2066,7 @@ debug.getlocal(level, n) -- Local variables
    - FAQ prepared
 
 **Subtasks**:
+
 1. Finalize release notes
 2. Create version tags
 3. Publish NPM packages
@@ -1876,6 +2074,7 @@ debug.getlocal(level, n) -- Local variables
 5. Announce release
 
 **Success Criteria**:
+
 - v1.0 released
 - All packages published
 - Documentation live
@@ -1890,10 +2089,12 @@ debug.getlocal(level, n) -- Local variables
 ### Ongoing Tasks
 
 #### Task 4.1: Bug Fixes & Maintenance
+
 **Effort**: Ongoing (20% time)  
 **Priority**: P0
 
 **Activities**:
+
 - Triaging reported bugs
 - Fixing critical issues
 - Security updates
@@ -1902,10 +2103,12 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 4.2: Community Support
+
 **Effort**: Ongoing (10% time)  
 **Priority**: P0
 
 **Activities**:
+
 - Answering Discord questions
 - Helping game creators
 - Collecting feedback
@@ -1914,10 +2117,12 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 4.3: Feature Development (Roadmap)
+
 **Effort**: Ongoing (70% time)  
 **Priority**: P1
 
 **Planned features**:
+
 1. **Desktop app** (Electron) - 2-3 weeks
 2. **Mobile app** (React Native) - 8-12 weeks
 3. **C engine** (OpenGL) - 12-16 weeks
@@ -1927,10 +2132,12 @@ debug.getlocal(level, n) -- Local variables
 ---
 
 #### Task 4.4: Documentation Updates
+
 **Effort**: Ongoing (5% time)  
 **Priority**: P1
 
 **Activities**:
+
 - Update tutorials
 - API documentation maintenance
 - Community-contributed guides
@@ -1942,6 +2149,7 @@ debug.getlocal(level, n) -- Local variables
 ## Success Criteria Summary
 
 ### Phase 1 Completion (Week 8)
+
 - ✅ All deprecated code removed/refactored
 - ✅ 50%+ test coverage
 - ✅ API documentation published
@@ -1949,6 +2157,7 @@ debug.getlocal(level, n) -- Local variables
 - ✅ Design system modernized
 
 ### Phase 2 Completion (Week 16)
+
 - ✅ Physics system implemented
 - ✅ Instanced rendering working
 - ✅ Mobile support improved
@@ -1956,6 +2165,7 @@ debug.getlocal(level, n) -- Local variables
 - ✅ 65%+ test coverage
 
 ### Phase 3 Completion (Week 22)
+
 - ✅ Performance optimized
 - ✅ Visual polish complete
 - ✅ Documentation comprehensive
@@ -1963,6 +2173,7 @@ debug.getlocal(level, n) -- Local variables
 - ✅ Beta tested and approved
 
 ### v1.0 Release (Week 26-34)
+
 - ✅ Production-ready
 - ✅ All platforms supported
 - ✅ Community ready
@@ -1979,4 +2190,4 @@ debug.getlocal(level, n) -- Local variables
 
 ---
 
-*This document is a living roadmap. Update quarterly or as plans change.*
+_This document is a living roadmap. Update quarterly or as plans change._

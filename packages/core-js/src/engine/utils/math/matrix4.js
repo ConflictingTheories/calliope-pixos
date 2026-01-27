@@ -34,7 +34,7 @@ const EPSILON = 0.000001;
  * @param {number[]} mat - Array of 16 numbers representing the matrix.
  * @returns {Matrix4} The resulting 4x4 matrix.
  */
-const from = (mat) => {
+const from = mat => {
   let dest = new Float32Array(16);
   dest[0] = mat[0];
   dest[1] = mat[1];
@@ -296,38 +296,38 @@ function set(mat, dest) {
  * @returns {Matrix3} The resulting normal matrix.
  */
 function normalFromMat4(out, a) {
-  var a00 = a[0],
+  let a00 = a[0],
     a01 = a[1],
     a02 = a[2],
     a03 = a[3];
-  var a10 = a[4],
+  let a10 = a[4],
     a11 = a[5],
     a12 = a[6],
     a13 = a[7];
-  var a20 = a[8],
+  let a20 = a[8],
     a21 = a[9],
     a22 = a[10],
     a23 = a[11];
-  var a30 = a[12],
+  let a30 = a[12],
     a31 = a[13],
     a32 = a[14],
     a33 = a[15];
 
-  var b00 = a00 * a11 - a01 * a10;
-  var b01 = a00 * a12 - a02 * a10;
-  var b02 = a00 * a13 - a03 * a10;
-  var b03 = a01 * a12 - a02 * a11;
-  var b04 = a01 * a13 - a03 * a11;
-  var b05 = a02 * a13 - a03 * a12;
-  var b06 = a20 * a31 - a21 * a30;
-  var b07 = a20 * a32 - a22 * a30;
-  var b08 = a20 * a33 - a23 * a30;
-  var b09 = a21 * a32 - a22 * a31;
-  var b10 = a21 * a33 - a23 * a31;
-  var b11 = a22 * a33 - a23 * a32;
+  let b00 = a00 * a11 - a01 * a10;
+  let b01 = a00 * a12 - a02 * a10;
+  let b02 = a00 * a13 - a03 * a10;
+  let b03 = a01 * a12 - a02 * a11;
+  let b04 = a01 * a13 - a03 * a11;
+  let b05 = a02 * a13 - a03 * a12;
+  let b06 = a20 * a31 - a21 * a30;
+  let b07 = a20 * a32 - a22 * a30;
+  let b08 = a20 * a33 - a23 * a30;
+  let b09 = a21 * a32 - a22 * a31;
+  let b10 = a21 * a33 - a23 * a31;
+  let b11 = a22 * a33 - a23 * a32;
 
   // Calculate the determinant
-  var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+  let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
   if (!det) {
     return null;
@@ -354,7 +354,7 @@ function normalFromMat4(out, a) {
  * @param {Vector3} v - The vector to normalize.
  * @returns {Vector3} The normalized vector.
  */
-const normalize = (v) => {
+const normalize = v => {
   let len = Math.hypot(...v);
   // Guard against zero-length vectors which would produce NaN components.
   if (!len || Math.abs(len) < EPSILON) {
@@ -364,4 +364,17 @@ const normalize = (v) => {
   return [v[0] / len, v[1] / len, v[2] / len];
 };
 
-export { from, normalize, subtractVectors, normalFromMat4, create, create3, perspective, frustum, translate, rotate, isPowerOf2, set };
+export {
+  from,
+  normalize,
+  subtractVectors,
+  normalFromMat4,
+  create,
+  create3,
+  perspective,
+  frustum,
+  translate,
+  rotate,
+  isPowerOf2,
+  set,
+};

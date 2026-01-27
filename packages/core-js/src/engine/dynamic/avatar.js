@@ -43,8 +43,10 @@ export default class DynamicAvatar extends Avatar {
     // extended properties
     if (this.json.extends) {
       await Promise.all(
-        this.json.extends.map(async (file) => {
-          let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
+        this.json.extends.map(async file => {
+          let stringD = JSON.parse(
+            await this.zip.file('sprites/' + file + '.json').async('string')
+          );
           Object.assign(this.json, stringD);
         })
       );
@@ -63,13 +65,13 @@ export default class DynamicAvatar extends Avatar {
     // Offsets
     this.hotspotOffset = new Vector(...this.json.hotspotOffset);
     this.drawOffset = {};
-    Object.keys(this.json.drawOffset).forEach((offset) => {
+    Object.keys(this.json.drawOffset).forEach(offset => {
       this.drawOffset[offset] = new Vector(...this.json.drawOffset[offset]);
     });
     // Should the camera follow the avatar?
     this.bindCamera = this.json.bindCamera;
     this.enableSpeech = this.json.enableSpeech; // speech bubble
-  }
+  };
 
   /**
    * Handles selection interaction, with Lua scripting support.
@@ -106,5 +108,5 @@ export default class DynamicAvatar extends Avatar {
     } catch (e) {
       debug('DynamicAvatar', 'no lua script found', e.message);
     }
-  }
+  };
 }

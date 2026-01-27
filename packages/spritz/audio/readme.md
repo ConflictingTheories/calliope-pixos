@@ -4,24 +4,24 @@ This directory contains all audio files used in the game, including background m
 
 ## Background Music
 
-| File | Description | Usage |
-|------|-------------|-------|
-| `brass-loop.mp3` | Triumphant brass fanfare | Fire Chamber |
-| `calm-escape.mp3` | Peaceful ambient music | Safe zones |
-| `dawns-peak.mp3` | Hopeful morning theme | Victory scenes |
-| `deep-unknown-beat.mp3` | Ominous dark rhythm | Boss Arena |
-| `dial-in.mp3` | Electronic tension | Tech areas |
-| `distorted-communication.mp3` | Glitchy ambiance | Corrupted zones |
-| `dungeon-beat.mp3` | Dungeon exploration | Dungeon Entrance |
-| `fields.mp3` | Open countryside | Village Hub |
-| `icy-passage.mp3` | Cold, airy atmosphere | Air Chamber |
-| `jungle-rhythm.mp3` | Tribal earth beats | Earth Chamber |
-| `lonely-mountain.mp3` | Solitary, epic | Mountain areas |
-| `menu.mp3` | Main menu music | Title screen |
-| `ocean-waves.mp3` | Flowing water sounds | Water Chamber |
-| `opening.mp3` | Epic introduction | Game intro cutscene |
-| `organ.mp3` | Gothic organ music | Dark temples |
-| `sewer-beat.mp3` | Industrial underground | Sewer areas |
+| File                          | Description              | Usage               |
+| ----------------------------- | ------------------------ | ------------------- |
+| `brass-loop.mp3`              | Triumphant brass fanfare | Fire Chamber        |
+| `calm-escape.mp3`             | Peaceful ambient music   | Safe zones          |
+| `dawns-peak.mp3`              | Hopeful morning theme    | Victory scenes      |
+| `deep-unknown-beat.mp3`       | Ominous dark rhythm      | Boss Arena          |
+| `dial-in.mp3`                 | Electronic tension       | Tech areas          |
+| `distorted-communication.mp3` | Glitchy ambiance         | Corrupted zones     |
+| `dungeon-beat.mp3`            | Dungeon exploration      | Dungeon Entrance    |
+| `fields.mp3`                  | Open countryside         | Village Hub         |
+| `icy-passage.mp3`             | Cold, airy atmosphere    | Air Chamber         |
+| `jungle-rhythm.mp3`           | Tribal earth beats       | Earth Chamber       |
+| `lonely-mountain.mp3`         | Solitary, epic           | Mountain areas      |
+| `menu.mp3`                    | Main menu music          | Title screen        |
+| `ocean-waves.mp3`             | Flowing water sounds     | Water Chamber       |
+| `opening.mp3`                 | Epic introduction        | Game intro cutscene |
+| `organ.mp3`                   | Gothic organ music       | Dark temples        |
+| `sewer-beat.mp3`              | Industrial underground   | Sewer areas         |
 
 ## Audio Format
 
@@ -33,6 +33,7 @@ This directory contains all audio files used in the game, including background m
 ## Usage in Maps
 
 Audio is assigned in map.json:
+
 ```json
 {
   "audioSrc": "fields.mp3"
@@ -42,6 +43,7 @@ Audio is assigned in map.json:
 ## Usage in Cutscenes
 
 Cutscenes can play audio:
+
 ```
 @do music("opening.mp3")
 @do sound("door_open.mp3")
@@ -50,6 +52,7 @@ Cutscenes can play audio:
 ## Engine Audio Features
 
 The PixoSpritz audio engine supports:
+
 - **BPM Analysis**: Automatic beat detection for rhythm-based effects
 - **Crossfade**: Smooth transitions between tracks
 - **Spatial Audio**: 3D positioned sound sources
@@ -67,6 +70,7 @@ The PixoSpritz audio engine supports:
 ## Sound Effect Triggers
 
 Sound effects can be triggered via scripts:
+
 ```lua
 -- In .pxs trigger scripts
 play_sound("door_open.mp3")

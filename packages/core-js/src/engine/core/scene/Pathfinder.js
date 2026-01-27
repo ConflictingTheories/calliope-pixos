@@ -43,11 +43,7 @@ export default class Pathfinder {
    * @returns {Array<Array<number>>|null} Path as array of [x, y, z] coordinates, or null if no path found.
    */
   findPath(startX, startY, endX, endY, options = {}) {
-    const {
-      allowDiagonal = true,
-      smoothPath = true,
-      maxIterations = this.maxIterations,
-    } = options;
+    const { allowDiagonal = true, smoothPath = true, maxIterations = this.maxIterations } = options;
 
     // Convert world coordinates to grid coordinates
     const startGrid = this.worldToGrid(startX, startY);
@@ -109,7 +105,8 @@ export default class Pathfinder {
 
         if (!this.isWalkable(neighbor[0], neighbor[1])) continue;
 
-        const tentativeG = (gScore.get(currentKey) || Infinity) + this.getCost(current, neighbor, allowDiagonal);
+        const tentativeG =
+          (gScore.get(currentKey) || Infinity) + this.getCost(current, neighbor, allowDiagonal);
 
         if (!gScore.has(neighborKey) || tentativeG < gScore.get(neighborKey)) {
           cameFrom.set(neighborKey, currentKey);
@@ -194,7 +191,7 @@ export default class Pathfinder {
         [x + 1, y - 1], // Northeast
         [x + 1, y + 1], // Southeast
         [x - 1, y + 1], // Southwest
-        [x - 1, y - 1]  // Northwest
+        [x - 1, y - 1] // Northwest
       );
     }
 

@@ -56,7 +56,7 @@ export default class SelectionTool extends BaseTool {
 
   getPreview(x, y, options) {
     const previewPixels = [];
-    
+
     if (this.startPoint) {
       const minX = Math.min(this.startPoint.x, x);
       const maxX = Math.max(this.startPoint.x, x);
@@ -144,7 +144,8 @@ export default class SelectionTool extends BaseTool {
 
         if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
           const color = this.clipboard.pixels[py * this.clipboard.width + px];
-          if (color.a > 0) { // Only paste non-transparent pixels
+          if (color.a > 0) {
+            // Only paste non-transparent pixels
             changes.push({ x, y, ...color });
           }
         }

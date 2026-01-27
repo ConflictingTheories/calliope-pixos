@@ -14,7 +14,8 @@ function getFoldersFeatures({
   setClickedButtonName,
   modifierKeyPressed,
 }) {
-  const { LEFT_KEY, RIGHT_KEY, BACK_KEY, FORWARD_KEY, BACK_BUTTON_NAME, FORWARD_BUTTON_NAME } = constants;
+  const { LEFT_KEY, RIGHT_KEY, BACK_KEY, FORWARD_KEY, BACK_BUTTON_NAME, FORWARD_BUTTON_NAME } =
+    constants;
 
   function goIntoFolder(entry) {
     const path = [...history.path];
@@ -56,7 +57,7 @@ function getFoldersFeatures({
     if (selectedFolder.children.includes(entry) || entry.children.includes(selectedFolder)) {
       setHighlightedIds([selectedFolder.id]);
     } else {
-      const highlightedEntry = entry.children.find((child) => selectedFolder.isDescendantOf(child));
+      const highlightedEntry = entry.children.find(child => selectedFolder.isDescendantOf(child));
       setHighlightedIds(highlightedEntry ? [highlightedEntry.id] : [entry.parent.id]);
     }
   }
@@ -68,7 +69,7 @@ function getFoldersFeatures({
       const entryRemoved =
         previousEntry === entry ||
         highlightedEntries.includes(entry) ||
-        highlightedEntries.find((highlightedEntry) => entry.isDescendantOf(highlightedEntry));
+        highlightedEntries.find(highlightedEntry => entry.isDescendantOf(highlightedEntry));
       if (entryRemoved) {
         if (indexEntry <= history.index) {
           offsetIndex++;
@@ -100,7 +101,7 @@ function getFoldersFeatures({
 
   function filterChildren(children, isDirectory) {
     return children
-      .filter((child) => Boolean(child.directory) === isDirectory)
+      .filter(child => Boolean(child.directory) === isDirectory)
       .sort((previousChild, nextChild) => previousChild.name.localeCompare(nextChild.name));
   }
 

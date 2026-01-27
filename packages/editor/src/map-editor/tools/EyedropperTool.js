@@ -40,15 +40,15 @@ export default class EyedropperTool extends BaseTool {
   _pick(x, y, mapData, options) {
     const { layer = 0 } = options;
     const cells = mapData.cells || mapData.layers?.[layer];
-    
+
     if (!cells) return null;
-    
+
     const tile = cells[y]?.[x];
-    
+
     if (tile !== undefined && this.onTilePicked) {
       this.onTilePicked(tile);
     }
-    
+
     // Return the picked tile info for the editor to handle
     return { pickedTile: tile };
   }

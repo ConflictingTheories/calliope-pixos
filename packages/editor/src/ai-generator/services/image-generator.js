@@ -42,9 +42,10 @@ function buildStrictSpritesheetPrompt(description, config) {
   const { tileSize, directions, framesPerDirection, style } = config;
   const [tileWidth, tileHeight] = tileSize;
 
-  const directionDesc = directions === 8
-    ? '8 rows for directions: South, Southeast, East, Northeast, North, Northwest, West, Southwest'
-    : '4 rows for directions: South, East, North, West';
+  const directionDesc =
+    directions === 8
+      ? '8 rows for directions: South, Southeast, East, Northeast, North, Northwest, West, Southwest'
+      : '4 rows for directions: South, East, North, West';
 
   return `${style || 'Pixel art'} game character spritesheet, ${description}.
 
@@ -61,9 +62,11 @@ EXACT LAYOUT REQUIREMENTS:
 - Top-down 3/4 perspective (classic RPG style)
 
 ROW ORDER (top to bottom):
-${directions === 8 ?
-      '1. South (facing down/toward camera)\n2. Southeast\n3. East (facing right)\n4. Northeast\n5. North (facing away)\n6. Northwest\n7. West (facing left)\n8. Southwest' :
-      '1. South (facing down)\n2. East (facing right)\n3. North (facing away)\n4. West (facing left)'}
+${
+  directions === 8
+    ? '1. South (facing down/toward camera)\n2. Southeast\n3. East (facing right)\n4. Northeast\n5. North (facing away)\n6. Northwest\n7. West (facing left)\n8. Southwest'
+    : '1. South (facing down)\n2. East (facing right)\n3. North (facing away)\n4. West (facing left)'
+}
 
 Each row shows the same walk cycle animation from that viewing angle.`;
 }
@@ -122,7 +125,8 @@ export async function generateSpritesheet(description, config) {
   const layout = SPRITESHEET_LAYOUTS[layoutName] || {
     sheetSize: config.sheetSize,
     tileSize: config.tileSize,
-    directions: config.directions === 8 ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW'] : ['S', 'E', 'N', 'W'],
+    directions:
+      config.directions === 8 ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW'] : ['S', 'E', 'N', 'W'],
     framesPerDirection: config.framesPerDirection,
   };
 
@@ -141,14 +145,14 @@ export async function generateSpritesheet(description, config) {
  */
 export async function generateSpriteFrame(description, direction, action, options = {}) {
   const directionNames = {
-    'N': 'from behind, back view, walking away',
-    'NE': 'from behind-right angle, walking away and right',
-    'E': 'from the right side, profile view, walking right',
-    'SE': 'front-right 3/4 view, walking toward and right',
-    'S': 'from the front, facing the viewer, walking toward',
-    'SW': 'front-left 3/4 view, walking toward and left',
-    'W': 'from the left side, profile view, walking left',
-    'NW': 'from behind-left angle, walking away and left',
+    N: 'from behind, back view, walking away',
+    NE: 'from behind-right angle, walking away and right',
+    E: 'from the right side, profile view, walking right',
+    SE: 'front-right 3/4 view, walking toward and right',
+    S: 'from the front, facing the viewer, walking toward',
+    SW: 'front-left 3/4 view, walking toward and left',
+    W: 'from the left side, profile view, walking left',
+    NW: 'from behind-left angle, walking away and left',
   };
 
   const directionDesc = directionNames[direction] || 'facing forward';

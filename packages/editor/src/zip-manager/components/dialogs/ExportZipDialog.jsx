@@ -36,7 +36,10 @@ function ExportZipDialog({ data, hiddenPassword, onExportZip, onClose, messages 
     if (!filenameTextSelected.current && filename && filenameInputRef && filenameInputRef.current) {
       filenameTextSelected.current = true;
       let selectionEnd = filename.lastIndexOf('.');
-      filenameInputRef.current.setSelectionRange(0, selectionEnd === -1 ? filename.length : selectionEnd);
+      filenameInputRef.current.setSelectionRange(
+        0,
+        selectionEnd === -1 ? filename.length : selectionEnd
+      );
     }
   }, [filename]);
   return (
@@ -51,12 +54,26 @@ function ExportZipDialog({ data, hiddenPassword, onExportZip, onClose, messages 
     >
       <label style={{ display: filenameHidden ? 'none' : null }}>
         {messages.EXPORT_ZIP_FILENAME_LABEL}
-        {!filenameHidden && <input spellCheck="false" type="text" value={filename} required onChange={handleChangeFilename} ref={filenameInputRef} />}
+        {!filenameHidden && (
+          <input
+            spellCheck="false"
+            type="text"
+            value={filename}
+            required
+            onChange={handleChangeFilename}
+            ref={filenameInputRef}
+          />
+        )}
       </label>
       {hiddenPassword || (
         <label>
           {messages.EXPORT_ZIP_PASSWORD_LABEL}
-          <input type="password" autoComplete="off" value={password} onChange={handleChangePassword} />
+          <input
+            type="password"
+            autoComplete="off"
+            value={password}
+            onChange={handleChangePassword}
+          />
         </label>
       )}
     </Dialog>

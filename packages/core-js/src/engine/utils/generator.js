@@ -52,7 +52,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // load Sprites
     await Promise.all(
       tome.sprites
-        .filter((x) => {
+        .filter(x => {
           // Determine whether to load sprite or not
           // base on the tome settings and cyoa
 
@@ -64,7 +64,7 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // Load Objects
     await Promise.all(
       tome.objects
-        .filter((x) => {
+        .filter(x => {
           // Determine whether to load object or not
           // base on the tome settings and cyoa
 
@@ -76,13 +76,13 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // Load NPCs for the zone
     await Promise.all(
       tome.npcs
-        .filter((x) => {
+        .filter(x => {
           // Determine whether to load NPC and decide what
           // dialogue is base on the tome settings and cyoa
 
           return x.id == tome.selected;
         })
-        .map(async (trigger) => {
+        .map(async trigger => {
           // run trigger
         })
     );
@@ -90,13 +90,13 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // Apply any Triggers & Setup New Spritz if needed
     await Promise.all(
       tome.triggers
-        .filter((x) => {
+        .filter(x => {
           // Determine whether to load trigger
           // base on the tome settings and cyoa
 
           return x.id == tome.selected;
         })
-        .map(async (trigger) => {
+        .map(async trigger => {
           // run trigger
         })
     );
@@ -104,10 +104,10 @@ export async function generateZone(self, gender, storeName, cyoa) {
     // Finally - Play appropriate spritz
     await Promise.all(
       tome.spritz
-        .filter((x) => {
+        .filter(x => {
           return x.id == tome.selected;
         })
-        .map(async (spritz) => {
+        .map(async spritz => {
           await self.playCutScene(spritz.id, tome.spritz);
         })
     );
@@ -125,7 +125,9 @@ export async function generateZone(self, gender, storeName, cyoa) {
             args: [
               [
                 'Welcome traveler... I see you are exploring. Good. Please continue to look',
-                'You have travelled into the number ' + (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) + ' room',
+                'You have travelled into the number ' +
+                  (store.pixos && store.pixos[storeName] ? store.pixos[storeName].selected : -2) +
+                  ' room',
               ],
               false,
               { autoclose: true },
@@ -143,13 +145,18 @@ export async function generateZone(self, gender, storeName, cyoa) {
 export async function loadAvatar(zone, storeName) {
   // randomly pick gender & store
   let gender =
-    typeof store.pixos[storeName]?.gender !== 'undefined' ? store.pixos[storeName].gender : ['male', 'female'][Math.floor((2 * Math.random()) % 2)];
+    typeof store.pixos[storeName]?.gender !== 'undefined'
+      ? store.pixos[storeName].gender
+      : ['male', 'female'][Math.floor((2 * Math.random()) % 2)];
   // Load avatar (Male or Female)
   await zone.loadSprite.bind(self)({
     id: 'avatar',
     type: 'characters/' + gender,
     gender: gender,
-    pos: typeof store.pixos[storeName]?.position !== 'undefined' ? store.pixos[storeName].position : new Vector(...[8, 8, zone.getHeight(8, 8)]),
+    pos:
+      typeof store.pixos[storeName]?.position !== 'undefined'
+        ? store.pixos[storeName].position
+        : new Vector(...[8, 8, zone.getHeight(8, 8)]),
     facing: Direction.Down,
   });
   return gender;

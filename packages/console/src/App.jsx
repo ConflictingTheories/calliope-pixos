@@ -13,12 +13,18 @@ function App() {
   const manifestParam = urlParams.get('manifest');
 
   // Only auto-load if explicitly requested via manifest or network params
-  const manifest = manifestParam || (networkParam === 'true' ? 'manifest.network.json' : (networkParam === 'local' ? 'manifest.local.json' : null));
+  const manifest =
+    manifestParam ||
+    (networkParam === 'true'
+      ? 'manifest.network.json'
+      : networkParam === 'local'
+        ? 'manifest.local.json'
+        : null);
 
   useEffect(() => {
     // Simulate loading progress
     const interval = setInterval(() => {
-      setProgress((prev) => {
+      setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           // Mount PixosClient 100ms before loading finishes
@@ -67,7 +73,9 @@ function App() {
 
         <div className="screen-container">
           <ErrorBoundary>
-            {(preMountClient || !loading) && <PixosClient manifest={manifest ? `/spritz/${manifest}` : null} loading={loading} />}
+            {(preMountClient || !loading) && (
+              <PixosClient manifest={manifest ? `/spritz/${manifest}` : null} loading={loading} />
+            )}
           </ErrorBoundary>
         </div>
       </div>

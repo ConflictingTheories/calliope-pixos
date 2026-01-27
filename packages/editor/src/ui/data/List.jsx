@@ -4,22 +4,24 @@
 import React from 'react';
 import './List.css';
 
-export function List({ 
+export function List({
   children,
   bordered = false,
   hover = false,
   size = 'md',
   className = '',
   style,
-  ...props 
+  ...props
 }) {
   const classes = [
     'px-list',
     bordered && 'px-list-bordered',
     hover && 'px-list-hover',
     `px-list-${size}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <ul className={classes} style={style} {...props}>
@@ -28,12 +30,7 @@ export function List({
   );
 }
 
-List.Item = function ListItem({ 
-  children, 
-  index,
-  className = '',
-  ...props 
-}) {
+List.Item = function ListItem({ children, index, className = '', ...props }) {
   return (
     <li className={`px-list-item ${className}`} {...props}>
       {children}

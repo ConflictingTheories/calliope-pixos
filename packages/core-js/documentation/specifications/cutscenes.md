@@ -3,26 +3,31 @@
 ## Basic Syntax
 
 ### Comments
+
 ```
 # This is a comment
 ```
 
 ### Character Definition
+
 ```
 @char NAME sprite=path/to/sprite
 ```
 
 ### Backdrop
+
 ```
 @backdrop path/to/image [fadeIn=duration]
 ```
 
 ### Dialogue
+
 ```
 SPEAKER: [expression=emotion,position=location] Text
 ```
 
 ### Multi-line Dialogue
+
 ```
 SPEAKER: [expression=emotion,position=location]
 """
@@ -32,48 +37,57 @@ lines
 ```
 
 ### Cutin (Dramatic Moment)
+
 ```
 *SPEAKER: [cutin=size=large,expression=emotion] Text
 ```
 
 ### Sound Effect
+
 ```
 @do playSfx [name=audio/file.mp3]
 ```
 
 ### Action
+
 ```
 @action ACTOR verb [param=value,duration=ms]
 ```
 
 ### Transitions
+
 ```
 @transition fadeOutBackdrop [duration=ms]
 @transition wipe [duration=ms]
 ```
 
 ### Wait
+
 ```
 wait 1000
 waitInput
 ```
 
 ### End
+
 ```
 @end
 ```
 
 ## Expressions
+
 - `smile` 😊 | `sad` 😢 | `annoyed` 😠 | `shocked` 😨
 - `neutral` 😐 | `smirk` 😏 | `worried` 😰 | `tired` 😴
 
 ## Positions
+
 - `left` | `right` | `center`
 - `top-left` | `top-right` | `top-center`
 
 ## Asset Paths
 
 ### Characters
+
 ```
 @char HERO sprite=characters/male
 @char WITCH sprite=characters/female
@@ -81,12 +95,14 @@ waitInput
 ```
 
 ### Direct Portraits
+
 ```
 @char FIRE sprite=fire_portrait
 @char WATER sprite=water_portrait
 ```
 
 ### Backdrops
+
 ```
 @backdrop textures/room.gif [fadeIn=800]
 @backdrop textures/sewer.gif [fadeIn=600]
@@ -94,6 +110,7 @@ waitInput
 ```
 
 ### Audio
+
 ```
 @do playSfx [name=audio/opening.mp3]
 @do playSfx [name=audio/brass-loop.mp3]
@@ -103,6 +120,7 @@ waitInput
 ## Common Patterns
 
 ### Scene Start
+
 ```
 @backdrop textures/room.gif [fadeIn=800]
 @char HERO sprite=characters/male
@@ -111,12 +129,14 @@ wait 1000
 ```
 
 ### Dialogue Exchange
+
 ```
 HERO: [expression=smile,position=left] Hello!
 WITCH: [expression=neutral,position=right] Greetings.
 ```
 
 ### Dramatic Moment
+
 ```
 @do playSfx [name=audio/organ.mp3]
 *HERO: [cutin=size=large,expression=shocked]
@@ -127,6 +147,7 @@ wait 1200
 ```
 
 ### Scene Transition
+
 ```
 @transition fadeOutBackdrop [duration=600]
 wait 800
@@ -134,6 +155,7 @@ wait 800
 ```
 
 ### Action Sequence
+
 ```
 @do playSfx [name=audio/dungeon-beat.mp3]
 @action HERO moveTo [x=40,duration=600]
@@ -141,6 +163,7 @@ wait 800
 ```
 
 ### User Pause
+
 ```
 waitInput
 ```
@@ -148,6 +171,7 @@ waitInput
 ## Available Assets
 
 ### Audio Files (16 total)
+
 - `brass-loop.mp3` - Heroic
 - `calm-escape.mp3` - Peaceful
 - `dawns-peak.mp3` - Victory
@@ -166,6 +190,7 @@ waitInput
 - `sewer-beat.mp3` - Underground
 
 ### Character Portraits
+
 - `hero_portrait.gif`
 - `witch_portrait.gif`
 - `air_portrait.gif`
@@ -179,6 +204,7 @@ waitInput
 - `potion_portrait.gif`
 
 ### Backdrops
+
 - `room.gif` / `room.png`
 - `sewer.gif` / `sewer.png`
 - `sewer-lava.gif`
@@ -197,6 +223,7 @@ waitInput
 ## Examples
 
 See `/example/spritz/cutscenes/`:
+
 - **epic-quest.pxc** - Full showcase
 - **elemental-gathering.pxc** - Multi-character
 

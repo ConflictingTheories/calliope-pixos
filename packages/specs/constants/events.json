@@ -3,7 +3,7 @@
   "$id": "https://pixospritz.dev/schemas/events.json",
   "title": "Event Type Constants",
   "description": "Shared event type identifiers for both engines",
-  
+
   "categories": {
     "engine": "Core engine lifecycle events",
     "input": "User input events",
@@ -15,7 +15,7 @@
     "save": "State persistence events",
     "script": "Scripting system events"
   },
-  
+
   "events": {
     "engine": {
       "ENGINE_INIT": { "description": "Engine initialization complete" },
@@ -28,7 +28,7 @@
       "ENGINE_ERROR": { "description": "Engine error occurred" },
       "ENGINE_RESIZE": { "description": "Canvas resized" }
     },
-    
+
     "input": {
       "KEY_DOWN": { "description": "Key pressed", "data": ["key", "code", "repeat"] },
       "KEY_UP": { "description": "Key released", "data": ["key", "code"] },
@@ -41,33 +41,48 @@
       "TOUCH_END": { "description": "Touch ended", "data": ["touches"] },
       "GAMEPAD_CONNECT": { "description": "Gamepad connected", "data": ["index", "id"] },
       "GAMEPAD_DISCONNECT": { "description": "Gamepad disconnected", "data": ["index"] },
-      "GAMEPAD_BUTTON": { "description": "Gamepad button state changed", "data": ["index", "button", "pressed"] },
+      "GAMEPAD_BUTTON": {
+        "description": "Gamepad button state changed",
+        "data": ["index", "button", "pressed"]
+      },
       "GAMEPAD_AXIS": { "description": "Gamepad axis moved", "data": ["index", "axis", "value"] }
     },
-    
+
     "scene": {
       "ZONE_LOAD": { "description": "Zone loading started", "data": ["zoneId"] },
       "ZONE_READY": { "description": "Zone finished loading", "data": ["zoneId"] },
       "ZONE_ENTER": { "description": "Player entered zone", "data": ["zoneId", "fromZone"] },
       "ZONE_EXIT": { "description": "Player exiting zone", "data": ["zoneId", "toZone"] },
-      "ZONE_CHANGE": { "description": "Zone transition complete", "data": ["zoneId", "previousZone"] },
+      "ZONE_CHANGE": {
+        "description": "Zone transition complete",
+        "data": ["zoneId", "previousZone"]
+      },
       "WORLD_LOAD": { "description": "World loading started" },
       "WORLD_READY": { "description": "World finished loading" }
     },
-    
+
     "entity": {
       "ENTITY_SPAWN": { "description": "Entity created", "data": ["entityId", "type"] },
       "ENTITY_DESTROY": { "description": "Entity removed", "data": ["entityId"] },
       "ENTITY_MOVE": { "description": "Entity position changed", "data": ["entityId", "position"] },
       "ENTITY_COLLIDE": { "description": "Entity collision", "data": ["entityA", "entityB"] },
       "ENTITY_INTERACT": { "description": "Player interacted with entity", "data": ["entityId"] },
-      "SPRITE_ANIMATE": { "description": "Sprite animation changed", "data": ["spriteId", "animation"] },
+      "SPRITE_ANIMATE": {
+        "description": "Sprite animation changed",
+        "data": ["spriteId", "animation"]
+      },
       "AVATAR_SPAWN": { "description": "Avatar (player) spawned", "data": ["avatarId"] },
       "NPC_SPAWN": { "description": "NPC spawned", "data": ["npcId", "type"] },
-      "TRIGGER_ENTER": { "description": "Entity entered trigger zone", "data": ["triggerId", "entityId"] },
-      "TRIGGER_EXIT": { "description": "Entity exited trigger zone", "data": ["triggerId", "entityId"] }
+      "TRIGGER_ENTER": {
+        "description": "Entity entered trigger zone",
+        "data": ["triggerId", "entityId"]
+      },
+      "TRIGGER_EXIT": {
+        "description": "Entity exited trigger zone",
+        "data": ["triggerId", "entityId"]
+      }
     },
-    
+
     "audio": {
       "AUDIO_PLAY": { "description": "Audio started playing", "data": ["trackId", "type"] },
       "AUDIO_STOP": { "description": "Audio stopped", "data": ["trackId"] },
@@ -77,7 +92,7 @@
       "MUSIC_CHANGE": { "description": "Background music changed", "data": ["trackId"] },
       "BPM_DETECTED": { "description": "BPM analysis complete", "data": ["bpm"] }
     },
-    
+
     "network": {
       "NET_CONNECT": { "description": "Connected to server" },
       "NET_DISCONNECT": { "description": "Disconnected from server" },
@@ -85,10 +100,13 @@
       "NET_ERROR": { "description": "Network error", "data": ["error"] },
       "PLAYER_JOIN": { "description": "Remote player joined", "data": ["playerId"] },
       "PLAYER_LEAVE": { "description": "Remote player left", "data": ["playerId"] },
-      "PLAYER_UPDATE": { "description": "Remote player state updated", "data": ["playerId", "state"] },
+      "PLAYER_UPDATE": {
+        "description": "Remote player state updated",
+        "data": ["playerId", "state"]
+      },
       "CHAT_MESSAGE": { "description": "Chat message received", "data": ["playerId", "message"] }
     },
-    
+
     "ui": {
       "MENU_OPEN": { "description": "Menu opened", "data": ["menuId"] },
       "MENU_CLOSE": { "description": "Menu closed", "data": ["menuId"] },
@@ -102,7 +120,7 @@
       "TRANSITION_START": { "description": "Screen transition started", "data": ["type"] },
       "TRANSITION_END": { "description": "Screen transition ended", "data": ["type"] }
     },
-    
+
     "save": {
       "SAVE_START": { "description": "Save operation started", "data": ["slotId"] },
       "SAVE_COMPLETE": { "description": "Save operation complete", "data": ["slotId"] },
@@ -114,24 +132,22 @@
       "AUTOSAVE": { "description": "Autosave triggered" },
       "IMPORT_SAVE": { "description": "Save file imported", "data": ["sourceGameId"] }
     },
-    
+
     "script": {
       "SCRIPT_LOAD": { "description": "Script loaded", "data": ["scriptId"] },
-      "SCRIPT_ERROR": { "description": "Script runtime error", "data": ["scriptId", "error", "line"] },
+      "SCRIPT_ERROR": {
+        "description": "Script runtime error",
+        "data": ["scriptId", "error", "line"]
+      },
       "CALLBACK_TRIGGER": { "description": "Callback executed", "data": ["callbackId"] },
       "ACTION_START": { "description": "Action started", "data": ["actionType", "entityId"] },
       "ACTION_END": { "description": "Action completed", "data": ["actionType", "entityId"] },
       "FLAG_CHANGE": { "description": "Game flag changed", "data": ["flagName", "value"] }
     }
   },
-  
+
   "wildcards": {
     "description": "Pattern matching for event subscriptions",
-    "examples": [
-      "input:*",
-      "entity:*",
-      "*:error",
-      "save:*"
-    ]
+    "examples": ["input:*", "entity:*", "*:error", "save:*"]
   }
 }

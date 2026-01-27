@@ -23,9 +23,11 @@ export class JwtManager {
     this.secret = secret || process.env.JWT_SECRET || this._generateDefaultSecret();
     this.expiresIn = expiresIn;
     this.algorithm = 'HS256';
-    
+
     if (!process.env.JWT_SECRET && !secret) {
-      console.warn('[JwtManager] WARNING: Using auto-generated secret. Set JWT_SECRET environment variable in production.');
+      console.warn(
+        '[JwtManager] WARNING: Using auto-generated secret. Set JWT_SECRET environment variable in production.'
+      );
     }
   }
 
@@ -81,16 +83,16 @@ export class JwtManager {
    */
   generate(payload) {
     const now = Math.floor(Date.now() / 1000);
-    
+
     const header = {
       alg: this.algorithm,
-      typ: 'JWT'
+      typ: 'JWT',
     };
 
     const tokenPayload = {
       ...payload,
       iat: now,
-      exp: now + this.expiresIn
+      exp: now + this.expiresIn,
     };
 
     const headerEncoded = this._base64UrlEncode(header);
@@ -145,7 +147,7 @@ export class JwtManager {
    */
   refresh(token) {
     const result = this.verify(token);
-    
+
     if (!result.valid) {
       return { success: false, error: result.error };
     }
@@ -185,14 +187,14 @@ export class TokenStore {
   constructor() {
     /** @type {Set<string>} */
     this.revokedTokens = new Set();
-    
+
     // Cleanup expired revoked tokens periodically
     this.cleanupInterval = setInterval(() => this.cleanup(), 3600000); // Every hour
   }
 
   /**
    * Revoke a token
-   * @param {string} token 
+   * @param {string} token
    */
   revoke(token) {
     this.revokedTokens.add(token);
@@ -200,7 +202,7 @@ export class TokenStore {
 
   /**
    * Check if a token is revoked
-   * @param {string} token 
+   * @param {string} token
    * @returns {boolean}
    */
   isRevoked(token) {

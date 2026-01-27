@@ -19,12 +19,12 @@ export default class BaseTool {
     this.shortcut = options.shortcut || null;
     this.active = false;
     this.size = options.size || 1;
-    
+
     // Current drawing state
     this.isDrawing = false;
     this.lastX = -1;
     this.lastY = -1;
-    
+
     // For preview
     this.previewPixels = [];
   }
@@ -148,8 +148,14 @@ export default class BaseTool {
       if (x === x1 && y === y1) break;
 
       const e2 = 2 * err;
-      if (e2 > -dy) { err -= dy; x += sx; }
-      if (e2 < dx) { err += dx; y += sy; }
+      if (e2 > -dy) {
+        err -= dy;
+        x += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y += sy;
+      }
     }
 
     return pixels;
@@ -172,9 +178,11 @@ export default class BaseTool {
    * Check if two colors match (with tolerance)
    */
   colorsMatch(c1, c2, tolerance = 0) {
-    return Math.abs(c1.r - c2.r) <= tolerance &&
-           Math.abs(c1.g - c2.g) <= tolerance &&
-           Math.abs(c1.b - c2.b) <= tolerance &&
-           Math.abs(c1.a - c2.a) <= tolerance;
+    return (
+      Math.abs(c1.r - c2.r) <= tolerance &&
+      Math.abs(c1.g - c2.g) <= tolerance &&
+      Math.abs(c1.b - c2.b) <= tolerance &&
+      Math.abs(c1.a - c2.a) <= tolerance
+    );
   }
 }

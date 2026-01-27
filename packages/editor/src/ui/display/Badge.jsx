@@ -4,25 +4,21 @@
 import React from 'react';
 import './Badge.css';
 
-export function Badge({ 
+export function Badge({
   children,
   content,
   color = 'red',
   maxCount = 99,
   className = '',
   style,
-  ...props 
+  ...props
 }) {
-  const displayContent = typeof content === 'number' && content > maxCount
-    ? `${maxCount}+`
-    : content;
+  const displayContent =
+    typeof content === 'number' && content > maxCount ? `${maxCount}+` : content;
 
-  const classes = [
-    'px-badge',
-    `px-badge-${color}`,
-    !children && 'px-badge-standalone',
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ['px-badge', `px-badge-${color}`, !children && 'px-badge-standalone', className]
+    .filter(Boolean)
+    .join(' ');
 
   if (!children) {
     return (

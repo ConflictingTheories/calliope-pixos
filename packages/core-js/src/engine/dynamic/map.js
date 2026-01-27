@@ -34,20 +34,20 @@ export async function loadMap(json, cells, zip, heights = null) {
   let $sprites =
     typeof json.sprites === 'string'
       ? json.sprites
-      : json.sprites.map((sprite) => {
-        return {
-          id: sprite.id,
-          type: sprite.type,
-          pos: new Vector(...sprite.pos),
-          facing: Direction[sprite.facing],
-          zones: sprite.zones ?? null,
-        };
-      });
+      : json.sprites.map(sprite => {
+          return {
+            id: sprite.id,
+            type: sprite.type,
+            pos: new Vector(...sprite.pos),
+            facing: Direction[sprite.facing],
+            zones: sprite.zones ?? null,
+          };
+        });
 
-  let $scenes = (json.scenes ?? []).map((scene) => {
+  let $scenes = (json.scenes ?? []).map(scene => {
     return {
       id: scene.id,
-      actions: scene.actions.map((action) => {
+      actions: scene.actions.map(action => {
         if (action.trigger) {
           return { trigger: action.trigger, scope: this };
         } else {
@@ -64,7 +64,7 @@ export async function loadMap(json, cells, zip, heights = null) {
   });
 
   let $scripts = await Promise.all(
-    (json.scripts ?? []).map(async (script) => {
+    (json.scripts ?? []).map(async script => {
       // Lua Scripting
       try {
         let file = zip.file(`triggers/${script.trigger}.pxs`);
@@ -73,7 +73,7 @@ export async function loadMap(json, cells, zip, heights = null) {
         debug('Map', 'lua script', luaScript);
 
         // defer execution of lua until trigger is called
-        let result = ((_this) => {
+        let result = (_this => {
           let interpreter = new PixoScriptInterpreter(_this.engine);
           interpreter.setScope({ _this, zone: this, subject: _this });
           interpreter.initLibrary();
@@ -95,7 +95,7 @@ export async function loadMap(json, cells, zip, heights = null) {
     })
   );
 
-  let $objects = (json.objects ?? []).map((object) => {
+  let $objects = (json.objects ?? []).map(object => {
     return {
       id: object.id,
       type: object.type,
@@ -141,16 +141,18 @@ export function dynamicCells(cells, Tileset) {
   if (typeof cells === 'string') {
     return cells;
   }
-  
+
   // Guard: Check if Tileset is valid
   if (!Tileset || typeof Tileset !== 'object') {
-    console.error('[dynamicCells] Tileset is undefined or invalid - tiles.json may be missing from tileset');
+    console.error(
+      '[dynamicCells] Tileset is undefined or invalid - tiles.json may be missing from tileset'
+    );
     return [];
   }
-  
+
   let result = [];
   let missingTiles = new Set();
-  
+
   cells.forEach((row, i) => {
     let len = row.length;
     row.forEach((cell, j) => {
@@ -164,11 +166,11 @@ export function dynamicCells(cells, Tileset) {
       }
     });
   });
-  
+
   // Log missing tiles once
   if (missingTiles.size > 0) {
     console.warn('[dynamicCells] Missing tile definitions:', Array.from(missingTiles).join(', '));
   }
-  
+
   return result;
 }

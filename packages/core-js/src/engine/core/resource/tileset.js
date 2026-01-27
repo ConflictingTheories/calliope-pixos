@@ -35,9 +35,9 @@ export default class Tileset extends Loadable {
    * Received tileset definition JSON
    * @param {*} data
    */
-  onJsonLoaded = (data) => {
+  onJsonLoaded = data => {
     // Merge tileset definition into this object
-    Object.keys(data).map((k) => {
+    Object.keys(data).map(k => {
       this[k] = data[k];
     });
     // Definition actions must always run before loaded actions
@@ -47,8 +47,14 @@ export default class Tileset extends Loadable {
     this.texture = this.engine.resourceManager.loadTexture(this.src);
     this.texture.runWhenLoaded(this._onTextureLoaded);
     // set background colour
-    if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
-  }
+    if (this.bgColor)
+      this.engine.gl.clearColor(
+        this.bgColor[0] / 255,
+        this.bgColor[1] / 255,
+        this.bgColor[2] / 255,
+        1.0
+      );
+  };
 
   /**
    * Received tileset definition JSON
@@ -57,7 +63,7 @@ export default class Tileset extends Loadable {
    */
   onJsonLoadedFromZip = async (data, zip) => {
     // Merge tileset definition into this object
-    Object.keys(data).map((k) => {
+    Object.keys(data).map(k => {
       this[k] = data[k];
     });
     // Definition actions must always run before loaded actions
@@ -67,8 +73,14 @@ export default class Tileset extends Loadable {
     this.texture = await this.engine.resourceManager.loadTextureFromZip(this.src, zip);
     this.texture.runWhenLoaded(this._onTextureLoaded);
     // set background colour
-    if (this.bgColor) this.engine.gl.clearColor(this.bgColor[0] / 255, this.bgColor[1] / 255, this.bgColor[2] / 255, 1.0);
-  }
+    if (this.bgColor)
+      this.engine.gl.clearColor(
+        this.bgColor[0] / 255,
+        this.bgColor[1] / 255,
+        this.bgColor[2] / 255,
+        1.0
+      );
+  };
 
   /**
    * run when loaded
@@ -76,17 +88,17 @@ export default class Tileset extends Loadable {
   _onTextureLoaded = () => {
     this.loaded = true;
     this.onLoadActions.run();
-  }
+  };
 
   /**
    * Actions to run after the tileset definition has loaded,
    * but before the texture is ready
    * @param {*} action
    */
-  runWhenDefinitionLoaded = (action) => {
+  runWhenDefinitionLoaded = action => {
     if (this.definitionLoaded) action();
     else this.onDefinitionLoadActions.add(action);
-  }
+  };
 
   /**
    * Get vertices for tile
@@ -104,35 +116,47 @@ export default class Tileset extends Loadable {
 
     // Debug logging for first few calls with height override
     if (heightOverride !== null) {
-      console.log(`[Tileset.getTileVertices] tile=${id}, offset=[${offset}], heightOverride=${heightOverride}, zOffset=${zOffset}`);
+      console.log(
+        `[Tileset.getTileVertices] tile=${id}, offset=[${offset}], heightOverride=${heightOverride}, zOffset=${zOffset}`
+      );
     }
 
     if (!this.geometry[id] || !this.geometry[id].vertices) {
       // If geometry is missing for a tile, log a warning and fallback to either
       // geometry[0] or a simple flat quad to avoid blank spaces in the map.
-      console.warn(`[Tileset.getTileVertices] Missing geometry for tile id ${id}. Attempting fallback.`);
+      console.warn(
+        `[Tileset.getTileVertices] Missing geometry for tile id ${id}. Attempting fallback.`
+      );
       if (this.geometry[0] && this.geometry[0].vertices) {
         id = 0; // fallback to first geometry definition
       } else {
         // Simple fallback quad: [0,0,0], [1,0,0], [1,0,1], [0,0,1]
         const quad = [
-          [[0, 0, 0], [1, 0, 0], [1, 0, 1]],
-          [[0, 0, 0], [1, 0, 1], [0, 0, 1]],
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 0, 1],
+          ],
+          [
+            [0, 0, 0],
+            [1, 0, 1],
+            [0, 0, 1],
+          ],
         ];
         return quad
-          .map((poly) => poly.map((vertex) => [vertex[0] + offset[0], vertex[1] + yOffset, vertex[2] + zOffset]))
+          .map(poly =>
+            poly.map(vertex => [vertex[0] + offset[0], vertex[1] + yOffset, vertex[2] + zOffset])
+          )
           .flat(3);
       }
     }
 
     return this.geometry[id].vertices
-      .map((poly) => poly.map((vertex) => [
-        vertex[0] + xOffset,
-        vertex[1] + yOffset,
-        vertex[2] + zOffset,
-      ]))
+      .map(poly =>
+        poly.map(vertex => [vertex[0] + xOffset, vertex[1] + yOffset, vertex[2] + zOffset])
+      )
       .flat(3);
-  }
+  };
 
   /**
    * get texture coordinates
@@ -144,34 +168,39 @@ export default class Tileset extends Loadable {
     let tileOffset = this.textures[texId];
     let size = [this.tileSize / this.sheetSize[0], this.tileSize / this.sheetSize[1]];
     return this.geometry[id].surfaces
-      .map((poly) => poly.map((vertex) => [(vertex[0] + tileOffset[0]) * size[0], (vertex[1] + tileOffset[1]) * size[1]]))
+      .map(poly =>
+        poly.map(vertex => [
+          (vertex[0] + tileOffset[0]) * size[0],
+          (vertex[1] + tileOffset[1]) * size[1],
+        ])
+      )
       .flat(3);
-  }
+  };
 
   /**
    * determine walkability
    * @param {*} tileId
    * @returns
    */
-  getWalkability = (tileId) => {
+  getWalkability = tileId => {
     return this.geometry[tileId].type;
-  }
+  };
 
   /**
    * get poly for walk
    * @param {*} tileId
    * @returns
    */
-  getTileWalkPoly = (tileId) => {
+  getTileWalkPoly = tileId => {
     return this.geometry[tileId].walkPoly;
-  }
+  };
 
   /**
    * Get metadata for a tile (e.g., preserveHeightOnWalk)
    * @param {string} tileName
    * @returns {object}
    */
-  getTileMetadata = (tileName) => {
+  getTileMetadata = tileName => {
     return this.tileMetadata[tileName] || {};
-  }
+  };
 }

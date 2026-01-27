@@ -3,6 +3,7 @@
 ## What Was Happening
 
 ### The Symptom
+
 - Click handlers working but UI not visible
 - User could click buttons/text that should be on screen but weren't displayed
 - This is a classic symptom of: **elements exist but aren't being rendered**
@@ -65,11 +66,12 @@ The problem wasn't actually about clearing. The problem was:
 
 Actually, now that I think about it more carefully - the real issue was likely that:
 
-1. The HUD drawings happen during `spritz.update()` 
+1. The HUD drawings happen during `spritz.update()`
 2. The HUD canvas might not be properly set up or composited
 3. OR the drawings were happening but the canvas element wasn't properly visible in the DOM
 
 But wait, the user said "click handlers still work" - which means:
+
 - The canvas exists and is properly positioned ✓
 - Events are capturing correctly ✓
 - The rendering pipeline must have been broken
@@ -87,7 +89,7 @@ if (this.hud.renderActiveElements) {
 
 This means:
 
-1. Events still update during `tick()` 
+1. Events still update during `tick()`
 2. BUT the visual rendering happens in a consistent location in the render pipeline
 3. All HUD elements are re-drawn EVERY FRAME (guaranteed)
 4. Canvas context is always fresh and properly set up
@@ -95,14 +97,18 @@ This means:
 ## Why This Works
 
 ### Per-Frame Rendering Guarantee
+
 By calling `renderActiveElements()` every frame in the render pipeline:
+
 - ✓ Canvas state is consistent
 - ✓ All active elements always visible
 - ✓ Elements can't "accidentally" disappear
 - ✓ Rendering happens in proper order relative to WebGL
 
 ### Independent of Event Timing
+
 Events can register/unregister themselves, but the rendering happens automatically:
+
 ```javascript
 // Event init
 this.engine.hud.registerElement(id, this);
@@ -112,24 +118,29 @@ hud.renderActiveElements() → this.render()
 ```
 
 ### Optional: Events Can Keep Drawing During Tick
+
 Events can STILL draw during tick for immediate feedback, but with the fix:
+
 - Drawing during tick = immediate feedback in that frame
-- + Drawing again in render phase = guaranteed visibility next frame and beyond
+- - Drawing again in render phase = guaranteed visibility next frame and beyond
 
 ## Comparison: Other Engines
 
 This pattern is common in game engines:
 
-**Unity**: 
+**Unity**:
+
 - `Update()` - Game logic
 - `LateUpdate()` - Post-update cleanup
 - `OnRender()` - Rendering phase (guaranteed)
 
 **Unreal Engine**:
+
 - `Tick()` - Update
 - `Draw()` - Render phase (guaranteed)
 
 **Our Engine (NOW)**:
+
 - `tick()` - Update game state
 - `render()` - Render phase (guaranteed)
 
@@ -142,6 +153,7 @@ hudCanvas.addEventListener('click', handler);
 ```
 
 This works regardless of what's drawn on the canvas because:
+
 1. The browser tracks the canvas element's position
 2. The browser detects clicks in that region
 3. The handler is called regardless of canvas contents

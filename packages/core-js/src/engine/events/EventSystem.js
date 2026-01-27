@@ -52,31 +52,31 @@ export default class EventSystem {
   constructor(engine) {
     /** @type {import('../core/index.js').default} */
     this.engine = engine;
-    
+
     /** @type {Map<string, EventListener[]>} Direct event listeners */
     this.listeners = new Map();
-    
+
     /** @type {Map<string, EventListener[]>} Wildcard pattern listeners */
     this.wildcardListeners = new Map();
-    
+
     /** @type {Map<string, Set<string>>} Entity ID -> parent entity ID (for bubbling) */
     this.entityHierarchy = new Map();
-    
+
     /** @type {number} Unique ID counter */
     this.idCounter = 0;
-    
+
     /** @type {boolean} Currently dispatching an event */
     this.isDispatching = false;
-    
+
     /** @type {Set<string>} Listeners to remove after dispatch */
     this.pendingRemovals = new Set();
-    
+
     /** @type {Set<string>} Listeners to add after dispatch */
     this.pendingAdditions = new Set();
-    
+
     /** @type {Map<string, EventListener>} Pending listeners by ID */
     this.pendingListenerMap = new Map();
-    
+
     // Event phases
     /** @type {number} */
     this.CAPTURING_PHASE = 1;
@@ -102,15 +102,15 @@ export default class EventSystem {
       capture: options.capture || false,
       once: options.once || false,
       priority: options.priority || 0,
-      filter: options.filter || null
+      filter: options.filter || null,
     };
-    
+
     if (this.isDispatching) {
       this.pendingListenerMap.set(id, listener);
       this.pendingAdditions.add(id);
       return id;
     }
-    
+
     this.addListenerInternal(listener);
     return id;
   }
@@ -136,20 +136,20 @@ export default class EventSystem {
   addListenerInternal(listener) {
     const isWildcard = listener.event.includes('*') || listener.event.includes('?');
     const map = isWildcard ? this.wildcardListeners : this.listeners;
-    
+
     if (!map.has(listener.event)) {
       map.set(listener.event, []);
     }
-    
+
     const list = map.get(listener.event);
     list.push(listener);
-    
+
     // Sort by priority (higher first) and capture phase (capture first)
     list.sort((a, b) => {
       if (a.capture !== b.capture) return a.capture ? -1 : 1;
       return b.priority - a.priority;
     });
-    
+
     debug('EventSystem', `Added listener ${listener.id} for: ${listener.event}`);
   }
 
@@ -163,7 +163,7 @@ export default class EventSystem {
       this.pendingRemovals.add(id);
       return true;
     }
-    
+
     return this.removeListenerInternal(id);
   }
 
@@ -188,7 +188,7 @@ export default class EventSystem {
         return true;
       }
     }
-    
+
     for (const [pattern, list] of this.wildcardListeners) {
       const idx = list.findIndex(l => l.id === id);
       if (idx >= 0) {
@@ -197,7 +197,7 @@ export default class EventSystem {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -210,9 +210,9 @@ export default class EventSystem {
    */
   dispatchEvent(eventType, data = {}, eventOptions = {}) {
     const event = this.createEvent(eventType, data, eventOptions);
-    
+
     this.isDispatching = true;
-    
+
     try {
       if (event.bubbles && event.target) {
         // Full propagation path
@@ -225,7 +225,7 @@ export default class EventSystem {
       this.isDispatching = false;
       this.processPendingChanges();
     }
-    
+
     return event;
   }
 
@@ -257,28 +257,28 @@ export default class EventSystem {
       defaultPrevented: false,
       propagationStopped: false,
       immediatePropagationStopped: false,
-      
+
       preventDefault() {
         if (this.cancelable) {
           this.defaultPrevented = true;
         }
       },
-      
+
       stopPropagation() {
         this.propagationStopped = true;
       },
-      
+
       stopImmediatePropagation() {
         this.propagationStopped = true;
         this.immediatePropagationStopped = true;
-      }
+      },
     };
-    
+
     // Build propagation path if target exists
     if (event.target && event.bubbles) {
       event.path = this.buildEventPath(event.target);
     }
-    
+
     return event;
   }
 
@@ -290,7 +290,7 @@ export default class EventSystem {
   buildEventPath(targetId) {
     const path = [targetId];
     let current = targetId;
-    
+
     while (this.entityHierarchy.has(current)) {
       const parents = this.entityHierarchy.get(current);
       if (parents.size > 0) {
@@ -302,7 +302,7 @@ export default class EventSystem {
         break;
       }
     }
-    
+
     return path;
   }
 
@@ -316,7 +316,7 @@ export default class EventSystem {
       this.dispatchSimple(event);
       return;
     }
-    
+
     // Capture phase (root to target, excluding target)
     event.phase = this.CAPTURING_PHASE;
     for (let i = path.length - 1; i > 0; i--) {
@@ -324,14 +324,14 @@ export default class EventSystem {
       event.currentTarget = path[i];
       this.invokeListeners(event, true);
     }
-    
+
     // Target phase
     if (!event.propagationStopped) {
       event.phase = this.AT_TARGET;
       event.currentTarget = path[0];
       this.invokeListeners(event, false); // Both capture and bubble listeners
     }
-    
+
     // Bubble phase (target to root, excluding target)
     if (!event.propagationStopped && event.bubbles) {
       event.phase = this.BUBBLING_PHASE;
@@ -361,33 +361,33 @@ export default class EventSystem {
   invokeListeners(event, captureOnly) {
     // Get direct listeners
     const directListeners = this.listeners.get(event.type) || [];
-    
+
     // Get wildcard matches
     const wildcardListeners = this.getWildcardMatches(event.type);
-    
+
     // Combine and filter by phase
     const allListeners = [...directListeners, ...wildcardListeners].filter(l => {
       if (captureOnly && !l.capture) return false;
       if (!captureOnly && event.phase === this.BUBBLING_PHASE && l.capture) return false;
       return true;
     });
-    
+
     // Sort by priority
     allListeners.sort((a, b) => b.priority - a.priority);
-    
+
     const toRemove = [];
-    
+
     for (const listener of allListeners) {
       if (event.immediatePropagationStopped) break;
-      
+
       // Check filter
       if (listener.filter && !this.matchesFilter(event, listener.filter)) {
         continue;
       }
-      
+
       try {
         listener.handler(event);
-        
+
         if (listener.once) {
           toRemove.push(listener.id);
         }
@@ -395,7 +395,7 @@ export default class EventSystem {
         console.error(`EventSystem: Error in listener for ${event.type}:`, error);
       }
     }
-    
+
     // Mark for removal
     for (const id of toRemove) {
       this.pendingRemovals.add(id);
@@ -409,13 +409,13 @@ export default class EventSystem {
    */
   getWildcardMatches(eventType) {
     const matches = [];
-    
+
     for (const [pattern, listeners] of this.wildcardListeners) {
       if (this.matchesPattern(eventType, pattern)) {
         matches.push(...listeners);
       }
     }
-    
+
     return matches;
   }
 
@@ -427,11 +427,14 @@ export default class EventSystem {
    */
   matchesPattern(type, pattern) {
     // Support * (any chars) and ? (single char)
-    const regexStr = '^' + pattern
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.') + '$';
-    
+    const regexStr =
+      '^' +
+      pattern
+        .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+        .replace(/\*/g, '.*')
+        .replace(/\?/g, '.') +
+      '$';
+
     return new RegExp(regexStr).test(type);
   }
 
@@ -452,7 +455,7 @@ export default class EventSystem {
         }
         continue;
       }
-      
+
       // Check event data
       if (event.data && key in event.data) {
         if (typeof value === 'function') {
@@ -462,11 +465,11 @@ export default class EventSystem {
         }
         continue;
       }
-      
+
       // Key not found
       return false;
     }
-    
+
     return true;
   }
 
@@ -479,7 +482,7 @@ export default class EventSystem {
       this.removeListenerInternal(id);
     }
     this.pendingRemovals.clear();
-    
+
     // Process additions
     for (const id of this.pendingAdditions) {
       const listener = this.pendingListenerMap.get(id);
@@ -510,7 +513,7 @@ export default class EventSystem {
    */
   removeParent(childId, parentId = null) {
     if (!this.entityHierarchy.has(childId)) return;
-    
+
     if (parentId) {
       this.entityHierarchy.get(childId).delete(parentId);
     } else {
@@ -524,7 +527,7 @@ export default class EventSystem {
    */
   removeAllListeners(eventType) {
     this.listeners.delete(eventType);
-    
+
     // Also remove from wildcards if it's a pattern
     this.wildcardListeners.delete(eventType);
   }
@@ -545,10 +548,7 @@ export default class EventSystem {
    * @returns {string[]} Event types.
    */
   eventTypes() {
-    return [
-      ...this.listeners.keys(),
-      ...this.wildcardListeners.keys()
-    ];
+    return [...this.listeners.keys(), ...this.wildcardListeners.keys()];
   }
 
   /**
@@ -572,14 +572,18 @@ export default class EventSystem {
    * @returns {string} Listener ID.
    */
   delegate(parentId, eventType, childSelector, handler) {
-    return this.addEventListener(eventType, (event) => {
-      // Check if target matches selector
-      if (this.matchesSelector(event.target, childSelector)) {
-        handler(event);
+    return this.addEventListener(
+      eventType,
+      event => {
+        // Check if target matches selector
+        if (this.matchesSelector(event.target, childSelector)) {
+          handler(event);
+        }
+      },
+      {
+        filter: { currentTarget: parentId },
       }
-    }, {
-      filter: { currentTarget: parentId }
-    });
+    );
   }
 
   /**
@@ -590,20 +594,20 @@ export default class EventSystem {
    */
   matchesSelector(entityId, selector) {
     if (!entityId) return false;
-    
+
     // Exact match
     if (entityId === selector) return true;
-    
+
     // Wildcard match
     if (selector.includes('*') || selector.includes('?')) {
       return this.matchesPattern(entityId, selector);
     }
-    
+
     // Prefix match (e.g., "sprite:" matches "sprite:player")
     if (selector.endsWith(':')) {
       return entityId.startsWith(selector);
     }
-    
+
     return false;
   }
 }

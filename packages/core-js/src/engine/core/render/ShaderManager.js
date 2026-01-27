@@ -12,7 +12,14 @@
 \*                                                 */
 
 // Absolute imports
-import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.js';
+import {
+  create,
+  create3,
+  normalFromMat4,
+  frustum,
+  perspective,
+  set,
+} from '../../utils/math/matrix4.js';
 import { Vector, degToRad } from '../../utils/math/vector.js';
 
 /**
@@ -57,7 +64,9 @@ export default class ShaderManager {
     gl.linkProgram(shaderProgram);
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
+      throw new Error(
+        `WebGL unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`
+      );
     }
 
     // Get attribute locations
@@ -92,14 +101,23 @@ export default class ShaderManager {
         position: gl.getUniformLocation(shaderProgram, `uLights[${i}].position`),
         attenuation: gl.getUniformLocation(shaderProgram, `uLights[${i}].attenuation`),
         direction: gl.getUniformLocation(shaderProgram, `uLights[${i}].direction`),
-        scatteringCoefficients: gl.getUniformLocation(shaderProgram, `uLights[${i}].scatteringCoefficients`),
+        scatteringCoefficients: gl.getUniformLocation(
+          shaderProgram,
+          `uLights[${i}].scatteringCoefficients`
+        ),
         density: gl.getUniformLocation(shaderProgram, `uLights[${i}].density`),
       };
     }
 
     // Add setMatrixUniforms method
     const self = this.renderManager;
-    shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
+    shaderProgram.setMatrixUniforms = function ({
+      id = null,
+      scale = null,
+      sampler = 1.0,
+      isSelected = false,
+      colorMultiplier = null,
+    }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(shaderProgram);
 
@@ -148,7 +166,14 @@ export default class ShaderManager {
         const layoutKey = attrs[attrName];
         if (shaderProgram[attrName] !== -1) {
           const attr = layout.attributeMap[layoutKey];
-          gl.vertexAttribPointer(shaderProgram[attrName], attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+          gl.vertexAttribPointer(
+            shaderProgram[attrName],
+            attr.size,
+            gl[attr.type],
+            attr.normalized,
+            attr.stride,
+            attr.offset
+          );
         }
       }
     };
@@ -183,27 +208,64 @@ export default class ShaderManager {
     gl.linkProgram(particleShaderProgram);
 
     if (!gl.getProgramParameter(particleShaderProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the particle shader program: ${gl.getProgramInfoLog(particleShaderProgram)}`);
+      throw new Error(
+        `WebGL unable to initialize the particle shader program: ${gl.getProgramInfoLog(particleShaderProgram)}`
+      );
     }
 
     // Get attribute locations
-    particleShaderProgram.aVertexPosition = gl.getAttribLocation(particleShaderProgram, 'aVertexPosition');
-    particleShaderProgram.aTextureCoord = gl.getAttribLocation(particleShaderProgram, 'aTextureCoord');
-    particleShaderProgram.aInstancePosition = gl.getAttribLocation(particleShaderProgram, 'aInstancePosition');
-    particleShaderProgram.aInstanceColor = gl.getAttribLocation(particleShaderProgram, 'aInstanceColor');
-    particleShaderProgram.aInstanceSize = gl.getAttribLocation(particleShaderProgram, 'aInstanceSize');
+    particleShaderProgram.aVertexPosition = gl.getAttribLocation(
+      particleShaderProgram,
+      'aVertexPosition'
+    );
+    particleShaderProgram.aTextureCoord = gl.getAttribLocation(
+      particleShaderProgram,
+      'aTextureCoord'
+    );
+    particleShaderProgram.aInstancePosition = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstancePosition'
+    );
+    particleShaderProgram.aInstanceColor = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstanceColor'
+    );
+    particleShaderProgram.aInstanceSize = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstanceSize'
+    );
 
     // Get uniform locations
-    particleShaderProgram.pMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
-    particleShaderProgram.mMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uModelMatrix');
-    particleShaderProgram.vMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
+    particleShaderProgram.pMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uProjectionMatrix'
+    );
+    particleShaderProgram.mMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uModelMatrix'
+    );
+    particleShaderProgram.vMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uViewMatrix'
+    );
     particleShaderProgram.scaleUniform = gl.getUniformLocation(particleShaderProgram, 'uScale');
-    particleShaderProgram.particleColorUniform = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
+    particleShaderProgram.particleColorUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uParticleColor'
+    );
     particleShaderProgram.alphaUniform = gl.getUniformLocation(particleShaderProgram, 'uAlpha');
-    particleShaderProgram.instancedUniform = gl.getUniformLocation(particleShaderProgram, 'uInstanced');
+    particleShaderProgram.instancedUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uInstanced'
+    );
 
     // Add setMatrixUniforms method
-    particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null, alpha = 1.0, instanced = false }) {
+    particleShaderProgram.setMatrixUniforms = function ({
+      color = null,
+      scale = null,
+      alpha = 1.0,
+      instanced = false,
+    }) {
       gl.useProgram(particleShaderProgram);
       gl.uniformMatrix4fv(this.pMatrixUniform, false, self.uProjMat);
       gl.uniformMatrix4fv(this.mMatrixUniform, false, self.uModelMat);
@@ -241,7 +303,9 @@ export default class ShaderManager {
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize effect shader "${id}": ${gl.getProgramInfoLog(program)}`);
+      throw new Error(
+        `WebGL unable to initialize effect shader "${id}": ${gl.getProgramInfoLog(program)}`
+      );
     }
 
     // Run initialization function if provided

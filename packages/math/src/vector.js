@@ -25,14 +25,18 @@ export const V3 = {
   /** Dot product of two 3D vectors */
   dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
   /** Cross product of two 3D vectors */
-  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  cross: (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ],
   /** Length/magnitude of a 3D vector */
-  len: (a) => Math.hypot(a[0], a[1], a[2]),
+  len: a => Math.hypot(a[0], a[1], a[2]),
   /** Normalize a 3D vector (returns unit vector) */
-  norm: (a) => {
+  norm: a => {
     const L = Math.hypot(a[0], a[1], a[2]) || 1;
     return [a[0] / L, a[1] / L, a[2] / L];
-  }
+  },
 };
 
 /**
@@ -186,7 +190,8 @@ export class Vector4 {
   }
 
   normal() {
-    if (this.x === 0 && this.y === 0 && this.z === 0 && this.w === 0) return new Vector4(0, 0, 0, 0);
+    if (this.x === 0 && this.y === 0 && this.z === 0 && this.w === 0)
+      return new Vector4(0, 0, 0, 0);
     const l = this.length();
     return new Vector4(this.x / l, this.y / l, this.z / l, this.w / l);
   }
@@ -225,15 +230,19 @@ export const vec3 = {
     return out;
   },
   cross: (a, b, out = [0, 0, 0]) => {
-    const ax = a[0], ay = a[1], az = a[2];
-    const bx = b[0], by = b[1], bz = b[2];
+    const ax = a[0],
+      ay = a[1],
+      az = a[2];
+    const bx = b[0],
+      by = b[1],
+      bz = b[2];
     out[0] = ay * bz - az * by;
     out[1] = az * bx - ax * bz;
     out[2] = ax * by - ay * bx;
     return out;
   },
   dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
-  length: (v) => Math.hypot(v[0], v[1], v[2]),
+  length: v => Math.hypot(v[0], v[1], v[2]),
   normalize: (v, out = [0, 0, 0]) => {
     const len = vec3.length(v);
     if (len === 0) return out;
@@ -289,10 +298,12 @@ export function radToDeg(radians) {
 
 // Collision utilities
 export function lineRectCollide(line, rect) {
-  return rect.y > line.y - rect.size / 2 && 
-         rect.y < line.y + rect.size / 2 && 
-         rect.x > line.x1 - rect.size / 2 && 
-         rect.x < line.x2 + rect.size / 2;
+  return (
+    rect.y > line.y - rect.size / 2 &&
+    rect.y < line.y + rect.size / 2 &&
+    rect.x > line.x1 - rect.size / 2 &&
+    rect.x < line.x2 + rect.size / 2
+  );
 }
 
 export function rectRectCollide(r1, r2) {

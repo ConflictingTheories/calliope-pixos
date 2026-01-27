@@ -13,14 +13,14 @@
 
 /**
  * ObjHelper - A clean, modern OBJ/MTL parser and loader
- * 
+ *
  * Based on the patterns from ObjModelViewer.jsx, this helper provides:
  * - Simple OBJ parsing with face triangulation
  * - MTL material parsing with texture support
  * - Automatic face normal calculation when vertex normals are missing
  * - Per-mesh material assignment
  * - WebGL buffer initialization
- * 
+ *
  * @example
  * const helper = new ObjHelper(gl);
  * const meshes = helper.parseOBJ(objText);
@@ -41,14 +41,18 @@ const vec3 = {
     return out;
   },
   cross: (a, b, out = [0, 0, 0]) => {
-    const ax = a[0], ay = a[1], az = a[2];
-    const bx = b[0], by = b[1], bz = b[2];
+    const ax = a[0],
+      ay = a[1],
+      az = a[2];
+    const bx = b[0],
+      by = b[1],
+      bz = b[2];
     out[0] = ay * bz - az * by;
     out[1] = az * bx - ax * bz;
     out[2] = ax * by - ay * bx;
     return out;
   },
-  length: (v) => Math.hypot(v[0], v[1], v[2]),
+  length: v => Math.hypot(v[0], v[1], v[2]),
   normalize: (v, out = [0, 0, 0]) => {
     const len = vec3.length(v);
     if (len === 0) return out;
@@ -102,7 +106,7 @@ export default class ObjHelper {
    * - vn (vertex normals)
    * - f (faces with triangulation)
    * - usemtl (material assignment)
-   * 
+   *
    * @param {string} text - OBJ file content
    * @returns {ParsedMesh[]} Array of parsed meshes, one per material group
    */
@@ -127,28 +131,17 @@ export default class ObjHelper {
       switch (parts[0]) {
         case 'v':
           // Vertex position
-          positions.push(
-            parseFloat(parts[1]),
-            parseFloat(parts[2]),
-            parseFloat(parts[3])
-          );
+          positions.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
           break;
 
         case 'vt':
           // Texture coordinate (flip Y for OpenGL convention)
-          uvs.push(
-            parseFloat(parts[1]),
-            1.0 - parseFloat(parts[2])
-          );
+          uvs.push(parseFloat(parts[1]), 1.0 - parseFloat(parts[2]));
           break;
 
         case 'vn':
           // Vertex normal
-          normals.push(
-            parseFloat(parts[1]),
-            parseFloat(parts[2]),
-            parseFloat(parts[3])
-          );
+          normals.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
           break;
 
         case 'f':
@@ -234,7 +227,7 @@ export default class ObjHelper {
    * - Ka, Kd, Ks (ambient, diffuse, specular colors)
    * - Ns (specular exponent)
    * - map_Kd (diffuse texture map)
-   * 
+   *
    * @param {string} text - MTL file content
    * @returns {Object.<string, ParsedMaterial>} Material definitions keyed by name
    */
@@ -255,7 +248,7 @@ export default class ObjHelper {
             Ka: [1, 1, 1],
             Kd: [0.8, 0.8, 0.8],
             Ks: [1, 1, 1],
-            Ns: 50
+            Ns: 50,
           };
           break;
 
@@ -264,9 +257,7 @@ export default class ObjHelper {
         case 'Ks':
           if (current) {
             const vals = parts.slice(1).map(parseFloat);
-            materials[current][parts[0]] = vals.length === 1
-              ? [vals[0], vals[0], vals[0]]
-              : vals;
+            materials[current][parts[0]] = vals.length === 1 ? [vals[0], vals[0], vals[0]] : vals;
           }
           break;
 
@@ -299,7 +290,7 @@ export default class ObjHelper {
       Ka: [0.25, 0.25, 0.3],
       Kd: [0.75, 0.75, 0.75],
       Ks: [1, 1, 1],
-      Ns: 50
+      Ns: 50,
     };
 
     meshes.forEach(mesh => {
@@ -382,8 +373,14 @@ export default class ObjHelper {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0,
-      gl.RGBA, gl.UNSIGNED_BYTE,
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       new Uint8Array(color)
     );
     return tex;
@@ -393,7 +390,7 @@ export default class ObjHelper {
    * Initialize WebGL buffers for meshes
    * Creates VAO with position, normal, and UV buffers
    * Also creates legacy-compatible separate buffer references
-   * 
+   *
    * @param {ParsedMesh[]} meshes - Parsed meshes to initialize
    */
   initBuffers(meshes) {
@@ -445,7 +442,7 @@ export default class ObjHelper {
   /**
    * Initialize buffers in legacy format for compatibility with existing engine
    * This creates buffers compatible with the existing OBJ library interface
-   * 
+   *
    * @param {Object} mesh - Legacy mesh object with vertices, vertexNormals, textures arrays
    * @returns {Object} Mesh with initialized buffers
    */
@@ -501,13 +498,16 @@ export default class ObjHelper {
         min: [0, 0, 0],
         max: [0, 0, 0],
         size: [0, 0, 0],
-        center: [0, 0, 0]
+        center: [0, 0, 0],
       };
     }
 
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-    let minZ = Infinity, maxZ = -Infinity;
+    let minX = Infinity,
+      maxX = -Infinity;
+    let minY = Infinity,
+      maxY = -Infinity;
+    let minZ = Infinity,
+      maxZ = -Infinity;
 
     for (let i = 0; i < positions.length; i += 3) {
       const x = positions[i];
@@ -526,7 +526,7 @@ export default class ObjHelper {
       min: [minX, minY, minZ],
       max: [maxX, maxY, maxZ],
       size: [maxX - minX, maxY - minY, maxZ - minZ],
-      center: [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2]
+      center: [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2],
     };
   }
 
@@ -554,12 +554,7 @@ export default class ObjHelper {
     // Load each texture
     for (const filename of textureFiles) {
       // Possible paths in ZIP: root, textures/, models/, or raw path
-      const paths = [
-        filename,
-        `${root}/${filename}`,
-        `textures/${filename}`,
-        `models/${filename}`,
-      ];
+      const paths = [filename, `${root}/${filename}`, `textures/${filename}`, `models/${filename}`];
 
       let file = null;
       for (const p of paths) {
@@ -567,7 +562,11 @@ export default class ObjHelper {
         if (file) break;
       }
 
-      const promise = (file ? file.async('arraybuffer') : Promise.reject(new Error(`File ${filename} not found in any expected paths`)))
+      const promise = (
+        file
+          ? file.async('arraybuffer')
+          : Promise.reject(new Error(`File ${filename} not found in any expected paths`))
+      )
         .then(buffer => new Blob([buffer]))
         .then(blob => this.loadTexture(blob))
         .then(texture => {

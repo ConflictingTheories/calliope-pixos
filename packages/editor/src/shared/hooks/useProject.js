@@ -6,7 +6,7 @@
  *
  * A hook for accessing the current project context in editors.
  * Provides access to project metadata, assets, and settings.
- * 
+ *
  * Usage:
  *   const { project, assets, getAsset, saveAsset, isDirty } = useProject();
  */
@@ -38,7 +38,7 @@ const ProjectContext = createContext(null);
 
 /**
  * ProjectProvider - Provides project context to children
- * 
+ *
  * @param {Object} props
  * @param {Project} [props.initialProject] - Initial project data
  * @param {function} [props.onSave] - Callback when project is saved
@@ -64,24 +64,30 @@ export function ProjectProvider({ initialProject, onSave, onLoad, children }) {
   }, [project.assets]);
 
   // Get asset by ID or path
-  const getAsset = useCallback((idOrPath) => {
-    return assetIndex.get(idOrPath) || null;
-  }, [assetIndex]);
+  const getAsset = useCallback(
+    idOrPath => {
+      return assetIndex.get(idOrPath) || null;
+    },
+    [assetIndex]
+  );
 
   // Get assets by type
-  const getAssetsByType = useCallback((type) => {
-    return (project.assets || []).filter(asset => asset.type === type);
-  }, [project.assets]);
+  const getAssetsByType = useCallback(
+    type => {
+      return (project.assets || []).filter(asset => asset.type === type);
+    },
+    [project.assets]
+  );
 
   // Add or update an asset
-  const saveAsset = useCallback((asset) => {
+  const saveAsset = useCallback(asset => {
     setProject(prev => {
       const assets = [...(prev.assets || [])];
       const existingIndex = assets.findIndex(a => a.id === asset.id);
-      
+
       const updatedAsset = {
         ...asset,
-        lastModified: Date.now()
+        lastModified: Date.now(),
       };
 
       if (existingIndex >= 0) {
@@ -96,25 +102,25 @@ export function ProjectProvider({ initialProject, onSave, onLoad, children }) {
   }, []);
 
   // Delete an asset
-  const deleteAsset = useCallback((assetId) => {
+  const deleteAsset = useCallback(assetId => {
     setProject(prev => ({
       ...prev,
-      assets: (prev.assets || []).filter(a => a.id !== assetId)
+      assets: (prev.assets || []).filter(a => a.id !== assetId),
     }));
     setIsDirty(true);
   }, []);
 
   // Update project metadata
-  const updateProject = useCallback((updates) => {
+  const updateProject = useCallback(updates => {
     setProject(prev => ({ ...prev, ...updates }));
     setIsDirty(true);
   }, []);
 
   // Update project settings
-  const updateSettings = useCallback((settings) => {
+  const updateSettings = useCallback(settings => {
     setProject(prev => ({
       ...prev,
-      settings: { ...prev.settings, ...settings }
+      settings: { ...prev.settings, ...settings },
     }));
     setIsDirty(true);
   }, []);
@@ -135,20 +141,23 @@ export function ProjectProvider({ initialProject, onSave, onLoad, children }) {
   }, [project, onSave]);
 
   // Load project
-  const load = useCallback(async (projectData) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const loadedProject = await onLoad?.(projectData) || projectData;
-      setProject(loadedProject);
-      setIsDirty(false);
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onLoad]);
+  const load = useCallback(
+    async projectData => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const loadedProject = (await onLoad?.(projectData)) || projectData;
+        setProject(loadedProject);
+        setIsDirty(false);
+      } catch (err) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onLoad]
+  );
 
   // Create new project
   const createNew = useCallback((name = 'Untitled Project') => {
@@ -158,7 +167,7 @@ export function ProjectProvider({ initialProject, onSave, onLoad, children }) {
 
   // Warn on unsaved changes before unload
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = e => {
       if (isDirty) {
         e.preventDefault();
         e.returnValue = '';
@@ -184,14 +193,10 @@ export function ProjectProvider({ initialProject, onSave, onLoad, children }) {
     updateSettings,
     save,
     load,
-    createNew
+    createNew,
   };
 
-  return (
-    <ProjectContext.Provider value={value}>
-      {children}
-    </ProjectContext.Provider>
-  );
+  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 }
 
 /**
@@ -216,7 +221,7 @@ export function useProject() {
       updateSettings: () => {},
       save: async () => {},
       load: async () => {},
-      createNew: () => {}
+      createNew: () => {},
     };
   }
   return context;
@@ -235,9 +240,9 @@ function createEmptyProject(name = 'Untitled Project') {
       gridSize: 16,
       defaultPalette: null,
       autoSave: true,
-      autoSaveInterval: 60000
+      autoSaveInterval: 60000,
     },
-    assets: []
+    assets: [],
   };
 }
 
@@ -252,7 +257,7 @@ export const AssetTypes = {
   CUTSCENE: 'cutscene',
   AUDIO: 'audio',
   MODEL: 'model',
-  PALETTE: 'palette'
+  PALETTE: 'palette',
 };
 
 export default useProject;

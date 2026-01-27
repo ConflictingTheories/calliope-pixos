@@ -24,9 +24,9 @@ export const TEMPLATE_CATEGORIES = {
  * Template complexity levels
  */
 export const COMPLEXITY = {
-  STARTER: 'starter',      // ~5 assets, 2-3 minutes
-  STANDARD: 'standard',    // ~10 assets, 5-7 minutes
-  ADVANCED: 'advanced',    // ~20 assets, 10-15 minutes
+  STARTER: 'starter', // ~5 assets, 2-3 minutes
+  STANDARD: 'standard', // ~10 assets, 5-7 minutes
+  ADVANCED: 'advanced', // ~20 assets, 10-15 minutes
 };
 
 /**
@@ -127,7 +127,7 @@ Story elements:
     expectedAssets: [
       'sprites/player/player.json',
       'sprites/player/player.png',
-      'sprites/mentor/mentor.json', 
+      'sprites/mentor/mentor.json',
       'sprites/mentor/mentor.png',
       'sprites/fire-guardian/fire-guardian.json',
       'sprites/fire-guardian/fire-guardian.png',
@@ -382,7 +382,8 @@ Story:
   {
     id: 'visual-novel-romance',
     name: '💕 Coffee Shop Romance',
-    description: 'A cozy visual novel about working at a coffee shop and meeting interesting people.',
+    description:
+      'A cozy visual novel about working at a coffee shop and meeting interesting people.',
     category: TEMPLATE_CATEGORIES.MODERN,
     complexity: COMPLEXITY.STANDARD,
     estimatedTime: '5-7 minutes',
@@ -478,7 +479,7 @@ Keep it encouraging and fun! Wrong answers get hints, not penalties.`,
 
 /**
  * Get template by ID
- * @param {string} id 
+ * @param {string} id
  * @returns {object|null}
  */
 export function getTemplateById(id) {
@@ -487,7 +488,7 @@ export function getTemplateById(id) {
 
 /**
  * Get templates by category
- * @param {string} category 
+ * @param {string} category
  * @returns {array}
  */
 export function getTemplatesByCategory(category) {
@@ -496,7 +497,7 @@ export function getTemplatesByCategory(category) {
 
 /**
  * Get templates by complexity
- * @param {string} complexity 
+ * @param {string} complexity
  * @returns {array}
  */
 export function getTemplatesByComplexity(complexity) {
@@ -521,12 +522,12 @@ export function getStarterTemplates() {
 
 /**
  * Search templates by tag
- * @param {string} tag 
+ * @param {string} tag
  * @returns {array}
  */
 export function searchTemplatesByTag(tag) {
   const lowerTag = tag.toLowerCase();
-  return GAME_TEMPLATES.filter(t => 
+  return GAME_TEMPLATES.filter(t =>
     t.tags.some(templateTag => templateTag.toLowerCase().includes(lowerTag))
   );
 }

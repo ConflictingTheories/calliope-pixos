@@ -46,7 +46,7 @@ const rootZipFilename = messages.ROOT_ZIP_FILENAME;
 function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   const [zipFilesystem, setZipFilesystem] = useState(apiFilesystem);
   const [selectedFolder, setSelectedFolder] = useState(root);
-  
+
   // Context menu state
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -86,26 +86,28 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   const getHighlightedEntryElement = () => highlightedEntryElementRef.current;
   const resetHighlightedEntryElement = () => (highlightedEntryElementRef.current = null);
   const getEntriesHeight = () => entriesHeightRef.current;
-  const setEntriesHeight = (height) => (entriesHeightRef.current = height);
-  const setPlayerActive = (active) => (playerActiveRef.current = active);
+  const setEntriesHeight = height => (entriesHeightRef.current = height);
+  const setPlayerActive = active => (playerActiveRef.current = active);
 
   const { abortDownload, removeDownload } = getDownloadsFeatures({
     setDownloads,
   });
 
-  const { modifierKeyPressed, saveZipFile, saveEntries, openDisplayError, closeDisplayError } = getCommonFeatures({
-    dialogs,
-    setDownloads,
-    setDialogs,
-    removeDownload,
-  });
+  const { modifierKeyPressed, saveZipFile, saveEntries, openDisplayError, closeDisplayError } =
+    getCommonFeatures({
+      dialogs,
+      setDownloads,
+      setDialogs,
+      removeDownload,
+    });
 
-  const { initOptionsFeatures, setOptions, getOptions, openOptions, closeOptions, resetOptions } = getOptionsFeatures({
-    dialogs,
-    setDialogs,
-    setTheme,
-    onOptionsChange,
-  });
+  const { initOptionsFeatures, setOptions, getOptions, openOptions, closeOptions, resetOptions } =
+    getOptionsFeatures({
+      dialogs,
+      setDialogs,
+      setTheme,
+      onOptionsChange,
+    });
 
   const {
     disabledExportZip,
@@ -180,7 +182,14 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
     modifierKeyPressed,
   });
 
-  const { goIntoFolder, navigateBack, navigateForward, refreshSelectedFolder, updateHistoryData, onFoldersKeyUp } = getFoldersFeatures({
+  const {
+    goIntoFolder,
+    navigateBack,
+    navigateForward,
+    refreshSelectedFolder,
+    updateHistoryData,
+    onFoldersKeyUp,
+  } = getFoldersFeatures({
     disabledBack,
     disabledForward,
     history,
@@ -280,16 +289,25 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
     setClipboardData,
   });
 
-  const { playMusic, stopMusic, updateAccentColor, updateSkin, initMiscFeatures } = getMiscFeatures({
-    theme,
-    setOptions,
-    setTheme,
-    setMusicData,
-    setPlayerActive,
-    getOptions,
-  });
+  const { playMusic, stopMusic, updateAccentColor, updateSkin, initMiscFeatures } = getMiscFeatures(
+    {
+      theme,
+      setOptions,
+      setTheme,
+      setMusicData,
+      setPlayerActive,
+      getOptions,
+    }
+  );
 
-  const { enterEntry, initAppFeatures, updateZipFilesystem, resetClickedButtonName, getAppClassName, onAppKeyUp } = getAppFeatures({
+  const {
+    enterEntry,
+    initAppFeatures,
+    updateZipFilesystem,
+    resetClickedButtonName,
+    getAppClassName,
+    onAppKeyUp,
+  } = getAppFeatures({
     disabledEnterEntry,
     zipFilesystem,
     highlightedEntry,
@@ -333,14 +351,14 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
   useEffect(updateHighlightedEntries, [highlightedIds]);
   useEffect(updateAccentColor, [theme.accentColor]);
   useEffect(updateSkin, [theme.skin]);
-  
+
   // Notify parent when zip filesystem changes
   useEffect(() => {
     if (onZipLoaded && zipFilesystem) {
       onZipLoaded(zipFilesystem);
     }
   }, [zipFilesystem, onZipLoaded]);
-  
+
   useEffect(() => {
     initSelectedFolderFeatures();
     initMiscFeatures();
@@ -419,12 +437,7 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
           messages={messages}
         />
       </main>
-      <InfoBar
-        hidden={hiddenInfobar}
-        theme={theme}
-        onSetTheme={setTheme}
-        messages={messages}
-      />
+      <InfoBar hidden={hiddenInfobar} theme={theme} onSetTheme={setTheme} messages={messages} />
       <ContextMenu
         visible={contextMenu.visible}
         x={contextMenu.x}
@@ -455,13 +468,47 @@ function ZipManager({ openFile, onZipLoaded, onOptionsChange = () => {} }) {
         onClose={closePromptExportZip}
         messages={messages}
       />
-      <CreateFolderDialog data={dialogs.createFolder} onCreateFolder={createFolder} onClose={closePromptCreateFolder} messages={messages} />
-      <RenameDialog data={dialogs.rename} onRename={rename} onClose={closePromptRename} messages={messages} />
-      <ResetDialog data={dialogs.reset} onReset={reset} onClose={closeConfirmReset} messages={messages} />
-      <DeleteEntriesDialog data={dialogs.deleteEntries} onDeleteEntries={deleteEntries} onClose={closeConfirmDeleteEntries} messages={messages} />
-      <ErrorMessageDialog data={dialogs.displayError} onClose={closeDisplayError} messages={messages} />
-      <ImportPasswordDialog data={dialogs.enterImportPassword} onClose={closePromptImportPassword} messages={messages} />
-      <OptionsDialog data={dialogs.options} onSetOptions={setOptions} onResetOptions={resetOptions} onClose={closeOptions} messages={messages} />
+      <CreateFolderDialog
+        data={dialogs.createFolder}
+        onCreateFolder={createFolder}
+        onClose={closePromptCreateFolder}
+        messages={messages}
+      />
+      <RenameDialog
+        data={dialogs.rename}
+        onRename={rename}
+        onClose={closePromptRename}
+        messages={messages}
+      />
+      <ResetDialog
+        data={dialogs.reset}
+        onReset={reset}
+        onClose={closeConfirmReset}
+        messages={messages}
+      />
+      <DeleteEntriesDialog
+        data={dialogs.deleteEntries}
+        onDeleteEntries={deleteEntries}
+        onClose={closeConfirmDeleteEntries}
+        messages={messages}
+      />
+      <ErrorMessageDialog
+        data={dialogs.displayError}
+        onClose={closeDisplayError}
+        messages={messages}
+      />
+      <ImportPasswordDialog
+        data={dialogs.enterImportPassword}
+        onClose={closePromptImportPassword}
+        messages={messages}
+      />
+      <OptionsDialog
+        data={dialogs.options}
+        onSetOptions={setOptions}
+        onResetOptions={resetOptions}
+        onClose={closeOptions}
+        messages={messages}
+      />
       <ChooseActionDialog
         data={dialogs.chooseAction}
         onImportZipFile={importZipFile}

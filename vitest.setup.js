@@ -10,11 +10,11 @@ import '@testing-library/jest-dom/vitest';
 const localStorageMock = (() => {
   let store = {};
   return {
-    getItem: vi.fn((key) => store[key] || null),
+    getItem: vi.fn(key => store[key] || null),
     setItem: vi.fn((key, value) => {
       store[key] = String(value);
     }),
-    removeItem: vi.fn((key) => {
+    removeItem: vi.fn(key => {
       delete store[key];
     }),
     clear: vi.fn(() => {
@@ -23,23 +23,23 @@ const localStorageMock = (() => {
     get length() {
       return Object.keys(store).length;
     },
-    key: vi.fn((i) => Object.keys(store)[i] || null)
+    key: vi.fn(i => Object.keys(store)[i] || null),
   };
 })();
 
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock sessionStorage
 Object.defineProperty(window, 'sessionStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
@@ -47,8 +47,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn()
-  }))
+    dispatchEvent: vi.fn(),
+  })),
 });
 
 // Mock ResizeObserver
@@ -71,8 +71,8 @@ class IntersectionObserverMock {
 window.IntersectionObserver = IntersectionObserverMock;
 
 // Mock requestAnimationFrame
-window.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
-window.cancelAnimationFrame = vi.fn((id) => clearTimeout(id));
+window.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16));
+window.cancelAnimationFrame = vi.fn(id => clearTimeout(id));
 
 // Mock WebGL context
 const mockWebGLContext = {
@@ -155,10 +155,10 @@ const mockWebGLContext = {
   DEPTH_BUFFER_BIT: 256,
   FRAMEBUFFER: 36160,
   FRAMEBUFFER_COMPLETE: 36053,
-  COLOR_ATTACHMENT0: 36064
+  COLOR_ATTACHMENT0: 36064,
 };
 
-HTMLCanvasElement.prototype.getContext = vi.fn((type) => {
+HTMLCanvasElement.prototype.getContext = vi.fn(type => {
   if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') {
     return mockWebGLContext;
   }
@@ -187,7 +187,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn((type) => {
       stroke: vi.fn(),
       clip: vi.fn(),
       rect: vi.fn(),
-      canvas: document.createElement('canvas')
+      canvas: document.createElement('canvas'),
     };
   }
   return null;
@@ -197,28 +197,28 @@ HTMLCanvasElement.prototype.getContext = vi.fn((type) => {
 window.AudioContext = vi.fn().mockImplementation(() => ({
   createGain: vi.fn(() => ({
     connect: vi.fn(),
-    gain: { value: 1 }
+    gain: { value: 1 },
   })),
   createBufferSource: vi.fn(() => ({
     connect: vi.fn(),
     start: vi.fn(),
     stop: vi.fn(),
-    buffer: null
+    buffer: null,
   })),
   createAnalyser: vi.fn(() => ({
     connect: vi.fn(),
     fftSize: 2048,
-    getByteFrequencyData: vi.fn()
+    getByteFrequencyData: vi.fn(),
   })),
   createPanner: vi.fn(() => ({
     connect: vi.fn(),
-    setPosition: vi.fn()
+    setPosition: vi.fn(),
   })),
   createDynamicsCompressor: vi.fn(() => ({
-    connect: vi.fn()
+    connect: vi.fn(),
   })),
   createConvolver: vi.fn(() => ({
-    connect: vi.fn()
+    connect: vi.fn(),
   })),
   decodeAudioData: vi.fn(),
   destination: {},
@@ -226,7 +226,7 @@ window.AudioContext = vi.fn().mockImplementation(() => ({
   state: 'running',
   resume: vi.fn(),
   suspend: vi.fn(),
-  close: vi.fn()
+  close: vi.fn(),
 }));
 window.webkitAudioContext = window.AudioContext;
 
@@ -237,7 +237,7 @@ global.fetch = vi.fn(() =>
     json: () => Promise.resolve({}),
     text: () => Promise.resolve(''),
     blob: () => Promise.resolve(new Blob()),
-    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
   })
 );
 

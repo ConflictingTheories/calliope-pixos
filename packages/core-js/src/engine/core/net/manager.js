@@ -59,17 +59,20 @@ export default class NetworkManager {
     try {
       this.ws = new WebSocket(url);
     } catch (e) {
-      console.warn('[NetworkManager] WebSocket creation failed (server may be offline):', e.message);
+      console.warn(
+        '[NetworkManager] WebSocket creation failed (server may be offline):',
+        e.message
+      );
       return; // Gracefully fail - game can run offline
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.ws.onopen = () => {
         console.log('[NetworkManager] WebSocket connection established');
         resolve();
       };
 
-      this.ws.onmessage = (event) => {
+      this.ws.onmessage = event => {
         this.handleMessage(event.data);
       };
 
@@ -78,8 +81,11 @@ export default class NetworkManager {
         this.ws = null;
       };
 
-      this.ws.onerror = (error) => {
-        console.warn('[NetworkManager] WebSocket error (server may be offline):', error.type || 'connection failed');
+      this.ws.onerror = error => {
+        console.warn(
+          '[NetworkManager] WebSocket error (server may be offline):',
+          error.type || 'connection failed'
+        );
         // Don't reject - resolve to allow game to continue offline
         this.ws = null;
         resolve();
@@ -100,7 +106,10 @@ export default class NetworkManager {
         const out = {};
         Object.keys(obj || {}).forEach(k => {
           const v = obj[k];
-          if (v && (typeof v === 'object')) out[k] = Array.isArray(v) ? `[Array(${v.length})]` : `{${v.constructor && v.constructor.name}}`;
+          if (v && typeof v === 'object')
+            out[k] = Array.isArray(v)
+              ? `[Array(${v.length})]`
+              : `{${v.constructor && v.constructor.name}}`;
           else out[k] = v;
         });
         return JSON.stringify(out);
@@ -143,7 +152,7 @@ export default class NetworkManager {
       switch (data.type) {
         case 'connected':
           this.clientId = data.clientId;
-          this.engine.store.set("clientId", this.clientId);
+          this.engine.store.set('clientId', this.clientId);
           console.log(`Connected to server with client ID: ${this.clientId}`);
           break;
         case 'zone-loaded':
@@ -178,7 +187,12 @@ export default class NetworkManager {
       }
     } catch (error) {
       // Avoid serializing circular structures in the incoming message; log a safe preview instead.
-      const preview = typeof message === 'string' ? (message.length > 1000 ? message.slice(0, 1000) + '... (truncated)' : message) : this.safeStringify(message);
+      const preview =
+        typeof message === 'string'
+          ? message.length > 1000
+            ? message.slice(0, 1000) + '... (truncated)'
+            : message
+          : this.safeStringify(message);
       console.error('Failed to parse message from server. Parse error:', error);
       console.error('Raw message preview:', preview);
     }
@@ -223,9 +237,13 @@ export default class NetworkManager {
       y: avatar && avatar.pos ? avatar.pos.y : (avatarData.pos && avatarData.pos.y) || 0,
       z: avatar && avatar.pos ? avatar.pos.z : (avatarData.pos && avatarData.pos.z) || 0,
       // include small useful bits, but avoid large or circular objects
-      drawOffset: avatarData.drawOffset ? { x: avatarData.drawOffset.x, y: avatarData.drawOffset.y } : undefined,
-      hotspotOffset: avatarData.hotspotOffset ? { x: avatarData.hotspotOffset.x, y: avatarData.hotspotOffset.y } : undefined,
-      scale: avatarData.scale ? { x: avatarData.scale.x, y: avatarData.scale.y } : undefined
+      drawOffset: avatarData.drawOffset
+        ? { x: avatarData.drawOffset.x, y: avatarData.drawOffset.y }
+        : undefined,
+      hotspotOffset: avatarData.hotspotOffset
+        ? { x: avatarData.hotspotOffset.x, y: avatarData.hotspotOffset.y }
+        : undefined,
+      scale: avatarData.scale ? { x: avatarData.scale.x, y: avatarData.scale.y } : undefined,
     };
     this.send('join-zone', { zoneId, avatar: cleanAvatarData });
   }
@@ -245,7 +263,12 @@ export default class NetworkManager {
       this.send('action', data);
     } else {
       // Client authority: handle locally and broadcast
-      this.handleAction({ clientId: this.clientId, action: action.constructor.name.toLowerCase(), params: action.params, spriteId: sprite.id });
+      this.handleAction({
+        clientId: this.clientId,
+        action: action.constructor.name.toLowerCase(),
+        params: action.params,
+        spriteId: sprite.id,
+      });
     }
   }
 
@@ -261,8 +284,8 @@ export default class NetworkManager {
           x: avatar.pos.x,
           y: avatar.pos.y,
           z: avatar.pos.z,
-          facing: avatar.facing
-        }
+          facing: avatar.facing,
+        },
       };
       // Remove circular references
       const cleanData = JSON.parse(JSON.stringify(data));
@@ -303,7 +326,7 @@ export default class NetworkManager {
       x: sprite.pos.x,
       y: sprite.pos.y,
       z: sprite.pos.z,
-      avatar: sprite.getAvatarData ? sprite.getAvatarData() : sprite
+      avatar: sprite.getAvatarData ? sprite.getAvatarData() : sprite,
     }));
   }
 
@@ -326,16 +349,24 @@ export default class NetworkManager {
     // HUD / quick notification if available
     try {
       if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
-        this.engine.hud.scrollText(`Player ${payload.client.clientId} joined`, true, { autoclose: true, duration: 3000 });
+        this.engine.hud.scrollText(`Player ${payload.client.clientId} joined`, true, {
+          autoclose: true,
+          duration: 3000,
+        });
       }
-    } catch (e) { /* ignore HUD errors */ }
+    } catch (e) {
+      /* ignore HUD errors */
+    }
 
     const world = this.engine.spritz.world;
     if (world) {
       // Use world.addRemoteAvatar to create a remote avatar representation
       world.addRemoteAvatar(payload.client.clientId, payload.client.avatar);
       // store a lightweight player entry keyed by clientId
-      this.players.set(payload.client.clientId, Object.assign({}, payload.client.avatar, { clientId: payload.client.clientId }));
+      this.players.set(
+        payload.client.clientId,
+        Object.assign({}, payload.client.avatar, { clientId: payload.client.clientId })
+      );
     }
   }
 
@@ -347,9 +378,14 @@ export default class NetworkManager {
     console.log(`Player ${payload.clientId} left the zone`);
     try {
       if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
-        this.engine.hud.scrollText(`Player ${payload.clientId} left`, true, { autoclose: true, duration: 3000 });
+        this.engine.hud.scrollText(`Player ${payload.clientId} left`, true, {
+          autoclose: true,
+          duration: 3000,
+        });
       }
-    } catch (e) { /* ignore HUD errors */ }
+    } catch (e) {
+      /* ignore HUD errors */
+    }
     const player = this.players.get(payload.clientId);
     if (player) {
       const world = this.engine.spritz.world;
@@ -366,9 +402,15 @@ export default class NetworkManager {
     console.log('Players update:', payload.players);
     try {
       if (this.engine && this.engine.hud && typeof this.engine.hud.scrollText === 'function') {
-        this.engine.hud.scrollText(`Players in zone: ${payload.players.map(p => p.clientId).join(', ')}`, true, { autoclose: true, duration: 3000 });
+        this.engine.hud.scrollText(
+          `Players in zone: ${payload.players.map(p => p.clientId).join(', ')}`,
+          true,
+          { autoclose: true, duration: 3000 }
+        );
       }
-    } catch (e) { /* ignore HUD errors */ }
+    } catch (e) {
+      /* ignore HUD errors */
+    }
     // Update local players map
     const existingPlayers = new Set(this.players.keys());
     const newPlayers = new Set(payload.players.map(p => p.clientId));
@@ -419,13 +461,23 @@ export default class NetworkManager {
       // Fallback: use ActionLoader to construct action if factory missing
       if (!Action) {
         if (!NetworkManager._ActionLoader) NetworkManager._ActionLoader = ActionLoader;
-        const loader = new NetworkManager._ActionLoader(this.engine, payload.action, payload.params || {}, player, () => { });
+        const loader = new NetworkManager._ActionLoader(
+          this.engine,
+          payload.action,
+          payload.params || {},
+          player,
+          () => {}
+        );
         // loader.load returns an instance of Action (synchronously in our loader implementation)
         const instance = loader;
         // Some path: ActionLoader returns an Action instance via its load helper
         if (instance && instance.instances == null) {
           // unlikely shape; log and skip
-          console.warn('ActionLoader returned unexpected instance for action', payload.action, instance);
+          console.warn(
+            'ActionLoader returned unexpected instance for action',
+            payload.action,
+            instance
+          );
         }
         // ActionLoader already enqueued the action on the sprite via its callbacks;
       } else {
@@ -456,7 +508,11 @@ export default class NetworkManager {
 
       try {
         // Prefer updating remote avatars by clientId to avoid id mismatch between clients and server
-        if (spriteData.clientId && world.remoteAvatars && world.remoteAvatars.has(spriteData.clientId)) {
+        if (
+          spriteData.clientId &&
+          world.remoteAvatars &&
+          world.remoteAvatars.has(spriteData.clientId)
+        ) {
           // Use existing remote avatar mapping
           world.updateRemoteAvatar(spriteData.clientId, {
             x: spriteData.x,
@@ -464,7 +520,7 @@ export default class NetworkManager {
             z: spriteData.z || 0,
             facing: (spriteData.avatar && spriteData.avatar.facing) || spriteData.facing,
             animFrame: (spriteData.avatar && spriteData.avatar.animFrame) || spriteData.animFrame,
-            ...((spriteData.avatar) || {})
+            ...(spriteData.avatar || {}),
           });
         } else {
           // Fallback: try to match by sprite id in zone spriteDict
@@ -474,19 +530,21 @@ export default class NetworkManager {
             existingSprite.pos.y = spriteData.y;
             existingSprite.pos.z = spriteData.z || 0;
             if (spriteData.avatar) {
-              if (spriteData.avatar.facing != null) existingSprite.facing = spriteData.avatar.facing;
-              if (spriteData.avatar.animFrame != null) existingSprite.animFrame = spriteData.avatar.animFrame;
+              if (spriteData.avatar.facing != null)
+                existingSprite.facing = spriteData.avatar.facing;
+              if (spriteData.avatar.animFrame != null)
+                existingSprite.animFrame = spriteData.avatar.animFrame;
             }
           } else {
             // Create remote avatar using world.addRemoteAvatar if possible, providing clientId-aware data
             const avatarPayload = {
-              id: spriteData.id || (`player-${spriteData.clientId}`),
+              id: spriteData.id || `player-${spriteData.clientId}`,
               x: spriteData.x,
               y: spriteData.y,
               z: spriteData.z || 0,
               facing: (spriteData.avatar && spriteData.avatar.facing) || spriteData.facing,
               animFrame: (spriteData.avatar && spriteData.avatar.animFrame) || spriteData.animFrame,
-              ...((spriteData.avatar) || {})
+              ...(spriteData.avatar || {}),
             };
             if (spriteData.clientId && typeof world.addRemoteAvatar === 'function') {
               world.addRemoteAvatar(spriteData.clientId, avatarPayload);
@@ -505,7 +563,12 @@ export default class NetworkManager {
    * Sets the network authority from the manifest.
    */
   setAuthorityFromManifest() {
-    if (this.engine && this.engine.spritz && this.engine.spritz.manifest && this.engine.spritz.manifest.network) {
+    if (
+      this.engine &&
+      this.engine.spritz &&
+      this.engine.spritz.manifest &&
+      this.engine.spritz.manifest.network
+    ) {
       this.authority = this.engine.spritz.manifest.network.authority || 'server';
     }
   }
@@ -522,7 +585,10 @@ export default class NetworkManager {
       const updated = world.updateRemoteAvatar(payload.clientId, payload.avatar);
       if (!updated) {
         // If avatar didn't exist, create it
-        world.addRemoteAvatar(payload.clientId, { id: payload.avatar.id || `player-${payload.clientId}`, ...payload.avatar });
+        world.addRemoteAvatar(payload.clientId, {
+          id: payload.avatar.id || `player-${payload.clientId}`,
+          ...payload.avatar,
+        });
         this.players.set(payload.clientId, payload.avatar);
       } else {
         this.players.set(payload.clientId, payload.avatar);

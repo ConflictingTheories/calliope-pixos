@@ -19,18 +19,8 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
-  "files": [
-    "dist",
-    "src",
-    "README.md"
-  ],
-  "keywords": [
-    "pixoscript",
-    "scripting",
-    "game-engine",
-    "pixospritz",
-    "lua"
-  ],
+  "files": ["dist", "src", "README.md"],
+  "keywords": ["pixoscript", "scripting", "game-engine", "pixospritz", "lua"],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",

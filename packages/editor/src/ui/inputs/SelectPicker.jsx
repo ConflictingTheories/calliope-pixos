@@ -5,7 +5,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './SelectPicker.css';
 
-export function SelectPicker({ 
+export function SelectPicker({
   data = [],
   value,
   defaultValue,
@@ -25,7 +25,7 @@ export function SelectPicker({
   renderMenuItem,
   renderValue,
   style,
-  ...props 
+  ...props
 }) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
@@ -39,11 +39,10 @@ export function SelectPicker({
   const selectedItem = data.find(item => item[valueKey] === currentValue);
 
   // Filter items by search
-  const filteredData = searchable && searchText
-    ? data.filter(item => 
-        String(item[labelKey]).toLowerCase().includes(searchText.toLowerCase())
-      )
-    : data;
+  const filteredData =
+    searchable && searchText
+      ? data.filter(item => String(item[labelKey]).toLowerCase().includes(searchText.toLowerCase()))
+      : data;
 
   // Group items if needed
   const groupedData = groupBy
@@ -57,7 +56,7 @@ export function SelectPicker({
 
   // Close on outside click
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = e => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
         setSearchText('');
@@ -74,7 +73,7 @@ export function SelectPicker({
     }
   }, [isOpen, searchable]);
 
-  const handleSelect = (item) => {
+  const handleSelect = item => {
     const newValue = item[valueKey];
     setInternalValue(newValue);
     setIsOpen(false);
@@ -82,7 +81,7 @@ export function SelectPicker({
     onChange?.(newValue, item);
   };
 
-  const handleClear = (e) => {
+  const handleClear = e => {
     e.stopPropagation();
     setInternalValue(undefined);
     onChange?.(null, null);
@@ -95,14 +94,18 @@ export function SelectPicker({
     isOpen && 'px-select-picker-open',
     disabled && 'px-select-picker-disabled',
     block && 'px-select-picker-block',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const displayValue = selectedItem
-    ? (renderValue ? renderValue(currentValue, selectedItem) : selectedItem[labelKey])
+    ? renderValue
+      ? renderValue(currentValue, selectedItem)
+      : selectedItem[labelKey]
     : null;
 
-  const renderItem = (item) => {
+  const renderItem = item => {
     if (renderMenuItem) {
       return renderMenuItem(item[labelKey], item);
     }
@@ -111,15 +114,14 @@ export function SelectPicker({
 
   return (
     <div ref={containerRef} className={classes} style={style} {...props}>
-      <div 
-        className="px-select-picker-toggle"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-      >
+      <div className="px-select-picker-toggle" onClick={() => !disabled && setIsOpen(!isOpen)}>
         <span className="px-select-picker-value">
           {displayValue || <span className="px-select-picker-placeholder">{placeholder}</span>}
         </span>
         {cleanable && currentValue !== undefined && currentValue !== null && (
-          <span className="px-select-picker-clear" onClick={handleClear}>×</span>
+          <span className="px-select-picker-clear" onClick={handleClear}>
+            ×
+          </span>
         )}
         <span className="px-select-picker-caret">▼</span>
       </div>
@@ -132,39 +134,37 @@ export function SelectPicker({
                 ref={inputRef}
                 type="text"
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={e => setSearchText(e.target.value)}
                 placeholder="Search..."
                 className="px-select-picker-search-input"
               />
             </div>
           )}
           <div className="px-select-picker-options">
-            {groupedData ? (
-              Object.entries(groupedData).map(([group, items]) => (
-                <div key={group} className="px-select-picker-group">
-                  <div className="px-select-picker-group-title">{group}</div>
-                  {items.map(item => (
-                    <div
-                      key={item[valueKey]}
-                      className={`px-select-picker-option ${item[valueKey] === currentValue ? 'px-select-picker-option-selected' : ''}`}
-                      onClick={() => handleSelect(item)}
-                    >
-                      {renderItem(item)}
-                    </div>
-                  ))}
-                </div>
-              ))
-            ) : (
-              filteredData.map(item => (
-                <div
-                  key={item[valueKey]}
-                  className={`px-select-picker-option ${item[valueKey] === currentValue ? 'px-select-picker-option-selected' : ''}`}
-                  onClick={() => handleSelect(item)}
-                >
-                  {renderItem(item)}
-                </div>
-              ))
-            )}
+            {groupedData
+              ? Object.entries(groupedData).map(([group, items]) => (
+                  <div key={group} className="px-select-picker-group">
+                    <div className="px-select-picker-group-title">{group}</div>
+                    {items.map(item => (
+                      <div
+                        key={item[valueKey]}
+                        className={`px-select-picker-option ${item[valueKey] === currentValue ? 'px-select-picker-option-selected' : ''}`}
+                        onClick={() => handleSelect(item)}
+                      >
+                        {renderItem(item)}
+                      </div>
+                    ))}
+                  </div>
+                ))
+              : filteredData.map(item => (
+                  <div
+                    key={item[valueKey]}
+                    className={`px-select-picker-option ${item[valueKey] === currentValue ? 'px-select-picker-option-selected' : ''}`}
+                    onClick={() => handleSelect(item)}
+                  >
+                    {renderItem(item)}
+                  </div>
+                ))}
             {filteredData.length === 0 && (
               <div className="px-select-picker-no-results">No results found</div>
             )}

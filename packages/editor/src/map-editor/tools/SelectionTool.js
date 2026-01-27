@@ -49,7 +49,7 @@ export default class SelectionTool extends BaseTool {
     if (!this.selection) {
       return [{ x, y, tile: null, isSelection: true }];
     }
-    
+
     const preview = [];
     for (let py = this.selection.y; py < this.selection.y + this.selection.height; py++) {
       for (let px = this.selection.x; px < this.selection.x + this.selection.width; px++) {

@@ -33,7 +33,7 @@ export class AudioLoader {
     let loader = this;
     if (loop) {
       Object.keys(loader.instances)
-        .filter((instance) => src !== instance)
+        .filter(instance => src !== instance)
         .forEach(function (instance) {
           if (loader.instances[instance]) {
             loader.instances[instance].pauseAudio();
@@ -54,7 +54,7 @@ export class AudioLoader {
     let blob = await zip
       .file(`audio/${src}`)
       .async('arrayBuffer')
-      .then((audioData) => {
+      .then(audioData => {
         let buffer = new Uint8Array(audioData);
         return new Blob([buffer.buffer]);
       });
@@ -67,7 +67,7 @@ export class AudioLoader {
     let loader = this;
     if (loop) {
       Object.keys(loader.instances)
-        .filter((instance) => src !== instance)
+        .filter(instance => src !== instance)
         .forEach(function (instance) {
           if (loader.instances[instance]) {
             loader.instances[instance].pauseAudio();
@@ -106,7 +106,7 @@ export class AudioTrack {
         this.bpm = bpm;
       },
     });
-    this.audioNode.onaudioprocess = (e) => {
+    this.audioNode.onaudioprocess = e => {
       onAudioProcess.analyze(e);
     };
 
@@ -131,10 +131,10 @@ export class AudioTrack {
     this.playing = true;
     if (audioPromise !== undefined) {
       audioPromise
-        .then((_) => {
+        .then(_ => {
           // autoplay started
         })
-        .catch((err) => {
+        .catch(err => {
           // catch dom exception
           console.info(err);
         });
@@ -145,10 +145,10 @@ export class AudioTrack {
     this.playing = false;
     if (audioPromise !== undefined) {
       audioPromise
-        .then((_) => {
+        .then(_ => {
           // autoplay started
         })
-        .catch((err) => {
+        .catch(err => {
           // catch dom exception
           console.info(err);
         });

@@ -5,10 +5,10 @@
  * Copyright (c) 2022-2025 Kyle Derby MacInnis
  *
  * A right-click context menu component.
- * 
+ *
  * Usage:
  *   const { showMenu, hideMenu, ContextMenu: Menu } = useContextMenu();
- *   
+ *
  *   <div onContextMenu={(e) => showMenu(e, menuItems)}>
  *     Right click me
  *   </div>
@@ -33,7 +33,7 @@ import '../styles/context-menu.css';
 
 /**
  * ContextMenu - Right-click menu component
- * 
+ *
  * @param {Object} props
  * @param {boolean} props.visible - Whether menu is visible
  * @param {number} props.x - X position
@@ -42,14 +42,7 @@ import '../styles/context-menu.css';
  * @param {function} props.onClose - Callback to close menu
  * @param {string} [props.className] - Additional CSS classes
  */
-function ContextMenu({
-  visible,
-  x,
-  y,
-  items = [],
-  onClose,
-  className = ''
-}) {
+function ContextMenu({ visible, x, y, items = [], onClose, className = '' }) {
   const menuRef = useRef(null);
   const [position, setPosition] = useState({ x, y });
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -82,13 +75,13 @@ function ContextMenu({
   useEffect(() => {
     if (!visible) return;
 
-    const handleClickOutside = (e) => {
+    const handleClickOutside = e => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         onClose?.();
       }
     };
 
-    const handleEscape = (e) => {
+    const handleEscape = e => {
       if (e.key === 'Escape') {
         onClose?.();
       }
@@ -104,18 +97,21 @@ function ContextMenu({
   }, [visible, onClose]);
 
   // Handle item click
-  const handleItemClick = useCallback((item, e) => {
-    e.stopPropagation();
-    if (item.disabled || item.separator) return;
+  const handleItemClick = useCallback(
+    (item, e) => {
+      e.stopPropagation();
+      if (item.disabled || item.separator) return;
 
-    item.onClick?.();
-    if (!item.submenu) {
-      onClose?.();
-    }
-  }, [onClose]);
+      item.onClick?.();
+      if (!item.submenu) {
+        onClose?.();
+      }
+    },
+    [onClose]
+  );
 
   // Handle submenu hover
-  const handleSubmenuHover = useCallback((itemId) => {
+  const handleSubmenuHover = useCallback(itemId => {
     setActiveSubmenu(itemId);
   }, []);
 
@@ -139,7 +135,7 @@ function ContextMenu({
           <div
             key={item.id || index}
             className={`context-menu__item ${item.disabled ? 'context-menu__item--disabled' : ''} ${hasSubmenu ? 'context-menu__item--has-submenu' : ''}`}
-            onClick={(e) => handleItemClick(item, e)}
+            onClick={e => handleItemClick(item, e)}
             onMouseEnter={() => hasSubmenu && handleSubmenuHover(item.id)}
             onMouseLeave={() => hasSubmenu && handleSubmenuHover(null)}
             role="menuitem"
@@ -148,7 +144,11 @@ function ContextMenu({
             {item.icon && <span className="context-menu__icon">{item.icon}</span>}
             <span className="context-menu__label">{item.label}</span>
             {item.shortcut && <span className="context-menu__shortcut">{item.shortcut}</span>}
-            {hasSubmenu && <span className="context-menu__arrow"><ChevronRightIcon /></span>}
+            {hasSubmenu && (
+              <span className="context-menu__arrow">
+                <ChevronRightIcon />
+              </span>
+            )}
 
             {/* Submenu */}
             {hasSubmenu && activeSubmenu === item.id && (
@@ -162,13 +162,15 @@ function ContextMenu({
                     <div
                       key={subItem.id || subIndex}
                       className={`context-menu__item ${subItem.disabled ? 'context-menu__item--disabled' : ''}`}
-                      onClick={(e) => handleItemClick(subItem, e)}
+                      onClick={e => handleItemClick(subItem, e)}
                       role="menuitem"
                       aria-disabled={subItem.disabled}
                     >
                       {subItem.icon && <span className="context-menu__icon">{subItem.icon}</span>}
                       <span className="context-menu__label">{subItem.label}</span>
-                      {subItem.shortcut && <span className="context-menu__shortcut">{subItem.shortcut}</span>}
+                      {subItem.shortcut && (
+                        <span className="context-menu__shortcut">{subItem.shortcut}</span>
+                      )}
                     </div>
                   );
                 })}
@@ -194,7 +196,7 @@ function ChevronRightIcon() {
 
 /**
  * useContextMenu - Hook to manage context menu state
- * 
+ *
  * @returns {{
  *   visible: boolean,
  *   position: {x: number, y: number},
@@ -209,7 +211,7 @@ export function useContextMenu() {
     visible: false,
     x: 0,
     y: 0,
-    items: []
+    items: [],
   });
 
   const showMenu = useCallback((event, items) => {
@@ -219,7 +221,7 @@ export function useContextMenu() {
       visible: true,
       x: event.clientX,
       y: event.clientY,
-      items
+      items,
     });
   }, []);
 
@@ -227,15 +229,18 @@ export function useContextMenu() {
     setState(prev => ({ ...prev, visible: false }));
   }, []);
 
-  const ContextMenuComponent = useCallback(() => (
-    <ContextMenu
-      visible={state.visible}
-      x={state.x}
-      y={state.y}
-      items={state.items}
-      onClose={hideMenu}
-    />
-  ), [state, hideMenu]);
+  const ContextMenuComponent = useCallback(
+    () => (
+      <ContextMenu
+        visible={state.visible}
+        x={state.x}
+        y={state.y}
+        items={state.items}
+        onClose={hideMenu}
+      />
+    ),
+    [state, hideMenu]
+  );
 
   return {
     visible: state.visible,
@@ -243,7 +248,7 @@ export function useContextMenu() {
     items: state.items,
     showMenu,
     hideMenu,
-    ContextMenuComponent
+    ContextMenuComponent,
   };
 }
 

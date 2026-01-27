@@ -106,12 +106,12 @@ export default class BaseTool {
   getBrushCells(centerX, centerY, width, height) {
     const cells = [];
     const halfSize = Math.floor(this.brushSize / 2);
-    
+
     for (let dy = -halfSize; dy <= halfSize; dy++) {
       for (let dx = -halfSize; dx <= halfSize; dx++) {
         const x = centerX + dx;
         const y = centerY + dy;
-        
+
         // Check bounds
         if (x >= 0 && x < width && y >= 0 && y < height) {
           // For circular brush, check distance
@@ -126,7 +126,7 @@ export default class BaseTool {
         }
       }
     }
-    
+
     return cells;
   }
 

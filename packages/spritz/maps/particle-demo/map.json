@@ -7,7 +7,7 @@
   "mode": "explore",
   "skybox": "cosmic",
   "onLoad": "zone/particle_demo_load",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -16,7 +16,7 @@
       "facing": "Up",
       "bindCamera": true
     },
-    
+
     {
       "id": "particle-fountain",
       "type": "effects/spurt",
@@ -25,7 +25,7 @@
       "onStep": "sprite/fountain_particles",
       "loopParticles": true
     },
-    
+
     {
       "id": "torch-left",
       "type": "effects/fireplace",
@@ -42,7 +42,7 @@
       "onStep": "sprite/torch_fire",
       "particleType": "flame"
     },
-    
+
     {
       "id": "magic-crystal-1",
       "type": "objects/chests/blue",
@@ -83,7 +83,7 @@
       "color": [1.0, 1.0, 0.2],
       "requiredCount": 4
     },
-    
+
     {
       "id": "secret-door",
       "type": "furniture/door",
@@ -93,7 +93,7 @@
       "requiredCrystals": 4,
       "zones": ["boss-arena"]
     },
-    
+
     {
       "id": "weather-orb",
       "type": "furniture/portal",
@@ -102,7 +102,7 @@
       "selectTrigger": "sprite/weather_cycle",
       "weatherIndex": 0
     },
-    
+
     {
       "id": "return-portal",
       "type": "furniture/portal",
@@ -111,7 +111,7 @@
       "zones": ["village-hub"],
       "state": "open"
     },
-    
+
     {
       "id": "quest-giver",
       "type": "characters/female",
@@ -120,7 +120,7 @@
       "selectTrigger": "sprite/particle_quest",
       "questState": "not_started"
     },
-    
+
     {
       "id": "magic-chest",
       "type": "objects/chests/wood",
@@ -131,9 +131,9 @@
       "selectTrigger": "sprite/chest_open_particles"
     }
   ],
-  
+
   "objects": [],
-  
+
   "lights": [
     {
       "id": "center-light",
@@ -192,7 +192,7 @@
       "enabled": true
     }
   ],
-  
+
   "triggers": [
     {
       "id": "zone-enter",
@@ -213,7 +213,7 @@
       "onEnter": "tile/secret_area_approach"
     }
   ],
-  
+
   "dynamicState": {
     "crystalsActivated": 0,
     "doorUnlocked": false,

@@ -24,7 +24,7 @@ import './audio-preview.css';
  *    content is undefined or null the component will render
  *    nothing.
  */
-const formatDuration = (seconds) => {
+const formatDuration = seconds => {
   if (!Number.isFinite(seconds) || seconds <= 0) return '—';
   const mins = Math.floor(seconds / 60);
   const secs = Math.round(seconds % 60)
@@ -33,7 +33,7 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs}`;
 };
 
-const deriveMetadataFromContent = (dataUri) => {
+const deriveMetadataFromContent = dataUri => {
   if (!dataUri) {
     return {
       format: '—',
@@ -69,11 +69,11 @@ const AudioPreview = ({ content }) => {
   const [audioElementKey, setAudioElementKey] = useState(0);
 
   useEffect(() => {
-    setStats((prev) => ({ ...prev, ...deriveMetadataFromContent(content), durationLabel: '—' }));
+    setStats(prev => ({ ...prev, ...deriveMetadataFromContent(content), durationLabel: '—' }));
   }, [content]);
 
   useEffect(() => {
-    setAudioElementKey((prev) => (content ? prev + 1 : 0));
+    setAudioElementKey(prev => (content ? prev + 1 : 0));
   }, [content]);
 
   useEffect(() => {
@@ -81,11 +81,12 @@ const AudioPreview = ({ content }) => {
     if (!audioEl || !content) return undefined;
 
     const handleMetadata = () => {
-      setStats((prev) => {
+      setStats(prev => {
         const duration = audioEl.duration;
-        const bitrateLabel = prev.sizeBytes && Number.isFinite(duration) && duration > 0
-          ? `${Math.max(1, Math.round((prev.sizeBytes * 8) / duration / 1000))} kbps`
-          : prev.bitrateLabel;
+        const bitrateLabel =
+          prev.sizeBytes && Number.isFinite(duration) && duration > 0
+            ? `${Math.max(1, Math.round((prev.sizeBytes * 8) / duration / 1000))} kbps`
+            : prev.bitrateLabel;
         return {
           ...prev,
           durationLabel: formatDuration(duration),
@@ -196,12 +197,15 @@ const AudioPreview = ({ content }) => {
     };
   }, [content, audioElementKey]);
 
-  const statItems = useMemo(() => ([
-    { label: 'Format', value: stats.format },
-    { label: 'Duration', value: stats.durationLabel || '—' },
-    { label: 'Size', value: stats.sizeLabel },
-    { label: 'Bitrate', value: stats.bitrateLabel },
-  ]), [stats]);
+  const statItems = useMemo(
+    () => [
+      { label: 'Format', value: stats.format },
+      { label: 'Duration', value: stats.durationLabel || '—' },
+      { label: 'Size', value: stats.sizeLabel },
+      { label: 'Bitrate', value: stats.bitrateLabel },
+    ],
+    [stats]
+  );
 
   if (!content) {
     return (
@@ -218,7 +222,9 @@ const AudioPreview = ({ content }) => {
           <div>
             <p className="eyebrow">Pixel Equalizer</p>
             <h3>Retro Audio Monitor</h3>
-            <p className="subtext">Enjoy a CRT-inspired visualizer while you inspect your assets.</p>
+            <p className="subtext">
+              Enjoy a CRT-inspired visualizer while you inspect your assets.
+            </p>
           </div>
           <audio
             key={audioElementKey}
@@ -236,7 +242,7 @@ const AudioPreview = ({ content }) => {
           <div className="pixel-grid-overlay" aria-hidden="true" />
         </div>
         <div className="audio-stats">
-          {statItems.map((item) => (
+          {statItems.map(item => (
             <div key={item.label} className="audio-stat">
               <span>{item.label}</span>
               <strong>{item.value}</strong>

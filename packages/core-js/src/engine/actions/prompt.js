@@ -34,7 +34,9 @@ export default {
     if (!this.loaded) return;
     // Check for autoclose (manual triggers and sections implemented in dialogue.js)
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
+      this.endTime = this.endTime
+        ? this.endTime
+        : (this.options.endTime ?? new Date().getTime() + 10000); // 10 seconds default if autoclose
       if (time > this.endTime) {
         this.completed = true;
       }
@@ -44,17 +46,28 @@ export default {
     this.checkInput(time);
     // Draw Active Menus to Screen
     Object.keys(this.menuDict)
-      .filter((key) => this.activeMenus.includes(key))
-      .map((id) => {
+      .filter(key => this.activeMenus.includes(key))
+      .map(id => {
         let section = this.menuDict[id];
         let colors = section.colours;
         if (section.active) {
           colors['background'] = '#555';
         }
-        this.engine.hud.drawButton(section.text, section.x, section.y, section.w, section.h, section.colours);
+        this.engine.hud.drawButton(
+          section.text,
+          section.x,
+          section.y,
+          section.w,
+          section.h,
+          section.colours
+        );
       });
 
-    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(
+      this.prompt + this.text,
+      this.scrolling,
+      this.options
+    );
 
     if (this.completed) {
       this.unhookListener();
@@ -74,22 +87,45 @@ export default {
      * Normalize event to extract touches array.
      * Works with mouse events, touch events, and pre-processed events from WebGLView.
      */
-    const normalizeTouches = (e) => {
+    const normalizeTouches = e => {
       // Pre-computed canvas coordinates from WebGLView
       if (e.canvasX !== undefined && e.canvasY !== undefined) {
         return [{ x: e.canvasX, y: e.canvasY, identifier: 'normalized' }];
       }
+
+      // Helper to convert clientX/Y to canvas coordinates
+      const convertToCanvasCoordinates = (clientX, clientY) => {
+        const canvas = this.engine.canvas;
+        if (!canvas) return { x: clientX, y: clientY };
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY,
+        };
+      };
+
       // Touch events
       if (e.touches && e.touches.length > 0) {
-        return Array.from(e.touches).map(t => ({ x: t.clientX, y: t.clientY, identifier: t.identifier }));
+        return Array.from(e.touches).map(t => {
+          const coords = convertToCanvasCoordinates(t.clientX, t.clientY);
+          return { x: coords.x, y: coords.y, identifier: t.identifier };
+        });
       }
       // Touch end uses changedTouches
       if (e.changedTouches && e.changedTouches.length > 0) {
-        return Array.from(e.changedTouches).map(t => ({ x: t.clientX, y: t.clientY, identifier: t.identifier }));
+        return Array.from(e.changedTouches).map(t => {
+          const coords = convertToCanvasCoordinates(t.clientX, t.clientY);
+          return { x: coords.x, y: coords.y, identifier: t.identifier };
+        });
       }
       // Mouse events
       if (e.clientX !== undefined && e.clientY !== undefined) {
-        return [{ x: e.clientX, y: e.clientY, identifier: 'mouse' }];
+        const coords = convertToCanvasCoordinates(e.clientX, e.clientY);
+        return [{ x: coords.x, y: coords.y, identifier: 'mouse' }];
       }
       // Already normalized (legacy format)
       if (e.touches) {
@@ -98,7 +134,7 @@ export default {
       return [];
     };
 
-    let touchstart = (e) => {
+    let touchstart = e => {
       const touches = normalizeTouches(e);
       this.isTouched = true;
       this.touches = touches;
@@ -107,14 +143,14 @@ export default {
         let y = this.touches[0].y;
         let self = this;
         self.activeMenus
-          .filter((key) => {
+          .filter(key => {
             let w = self.menuDict[key];
             if (x < w.x + w.w && x > w.x && y < w.y + w.h && y > w.y) {
               return true;
             }
             return false;
           })
-          .map((key) => {
+          .map(key => {
             let w = self.menuDict[key];
             if (w.trigger) w.trigger(this);
             if (w.children) {
@@ -123,10 +159,10 @@ export default {
           });
       }
     };
-    let touchmove = (e) => {
+    let touchmove = e => {
       this.touches = normalizeTouches(e);
     };
-    let touchend = (e) => {
+    let touchend = e => {
       this.isTouched = false;
       this.touches = normalizeTouches(e);
     };

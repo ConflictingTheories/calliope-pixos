@@ -4,10 +4,10 @@
   "consoleVersion": "1.0.0",
   "supportedConsoleVersions": ">=1.0.0 <2.0.0",
   "description": "A complete showcase of the PixoSpritz engine featuring exploration, combat, puzzles, and an epic quest to save the kingdom.",
-  
+
   "initialZones": ["particle-demo"],
   "modes": ["explore", "fight", "debug", "tactics"],
-  
+
   "maps": [
     "village-hub",
     "dungeon-entrance",
@@ -24,14 +24,14 @@
     "cutscene-demo",
     "particle-demo"
   ],
-  
+
   "tilesets": ["common", "sewer", "village"],
-  
+
   "network": {
     "enabled": false,
     "authority": "client"
   },
-  
+
   "sprites": [
     "characters/male",
     "characters/female",
@@ -51,7 +51,7 @@
     "objects/chests/red",
     "objects/chests/blue"
   ],
-  
+
   "objects": [
     "apple",
     "bed",
@@ -64,7 +64,7 @@
     "person",
     "robot"
   ],
-  
+
   "textures": [
     "textures/room.gif",
     "textures/room.png",
@@ -78,9 +78,9 @@
     "textures/portraits/female_portrait.gif",
     "textures/portraits/knight_portrait.gif"
   ],
-  
+
   "fonts": [],
-  
+
   "audio": [
     "audio/opening.mp3",
     "audio/brass-loop.mp3",
@@ -99,7 +99,7 @@
     "audio/organ.mp3",
     "audio/sewer-beat.mp3"
   ],
-  
+
   "cutscenes": [
     "cutscenes/game-intro.pxc",
     "cutscenes/fire-trial.pxc",
@@ -115,14 +115,14 @@
     "cutscenes/showcase-demo.pxc",
     "cutscenes/shakespeare.pxc"
   ],
-  
+
   "shaders": [
     "shaders/glow_effect.pxsl",
     "shaders/water_surface.pxsl",
     "shaders/retro_crt.pxsl",
     "shaders/magic_particle.pxsl"
   ],
-  
+
   "gameFlags": {
     "fire_trial_complete": false,
     "water_trial_complete": false,

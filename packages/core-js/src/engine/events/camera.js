@@ -100,7 +100,10 @@ export default {
         }
         break;
       case 'rotate':
-        if (typeof this.options.yawDelta === 'number' || typeof this.options.pitchDelta === 'number') {
+        if (
+          typeof this.options.yawDelta === 'number' ||
+          typeof this.options.pitchDelta === 'number'
+        ) {
           // Apply rotation incrementally or directly based on progress
           const initialYaw = camera.yaw;
           const initialPitch = camera.pitch;
@@ -115,7 +118,8 @@ export default {
       case 'translate':
         if (this.options.translateDirection) {
           // For continuous translation, this might be called repeatedly.
-          if (!this.completed) { // Only translate while not completed
+          if (!this.completed) {
+            // Only translate while not completed
             camera.translateCam(this.options.translateDirection);
           }
         }
@@ -132,7 +136,9 @@ export default {
         //   - instant: boolean - if true, snap to position without interpolation
         if (this.options.target) {
           const target = this.options.target;
-          const targetVec = target.toArray ? target : new Vector(target.x || 0, target.y || 0, target.z || 0);
+          const targetVec = target.toArray
+            ? target
+            : new Vector(target.x || 0, target.y || 0, target.z || 0);
           const mode = this.options.mode || 'orbital';
           const distance = this.options.distance || camera.cameraDistance;
           const instant = this.options.instant || false;
@@ -194,9 +200,14 @@ export default {
             } else {
               // Interpolate camera state
               const startTarget = this.options._startTarget || camera.cameraTarget;
-              const startDistance = this.options._startDistance !== undefined ? this.options._startDistance : camera.cameraDistance;
-              const startYaw = this.options._startYaw !== undefined ? this.options._startYaw : camera.yaw;
-              const startPitch = this.options._startPitch !== undefined ? this.options._startPitch : camera.pitch;
+              const startDistance =
+                this.options._startDistance !== undefined
+                  ? this.options._startDistance
+                  : camera.cameraDistance;
+              const startYaw =
+                this.options._startYaw !== undefined ? this.options._startYaw : camera.yaw;
+              const startPitch =
+                this.options._startPitch !== undefined ? this.options._startPitch : camera.pitch;
 
               // Store start values on first tick
               if (!this.options._startTarget) {

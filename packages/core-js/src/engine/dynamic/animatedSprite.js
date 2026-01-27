@@ -37,20 +37,24 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
     } else {
       this.triggerTime = this.json.triggerTime;
     }
-  }
+  };
 
   /**
    * Animates the sprite on ticks.
    * @param {number} time - The current time.
    */
-  tick = (time) => {
+  tick = time => {
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;
     }
     // wait enough time
     this.accumTime += time - this.lastTime;
-    if (this.accumTime < this.frameTime || (this.animFrame == 0 && this.accumTime < this.triggerTime)) return;
+    if (
+      this.accumTime < this.frameTime ||
+      (this.animFrame == 0 && this.accumTime < this.triggerTime)
+    )
+      return;
     // reset animation
     if (this.animFrame == 5) {
       this.setFrame(0);
@@ -60,5 +64,5 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
       this.accumTime = 0;
       this.lastTime = time;
     }
-  }
+  };
 }

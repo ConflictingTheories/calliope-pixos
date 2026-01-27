@@ -16,7 +16,7 @@ describe('RedisStore (in-memory fallback)', () => {
     store = new RedisStore({
       sessionTtl: 60,
       zoneTtl: 300,
-      prefix: 'test:'
+      prefix: 'test:',
     });
   });
 
@@ -28,10 +28,10 @@ describe('RedisStore (in-memory fallback)', () => {
     test('saveZoneState and loadZoneState work correctly', async () => {
       const zoneId = 'zone-1';
       const state = { players: [], objects: [{ id: 'obj-1' }] };
-      
+
       await store.saveZoneState(zoneId, state);
       const loaded = await store.loadZoneState(zoneId);
-      
+
       expect(loaded).toEqual(state);
     });
 
@@ -43,10 +43,10 @@ describe('RedisStore (in-memory fallback)', () => {
     test('deleteZoneState removes zone', async () => {
       const zoneId = 'zone-to-delete';
       await store.saveZoneState(zoneId, { test: true });
-      
+
       await store.deleteZoneState(zoneId);
       const loaded = await store.loadZoneState(zoneId);
-      
+
       expect(loaded).toBe(null);
     });
   });
@@ -55,10 +55,10 @@ describe('RedisStore (in-memory fallback)', () => {
     test('saveSession and loadSession work correctly', async () => {
       const clientId = 'client-1';
       const sessionData = { zoneId: 'zone-1', avatar: { x: 10, y: 20 } };
-      
+
       await store.saveSession(clientId, sessionData);
       const loaded = await store.loadSession(clientId);
-      
+
       expect(loaded.zoneId).toBe('zone-1');
       expect(loaded.avatar).toEqual({ x: 10, y: 20 });
       expect(loaded.savedAt).toBeTruthy(); // Should have timestamp
@@ -72,17 +72,17 @@ describe('RedisStore (in-memory fallback)', () => {
     test('deleteSession removes session', async () => {
       const clientId = 'session-to-delete';
       await store.saveSession(clientId, { test: true });
-      
+
       await store.deleteSession(clientId);
       const loaded = await store.loadSession(clientId);
-      
+
       expect(loaded).toBe(null);
     });
 
     test('extendSession updates TTL', async () => {
       const clientId = 'session-extend';
       await store.saveSession(clientId, { test: true });
-      
+
       const result = await store.extendSession(clientId);
       expect(result).toBe(true);
     });
@@ -98,9 +98,9 @@ describe('RedisStore (in-memory fallback)', () => {
       const zoneId = 'zone-players';
       await store.savePlayerPosition(zoneId, 'player-1', { x: 10, y: 20 });
       await store.savePlayerPosition(zoneId, 'player-2', { x: 30, y: 40 });
-      
+
       const players = await store.getZonePlayers(zoneId);
-      
+
       // In memory fallback, this is stored in zone state
       expect(players).toBeTruthy();
     });
@@ -108,9 +108,9 @@ describe('RedisStore (in-memory fallback)', () => {
     test('removePlayerFromZone removes player', async () => {
       const zoneId = 'zone-remove';
       await store.savePlayerPosition(zoneId, 'player-1', { x: 10, y: 20 });
-      
+
       await store.removePlayerFromZone(zoneId, 'player-1');
-      
+
       // Should succeed without error
       expect(true).toBeTruthy();
     });
@@ -125,9 +125,9 @@ describe('RedisStore (in-memory fallback)', () => {
     test('getStats returns store statistics', async () => {
       await store.saveZoneState('zone-1', { test: true });
       await store.saveSession('client-1', { test: true });
-      
+
       const stats = await store.getStats();
-      
+
       expect(stats.connected).toBe(false); // No Redis connection
       expect(stats.memoryEntries >= 2).toBeTruthy();
     });

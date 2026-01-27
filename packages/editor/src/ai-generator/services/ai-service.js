@@ -274,8 +274,8 @@ export class AIService {
       if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
         throw new Error(
           'Unable to reach OpenAI API. This is likely due to CORS restrictions. ' +
-          'Direct browser calls to OpenAI are blocked. Please use the "Custom" provider ' +
-          'with a proxy server, or run the editor from a server that proxies API requests.'
+            'Direct browser calls to OpenAI are blocked. Please use the "Custom" provider ' +
+            'with a proxy server, or run the editor from a server that proxies API requests.'
         );
       }
       throw err;
@@ -433,7 +433,8 @@ export class AIService {
 
     if (schema) {
       body.response_format = { type: 'json_object' };
-      messages[messages.length - 1].content += `\n\nRespond with JSON matching: ${JSON.stringify(schema)}`;
+      messages[messages.length - 1].content +=
+        `\n\nRespond with JSON matching: ${JSON.stringify(schema)}`;
     }
 
     const response = await fetch(this.config.customEndpoint, {
@@ -502,8 +503,8 @@ export class AIService {
         if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
           throw new Error(
             'Unable to reach OpenAI Image API. This is likely due to CORS restrictions. ' +
-            'Direct browser calls to OpenAI are blocked. Please use a proxy server ' +
-            'or run the editor from a server that proxies API requests.'
+              'Direct browser calls to OpenAI are blocked. Please use a proxy server ' +
+              'or run the editor from a server that proxies API requests.'
           );
         }
         throw err;

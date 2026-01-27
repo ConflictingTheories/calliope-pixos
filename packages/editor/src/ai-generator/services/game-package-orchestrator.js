@@ -7,12 +7,12 @@
  * High-level orchestrator for generating complete game packages
  * from a single prompt. Creates sprites, maps, scripts, cutscenes,
  * audio, and manifest in proper Pixospritz structure.
- * 
+ *
  * CRITICAL: This orchestrator VALIDATES that all required assets
  * are generated before declaring success. A game package is NOT
  * complete without:
  * - At least 1 player sprite (config + image)
- * - At least 1 NPC sprite (config + image)  
+ * - At least 1 NPC sprite (config + image)
  * - At least 1 cutscene
  * - At least 1 map with cells
  * - A valid manifest.json
@@ -20,7 +20,12 @@
 
 import aiService from './ai-service.js';
 import { generateCutscene, generateScript, generateManifest } from './text-generator.js';
-import { generatePortrait, generateSpritesheet, generateTileset, base64ToBlob } from './image-generator.js';
+import {
+  generatePortrait,
+  generateSpritesheet,
+  generateTileset,
+  base64ToBlob,
+} from './image-generator.js';
 import { SPRITESHEET_LAYOUTS, calculateFrameCoordinates } from './dsl-specifications.js';
 import { validateSpriteConfig, validateManifest } from './asset-validation.js';
 import { debug, debugWarn, debugError } from '../../shared/debug-logger.js';
@@ -167,8 +172,8 @@ export class GameConcept {
 export class GamePackageOrchestrator {
   constructor(options = {}) {
     this.writeFile = options.writeFile;
-    this.onProgress = options.onProgress || (() => { });
-    this.onStatusChange = options.onStatusChange || (() => { });
+    this.onProgress = options.onProgress || (() => {});
+    this.onStatusChange = options.onStatusChange || (() => {});
     this.tracker = new AssetTracker();
     this.maxRetries = 3;
   }
@@ -253,12 +258,9 @@ ENSURE you have at least: 1 player, 1 NPC, 1 location, 1 intro cutscene.
 RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
     try {
-      const response = await aiService.chatCompletion(
-        analysisPrompt,
-        systemPrompt,
-        null,
-        { temperature: 0.7 }
-      );
+      const response = await aiService.chatCompletion(analysisPrompt, systemPrompt, null, {
+        temperature: 0.7,
+      });
 
       // Parse the JSON response - it may be a string or already parsed
       let conceptData;
@@ -274,7 +276,10 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
             throw new Error('AI returned invalid JSON for game concept');
           }
         } else {
-          console.error('[GameOrchestrator] No JSON found in response:', response.substring(0, 500));
+          console.error(
+            '[GameOrchestrator] No JSON found in response:',
+            response.substring(0, 500)
+          );
           throw new Error('AI did not return JSON for game concept');
         }
       } else if (typeof response === 'object' && response !== null) {
@@ -283,7 +288,11 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         throw new Error('AI returned empty or invalid response');
       }
 
-      debug('GameOrchestrator', ' Parsed concept data:', JSON.stringify(conceptData).substring(0, 200));
+      debug(
+        'GameOrchestrator',
+        ' Parsed concept data:',
+        JSON.stringify(conceptData).substring(0, 200)
+      );
 
       const gameConcept = new GameConcept(conceptData);
 
@@ -353,7 +362,10 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // STEP 2: Generate PLAYER character (REQUIRED)
       // ================================================================
       debug('GameOrchestrator', ' STEP 2: Generating PLAYER character...');
-      this.onStatusChange({ phase: 'generating', message: 'Creating player character (REQUIRED)...' });
+      this.onStatusChange({
+        phase: 'generating',
+        message: 'Creating player character (REQUIRED)...',
+      });
 
       const playerChar = concept.characters.find(c => c.type === 'player') || concept.characters[0];
 
@@ -361,7 +373,13 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         throw new Error('CRITICAL: No player character in game concept!');
       }
 
-      debug('GameOrchestrator', ' Player:', playerChar.name, '-', playerChar.description?.substring(0, 50));
+      debug(
+        'GameOrchestrator',
+        ' Player:',
+        playerChar.name,
+        '-',
+        playerChar.description?.substring(0, 50)
+      );
 
       const playerAssets = await this.generateCharacterAssetsWithRetry(
         playerChar,
@@ -376,7 +394,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       // Track what was generated
       for (const asset of playerAssets.assets) {
         if (asset.type === 'config') this.tracker.markGenerated('player-sprite-config', asset.path);
-        if (asset.type === 'image' && asset.subtype === 'spritesheet') this.tracker.markGenerated('player-sprite-image', asset.path);
+        if (asset.type === 'image' && asset.subtype === 'spritesheet')
+          this.tracker.markGenerated('player-sprite-image', asset.path);
       }
 
       if (playerAssets.assets.length > 0) {
@@ -396,7 +415,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
       // Ensure at least one NPC
       if (npcs.length === 0 && concept.characters.length > 1) {
-        const fallbackNpc = concept.characters.find(c => c.type !== 'player') || concept.characters[1];
+        const fallbackNpc =
+          concept.characters.find(c => c.type !== 'player') || concept.characters[1];
         if (fallbackNpc) {
           fallbackNpc.type = 'npc';
           npcs.push(fallbackNpc);
@@ -420,7 +440,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         // Track what was generated
         for (const asset of npcAssets.assets) {
           if (asset.type === 'config') this.tracker.markGenerated('npc-sprite-config', asset.path);
-          if (asset.type === 'image' && asset.subtype === 'spritesheet') this.tracker.markGenerated('npc-sprite-image', asset.path);
+          if (asset.type === 'image' && asset.subtype === 'spritesheet')
+            this.tracker.markGenerated('npc-sprite-image', asset.path);
         }
 
         if (npcAssets.assets.length > 0) {
@@ -453,7 +474,10 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
             assetPaths.sprites.push(`monsters/${this.sanitizeName(enemy.name)}`);
           }
         } catch (error) {
-          console.error('[GameOrchestrator] Enemy generation failed (non-critical):', error.message);
+          console.error(
+            '[GameOrchestrator] Enemy generation failed (non-critical):',
+            error.message
+          );
           results.errors.push({ phase: 'enemy', message: error.message, retryable: true });
         }
       }
@@ -467,7 +491,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       this.onStatusChange({ phase: 'generating', message: 'Writing cutscenes (REQUIRED)...' });
 
       // Ensure we have an intro cutscene
-      const introCutscene = concept.cutscenes.find(c => c.trigger === 'intro') || concept.cutscenes[0];
+      const introCutscene =
+        concept.cutscenes.find(c => c.trigger === 'intro') || concept.cutscenes[0];
 
       if (!introCutscene) {
         // Create a default intro cutscene
@@ -498,10 +523,14 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
           this.tracker.markGenerated('cutscene', cutscenePath);
           assetPaths.cutscenes.push(cutscenePath);
-
         } catch (error) {
           console.error('[GameOrchestrator] Cutscene failed:', cutscene.id, error.message);
-          results.errors.push({ phase: 'cutscene', message: error.message, cutscene: cutscene.id, retryable: true });
+          results.errors.push({
+            phase: 'cutscene',
+            message: error.message,
+            cutscene: cutscene.id,
+            retryable: true,
+          });
         }
       }
 
@@ -598,7 +627,10 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
             debug('GameOrchestrator', ' ✓ Tileset texture generated');
           }
         } catch (texError) {
-          console.error('[GameOrchestrator] Tileset texture failed (using placeholder):', texError.message);
+          console.error(
+            '[GameOrchestrator] Tileset texture failed (using placeholder):',
+            texError.message
+          );
           // Create a simple placeholder tileset texture
           const placeholderBase64 = this.createPlaceholderTilesetTexture();
           results.assets.push({
@@ -613,7 +645,6 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         }
 
         this.tracker.markGenerated('tileset', 'tilesets/common/tileset.json');
-
       } catch (error) {
         console.error('[GameOrchestrator] Tileset generation failed:', error.message);
         results.errors.push({ phase: 'tileset', message: error.message, retryable: true });
@@ -663,7 +694,6 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
         this.tracker.markGenerated('map-cells', cellsPath);
         assetPaths.maps.push(this.sanitizeName(startLocation.id));
-
       } catch (error) {
         console.error('[GameOrchestrator] Map generation failed:', error.message);
         results.errors.push({ phase: 'map', message: error.message, retryable: true });
@@ -748,7 +778,6 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
           stats,
         });
       }
-
     } catch (error) {
       console.error('[GameOrchestrator] CRITICAL ERROR:', error);
       results.success = false;
@@ -797,16 +826,21 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
         // If we got config but no image, that's a partial success - try again for image
         if (hasConfig && !hasImage && attempt < this.maxRetries) {
-          debug('GameOrchestrator', ` Partial success for ${character.name}, retrying for image...`);
+          debug(
+            'GameOrchestrator',
+            ` Partial success for ${character.name}, retrying for image...`
+          );
           lastError = new Error('Image generation failed');
           continue;
         }
 
         return result;
-
       } catch (error) {
         lastError = error;
-        console.error(`[GameOrchestrator] Attempt ${attempt} failed for ${character.name}:`, error.message);
+        console.error(
+          `[GameOrchestrator] Attempt ${attempt} failed for ${character.name}:`,
+          error.message
+        );
 
         if (attempt < this.maxRetries) {
           // Wait before retry
@@ -818,15 +852,19 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     }
 
     // All retries failed
-    console.error(`[GameOrchestrator] All ${this.maxRetries} attempts failed for ${character.name}`);
+    console.error(
+      `[GameOrchestrator] All ${this.maxRetries} attempts failed for ${character.name}`
+    );
     return {
       assets: [],
-      errors: [{
-        phase: charType,
-        message: `Failed to generate ${character.name} after ${this.maxRetries} attempts: ${lastError?.message}`,
-        retryable: true,
-        character: character.name,
-      }],
+      errors: [
+        {
+          phase: charType,
+          message: `Failed to generate ${character.name} after ${this.maxRetries} attempts: ${lastError?.message}`,
+          retryable: true,
+          character: character.name,
+        },
+      ],
     };
   }
 
@@ -853,7 +891,6 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
         }
 
         throw new Error('Cutscene content too short or empty');
-
       } catch (error) {
         lastError = error;
         console.error(`[GameOrchestrator] Cutscene attempt ${attempt} failed:`, error.message);
@@ -943,7 +980,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
           ...layout,
           layoutName,
           style: 'pixel art',
-          onRetry: (info) => this.onStatusChange({ phase: 'rate-limited', message: info.message, retryInfo: info }),
+          onRetry: info =>
+            this.onStatusChange({ phase: 'rate-limited', message: info.message, retryInfo: info }),
         }
       );
 
@@ -962,7 +1000,6 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       });
 
       debug('GameOrchestrator', ` ✓ Spritesheet generated for ${name}`);
-
     } catch (error) {
       console.error(`[GameOrchestrator] ✗ Spritesheet failed for ${name}:`, error.message);
       results.errors.push({
@@ -981,7 +1018,12 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
           character.description || `${character.displayName || character.name} portrait`,
           {
             style: 'pixel art',
-            onRetry: (info) => this.onStatusChange({ phase: 'rate-limited', message: info.message, retryInfo: info }),
+            onRetry: info =>
+              this.onStatusChange({
+                phase: 'rate-limited',
+                message: info.message,
+                retryInfo: info,
+              }),
           }
         );
 
@@ -998,7 +1040,10 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
           debug('GameOrchestrator', ` ✓ Portrait generated for ${name}`);
         }
       } catch (error) {
-        console.error(`[GameOrchestrator] Portrait failed for ${name} (non-critical):`, error.message);
+        console.error(
+          `[GameOrchestrator] Portrait failed for ${name} (non-critical):`,
+          error.message
+        );
         results.errors.push({
           phase: 'portrait',
           message: error.message,
@@ -1055,12 +1100,14 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
           enabled: true,
         },
       ],
-      scripts: concept.cutscenes.some(c => c.trigger === 'intro') ? [
-        {
-          id: 'intro',
-          trigger: `zone/${this.sanitizeName(location.id)}_load`,
-        },
-      ] : [],
+      scripts: concept.cutscenes.some(c => c.trigger === 'intro')
+        ? [
+            {
+              id: 'intro',
+              trigger: `zone/${this.sanitizeName(location.id)}_load`,
+            },
+          ]
+        : [],
     };
   }
 
@@ -1097,7 +1144,8 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     // The actual canvas work would be done in browser context
 
     // Minimal valid 1x1 purple PNG as placeholder (will be replaced by proper generation)
-    const minimalPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const minimalPng =
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
     console.warn('[GameOrchestrator] Using placeholder tileset - AI generation failed');
     return minimalPng;
@@ -1113,74 +1161,170 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     // ============================================
     const geometry = {
       // Flat floor - walkable surface
-      'FLAT_ALL': {
+      FLAT_ALL: {
         vertices: [
-          [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
-          [[0, 1, 0], [1, 0, 0], [0, 0, 0]],
+          [
+            [0, 1, 0],
+            [1, 1, 0],
+            [1, 0, 0],
+          ],
+          [
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+          ],
         ],
         surfaces: [
-          [[0, 1], [1, 1], [1, 0]],
-          [[0, 1], [1, 0], [0, 0]],
+          [
+            [0, 1],
+            [1, 1],
+            [1, 0],
+          ],
+          [
+            [0, 1],
+            [1, 0],
+            [0, 0],
+          ],
         ],
         type: 15,
       },
       // Flat non-walkable
-      'FLAT_NONE': {
+      FLAT_NONE: {
         vertices: [
-          [[0, 1, 0], [1, 1, 0], [1, 0, 0]],
-          [[0, 1, 0], [1, 0, 0], [0, 0, 0]],
+          [
+            [0, 1, 0],
+            [1, 1, 0],
+            [1, 0, 0],
+          ],
+          [
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+          ],
         ],
         surfaces: [
-          [[0, 1], [1, 1], [1, 0]],
-          [[0, 1], [1, 0], [0, 0]],
+          [
+            [0, 1],
+            [1, 1],
+            [1, 0],
+          ],
+          [
+            [0, 1],
+            [1, 0],
+            [0, 0],
+          ],
         ],
         type: 0,
       },
       // North wall
-      'WALL_T': {
+      WALL_T: {
         vertices: [
-          [[0, 0, 0], [1, 0, 0], [1, 0, 1]],
-          [[0, 0, 0], [1, 0, 1], [0, 0, 1]],
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 0, 1],
+          ],
+          [
+            [0, 0, 0],
+            [1, 0, 1],
+            [0, 0, 1],
+          ],
         ],
         surfaces: [
-          [[0, 0], [1, 0], [1, 1]],
-          [[0, 0], [1, 1], [0, 1]],
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+          ],
+          [
+            [0, 0],
+            [1, 1],
+            [0, 1],
+          ],
         ],
         type: 2,
       },
       // South wall
-      'WALL_B': {
+      WALL_B: {
         vertices: [
-          [[0, 1, 0], [1, 1, 0], [1, 1, 1]],
-          [[0, 1, 0], [1, 1, 1], [0, 1, 1]],
+          [
+            [0, 1, 0],
+            [1, 1, 0],
+            [1, 1, 1],
+          ],
+          [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 1, 1],
+          ],
         ],
         surfaces: [
-          [[0, 0], [1, 0], [1, 1]],
-          [[0, 0], [1, 1], [0, 1]],
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+          ],
+          [
+            [0, 0],
+            [1, 1],
+            [0, 1],
+          ],
         ],
         type: 8,
       },
       // Left wall
-      'WALL_L': {
+      WALL_L: {
         vertices: [
-          [[0, 0, 0], [0, 1, 0], [0, 1, 1]],
-          [[0, 0, 0], [0, 1, 1], [0, 0, 1]],
+          [
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 1, 1],
+          ],
+          [
+            [0, 0, 0],
+            [0, 1, 1],
+            [0, 0, 1],
+          ],
         ],
         surfaces: [
-          [[0, 0], [1, 0], [1, 1]],
-          [[0, 0], [1, 1], [0, 1]],
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+          ],
+          [
+            [0, 0],
+            [1, 1],
+            [0, 1],
+          ],
         ],
         type: 1,
       },
       // Right wall
-      'WALL_R': {
+      WALL_R: {
         vertices: [
-          [[1, 0, 0], [1, 1, 0], [1, 1, 1]],
-          [[1, 0, 0], [1, 1, 1], [1, 0, 1]],
+          [
+            [1, 0, 0],
+            [1, 1, 0],
+            [1, 1, 1],
+          ],
+          [
+            [1, 0, 0],
+            [1, 1, 1],
+            [1, 0, 1],
+          ],
         ],
         surfaces: [
-          [[0, 0], [1, 0], [1, 1]],
-          [[0, 0], [1, 1], [0, 1]],
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+          ],
+          [
+            [0, 0],
+            [1, 1],
+            [0, 1],
+          ],
         ],
         type: 4,
       },
@@ -1199,29 +1343,29 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       tileSize: 64,
       bgColor: [32, 62, 88],
       textures: {
-        'FLOOR': [1, 1],
-        'FLOOR_BR': [2, 2],
-        'FLOOR_R': [2, 1],
-        'FLOOR_TR': [2, 0],
-        'FLOOR_T': [1, 0],
-        'FLOOR_TL': [0, 0],
-        'FLOOR_L': [0, 1],
-        'FLOOR_BL': [0, 2],
-        'FLOOR_B': [1, 2],
-        'WALL': [1, 5],
-        'EMPTY': [0, 5],
-        'EMPTY_T': [1, 4],
-        'EMPTY_B': [1, 6],
-        'EMPTY_L': [0, 5],
-        'EMPTY_R': [2, 5],
-        'EMPTY_TL': [0, 4],
-        'EMPTY_TR': [2, 4],
-        'EMPTY_BL': [0, 6],
-        'EMPTY_BR': [2, 6],
-        'EMPTY_CTL': [3, 0],
-        'EMPTY_CTR': [4, 0],
-        'EMPTY_CBL': [3, 1],
-        'EMPTY_CBR': [4, 1],
+        FLOOR: [1, 1],
+        FLOOR_BR: [2, 2],
+        FLOOR_R: [2, 1],
+        FLOOR_TR: [2, 0],
+        FLOOR_T: [1, 0],
+        FLOOR_TL: [0, 0],
+        FLOOR_L: [0, 1],
+        FLOOR_BL: [0, 2],
+        FLOOR_B: [1, 2],
+        WALL: [1, 5],
+        EMPTY: [0, 5],
+        EMPTY_T: [1, 4],
+        EMPTY_B: [1, 6],
+        EMPTY_L: [0, 5],
+        EMPTY_R: [2, 5],
+        EMPTY_TL: [0, 4],
+        EMPTY_TR: [2, 4],
+        EMPTY_BL: [0, 6],
+        EMPTY_BR: [2, 6],
+        EMPTY_CTL: [3, 0],
+        EMPTY_CTR: [4, 0],
+        EMPTY_CBL: [3, 1],
+        EMPTY_CBR: [4, 1],
       },
     };
 
@@ -1230,22 +1374,54 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     // Format: [geometry, texture, height, ...]
     // ============================================
     const tiles = {
-      'FLOOR': ['FLAT_ALL', 'FLOOR', 0],
-      'WATER': ['FLAT_NONE', 'FLOOR', -1.5],
-      'EMPTY': ['FLAT_ALL', 'EMPTY', 2],
+      FLOOR: ['FLAT_ALL', 'FLOOR', 0],
+      WATER: ['FLAT_NONE', 'FLOOR', -1.5],
+      EMPTY: ['FLAT_ALL', 'EMPTY', 2],
 
-      'N_WALL': ['WALL_T', 'WALL', 2, 'FLAT_ALL', 'EMPTY_B', 2],
-      'S_WALL': ['WALL_B', 'WALL', 2, 'FLAT_ALL', 'EMPTY_T', 2],
-      'L_WALL': ['WALL_L', 'WALL', 2, 'FLAT_ALL', 'EMPTY_R', 2],
-      'R_WALL': ['WALL_R', 'WALL', 2, 'FLAT_ALL', 'EMPTY_L', 2],
+      N_WALL: ['WALL_T', 'WALL', 2, 'FLAT_ALL', 'EMPTY_B', 2],
+      S_WALL: ['WALL_B', 'WALL', 2, 'FLAT_ALL', 'EMPTY_T', 2],
+      L_WALL: ['WALL_L', 'WALL', 2, 'FLAT_ALL', 'EMPTY_R', 2],
+      R_WALL: ['WALL_R', 'WALL', 2, 'FLAT_ALL', 'EMPTY_L', 2],
 
-      'NLW_CORNER': ['FLAT_ALL', 'EMPTY_CTL', 2],
-      'NRW_CORNER': ['FLAT_ALL', 'EMPTY_CTR', 2],
-      'SLW_CORNER': ['FLAT_ALL', 'EMPTY_CBL', 2],
-      'SRW_CORNER': ['FLAT_ALL', 'EMPTY_CBR', 2],
+      NLW_CORNER: ['FLAT_ALL', 'EMPTY_CTL', 2],
+      NRW_CORNER: ['FLAT_ALL', 'EMPTY_CTR', 2],
+      SLW_CORNER: ['FLAT_ALL', 'EMPTY_CBL', 2],
+      SRW_CORNER: ['FLAT_ALL', 'EMPTY_CBR', 2],
 
-      'EDGE': ['WALL_R', 'WALL', 2, 'WALL_B', 'WALL', 2, 'WALL_L', 'WALL', 2, 'WALL_T', 'WALL', 2, 'FLAT_ALL', 'FLOOR', 2],
-      'PILLAR': ['WALL_R', 'WALL', 2, 'WALL_B', 'WALL', 2, 'WALL_L', 'WALL', 2, 'WALL_T', 'WALL', 2, 'FLAT_ALL', 'EMPTY', 2],
+      EDGE: [
+        'WALL_R',
+        'WALL',
+        2,
+        'WALL_B',
+        'WALL',
+        2,
+        'WALL_L',
+        'WALL',
+        2,
+        'WALL_T',
+        'WALL',
+        2,
+        'FLAT_ALL',
+        'FLOOR',
+        2,
+      ],
+      PILLAR: [
+        'WALL_R',
+        'WALL',
+        2,
+        'WALL_B',
+        'WALL',
+        2,
+        'WALL_L',
+        'WALL',
+        2,
+        'WALL_T',
+        'WALL',
+        2,
+        'FLAT_ALL',
+        'EMPTY',
+        2,
+      ],
     };
 
     return { tileset, geometry, tiles };

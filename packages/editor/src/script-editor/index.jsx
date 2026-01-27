@@ -50,12 +50,12 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   const editorRef = useRef(null);
 
   // Map file extensions to appropriate languages
-  const getLanguage = useCallback((langOrExt) => {
+  const getLanguage = useCallback(langOrExt => {
     if (!langOrExt) return 'lua';
     const ext = langOrExt.toLowerCase();
     if (ext === 'pxs' || ext === 'pixoscript') return 'pixoscript';
     if (ext === 'pxc' || ext === 'spritzcut') return 'spritzcut';
-    if (ext === 'pxsl') return 'pxsl';  // PixoSpritz Shader Language
+    if (ext === 'pxsl') return 'pxsl'; // PixoSpritz Shader Language
     if (ext === 'glsl' || ext === 'vert' || ext === 'frag') return 'glsl';
     if (ext === 'lua') return 'pixoscript'; // Use enhanced PixoScript for .lua files
     return langOrExt;
@@ -79,7 +79,7 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   /**
    * Handle content changes in the editor
    */
-  const handleEditorChange = useCallback((value) => {
+  const handleEditorChange = useCallback(value => {
     setContent(value || '');
     setHasChanges(true);
   }, []);
@@ -87,16 +87,19 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   /**
    * Handle editor mount - store reference for future use
    */
-  const handleEditorMount = useCallback((editor, monacoInstance) => {
-    editorRef.current = editor;
-    
-    // Apply custom theme based on language
-    if (lang === 'pixoscript') {
-      monacoInstance.editor.setTheme('pixoscript-dark');
-    } else if (lang === 'spritzcut') {
-      monacoInstance.editor.setTheme('spritzcut-dark');
-    }
-  }, [lang]);
+  const handleEditorMount = useCallback(
+    (editor, monacoInstance) => {
+      editorRef.current = editor;
+
+      // Apply custom theme based on language
+      if (lang === 'pixoscript') {
+        monacoInstance.editor.setTheme('pixoscript-dark');
+      } else if (lang === 'spritzcut') {
+        monacoInstance.editor.setTheme('spritzcut-dark');
+      }
+    },
+    [lang]
+  );
 
   /**
    * Saves the current content state by invoking the onSave callback if provided.
@@ -116,7 +119,7 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
 
   // Keyboard shortcut for save (Ctrl+S / Cmd+S)
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveChanges();
@@ -127,8 +130,8 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   }, [saveChanges]);
 
   return (
-    <div 
-      style={{ 
+    <div
+      style={{
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
@@ -138,7 +141,7 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
         boxSizing: 'border-box',
       }}
     >
-      <div 
+      <div
         style={{
           flex: 1,
           minHeight: 0,
@@ -152,7 +155,13 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
       >
         <div style={{ flex: 1, minHeight: 0 }}>
           <Editor
-            theme={lang === 'pixoscript' ? 'pixoscript-dark' : lang === 'spritzcut' ? 'spritzcut-dark' : 'vs-dark'}
+            theme={
+              lang === 'pixoscript'
+                ? 'pixoscript-dark'
+                : lang === 'spritzcut'
+                  ? 'spritzcut-dark'
+                  : 'vs-dark'
+            }
             height="100%"
             value={content}
             language={lang}
@@ -172,20 +181,17 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
             }}
           />
         </div>
-        <div style={{ 
-          padding: '10px', 
-          borderTop: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          flexShrink: 0,
-        }}>
-          <Button 
-            appearance="primary" 
-            size="sm"
-            onClick={saveChanges}
-            disabled={!hasChanges}
-          >
+        <div
+          style={{
+            padding: '10px',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            flexShrink: 0,
+          }}
+        >
+          <Button appearance="primary" size="sm" onClick={saveChanges} disabled={!hasChanges}>
             {hasChanges ? 'Save Changes *' : 'Save Changes'}
           </Button>
           {hasChanges && (

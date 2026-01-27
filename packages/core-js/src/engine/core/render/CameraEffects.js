@@ -25,13 +25,13 @@ const Easing = {
   linear: t => t,
   easeInQuad: t => t * t,
   easeOutQuad: t => t * (2 - t),
-  easeInOutQuad: t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+  easeInOutQuad: t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
   easeInCubic: t => t * t * t,
-  easeOutCubic: t => (--t) * t * t + 1,
-  easeInOutCubic: t => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+  easeOutCubic: t => --t * t * t + 1,
+  easeInOutCubic: t => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
   easeOutElastic: t => {
     const p = 0.3;
-    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+    return Math.pow(2, -10 * t) * Math.sin(((t - p / 4) * (2 * Math.PI)) / p) + 1;
   },
   easeOutBounce: t => {
     if (t < 1 / 2.75) return 7.5625 * t * t;
@@ -50,7 +50,7 @@ export default class CameraEffects {
    */
   constructor(camera) {
     this.camera = camera;
-    
+
     // Screen shake state
     this.shake = {
       active: false,
@@ -62,7 +62,7 @@ export default class CameraEffects {
       type: 'random', // 'random', 'horizontal', 'vertical', 'rotational'
       frequency: 1,
     };
-    
+
     // Smooth follow state
     this.follow = {
       active: false,
@@ -72,7 +72,7 @@ export default class CameraEffects {
       deadzone: new Vector(0, 0, 0),
       bounds: null, // { min: Vector, max: Vector }
     };
-    
+
     // Zoom effect state
     this.zoom = {
       active: false,
@@ -80,7 +80,7 @@ export default class CameraEffects {
       currentZoom: 1,
       speed: 0.1,
     };
-    
+
     // Flash effect state
     this.flash = {
       active: false,
@@ -88,7 +88,7 @@ export default class CameraEffects {
       duration: 0,
       elapsed: 0,
     };
-    
+
     // Fade effect state
     this.fade = {
       active: false,
@@ -165,7 +165,7 @@ export default class CameraEffects {
     if (!this.shake.active) return;
 
     this.shake.elapsed += deltaTime;
-    
+
     if (this.shake.elapsed >= this.shake.duration) {
       this.stopShake();
       return;
@@ -174,32 +174,20 @@ export default class CameraEffects {
     // Calculate current intensity with decay
     const progress = this.shake.elapsed / this.shake.duration;
     const currentIntensity = this.shake.intensity * (1 - progress) * this.shake.decay;
-    
+
     // Generate shake offset based on type
     const time = this.shake.elapsed * this.shake.frequency * 10;
-    
+
     switch (this.shake.type) {
       case 'horizontal':
-        this.shake.offset = new Vector(
-          (Math.sin(time) * 2 - 1) * currentIntensity,
-          0,
-          0
-        );
+        this.shake.offset = new Vector((Math.sin(time) * 2 - 1) * currentIntensity, 0, 0);
         break;
       case 'vertical':
-        this.shake.offset = new Vector(
-          0,
-          (Math.sin(time) * 2 - 1) * currentIntensity,
-          0
-        );
+        this.shake.offset = new Vector(0, (Math.sin(time) * 2 - 1) * currentIntensity, 0);
         break;
       case 'rotational':
         // Apply rotation shake (stored as z offset for now)
-        this.shake.offset = new Vector(
-          0,
-          0,
-          (Math.sin(time) * 2 - 1) * currentIntensity * 0.1
-        );
+        this.shake.offset = new Vector(0, 0, (Math.sin(time) * 2 - 1) * currentIntensity * 0.1);
         break;
       case 'random':
       default:
@@ -246,12 +234,15 @@ export default class CameraEffects {
    */
   getFollowTarget() {
     if (!this.follow.active || !this.follow.target) return null;
-    
+
     const targetPos = this.follow.target.position || this.follow.target;
-    return targetPos.add ? targetPos.add(this.follow.offset) : 
-           new Vector(targetPos.x + this.follow.offset.x, 
-                     targetPos.y + this.follow.offset.y, 
-                     targetPos.z + this.follow.offset.z);
+    return targetPos.add
+      ? targetPos.add(this.follow.offset)
+      : new Vector(
+          targetPos.x + this.follow.offset.x,
+          targetPos.y + this.follow.offset.y,
+          targetPos.z + this.follow.offset.z
+        );
   }
 
   _updateFollow(deltaTime) {
@@ -261,7 +252,7 @@ export default class CameraEffects {
     if (!targetPos) return;
 
     const currentPos = this.camera.cameraTarget || this.camera.cameraPosition;
-    
+
     // Calculate difference
     let dx = targetPos.x - currentPos.x;
     let dy = targetPos.y - currentPos.y;
@@ -274,7 +265,7 @@ export default class CameraEffects {
 
     // Smooth interpolation
     const smoothFactor = 1 - Math.pow(1 - this.follow.smoothness, deltaTime * 60);
-    
+
     let newX = currentPos.x + dx * smoothFactor;
     let newY = currentPos.y + dy * smoothFactor;
     let newZ = currentPos.z + dz * smoothFactor;
@@ -318,7 +309,7 @@ export default class CameraEffects {
     }
 
     this.zoom.currentZoom += diff * this.zoom.speed * deltaTime * 60;
-    
+
     // Apply zoom to camera
     if (this.camera.zoom) {
       this.camera.cameraDistance = 15 / this.zoom.currentZoom;
@@ -347,7 +338,7 @@ export default class CameraEffects {
    */
   getFlashColor() {
     if (!this.flash.active) return null;
-    
+
     const progress = this.flash.elapsed / this.flash.duration;
     const alpha = this.flash.color[3] * (1 - progress);
     return [this.flash.color[0], this.flash.color[1], this.flash.color[2], alpha];
@@ -412,7 +403,7 @@ export default class CameraEffects {
     if (!this.fade.active) return;
 
     this.fade.elapsed += deltaTime;
-    
+
     if (this.fade.elapsed >= this.fade.duration) {
       this.fade.currentAlpha = this.fade.targetAlpha;
       this.fade.active = false;
@@ -425,7 +416,7 @@ export default class CameraEffects {
     const progress = this.fade.elapsed / this.fade.duration;
     const easingFn = Easing[this.fade.easing] || Easing.linear;
     const easedProgress = easingFn(progress);
-    
+
     const startAlpha = this.fade.startAlpha ?? 0;
     this.fade.currentAlpha = startAlpha + (this.fade.targetAlpha - startAlpha) * easedProgress;
   }
@@ -452,11 +443,11 @@ export default class CameraEffects {
    */
   getPunchOffset() {
     if (!this.punch.active) return new Vector(0, 0, 0);
-    
+
     const progress = this.punch.elapsed / this.punch.duration;
     const easedProgress = Easing.easeOutElastic(progress);
     const currentIntensity = this.punch.intensity * (1 - easedProgress);
-    
+
     return new Vector(
       this.punch.direction.x * currentIntensity,
       this.punch.direction.y * currentIntensity,
@@ -482,12 +473,8 @@ export default class CameraEffects {
   getTotalOffset() {
     const shake = this.getShakeOffset();
     const punch = this.getPunchOffset();
-    
-    return new Vector(
-      shake.x + punch.x,
-      shake.y + punch.y,
-      shake.z + punch.z
-    );
+
+    return new Vector(shake.x + punch.x, shake.y + punch.y, shake.z + punch.z);
   }
 }
 

@@ -1,15 +1,15 @@
 /*                                                 *\
-** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
-** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-*                                                 */
+ ** ----------------------------------------------- **
+ **          Calliope - Pixos Game Engine           **
+ ** ----------------------------------------------- **
+ **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+ **                                                 **
+ **    Any unauthorized distribution or transfer    **
+ **       of this work is strictly prohibited.      **
+ **                                                 **
+ **               All Rights Reserved.              **
+ ** ----------------------------------------------- **
+ *                                                 */
 
 // Fragment shader for directional wipe transition.
 // Wipes from left to right (or reverse based on direction).

@@ -4,9 +4,9 @@
   "title": "PixoSpritz Sprite Definition",
   "description": "Schema for sprite/avatar definition files",
   "type": "object",
-  
+
   "required": ["type", "src", "sheetSize", "tileSize"],
-  
+
   "properties": {
     "type": {
       "type": "string",

@@ -1,218 +1,218 @@
-import { hasOwnProperty, LuaType, tostring } from './utils.js'
+import { hasOwnProperty, LuaType, tostring } from './utils.js';
 
 type MetaMethods =
-    // unary op
-    | '__unm'
-    | '__bnot'
-    | '__len'
-    // binary op
-    | '__add'
-    | '__sub'
-    | '__mul'
-    | '__mod'
-    | '__pow'
-    | '__div'
-    | '__idiv'
-    | '__band'
-    | '__bor'
-    | '__bxor'
-    | '__shl'
-    | '__shr'
-    | '__concat'
-    | '__eq'
-    | '__lt'
-    | '__le'
-    // other
-    | '__index'
-    | '__newindex'
-    | '__call'
-    | '__pairs'
-    | '__ipairs'
-    | '__tostring'
+  // unary op
+  | '__unm'
+  | '__bnot'
+  | '__len'
+  // binary op
+  | '__add'
+  | '__sub'
+  | '__mul'
+  | '__mod'
+  | '__pow'
+  | '__div'
+  | '__idiv'
+  | '__band'
+  | '__bor'
+  | '__bxor'
+  | '__shl'
+  | '__shr'
+  | '__concat'
+  | '__eq'
+  | '__lt'
+  | '__le'
+  // other
+  | '__index'
+  | '__newindex'
+  | '__call'
+  | '__pairs'
+  | '__ipairs'
+  | '__tostring';
 
 class Table {
-    public numValues: LuaType[] = [undefined]
-    public strValues: Record<string, LuaType> = {}
-    public keys: string[] = []
-    public values: LuaType[] = []
-    public metatable: Table | null = null
-    public constructor(initialiser?: Record<string, LuaType> | LuaType[] | ((t: Table) => void)) {
-        if (initialiser === undefined) return
+  public numValues: LuaType[] = [undefined];
+  public strValues: Record<string, LuaType> = {};
+  public keys: string[] = [];
+  public values: LuaType[] = [];
+  public metatable: Table | null = null;
+  public constructor(initialiser?: Record<string, LuaType> | LuaType[] | ((t: Table) => void)) {
+    if (initialiser === undefined) return;
 
-        if (typeof initialiser === 'function') {
-            initialiser(this)
-            return
+    if (typeof initialiser === 'function') {
+      initialiser(this);
+      return;
+    }
+
+    if (Array.isArray(initialiser)) {
+      this.insert(...initialiser);
+      return;
+    }
+
+    for (const key in initialiser) {
+      if (hasOwnProperty(initialiser, key)) {
+        let value = initialiser[key];
+        if (value === null) value = undefined;
+        this.set(key, value);
+      }
+    }
+  }
+
+  public get(key: LuaType): LuaType {
+    const value = this.rawget(key);
+
+    if (value === undefined && this.metatable) {
+      const mm = this.metatable.get('__index') as Table | Function;
+
+      if (mm instanceof Table) {
+        return mm.get(key);
+      }
+
+      if (typeof mm === 'function') {
+        const v = mm.call(undefined, this, key);
+        return v instanceof Array ? v[0] : v;
+      }
+    }
+
+    return value;
+  }
+
+  public rawget(key: LuaType): LuaType {
+    switch (typeof key) {
+      case 'string':
+        if (hasOwnProperty(this.strValues, key)) {
+          return this.strValues[key];
         }
-
-        if (Array.isArray(initialiser)) {
-            this.insert(...initialiser)
-            return
-        }
-
-        for (const key in initialiser) {
-            if (hasOwnProperty(initialiser, key)) {
-                let value = initialiser[key]
-                if (value === null) value = undefined
-                this.set(key, value)
-            }
+        break;
+      case 'number':
+        if (key > 0 && key % 1 === 0) {
+          return this.numValues[key];
         }
     }
 
-    public get(key: LuaType): LuaType {
-        const value = this.rawget(key)
+    const index = this.keys.indexOf(tostring(key));
+    return index === -1 ? undefined : this.values[index];
+  }
 
-        if (value === undefined && this.metatable) {
-            const mm = this.metatable.get('__index') as Table | Function
+  public getMetaMethod(name: MetaMethods): Function {
+    return this.metatable && (this.metatable.rawget(name) as Function);
+  }
 
-            if (mm instanceof Table) {
-                return mm.get(key)
-            }
+  public set(key: LuaType, value: LuaType): LuaType {
+    const mm = this.metatable && this.metatable.get('__newindex');
+    if (mm) {
+      const oldValue = this.rawget(key);
 
-            if (typeof mm === 'function') {
-                const v = mm.call(undefined, this, key)
-                return v instanceof Array ? v[0] : v
-            }
+      if (oldValue === undefined) {
+        if (mm instanceof Table) {
+          return mm.set(key, value);
         }
-
-        return value
+        if (typeof mm === 'function') {
+          return mm(this, key, value);
+        }
+      }
     }
 
-    public rawget(key: LuaType): LuaType {
-        switch (typeof key) {
-            case 'string':
-                if (hasOwnProperty(this.strValues, key)) {
-                    return this.strValues[key]
-                }
-                break
-            case 'number':
-                if (key > 0 && key % 1 === 0) {
-                    return this.numValues[key]
-                }
-        }
+    this.rawset(key, value);
+  }
 
-        const index = this.keys.indexOf(tostring(key))
-        return index === -1 ? undefined : this.values[index]
+  public setFn(key: string): (v: LuaType) => void {
+    return v => this.set(key, v);
+  }
+
+  public rawset(key: LuaType, value: LuaType): void {
+    switch (typeof key) {
+      case 'string':
+        this.strValues[key] = value;
+        return;
+
+      case 'number':
+        if (key > 0 && key % 1 === 0) {
+          this.numValues[key] = value;
+          return;
+        }
     }
 
-    public getMetaMethod(name: MetaMethods): Function {
-        return this.metatable && (this.metatable.rawget(name) as Function)
+    const K = tostring(key);
+    const index = this.keys.indexOf(K);
+    if (index > -1) {
+      this.values[index] = value;
+      return;
     }
 
-    public set(key: LuaType, value: LuaType): LuaType {
-        const mm = this.metatable && this.metatable.get('__newindex')
-        if (mm) {
-            const oldValue = this.rawget(key)
+    this.values[this.keys.length] = value;
+    this.keys.push(K);
+  }
 
-            if (oldValue === undefined) {
-                if (mm instanceof Table) {
-                    return mm.set(key, value)
-                }
-                if (typeof mm === 'function') {
-                    return mm(this, key, value)
-                }
-            }
-        }
+  public insert(...values: LuaType[]): void {
+    this.numValues.push(...values);
+  }
 
-        this.rawset(key, value)
+  public toObject(): unknown[] | Record<string, unknown> {
+    const outputAsArray = Object.keys(this.strValues).length === 0 && this.getn() > 0;
+    const result: unknown[] | Record<string, unknown> = outputAsArray ? [] : {};
+
+    for (let i = 1; i < this.numValues.length; i++) {
+      const propValue = this.numValues[i];
+      const value = propValue instanceof Table ? propValue.toObject() : propValue;
+
+      if (outputAsArray) {
+        const res = result as unknown[];
+        res[i - 1] = value;
+      } else {
+        const res = result as Record<string, unknown>;
+        res[String(i - 1)] = value;
+      }
     }
 
-    public setFn(key: string): (v: LuaType) => void {
-        return v => this.set(key, v)
+    for (const key in this.strValues) {
+      if (hasOwnProperty(this.strValues, key)) {
+        const propValue = this.strValues[key];
+        const value = propValue instanceof Table ? propValue.toObject() : propValue;
+
+        const res = result as Record<string, unknown>;
+        res[key] = value;
+      }
     }
 
-    public rawset(key: LuaType, value: LuaType): void {
-        switch (typeof key) {
-            case 'string':
-                this.strValues[key] = value
-                return
+    return result;
+  }
 
-            case 'number':
-                if (key > 0 && key % 1 === 0) {
-                    this.numValues[key] = value
-                    return
-                }
-        }
+  public getn(): number {
+    const vals = this.numValues;
+    const keys: boolean[] = [];
 
-        const K = tostring(key)
-        const index = this.keys.indexOf(K)
-        if (index > -1) {
-            this.values[index] = value
-            return
-        }
-
-        this.values[this.keys.length] = value
-        this.keys.push(K)
+    for (const i in vals) {
+      if (hasOwnProperty(vals, i)) {
+        keys[i] = true;
+      }
     }
 
-    public insert(...values: LuaType[]): void {
-        this.numValues.push(...values)
+    let j = 0;
+    while (keys[j + 1]) {
+      j += 1;
     }
 
-    public toObject(): unknown[] | Record<string, unknown> {
-        const outputAsArray = Object.keys(this.strValues).length === 0 && this.getn() > 0
-        const result: unknown[] | Record<string, unknown> = outputAsArray ? [] : {}
+    // Following translated from ltable.c (http://www.pxs.org/source/5.3/ltable.c.html)
+    if (j > 0 && vals[j] === undefined) {
+      /* there is a boundary in the array part: (binary) search for it */
+      let i = 0;
 
-        for (let i = 1; i < this.numValues.length; i++) {
-            const propValue = this.numValues[i]
-            const value = propValue instanceof Table ? propValue.toObject() : propValue
+      while (j - i > 1) {
+        const m = Math.floor((i + j) / 2);
 
-            if (outputAsArray) {
-                const res = result as unknown[]
-                res[i - 1] = value
-            } else {
-                const res = result as Record<string, unknown>
-                res[String(i - 1)] = value
-            }
+        if (vals[m] === undefined) {
+          j = m;
+        } else {
+          i = m;
         }
+      }
 
-        for (const key in this.strValues) {
-            if (hasOwnProperty(this.strValues, key)) {
-                const propValue = this.strValues[key]
-                const value = propValue instanceof Table ? propValue.toObject() : propValue
-
-                const res = result as Record<string, unknown>
-                res[key] = value
-            }
-        }
-
-        return result
+      return i;
     }
 
-    public getn(): number {
-        const vals = this.numValues
-        const keys: boolean[] = []
-
-        for (const i in vals) {
-            if (hasOwnProperty(vals, i)) {
-                keys[i] = true
-            }
-        }
-
-        let j = 0
-        while (keys[j + 1]) {
-            j += 1
-        }
-
-        // Following translated from ltable.c (http://www.pxs.org/source/5.3/ltable.c.html)
-        if (j > 0 && vals[j] === undefined) {
-            /* there is a boundary in the array part: (binary) search for it */
-            let i = 0
-
-            while (j - i > 1) {
-                const m = Math.floor((i + j) / 2)
-
-                if (vals[m] === undefined) {
-                    j = m
-                } else {
-                    i = m
-                }
-            }
-
-            return i
-        }
-
-        return j
-    }
+    return j;
+  }
 }
 
-export { MetaMethods, Table }
+export { MetaMethods, Table };

@@ -21,22 +21,22 @@
  * added as needed.
  */
 
-  /**
-   * @typedef {object} CutsceneStep
-   * @property {string} type - The type of step ('wait', 'transition', 'load_zone', 'action', 'set_backdrop', 'show_cutout').
-   * @property {number} [ms] - Milliseconds to wait (for 'wait' type).
-   * @property {string} [effect] - Transition effect (for 'transition' and 'load_zone' types).
-   * @property {string} [direction] - Transition direction ('in' or 'out', for 'transition' type).
-   * @property {number} [duration] - Transition duration in ms (for 'transition' and 'load_zone' types).
-   * @property {string} [zone] - Zone name to load (for 'load_zone' type).
-   * @property {boolean} [remotely] - Whether to load remotely (for 'load_zone' type).
-   * @property {string} [zip] - Zip archive for zone loading (for 'load_zone' type).
-   * @property {function(): Promise<void>} [action] - Action function to run (for 'action' type).
-   * @property {string} [backdrop] - Backdrop label to set (for 'set_backdrop' type).
-   * @property {string} [sprite] - Sprite ID for cutout (for 'show_cutout' type).
-   * @property {string} [cutout] - Cutout label (for 'show_cutout' type).
-   * @property {string} [position] - Position ('left' or 'right') for cutout (for 'show_cutout' type).
-   */
+/**
+ * @typedef {object} CutsceneStep
+ * @property {string} type - The type of step ('wait', 'transition', 'load_zone', 'action', 'set_backdrop', 'show_cutout').
+ * @property {number} [ms] - Milliseconds to wait (for 'wait' type).
+ * @property {string} [effect] - Transition effect (for 'transition' and 'load_zone' types).
+ * @property {string} [direction] - Transition direction ('in' or 'out', for 'transition' type).
+ * @property {number} [duration] - Transition duration in ms (for 'transition' and 'load_zone' types).
+ * @property {string} [zone] - Zone name to load (for 'load_zone' type).
+ * @property {boolean} [remotely] - Whether to load remotely (for 'load_zone' type).
+ * @property {string} [zip] - Zip archive for zone loading (for 'load_zone' type).
+ * @property {function(): Promise<void>} [action] - Action function to run (for 'action' type).
+ * @property {string} [backdrop] - Backdrop label to set (for 'set_backdrop' type).
+ * @property {string} [sprite] - Sprite ID for cutout (for 'show_cutout' type).
+ * @property {string} [cutout] - Cutout label (for 'show_cutout' type).
+ * @property {string} [position] - Position ('left' or 'right') for cutout (for 'show_cutout' type).
+ */
 
 /**
  * CutsceneManager - Manages cutscenes in the Pixos game engine.
@@ -71,22 +71,22 @@ export default class CutsceneManager {
    */
   register = (name, steps) => {
     this.scenes[name] = Array.isArray(steps) ? steps.slice() : [];
-  }
+  };
 
   /**
    * Checks if a cutscene is registered.
    * @param {string} name - The name of the cutscene.
    * @returns {boolean} True if the cutscene is registered.
    */
-  isRegistered = (name) => {
+  isRegistered = name => {
     return name in this.scenes;
-  }
+  };
 
   /**
    * Starts playing a cutscene by name.
    * @param {string} name - The name of the cutscene to start.
    */
-  start = (name) => {
+  start = name => {
     const def = this.scenes[name];
     if (!def) {
       console.warn('Cutscene not found:', name);
@@ -97,7 +97,7 @@ export default class CutsceneManager {
     this._currentPromise = null;
     this.currentBackdrop = null; // Reset backdrop
     this.currentCutouts = []; // Reset cutouts
-  }
+  };
 
   /**
    * Skips the active cutscene.
@@ -105,7 +105,7 @@ export default class CutsceneManager {
   skip = () => {
     this.queue = [];
     this.active = false;
-  }
+  };
 
   /**
    * Checks if a cutscene is running.
@@ -113,7 +113,7 @@ export default class CutsceneManager {
    */
   isRunning = () => {
     return this.active;
-  }
+  };
 
   /**
    * Updates the cutscene manager each frame.
@@ -161,48 +161,48 @@ export default class CutsceneManager {
       this._currentPromise = null;
       this.update();
     });
-  }
+  };
 
   /**
    * Waits for a specified number of milliseconds.
    * @param {number} ms - The milliseconds to wait.
    * @returns {Promise<void>} A promise that resolves after the wait.
    */
-  wait = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  wait = ms => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
 
   /**
    * Handles a transition step.
    * @param {CutsceneStep} step - The transition step.
    * @returns {Promise<void>} A promise that resolves when the transition completes.
    */
-  transition = (step) => {
+  transition = step => {
     const rm = this.engine.renderManager;
     if (!rm) return Promise.resolve();
     const effect = step.effect || 'fade';
     const direction = step.direction || 'out';
     const duration = step.duration || 500;
     return rm.startTransition({ effect, direction, duration });
-  }
+  };
 
   /**
    * Runs an action step.
    * @param {CutsceneStep} step - The action step.
    * @returns {Promise<void>} A promise that resolves when the action completes.
    */
-  runAction = (step) => {
+  runAction = step => {
     const action = step.action;
     if (!action) return Promise.resolve();
     return action();
-  }
+  };
 
   /**
    * Loads a zone as part of a cutscene.
    * @param {CutsceneStep} step - The load_zone step.
    * @returns {Promise<void>} A promise that resolves when the zone is loaded.
    */
-  loadZone = (step) => {
+  loadZone = step => {
     const { zone, remotely = false, zip } = step;
     if (!zone || !this.engine.spritz || !this.engine.spritz.world) {
       return Promise.resolve();
@@ -213,24 +213,24 @@ export default class CutsceneManager {
       return this.engine.spritz.world.loadZoneFromZip(zone, zip, false, null);
     }
     return this.engine.spritz.world.loadZone(zone, remotely, false, null);
-  }
+  };
 
   /**
    * Sets the backdrop for the cutscene.
    * @param {CutsceneStep} step - The set_backdrop step.
    * @returns {Promise<void>} A promise that resolves when the backdrop is set.
    */
-  setBackdrop = (step) => {
+  setBackdrop = step => {
     this.currentBackdrop = step.backdrop || null;
     return Promise.resolve();
-  }
+  };
 
   /**
    * Shows a cutout in the cutscene.
    * @param {CutsceneStep} step - The show_cutout step.
    * @returns {Promise<void>} A promise that resolves when the cutout is shown.
    */
-  showCutout = (step) => {
+  showCutout = step => {
     const { sprite, cutout, position = 'left' } = step;
     if (sprite && cutout) {
       // Remove existing cutout for this sprite if any
@@ -239,5 +239,5 @@ export default class CutsceneManager {
       this.currentCutouts.push({ sprite, cutout, position });
     }
     return Promise.resolve();
-  }
+  };
 }

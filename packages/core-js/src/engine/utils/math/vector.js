@@ -322,7 +322,8 @@ export class Vector4 {
    * @returns {Vector4} The normalized vector.
    */
   normal() {
-    if (this.x === 0 && this.y === 0 && this.z === 0 && this.w === 0) return new Vector4(0, 0, 0, 0);
+    if (this.x === 0 && this.y === 0 && this.z === 0 && this.w === 0)
+      return new Vector4(0, 0, 0, 0);
     const l = this.length();
     return new Vector4(this.x / l, this.y / l, this.z / l, this.w / l);
   }
@@ -368,7 +369,12 @@ export class Vector4 {
  * @returns {boolean} True if they collide.
  */
 export function lineRectCollide(line, rect) {
-  return rect.y > line.y - rect.size / 2 && rect.y < line.y + rect.size / 2 && rect.x > line.x1 - rect.size / 2 && rect.x < line.x2 + rect.size / 2;
+  return (
+    rect.y > line.y - rect.size / 2 &&
+    rect.y < line.y + rect.size / 2 &&
+    rect.x > line.x1 - rect.size / 2 &&
+    rect.x < line.x2 + rect.size / 2
+  );
 }
 
 /**

@@ -4,30 +4,30 @@
 import React from 'react';
 import './Input.css';
 
-export const Input = React.forwardRef(function Input({ 
-  value,
-  defaultValue,
-  placeholder,
-  size = 'md',
-  disabled = false,
-  readOnly = false,
-  as = 'input',
-  className = '',
-  onChange,
-  onPressEnter,
-  style,
-  ...props 
-}, ref) {
+export const Input = React.forwardRef(function Input(
+  {
+    value,
+    defaultValue,
+    placeholder,
+    size = 'md',
+    disabled = false,
+    readOnly = false,
+    as = 'input',
+    className = '',
+    onChange,
+    onPressEnter,
+    style,
+    ...props
+  },
+  ref
+) {
   const Component = as === 'textarea' ? 'textarea' : 'input';
-  
-  const classes = [
-    'px-input',
-    `px-input-${size}`,
-    disabled && 'px-input-disabled',
-    className
-  ].filter(Boolean).join(' ');
 
-  const handleKeyDown = (e) => {
+  const classes = ['px-input', `px-input-${size}`, disabled && 'px-input-disabled', className]
+    .filter(Boolean)
+    .join(' ');
+
+  const handleKeyDown = e => {
     if (e.key === 'Enter' && onPressEnter) {
       onPressEnter(e);
     }

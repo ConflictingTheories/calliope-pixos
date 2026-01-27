@@ -12,7 +12,19 @@
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Panel, Container, Row, Col, Button, Message, Slider, Checkbox, Input, InputNumber, SelectPicker } from '../ui';
+import {
+  Panel,
+  Container,
+  Row,
+  Col,
+  Button,
+  Message,
+  Slider,
+  Checkbox,
+  Input,
+  InputNumber,
+  SelectPicker,
+} from '../ui';
 
 const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
@@ -71,7 +83,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
     }
   }, [content, zip, getData, toDataUri]);
 
-  const loadSpriteImage = async (src) => {
+  const loadSpriteImage = async src => {
     if (!zip || !getData || !toDataUri) return;
 
     try {
@@ -201,8 +213,14 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
 
           ctx.drawImage(
             img,
-            x, y, tileSize[0], tileSize[1],
-            offsetX, offsetY, scaledWidth, scaledHeight
+            x,
+            y,
+            tileSize[0],
+            tileSize[1],
+            offsetX,
+            offsetY,
+            scaledWidth,
+            scaledHeight
           );
         }
       }
@@ -215,7 +233,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
     if (isPlaying && spriteData?.frames?.[selectedDirection]) {
       const frames = spriteData.frames[selectedDirection];
       const animate = () => {
-        setSelectedFrame((prev) => {
+        setSelectedFrame(prev => {
           const next = prev + 1;
           if (next >= frames.length) {
             if (loop) {
@@ -243,7 +261,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
   }, [isPlaying, animationSpeed, spriteData, selectedDirection, loop]);
 
   // Canvas interaction handlers
-  const handleMouseDown = (e) => {
+  const handleMouseDown = e => {
     setDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
   };
@@ -252,22 +270,22 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
     setDragging(false);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = e => {
     if (!dragging) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     dragStart.current = { x: e.clientX, y: e.clientY };
-    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+    setCamera(prev => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
   };
 
-  const handleWheel = (e) => {
+  const handleWheel = e => {
     e.preventDefault();
     let zoom = camera.zoom + (e.deltaY < 0 ? 0.2 : -0.2);
     zoom = Math.max(0.5, Math.min(8, zoom));
-    setCamera((prev) => ({ ...prev, zoom }));
+    setCamera(prev => ({ ...prev, zoom }));
   };
 
-  const handleCanvasClick = (e) => {
+  const handleCanvasClick = e => {
     if (!spriteData || !spriteData.tileSize) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
@@ -328,7 +346,9 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
         {/* Spritesheet View - Top */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Spritesheet View</div>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+              Spritesheet View
+            </div>
             <canvas
               ref={canvasRef}
               width={spriteImage ? undefined : 600}
@@ -350,7 +370,9 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
               onWheel={handleWheel}
               onClick={handleCanvasClick}
             />
-            <div style={{ marginTop: '0.5rem', fontSize: '0.8em', color: '#ccc', textAlign: 'center' }}>
+            <div
+              style={{ marginTop: '0.5rem', fontSize: '0.8em', color: '#ccc', textAlign: 'center' }}
+            >
               Zoom: {camera.zoom.toFixed(1)}x | Click grid cells to set frame positions
             </div>
           </div>
@@ -361,7 +383,9 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
           {/* Preview */}
           <div style={{ flex: '1' }}>
             <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Preview</div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+                Preview
+              </div>
               <canvas
                 ref={previewCanvasRef}
                 width={128}
@@ -374,7 +398,15 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
                   display: 'block',
                 }}
               />
-              <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: '0.5rem',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                }}
+              >
                 <Button
                   appearance={isPlaying ? 'primary' : 'default'}
                   onClick={() => setIsPlaying(!isPlaying)}
@@ -387,7 +419,9 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
                 </Checkbox>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Speed: {animationSpeed}ms</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Speed: {animationSpeed}ms
+                </div>
                 <Slider
                   min={50}
                   max={1000}
@@ -403,9 +437,13 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
           {/* Direction & Frame Selection */}
           <div style={{ flex: '1' }}>
             <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Direction & Frame</div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+                Direction & Frame
+              </div>
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Direction:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Direction:
+                </div>
                 <SelectPicker
                   data={DIRECTIONS.map(dir => ({ label: dir, value: dir }))}
                   value={selectedDirection}
@@ -415,7 +453,9 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Frame:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Frame:
+                </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                   {spriteData.frames?.[selectedDirection]?.map((frame, index) => (
                     <Button
@@ -450,22 +490,32 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
         {/* Frame Coordinates */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Frame Coordinates</div>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+              Frame Coordinates
+            </div>
             {spriteData.frames?.[selectedDirection]?.[selectedFrame] ? (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <div style={{ flex: '1' }}>
-                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>X:</div>
+                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                    X:
+                  </div>
                   <InputNumber
                     value={spriteData.frames[selectedDirection][selectedFrame][0]}
-                    onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 0, value)}
+                    onChange={value =>
+                      updateFrameCoordinate(selectedDirection, selectedFrame, 0, value)
+                    }
                     style={{ width: '100%' }}
                   />
                 </div>
                 <div style={{ flex: '1' }}>
-                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Y:</div>
+                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                    Y:
+                  </div>
                   <InputNumber
                     value={spriteData.frames[selectedDirection][selectedFrame][1]}
-                    onChange={(value) => updateFrameCoordinate(selectedDirection, selectedFrame, 1, value)}
+                    onChange={value =>
+                      updateFrameCoordinate(selectedDirection, selectedFrame, 1, value)
+                    }
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -481,69 +531,101 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
         {/* Sprite Properties */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>Sprite Properties</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.5rem' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+              Sprite Properties
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '0.5rem',
+              }}
+            >
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Type:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Type:
+                </div>
                 <Input
                   value={spriteData.type || ''}
-                  onChange={(value) => updateSpriteProperty('type', value)}
+                  onChange={value => updateSpriteProperty('type', value)}
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Source:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Source:
+                </div>
                 <Input
                   value={spriteData.src || ''}
-                  onChange={(value) => updateSpriteProperty('src', value)}
+                  onChange={value => updateSpriteProperty('src', value)}
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Sheet W:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Sheet W:
+                </div>
                 <InputNumber
                   value={spriteData.sheetSize?.[0] || 0}
-                  onChange={(value) => updateSpriteProperty('sheetSize', [value, spriteData.sheetSize?.[1] || 0])}
+                  onChange={value =>
+                    updateSpriteProperty('sheetSize', [value, spriteData.sheetSize?.[1] || 0])
+                  }
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Sheet H:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Sheet H:
+                </div>
                 <InputNumber
                   value={spriteData.sheetSize?.[1] || 0}
-                  onChange={(value) => updateSpriteProperty('sheetSize', [spriteData.sheetSize?.[0] || 0, value])}
+                  onChange={value =>
+                    updateSpriteProperty('sheetSize', [spriteData.sheetSize?.[0] || 0, value])
+                  }
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Tile W:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Tile W:
+                </div>
                 <InputNumber
                   value={spriteData.tileSize?.[0] || 0}
-                  onChange={(value) => updateSpriteProperty('tileSize', [value, spriteData.tileSize?.[1] || 0])}
+                  onChange={value =>
+                    updateSpriteProperty('tileSize', [value, spriteData.tileSize?.[1] || 0])
+                  }
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Tile H:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Tile H:
+                </div>
                 <InputNumber
                   value={spriteData.tileSize?.[1] || 0}
-                  onChange={(value) => updateSpriteProperty('tileSize', [spriteData.tileSize?.[0] || 0, value])}
+                  onChange={value =>
+                    updateSpriteProperty('tileSize', [spriteData.tileSize?.[0] || 0, value])
+                  }
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>State:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  State:
+                </div>
                 <Input
                   value={spriteData.state || ''}
-                  onChange={(value) => updateSpriteProperty('state', value)}
+                  onChange={value => updateSpriteProperty('state', value)}
                   style={{ width: '100%' }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>Gender:</div>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  Gender:
+                </div>
                 <Input
                   value={spriteData.gender || ''}
-                  onChange={(value) => updateSpriteProperty('gender', value)}
+                  onChange={value => updateSpriteProperty('gender', value)}
                   style={{ width: '100%' }}
                 />
               </div>
@@ -560,7 +642,14 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
 
         {error && (
           <div style={{ marginBottom: '1rem' }}>
-            <div style={{ border: '1px solid #d9534f', padding: '0.5rem', background: '#2a1a1a', color: '#d9534f' }}>
+            <div
+              style={{
+                border: '1px solid #d9534f',
+                padding: '0.5rem',
+                background: '#2a1a1a',
+                color: '#d9534f',
+              }}
+            >
               {error}
             </div>
           </div>

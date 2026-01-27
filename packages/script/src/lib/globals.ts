@@ -1,53 +1,53 @@
-import { parse } from '../parser.js'
-import { Table } from '../Table.js'
-import { LuaError } from '../LuaError.js'
+import { parse } from '../parser.js';
+import { Table } from '../Table.js';
+import { LuaError } from '../LuaError.js';
 import {
-    LuaType,
-    Config,
-    type,
-    tostring,
-    posrelat,
-    coerceToNumber,
-    coerceToString,
-    coerceToBoolean,
-    coerceArgToNumber,
-    coerceArgToString,
-    coerceArgToTable,
-    hasOwnProperty
-} from '../utils.js'
-import { metatable as stringMetatable } from './string.js'
+  LuaType,
+  Config,
+  type,
+  tostring,
+  posrelat,
+  coerceToNumber,
+  coerceToString,
+  coerceToBoolean,
+  coerceArgToNumber,
+  coerceArgToString,
+  coerceArgToTable,
+  hasOwnProperty,
+} from '../utils.js';
+import { metatable as stringMetatable } from './string.js';
 
-const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function ipairsIterator(table: Table, index: number): LuaType[] {
-    if (index === undefined) {
-        throw new LuaError('Bad argument #2 to ipairs() iterator')
-    }
+  if (index === undefined) {
+    throw new LuaError('Bad argument #2 to ipairs() iterator');
+  }
 
-    const nextIndex = index + 1
-    const numValues = table.numValues
+  const nextIndex = index + 1;
+  const numValues = table.numValues;
 
-    if (!numValues[nextIndex] || numValues[nextIndex] === undefined) return undefined
-    return [nextIndex, numValues[nextIndex]]
+  if (!numValues[nextIndex] || numValues[nextIndex] === undefined) return undefined;
+  return [nextIndex, numValues[nextIndex]];
 }
 
-const _VERSION = 'Lua 5.3'
+const _VERSION = 'Lua 5.3';
 
 function assert(v: LuaType, m?: LuaType): [unknown, unknown] {
-    if (coerceToBoolean(v)) return [v, m]
+  if (coerceToBoolean(v)) return [v, m];
 
-    const msg = m === undefined ? 'Assertion failed!' : coerceArgToString(m, 'assert', 2)
-    throw new LuaError(msg)
+  const msg = m === undefined ? 'Assertion failed!' : coerceArgToString(m, 'assert', 2);
+  throw new LuaError(msg);
 }
 
 function collectgarbage(): [] {
-    // noop
-    return []
+  // noop
+  return [];
 }
 
 function error(message: LuaType): void {
-    const msg = coerceArgToString(message, 'error', 1)
-    throw new LuaError(msg)
+  const msg = coerceArgToString(message, 'error', 1);
+  throw new LuaError(msg);
 }
 
 /**
@@ -56,13 +56,13 @@ function error(message: LuaType): void {
  * Otherwise, returns the metatable of the given object.
  */
 function getmetatable(table: LuaType): Table {
-    if (table instanceof Table && table.metatable) {
-        const mm = table.metatable.rawget('__metatable') as Table
-        return mm ? mm : table.metatable
-    }
-    if (typeof table === 'string') {
-        return stringMetatable
-    }
+  if (table instanceof Table && table.metatable) {
+    const mm = table.metatable.rawget('__metatable') as Table;
+    return mm ? mm : table.metatable;
+  }
+  if (typeof table === 'string') {
+    return stringMetatable;
+  }
 }
 
 /**
@@ -73,9 +73,9 @@ function getmetatable(table: LuaType): Table {
  * will iterate over the key–value pairs (1,t[1]), (2,t[2]), ..., up to the first nil value.
  */
 function ipairs(t: LuaType): [Function, Table, number] {
-    const table = coerceArgToTable(t, 'ipairs', 1)
-    const mm = table.getMetaMethod('__pairs') || table.getMetaMethod('__ipairs')
-    return mm ? mm(table).slice(0, 3) : [ipairsIterator, table, 0]
+  const table = coerceArgToTable(t, 'ipairs', 1);
+  const mm = table.getMetaMethod('__pairs') || table.getMetaMethod('__ipairs');
+  return mm ? mm(table).slice(0, 3) : [ipairsIterator, table, 0];
 }
 
 /**
@@ -94,54 +94,54 @@ function ipairs(t: LuaType): [Function, Table, number] {
  * You may however modify existing fields. In particular, you may clear existing fields.
  */
 function next(table: LuaType, index?: LuaType): [number | string, LuaType] {
-    const TABLE = coerceArgToTable(table, 'next', 1)
+  const TABLE = coerceArgToTable(table, 'next', 1);
 
-    // SLOOOOOOOW...
-    let found = index === undefined
+  // SLOOOOOOOW...
+  let found = index === undefined;
 
-    if (found || (typeof index === 'number' && index > 0)) {
-        const numValues = TABLE.numValues
-        const keys = Object.keys(numValues)
-        let i = 1
+  if (found || (typeof index === 'number' && index > 0)) {
+    const numValues = TABLE.numValues;
+    const keys = Object.keys(numValues);
+    let i = 1;
 
-        if (!found) {
-            const I = keys.indexOf(`${index}`)
-            if (I >= 0) {
-                found = true
-                i += I
-            }
-        }
-
-        if (found) {
-            for (i; keys[i] !== undefined; i++) {
-                const key = Number(keys[i])
-                const value = numValues[key]
-                if (value !== undefined) return [key, value]
-            }
-        }
+    if (!found) {
+      const I = keys.indexOf(`${index}`);
+      if (I >= 0) {
+        found = true;
+        i += I;
+      }
     }
 
-    for (const i in TABLE.strValues) {
-        if (hasOwnProperty(TABLE.strValues, i)) {
-            if (!found) {
-                if (i === index) found = true
-            } else if (TABLE.strValues[i] !== undefined) {
-                return [i, TABLE.strValues[i]]
-            }
-        }
+    if (found) {
+      for (i; keys[i] !== undefined; i++) {
+        const key = Number(keys[i]);
+        const value = numValues[key];
+        if (value !== undefined) return [key, value];
+      }
     }
+  }
 
-    for (const i in TABLE.keys) {
-        if (hasOwnProperty(TABLE.keys, i)) {
-            const key = TABLE.keys[i]
-
-            if (!found) {
-                if (key === index) found = true
-            } else if (TABLE.values[i] !== undefined) {
-                return [key, TABLE.values[i]]
-            }
-        }
+  for (const i in TABLE.strValues) {
+    if (hasOwnProperty(TABLE.strValues, i)) {
+      if (!found) {
+        if (i === index) found = true;
+      } else if (TABLE.strValues[i] !== undefined) {
+        return [i, TABLE.strValues[i]];
+      }
     }
+  }
+
+  for (const i in TABLE.keys) {
+    if (hasOwnProperty(TABLE.keys, i)) {
+      const key = TABLE.keys[i];
+
+      if (!found) {
+        if (key === index) found = true;
+      } else if (TABLE.values[i] !== undefined) {
+        return [key, TABLE.values[i]];
+      }
+    }
+  }
 }
 
 /**
@@ -156,9 +156,9 @@ function next(table: LuaType, index?: LuaType): [number | string, LuaType] {
  * See function next for the caveats of modifying the table during its traversal.
  */
 function pairs(t: LuaType): [Function, Table, undefined] {
-    const table = coerceArgToTable(t, 'pairs', 1)
-    const mm = table.getMetaMethod('__pairs')
-    return mm ? mm(table).slice(0, 3) : [next, table, undefined]
+  const table = coerceArgToTable(t, 'pairs', 1);
+  const mm = table.getMetaMethod('__pairs');
+  return mm ? mm(table).slice(0, 3) : [next, table, undefined];
 }
 
 /**
@@ -170,22 +170,22 @@ function pairs(t: LuaType): [Function, Table, undefined] {
  * In case of any error, pcall returns false plus the error message.
  */
 function pcall(f: LuaType, ...args: LuaType[]): [false, string] | [true, ...LuaType[]] {
-    if (typeof f !== 'function') {
-        throw new LuaError('Attempt to call non-function')
-    }
+  if (typeof f !== 'function') {
+    throw new LuaError('Attempt to call non-function');
+  }
 
-    try {
-        return [true, ...f(...args)]
-    } catch (e) {
-        return [false, e && e.toString()]
-    }
+  try {
+    return [true, ...f(...args)];
+  } catch (e) {
+    return [false, e && e.toString()];
+  }
 }
 
 /**
  * Checks whether v1 is equal to v2, without invoking the __eq metamethod. Returns a boolean.
  */
 function rawequal(v1: LuaType, v2: LuaType): boolean {
-    return v1 === v2
+  return v1 === v2;
 }
 
 /**
@@ -193,8 +193,8 @@ function rawequal(v1: LuaType, v2: LuaType): boolean {
  * table must be a table; index may be any value.
  */
 function rawget(table: LuaType, index: LuaType): LuaType {
-    const TABLE = coerceArgToTable(table, 'rawget', 1)
-    return TABLE.rawget(index)
+  const TABLE = coerceArgToTable(table, 'rawget', 1);
+  return TABLE.rawget(index);
 }
 
 /**
@@ -202,11 +202,11 @@ function rawget(table: LuaType, index: LuaType): LuaType {
  * Returns an integer.
  */
 function rawlen(v: LuaType): number {
-    if (v instanceof Table) return v.getn()
+  if (v instanceof Table) return v.getn();
 
-    if (typeof v === 'string') return v.length
+  if (typeof v === 'string') return v.length;
 
-    throw new LuaError('attempt to get length of an unsupported value')
+  throw new LuaError('attempt to get length of an unsupported value');
 }
 
 /**
@@ -216,11 +216,11 @@ function rawlen(v: LuaType): number {
  * This function returns table.
  */
 function rawset(table: LuaType, index: LuaType, value: LuaType): Table {
-    const TABLE = coerceArgToTable(table, 'rawset', 1)
-    if (index === undefined) throw new LuaError('table index is nil')
+  const TABLE = coerceArgToTable(table, 'rawset', 1);
+  if (index === undefined) throw new LuaError('table index is nil');
 
-    TABLE.rawset(index, value)
-    return TABLE
+  TABLE.rawset(index, value);
+  return TABLE;
 }
 
 /**
@@ -229,16 +229,16 @@ function rawset(table: LuaType, index: LuaType, value: LuaType): Table {
  * Otherwise, index must be the string "#", and select returns the total number of extra arguments it received.
  */
 function select(index: number | '#', ...args: LuaType[]): LuaType[] | number {
-    if (index === '#') {
-        return args.length
-    }
+  if (index === '#') {
+    return args.length;
+  }
 
-    if (typeof index === 'number') {
-        const pos = posrelat(Math.trunc(index), args.length)
-        return args.slice(pos - 1)
-    }
+  if (typeof index === 'number') {
+    const pos = posrelat(Math.trunc(index), args.length);
+    return args.slice(pos - 1);
+  }
 
-    throw new LuaError(`bad argument #1 to 'select' (number expected, got ${type(index)})`)
+  throw new LuaError(`bad argument #1 to 'select' (number expected, got ${type(index)})`);
 }
 
 /**
@@ -250,14 +250,17 @@ function select(index: number | '#', ...args: LuaType[]): LuaType[] | number {
  * This function returns table.
  */
 function setmetatable(table: LuaType, metatable: LuaType): Table {
-    const TABLE = coerceArgToTable(table, 'setmetatable', 1)
+  const TABLE = coerceArgToTable(table, 'setmetatable', 1);
 
-    if (TABLE.metatable && TABLE.metatable.rawget('__metatable')) {
-        throw new LuaError('cannot change a protected metatable')
-    }
+  if (TABLE.metatable && TABLE.metatable.rawget('__metatable')) {
+    throw new LuaError('cannot change a protected metatable');
+  }
 
-    TABLE.metatable = metatable === null || metatable === undefined ? null : coerceArgToTable(metatable, 'setmetatable', 2) 
-    return TABLE
+  TABLE.metatable =
+    metatable === null || metatable === undefined
+      ? null
+      : coerceArgToTable(metatable, 'setmetatable', 2);
+  return TABLE;
 }
 
 /**
@@ -276,132 +279,137 @@ function setmetatable(table: LuaType, metatable: LuaType): Table {
  * If the string e is not a valid numeral in the given base, the function returns nil.
  */
 function tonumber(e: LuaType, base: LuaType): number {
-    const E = coerceToString(e).trim()
-    const BASE = base === undefined ? 10 : coerceArgToNumber(base, 'tonumber', 2)
+  const E = coerceToString(e).trim();
+  const BASE = base === undefined ? 10 : coerceArgToNumber(base, 'tonumber', 2);
 
-    if (BASE !== 10 && E === 'nil') {
-        throw new LuaError("bad argument #1 to 'tonumber' (string expected, got nil)")
-    }
+  if (BASE !== 10 && E === 'nil') {
+    throw new LuaError("bad argument #1 to 'tonumber' (string expected, got nil)");
+  }
 
-    if (BASE < 2 || BASE > 36) {
-        throw new LuaError(`bad argument #2 to 'tonumber' (base out of range)`)
-    }
+  if (BASE < 2 || BASE > 36) {
+    throw new LuaError(`bad argument #2 to 'tonumber' (base out of range)`);
+  }
 
-    if (E === '') return
-    if (BASE === 10) return coerceToNumber(E)
+  if (E === '') return;
+  if (BASE === 10) return coerceToNumber(E);
 
-    const pattern = new RegExp(`^${BASE === 16 ? '(0x)?' : ''}[${CHARS.substr(0, BASE)}]*$`, 'gi')
+  const pattern = new RegExp(`^${BASE === 16 ? '(0x)?' : ''}[${CHARS.substr(0, BASE)}]*$`, 'gi');
 
-    if (!pattern.test(E)) return // Invalid
-    return parseInt(E, BASE)
+  if (!pattern.test(E)) return; // Invalid
+  return parseInt(E, BASE);
 }
 
 /**
  * This function is similar to pcall, except that it sets a new message handler msgh.
  */
-function xpcall(f: LuaType, msgh: LuaType, ...args: LuaType[]): [false, string] | [true, ...LuaType[]] {
-    if (typeof f !== 'function' || typeof msgh !== 'function') {
-        throw new LuaError('Attempt to call non-function')
-    }
+function xpcall(
+  f: LuaType,
+  msgh: LuaType,
+  ...args: LuaType[]
+): [false, string] | [true, ...LuaType[]] {
+  if (typeof f !== 'function' || typeof msgh !== 'function') {
+    throw new LuaError('Attempt to call non-function');
+  }
 
-    try {
-        return [true, ...f(...args)]
-    } catch (e) {
-        return [false, msgh(e)[0]]
-    }
+  try {
+    return [true, ...f(...args)];
+  } catch (e) {
+    return [false, msgh(e)[0]];
+  }
 }
 
 function createG(cfg: Config, execChunk: (_G: Table, chunk: string) => LuaType[]): Table {
-    function print(...args: LuaType[]): void {
-        const output = args.map(arg => tostring(arg)).join('\t')
-        cfg.stdout(output)
+  function print(...args: LuaType[]): void {
+    const output = args.map(arg => tostring(arg)).join('\t');
+    cfg.stdout(output);
+  }
+
+  function load(
+    chunk: LuaType,
+    _chunkname?: string,
+    _mode?: 'b' | 't' | 'bt',
+    env?: Table
+  ): [undefined, string] | (() => LuaType[]) {
+    let C = '';
+    if (chunk instanceof Function) {
+      let ret = ' ';
+      while (ret !== '' && ret !== undefined) {
+        C += ret;
+        ret = chunk()[0];
+      }
+    } else {
+      C = coerceArgToString(chunk, 'load', 1);
     }
 
-    function load(
-        chunk: LuaType,
-        _chunkname?: string,
-        _mode?: 'b' | 't' | 'bt',
-        env?: Table
-    ): [undefined, string] | (() => LuaType[]) {
-        let C = ''
-        if (chunk instanceof Function) {
-            let ret = ' '
-            while (ret !== '' && ret !== undefined) {
-                C += ret
-                ret = chunk()[0]
-            }
-        } else {
-            C = coerceArgToString(chunk, 'load', 1)
-        }
-
-        let parsed: string
-        try {
-            parsed = parse(C)
-        } catch (e) {
-            return [undefined, e.message]
-        }
-
-        return () => execChunk(env || _G, parsed)
+    let parsed: string;
+    try {
+      parsed = parse(C);
+    } catch (e) {
+      return [undefined, e.message];
     }
 
-    function dofile(filename?: LuaType): LuaType[] {
-        const res = loadfile(filename)
+    return () => execChunk(env || _G, parsed);
+  }
 
-        if (Array.isArray(res) && res[0] === undefined) {
-            throw new LuaError(res[1])
-        }
+  function dofile(filename?: LuaType): LuaType[] {
+    const res = loadfile(filename);
 
-        const exec = res as () => LuaType[]
-        return exec()
+    if (Array.isArray(res) && res[0] === undefined) {
+      throw new LuaError(res[1]);
     }
 
-    function loadfile(
-        filename?: LuaType,
-        mode?: 'b' | 't' | 'bt',
-        env?: Table
-    ): [undefined, string] | (() => LuaType[]) {
-        const FILENAME = filename === undefined ? cfg.stdin : coerceArgToString(filename, 'loadfile', 1)
+    const exec = res as () => LuaType[];
+    return exec();
+  }
 
-        if (!cfg.fileExists) {
-            throw new LuaError('loadfile requires the config.fileExists function')
-        }
+  function loadfile(
+    filename?: LuaType,
+    mode?: 'b' | 't' | 'bt',
+    env?: Table
+  ): [undefined, string] | (() => LuaType[]) {
+    const FILENAME =
+      filename === undefined ? cfg.stdin : coerceArgToString(filename, 'loadfile', 1);
 
-        if (!cfg.fileExists(FILENAME)) return [undefined, 'file not found']
-
-        if (!cfg.loadFile) {
-            throw new LuaError('loadfile requires the config.loadFile function')
-        }
-
-        return load(cfg.loadFile(FILENAME), FILENAME, mode, env)
+    if (!cfg.fileExists) {
+      throw new LuaError('loadfile requires the config.fileExists function');
     }
 
-    const _G = new Table({
-        _VERSION,
-        assert,
-        dofile,
-        collectgarbage,
-        error,
-        getmetatable,
-        ipairs,
-        load,
-        loadfile,
-        next,
-        pairs,
-        pcall,
-        print,
-        rawequal,
-        rawget,
-        rawlen,
-        rawset,
-        select,
-        setmetatable,
-        tonumber,
-        tostring,
-        type,
-        xpcall
-    })
+    if (!cfg.fileExists(FILENAME)) return [undefined, 'file not found'];
 
-    return _G
+    if (!cfg.loadFile) {
+      throw new LuaError('loadfile requires the config.loadFile function');
+    }
+
+    return load(cfg.loadFile(FILENAME), FILENAME, mode, env);
+  }
+
+  const _G = new Table({
+    _VERSION,
+    assert,
+    dofile,
+    collectgarbage,
+    error,
+    getmetatable,
+    ipairs,
+    load,
+    loadfile,
+    next,
+    pairs,
+    pcall,
+    print,
+    rawequal,
+    rawget,
+    rawlen,
+    rawset,
+    select,
+    setmetatable,
+    tonumber,
+    tostring,
+    type,
+    xpcall,
+  });
+
+  return _G;
 }
 
-export { tostring, createG }
+export { tostring, createG };

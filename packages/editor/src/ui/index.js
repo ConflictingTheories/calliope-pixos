@@ -1,6 +1,6 @@
 /**
  * PixoSpritz Editor UI Components
- * 
+ *
  * Custom component library replacing rsuite dependency.
  * Lightweight, dependency-free components styled for the editor.
  */

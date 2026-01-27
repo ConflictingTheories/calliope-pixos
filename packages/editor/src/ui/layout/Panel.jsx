@@ -5,17 +5,17 @@
 import React from 'react';
 import './Panel.css';
 
-export function Panel({ 
-  header, 
-  children, 
-  bordered = false, 
+export function Panel({
+  header,
+  children,
+  bordered = false,
   shaded = false,
   collapsible = false,
   defaultExpanded = true,
   className = '',
   bodyFill = false,
   style,
-  ...props 
+  ...props
 }) {
   const [expanded, setExpanded] = React.useState(defaultExpanded);
 
@@ -24,30 +24,24 @@ export function Panel({
     bordered && 'px-panel-bordered',
     shaded && 'px-panel-shaded',
     bodyFill && 'px-panel-body-fill',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style} {...props}>
       {header && (
-        <div 
+        <div
           className="px-panel-header"
           onClick={collapsible ? () => setExpanded(!expanded) : undefined}
           style={collapsible ? { cursor: 'pointer' } : undefined}
         >
-          {collapsible && (
-            <span className="px-panel-collapse-icon">
-              {expanded ? '▼' : '▶'}
-            </span>
-          )}
+          {collapsible && <span className="px-panel-collapse-icon">{expanded ? '▼' : '▶'}</span>}
           {header}
         </div>
       )}
-      {(!collapsible || expanded) && (
-        <div className="px-panel-body">
-          {children}
-        </div>
-      )}
+      {(!collapsible || expanded) && <div className="px-panel-body">{children}</div>}
     </div>
   );
 }

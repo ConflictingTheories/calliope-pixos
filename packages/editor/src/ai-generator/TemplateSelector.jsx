@@ -8,15 +8,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import {
-  Panel,
-  Button,
-  ButtonGroup,
-  Tag,
-  Input,
-  InputGroup,
-  Row,
-} from '../ui';
+import { Panel, Button, ButtonGroup, Tag, Input, InputGroup, Row } from '../ui';
 
 import {
   GAME_TEMPLATES,
@@ -69,7 +61,11 @@ function TemplateCard({ template, onSelect, isSelected }) {
     >
       <div className="template-card-header">
         <span className="template-card-name">{template.name}</span>
-        {template.featured && <Tag color="orange" size="sm">Featured</Tag>}
+        {template.featured && (
+          <Tag color="orange" size="sm">
+            Featured
+          </Tag>
+        )}
       </div>
 
       <p className="template-card-description">{template.description}</p>
@@ -81,17 +77,15 @@ function TemplateCard({ template, onSelect, isSelected }) {
         <span className="template-meta-item">
           {CATEGORY_ICONS[template.category]} {template.category}
         </span>
-        <span className="template-meta-item">
-          ⏱️ {template.estimatedTime}
-        </span>
-        <span className="template-meta-item">
-          📦 ~{template.estimatedAssets} assets
-        </span>
+        <span className="template-meta-item">⏱️ {template.estimatedTime}</span>
+        <span className="template-meta-item">📦 ~{template.estimatedAssets} assets</span>
       </div>
 
       <div className="template-card-tags">
         {template.tags.slice(0, 4).map((tag, i) => (
-          <Tag key={i} size="sm">{tag}</Tag>
+          <Tag key={i} size="sm">
+            {tag}
+          </Tag>
         ))}
       </div>
     </div>
@@ -123,10 +117,11 @@ function TemplateSelector({ onSelectTemplate, selectedTemplate }) {
     // Apply search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      templates = templates.filter(t =>
-        t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query) ||
-        t.tags.some(tag => tag.toLowerCase().includes(query))
+      templates = templates.filter(
+        t =>
+          t.name.toLowerCase().includes(query) ||
+          t.description.toLowerCase().includes(query) ||
+          t.tags.some(tag => tag.toLowerCase().includes(query))
       );
     }
 
@@ -143,11 +138,7 @@ function TemplateSelector({ onSelectTemplate, selectedTemplate }) {
       {/* Search */}
       <div className="template-search">
         <InputGroup inside>
-          <Input
-            placeholder="Search templates..."
-            value={searchQuery}
-            onChange={setSearchQuery}
-          />
+          <Input placeholder="Search templates..." value={searchQuery} onChange={setSearchQuery} />
           <InputGroup.Addon>🔍</InputGroup.Addon>
         </InputGroup>
       </div>
@@ -208,10 +199,13 @@ function TemplateSelector({ onSelectTemplate, selectedTemplate }) {
         {filteredTemplates.length === 0 ? (
           <div className="template-empty">
             <p>No templates match your search.</p>
-            <Button appearance="ghost" onClick={() => {
-              setSearchQuery('');
-              setActiveFilter('all');
-            }}>
+            <Button
+              appearance="ghost"
+              onClick={() => {
+                setSearchQuery('');
+                setActiveFilter('all');
+              }}
+            >
               Clear filters
             </Button>
           </div>

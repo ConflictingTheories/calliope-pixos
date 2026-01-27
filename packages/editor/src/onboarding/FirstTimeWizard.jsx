@@ -6,7 +6,10 @@ const steps = [
     title: 'Welcome to Pixospritz!',
     content: (
       <>
-        <p>Let’s get you started making your first game. This wizard will guide you through the basics.</p>
+        <p>
+          Let’s get you started making your first game. This wizard will guide you through the
+          basics.
+        </p>
       </>
     ),
   },
@@ -14,7 +17,10 @@ const steps = [
     title: 'Create a Project',
     content: (
       <>
-        <p>Click <b>New Project</b> to create a blank game, or choose a template to start from an example.</p>
+        <p>
+          Click <b>New Project</b> to create a blank game, or choose a template to start from an
+          example.
+        </p>
       </>
     ),
   },
@@ -53,9 +59,7 @@ export default function FirstTimeWizard({ onClose }) {
         ))}
       </div>
       <div className="onboarding-actions">
-        {step > 0 && (
-          <button onClick={() => setStep(step - 1)}>Back</button>
-        )}
+        {step > 0 && <button onClick={() => setStep(step - 1)}>Back</button>}
         {step < steps.length - 1 ? (
           <button onClick={() => setStep(step + 1)}>Next</button>
         ) : (

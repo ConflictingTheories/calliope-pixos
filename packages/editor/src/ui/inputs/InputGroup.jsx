@@ -4,20 +4,15 @@
 import React from 'react';
 import './InputGroup.css';
 
-export function InputGroup({ 
-  children, 
-  inside = false,
-  size,
-  className = '',
-  style,
-  ...props 
-}) {
+export function InputGroup({ children, inside = false, size, className = '', style, ...props }) {
   const classes = [
     'px-input-group',
     inside && 'px-input-group-inside',
     size && `px-input-group-${size}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style} {...props}>

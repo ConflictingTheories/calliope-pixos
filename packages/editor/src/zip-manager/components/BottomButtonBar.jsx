@@ -61,7 +61,7 @@ function BottomButtonBar({
       aria-label={messages.HIGHLIGHTED_ENTRIES_LABEL}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onContextMenu={(event) => event.preventDefault()}
+      onContextMenu={event => event.preventDefault()}
     >
       <div className="button-group">
         <HighlightAllButton
@@ -122,7 +122,11 @@ function BottomButtonBar({
           constants={constants}
           messages={messages}
         />
-        <ResetClipboardDataButton disabled={disabledResetClipboardDataButton} onResetClipboardData={onResetClipboardData} messages={messages} />
+        <ResetClipboardDataButton
+          disabled={disabledResetClipboardDataButton}
+          onResetClipboardData={onResetClipboardData}
+          messages={messages}
+        />
       </div>
     </div>
   );

@@ -23,7 +23,11 @@ import ModeManager from './mode/manager.js'; // Import ModeManager
 import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
 import SaveManager from './persistence/SaveManager.js';
-import { attachFlagDebugInfo, attachWebglDebugInfo, updateDebugInformation } from './debug/index.js';
+import {
+  attachFlagDebugInfo,
+  attachWebglDebugInfo,
+  updateDebugInformation,
+} from './debug/index.js';
 
 /**
  * @typedef {object} SpritzGame
@@ -159,7 +163,7 @@ export default class GLEngine {
     const gl = this.canvas.getContext('webgl2', {
       antialias: true,
       depth: true,
-      preserveDrawingBuffer: false
+      preserveDrawingBuffer: false,
     });
     /** @type {CanvasRenderingContext2D|null} */
     const gp = this.gamepadCanvas.getContext('2d');
@@ -222,7 +226,6 @@ export default class GLEngine {
 
     /** @deprecated Eventually move this into inputManager.touch instead. */
     this.touchHandler = this.gamepad.listen.bind(this.gamepad);
-
 
     // Initialize network if enabled
     if (spritz.manifest?.network?.enabled) {
@@ -315,7 +318,11 @@ export default class GLEngine {
 
     // Allow particle system to update physics with a stable timestamp
     if (this.renderManager && this.renderManager.updateParticles) {
-      try { this.renderManager.updateParticles(timestamp); } catch (e) { console.warn('updateParticles failed', e); }
+      try {
+        this.renderManager.updateParticles(timestamp);
+      } catch (e) {
+        console.warn('updateParticles failed', e);
+      }
     }
 
     this.spritz.render(this); // Render scene (might be overridden by mode)
@@ -328,24 +335,40 @@ export default class GLEngine {
 
     // Render particles after main scene but before HUD/gamepad
     if (this.renderManager && this.renderManager.renderParticles) {
-      try { this.renderManager.renderParticles(); } catch (e) { console.warn('renderParticles failed', e); }
+      try {
+        this.renderManager.renderParticles();
+      } catch (e) {
+        console.warn('renderParticles failed', e);
+      }
     }
     this.gamepad.render(); // Render gamepad (may be optimizable?)
 
     // Draw height debug overlay if enabled (shows tile/sprite/object z values on screen)
     if (this.debugHeightOverlay && this.hud.drawHeightDebugOverlay) {
-      try { this.hud.drawHeightDebugOverlay(); } catch (e) { console.warn('drawHeightDebugOverlay failed', e); }
+      try {
+        this.hud.drawHeightDebugOverlay();
+      } catch (e) {
+        console.warn('drawHeightDebugOverlay failed', e);
+      }
     }
 
     // Render inventory UI if visible
     if (this.hud.renderInventory) {
-      try { this.hud.renderInventory(); } catch (e) { console.warn('renderInventory failed', e); }
+      try {
+        this.hud.renderInventory();
+      } catch (e) {
+        console.warn('renderInventory failed', e);
+      }
     }
 
     // Re-render all active HUD elements (dialogues, menus, buttons, etc.)
     // This ensures they remain visible even after HUD canvas is cleared at start of frame
     if (this.hud.renderActiveElements) {
-      try { this.hud.renderActiveElements(); } catch (e) { console.warn('renderActiveElements failed', e); }
+      try {
+        this.hud.renderActiveElements();
+      } catch (e) {
+        console.warn('renderActiveElements failed', e);
+      }
     }
 
     // Update debug overlay if enabled
@@ -375,7 +398,11 @@ export default class GLEngine {
   getSelectedObject(type = 'sprite|object|tile') {
     // When FreeCam is active, suppress picking to avoid interfering with camera controls
     if (this._freecamActive) return null;
-    if (this.spritz.world?.spriteList?.length <= 0 && this.spritz.world?.objectList?.length <= 0 && this.spritz.world?.zoneList?.length <= 0) {
+    if (
+      this.spritz.world?.spriteList?.length <= 0 &&
+      this.spritz.world?.objectList?.length <= 0 &&
+      this.spritz.world?.zoneList?.length <= 0
+    ) {
       return null; // No pickable objects in the scene
     }
 
@@ -404,10 +431,10 @@ export default class GLEngine {
     }
 
     // Select type(s) based on request
-    type.split('|').forEach((t) => {
+    type.split('|').forEach(t => {
       switch (t) {
         case 'sprite':
-          this.spritz.world.spriteList = this.spritz.world.spriteList.map((sprite) => {
+          this.spritz.world.spriteList = this.spritz.world.spriteList.map(sprite => {
             if (sprite.objId === id) {
               sprite.isSelected = true;
               if (this.spritz.world.spriteDict[sprite.id]) {
@@ -427,7 +454,7 @@ export default class GLEngine {
           });
           break;
         case 'object':
-          this.spritz.world.objectList = this.spritz.world.objectList.map((obj) => {
+          this.spritz.world.objectList = this.spritz.world.objectList.map(obj => {
             if (obj.objId === id) {
               obj.isSelected = true;
               if (this.spritz.world.objectDict[obj.id]) {
@@ -453,7 +480,7 @@ export default class GLEngine {
           let cell = data[2];
 
           // Search zones and find selected tile
-          this.spritz.world.zoneList.forEach((zone) => {
+          this.spritz.world.zoneList.forEach(zone => {
             if (zone.objId === zoneObjId) {
               // Allow mode to handle selection first
               if (!this.modeManager.handleSelect(zone, row, cell, 'tile')) {
@@ -463,8 +490,14 @@ export default class GLEngine {
               }
             }
           });
-          if (id !== 0) { // If a valid ID was picked (not background)
-            console.log('TILE SELECTION:', { zoneObjId, row, cell, zones: this.spritz.world.zoneList });
+          if (id !== 0) {
+            // If a valid ID was picked (not background)
+            console.log('TILE SELECTION:', {
+              zoneObjId,
+              row,
+              cell,
+              zones: this.spritz.world.zoneList,
+            });
           }
           break;
       }
@@ -509,7 +542,6 @@ export default class GLEngine {
     // Speak
     window.speechSynthesis.speak(speech);
   }
-
 
   /**
    * Returns the current client width and height of the main canvas.

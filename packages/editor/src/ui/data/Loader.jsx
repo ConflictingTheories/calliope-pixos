@@ -4,7 +4,7 @@
 import React from 'react';
 import './Loader.css';
 
-export function Loader({ 
+export function Loader({
   size = 'md',
   speed = 'normal',
   center = false,
@@ -14,7 +14,7 @@ export function Loader({
   content,
   className = '',
   style,
-  ...props 
+  ...props
 }) {
   const classes = [
     'px-loader',
@@ -23,8 +23,10 @@ export function Loader({
     center && 'px-loader-center',
     vertical && 'px-loader-vertical',
     inverse && 'px-loader-inverse',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const loader = (
     <div className={classes} style={style} {...props}>
@@ -34,11 +36,7 @@ export function Loader({
   );
 
   if (backdrop) {
-    return (
-      <div className="px-loader-backdrop">
-        {loader}
-      </div>
-    );
+    return <div className="px-loader-backdrop">{loader}</div>;
   }
 
   return loader;

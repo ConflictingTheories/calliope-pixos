@@ -65,7 +65,7 @@ export class ControllerStick {
     this.gamepad.map['y-dir'] = 0;
     this.gamepad.map['x-axis'] = 0;
     this.gamepad.map['y-axis'] = 0;
-  }
+  };
   /**
    * Draws the joystick on the canvas.
    */
@@ -94,7 +94,7 @@ export class ControllerStick {
     ctx.arc(this.dx, this.dy, this.radius - 10, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.closePath();
-  }
+  };
   /**
    * Manages the event state for the joystick.
    * @param {string} id - The touch identifier.
@@ -103,21 +103,21 @@ export class ControllerStick {
   state = (id, type) => {
     let { gamepad } = this;
     let { touches, map, checkInput } = gamepad;
-    
+
     // Ensure touch exists before processing
     if (!touches[id]) {
       return;
     }
-    
+
     // Touch coordinates are already in canvas pixel space from gamepad listen()
     // No need for additional scaling here
-    var touch = {
+    let touch = {
       x: touches[id].x,
       y: touches[id].y,
     };
-    var dx = parseInt(touch.x - this.x);
-    var dy = parseInt(touch.y - this.y);
-    var dist = parseInt(Math.sqrt(dx * dx + dy * dy));
+    let dx = parseInt(touch.x - this.x);
+    let dy = parseInt(touch.y - this.y);
+    let dist = parseInt(Math.sqrt(dx * dx + dy * dy));
     // Start
     if (dist < this.radius * 1.2) {
       if (!type) {
@@ -165,7 +165,7 @@ export class ControllerStick {
         this.gamepad.checkInput();
       }
     }
-  }
+  };
   /**
    * Resets the joystick state.
    */
@@ -177,5 +177,5 @@ export class ControllerStick {
     map['y-dir'] = 0;
     map['x-axis'] = 0;
     map['y-axis'] = 0;
-  }
+  };
 }

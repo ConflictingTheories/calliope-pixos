@@ -95,7 +95,8 @@ const OPTIONS_MAX_WORKERS_LABEL = 'Número de núcleos:';
 const OPTIONS_CHUNK_SIZE_LABEL = 'Tamaño de fragmento (kB):';
 const CHOOSE_ACTION_DIALOG_ADD_FILE_BUTTON_LABEL = 'Agregar archivo';
 const CHOOSE_ACTION_TITLE = 'Elegir acción';
-const CHOOSE_ACTION_LABEL = 'Se ha seleccionado un archivo zip, por favor elija la acción adecuada.';
+const CHOOSE_ACTION_LABEL =
+  'Se ha seleccionado un archivo zip, por favor elija la acción adecuada.';
 const NO_ENTRIES_LABEL = 'Arrastre y suelte archivos y directorios aquí';
 const INFO_LABEL = ['Código fuente en ', ' GitHub ', ' Hecho con ', '♡', ' en ', 'Rennes'];
 const CITY_URL = 'https://es.wikipedia.org/wiki/Rennes';

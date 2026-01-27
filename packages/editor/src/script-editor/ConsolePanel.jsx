@@ -88,36 +88,38 @@ export default function ConsolePanel({
   /**
    * Handle keyboard navigation in input
    */
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      executeCommand();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (commandHistory.length > 0) {
-        const newIndex = historyIndex === -1
-          ? commandHistory.length - 1
-          : Math.max(0, historyIndex - 1);
-        setHistoryIndex(newIndex);
-        setInputValue(commandHistory[newIndex] || '');
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIndex >= 0) {
-        const newIndex = historyIndex + 1;
-        if (newIndex >= commandHistory.length) {
-          setHistoryIndex(-1);
-          setInputValue('');
-        } else {
+  const handleKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        executeCommand();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (commandHistory.length > 0) {
+          const newIndex =
+            historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
           setHistoryIndex(newIndex);
           setInputValue(commandHistory[newIndex] || '');
         }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex >= 0) {
+          const newIndex = historyIndex + 1;
+          if (newIndex >= commandHistory.length) {
+            setHistoryIndex(-1);
+            setInputValue('');
+          } else {
+            setHistoryIndex(newIndex);
+            setInputValue(commandHistory[newIndex] || '');
+          }
+        }
+      } else if (e.key === 'l' && e.ctrlKey) {
+        e.preventDefault();
+        if (onClear) onClear();
       }
-    } else if (e.key === 'l' && e.ctrlKey) {
-      e.preventDefault();
-      if (onClear) onClear();
-    }
-  }, [executeCommand, commandHistory, historyIndex, onClear]);
+    },
+    [executeCommand, commandHistory, historyIndex, onClear]
+  );
 
   /**
    * Filter messages based on selected type
@@ -133,7 +135,7 @@ export default function ConsolePanel({
   /**
    * Format timestamp for display
    */
-  const formatTime = (timestamp) => {
+  const formatTime = timestamp => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', {
@@ -148,15 +150,22 @@ export default function ConsolePanel({
   /**
    * Get icon for message type
    */
-  const getIcon = (type) => {
+  const getIcon = type => {
     switch (type) {
-      case ConsoleMessageType.ERROR: return '✖';
-      case ConsoleMessageType.WARN: return '⚠';
-      case ConsoleMessageType.SUCCESS: return '✔';
-      case ConsoleMessageType.DEBUG: return '🔍';
-      case ConsoleMessageType.COMMAND: return '>';
-      case ConsoleMessageType.OUTPUT: return '←';
-      default: return 'ℹ';
+      case ConsoleMessageType.ERROR:
+        return '✖';
+      case ConsoleMessageType.WARN:
+        return '⚠';
+      case ConsoleMessageType.SUCCESS:
+        return '✔';
+      case ConsoleMessageType.DEBUG:
+        return '🔍';
+      case ConsoleMessageType.COMMAND:
+        return '>';
+      case ConsoleMessageType.OUTPUT:
+        return '←';
+      default:
+        return 'ℹ';
     }
   };
 
@@ -176,7 +185,7 @@ export default function ConsolePanel({
         <div className="console-toolbar-center">
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={e => setFilter(e.target.value)}
             className="console-filter"
           >
             <option value="all">All Messages</option>
@@ -204,11 +213,7 @@ export default function ConsolePanel({
             </button>
           )}
           {onClear && (
-            <button
-              className="console-btn"
-              onClick={onClear}
-              title="Clear console (Ctrl+L)"
-            >
+            <button className="console-btn" onClick={onClear} title="Clear console (Ctrl+L)">
               🗑
             </button>
           )}
@@ -216,11 +221,7 @@ export default function ConsolePanel({
       </div>
 
       {/* Messages */}
-      <div
-        ref={consoleRef}
-        className="console-messages"
-        onScroll={handleScroll}
-      >
+      <div ref={consoleRef} className="console-messages" onScroll={handleScroll}>
         {filteredMessages.length === 0 ? (
           <div className="console-empty">
             <span className="console-empty-icon">📝</span>
@@ -229,21 +230,14 @@ export default function ConsolePanel({
           </div>
         ) : (
           filteredMessages.map((msg, idx) => (
-            <div
-              key={msg.id || idx}
-              className={`console-message console-${msg.type || 'info'}`}
-            >
+            <div key={msg.id || idx} className={`console-message console-${msg.type || 'info'}`}>
               <span className="console-icon">{getIcon(msg.type)}</span>
               <span className="console-time">{formatTime(msg.timestamp)}</span>
               <span className="console-text">
-                {msg.source && (
-                  <span className="console-source">[{msg.source}]</span>
-                )}
+                {msg.source && <span className="console-source">[{msg.source}]</span>}
                 {msg.text}
               </span>
-              {msg.line && (
-                <span className="console-line">Line {msg.line}</span>
-              )}
+              {msg.line && <span className="console-line">Line {msg.line}</span>}
             </div>
           ))
         )}
@@ -257,7 +251,7 @@ export default function ConsolePanel({
           type="text"
           className="console-input"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Enter command or Lua expression..."
           disabled={isRunning}
@@ -298,16 +292,25 @@ export function useConsole() {
   const info = useCallback((text, options) => log(text, ConsoleMessageType.INFO, options), [log]);
   const warn = useCallback((text, options) => log(text, ConsoleMessageType.WARN, options), [log]);
   const error = useCallback((text, options) => log(text, ConsoleMessageType.ERROR, options), [log]);
-  const success = useCallback((text, options) => log(text, ConsoleMessageType.SUCCESS, options), [log]);
+  const success = useCallback(
+    (text, options) => log(text, ConsoleMessageType.SUCCESS, options),
+    [log]
+  );
   const debug = useCallback((text, options) => log(text, ConsoleMessageType.DEBUG, options), [log]);
 
-  const output = useCallback((text, options) => {
-    return log(text, ConsoleMessageType.OUTPUT, options);
-  }, [log]);
+  const output = useCallback(
+    (text, options) => {
+      return log(text, ConsoleMessageType.OUTPUT, options);
+    },
+    [log]
+  );
 
-  const command = useCallback((text) => {
-    return log(text, ConsoleMessageType.COMMAND, {});
-  }, [log]);
+  const command = useCallback(
+    text => {
+      return log(text, ConsoleMessageType.COMMAND, {});
+    },
+    [log]
+  );
 
   const clear = useCallback(() => {
     setMessages([]);

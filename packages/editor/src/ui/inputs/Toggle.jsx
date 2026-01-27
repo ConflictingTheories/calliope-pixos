@@ -4,7 +4,7 @@
 import React from 'react';
 import './Toggle.css';
 
-export function Toggle({ 
+export function Toggle({
   checked,
   defaultChecked,
   disabled = false,
@@ -14,12 +14,12 @@ export function Toggle({
   className = '',
   onChange,
   style,
-  ...props 
+  ...props
 }) {
   const [internalChecked, setInternalChecked] = React.useState(defaultChecked ?? false);
   const isChecked = checked !== undefined ? checked : internalChecked;
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const newValue = e.target.checked;
     setInternalChecked(newValue);
     onChange?.(newValue, e);
@@ -30,8 +30,10 @@ export function Toggle({
     `px-toggle-${size}`,
     isChecked && 'px-toggle-checked',
     disabled && 'px-toggle-disabled',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <label className={classes} style={style}>

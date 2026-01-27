@@ -41,7 +41,7 @@ function getHighlightedEntriesFeatures({
 
   function copy() {
     setClipboardData({
-      entries: highlightedEntries.map((entry) => entry.clone(true)),
+      entries: highlightedEntries.map(entry => entry.clone(true)),
     });
   }
 
@@ -86,7 +86,7 @@ function getHighlightedEntriesFeatures({
   }
 
   function deleteEntries() {
-    highlightedEntries.forEach((entry) => zipFilesystem.remove(entry));
+    highlightedEntries.forEach(entry => zipFilesystem.remove(entry));
     if (entries.length) {
       const indexEntry = Math.max(
         ...entries
@@ -95,7 +95,10 @@ function getHighlightedEntriesFeatures({
           .map(({ index }) => index)
       );
       let indexNextEntry = indexEntry;
-      while (indexNextEntry < entries.length && highlightedIds.includes(entries[indexNextEntry].id)) {
+      while (
+        indexNextEntry < entries.length &&
+        highlightedIds.includes(entries[indexNextEntry].id)
+      ) {
         indexNextEntry++;
       }
       if (indexNextEntry === entries.length) {

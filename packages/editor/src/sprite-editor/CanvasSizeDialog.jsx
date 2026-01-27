@@ -38,7 +38,7 @@ const ANCHORS = [
 
 /**
  * CanvasSizeDialog - Modal dialog for changing canvas dimensions
- * 
+ *
  * @param {Object} props
  * @param {boolean} props.open - Whether dialog is open
  * @param {function} props.onClose - Close callback
@@ -46,24 +46,18 @@ const ANCHORS = [
  * @param {number} props.currentHeight - Current canvas height
  * @param {function} props.onApply - Callback with new dimensions and options
  */
-function CanvasSizeDialog({
-  open,
-  onClose,
-  currentWidth = 32,
-  currentHeight = 32,
-  onApply
-}) {
+function CanvasSizeDialog({ open, onClose, currentWidth = 32, currentHeight = 32, onApply }) {
   const [width, setWidth] = useState(currentWidth);
   const [height, setHeight] = useState(currentHeight);
   const [lockAspect, setLockAspect] = useState(false);
   const [anchor, setAnchor] = useState('middle-center');
   const [resizeMode, setResizeMode] = useState('resize'); // 'resize' | 'scale'
   const [scaleMethod, setScaleMethod] = useState('nearest'); // 'nearest' | 'bilinear'
-  
+
   const aspectRatio = useMemo(() => currentWidth / currentHeight, [currentWidth, currentHeight]);
 
   // Handle preset selection
-  const handlePresetChange = useCallback((value) => {
+  const handlePresetChange = useCallback(value => {
     if (value === 'custom') return;
     const [w, h] = value.split('x').map(Number);
     setWidth(w);
@@ -71,22 +65,28 @@ function CanvasSizeDialog({
   }, []);
 
   // Handle width change with aspect lock
-  const handleWidthChange = useCallback((value) => {
-    const newWidth = Math.max(8, Math.min(256, value || 8));
-    setWidth(newWidth);
-    if (lockAspect) {
-      setHeight(Math.round(newWidth / aspectRatio));
-    }
-  }, [lockAspect, aspectRatio]);
+  const handleWidthChange = useCallback(
+    value => {
+      const newWidth = Math.max(8, Math.min(256, value || 8));
+      setWidth(newWidth);
+      if (lockAspect) {
+        setHeight(Math.round(newWidth / aspectRatio));
+      }
+    },
+    [lockAspect, aspectRatio]
+  );
 
   // Handle height change with aspect lock
-  const handleHeightChange = useCallback((value) => {
-    const newHeight = Math.max(8, Math.min(256, value || 8));
-    setHeight(newHeight);
-    if (lockAspect) {
-      setWidth(Math.round(newHeight * aspectRatio));
-    }
-  }, [lockAspect, aspectRatio]);
+  const handleHeightChange = useCallback(
+    value => {
+      const newHeight = Math.max(8, Math.min(256, value || 8));
+      setHeight(newHeight);
+      if (lockAspect) {
+        setWidth(Math.round(newHeight * aspectRatio));
+      }
+    },
+    [lockAspect, aspectRatio]
+  );
 
   // Apply changes
   const handleApply = useCallback(() => {
@@ -95,7 +95,7 @@ function CanvasSizeDialog({
       height,
       anchor,
       mode: resizeMode,
-      scaleMethod: resizeMode === 'scale' ? scaleMethod : null
+      scaleMethod: resizeMode === 'scale' ? scaleMethod : null,
     });
     onClose?.();
   }, [width, height, anchor, resizeMode, scaleMethod, onApply, onClose]);
@@ -120,7 +120,9 @@ function CanvasSizeDialog({
         <div className="canvas-size-dialog__content">
           {/* Current Size Info */}
           <div className="canvas-size-dialog__info">
-            <span>Current: {currentWidth}×{currentHeight}</span>
+            <span>
+              Current: {currentWidth}×{currentHeight}
+            </span>
           </div>
 
           {/* Preset Selector */}
@@ -151,7 +153,7 @@ function CanvasSizeDialog({
               />
               <span>px</span>
             </div>
-            
+
             <button
               className={`canvas-size-dialog__lock ${lockAspect ? 'canvas-size-dialog__lock--active' : ''}`}
               onClick={() => setLockAspect(!lockAspect)}
@@ -159,7 +161,7 @@ function CanvasSizeDialog({
             >
               {lockAspect ? '🔗' : '⛓️‍💥'}
             </button>
-            
+
             <div className="canvas-size-dialog__dimension">
               <label>Height:</label>
               <InputNumber
@@ -177,11 +179,7 @@ function CanvasSizeDialog({
           {/* Resize Mode */}
           <div className="canvas-size-dialog__row">
             <label>Mode:</label>
-            <RadioGroup
-              inline
-              value={resizeMode}
-              onChange={setResizeMode}
-            >
+            <RadioGroup inline value={resizeMode} onChange={setResizeMode}>
               <Radio value="resize">Resize Canvas</Radio>
               <Radio value="scale">Scale Image</Radio>
             </RadioGroup>
@@ -191,11 +189,7 @@ function CanvasSizeDialog({
           {resizeMode === 'scale' && (
             <div className="canvas-size-dialog__row">
               <label>Method:</label>
-              <RadioGroup
-                inline
-                value={scaleMethod}
-                onChange={setScaleMethod}
-              >
+              <RadioGroup inline value={scaleMethod} onChange={setScaleMethod}>
                 <Radio value="nearest">Nearest (Sharp)</Radio>
                 <Radio value="bilinear">Bilinear (Smooth)</Radio>
               </RadioGroup>
@@ -209,7 +203,7 @@ function CanvasSizeDialog({
               <div className="canvas-size-dialog__anchor-grid">
                 {ANCHORS.map((row, rowIndex) => (
                   <div key={rowIndex} className="canvas-size-dialog__anchor-row">
-                    {row.map((pos) => (
+                    {row.map(pos => (
                       <button
                         key={pos}
                         className={`canvas-size-dialog__anchor-btn ${anchor === pos ? 'canvas-size-dialog__anchor-btn--active' : ''}`}
@@ -227,38 +221,45 @@ function CanvasSizeDialog({
 
           {/* Preview */}
           <div className="canvas-size-dialog__preview">
-            <div 
+            <div
               className="canvas-size-dialog__preview-outer"
               style={{
                 width: Math.max(width, currentWidth) / 2 + 20,
-                height: Math.max(height, currentHeight) / 2 + 20
+                height: Math.max(height, currentHeight) / 2 + 20,
               }}
             >
-              <div 
+              <div
                 className="canvas-size-dialog__preview-current"
                 style={{
                   width: currentWidth / 2,
-                  height: currentHeight / 2
+                  height: currentHeight / 2,
                 }}
               />
-              <div 
+              <div
                 className="canvas-size-dialog__preview-new"
                 style={{
                   width: width / 2,
-                  height: height / 2
+                  height: height / 2,
                 }}
               />
             </div>
             <span className="canvas-size-dialog__preview-label">
-              {width}×{height} ({Math.round((width * height) / (currentWidth * currentHeight) * 100)}%)
+              {width}×{height} (
+              {Math.round(((width * height) / (currentWidth * currentHeight)) * 100)}%)
             </span>
           </div>
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={handleReset} appearance="subtle">Reset</Button>
-        <Button onClick={onClose} appearance="subtle">Cancel</Button>
-        <Button onClick={handleApply} appearance="primary">Apply</Button>
+        <Button onClick={handleReset} appearance="subtle">
+          Reset
+        </Button>
+        <Button onClick={onClose} appearance="subtle">
+          Cancel
+        </Button>
+        <Button onClick={handleApply} appearance="primary">
+          Apply
+        </Button>
       </Modal.Footer>
     </Modal>
   );

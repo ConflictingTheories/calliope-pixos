@@ -1,15 +1,15 @@
 /*                                                 *\
-** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
-** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-*                                                 */
+ ** ----------------------------------------------- **
+ **          Calliope - Pixos Game Engine           **
+ ** ----------------------------------------------- **
+ **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+ **                                                 **
+ **    Any unauthorized distribution or transfer    **
+ **       of this work is strictly prohibited.      **
+ **                                                 **
+ **               All Rights Reserved.              **
+ ** ----------------------------------------------- **
+ *                                                 */
 
 // Fragment shader for iris/circle transition effect.
 // Creates a circular iris wipe effect, common in classic films and games.

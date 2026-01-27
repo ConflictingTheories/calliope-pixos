@@ -32,7 +32,7 @@ export default class LineTool extends BaseTool {
 
   onEnd(x, y, mapData, options) {
     if (!this.startPoint) return null;
-    
+
     const result = this._drawLine(this.startPoint.x, this.startPoint.y, x, y, options);
     this.startPoint = null;
     return result;
@@ -42,7 +42,7 @@ export default class LineTool extends BaseTool {
     if (!this.startPoint) {
       return [{ x, y, tile: options.selectedTile, isPreview: true }];
     }
-    
+
     return this._getLineCells(this.startPoint.x, this.startPoint.y, x, y, options);
   }
 
@@ -54,7 +54,7 @@ export default class LineTool extends BaseTool {
   _getLineCells(x0, y0, x1, y1, options) {
     const { selectedTile, layer = 0, mapWidth = 16, mapHeight = 16 } = options;
     const cells = [];
-    
+
     // Bresenham's line algorithm
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);
@@ -77,9 +77,9 @@ export default class LineTool extends BaseTool {
           }
         }
       }
-      
+
       if (x === x1 && y === y1) break;
-      
+
       const e2 = 2 * err;
       if (e2 > -dy) {
         err -= dy;

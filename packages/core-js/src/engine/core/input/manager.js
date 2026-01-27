@@ -120,8 +120,6 @@ export default class InputManager {
     this.mappings[mode] = mappings;
   }
 
-
-
   /**
    * Registers a hook for an action.
    * @param {string} action - The action name.
@@ -173,7 +171,7 @@ export default class InputManager {
       const mapping = actions[action];
       let active = false;
 
-      const checkKeyboard = (key) => {
+      const checkKeyboard = key => {
         // Use isCodePressed for special keys like 'ArrowLeft', and isKeyPressed for others.
         if (key.length > 1) {
           return this.keyboard.isCodePressed(key);
@@ -339,7 +337,7 @@ export default class InputManager {
                     bottom: '#777',
                     background: '#999',
                   },
-                  trigger: (menu) => {
+                  trigger: menu => {
                     menu.completed = true;
                   },
                 },
@@ -347,41 +345,78 @@ export default class InputManager {
               ['main']
             );
           case 'chat':
-            return new ActionLoader(this.engine, 'chat', ['>:', true, { autoclose: false }], avatar);
+            return new ActionLoader(
+              this.engine,
+              'chat',
+              ['>:', true, { autoclose: false }],
+              avatar
+            );
           case 'patrol':
-            return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone], avatar);
+            return new ActionLoader(
+              this.engine,
+              'patrol',
+              [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 600, avatar.zone],
+              avatar
+            );
           case 'run':
-            return new ActionLoader(this.engine, 'patrol', [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 200, avatar.zone], avatar);
+            return new ActionLoader(
+              this.engine,
+              'patrol',
+              [avatar.pos.toArray(), new Vector(8, 13, avatar.pos.z).toArray(), 200, avatar.zone],
+              avatar
+            );
           case 'interact':
-            return new ActionLoader(this.engine, 'interact', [avatar.pos.toArray(), avatar.facing, avatar.zone.world], avatar);
+            return new ActionLoader(
+              this.engine,
+              'interact',
+              [avatar.pos.toArray(), avatar.facing, avatar.zone.world],
+              avatar
+            );
           case 'help':
-            return new ActionLoader(this.engine, 'dialogue', ['Welcome! You pressed help! Press Escape to close', false, { autoclose: true }], avatar);
+            return new ActionLoader(
+              this.engine,
+              'dialogue',
+              ['Welcome! You pressed help! Press Escape to close', false, { autoclose: true }],
+              avatar
+            );
           case 'clear_speech':
             return avatar.speech.clearHud();
           case 'move_up':
             // Get the direction the camera is facing and move forward relative to it
-            const upDir = Direction.getCameraRelativeDirection('forward', this.engine.renderManager.camera.cameraDir);
+            const upDir = Direction.getCameraRelativeDirection(
+              'forward',
+              this.engine.renderManager.camera.cameraDir
+            );
             return avatar.handleWalk('w', {}, upDir);
           case 'move_down':
             // Move backward relative to camera
-            const downDir = Direction.getCameraRelativeDirection('backward', this.engine.renderManager.camera.cameraDir);
+            const downDir = Direction.getCameraRelativeDirection(
+              'backward',
+              this.engine.renderManager.camera.cameraDir
+            );
             return avatar.handleWalk('s', {}, downDir);
           case 'move_left':
             // Move left relative to camera
-            const leftDir = Direction.getCameraRelativeDirection('left', this.engine.renderManager.camera.cameraDir);
+            const leftDir = Direction.getCameraRelativeDirection(
+              'left',
+              this.engine.renderManager.camera.cameraDir
+            );
             return avatar.handleWalk('a', {}, leftDir);
           case 'move_right':
             // Move right relative to camera
-            const rightDir = Direction.getCameraRelativeDirection('right', this.engine.renderManager.camera.cameraDir);
+            const rightDir = Direction.getCameraRelativeDirection(
+              'right',
+              this.engine.renderManager.camera.cameraDir
+            );
             return avatar.handleWalk('d', {}, rightDir);
           case 'face_up':
-            return avatar.faceDir("N"); // Assuming Direction.Up = 0
+            return avatar.faceDir('N'); // Assuming Direction.Up = 0
           case 'face_down':
-            return avatar.faceDir("S"); // Assuming Direction.Down = 2
+            return avatar.faceDir('S'); // Assuming Direction.Down = 2
           case 'face_left':
-            return avatar.faceDir("W"); // Assuming Direction.Left = 3
+            return avatar.faceDir('W'); // Assuming Direction.Left = 3
           case 'face_right':
-            return avatar.faceDir("E"); // Assuming Direction.Right = 1
+            return avatar.faceDir('E'); // Assuming Direction.Right = 1
           default:
             // For custom actions, try to create ActionLoader with action name
             // Skip actions that don't have corresponding action files
@@ -402,7 +437,12 @@ export default class InputManager {
                   }
                   avatar.faceDir(Direction.spriteSequence(facing));
                   avatar.zone.world.addEvent(
-                    new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
+                    new EventLoader(
+                      this.engine,
+                      'camera',
+                      ['pan', { from, to, duration: 1 }],
+                      avatar.zone.world
+                    )
                   );
                   break;
                 case 'camera_rotate_right':
@@ -416,7 +456,12 @@ export default class InputManager {
                   }
                   avatar.faceDir(Direction.spriteSequence(facing));
                   avatar.zone.world.addEvent(
-                    new EventLoader(this.engine, 'camera', ['pan', { from, to, duration: 1 }], avatar.zone.world)
+                    new EventLoader(
+                      this.engine,
+                      'camera',
+                      ['pan', { from, to, duration: 1 }],
+                      avatar.zone.world
+                    )
                   );
                   break;
                 case 'camera_zoom_in':

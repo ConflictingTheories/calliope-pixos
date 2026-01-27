@@ -17,15 +17,7 @@
 
 import React, { useState } from 'react';
 import JSZip from 'jszip';
-import {
-  Panel,
-  Uploader,
-  List,
-  Message,
-  Loader,
-  Placeholder,
-  Button,
-} from '../ui';
+import { Panel, Uploader, List, Message, Loader, Placeholder, Button } from '../ui';
 
 function ZipManager({ openFile, onZipLoaded }) {
   const [entries, setEntries] = useState([]);
@@ -119,73 +111,72 @@ function ZipManager({ openFile, onZipLoaded }) {
     try {
       zip.file(name, defaultContent);
       const entry = zip.file(name);
-      setEntries((prev) => [...prev, { name, file: entry }]);
+      setEntries(prev => [...prev, { name, file: entry }]);
     } catch (err) {
       console.error('Failed to create file', err);
     }
   }
 
   return (
-    <Panel bordered header={<strong>Zip Manager</strong>}> 
+    <Panel bordered header={<strong>Zip Manager</strong>}>
       <Uploader
         autoUpload={false}
         multiple={false}
-        accept='.pxz,.zip'
+        accept=".pxz,.zip"
         onChange={handleFileChange}
         style={{ marginBottom: '1rem' }}
       >
-        <button type='button'>Select Zip</button>
+        <button type="button">Select Zip</button>
       </Uploader>
-      {loading && <Loader center content='Loading package…' />}
-      {error && <Message type='error'>{error}</Message>}
+      {loading && <Loader center content="Loading package…" />}
+      {error && <Message type="error">{error}</Message>}
       {entries.length > 0 ? (
         <List hover bordered style={{ maxHeight: '60vh', overflow: 'auto' }}>
           {entries.map((entry, idx) => (
-            <List.Item
-              key={idx}
-              onClick={() => openFile(entry)}
-              style={{ cursor: 'pointer' }}
-            >
+            <List.Item key={idx} onClick={() => openFile(entry)} style={{ cursor: 'pointer' }}>
               {entry.name}
             </List.Item>
           ))}
         </List>
-      ) : !loading && (
-        <Placeholder.Paragraph rows={4} active />
+      ) : (
+        !loading && <Placeholder.Paragraph rows={4} active />
       )}
       {zip && entries.length > 0 && (
         <div style={{ marginTop: '1rem' }}>
-          <Button appearance='primary' onClick={async () => {
-            try {
-              const blob = await zip.generateAsync({ type: 'blob' });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = 'pixospritz-package.pxz';
-              link.click();
-              setTimeout(() => URL.revokeObjectURL(url), 10000);
-            } catch (err) {
-              console.error('Failed to export zip', err);
-            }
-          }}>
+          <Button
+            appearance="primary"
+            onClick={async () => {
+              try {
+                const blob = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'pixospritz-package.pxz';
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+              } catch (err) {
+                console.error('Failed to export zip', err);
+              }
+            }}
+          >
             Export ZIP
           </Button>
         </div>
       )}
       {/* Project actions */}
       <div style={{ marginTop: '1rem' }}>
-        <Button appearance='default' onClick={createNewProject}>
+        <Button appearance="default" onClick={createNewProject}>
           New Project
         </Button>
         <Uploader
           autoUpload={false}
           multiple
-          onChange={(files) => importFiles(files)}
+          onChange={files => importFiles(files)}
           style={{ display: 'inline-block', marginLeft: '0.5rem' }}
         >
-          <Button appearance='default'>Add Files</Button>
+          <Button appearance="default">Add Files</Button>
         </Uploader>
-        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={createNewFile}>
+        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={createNewFile}>
           New File
         </Button>
       </div>

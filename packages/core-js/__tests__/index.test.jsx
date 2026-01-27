@@ -7,8 +7,12 @@ import Pixos from '../src/index.jsx';
 vi.mock('../src/components/WebGLView.jsx', () => {
   return {
     default: function MockWebGLView({ width, height }) {
-      return <div data-testid="webgl-view" style={{ width, height }}>WebGL View</div>;
-    }
+      return (
+        <div data-testid="webgl-view" style={{ width, height }}>
+          WebGL View
+        </div>
+      );
+    },
   };
 });
 
@@ -17,7 +21,7 @@ vi.mock('../src/spritz/player.js', () => {
   return {
     default: function MockSpritzProvider() {
       return {};
-    }
+    },
   };
 });
 

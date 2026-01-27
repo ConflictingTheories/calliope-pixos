@@ -1,9 +1,11 @@
 # Pixospritz - Tilesets Specification
 
 ## Introduction
+
 Tilesets define the visual and logical structure of the game world grid. Each tileset contains a collection of tile images and metadata describing walkability, interaction, and rendering order. Tilesets are used to build maps, zones, and environments, and can be extended with custom properties for gameplay logic.
 
 ## Format & Template
+
 A tileset is defined as an object with the following properties:
 
 ```json
@@ -26,6 +28,7 @@ A tileset is defined as an object with the following properties:
 - `layers`: Optional rendering layers for multi-layer maps.
 
 ## Engine Features
+
 - Tilesets are loaded and cached by the engine.
 - Tiles are rendered before sprites/objects, respecting layer and depth.
 - Tiles can be walkable, interactable, or trigger events.
@@ -33,6 +36,7 @@ A tileset is defined as an object with the following properties:
 - Custom shaders and effects can be applied to tilesets.
 
 ## Tips
+
 - Use layers for complex maps (e.g., background, collision, foreground).
 - Define walkability and interaction for each tile to support gameplay logic.
 - Optimize tileset images for performance and clarity.

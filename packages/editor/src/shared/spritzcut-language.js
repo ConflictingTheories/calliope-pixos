@@ -32,24 +32,43 @@ export function registerSpritzCutLanguage(monaco) {
     tokenPostfix: '.spritzcut',
 
     // Keywords and commands
-    keywords: [
-      'wait', 'waitInput', 'end'
-    ],
+    keywords: ['wait', 'waitInput', 'end'],
 
     commands: [
-      'backdrop', 'char', 'action', 'transition', 'do', 'end',
-      'playBgm', 'playSfx', 'playVoice', 'stopBgm', 'stopAll', 'stopSfx',
-      'moveTo', 'fadeIn', 'fadeOut', 'fadeOutBackdrop', 'wipe', 'shake'
+      'backdrop',
+      'char',
+      'action',
+      'transition',
+      'do',
+      'end',
+      'playBgm',
+      'playSfx',
+      'playVoice',
+      'stopBgm',
+      'stopAll',
+      'stopSfx',
+      'moveTo',
+      'fadeIn',
+      'fadeOut',
+      'fadeOutBackdrop',
+      'wipe',
+      'shake',
     ],
 
     expressions: [
-      'smile', 'sad', 'angry', 'annoyed', 'shocked', 'neutral', 
-      'smirk', 'worried', 'tired', 'happy'
+      'smile',
+      'sad',
+      'angry',
+      'annoyed',
+      'shocked',
+      'neutral',
+      'smirk',
+      'worried',
+      'tired',
+      'happy',
     ],
 
-    operators: [
-      '->', '|', '='
-    ],
+    operators: ['->', '|', '='],
 
     // Token rules
     tokenizer: {
@@ -62,7 +81,7 @@ export function registerSpritzCutLanguage(monaco) {
 
         // @ commands (backdrop, char, action, transition, do)
         [/@(backdrop|char|action|transition|do|end)\b/, 'keyword.command'],
-        
+
         // Other @ prefixed commands
         [/@\w+/, 'keyword'],
 
@@ -96,14 +115,17 @@ export function registerSpritzCutLanguage(monaco) {
         [/\b(data|textures|sprites|audio|maps):[\w\/.]+/, 'string.path'],
 
         // Identifiers
-        [/[a-zA-Z_]\w*/, {
-          cases: {
-            '@keywords': 'keyword',
-            '@commands': 'type.command',
-            '@expressions': 'constant.expression',
-            '@default': 'identifier'
-          }
-        }],
+        [
+          /[a-zA-Z_]\w*/,
+          {
+            cases: {
+              '@keywords': 'keyword',
+              '@commands': 'type.command',
+              '@expressions': 'constant.expression',
+              '@default': 'identifier',
+            },
+          },
+        ],
 
         // Whitespace
         [/\s+/, 'white'],
@@ -117,7 +139,10 @@ export function registerSpritzCutLanguage(monaco) {
 
       bracketContent: [
         [/\]/, 'delimiter.bracket', '@pop'],
-        [/\b(x|y|duration|fadeIn|fadeOut|name|sprite|expression|position|size|delay)\b/, 'variable.parameter'],
+        [
+          /\b(x|y|duration|fadeIn|fadeOut|name|sprite|expression|position|size|delay)\b/,
+          'variable.parameter',
+        ],
         [/=/, 'operator'],
         [/\d+(\.\d+)?/, 'number'],
         [/"([^"\\]|\\.)*"/, 'string'],

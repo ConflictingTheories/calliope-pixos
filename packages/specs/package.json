@@ -18,19 +18,8 @@
     "generate": "node generate-c-headers.cjs",
     "generate:core-c": "node generate-c-headers.cjs --output-dir ../core-c/src/generated"
   },
-  "files": [
-    "index.js",
-    "math/",
-    "formats/",
-    "constants/",
-    "shaders/",
-    "generate-c-headers.cjs"
-  ],
-  "keywords": [
-    "pixospritz",
-    "game-engine",
-    "specifications"
-  ],
+  "files": ["index.js", "math/", "formats/", "constants/", "shaders/", "generate-c-headers.cjs"],
+  "keywords": ["pixospritz", "game-engine", "specifications"],
   "author": "ConflictingTheories",
   "license": "MIT"
 }

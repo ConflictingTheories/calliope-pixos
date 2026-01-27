@@ -64,18 +64,21 @@ export default class Item {
    * @returns {Item} New item instance.
    */
   static fromSerialized(serialized) {
-    const item = new Item({
-      id: serialized.id,
-      name: serialized.name,
-      description: serialized.description,
-      icon: serialized.icon,
-      stackable: serialized.stackable,
-      maxStack: serialized.maxStack,
-      category: serialized.category,
-      usable: serialized.usable,
-      onUse: serialized.onUse,
-      data: serialized.data,
-    }, serialized.quantity);
+    const item = new Item(
+      {
+        id: serialized.id,
+        name: serialized.name,
+        description: serialized.description,
+        icon: serialized.icon,
+        stackable: serialized.stackable,
+        maxStack: serialized.maxStack,
+        category: serialized.category,
+        usable: serialized.usable,
+        onUse: serialized.onUse,
+        data: serialized.data,
+      },
+      serialized.quantity
+    );
     return item;
   }
 
@@ -105,10 +108,9 @@ export default class Item {
    * @returns {boolean} True if items can stack.
    */
   canStackWith(other) {
-    return this.stackable && 
-           other.stackable && 
-           this.id === other.id &&
-           this.quantity < this.maxStack;
+    return (
+      this.stackable && other.stackable && this.id === other.id && this.quantity < this.maxStack
+    );
   }
 
   /**

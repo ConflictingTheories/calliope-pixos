@@ -2,8 +2,7 @@
  * High level Zone Manager - handles zone management logic - handling transitions, events, and players.
  */
 export default class ZoneHandler {
-
-  constructor(clientManager,) {
+  constructor(clientManager) {
     /** @type {<string, object>[]}*/
     this.zones = new Map();
 
@@ -12,9 +11,9 @@ export default class ZoneHandler {
   }
 
   /**
-   * 
-   * @param {string} id 
-   * @returns 
+   *
+   * @param {string} id
+   * @returns
    */
   getZone(id) {
     if (!this.zones.has(id)) return;
@@ -22,20 +21,20 @@ export default class ZoneHandler {
   }
 
   /**
-   * 
-   * @param {string} id 
-   * @param {any} zoneData 
-   * @returns 
+   *
+   * @param {string} id
+   * @param {any} zoneData
+   * @returns
    */
   setZone(id, zoneData) {
     return this.zones.set(id, zoneData);
   }
 
   /**
-   * 
-   * @param {string} clientId 
-   * @param {object} payload 
-   * @returns 
+   *
+   * @param {string} clientId
+   * @param {object} payload
+   * @returns
    */
   handleLoadZone(clientId, payload) {
     /** @type{import("./clientManager.js").Client} */
@@ -94,9 +93,16 @@ export default class ZoneHandler {
     client.sendMessage('zone-joined', { zoneId, players: playersInZone });
 
     // Inform others a player joined and broadcast current players list
-    this.broadcastToZone(zoneId, { type: 'player-joined', payload: { client: { clientId, avatar } } }, clientId);
+    this.broadcastToZone(
+      zoneId,
+      { type: 'player-joined', payload: { client: { clientId, avatar } } },
+      clientId
+    );
 
-    const updatedPlayers = Array.from(zone).map(id => ({ clientId: id, avatar: this.clientManager.getClient(id).getAvatar() }));
+    const updatedPlayers = Array.from(zone).map(id => ({
+      clientId: id,
+      avatar: this.clientManager.getClient(id).getAvatar(),
+    }));
 
     this.broadcastToZone(zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
 
@@ -121,11 +127,11 @@ export default class ZoneHandler {
       if (zone) {
         zone.delete(clientId);
         // Notify others but don't immediately remove - session may reconnect
-        this.broadcastToZone(zoneId, { 
-          type: 'player-disconnected', 
-          payload: { clientId, mayReconnect: true } 
+        this.broadcastToZone(zoneId, {
+          type: 'player-disconnected',
+          payload: { clientId, mayReconnect: true },
         });
-        
+
         // Broadcast updated player list after disconnect
         const updatedPlayers = Array.from(zone)
           .map(id => {
@@ -133,10 +139,13 @@ export default class ZoneHandler {
             return c ? { clientId: id, avatar: c.getAvatar() } : null;
           })
           .filter(Boolean);
-        this.broadcastToZone(zoneId, { type: 'players-update', payload: { players: updatedPlayers } });
+        this.broadcastToZone(zoneId, {
+          type: 'players-update',
+          payload: { players: updatedPlayers },
+        });
       }
     }
-    
+
     // Use ClientManager's disconnect handling (preserves session for reconnection)
     this.clientManager.handleDisconnect(clientId);
     console.log(`[ZoneHandler] Client ${clientId} disconnected`);
@@ -144,31 +153,35 @@ export default class ZoneHandler {
 
   /**
    * Handle client reconnection to a zone
-   * @param {string} clientId 
+   * @param {string} clientId
    */
   handleReconnect(clientId) {
     const client = this.clientManager.getClient(clientId);
     if (client && client.getZoneId()) {
       const zoneId = client.getZoneId();
       const zone = this.getZone(zoneId);
-      
+
       if (zone) {
         zone.add(clientId);
-        this.broadcastToZone(zoneId, { 
-          type: 'player-reconnected', 
-          payload: { clientId, avatar: client.getAvatar() } 
-        }, clientId);
-        
+        this.broadcastToZone(
+          zoneId,
+          {
+            type: 'player-reconnected',
+            payload: { clientId, avatar: client.getAvatar() },
+          },
+          clientId
+        );
+
         console.log(`[ZoneHandler] Client ${clientId} reconnected to zone ${zoneId}`);
       }
     }
   }
 
   /**
-   * 
-   * @param {*} zoneId 
-   * @param {*} message 
-   * @param {*} excludeClientId 
+   *
+   * @param {*} zoneId
+   * @param {*} message
+   * @param {*} excludeClientId
    */
   broadcastToZone(zoneId, message, excludeClientId = null) {
     const zone = this.getZone(zoneId);
@@ -179,7 +192,9 @@ export default class ZoneHandler {
           if (client && client.isReady()) {
             try {
               client.sendMessage(message.type, message.payload);
-              console.log(`Broadcast to ${clientId} in zone ${zoneId}: ${message.type || 'message'}`);
+              console.log(
+                `Broadcast to ${clientId} in zone ${zoneId}: ${message.type || 'message'}`
+              );
             } catch (e) {
               console.warn(`Failed to send to ${clientId}:`, e);
             }
@@ -213,11 +228,22 @@ export default class ZoneHandler {
       if (c && c.getAvatar()) {
         const avatar = c.getAvatar();
         // Normalize avatar representation: some clients send pos under 'pos' or top-level x/y
-        const x = (avatar.pos && avatar.pos.x) != null ? avatar.pos.x : (avatar.x != null ? avatar.x : 0);
-        const y = (avatar.pos && avatar.pos.y) != null ? avatar.pos.y : (avatar.y != null ? avatar.y : 0);
-        const z = (avatar.pos && avatar.pos.z) != null ? avatar.pos.z : (avatar.z != null ? avatar.z : 0);
+        const x =
+          (avatar.pos && avatar.pos.x) != null ? avatar.pos.x : avatar.x != null ? avatar.x : 0;
+        const y =
+          (avatar.pos && avatar.pos.y) != null ? avatar.pos.y : avatar.y != null ? avatar.y : 0;
+        const z =
+          (avatar.pos && avatar.pos.z) != null ? avatar.pos.z : avatar.z != null ? avatar.z : 0;
         const id = avatar.id != null ? avatar.id : `avatar-${cid}`;
-        sprites.push({ clientId: cid, id, objId: avatar.objId || cid, x, y, z, avatar: { ...avatar, x, y, z, id, clientId: cid } });
+        sprites.push({
+          clientId: cid,
+          id,
+          objId: avatar.objId || cid,
+          x,
+          y,
+          z,
+          avatar: { ...avatar, x, y, z, id, clientId: cid },
+        });
       }
     }
 
@@ -226,6 +252,4 @@ export default class ZoneHandler {
       client.sendMessage('zone-state', { zoneId, sprites });
     }
   }
-
-
 }

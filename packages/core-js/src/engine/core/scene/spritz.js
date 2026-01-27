@@ -46,13 +46,13 @@ export default class Spritz {
    * Init Spritz
    * @param {*} engine
    */
-  init = async (engine) => {
+  init = async engine => {
     // game Engine & Timing
     Spritz._instance.engine = engine;
     // Init Game Engine Components
     let world = (Spritz._instance.world = new World(Spritz._instance, 'spritz'));
     // Load Zones - TODO - Add injection / Props to make more Dynamic
-    world.zoneList.forEach((z) => z.runWhenLoaded(() => console.log('loading...done')));
+    world.zoneList.forEach(z => z.runWhenLoaded(() => console.log('loading...done')));
     // show start menu
     world.startMenu({
       start: {
@@ -68,11 +68,11 @@ export default class Spritz {
           bottom: '#777',
           background: '#999',
         },
-        onOpen: (menu) => {
+        onOpen: menu => {
           // tood - needs a way to trigger on open
           this.isPaused = true;
         },
-        trigger: (menu) => {
+        trigger: menu => {
           // Unpause Gameplay
           menu.world.isPaused = false;
           // Exit Menu
@@ -86,7 +86,7 @@ export default class Spritz {
    * Todo - Load spritz remotely
    * @param {string} src
    */
-  loadSpritzManifest = async (src) => {
+  loadSpritzManifest = async src => {
     // Put up loading Screen
     //
     // Fetch Manifest Remotely from Src
@@ -130,7 +130,7 @@ export default class Spritz {
    * Logic Update Loop (events)
    * @param {number} now
    */
-  update = (now) => {
+  update = now => {
     // Build
     Spritz._instance.world.tickOuter(now);
   };
@@ -155,7 +155,7 @@ export default class Spritz {
    * Keyboard event handler for Spritz
    * @param {*} e
    */
-  onKeyEvent = (e) => {
+  onKeyEvent = e => {
     if (e.type === 'keydown') {
       Spritz._instance.engine.keyboard.onKeyDown(e);
     } else Spritz._instance.engine.keyboard.onKeyUp(e);
@@ -165,7 +165,7 @@ export default class Spritz {
    * Mobile Touch event handler for Spritz
    * @param {*} e
    */
-  onTouchEvent = (e) => {
+  onTouchEvent = e => {
     switch (e.type) {
       case 'mousedown':
       case 'mouseup':
@@ -176,7 +176,11 @@ export default class Spritz {
       case 'touchcancel':
       default:
         // Ensure engine and touchHandler exist before calling
-        if (Spritz._instance && Spritz._instance.engine && typeof Spritz._instance.engine.touchHandler === 'function') {
+        if (
+          Spritz._instance &&
+          Spritz._instance.engine &&
+          typeof Spritz._instance.engine.touchHandler === 'function'
+        ) {
           try {
             Spritz._instance.engine.touchHandler(e);
           } catch (err) {

@@ -49,8 +49,10 @@ export default class DynamicSprite extends Sprite {
     // extended properties
     if (this.json.extends) {
       await Promise.all(
-        this.json.extends.map(async (file) => {
-          let stringD = JSON.parse(await this.zip.file('sprites/' + file + '.json').async('string'));
+        this.json.extends.map(async file => {
+          let stringD = JSON.parse(
+            await this.zip.file('sprites/' + file + '.json').async('string')
+          );
           debug('DynamicSprite', 'extending', { old: this.json, new: stringD });
           this.json = mergeDeep(this.json, stringD);
         })
@@ -74,14 +76,14 @@ export default class DynamicSprite extends Sprite {
     this.frames = this.json.frames;
     // Offsets
     this.drawOffset = {};
-    Object.keys(this.json.drawOffset).forEach((offset) => {
+    Object.keys(this.json.drawOffset).forEach(offset => {
       this.drawOffset[offset] = new Vector(...this.json.drawOffset[offset]);
     });
     this.hotspotOffset = new Vector(...this.json.hotspotOffset);
     // Should the camera follow the avatar?
     this.bindCamera = this.json.bindCamera;
     this.enableSpeech = this.json.enableSpeech; // speech bubble
-  }
+  };
 
   /**
    * Handles interaction with state machine and Lua callbacks.
@@ -89,14 +91,14 @@ export default class DynamicSprite extends Sprite {
    * @param {function} [finish=() => {}] - Callback on completion.
    * @returns {Promise<Array>} The interaction results.
    */
-  interact = async (sprite, finish = () => { }) => {
+  interact = async (sprite, finish = () => {}) => {
     let ret = null;
     let states = this.json.states ?? [];
 
     // build state machine
     let stateMachine = {};
     await Promise.all(
-      states.map(async (state) => {
+      states.map(async state => {
         let actions = await this.loadActionDynamically(state, sprite, finish); // load actions dynamically
 
         for (const action of actions) {
@@ -121,7 +123,7 @@ export default class DynamicSprite extends Sprite {
     if (finish) finish(false);
 
     return ret;
-  }
+  };
 
   /**
    * Loads actions dynamically based on state and Lua callbacks.
@@ -134,7 +136,7 @@ export default class DynamicSprite extends Sprite {
     debug('DynamicSprite', 'loadActionDynamically', { sprite: sprite?.id, state: state?.name });
     return await Promise.all(
       // load actions based on state
-      state.actions.map(async (action) => {
+      state.actions.map(async action => {
         debug('DynamicSprite', 'preping actions', action);
         let luaCallback =
           action.callback && action.callback !== ''
@@ -160,7 +162,11 @@ export default class DynamicSprite extends Sprite {
               let actionToLoad = new _this.ActionLoader(
                 _this.engine,
                 'dialogue',
-                [JSON.stringify(action.dialogue), false, { autoclose: true, onClose: () => finish(true) }],
+                [
+                  JSON.stringify(action.dialogue),
+                  false,
+                  { autoclose: true, onClose: () => finish(true) },
+                ],
                 _this,
                 callback
               );
@@ -171,7 +177,13 @@ export default class DynamicSprite extends Sprite {
             debug('DynamicSprite', 'preparing animate action');
             return async (_this, sprite, finish) => {
               debug('DynamicSprite', 'executing animate', { action });
-              let actionToLoad = new _this.ActionLoader(_this.engine, 'animate', [...action.animate, () => finish(true)], _this, callback);
+              let actionToLoad = new _this.ActionLoader(
+                _this.engine,
+                'animate',
+                [...action.animate, () => finish(true)],
+                _this,
+                callback
+              );
               debug('DynamicSprite', 'action to load', actionToLoad);
               _this.addAction(actionToLoad);
             };
@@ -182,7 +194,7 @@ export default class DynamicSprite extends Sprite {
         }
       })
     );
-  }
+  };
 
   /**
    * Handles selection interaction, with Lua scripting support.
@@ -197,7 +209,7 @@ export default class DynamicSprite extends Sprite {
 
     // pass-through interaction
     if (this.selectTrigger === 'interact') {
-      return await this.interact(sprite, () => { });
+      return await this.interact(sprite, () => {});
     }
 
     // lua scripting
@@ -219,7 +231,7 @@ export default class DynamicSprite extends Sprite {
     } catch (e) {
       debug('DynamicSprite', 'no lua script found', e.message);
     }
-  }
+  };
 
   /**
    * Handles step interaction, with Lua scripting support.
@@ -251,5 +263,5 @@ export default class DynamicSprite extends Sprite {
     } catch (e) {
       debug('DynamicSprite', 'no lua script found', e.message);
     }
-  }
+  };
 }

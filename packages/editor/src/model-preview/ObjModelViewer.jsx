@@ -116,19 +116,25 @@ const vec3 = {
     return out;
   },
   cross: (a, b, out = [0, 0, 0]) => {
-    const ax = a[0], ay = a[1], az = a[2];
-    const bx = b[0], by = b[1], bz = b[2];
+    const ax = a[0],
+      ay = a[1],
+      az = a[2];
+    const bx = b[0],
+      by = b[1],
+      bz = b[2];
     out[0] = ay * bz - az * by;
     out[1] = az * bx - ax * bz;
     out[2] = ax * by - ay * bx;
     return out;
   },
   dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
-  length: (v) => Math.hypot(v[0], v[1], v[2]),
+  length: v => Math.hypot(v[0], v[1], v[2]),
   normalize: (v, out = [0, 0, 0]) => {
     const len = vec3.length(v);
     if (len === 0) return out;
-    out[0] = v[0] / len; out[1] = v[1] / len; out[2] = v[2] / len;
+    out[0] = v[0] / len;
+    out[1] = v[1] / len;
+    out[2] = v[2] / len;
     return out;
   },
 };
@@ -141,7 +147,7 @@ function perspective(fovyRad, aspect, near, far) {
   out[5] = f;
   out[10] = (near + far) / d;
   out[11] = -1;
-  out[14] = 2 * near * far / d;
+  out[14] = (2 * near * far) / d;
   out[15] = 0;
   return out;
 }
@@ -150,20 +156,41 @@ function lookAt(eye, center, up) {
   const f = [0, 0, 0];
   vec3.sub(center, eye, f);
   const fmag = vec3.length(f);
-  if (fmag === 0) { f[2] = -1; } else { f[0] /= fmag; f[1] /= fmag; f[2] /= fmag; }
+  if (fmag === 0) {
+    f[2] = -1;
+  } else {
+    f[0] /= fmag;
+    f[1] /= fmag;
+    f[2] /= fmag;
+  }
 
   const s = [0, 0, 0];
   vec3.cross(up, f, s);
   const smag = vec3.length(s);
-  if (smag === 0) { s[0] = 1; } else { s[0] /= smag; s[1] /= smag; s[2] /= smag; }
+  if (smag === 0) {
+    s[0] = 1;
+  } else {
+    s[0] /= smag;
+    s[1] /= smag;
+    s[2] /= smag;
+  }
 
   const u = [0, 0, 0];
   vec3.cross(f, s, u);
 
   const out = new Float32Array(16);
-  out[0] = s[0]; out[1] = u[0]; out[2] = -f[0]; out[3] = 0;
-  out[4] = s[1]; out[5] = u[1]; out[6] = -f[1]; out[7] = 0;
-  out[8] = s[2]; out[9] = u[2]; out[10] = -f[2]; out[11] = 0;
+  out[0] = s[0];
+  out[1] = u[0];
+  out[2] = -f[0];
+  out[3] = 0;
+  out[4] = s[1];
+  out[5] = u[1];
+  out[6] = -f[1];
+  out[7] = 0;
+  out[8] = s[2];
+  out[9] = u[2];
+  out[10] = -f[2];
+  out[11] = 0;
   out[12] = -vec3.dot(s, eye);
   out[13] = -vec3.dot(u, eye);
   out[14] = vec3.dot(f, eye);
@@ -281,10 +308,10 @@ function parseMTL(text) {
 
 /**
  * ObjModelViewer - WebGL2-based OBJ model viewer
- * 
+ *
  * Props:
  *  - objContent (string): Raw OBJ file content
- *  - mtlContent (string): Raw MTL file content  
+ *  - mtlContent (string): Raw MTL file content
  *  - textures (object): Map of texture filenames to data URIs
  *  - textureBasePath (string): Base path for texture references
  */
@@ -299,7 +326,14 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
   const [loadedTextures, setLoadedTextures] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const cameraRef = useRef({ theta: 0, phi: 0.2, distance: 5, center: [0, 0, 0], up: [0, 1, 0], position: [0, 0, 5] });
+  const cameraRef = useRef({
+    theta: 0,
+    phi: 0.2,
+    distance: 5,
+    center: [0, 0, 0],
+    up: [0, 1, 0],
+    position: [0, 0, 5],
+  });
   const draggingRef = useRef(false);
   const lastMouseRef = useRef({ x: 0, y: 0 });
 
@@ -349,7 +383,7 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
    * Load texture from data URI
    */
   function loadTextureFromDataUri(gl, dataUri, name) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
         const tex = gl.createTexture();
@@ -408,7 +442,7 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
             Ka: [0.25, 0.25, 0.3],
             Kd: [0.75, 0.75, 0.75],
             Ks: [1, 1, 1],
-            Ns: 50
+            Ns: 50,
           };
           let tex = null;
           if (mesh.materialProps.map_Kd) {
@@ -448,8 +482,12 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
 
         // Auto-fit camera to model bounds
         if (parsedMeshes.length > 0) {
-          let minX = Infinity, minY = Infinity, minZ = Infinity;
-          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+          let minX = Infinity,
+            minY = Infinity,
+            minZ = Infinity;
+          let maxX = -Infinity,
+            maxY = -Infinity,
+            maxZ = -Infinity;
           parsedMeshes.forEach(mesh => {
             for (let i = 0; i < mesh.positions.length; i += 3) {
               minX = Math.min(minX, mesh.positions[i]);
@@ -516,7 +554,12 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
     let animationFrameId;
 
     function render() {
-      const projectionMatrix = perspective(45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.01, 10000);
+      const projectionMatrix = perspective(
+        (45 * Math.PI) / 180,
+        canvas.clientWidth / canvas.clientHeight,
+        0.01,
+        10000
+      );
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -568,7 +611,10 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
     lastMouseRef.current = { x: e.clientX, y: e.clientY };
     cameraRef.current.theta -= dx * 0.005;
     cameraRef.current.phi -= dy * 0.005;
-    cameraRef.current.phi = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, cameraRef.current.phi));
+    cameraRef.current.phi = Math.max(
+      -Math.PI / 2 + 0.01,
+      Math.min(Math.PI / 2 - 0.01, cameraRef.current.phi)
+    );
   }
   function onMouseUp() {
     draggingRef.current = false;
@@ -581,38 +627,46 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
   }
 
   return (
-    <div className="editor-tool-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      minHeight: 0,
-      overflow: 'hidden'
-    }}>
-      <Panel bordered header={<strong>OBJ Model Viewer</strong>} style={{
-        margin: '1rem',
-        flex: '1 1 auto',
+    <div
+      className="editor-tool-container"
+      style={{
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
         minHeight: 0,
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          padding: '0.5rem',
-          background: 'var(--rs-bg-card, #1a1d24)',
-          borderRadius: '4px',
-          marginBottom: '0.5rem',
-          flexShrink: 0,
+        overflow: 'hidden',
+      }}
+    >
+      <Panel
+        bordered
+        header={<strong>OBJ Model Viewer</strong>}
+        style={{
+          margin: '1rem',
+          flex: '1 1 auto',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+          flexDirection: 'column',
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '0.5rem',
+            background: 'var(--rs-bg-card, #1a1d24)',
+            borderRadius: '4px',
+            marginBottom: '0.5rem',
+            flexShrink: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ fontSize: '12px', color: '#888' }}>
             {meshes.length > 0 ? `${meshes.length} mesh(es) loaded` : 'No model loaded'}
-            {Object.keys(loadedTextures).length > 0 && ` • ${Object.keys(loadedTextures).length} texture(s)`}
+            {Object.keys(loadedTextures).length > 0 &&
+              ` • ${Object.keys(loadedTextures).length} texture(s)`}
           </span>
-          <span style={{ fontSize: '11px', color: '#666' }}>
-            Drag to rotate • Scroll to zoom
-          </span>
+          <span style={{ fontSize: '11px', color: '#666' }}>Drag to rotate • Scroll to zoom</span>
         </div>
         <canvas
           ref={canvasRef}
@@ -624,7 +678,7 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
             background: '#141418',
             touchAction: 'none',
             userSelect: 'none',
-            borderRadius: '4px'
+            borderRadius: '4px',
           }}
           width={800}
           height={600}
@@ -634,10 +688,16 @@ function ObjModelViewer({ objContent, mtlContent, textures: textureDataUris, tex
           onMouseLeave={onMouseUp}
           onWheel={onWheel}
         />
-        {isLoading && <Message type="info" description="Loading model..." style={{ marginTop: '0.5rem' }} />}
+        {isLoading && (
+          <Message type="info" description="Loading model..." style={{ marginTop: '0.5rem' }} />
+        )}
         {error && <Message type="error" description={error} style={{ marginTop: '0.5rem' }} />}
         {!isLoading && !error && meshes.length === 0 && !objContent && (
-          <Message type="info" description="Select an OBJ file from the package to preview." style={{ marginTop: '0.5rem' }} />
+          <Message
+            type="info"
+            description="Select an OBJ file from the package to preview."
+            style={{ marginTop: '0.5rem' }}
+          />
         )}
       </Panel>
     </div>

@@ -6,7 +6,7 @@ import './Radio.css';
 
 const RadioContext = createContext(null);
 
-export function RadioGroup({ 
+export function RadioGroup({
   children,
   value,
   defaultValue,
@@ -15,7 +15,7 @@ export function RadioGroup({
   className = '',
   onChange,
   style,
-  ...props 
+  ...props
 }) {
   const [internalValue, setInternalValue] = React.useState(defaultValue);
   const currentValue = value !== undefined ? value : internalValue;
@@ -25,11 +25,9 @@ export function RadioGroup({
     onChange?.(newValue, event);
   };
 
-  const classes = [
-    'px-radio-group',
-    inline && 'px-radio-group-inline',
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ['px-radio-group', inline && 'px-radio-group-inline', className]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <RadioContext.Provider value={{ value: currentValue, name, onChange: handleChange }}>
@@ -40,30 +38,21 @@ export function RadioGroup({
   );
 }
 
-export function Radio({ 
-  children,
-  value,
-  disabled = false,
-  className = '',
-  style,
-  ...props 
-}) {
+export function Radio({ children, value, disabled = false, className = '', style, ...props }) {
   const context = useContext(RadioContext);
   const checked = context ? context.value === value : props.checked;
   const name = context?.name || props.name;
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     if (context) {
       context.onChange(value, e);
     }
     props.onChange?.(value, e);
   };
 
-  const classes = [
-    'px-radio',
-    disabled && 'px-radio-disabled',
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ['px-radio', disabled && 'px-radio-disabled', className]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <label className={classes} style={style}>

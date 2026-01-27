@@ -25,7 +25,13 @@ function PasswordDialog({ data, onClose, messages }) {
     >
       <label>
         {messages.IMPORT_PASSWORD_LABEL}
-        <input type="password" autoComplete="off" value={password} required onChange={handleChangePassword} />
+        <input
+          type="password"
+          autoComplete="off"
+          value={password}
+          required
+          onChange={handleChangePassword}
+        />
       </label>
     </Dialog>
   );

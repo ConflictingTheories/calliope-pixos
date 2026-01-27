@@ -101,7 +101,6 @@ function AnimationPreview({
 
     // Draw frame scaled to canvas
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-
   }, [frames, currentFrame, frameWidth, frameHeight, imageLoaded]);
 
   // Redraw on frame change
@@ -121,7 +120,7 @@ function AnimationPreview({
     }
 
     animationRef.current = setInterval(() => {
-      setCurrentFrame((prev) => {
+      setCurrentFrame(prev => {
         let next = prev + direction_;
 
         if (pingPong) {
@@ -165,11 +164,11 @@ function AnimationPreview({
   };
   const stepForward = () => {
     setIsPlaying(false);
-    setCurrentFrame((prev) => (prev + 1) % Math.max(1, frames.length));
+    setCurrentFrame(prev => (prev + 1) % Math.max(1, frames.length));
   };
   const stepBackward = () => {
     setIsPlaying(false);
-    setCurrentFrame((prev) => (prev - 1 + frames.length) % Math.max(1, frames.length));
+    setCurrentFrame(prev => (prev - 1 + frames.length) % Math.max(1, frames.length));
   };
   const goToFirst = () => {
     setIsPlaying(false);
@@ -203,16 +202,30 @@ function AnimationPreview({
 
       {/* Playback Controls */}
       <div className="animation-preview-controls">
-        <button onClick={goToFirst} title="First Frame" className="animation-btn">⏮</button>
-        <button onClick={stepBackward} title="Previous Frame" className="animation-btn">⏪</button>
+        <button onClick={goToFirst} title="First Frame" className="animation-btn">
+          ⏮
+        </button>
+        <button onClick={stepBackward} title="Previous Frame" className="animation-btn">
+          ⏪
+        </button>
         {isPlaying ? (
-          <button onClick={pause} title="Pause" className="animation-btn animation-btn-primary">⏸</button>
+          <button onClick={pause} title="Pause" className="animation-btn animation-btn-primary">
+            ⏸
+          </button>
         ) : (
-          <button onClick={play} title="Play" className="animation-btn animation-btn-primary">▶</button>
+          <button onClick={play} title="Play" className="animation-btn animation-btn-primary">
+            ▶
+          </button>
         )}
-        <button onClick={stop} title="Stop" className="animation-btn">⏹</button>
-        <button onClick={stepForward} title="Next Frame" className="animation-btn">⏩</button>
-        <button onClick={goToLast} title="Last Frame" className="animation-btn">⏭</button>
+        <button onClick={stop} title="Stop" className="animation-btn">
+          ⏹
+        </button>
+        <button onClick={stepForward} title="Next Frame" className="animation-btn">
+          ⏩
+        </button>
+        <button onClick={goToLast} title="Last Frame" className="animation-btn">
+          ⏭
+        </button>
       </div>
 
       {/* Speed & Options */}
@@ -224,25 +237,20 @@ function AnimationPreview({
             min="16"
             max="1000"
             value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
+            onChange={e => setSpeed(Number(e.target.value))}
           />
           <span className="animation-preview-speed-value">{speed}</span>
         </div>
         <div className="animation-preview-option">
           <label>
-            <input
-              type="checkbox"
-              checked={loop}
-              onChange={(e) => e.target.checked}
-              disabled
-            />
+            <input type="checkbox" checked={loop} onChange={e => e.target.checked} disabled />
             Loop
           </label>
           <label>
             <input
               type="checkbox"
               checked={pingPong}
-              onChange={(e) => setPingPong(e.target.checked)}
+              onChange={e => setPingPong(e.target.checked)}
             />
             Ping-Pong
           </label>

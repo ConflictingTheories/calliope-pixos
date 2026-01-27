@@ -5,7 +5,7 @@
   "tileset": "common",
   "audioSrc": "ocean-waves.mp3",
   "mode": "tactics",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -67,7 +67,7 @@
       "facing": "Up"
     }
   ],
-  
+
   "lights": [
     {
       "id": "water-glow-1",
@@ -106,7 +106,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "water-trial-intro",
@@ -115,7 +115,11 @@
           "sprite": "water-elemental",
           "action": "dialogue",
           "args": [
-            ["The depths call to you, traveler...", "Few have survived the crushing tides.", "Show me your resolve flows as deep as the ocean!"],
+            [
+              "The depths call to you, traveler...",
+              "Few have survived the crushing tides.",
+              "Show me your resolve flows as deep as the ocean!"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -130,7 +134,11 @@
           "sprite": "water-elemental",
           "action": "dialogue",
           "args": [
-            ["Your spirit... is unyielding...", "The Water Shard grants you its blessing.", "The currents of fate flow in your favor."],
+            [
+              "Your spirit... is unyielding...",
+              "The Water Shard grants you its blessing.",
+              "The currents of fate flow in your favor."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -138,14 +146,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "water-chamber-load",
       "trigger": "zone/water_chamber_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "coral-1",
@@ -166,6 +174,6 @@
       "pos": [3, 8, -1]
     }
   ],
-  
+
   "menu": {}
 }

@@ -12,7 +12,14 @@
 \*                                                 */
 
 // Absolute imports
-import { create, create3, normalFromMat4, frustum, perspective, set } from '../../utils/math/matrix4.js';
+import {
+  create,
+  create3,
+  normalFromMat4,
+  frustum,
+  perspective,
+  set,
+} from '../../utils/math/matrix4.js';
 import { Vector, degToRad } from '../../utils/math/vector.js';
 
 import CameraManager from './camera.js';
@@ -199,7 +206,10 @@ export default class RenderManager {
     this.shaderProgram = this.shaderManager.initMainShader(spritz.shaders);
 
     // Initialize Particle Shader Program
-    this.particleShaderProgram = this.shaderManager.initParticleShader(this.particleVsSource, this.particleFsSource);
+    this.particleShaderProgram = this.shaderManager.initParticleShader(
+      this.particleVsSource,
+      this.particleFsSource
+    );
 
     // Initialize picker shader (special shader which allows for picking objects on screen)
     this.effectPrograms['picker'] = this.shaderManager.initEffectShader({
@@ -232,7 +242,7 @@ export default class RenderManager {
     this.effectManager.init();
 
     this.initializedWebGl = true;
-  }
+  };
 
   /**
    * Initializes the optimized 1x1 pixel picker framebuffer.
@@ -256,13 +266,24 @@ export default class RenderManager {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickerTexture, 0);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.pickerTexture,
+      0
+    );
 
     // Create depth renderbuffer for picker (1x1 pixel)
     this.pickerDepthBuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.pickerDepthBuffer);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 1, 1);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.pickerDepthBuffer);
+    gl.framebufferRenderbuffer(
+      gl.FRAMEBUFFER,
+      gl.DEPTH_ATTACHMENT,
+      gl.RENDERBUFFER,
+      this.pickerDepthBuffer
+    );
 
     // Check framebuffer is complete
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
@@ -274,7 +295,7 @@ export default class RenderManager {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-  }
+  };
 
   /**
    * Loads and compiles a WebGL shader from source.
@@ -297,7 +318,7 @@ export default class RenderManager {
       throw new Error(`An error occurred compiling the shaders: ${log}`);
     }
     return shader;
-  }
+  };
 
   /**
    * Initializes the main shader program used for rendering game objects.
@@ -330,7 +351,9 @@ export default class RenderManager {
 
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
+      throw new Error(
+        `WebGL unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`
+      );
     }
 
     // Get attribute locations (don't enable them here - enable during render)
@@ -372,7 +395,10 @@ export default class RenderManager {
         position: gl.getUniformLocation(shaderProgram, `uLights[${i}].position`),
         attenuation: gl.getUniformLocation(shaderProgram, `uLights[${i}].attenuation`),
         direction: gl.getUniformLocation(shaderProgram, `uLights[${i}].direction`),
-        scatteringCoefficients: gl.getUniformLocation(shaderProgram, `uLights[${i}].scatteringCoefficients`),
+        scatteringCoefficients: gl.getUniformLocation(
+          shaderProgram,
+          `uLights[${i}].scatteringCoefficients`
+        ),
         density: gl.getUniformLocation(shaderProgram, `uLights[${i}].density`),
       };
     }
@@ -387,7 +413,13 @@ export default class RenderManager {
      * @param {number[]|null} [options.colorMultiplier=null] - A color multiplier to apply to the object.
      * @returns {void}
      */
-    shaderProgram.setMatrixUniforms = function ({ id = null, scale = null, sampler = 1.0, isSelected = false, colorMultiplier = null }) {
+    shaderProgram.setMatrixUniforms = function ({
+      id = null,
+      scale = null,
+      sampler = 1.0,
+      isSelected = false,
+      colorMultiplier = null,
+    }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(shaderProgram);
 
@@ -442,7 +474,14 @@ export default class RenderManager {
         const layoutKey = attrs[attrName];
         if (shaderProgram[attrName] !== -1) {
           const attr = layout.attributeMap[layoutKey];
-          gl.vertexAttribPointer(shaderProgram[attrName], attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+          gl.vertexAttribPointer(
+            shaderProgram[attrName],
+            attr.size,
+            gl[attr.type],
+            attr.normalized,
+            attr.stride,
+            attr.offset
+          );
         }
       }
     };
@@ -482,27 +521,59 @@ export default class RenderManager {
 
     gl.linkProgram(particleShaderProgram);
     if (!gl.getProgramParameter(particleShaderProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the particle shader program: ${gl.getProgramInfoLog(particleShaderProgram)}`);
+      throw new Error(
+        `WebGL unable to initialize the particle shader program: ${gl.getProgramInfoLog(particleShaderProgram)}`
+      );
     }
 
     // Get attribute locations (don't enable them here - enable during render)
-    particleShaderProgram.aVertexPosition = gl.getAttribLocation(particleShaderProgram, 'aVertexPosition');
+    particleShaderProgram.aVertexPosition = gl.getAttribLocation(
+      particleShaderProgram,
+      'aVertexPosition'
+    );
 
-    particleShaderProgram.aTextureCoord = gl.getAttribLocation(particleShaderProgram, 'aTextureCoord');
+    particleShaderProgram.aTextureCoord = gl.getAttribLocation(
+      particleShaderProgram,
+      'aTextureCoord'
+    );
 
     // Get uniform locations
-    particleShaderProgram.pMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uProjectionMatrix');
-    particleShaderProgram.mMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uModelMatrix');
-    particleShaderProgram.vMatrixUniform = gl.getUniformLocation(particleShaderProgram, 'uViewMatrix');
+    particleShaderProgram.pMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uProjectionMatrix'
+    );
+    particleShaderProgram.mMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uModelMatrix'
+    );
+    particleShaderProgram.vMatrixUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uViewMatrix'
+    );
     particleShaderProgram.scaleUniform = gl.getUniformLocation(particleShaderProgram, 'uScale');
-    particleShaderProgram.particleColorUniform = gl.getUniformLocation(particleShaderProgram, 'uParticleColor');
+    particleShaderProgram.particleColorUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uParticleColor'
+    );
     particleShaderProgram.alphaUniform = gl.getUniformLocation(particleShaderProgram, 'uAlpha');
-    particleShaderProgram.instancedUniform = gl.getUniformLocation(particleShaderProgram, 'uInstanced');
+    particleShaderProgram.instancedUniform = gl.getUniformLocation(
+      particleShaderProgram,
+      'uInstanced'
+    );
 
     // Get instanced attribute locations
-    particleShaderProgram.aInstancePosition = gl.getAttribLocation(particleShaderProgram, 'aInstancePosition');
-    particleShaderProgram.aInstanceColor = gl.getAttribLocation(particleShaderProgram, 'aInstanceColor');
-    particleShaderProgram.aInstanceSize = gl.getAttribLocation(particleShaderProgram, 'aInstanceSize');
+    particleShaderProgram.aInstancePosition = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstancePosition'
+    );
+    particleShaderProgram.aInstanceColor = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstanceColor'
+    );
+    particleShaderProgram.aInstanceSize = gl.getAttribLocation(
+      particleShaderProgram,
+      'aInstanceSize'
+    );
 
     /**
      * Sets the matrix and other common uniforms for the particle shader program.
@@ -513,7 +584,12 @@ export default class RenderManager {
      * @param {boolean} [options.instanced=false] - Whether instancing is active.
      * @returns {void}
      */
-    particleShaderProgram.setMatrixUniforms = function ({ color = null, scale = null, alpha = 1.0, instanced = false }) {
+    particleShaderProgram.setMatrixUniforms = function ({
+      color = null,
+      scale = null,
+      alpha = 1.0,
+      instanced = false,
+    }) {
       // Ensure this program is active before setting uniforms
       gl.useProgram(particleShaderProgram);
 
@@ -543,11 +619,11 @@ export default class RenderManager {
    * @param {number} timestamp - The current timestamp.
    * @returns {void}
    */
-  updateParticles = (timestamp) => {
+  updateParticles = timestamp => {
     if (this.particleManager && typeof this.particleManager.update === 'function') {
       this.particleManager.update(timestamp);
     }
-  }
+  };
 
   /**
    * Renders particles. Should be called after main scene draw or where appropriate.
@@ -557,7 +633,7 @@ export default class RenderManager {
     if (this.particleManager && typeof this.particleManager.render === 'function') {
       this.particleManager.render();
     }
-  }
+  };
 
   /**
    * Resets all vertex attribute arrays to a clean state.
@@ -572,7 +648,7 @@ export default class RenderManager {
     for (let i = 0; i < 8; i++) {
       gl.disableVertexAttribArray(i);
     }
-  }
+  };
 
   /**
    * Activates the main shader program for rendering.
@@ -625,7 +701,7 @@ export default class RenderManager {
    * @param {string} id - The ID of the effect program to activate.
    * @returns {void}
    */
-  activateShaderEffectProgram = (id) => {
+  activateShaderEffectProgram = id => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.useProgram(this.effectPrograms[id]);
@@ -661,7 +737,9 @@ export default class RenderManager {
     gl.bindAttribLocation(effectProgram, 1, 'aTextureCoord');
     gl.linkProgram(effectProgram);
     if (!gl.getProgramParameter(effectProgram, gl.LINK_STATUS)) {
-      throw new Error(`WebGL unable to initialize the shader effect program: ${gl.getProgramInfoLog(effectProgram)}`);
+      throw new Error(
+        `WebGL unable to initialize the shader effect program: ${gl.getProgramInfoLog(effectProgram)}`
+      );
     }
 
     // Apply callback to initialize effect-specific uniforms/attributes
@@ -703,7 +781,7 @@ export default class RenderManager {
     // a coordinate system mismatch (e.g., WebGL's Y-up vs. a different convention).
     // It might be a workaround that could be resolved by adjusting camera or model matrices.
     this.uProjMat[5] *= -1;
-  }
+  };
 
   /**
    * Enables back-face culling.
@@ -714,7 +792,7 @@ export default class RenderManager {
     const { gl } = this.engine;
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
-  }
+  };
 
   /**
    * Disables back-face culling.
@@ -724,7 +802,7 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.disable(gl.CULL_FACE);
-  }
+  };
 
   /**
    * Enables blending.
@@ -734,7 +812,7 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.enable(gl.BLEND);
-  }
+  };
 
   /**
    * Disables blending.
@@ -744,7 +822,7 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.disable(gl.BLEND);
-  }
+  };
 
   /**
    * Clears the color and depth buffers of the WebGL canvas.
@@ -754,7 +832,7 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  }
+  };
 
   /**
    * Applies a 1x1 pixel frustum for optimized object picking.
@@ -792,9 +870,16 @@ export default class RenderManager {
     gl.enable(gl.BLEND);
     gl.viewport(0, 0, 1, 1); // Set viewport to 1x1 pixel
 
-    this.uProjMat = frustum(subLeft, subLeft + subWidth, subBottom, subBottom + subHeight, zNear, zFar);
+    this.uProjMat = frustum(
+      subLeft,
+      subLeft + subWidth,
+      subBottom,
+      subBottom + subHeight,
+      zNear,
+      zFar
+    );
     this.uProjMat[5] *= -1; // Apply the same Y-axis inversion as in initProjection
-  }
+  };
 
   /**
    * Toggles fullscreen mode for the game canvas.
@@ -820,7 +905,7 @@ export default class RenderManager {
       }
       this.fullscreen = false;
     }
-  }
+  };
 
   /**
    * Pushes the current model and view matrices onto a stack.
@@ -833,7 +918,7 @@ export default class RenderManager {
     let copyView = create();
     set(this.camera.uViewMat, copyView);
     this.modelViewMatrixStack.push([copyModel, copyView]);
-  }
+  };
 
   /**
    * Pops the last saved model and view matrices from the stack and applies them.
@@ -846,9 +931,7 @@ export default class RenderManager {
       throw new Error('Invalid popMatrix! Matrix stack is empty.');
     }
     [this.uModelMat, this.camera.uViewMat] = this.modelViewMatrixStack.pop();
-  }
-
-
+  };
 
   /**
    * Creates a new WebGL buffer.
@@ -868,7 +951,7 @@ export default class RenderManager {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(contents), type);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return buf;
-  }
+  };
 
   /**
    * Updates the data in an existing WebGL buffer.
@@ -882,7 +965,7 @@ export default class RenderManager {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  }
+  };
 
   /**
    * Binds a WebGL buffer to an attribute location.
@@ -896,7 +979,7 @@ export default class RenderManager {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(attribute);
     gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
-  }
+  };
 
   /**
    * Begins a custom screen transition. Delegates to TransitionManager.
@@ -905,7 +988,7 @@ export default class RenderManager {
    */
   startTransition = (params = {}) => {
     return this.transitionManager.start(params);
-  }
+  };
 
   /**
    * Updates an in-progress transition. Delegates to TransitionManager.
@@ -913,25 +996,25 @@ export default class RenderManager {
    */
   updateTransition = () => {
     this.transitionManager.update();
-  }
+  };
 
   /**
    * @deprecated Use transitionManager.initProgram() instead.
    * @param {string} effect - Name of the transition effect.
    * @returns {void}
    */
-  initTransitionProgram = (effect) => {
+  initTransitionProgram = effect => {
     this.transitionManager.initProgram(effect);
-  }
+  };
 
   /**
    * @deprecated Use transitionManager.render() instead.
    * @param {number} progress - Progress value between 0 and 1.
    * @returns {void}
    */
-  renderTransition = (progress) => {
+  renderTransition = progress => {
     this.transitionManager.render(progress);
-  }
+  };
 
   /**
    * Renders the skybox.
@@ -940,7 +1023,7 @@ export default class RenderManager {
   renderSkybox = () => {
     if (!this.engine.spritz.loaded) return;
     this.skyboxManager.renderSkybox(this.uProjMat);
-  }
+  };
 
   /**
    * Handles canvas resize events. Updates projection matrix and viewport.
@@ -967,22 +1050,22 @@ export default class RenderManager {
 
     // Update effect manager
     this.effectManager.handleResize(width, height);
-  }
+  };
 
   /**
    * Internal pass for beginning a scene render (for post-processing).
    */
   beginScene = () => {
     this.effectManager.beginScene();
-  }
+  };
 
   /**
    * Internal pass for ending a scene render (for post-processing).
    * @param {number} timestamp - Current timestamp.
    */
-  endScene = (timestamp) => {
+  endScene = timestamp => {
     this.effectManager.endScene(timestamp);
-  }
+  };
 
   /**
    * Resets debug counters at the start of a new frame. Should be invoked by the engine's render loop before any drawing takes place.
@@ -994,5 +1077,5 @@ export default class RenderManager {
       this.debug.spritesDrawn = 0;
       this.debug.objectsDrawn = 0;
     }
-  }
+  };
 }

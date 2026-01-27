@@ -12,14 +12,14 @@
 \*                                                 */
 
 /**
-   * @typedef {object} ModeHandlers
-   * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
-   * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.
-   * @property {function(number, object): Promise<void>} [update] - Function called every frame to update the mode's state.
-   * @property {function(number, object): boolean} [checkInput] - Function to handle input events. Returns true if input was consumed.
-   * @property {function(object, number, number, string, object): boolean} [onSelect] - Function to handle object selection events. Returns true to consume default selection.
-   * @property {boolean} [picker] - Whether the mode should enable object picking.
-   */
+ * @typedef {object} ModeHandlers
+ * @property {function(object): Promise<object|void>} [setup] - Function called when the mode is activated. Can return an object of additional handlers.
+ * @property {function(object): Promise<void>} [teardown] - Function called when the mode is deactivated.
+ * @property {function(number, object): Promise<void>} [update] - Function called every frame to update the mode's state.
+ * @property {function(number, object): boolean} [checkInput] - Function to handle input events. Returns true if input was consumed.
+ * @property {function(object, number, number, string, object): boolean} [onSelect] - Function to handle object selection events. Returns true to consume default selection.
+ * @property {boolean} [picker] - Whether the mode should enable object picking.
+ */
 
 /**
  * ModeManager - manages game modes (explore, tactics, etc.).
@@ -51,7 +51,14 @@ export default class ModeManager {
    */
   register(name, handlers) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('ModeManager.register ->', name, 'hasSetup?', !!(handlers && handlers.setup), 'currentMode=', this.currentMode?.name);
+      console.log(
+        'ModeManager.register ->',
+        name,
+        'hasSetup?',
+        !!(handlers && handlers.setup),
+        'currentMode=',
+        this.currentMode?.name
+      );
     }
     this.registered[name] = handlers;
     // If this mode is currently active but handlers were not present at set-time,
@@ -152,7 +159,8 @@ export default class ModeManager {
       console.log('ModeManager.handleInput: current handlers ->', handlers);
     }
     try {
-      if (handlers && handlers.checkInput) return !!handlers.checkInput(time, this.currentMode.params);
+      if (handlers && handlers.checkInput)
+        return !!handlers.checkInput(time, this.currentMode.params);
     } catch (e) {
       console.warn(`Mode input handler failed for mode "${this.currentMode.name}":`, e);
     }
@@ -174,7 +182,8 @@ export default class ModeManager {
       console.log('ModeManager.handleSelect: current handlers ->', handlers);
     }
     try {
-      if (handlers && handlers.onSelect) return !!handlers.onSelect(zone, row, cell, type, this.currentMode.params);
+      if (handlers && handlers.onSelect)
+        return !!handlers.onSelect(zone, row, cell, type, this.currentMode.params);
     } catch (e) {
       console.warn(`Mode onSelect handler failed for mode "${this.currentMode.name}":`, e);
     }

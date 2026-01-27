@@ -27,8 +27,12 @@ export default {
     // Check for Sprites at that point
     this.zone = world.zoneContaining(...this.to);
     // Trigger interaction on Sprite
-    this.spriteList = this.zone.spriteList.filter((sprite) => sprite.pos.x === this.to[0] && sprite.pos.y === this.to[1]);
-    this.objectList = this.zone.objectList.filter((object) => object.pos.x === this.to[0] && object.pos.y === this.to[1]);
+    this.spriteList = this.zone.spriteList.filter(
+      sprite => sprite.pos.x === this.to[0] && sprite.pos.y === this.to[1]
+    );
+    this.objectList = this.zone.objectList.filter(
+      object => object.pos.x === this.to[0] && object.pos.y === this.to[1]
+    );
     // -- pass through reference to "finish()" callback
     this.finish = this.finish.bind(this);
     // Trigger
@@ -38,21 +42,29 @@ export default {
   interact: async function () {
     if (this.spriteList.length === 0 && this.objectList.length === 0) this.completed = true;
     // objects
-    await Promise.all(this.objectList.map(async (object) => {
-      let faceChange = object.faceDir(Direction.reverse(this.facing));
-      if (faceChange) {
-        object.addAction(faceChange); // face towards avatar
-      }
-      return object.interact ? await this.zone.objectDict[object.id].interact(this.sprite, this.finish) : null;
-    }));
+    await Promise.all(
+      this.objectList.map(async object => {
+        let faceChange = object.faceDir(Direction.reverse(this.facing));
+        if (faceChange) {
+          object.addAction(faceChange); // face towards avatar
+        }
+        return object.interact
+          ? await this.zone.objectDict[object.id].interact(this.sprite, this.finish)
+          : null;
+      })
+    );
     // sprite
-    await Promise.all(this.spriteList.map(async (sprite) => {
-      let faceChange = sprite.faceDir(Direction.reverse(this.facing));
-      if (faceChange) {
-        sprite.addAction(faceChange); // face towards avatar
-      }
-      return sprite.interact ? await this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish) : null;
-    }));
+    await Promise.all(
+      this.spriteList.map(async sprite => {
+        let faceChange = sprite.faceDir(Direction.reverse(this.facing));
+        if (faceChange) {
+          sprite.addAction(faceChange); // face towards avatar
+        }
+        return sprite.interact
+          ? await this.zone.spriteDict[sprite.id].interact(this.sprite, this.finish)
+          : null;
+      })
+    );
   },
   // Callback to clear interaction
   finish: function (result) {

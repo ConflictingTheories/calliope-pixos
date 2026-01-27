@@ -22,7 +22,7 @@ export default {
     this.options = options;
     this.completed = false;
     this.lastKey = new Date().getTime();
-    
+
     // Register this chat as an active HUD element so it gets re-rendered each frame
     this.engine.hud.registerElement(`chat-${Date.now()}`, this);
   },
@@ -31,22 +31,32 @@ export default {
     if (!this.loaded) return;
     // Check for Dialogue Completion (See dialogue.js for full section/scroll support)
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000; // 10 seconds default if autoclose
+      this.endTime = this.endTime
+        ? this.endTime
+        : (this.options.endTime ?? new Date().getTime() + 10000); // 10 seconds default if autoclose
       if (time > this.endTime) {
         this.completed = true;
       }
     }
     // Handle Input
     this.checkInput(time);
-    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(
+      this.prompt + this.text,
+      this.scrolling,
+      this.options
+    );
     return this.completed;
   },
   // Render
   render: function () {
     if (!this.engine || !this.prompt) return;
-    
+
     // Re-render chat textbox
-    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(
+      this.prompt + this.text,
+      this.scrolling,
+      this.options
+    );
   },
   // Handle Keyboard
   checkInput: function (time) {

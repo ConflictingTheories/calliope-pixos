@@ -113,10 +113,22 @@ export function createMat4() {
 }
 
 export function identity(out) {
-  out[0] = 1; out[1] = 0; out[2] = 0; out[3] = 0;
-  out[4] = 0; out[5] = 1; out[6] = 0; out[7] = 0;
-  out[8] = 0; out[9] = 0; out[10] = 1; out[11] = 0;
-  out[12] = 0; out[13] = 0; out[14] = 0; out[15] = 1;
+  out[0] = 1;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = 0;
+  out[5] = 1;
+  out[6] = 0;
+  out[7] = 0;
+  out[8] = 0;
+  out[9] = 0;
+  out[10] = 1;
+  out[11] = 0;
+  out[12] = 0;
+  out[13] = 0;
+  out[14] = 0;
+  out[15] = 1;
   return out;
 }
 
@@ -165,9 +177,15 @@ export function ortho(out, left, right, bottom, top, near, far) {
 }
 
 export function lookAt(out, eye, center, up) {
-  const eyex = eye[0], eyey = eye[1], eyez = eye[2];
-  const upx = up[0], upy = up[1], upz = up[2];
-  const centerx = center[0], centery = center[1], centerz = center[2];
+  const eyex = eye[0],
+    eyey = eye[1],
+    eyez = eye[2];
+  const upx = up[0],
+    upy = up[1],
+    upz = up[2];
+  const centerx = center[0],
+    centery = center[1],
+    centerz = center[2];
 
   let z0 = eyex - centerx;
   let z1 = eyey - centery;
@@ -218,7 +236,9 @@ export function lookAt(out, eye, center, up) {
 }
 
 export function translate(out, a, v) {
-  const x = v[0], y = v[1], z = v[2];
+  const x = v[0],
+    y = v[1],
+    z = v[2];
 
   out[0] = a[0];
   out[1] = a[1];
@@ -241,15 +261,39 @@ export function translate(out, a, v) {
 }
 
 export function multiply(out, a, b) {
-  const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
-  const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
-  const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
-  const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+  const a00 = a[0],
+    a01 = a[1],
+    a02 = a[2],
+    a03 = a[3];
+  const a10 = a[4],
+    a11 = a[5],
+    a12 = a[6],
+    a13 = a[7];
+  const a20 = a[8],
+    a21 = a[9],
+    a22 = a[10],
+    a23 = a[11];
+  const a30 = a[12],
+    a31 = a[13],
+    a32 = a[14],
+    a33 = a[15];
 
-  const b00 = b[0], b01 = b[1], b02 = b[2], b03 = b[3];
-  const b10 = b[4], b11 = b[5], b12 = b[6], b13 = b[7];
-  const b20 = b[8], b21 = b[9], b22 = b[10], b23 = b[11];
-  const b30 = b[12], b31 = b[13], b32 = b[14], b33 = b[15];
+  const b00 = b[0],
+    b01 = b[1],
+    b02 = b[2],
+    b03 = b[3];
+  const b10 = b[4],
+    b11 = b[5],
+    b12 = b[6],
+    b13 = b[7];
+  const b20 = b[8],
+    b21 = b[9],
+    b22 = b[10],
+    b23 = b[11];
+  const b30 = b[12],
+    b31 = b[13],
+    b32 = b[14],
+    b33 = b[15];
 
   out[0] = a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03;
   out[1] = a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03;

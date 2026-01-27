@@ -5,7 +5,7 @@
   "tileset": "common",
   "audioSrc": "icy-passage.mp3",
   "mode": "tactics",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -61,7 +61,7 @@
       "facing": "Up"
     }
   ],
-  
+
   "lights": [
     {
       "id": "sky-light-1",
@@ -100,7 +100,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "air-trial-intro",
@@ -109,7 +109,11 @@
           "sprite": "air-elemental",
           "action": "dialogue",
           "args": [
-            ["The winds whisper of your arrival...", "I am the storm, swift and untouchable!", "Only the truly agile may claim my blessing!"],
+            [
+              "The winds whisper of your arrival...",
+              "I am the storm, swift and untouchable!",
+              "Only the truly agile may claim my blessing!"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -124,7 +128,11 @@
           "sprite": "air-elemental",
           "action": "dialogue",
           "args": [
-            ["You move... like the wind itself...", "The Air Shard is yours to command.", "All four elements bow before you now."],
+            [
+              "You move... like the wind itself...",
+              "The Air Shard is yours to command.",
+              "All four elements bow before you now."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -132,14 +140,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "air-chamber-load",
       "trigger": "zone/air_chamber_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "cloud-platform-1",
@@ -163,6 +171,6 @@
       "rotation": [45, 45, 0]
     }
   ],
-  
+
   "menu": {}
 }

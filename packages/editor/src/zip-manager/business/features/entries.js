@@ -26,7 +26,17 @@ function getEntriesFeatures({
   getOptions,
   modifierKeyPressed,
 }) {
-  const { ACTION_KEY, DOWN_KEY, UP_KEY, PAGE_UP_KEY, PAGE_DOWN_KEY, HOME_KEY, END_KEY, HIGHLIGHT_ALL_KEY, HIGHLIGHT_ALL_BUTTON_NAME } = constants;
+  const {
+    ACTION_KEY,
+    DOWN_KEY,
+    UP_KEY,
+    PAGE_UP_KEY,
+    PAGE_DOWN_KEY,
+    HOME_KEY,
+    END_KEY,
+    HIGHLIGHT_ALL_KEY,
+    HIGHLIGHT_ALL_BUTTON_NAME,
+  } = constants;
 
   function getEntriesElementHeight() {
     return documentService.getHeight(entriesElement);
@@ -72,7 +82,9 @@ function getEntriesFeatures({
   }
 
   function highlightFirstLetter(letter) {
-    const filteredEntries = entries.filter((entry) => entry.name && entry.name.toLocaleLowerCase().startsWith(letter.toLocaleLowerCase()));
+    const filteredEntries = entries.filter(
+      entry => entry.name && entry.name.toLocaleLowerCase().startsWith(letter.toLocaleLowerCase())
+    );
     if (filteredEntries.length) {
       const firstEntry = filteredEntries[0];
       if (filteredEntries.length === 1) {
@@ -82,7 +94,7 @@ function getEntriesFeatures({
           previousHighlight: firstEntry,
           direction: 0,
         }));
-        setHighlightedIds(filteredEntries.reverse().map((entry) => entry.id));
+        setHighlightedIds(filteredEntries.reverse().map(entry => entry.id));
       }
     }
   }
@@ -96,16 +108,18 @@ function getEntriesFeatures({
       previousHighlight: entries[entries.length - 1],
       direction: 0,
     }));
-    setHighlightedIds(entries.map((entry) => entry.id));
+    setHighlightedIds(entries.map(entry => entry.id));
   }
 
   function highlightAll() {
-    const selectedFolderHighlightedIds = highlightedIds.filter((id) => selectedFolderEntries.find((entry) => entry.id === id));
+    const selectedFolderHighlightedIds = highlightedIds.filter(id =>
+      selectedFolderEntries.find(entry => entry.id === id)
+    );
     setHighlightedIds(
       entries
-        .filter((entry) => !selectedFolderHighlightedIds.includes(entry.id))
-        .filter((entry) => selectedFolderEntries.includes(entry))
-        .map((entry) => entry.id)
+        .filter(entry => !selectedFolderHighlightedIds.includes(entry.id))
+        .filter(entry => selectedFolderEntries.includes(entry))
+        .map(entry => entry.id)
         .concat(...selectedFolderHighlightedIds)
     );
   }
@@ -131,15 +145,26 @@ function getEntriesFeatures({
     setHighlightedIds([entry.id]);
   }
 
-  function toggleRange(targetEntry, previousHighlightedEntryIndex = getPreviousHighlightedEntryIndex()) {
-    const highlightedEntryIndex = entries.findIndex((entry) => entry.id === targetEntry.id);
+  function toggleRange(
+    targetEntry,
+    previousHighlightedEntryIndex = getPreviousHighlightedEntryIndex()
+  ) {
+    const highlightedEntryIndex = entries.findIndex(entry => entry.id === targetEntry.id);
     let newIds = [...highlightedIds];
     if (previousHighlightedEntryIndex < highlightedEntryIndex) {
-      for (let indexEntry = previousHighlightedEntryIndex + 1; indexEntry <= highlightedEntryIndex; indexEntry++) {
+      for (
+        let indexEntry = previousHighlightedEntryIndex + 1;
+        indexEntry <= highlightedEntryIndex;
+        indexEntry++
+      ) {
         newIds = getToggledHighlightedIds(newIds, entries[indexEntry]);
       }
     } else if (previousHighlightedEntryIndex > highlightedEntryIndex) {
-      for (let indexEntry = previousHighlightedEntryIndex - 1; indexEntry >= highlightedEntryIndex; indexEntry--) {
+      for (
+        let indexEntry = previousHighlightedEntryIndex - 1;
+        indexEntry >= highlightedEntryIndex;
+        indexEntry--
+      ) {
         newIds = getToggledHighlightedIds(newIds, entries[indexEntry]);
       }
     }
@@ -153,7 +178,7 @@ function getEntriesFeatures({
   function getToggledHighlightedIds(highlightedIds, entry) {
     if (highlightedIds.includes(entry.id)) {
       if (highlightedIds.length > 1) {
-        return highlightedIds.filter((id) => id !== entry.id);
+        return highlightedIds.filter(id => id !== entry.id);
       }
     } else {
       return [...highlightedIds, entry.id];
@@ -176,7 +201,7 @@ function getEntriesFeatures({
           toggle(previousEntry);
         }
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: -1,
       }));
@@ -198,7 +223,7 @@ function getEntriesFeatures({
           toggle(nextEntry);
         }
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: 1,
       }));
@@ -214,7 +239,7 @@ function getEntriesFeatures({
       } else {
         toggleRange(previousPageEntry, indexEntry + 1);
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: -1,
       }));
@@ -230,7 +255,7 @@ function getEntriesFeatures({
       } else {
         toggleRange(nextPageEntry, indexEntry - 1);
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: 1,
       }));
@@ -246,7 +271,7 @@ function getEntriesFeatures({
       } else {
         toggleRange(firstEntry, indexEntry + 1);
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: -1,
       }));
@@ -262,7 +287,7 @@ function getEntriesFeatures({
       } else {
         toggleRange(lastEntry, indexEntry - 1);
       }
-      setNavigation((navigation) => ({
+      setNavigation(navigation => ({
         ...navigation,
         direction: 1,
       }));
@@ -278,12 +303,12 @@ function getEntriesFeatures({
   }
 
   function getPreviousHighlightedEntryIndex() {
-    return entries.findIndex((highlightedEntry) => highlightedEntry === navigation.previousHighlight);
+    return entries.findIndex(highlightedEntry => highlightedEntry === navigation.previousHighlight);
   }
 
   function getHighlightedEntryIndex() {
     const entryId = highlightedIds[highlightedIds.length - 1];
-    return entries.findIndex((entry) => entry.id === entryId);
+    return entries.findIndex(entry => entry.id === entryId);
   }
 
   function resizeEntries(deltaY) {
@@ -292,7 +317,9 @@ function getEntriesFeatures({
 
   function updateEntriesHeight() {
     if (entriesElement && getHighlightedEntryElement()) {
-      setEntriesHeight(Math.max(Math.ceil(getEntriesElementHeight() / getHightlightedEntryHeight()), 1));
+      setEntriesHeight(
+        Math.max(Math.ceil(getEntriesElementHeight() / getHightlightedEntryHeight()), 1)
+      );
     }
   }
 
@@ -311,7 +338,12 @@ function getEntriesFeatures({
 
   function updateEntriesElementHeightEnd() {
     const entriesElementHeight = getEntriesElementHeight();
-    setEntriesElementHeight(Math.max(Math.min(entriesElementHeight + entriesDeltaHeight, entriesElementHeight), entriesElementHeight));
+    setEntriesElementHeight(
+      Math.max(
+        Math.min(entriesElementHeight + entriesDeltaHeight, entriesElementHeight),
+        entriesElementHeight
+      )
+    );
     setEntriesDeltaHeight(0);
   }
 

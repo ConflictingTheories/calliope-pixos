@@ -1,9 +1,11 @@
 # Pixospritz - Scenes (Spritz) Specification
 
 ## Introduction
+
 Scenes (also called "Spritz") are the top-level containers for gameplay, story, and world logic. A scene manages zones, maps, objects, sprites, events, and transitions. Scenes can be loaded, saved, and switched at runtime, and support custom configuration via manifest or scripting.
 
 ## Format & Template
+
 A scene is defined in the package or manifest as:
 
 ```json
@@ -30,12 +32,14 @@ A scene is defined in the package or manifest as:
 - `objects`, `sprites`: Entities present in the scene.
 
 ## Engine Features
+
 - Scenes manage zones, transitions, and global state.
 - Scenes can specify rendering, audio, and gameplay config (e.g., skybox shader).
 - Scenes support runtime switching and saving/loading.
 - Scenes can be extended via manifest, Lua, or engine plugins.
 
 ## Tips
+
 - Use scenes to organize story chapters, levels, or gameplay modes.
 - Specify default shaders, audio, and events for immersive experiences.
 - Use manifest or Lua to customize scene logic and transitions.

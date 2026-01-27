@@ -13,7 +13,7 @@
 
 /** referenced from https://webgl2fundamentals.org/webgl/lessons/webgl-picking.html */
 export default function vs() {
-    return `
+  return `
     attribute vec3 aVertexPosition;
     attribute vec2 aTextureCoord;
     
@@ -38,5 +38,4 @@ export default function vs() {
         gl_Position = uProjectionMatrix * uViewMatrix * vPosition;
     }
   `;
-  }
-  
+}

@@ -50,7 +50,7 @@
  *   diffuse(normal, lightDir)                    -> dot(normal, lightDir)
  *   specular(normal, lightDir, viewDir, power)   -> Blinn-Phong specular
  *   fresnel(normal, viewDir, power)              -> Fresnel effect
- *   
+ *
  *   // Color Operations
  *   brighten(color, amount)                      -> color * (1 + amount)
  *   darken(color, amount)                        -> color * (1 - amount)

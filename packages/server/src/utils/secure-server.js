@@ -41,7 +41,7 @@ export class SecureServer {
       try {
         const httpsOptions = {
           cert: fs.readFileSync(certPath),
-          key: fs.readFileSync(keyPath)
+          key: fs.readFileSync(keyPath),
         };
 
         // Add CA if provided
@@ -52,11 +52,11 @@ export class SecureServer {
         console.log('[SecureServer] Creating HTTPS server with TLS');
         return {
           server: https.createServer(httpsOptions),
-          isSecure: true
+          isSecure: true,
         };
       } catch (error) {
         console.error('[SecureServer] Failed to read SSL certificates:', error.message);
-        
+
         if (forceHttps) {
           throw new Error('HTTPS required in production but SSL certificates are invalid');
         }
@@ -70,11 +70,13 @@ export class SecureServer {
     }
 
     console.log('[SecureServer] Creating HTTP server (no TLS)');
-    console.warn('[SecureServer] WARNING: Running without TLS. Set SSL_CERT_PATH and SSL_KEY_PATH for secure connections.');
-    
+    console.warn(
+      '[SecureServer] WARNING: Running without TLS. Set SSL_CERT_PATH and SSL_KEY_PATH for secure connections.'
+    );
+
     return {
       server: http.createServer(),
-      isSecure: false
+      isSecure: false,
     };
   }
 
@@ -89,8 +91,10 @@ export class SecureServer {
     // or call openssl via child_process
     console.warn('[SecureServer] Self-signed certificate generation not implemented.');
     console.warn('[SecureServer] For development, run:');
-    console.warn('  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes');
-    
+    console.warn(
+      '  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes'
+    );
+
     return { certPath: null, keyPath: null };
   }
 }
@@ -106,7 +110,7 @@ export class WssWrapper {
    */
   static getWssConfig(options = {}) {
     const { server, isSecure } = SecureServer.create(options);
-    
+
     return {
       server,
       isSecure,
@@ -114,17 +118,17 @@ export class WssWrapper {
         zlibDeflateOptions: {
           chunkSize: 1024,
           memLevel: 7,
-          level: 3
+          level: 3,
         },
         zlibInflateOptions: {
-          chunkSize: 10 * 1024
+          chunkSize: 10 * 1024,
         },
         clientNoContextTakeover: true,
         serverNoContextTakeover: true,
         serverMaxWindowBits: 10,
         concurrencyLimit: 10,
-        threshold: 1024
-      }
+        threshold: 1024,
+      },
     };
   }
 }

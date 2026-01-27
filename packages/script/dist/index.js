@@ -62,7 +62,7 @@ const execChunk = (_G, chunk, chunkName) => {
         ...operators,
         Table,
         call,
-        get
+        get,
     });
     return res === undefined ? [undefined] : res;
 };
@@ -75,7 +75,7 @@ function createEnv(config = {}) {
         PIXOSCRIPT_PATH: './?.pxs',
         stdin: '',
         stdout: console.log,
-        ...config
+        ...config,
     };
     const _G = createG(cfg, execChunk);
     const { libPackage, _require } = getLibPackage((content, moduleName) => execChunk(_G, parseScript(content), moduleName)[0], cfg);
@@ -103,7 +103,7 @@ function createEnv(config = {}) {
     const parse = (code) => {
         const script = parseScript(code);
         return {
-            exec: () => execChunk(_G, script)[0]
+            exec: () => execChunk(_G, script)[0],
         };
     };
     /**
@@ -123,7 +123,7 @@ function createEnv(config = {}) {
     return {
         parse,
         parseFile,
-        loadLib
+        loadLib,
     };
 }
 // eslint-disable-next-line import/first

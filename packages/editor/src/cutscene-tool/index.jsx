@@ -15,15 +15,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { debug } from '../shared/debug-logger.js';
 import { collect } from 'react-recollect';
-import {
-  Button,
-  Message,
-  Nav,
-  Input,
-  SelectPicker,
-  ButtonGroup,
-  Panel,
-} from '../ui';
+import { Button, Message, Nav, Input, SelectPicker, ButtonGroup, Panel } from '../ui';
 import Editor, { loader } from '@monaco-editor/react';
 
 // Import Monaco with pre-configured web workers
@@ -113,7 +105,7 @@ function parseDSLToEvents(text) {
         speaker,
         content,
         portrait: meta.sprite || '',
-        meta
+        meta,
       });
       i++;
       continue;
@@ -126,7 +118,7 @@ function parseDSLToEvents(text) {
         events.push({
           type: 'wait',
           duration: parseInt(match[1], 10) / 1000, // Convert ms to seconds
-          command: raw
+          command: raw,
         });
       }
       i++;
@@ -138,7 +130,7 @@ function parseDSLToEvents(text) {
       events.push({
         type: 'wait',
         duration: 0,
-        command: raw
+        command: raw,
       });
       i++;
       continue;
@@ -150,7 +142,7 @@ function parseDSLToEvents(text) {
         type: 'action',
         command: raw,
         speaker: '',
-        content: ''
+        content: '',
       });
       i++;
       continue;
@@ -161,14 +153,14 @@ function parseDSLToEvents(text) {
       type: 'action',
       command: raw,
       speaker: '',
-      content: ''
+      content: '',
     });
     i++;
   }
 
-  return events.length > 0 ? events : [
-    { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} }
-  ];
+  return events.length > 0
+    ? events
+    : [{ type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} }];
 }
 
 // Serialize events to SpritzCut DSL script string
@@ -184,7 +176,7 @@ function serializeEvents(events) {
   }
 
   let script = '';
-  events.forEach((ev) => {
+  events.forEach(ev => {
     if (ev.type === 'dialogue' || ev.type === 'cutin') {
       const bracket = serializeBracket(ev.meta || {});
       const prefix = ev.type === 'cutin' ? '*' : '';
@@ -213,7 +205,7 @@ function serializeEvents(events) {
         script += `@action ${cmd}\n`;
       }
     } else {
-      // Fallback raw or unknown events 
+      // Fallback raw or unknown events
       if (ev.raw) script += ev.raw + '\n';
       else if (ev.command) script += ev.command + '\n';
     }
@@ -235,12 +227,27 @@ const EVENT_VISUALS = {
 
 // Expression emoji mapping
 const EXPRESSION_EMOJIS = {
-  smile: '😊', happy: '😊', sad: '😢', angry: '😠', annoyed: '😠',
-  shocked: '😨', surprised: '😨', neutral: '😐', smirk: '😏',
-  worried: '😰', tired: '😴',
+  smile: '😊',
+  happy: '😊',
+  sad: '😢',
+  angry: '😠',
+  annoyed: '😠',
+  shocked: '😨',
+  surprised: '😨',
+  neutral: '😐',
+  smirk: '😏',
+  worried: '😰',
+  tired: '😴',
 };
 
-function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot, portraitOptions }) {
+function StoryboardEditor({
+  events,
+  setEvents,
+  setTextContent,
+  serializeEvents,
+  pushHistorySnapshot,
+  portraitOptions,
+}) {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -256,56 +263,66 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
   }, [events]);
 
   // Update event and sync
-  const updateEvent = useCallback((index, field, value) => {
-    const next = events.map((ev, i) => {
-      if (i === index) {
-        if (field === 'meta') {
-          return { ...ev, meta: { ...ev.meta, ...value } };
+  const updateEvent = useCallback(
+    (index, field, value) => {
+      const next = events.map((ev, i) => {
+        if (i === index) {
+          if (field === 'meta') {
+            return { ...ev, meta: { ...ev.meta, ...value } };
+          }
+          return { ...ev, [field]: value };
         }
-        return { ...ev, [field]: value };
-      }
-      return ev;
-    });
-    setEvents(next);
-    setTextContent(serializeEvents(next));
-    pushHistorySnapshot(next);
-  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]);
+        return ev;
+      });
+      setEvents(next);
+      setTextContent(serializeEvents(next));
+      pushHistorySnapshot(next);
+    },
+    [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]
+  );
 
   // Add a new event of a specific type
-  const addEvent = useCallback((type, insertAfter = null) => {
-    const newEvent = type === 'dialogue' || type === 'cutin'
-      ? { type, speaker: '', content: '', portrait: '', meta: {} }
-      : type === 'wait'
-        ? { type, duration: 1, command: 'wait 1000' }
-        : { type, command: '', speaker: '', content: '' };
+  const addEvent = useCallback(
+    (type, insertAfter = null) => {
+      const newEvent =
+        type === 'dialogue' || type === 'cutin'
+          ? { type, speaker: '', content: '', portrait: '', meta: {} }
+          : type === 'wait'
+            ? { type, duration: 1, command: 'wait 1000' }
+            : { type, command: '', speaker: '', content: '' };
 
-    let next;
-    if (insertAfter !== null && insertAfter >= 0) {
-      next = [...events.slice(0, insertAfter + 1), newEvent, ...events.slice(insertAfter + 1)];
-      setSelectedIndex(insertAfter + 1);
-    } else {
-      next = [...events, newEvent];
-      setSelectedIndex(events.length);
-    }
-    setEvents(next);
-    setTextContent(serializeEvents(next));
-    pushHistorySnapshot(next);
-    setShowAddMenu(false);
-  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]);
+      let next;
+      if (insertAfter !== null && insertAfter >= 0) {
+        next = [...events.slice(0, insertAfter + 1), newEvent, ...events.slice(insertAfter + 1)];
+        setSelectedIndex(insertAfter + 1);
+      } else {
+        next = [...events, newEvent];
+        setSelectedIndex(events.length);
+      }
+      setEvents(next);
+      setTextContent(serializeEvents(next));
+      pushHistorySnapshot(next);
+      setShowAddMenu(false);
+    },
+    [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]
+  );
 
   // Remove an event
-  const removeEvent = useCallback((index) => {
-    if (events.length <= 1) return; // Keep at least one event
-    const next = events.filter((_, i) => i !== index);
-    setEvents(next);
-    setTextContent(serializeEvents(next));
-    pushHistorySnapshot(next);
-    if (selectedIndex === index) setSelectedIndex(null);
-    else if (selectedIndex > index) setSelectedIndex(selectedIndex - 1);
-  }, [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot, selectedIndex]);
+  const removeEvent = useCallback(
+    index => {
+      if (events.length <= 1) return; // Keep at least one event
+      const next = events.filter((_, i) => i !== index);
+      setEvents(next);
+      setTextContent(serializeEvents(next));
+      pushHistorySnapshot(next);
+      if (selectedIndex === index) setSelectedIndex(null);
+      else if (selectedIndex > index) setSelectedIndex(selectedIndex - 1);
+    },
+    [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot, selectedIndex]
+  );
 
   // Drag and drop handlers
-  const handleDragStart = (index) => {
+  const handleDragStart = index => {
     setDraggedIndex(index);
   };
 
@@ -316,7 +333,7 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
     }
   };
 
-  const handleDrop = (index) => {
+  const handleDrop = index => {
     if (draggedIndex !== null && draggedIndex !== index) {
       const next = [...events];
       const [dragged] = next.splice(draggedIndex, 1);
@@ -346,7 +363,7 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
         key={idx}
         draggable
         onDragStart={() => handleDragStart(idx)}
-        onDragOver={(e) => handleDragOver(e, idx)}
+        onDragOver={e => handleDragOver(e, idx)}
         onDrop={() => handleDrop(idx)}
         onDragEnd={handleDragEnd}
         onClick={() => setSelectedIndex(isSelected ? null : idx)}
@@ -368,52 +385,72 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
         }}
       >
         {/* Drag handle + type icon */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '2px',
-          cursor: 'grab',
-          padding: '0 2px',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2px',
+            cursor: 'grab',
+            padding: '0 2px',
+          }}
+        >
           <span style={{ fontSize: '14px', filter: 'grayscale(0.2)' }}>{visual.icon}</span>
-          <span style={{
-            fontSize: '8px',
-            color: visual.color,
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.3px',
-          }}>
+          <span
+            style={{
+              fontSize: '8px',
+              color: visual.color,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+            }}
+          >
             {visual.label.slice(0, 3)}
           </span>
         </div>
 
         {/* Content preview */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
           {(ev.type === 'dialogue' || ev.type === 'cutin') && (
             <>
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                color: visual.color,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: visual.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
                 {ev.speaker || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>Speaker?</span>}
                 {ev.meta?.expression && (
-                  <span style={{ fontSize: '12px' }}>{EXPRESSION_EMOJIS[ev.meta.expression] || ''}</span>
+                  <span style={{ fontSize: '12px' }}>
+                    {EXPRESSION_EMOJIS[ev.meta.expression] || ''}
+                  </span>
                 )}
               </div>
-              <div style={{
-                fontSize: '11px',
-                color: 'rgba(255,255,255,0.7)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                {ev.content || <span style={{ opacity: 0.4, fontStyle: 'italic' }}>Enter dialogue...</span>}
+              <div
+                style={{
+                  fontSize: '11px',
+                  color: 'rgba(255,255,255,0.7)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {ev.content || (
+                  <span style={{ opacity: 0.4, fontStyle: 'italic' }}>Enter dialogue...</span>
+                )}
               </div>
             </>
           )}
@@ -423,14 +460,16 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
             </div>
           )}
           {ev.type === 'action' && (
-            <div style={{
-              fontSize: '10px',
-              color: 'rgba(255,255,255,0.7)',
-              fontFamily: 'monospace',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}>
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'rgba(255,255,255,0.7)',
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {ev.command || <span style={{ opacity: 0.4 }}>@command...</span>}
             </div>
           )}
@@ -438,7 +477,10 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
 
         {/* Quick delete on hover */}
         <button
-          onClick={(e) => { e.stopPropagation(); removeEvent(idx); }}
+          onClick={e => {
+            e.stopPropagation();
+            removeEvent(idx);
+          }}
           style={{
             background: 'transparent',
             border: 'none',
@@ -449,8 +491,8 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
             opacity: 0.5,
             transition: 'opacity 0.15s',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = 0.5}
+          onMouseEnter={e => (e.currentTarget.style.opacity = 1)}
+          onMouseLeave={e => (e.currentTarget.style.opacity = 0.5)}
           title="Delete"
         >
           ×
@@ -463,18 +505,22 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
   const renderDetailEditor = () => {
     if (selectedIndex === null || !events[selectedIndex]) {
       return (
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'rgba(255,255,255,0.3)',
-          fontSize: '12px',
-          fontStyle: 'italic',
-          textAlign: 'center',
-          padding: '20px',
-        }}>
-          Click an event to edit<br />or drag to reorder
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255,255,255,0.3)',
+            fontSize: '12px',
+            fontStyle: 'italic',
+            textAlign: 'center',
+            padding: '20px',
+          }}
+        >
+          Click an event to edit
+          <br />
+          or drag to reorder
         </div>
       );
     }
@@ -483,21 +529,25 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
     const visual = EVENT_VISUALS[ev.type] || EVENT_VISUALS.action;
 
     return (
-      <div style={{
-        flex: 1,
-        minHeight: 0,
-        overflow: 'auto',
-        padding: '8px',
-        background: 'rgba(0,0,0,0.2)',
-        borderRadius: '6px',
-      }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflow: 'auto',
+          padding: '8px',
+          background: 'rgba(0,0,0,0.2)',
+          borderRadius: '6px',
+        }}
+      >
         {/* Type selector as visual tabs */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          marginBottom: '10px',
-          flexWrap: 'wrap',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '4px',
+            marginBottom: '10px',
+            flexWrap: 'wrap',
+          }}
+        >
           {Object.entries(EVENT_VISUALS).map(([type, vis]) => (
             <button
               key={type}
@@ -531,7 +581,7 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
               <input
                 type="text"
                 value={ev.speaker || ''}
-                onChange={(e) => updateEvent(selectedIndex, 'speaker', e.target.value.toUpperCase())}
+                onChange={e => updateEvent(selectedIndex, 'speaker', e.target.value.toUpperCase())}
                 placeholder="SPEAKER NAME"
                 style={{
                   width: '100%',
@@ -549,36 +599,50 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
                 list="speaker-suggestions"
               />
               <datalist id="speaker-suggestions">
-                {knownSpeakers.map(s => <option key={s} value={s} />)}
+                {knownSpeakers.map(s => (
+                  <option key={s} value={s} />
+                ))}
               </datalist>
             </div>
 
             {/* Expression quick-select */}
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {Object.entries(EXPRESSION_EMOJIS).slice(0, 8).map(([expr, emoji]) => (
-                <button
-                  key={expr}
-                  onClick={() => updateEvent(selectedIndex, 'meta', { expression: ev.meta?.expression === expr ? '' : expr })}
-                  style={{
-                    padding: '4px 6px',
-                    background: ev.meta?.expression === expr ? 'rgba(125,211,252,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: ev.meta?.expression === expr ? '1px solid rgba(125,211,252,0.4)' : '1px solid transparent',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    transition: 'all 0.15s',
-                  }}
-                  title={expr}
-                >
-                  {emoji}
-                </button>
-              ))}
+              {Object.entries(EXPRESSION_EMOJIS)
+                .slice(0, 8)
+                .map(([expr, emoji]) => (
+                  <button
+                    key={expr}
+                    onClick={() =>
+                      updateEvent(selectedIndex, 'meta', {
+                        expression: ev.meta?.expression === expr ? '' : expr,
+                      })
+                    }
+                    style={{
+                      padding: '4px 6px',
+                      background:
+                        ev.meta?.expression === expr
+                          ? 'rgba(125,211,252,0.2)'
+                          : 'rgba(255,255,255,0.05)',
+                      border:
+                        ev.meta?.expression === expr
+                          ? '1px solid rgba(125,211,252,0.4)'
+                          : '1px solid transparent',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      transition: 'all 0.15s',
+                    }}
+                    title={expr}
+                  >
+                    {emoji}
+                  </button>
+                ))}
             </div>
 
             {/* Dialogue text - big comfortable textarea */}
             <textarea
               value={ev.content || ''}
-              onChange={(e) => updateEvent(selectedIndex, 'content', e.target.value)}
+              onChange={e => updateEvent(selectedIndex, 'content', e.target.value)}
               placeholder="What do they say?"
               style={{
                 width: '100%',
@@ -605,13 +669,21 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
               <button
                 onClick={() => {
                   updateEvent(selectedIndex, 'duration', ev.duration || 1);
-                  updateEvent(selectedIndex, 'command', `wait ${Math.round((ev.duration || 1) * 1000)}`);
+                  updateEvent(
+                    selectedIndex,
+                    'command',
+                    `wait ${Math.round((ev.duration || 1) * 1000)}`
+                  );
                 }}
                 style={{
                   flex: 1,
                   padding: '12px',
-                  background: !ev.command?.includes('waitInput') ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.05)',
-                  border: !ev.command?.includes('waitInput') ? '1px solid rgba(251,191,36,0.4)' : '1px solid transparent',
+                  background: !ev.command?.includes('waitInput')
+                    ? 'rgba(251,191,36,0.2)'
+                    : 'rgba(255,255,255,0.05)',
+                  border: !ev.command?.includes('waitInput')
+                    ? '1px solid rgba(251,191,36,0.4)'
+                    : '1px solid transparent',
                   borderRadius: '6px',
                   color: !ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
                   cursor: 'pointer',
@@ -628,8 +700,12 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
                 style={{
                   flex: 1,
                   padding: '12px',
-                  background: ev.command?.includes('waitInput') ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.05)',
-                  border: ev.command?.includes('waitInput') ? '1px solid rgba(251,191,36,0.4)' : '1px solid transparent',
+                  background: ev.command?.includes('waitInput')
+                    ? 'rgba(251,191,36,0.2)'
+                    : 'rgba(255,255,255,0.05)',
+                  border: ev.command?.includes('waitInput')
+                    ? '1px solid rgba(251,191,36,0.4)'
+                    : '1px solid transparent',
                   borderRadius: '6px',
                   color: ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
                   cursor: 'pointer',
@@ -648,20 +724,22 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
                   max="10"
                   step="0.5"
                   value={ev.duration || 1}
-                  onChange={(e) => {
+                  onChange={e => {
                     const dur = parseFloat(e.target.value);
                     updateEvent(selectedIndex, 'duration', dur);
                     updateEvent(selectedIndex, 'command', `wait ${Math.round(dur * 1000)}`);
                   }}
                   style={{ flex: 1 }}
                 />
-                <span style={{
-                  color: '#fbbf24',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  minWidth: '40px',
-                  textAlign: 'right',
-                }}>
+                <span
+                  style={{
+                    color: '#fbbf24',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    minWidth: '40px',
+                    textAlign: 'right',
+                  }}
+                >
                   {ev.duration || 1}s
                 </span>
               </div>
@@ -704,7 +782,7 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
             <input
               type="text"
               value={ev.command || ''}
-              onChange={(e) => updateEvent(selectedIndex, 'command', e.target.value)}
+              onChange={e => updateEvent(selectedIndex, 'command', e.target.value)}
               placeholder="@command [param=value]"
               style={{
                 width: '100%',
@@ -735,17 +813,19 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
         height: '100%',
         overflow: 'hidden',
       }}
-      onKeyDown={(e) => e.stopPropagation()}
+      onKeyDown={e => e.stopPropagation()}
     >
       {/* Timeline - scrollable list of event cards */}
-      <div style={{
-        flex: '1 1 50%',
-        minHeight: '120px',
-        overflowY: 'auto',
-        padding: '4px',
-        background: 'rgba(0,0,0,0.15)',
-        borderRadius: '6px',
-      }}>
+      <div
+        style={{
+          flex: '1 1 50%',
+          minHeight: '120px',
+          overflowY: 'auto',
+          padding: '4px',
+          background: 'rgba(0,0,0,0.15)',
+          borderRadius: '6px',
+        }}
+      >
         {events.map((ev, idx) => renderEventCard(ev, idx))}
 
         {/* Add button */}
@@ -767,20 +847,22 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
             +
           </button>
           {showAddMenu && (
-            <div style={{
-              position: 'absolute',
-              bottom: '100%',
-              left: 0,
-              right: 0,
-              marginBottom: '4px',
-              background: 'rgba(10,15,26,0.98)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '6px',
-              padding: '4px',
-              display: 'flex',
-              gap: '4px',
-              zIndex: 10,
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 0,
+                right: 0,
+                marginBottom: '4px',
+                background: 'rgba(10,15,26,0.98)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '6px',
+                padding: '4px',
+                display: 'flex',
+                gap: '4px',
+                zIndex: 10,
+              }}
+            >
               {Object.entries(EVENT_VISUALS).map(([type, vis]) => (
                 <button
                   key={type}
@@ -811,7 +893,9 @@ function StoryboardEditor({ events, setEvents, setTextContent, serializeEvents, 
       </div>
 
       {/* Detail editor for selected event */}
-      <div style={{ flex: '1 1 50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{ flex: '1 1 50%', minHeight: '150px', display: 'flex', flexDirection: 'column' }}
+      >
         {renderDetailEditor()}
       </div>
     </div>
@@ -853,7 +937,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
   const initialLoadDone = useRef(false);
 
   // Handle split resizing
-  const handleSplitMouseDown = useCallback((e) => {
+  const handleSplitMouseDown = useCallback(e => {
     e.preventDefault();
     setIsDraggingSplit(true);
   }, []);
@@ -861,7 +945,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
   useEffect(() => {
     if (!isDraggingSplit) return;
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = e => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -913,7 +997,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
   // Push snapshot into history; ensures future redo states are discarded
   function pushHistorySnapshot(nextEvents) {
     const snapshot = JSON.parse(JSON.stringify(nextEvents));
-    setHistory((prev) => {
+    setHistory(prev => {
       const trimmed = prev.slice(0, historyIndex + 1);
       const updated = [...trimmed, snapshot];
       setHistoryIndex(updated.length - 1);
@@ -961,9 +1045,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
         }
 
         if (!parsed || parsed.length === 0) {
-          parsed = [
-            { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} },
-          ];
+          parsed = [{ type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} }];
         }
 
         setEvents(parsed);
@@ -988,10 +1070,10 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
   }, [content]);
 
   // Build portrait options from available assets
-  const portraitOptions = assets.map((a) => ({ label: a.name, value: a.name }));
+  const portraitOptions = assets.map(a => ({ label: a.name, value: a.name }));
 
   // Quick insert templates for common commands
-  const insertTemplate = (template) => {
+  const insertTemplate = template => {
     if (editorMode === 'text') {
       const cursorPos = textContent.length;
       const newText = textContent + (textContent.endsWith('\n') ? '' : '\n') + template + '\n';
@@ -1030,7 +1112,10 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
   // Add a new event to the end
   function addEvent() {
-    const next = [...events, { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} }];
+    const next = [
+      ...events,
+      { type: 'dialogue', speaker: '', content: '', portrait: '', meta: {} },
+    ];
     setEvents(next);
     setTextContent(serializeEvents(next));
     pushHistorySnapshot(next);
@@ -1091,8 +1176,16 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
       }}
     >
       {error && (
-        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
-          <Message type='error' description={error} closable onClose={() => setError(null)} />
+        <div
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+          }}
+        >
+          <Message type="error" description={error} closable onClose={() => setError(null)} />
         </div>
       )}
 
@@ -1107,25 +1200,29 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
         }}
       >
         {/* Left side - Preview player */}
-        <div style={{
-          flex: `0 0 ${splitRatio}%`,
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '10px',
-          overflow: 'hidden',
-        }}>
-          {/* Preview header */}
-          <div style={{
-            padding: '8px 12px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+        <div
+          style={{
+            flex: `0 0 ${splitRatio}%`,
+            minWidth: 0,
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexShrink: 0,
-          }}>
+            flexDirection: 'column',
+            background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Preview header */}
+          <div
+            style={{
+              padding: '8px 12px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexShrink: 0,
+            }}
+          >
             <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
               Preview Stage
             </h4>
@@ -1137,23 +1234,34 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                   min="8"
                   max="200"
                   value={speed}
-                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  onChange={e => setSpeed(Number(e.target.value))}
                   style={{ width: '80px' }}
                 />
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', width: '28px', textAlign: 'right' }}>{speed}</span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'rgba(255,255,255,0.7)',
+                    width: '28px',
+                    textAlign: 'right',
+                  }}
+                >
+                  {speed}
+                </span>
               </div>
-              <label style={{
-                fontSize: '11px',
-                color: 'rgba(255,255,255,0.7)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                cursor: 'pointer',
-              }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  color: 'rgba(255,255,255,0.7)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  cursor: 'pointer',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={autoAdvance}
-                  onChange={(e) => setAutoAdvance(e.target.checked)}
+                  onChange={e => setAutoAdvance(e.target.checked)}
                   style={{ margin: 0 }}
                 />
                 Auto
@@ -1192,22 +1300,26 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           </div>
 
           {/* Player container - maintains aspect ratio */}
-          <div style={{
-            flex: 1,
-            minHeight: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px',
-            background: '#000',
-            position: 'relative',
-          }}>
-            <div style={{
-              width: '100%',
-              maxWidth: '960px',
-              aspectRatio: '16/9',
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              background: '#000',
               position: 'relative',
-            }}>
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '960px',
+                aspectRatio: '16/9',
+                position: 'relative',
+              }}
+            >
               <CutscenePlayer
                 ref={cutscenePlayerRef}
                 scriptText={scriptText}
@@ -1220,35 +1332,43 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
 
             {/* Export Progress Overlay */}
             {isExporting && exportProgress && (
-              <div style={{
-                position: 'absolute',
-                bottom: '16px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.85)',
-                border: '1px solid rgba(251,191,36,0.4)',
-                borderRadius: '8px',
-                padding: '12px 20px',
-                minWidth: '280px',
-                zIndex: 100,
-                backdropFilter: 'blur(4px)',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '8px',
-                }}>
-                  <span style={{
-                    color: '#fbbf24',
-                    fontSize: '12px',
-                    fontWeight: 600,
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.85)',
+                  border: '1px solid rgba(251,191,36,0.4)',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  minWidth: '280px',
+                  zIndex: 100,
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                <div
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                  }}>
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span
+                    style={{
+                      color: '#fbbf24',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
                     <span style={{ animation: 'spin 1s linear infinite' }}>📹</span>
-                    {exportProgress.status === 'complete' ? 'Export Complete!' : 'Exporting Video...'}
+                    {exportProgress.status === 'complete'
+                      ? 'Export Complete!'
+                      : 'Exporting Video...'}
                   </span>
                   <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 700 }}>
                     {exportProgress.progress || 0}%
@@ -1256,34 +1376,41 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 </div>
 
                 {/* Progress bar */}
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  background: 'rgba(251,191,36,0.15)',
-                  borderRadius: '3px',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    width: `${exportProgress.progress || 0}%`,
-                    height: '100%',
-                    background: exportProgress.status === 'complete'
-                      ? 'linear-gradient(90deg, #22c55e, #4ade80)'
-                      : exportProgress.status === 'error'
-                        ? '#ef4444'
-                        : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    background: 'rgba(251,191,36,0.15)',
                     borderRadius: '3px',
-                    transition: 'width 0.2s ease',
-                  }} />
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${exportProgress.progress || 0}%`,
+                      height: '100%',
+                      background:
+                        exportProgress.status === 'complete'
+                          ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                          : exportProgress.status === 'error'
+                            ? '#ef4444'
+                            : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                      borderRadius: '3px',
+                      transition: 'width 0.2s ease',
+                    }}
+                  />
                 </div>
 
                 {/* Status message */}
                 {exportProgress.message && (
-                  <div style={{
-                    marginTop: '6px',
-                    fontSize: '10px',
-                    color: 'rgba(255,255,255,0.6)',
-                    textAlign: 'center',
-                  }}>
+                  <div
+                    style={{
+                      marginTop: '6px',
+                      fontSize: '10px',
+                      color: 'rgba(255,255,255,0.6)',
+                      textAlign: 'center',
+                    }}
+                  >
                     {exportProgress.message}
                   </div>
                 )}
@@ -1299,25 +1426,25 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           style={{
             width: '10px',
             cursor: 'col-resize',
-            background: isDraggingSplit
-              ? 'rgba(125, 211, 252, 0.2)'
-              : 'transparent',
+            background: isDraggingSplit ? 'rgba(125, 211, 252, 0.2)' : 'transparent',
             transition: 'background 0.15s',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={e => {
             if (!isDraggingSplit) {
               e.currentTarget.style.background = 'rgba(125, 211, 252, 0.1)';
-              e.currentTarget.querySelector('.split-handle').style.background = 'rgba(125, 211, 252, 0.6)';
+              e.currentTarget.querySelector('.split-handle').style.background =
+                'rgba(125, 211, 252, 0.6)';
             }
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={e => {
             if (!isDraggingSplit) {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.querySelector('.split-handle').style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.querySelector('.split-handle').style.background =
+                'rgba(255,255,255,0.15)';
             }
           }}
         >
@@ -1326,9 +1453,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             style={{
               width: '3px',
               height: '50px',
-              background: isDraggingSplit
-                ? 'rgba(125, 211, 252, 0.8)'
-                : 'rgba(255,255,255,0.15)',
+              background: isDraggingSplit ? 'rgba(125, 211, 252, 0.8)' : 'rgba(255,255,255,0.15)',
               borderRadius: '2px',
               transition: 'background 0.15s',
             }}
@@ -1348,55 +1473,72 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             flexDirection: 'column',
             overflow: 'hidden',
           }}
-          onKeyDown={(e) => e.stopPropagation()}
-          onKeyUp={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+          onKeyUp={e => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
         >
           {/* Editor header with tabs */}
-          <div style={{
-            padding: '8px 12px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexShrink: 0,
-          }}>
+          <div
+            style={{
+              padding: '8px 12px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexShrink: 0,
+            }}
+          >
             <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
               SpritzCut DSL Editor
             </h4>
-            <Nav appearance="subtle" activeKey={editorMode} onSelect={setEditorMode} style={{ marginBottom: 0 }}>
-              <Nav.Item eventKey="text" style={{ fontSize: '11px', padding: '3px 8px' }}>Code</Nav.Item>
-              <Nav.Item eventKey="visual" style={{ fontSize: '11px', padding: '3px 8px' }}>Visual</Nav.Item>
+            <Nav
+              appearance="subtle"
+              activeKey={editorMode}
+              onSelect={setEditorMode}
+              style={{ marginBottom: 0 }}
+            >
+              <Nav.Item eventKey="text" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                Code
+              </Nav.Item>
+              <Nav.Item eventKey="visual" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                Visual
+              </Nav.Item>
             </Nav>
           </div>
 
           {/* Quick Insert Commands Panel */}
-          <details style={{
-            margin: '8px',
-            background: 'rgba(125,211,252,0.05)',
-            border: '1px solid rgba(125,211,252,0.15)',
-            borderRadius: '6px',
-            padding: '6px',
-            flexShrink: 0,
-          }}>
-            <summary style={{
-              color: '#7dd3fc',
-              fontSize: '10px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              userSelect: 'none',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
+          <details
+            style={{
+              margin: '8px',
+              background: 'rgba(125,211,252,0.05)',
+              border: '1px solid rgba(125,211,252,0.15)',
+              borderRadius: '6px',
+              padding: '6px',
+              flexShrink: 0,
+            }}
+          >
+            <summary
+              style={{
+                color: '#7dd3fc',
+                fontSize: '10px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                userSelect: 'none',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               Quick Insert Commands
             </summary>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '3px',
-              marginTop: '6px'
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '3px',
+                marginTop: '6px',
+              }}
+            >
               {[
                 { label: '🖼️ Backdrop', template: '@backdrop textures/room.gif [fadeIn=800]' },
                 { label: '👤 Character', template: '@char HERO sprite=characters/male' },
@@ -1430,7 +1572,15 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           </details>
 
           {/* Editor content area */}
-          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 8px 8px' }}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '0 8px 8px',
+            }}
+          >
             {/* Text Editor Mode - Monaco */}
             {editorMode === 'text' && (
               <div style={{ flex: 1, minHeight: 0, borderRadius: '6px', overflow: 'hidden' }}>
@@ -1439,7 +1589,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                   height="100%"
                   value={textContent}
                   language="spritzcut"
-                  onChange={(value) => {
+                  onChange={value => {
                     setTextContent(value || '');
                     try {
                       const parsed = parseDSLToEvents(value || '');
@@ -1477,31 +1627,23 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             )}
 
             {/* Footer with save/undo/redo */}
-            <div style={{
-              display: 'flex',
-              gap: '6px',
-              paddingTop: '8px',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-              flexShrink: 0,
-            }}>
-              <Button
-                appearance='primary'
-                size="sm"
-                style={{ flex: 1 }}
-                onClick={handleSave}
-              >
+            <div
+              style={{
+                display: 'flex',
+                gap: '6px',
+                paddingTop: '8px',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                flexShrink: 0,
+              }}
+            >
+              <Button appearance="primary" size="sm" style={{ flex: 1 }} onClick={handleSave}>
                 Save
               </Button>
-              <Button
-                appearance='default'
-                size="sm"
-                onClick={undo}
-                disabled={historyIndex <= 0}
-              >
+              <Button appearance="default" size="sm" onClick={undo} disabled={historyIndex <= 0}>
                 Undo
               </Button>
               <Button
-                appearance='default'
+                appearance="default"
                 size="sm"
                 onClick={redo}
                 disabled={historyIndex >= history.length - 1}

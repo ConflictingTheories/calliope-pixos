@@ -171,8 +171,12 @@ export default class Inventory {
    * @returns {boolean} True if move was successful.
    */
   moveItem(fromSlot, toSlot) {
-    if (fromSlot < 0 || fromSlot >= this.slots.length ||
-        toSlot < 0 || toSlot >= this.slots.length) {
+    if (
+      fromSlot < 0 ||
+      fromSlot >= this.slots.length ||
+      toSlot < 0 ||
+      toSlot >= this.slots.length
+    ) {
       return false;
     }
 
@@ -270,7 +274,7 @@ export default class Inventory {
    */
   serialize() {
     return {
-      slots: this.slots.map(slot => slot ? slot.serialize() : null),
+      slots: this.slots.map(slot => (slot ? slot.serialize() : null)),
       maxSlots: this.maxSlots,
     };
   }

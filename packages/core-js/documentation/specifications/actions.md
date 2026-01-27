@@ -1,9 +1,11 @@
 # Pixospritz - Actions Specification
 
 ## Introduction
+
 Actions are the core interactions and behaviors in Pixospritz games. They are engine-defined logic units that can be triggered by the player, AI, scripts, or events. Actions are distinct from triggers and callbacks, and are extensible via custom hooks and scripting.
 
 ## Supported Actions
+
 - `animate`: Play an animation on a sprite or object.
 - `changezone`: Transition to a different zone or map.
 - `chat`: Display dialogue or chat bubbles.
@@ -17,6 +19,7 @@ Actions are the core interactions and behaviors in Pixospritz games. They are en
 - `script`: Run a Lua or engine script.
 
 ## Action Lifecycle Hooks
+
 - `init()`: Runs once at action start for setup.
 - `tick()`: Runs every frame to update logic.
 - `end()`: Runs at action completion for cleanup.
@@ -27,6 +30,7 @@ Actions are the core interactions and behaviors in Pixospritz games. They are en
 - `cancel()`: Runs when action is cancelled.
 
 ## Format & Template
+
 Actions are defined in zone, sprite, or object data as:
 
 ```json
@@ -45,12 +49,14 @@ Actions are defined in zone, sprite, or object data as:
 - `onSuccess`, `onError`: Optional hooks for chaining actions.
 
 ## Engine Features
+
 - Actions can be triggered by player input, AI, Lua scripts, or events.
 - Actions support chaining, conditional logic, and custom hooks.
 - Actions are extensible via engine and scripting APIs.
 - Actions can be paused, resumed, or cancelled.
 
 ## Tips
+
 - Use hooks to manage complex action flows and error handling.
 - Chain actions for multi-step behaviors (e.g., move then chat).
 - Extend actions with custom logic via Lua or engine plugins.

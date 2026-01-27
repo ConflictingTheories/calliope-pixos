@@ -1,9 +1,11 @@
 # Pixospritz - Main README
 
 ## Overview
+
 Pixospritz is a modular, extensible game engine and storytelling platform. It supports cross-platform, cross-publisher, and multi-game integration, allowing players to merge standalone titles into persistent experiences. The engine is built in JavaScript/WebGL and supports runtime extensibility, Lua scripting, and package-based content.
 
 ## Key Features
+
 - **Package-based design:** Game content is distributed in packages, supporting standalone and episodic play, and dynamic interoperability.
 - **Rendering pipeline:** Modern WebGL pipeline with custom shaders, skyboxes, tiles, 3D models, sprites, and transitions. Skybox shaders can be switched programmatically, via Lua, or by zone/manifest config.
 - **Lua scripting:** Full engine API access from Lua, including actions, events, triggers, callbacks, rendering, audio, and game state.
@@ -14,6 +16,7 @@ Pixospritz is a modular, extensible game engine and storytelling platform. It su
 - **Networked multiplayer:** Optional network layer for shared world states and real-time multiplayer.
 
 ## Example: Lua Scripting
+
 ```lua
 function on_zone_enter(zone, player)
   engine:set_skybox_shader('morning')
@@ -25,7 +28,9 @@ end
 ```
 
 ## Documentation
+
 See the `documentation/specifications/` folder for detailed specs on:
+
 - Architecture
 - Sprites
 - Tilesets
@@ -41,6 +46,7 @@ See the `documentation/specifications/` folder for detailed specs on:
 - Maps
 
 Each spec includes:
+
 - Introduction and context
 - Format and template examples
 - Engine features and extensibility
@@ -48,6 +54,7 @@ Each spec includes:
 - Lua scripting integration (where applicable)
 
 ## Getting Started
+
 1. Clone the repo and install dependencies.
 2. Create or import a package with assets, zones, and scripts.
 3. Configure zones, scenes, and manifests for your game.
@@ -55,5 +62,5 @@ Each spec includes:
 5. Run the engine and start building your story!
 
 ## Contributing
-Contributions are welcome! Please see the documentation for guidelines and API references.
 
+Contributions are welcome! Please see the documentation for guidelines and API references.

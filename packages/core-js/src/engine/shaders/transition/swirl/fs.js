@@ -1,15 +1,15 @@
 /*                                                 *\
-** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
-** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-*                                                 */
+ ** ----------------------------------------------- **
+ **          Calliope - Pixos Game Engine           **
+ ** ----------------------------------------------- **
+ **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+ **                                                 **
+ **    Any unauthorized distribution or transfer    **
+ **       of this work is strictly prohibited.      **
+ **                                                 **
+ **               All Rights Reserved.              **
+ ** ----------------------------------------------- **
+ *                                                 */
 
 // Fragment shader for a radial “swirl” transition. This effect creates a
 // growing or shrinking circular wipe based on the distance from the

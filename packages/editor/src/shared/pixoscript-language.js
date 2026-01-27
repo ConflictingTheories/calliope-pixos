@@ -20,26 +20,26 @@ export const PIXOS_API = {
     params: ['zone_name: Path to zone JSON file (e.g., "maps/village.json")'],
     returns: 'Promise that resolves when zone is loaded',
     example: 'pixos.sync({ pixos.load_zone_from_zip("maps/cave.json", zip) })',
-    category: 'Zone'
+    category: 'Zone',
   },
   'pixos.load_zone_from_zip': {
     signature: 'load_zone_from_zip(zone_name: string, zip: ZipObject)',
     description: 'Loads a zone from a specific zip package.',
     params: ['zone_name: Path to zone JSON', 'zip: Zip archive reference'],
     returns: 'Promise that resolves when zone is loaded',
-    category: 'Zone'
+    category: 'Zone',
   },
   'pixos.get_zone': {
     signature: 'get_zone()',
     description: 'Returns the current active zone object.',
     returns: 'Zone object',
-    category: 'Zone'
+    category: 'Zone',
   },
   'pixos.get_world': {
     signature: 'get_world()',
     description: 'Returns the world object containing all zones.',
     returns: 'World object',
-    category: 'Zone'
+    category: 'Zone',
   },
 
   // Flag/State Management
@@ -48,7 +48,7 @@ export const PIXOS_API = {
     description: 'Sets a persistent game flag. Flags are saved with game state.',
     params: ['key: Flag identifier', 'value: Any serializable value'],
     example: 'pixos.set_flag("quest_complete", true)',
-    category: 'Flags'
+    category: 'Flags',
   },
   'pixos.get_flag': {
     signature: 'get_flag(key: string)',
@@ -56,26 +56,26 @@ export const PIXOS_API = {
     params: ['key: Flag identifier'],
     returns: 'Flag value or nil if not set',
     example: 'local completed = pixos.get_flag("quest_complete")',
-    category: 'Flags'
+    category: 'Flags',
   },
   'pixos.has_flag': {
     signature: 'has_flag(key: string)',
     description: 'Checks if a flag exists.',
     params: ['key: Flag identifier'],
     returns: 'true if flag exists, false otherwise',
-    category: 'Flags'
+    category: 'Flags',
   },
   'pixos.add_flag': {
     signature: 'add_flag(key: string, value: any)',
     description: 'Adds a new flag (convenience wrapper for set_flag).',
     params: ['key: Flag identifier', 'value: Any serializable value'],
-    category: 'Flags'
+    category: 'Flags',
   },
   'pixos.all_flags': {
     signature: 'all_flags()',
     description: 'Returns all game flags as a table.',
     returns: 'Table of all flags',
-    category: 'Flags'
+    category: 'Flags',
   },
 
   // Cutscene System
@@ -84,32 +84,32 @@ export const PIXOS_API = {
     description: 'Plays a registered cutscene or .pxc file.',
     params: ['name: Cutscene name or path to .pxc file'],
     example: 'pixos.sync({ pixos.play_cutscene("intro") })',
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.play_pxc_cutscene': {
     signature: 'play_pxc_cutscene(path: string, options?: table)',
     description: 'Loads and plays a .pxc cutscene file.',
     params: ['path: Path to .pxc file', 'options: Optional callbacks (onDialogueShow, onEnd)'],
     example: 'pixos.sync({ pixos.play_pxc_cutscene("cutscenes/intro.pxc") })',
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.play_pxc_script': {
     signature: 'play_pxc_script(script: string, options?: table)',
     description: 'Plays inline .pxc cutscene script.',
     params: ['script: Raw .pxc script text', 'options: Optional callbacks'],
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.register_cutscene': {
     signature: 'register_cutscene(name: string, steps: table)',
     description: 'Registers a cutscene with step-based definitions.',
     params: ['name: Unique cutscene identifier', 'steps: Array of step tables'],
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.start_cutscene': {
     signature: 'start_cutscene(name: string)',
     description: 'Starts a pre-registered cutscene immediately.',
     params: ['name: Cutscene name'],
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.run_cutscene': {
     signature: 'run_cutscene(steps: table)',
@@ -120,73 +120,86 @@ export const PIXOS_API = {
   { type = 'load_zone', zone = 'cave' },
   { type = 'transition', effect = 'fade', direction = 'in', duration = 500 }
 }) })`,
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
   'pixos.skip_cutscene': {
     signature: 'skip_cutscene()',
     description: 'Skips the currently playing cutscene.',
-    category: 'Cutscene'
+    category: 'Cutscene',
   },
 
   // Dialogue
   'pixos.sprite_dialogue': {
     signature: 'sprite_dialogue(sprite_id: string, text: string, options?: table)',
     description: 'Shows a dialogue bubble above a sprite.',
-    params: ['sprite_id: Sprite identifier', 'text: Dialogue text', 'options: {duration, style, onClose}'],
+    params: [
+      'sprite_id: Sprite identifier',
+      'text: Dialogue text',
+      'options: {duration, style, onClose}',
+    ],
     example: 'pixos.sync({ pixos.sprite_dialogue("npc_elder", "Welcome, traveler!") })',
-    category: 'Dialogue'
+    category: 'Dialogue',
   },
 
   // Sprite Control
   'pixos.move_sprite': {
     signature: 'move_sprite(sprite_id: string, location: table, running?: boolean)',
     description: 'Moves a sprite to a location.',
-    params: ['sprite_id: Sprite identifier', 'location: {x, y} or {row, col}', 'running: Use run animation'],
+    params: [
+      'sprite_id: Sprite identifier',
+      'location: {x, y} or {row, col}',
+      'running: Use run animation',
+    ],
     example: 'pixos.sync({ pixos.move_sprite("hero", {5, 10}, true) })',
-    category: 'Sprites'
+    category: 'Sprites',
   },
   'pixos.get_caller': {
     signature: 'get_caller()',
     description: 'Gets the sprite that triggered this script.',
     returns: 'Sprite object or nil',
-    category: 'Sprites'
+    category: 'Sprites',
   },
   'pixos.get_subject': {
     signature: 'get_subject()',
     description: 'Gets the subject sprite (e.g., the one being interacted with).',
     returns: 'Sprite object or nil',
-    category: 'Sprites'
+    category: 'Sprites',
   },
 
   // Camera Control
   'pixos.set_camera': {
     signature: 'set_camera()',
     description: 'Resets the camera to default position.',
-    category: 'Camera'
+    category: 'Camera',
   },
   'pixos.look_at': {
     signature: 'look_at(position: table, target: table, up: table)',
     description: 'Sets camera view matrix.',
-    params: ['position: Camera position {x, y, z}', 'target: Look-at target {x, y, z}', 'up: Up direction {x, y, z}'],
-    category: 'Camera'
+    params: [
+      'position: Camera position {x, y, z}',
+      'target: Look-at target {x, y, z}',
+      'up: Up direction {x, y, z}',
+    ],
+    category: 'Camera',
   },
   'pixos.pan_camera': {
     signature: 'pan_camera(from: table, to: table, duration: number)',
     description: 'Smoothly pans camera between two positions.',
     params: ['from: Start position', 'to: End position', 'duration: Animation duration in ms'],
-    category: 'Camera'
+    category: 'Camera',
   },
   'pixos.focus_camera': {
     signature: 'focus_camera(target: table, mode: string, speed?: number)',
-    description: 'Focuses camera on a specific target with a mode (default, follow, topdown, isometric, fps).',
+    description:
+      'Focuses camera on a specific target with a mode (default, follow, topdown, isometric, fps).',
     params: ['target: {x, y} or {x, y, z}', 'mode: Camera mode', 'speed: Lerp speed'],
-    category: 'Camera'
+    category: 'Camera',
   },
   'pixos.zoom_camera': {
     signature: 'zoom_camera(level: number, duration?: number)',
     description: 'Zooms the camera to a specific level.',
     params: ['level: Zoom scale (1.0 = default)', 'duration: Time in ms'],
-    category: 'Camera'
+    category: 'Camera',
   },
 
   // Audio
@@ -194,59 +207,67 @@ export const PIXOS_API = {
     signature: 'play_sound(name: string, loop?: boolean, volume?: number)',
     description: 'Plays a sound effect.',
     params: ['name: Audio resource name', 'loop: Whether to loop', 'volume: 0.0 - 1.0'],
-    category: 'Audio'
+    category: 'Audio',
   },
   'pixos.play_music': {
     signature: 'play_music(name: string, loop?: boolean, volume?: number)',
     description: 'Plays background music.',
     params: ['name: Audio resource name', 'loop: Whether to loop', 'volume: 0.0 - 1.0'],
-    category: 'Audio'
+    category: 'Audio',
   },
   'pixos.stop_music': {
     signature: 'stop_music()',
     description: 'Stops the background music.',
-    category: 'Audio'
+    category: 'Audio',
   },
   'pixos.stop_audio': {
     signature: 'stop_audio(name?: string)',
     description: 'Stops a specific audio track or all audio if name omitted.',
     params: ['name: Optional audio resource name'],
-    category: 'Audio'
+    category: 'Audio',
   },
   'pixos.set_volume': {
     signature: 'set_volume(level: number)',
     description: 'Sets the master volume.',
     params: ['level: 0.0 - 1.0'],
-    category: 'Audio'
+    category: 'Audio',
   },
 
   // Transitions
   'pixos.run_transition': {
     signature: 'run_transition(effect?: string, direction?: string, duration?: number)',
     description: 'Runs a screen transition effect.',
-    params: ['effect: "fade", "blur", "cross", etc.', 'direction: "in" or "out"', 'duration: Milliseconds'],
+    params: [
+      'effect: "fade", "blur", "cross", etc.',
+      'direction: "in" or "out"',
+      'duration: Milliseconds',
+    ],
     example: 'pixos.sync({ pixos.run_transition("fade", "out", 500) })',
-    category: 'Effects'
+    category: 'Effects',
   },
   'pixos.screen_shake': {
     signature: 'screen_shake(intensity: number, duration: number)',
     description: 'Shakes the camera/screen.',
     params: ['intensity: Shake magnitude', 'duration: Time in ms'],
-    category: 'Effects'
+    category: 'Effects',
   },
 
   // Input
   'pixos.bind_action': {
     signature: 'bind_action(action: string, input_type: string, input_value: string)',
     description: 'Binds an input to an action.',
-    params: ['action: Action name', 'input_type: "keyboard", "mouse", "gamepad"', 'input_value: Key/button'],
-    category: 'Input'
+    params: [
+      'action: Action name',
+      'input_type: "keyboard", "mouse", "gamepad"',
+      'input_value: Key/button',
+    ],
+    category: 'Input',
   },
   'pixos.is_action_active': {
     signature: 'is_action_active(action: string)',
     description: 'Checks if an action is currently active (key held).',
     returns: 'boolean',
-    category: 'Input'
+    category: 'Input',
   },
 
   // Networking
@@ -254,7 +275,7 @@ export const PIXOS_API = {
     signature: 'send_action(action: table)',
     description: 'Sends a network action to the server.',
     params: ['action: Action data to send'],
-    category: 'Network'
+    category: 'Network',
   },
 
   // Utility
@@ -267,18 +288,18 @@ export const PIXOS_API = {
   pixos.move_sprite("hero", {5, 5}),
   pixos.run_transition("fade", "out", 500)
 })`,
-    category: 'Utility'
+    category: 'Utility',
   },
   'pixos.load_scripts': {
     signature: 'load_scripts(scripts: table)',
     description: 'Loads additional script modules.',
     params: ['scripts: Array of script paths'],
-    category: 'Utility'
+    category: 'Utility',
   },
   'pixos.reload_scripts': {
     signature: 'reload_scripts()',
     description: 'Reloads all scripts in the current zone (Hot Reload).',
-    category: 'Utility'
+    category: 'Utility',
   },
 };
 
@@ -306,18 +327,66 @@ export function registerPixoScriptLanguage(monaco) {
     tokenPostfix: '.pxs',
 
     keywords: [
-      'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for',
-      'function', 'goto', 'if', 'in', 'local', 'nil', 'not', 'or',
-      'repeat', 'return', 'then', 'true', 'until', 'while'
+      'and',
+      'break',
+      'do',
+      'else',
+      'elseif',
+      'end',
+      'false',
+      'for',
+      'function',
+      'goto',
+      'if',
+      'in',
+      'local',
+      'nil',
+      'not',
+      'or',
+      'repeat',
+      'return',
+      'then',
+      'true',
+      'until',
+      'while',
     ],
 
     builtins: [
-      'assert', 'collectgarbage', 'dofile', 'error', 'getfenv',
-      'getmetatable', 'ipairs', 'load', 'loadfile', 'loadstring',
-      'module', 'next', 'pairs', 'pcall', 'print', 'rawequal',
-      'rawget', 'rawset', 'require', 'select', 'setfenv',
-      'setmetatable', 'tonumber', 'tostring', 'type', 'unpack', 'xpcall',
-      'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table'
+      'assert',
+      'collectgarbage',
+      'dofile',
+      'error',
+      'getfenv',
+      'getmetatable',
+      'ipairs',
+      'load',
+      'loadfile',
+      'loadstring',
+      'module',
+      'next',
+      'pairs',
+      'pcall',
+      'print',
+      'rawequal',
+      'rawget',
+      'rawset',
+      'require',
+      'select',
+      'setfenv',
+      'setmetatable',
+      'tonumber',
+      'tostring',
+      'type',
+      'unpack',
+      'xpcall',
+      'coroutine',
+      'debug',
+      'io',
+      'math',
+      'os',
+      'package',
+      'string',
+      'table',
     ],
 
     // PixoScript API functions
@@ -330,10 +399,26 @@ export function registerPixoScriptLanguage(monaco) {
     ],
 
     operators: [
-      '+', '-', '*', '/', '%', '^', '#',
-      '==', '~=', '<=', '>=', '<', '>',
-      '=', 'and', 'or', 'not',
-      '..', '.', ':'
+      '+',
+      '-',
+      '*',
+      '/',
+      '%',
+      '^',
+      '#',
+      '==',
+      '~=',
+      '<=',
+      '>=',
+      '<',
+      '>',
+      '=',
+      'and',
+      'or',
+      'not',
+      '..',
+      '.',
+      ':',
     ],
 
     symbols: /[=><!~?:&|+\-*\/\^%#]+/,
@@ -350,33 +435,42 @@ export function registerPixoScriptLanguage(monaco) {
         [/'/, 'string', '@singleQuoteString'],
 
         // PixoScript API calls
-        [/pixos\.\w+/, {
-          cases: {
-            '@pixosApi': 'keyword.pixos',
-            '@default': 'variable.pixos'
-          }
-        }],
+        [
+          /pixos\.\w+/,
+          {
+            cases: {
+              '@pixosApi': 'keyword.pixos',
+              '@default': 'variable.pixos',
+            },
+          },
+        ],
 
         // Numbers
         [/0[xX][0-9a-fA-F]+/, 'number.hex'],
         [/\d+(\.\d+)?([eE][-+]?\d+)?/, 'number'],
 
         // Identifiers and keywords
-        [/[a-zA-Z_]\w*/, {
-          cases: {
-            '@keywords': 'keyword',
-            '@builtins': 'type.builtin',
-            '@default': 'identifier'
-          }
-        }],
+        [
+          /[a-zA-Z_]\w*/,
+          {
+            cases: {
+              '@keywords': 'keyword',
+              '@builtins': 'type.builtin',
+              '@default': 'identifier',
+            },
+          },
+        ],
 
         // Operators
-        [/@symbols/, {
-          cases: {
-            '@operators': 'operator',
-            '@default': ''
-          }
-        }],
+        [
+          /@symbols/,
+          {
+            cases: {
+              '@operators': 'operator',
+              '@default': '',
+            },
+          },
+        ],
 
         // Delimiters
         [/[{}()\[\]]/, '@brackets'],
@@ -418,7 +512,7 @@ export function registerPixoScriptLanguage(monaco) {
         startLineNumber: position.lineNumber,
         endLineNumber: position.lineNumber,
         startColumn: word.startColumn,
-        endColumn: word.endColumn
+        endColumn: word.endColumn,
       };
 
       const suggestions = [];
@@ -431,29 +525,47 @@ export function registerPixoScriptLanguage(monaco) {
           insertText: name.replace('pixos.', ''),
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: {
-            value: `**${doc.signature}**\n\n${doc.description}\n\n${doc.example ? '```lua\n' + doc.example + '\n```' : ''}`
+            value: `**${doc.signature}**\n\n${doc.description}\n\n${doc.example ? '```lua\n' + doc.example + '\n```' : ''}`,
           },
-          range
+          range,
         });
       }
 
       // Add Lua keywords
       const keywords = [
-        'local', 'function', 'end', 'if', 'then', 'else', 'elseif',
-        'for', 'while', 'do', 'repeat', 'until', 'return', 'break',
-        'and', 'or', 'not', 'true', 'false', 'nil', 'in'
+        'local',
+        'function',
+        'end',
+        'if',
+        'then',
+        'else',
+        'elseif',
+        'for',
+        'while',
+        'do',
+        'repeat',
+        'until',
+        'return',
+        'break',
+        'and',
+        'or',
+        'not',
+        'true',
+        'false',
+        'nil',
+        'in',
       ];
       keywords.forEach(kw => {
         suggestions.push({
           label: kw,
           kind: monaco.languages.CompletionItemKind.Keyword,
           insertText: kw,
-          range
+          range,
         });
       });
 
       return { suggestions };
-    }
+    },
   });
 
   // Register hover provider
@@ -467,7 +579,7 @@ export function registerPixoScriptLanguage(monaco) {
         startLineNumber: position.lineNumber,
         startColumn: 1,
         endLineNumber: position.lineNumber,
-        endColumn: position.column + text.length
+        endColumn: position.column + text.length,
       });
 
       // Check for pixos.* API calls
@@ -486,16 +598,18 @@ export function registerPixoScriptLanguage(monaco) {
             contents: [
               { value: `**${doc.signature}**` },
               { value: doc.description },
-              ...(doc.params ? [{ value: '**Parameters:**\n' + doc.params.map(p => `- ${p}`).join('\n') }] : []),
+              ...(doc.params
+                ? [{ value: '**Parameters:**\n' + doc.params.map(p => `- ${p}`).join('\n') }]
+                : []),
               ...(doc.returns ? [{ value: `**Returns:** ${doc.returns}` }] : []),
-              ...(doc.example ? [{ value: '**Example:**\n```lua\n' + doc.example + '\n```' }] : [])
-            ]
+              ...(doc.example ? [{ value: '**Example:**\n```lua\n' + doc.example + '\n```' }] : []),
+            ],
           };
         }
       }
 
       return null;
-    }
+    },
   });
 
   // Define theme for PixoScript

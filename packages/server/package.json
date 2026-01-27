@@ -8,17 +8,8 @@
     "start": "node src/main.js",
     "dev": "node --watch src/main.js"
   },
-  "files": [
-    "src",
-    "README.md"
-  ],
-  "keywords": [
-    "pixospritz",
-    "server",
-    "websocket",
-    "multiplayer",
-    "game-server"
-  ],
+  "files": ["src", "README.md"],
+  "keywords": ["pixospritz", "server", "websocket", "multiplayer", "game-server"],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",

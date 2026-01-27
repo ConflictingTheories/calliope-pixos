@@ -9,37 +9,34 @@
  * http://sam.zoy.org/wtfpl/COPYING for more details. */
 
 var libxm = typeof libxm !== 'undefined' ? libxm : {};
-var moduleOverrides = {};
-var arguments_ = [];
-var scriptDirectory = '';
-var err = libxm.printErr || console.warn.bind(console);
-var tempRet0 = 0;
-var wasmMemory;
-var ABORT = false;
-var HEAP8, HEAPU8, HEAP16, HEAP32, HEAPF32, HEAPF64;
-var wasmTable;
-var __ATPRERUN__ = [];
-var __ATINIT__ = [];
-var __ATMAIN__ = [];
-var __ATPOSTRUN__ = [];
-var runDependencies = 0;
-var dependenciesFulfilled = function runCaller() {
+let moduleOverrides = {};
+let arguments_ = [];
+let scriptDirectory = '';
+let err = libxm.printErr || console.warn.bind(console);
+let tempRet0 = 0;
+let wasmMemory;
+let ABORT = false;
+let HEAP8, HEAPU8, HEAP16, HEAP32, HEAPF32, HEAPF64;
+let wasmTable;
+let __ATPRERUN__ = [];
+let __ATINIT__ = [];
+let __ATMAIN__ = [];
+let __ATPOSTRUN__ = [];
+let runDependencies = 0;
+let dependenciesFulfilled = function runCaller() {
   if (!calledRun) run();
   if (!calledRun) dependenciesFulfilled = runCaller;
 };
-var wasmBinaryFile = locateFile('./assets/lib/libxm.wasm');
-var asmLibraryArg = {
+let wasmBinaryFile = locateFile('./assets/lib/libxm.wasm');
+let asmLibraryArg = {
   b: _emscripten_memcpy_big,
   c: _emscripten_resize_heap,
-  a: _setTempRet0
+  a: _setTempRet0,
 };
-var calledRun;
+let calledRun;
 
 var ___wasm_call_ctors = (libxm.___wasm_call_ctors = function () {
-  return (___wasm_call_ctors = libxm.___wasm_call_ctors = libxm.asm.e).apply(
-    null,
-    arguments
-  );
+  return (___wasm_call_ctors = libxm.___wasm_call_ctors = libxm.asm.e).apply(null, arguments);
 });
 libxm._xm_create_context = function () {
   return (libxm._xm_create_context = libxm.asm.f).apply(null, arguments);
@@ -87,7 +84,7 @@ if (typeof WebAssembly !== 'object') {
 __ATINIT__.push({
   func: function () {
     ___wasm_call_ctors();
-  }
+  },
 });
 if (libxm.preInit) {
   if (typeof libxm.preInit == 'function') libxm.preInit = [libxm.preInit];
@@ -119,22 +116,22 @@ function getValue(ptr, type, noSafe) {
   type = type || 'i8';
   if (type.charAt(type.length - 1) === '*') type = 'i32';
   switch (type) {
-  case 'i1':
-    return HEAP8[ptr >> 0];
-  case 'i8':
-    return HEAP8[ptr >> 0];
-  case 'i16':
-    return HEAP16[ptr >> 1];
-  case 'i32':
-    return HEAP32[ptr >> 2];
-  case 'i64':
-    return HEAP32[ptr >> 2];
-  case 'float':
-    return HEAPF32[ptr >> 2];
-  case 'double':
-    return HEAPF64[ptr >> 3];
-  default:
-    abort('invalid type for getValue: ' + type);
+    case 'i1':
+      return HEAP8[ptr >> 0];
+    case 'i8':
+      return HEAP8[ptr >> 0];
+    case 'i16':
+      return HEAP16[ptr >> 1];
+    case 'i32':
+      return HEAP32[ptr >> 2];
+    case 'i64':
+      return HEAP32[ptr >> 2];
+    case 'float':
+      return HEAPF32[ptr >> 2];
+    case 'double':
+      return HEAPF64[ptr >> 3];
+    default:
+      abort('invalid type for getValue: ' + type);
   }
   return null;
 }
@@ -198,7 +195,7 @@ function removeRunDependency() {
   runDependencies--;
   if (runDependencies == 0) {
     if (dependenciesFulfilled) {
-      var callback = dependenciesFulfilled;
+      let callback = dependenciesFulfilled;
       dependenciesFulfilled = null;
       callback();
     }
@@ -213,12 +210,12 @@ function abort(what) {
   err(what);
   ABORT = true;
   what = 'abort(' + what + '). Build with -s ASSERTIONS=1 for more info.';
-  var e = new WebAssembly.RuntimeError(what);
+  let e = new WebAssembly.RuntimeError(what);
   throw e;
 }
 
 async function createWasm() {
-  var info = { a: asmLibraryArg };
+  let info = { a: asmLibraryArg };
   addRunDependency();
   try {
     const response = await fetch(wasmBinaryFile);
@@ -227,7 +224,7 @@ async function createWasm() {
     }
     const binary = await response.arrayBuffer();
     const output = await WebAssembly.instantiate(binary, info);
-    var exports = output.instance.exports;
+    let exports = output.instance.exports;
     libxm.asm = exports;
     wasmMemory = libxm.asm.d;
     updateGlobalBufferAndViews(wasmMemory.buffer);
@@ -241,12 +238,12 @@ async function createWasm() {
 
 function callRuntimeCallbacks(callbacks) {
   while (callbacks.length > 0) {
-    var callback = callbacks.shift();
+    let callback = callbacks.shift();
     if (typeof callback == 'function') {
       callback(libxm);
       continue;
     }
-    var func = callback.func;
+    let func = callback.func;
     if (typeof func === 'number') {
       if (callback.arg === undefined) {
         wasmTable.get(func)();
@@ -315,13 +312,7 @@ const RATE = 48000;
 const xmActions = [];
 const amp = 1.0;
 
-let cFloatArray,
-  moduleContextPtr,
-  audioContext,
-  out,
-  buffers,
-  clip,
-  moduleContext;
+let cFloatArray, moduleContextPtr, audioContext, out, buffers, clip, moduleContext;
 
 function runXmContextAction(action) {
   if (xmActions.length > 0) {
@@ -343,11 +334,7 @@ function load(arrayBuffer) {
     const view = new Int8Array(arrayBuffer);
     const moduleStringBuffer = libxm._malloc(view.length);
     libxm.writeArrayToMemory(view, moduleStringBuffer);
-    const result = libxm._xm_create_context(
-      moduleContextPtr,
-      moduleStringBuffer,
-      RATE
-    );
+    const result = libxm._xm_create_context(moduleContextPtr, moduleStringBuffer, RATE);
     libxm._free(moduleStringBuffer);
     if (result !== 0) {
       moduleContext = undefined;
@@ -361,11 +348,7 @@ function load(arrayBuffer) {
 function fillBuffer(buffer) {
   const leftChannel = buffer.getChannelData(0);
   const rightChannel = buffer.getChannelData(1);
-  for (
-    let offset = 0;
-    offset < AUDIO_BUFFER_LENGTH;
-    offset += XM_BUFFER_LENGTH
-  ) {
+  for (let offset = 0; offset < AUDIO_BUFFER_LENGTH; offset += XM_BUFFER_LENGTH) {
     libxm._xm_generate_samples(moduleContext, cFloatArray, XM_BUFFER_LENGTH);
     for (let indexOffset = 0; indexOffset < XM_BUFFER_LENGTH; ++indexOffset) {
       leftChannel[offset + indexOffset] =
@@ -397,10 +380,7 @@ function makeSourceGenerator(index, start) {
   return () => {
     const source = audioContext.createBufferSource();
     source.buffer = buffers[index];
-    source.onended = makeSourceGenerator(
-      index,
-      start + 2 * AUDIO_BUFFER_LENGTH
-    );
+    source.onended = makeSourceGenerator(index, start + 2 * AUDIO_BUFFER_LENGTH);
     if (moduleContext !== undefined) {
       runXmContextAction(() => fillBuffer(source.buffer));
     } else {
@@ -433,14 +413,12 @@ function play({ data, masterVolume = 0.4 }) {
   audioContext = new AudioContext();
   buffers = [
     audioContext.createBuffer(2, AUDIO_BUFFER_LENGTH, RATE),
-    audioContext.createBuffer(2, AUDIO_BUFFER_LENGTH, RATE)
+    audioContext.createBuffer(2, AUDIO_BUFFER_LENGTH, RATE),
   ];
   setupSources();
   load(data);
   clip = false;
-  audioContext
-    .resume()
-    .then(() => setTimeout(() => (out.gain.value = masterVolume), 500));
+  audioContext.resume().then(() => setTimeout(() => (out.gain.value = masterVolume), 500));
 }
 
 export { init, play, pause, resume, audioContext, out };

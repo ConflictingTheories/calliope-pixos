@@ -1,5 +1,5 @@
 {
-    "name":"fight",
-    "update":"update.pxs",
-    "setup": "setup.pxs"
+  "name": "fight",
+  "update": "update.pxs",
+  "setup": "setup.pxs"
 }

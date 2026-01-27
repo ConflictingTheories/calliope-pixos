@@ -72,7 +72,7 @@ export default class Keyboard {
     Keyboard._instance.shift = e.shiftKey;
     // Notify hooks (debug / custom controls) about raw key event
     try {
-      (Keyboard._instance.hooks || []).forEach((h) => h(e, 'down'));
+      (Keyboard._instance.hooks || []).forEach(h => h(e, 'down'));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn('Error in keyboard hook (keydown):', err);
@@ -97,7 +97,7 @@ export default class Keyboard {
     }
     Keyboard._instance.shift = e.shiftKey;
     try {
-      (Keyboard._instance.hooks || []).forEach((h) => h(e, 'up'));
+      (Keyboard._instance.hooks || []).forEach(h => h(e, 'up'));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn('Error in keyboard hook (keyup):', err);

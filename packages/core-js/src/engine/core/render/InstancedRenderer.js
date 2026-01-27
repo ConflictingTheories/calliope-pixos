@@ -14,7 +14,7 @@
 /**
  * InstancedRenderer - Provides instanced rendering for sprites and other entities.
  * Groups entities by texture/shader and renders them in batches using WebGL2 instancing.
- * 
+ *
  * This significantly reduces draw calls when rendering many similar objects.
  * For example: 100 sprites with the same texture = 1 draw call instead of 100.
  */
@@ -28,13 +28,13 @@ export default class InstancedRenderer {
     this.renderManager = renderManager;
     /** @type {import('../index.js').default} */
     this.engine = renderManager.engine;
-    
+
     /** @type {boolean} */
     this.initialized = false;
-    
+
     /** @type {number} */
     this.maxInstances = 10000;
-    
+
     // Instance data buffers
     /** @type {WebGLBuffer|null} */
     this.instancePositionBuf = null;
@@ -46,7 +46,7 @@ export default class InstancedRenderer {
     this.instanceColorBuf = null;
     /** @type {WebGLBuffer|null} */
     this.instanceTexCoordBuf = null;
-    
+
     // Pre-allocated typed arrays
     /** @type {Float32Array|null} */
     this.instancePositions = null;
@@ -88,7 +88,7 @@ export default class InstancedRenderer {
   /**
    * Renders a batch of sprites using instanced rendering.
    * All sprites must share the same texture and shader.
-   * 
+   *
    * @param {Array<Object>} sprites - Array of sprite data objects with:
    *   - position: [x, y, z]
    *   - rotation: [x, y, z, w] (quaternion) or angle (number)

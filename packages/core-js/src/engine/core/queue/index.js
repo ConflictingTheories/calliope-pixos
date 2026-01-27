@@ -37,7 +37,7 @@ export default class ActionQueue {
    */
   run() {
     let args = arguments;
-    this.actions = this.actions.filter((action) => {
+    this.actions = this.actions.filter(action => {
       return action(args);
     });
   }

@@ -1,15 +1,15 @@
 /*                                                 *\
-** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
-** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-*                                                 */
+ ** ----------------------------------------------- **
+ **          Calliope - Pixos Game Engine           **
+ ** ----------------------------------------------- **
+ **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+ **                                                 **
+ **    Any unauthorized distribution or transfer    **
+ **       of this work is strictly prohibited.      **
+ **                                                 **
+ **               All Rights Reserved.              **
+ ** ----------------------------------------------- **
+ *                                                 */
 
 // Fragment shader for a horizontal cross‑blur wipe. Progress moves the edge
 // across X; we soften with smoothstep. uDirection > 0.5 = IN (wipe recedes).

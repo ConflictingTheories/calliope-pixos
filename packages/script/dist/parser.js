@@ -35,7 +35,7 @@ const UNI_OP_MAP = {
     not: 'not',
     '-': 'unm',
     '~': 'bnot',
-    '#': 'len'
+    '#': 'len',
 };
 const BIN_OP_MAP = {
     '+': 'add',
@@ -56,7 +56,7 @@ const BIN_OP_MAP = {
     '<': 'lt',
     '<=': 'le',
     '>': 'gt',
-    '>=': 'ge'
+    '>=': 'ge',
 };
 const generate = (node) => {
     switch (node.type) {
@@ -256,7 +256,9 @@ const generate = (node) => {
             const args = node.type === 'CallExpression'
                 ? parseExpressionList(node.arguments).join(', ')
                 : expression(node.type === 'TableCallExpression' ? node.arguments : node.argument);
-            if (functionName instanceof MemExpr && node.base.type === 'MemberExpression' && node.base.indexer === ':') {
+            if (functionName instanceof MemExpr &&
+                node.base.type === 'MemberExpression' &&
+                node.base.indexer === ':') {
                 return `__lua.call(${functionName}, ${functionName.base}, ${args})`;
             }
             return `__lua.call(${functionName}, ${args})`;
@@ -341,7 +343,9 @@ const parseAssignments = (node) => {
     return lines.join(';\n');
 };
 const isCallExpression = (node) => {
-    return node.type === 'CallExpression' || node.type === 'StringCallExpression' || node.type === 'TableCallExpression';
+    return (node.type === 'CallExpression' ||
+        node.type === 'StringCallExpression' ||
+        node.type === 'TableCallExpression');
 };
 const ExpressionReturnsArray = (node) => {
     return isCallExpression(node) || node.type === 'VarargLiteral';
@@ -374,7 +378,7 @@ const checkGoto = (ast) => {
                         gotoInfo.push({
                             type: 'local',
                             name: n.variables[0].name,
-                            scope: gotoScope
+                            scope: gotoScope,
                         });
                         break;
                     }
@@ -387,7 +391,7 @@ const checkGoto = (ast) => {
                             name: n.label.name,
                             scope: gotoScope,
                             last: node.type !== 'RepeatStatement' &&
-                                node.body.slice(i).every(n => n.type === 'LabelStatement')
+                                node.body.slice(i).every(n => n.type === 'LabelStatement'),
                         });
                         break;
                     }
@@ -395,7 +399,7 @@ const checkGoto = (ast) => {
                         gotoInfo.push({
                             type: 'goto',
                             name: n.label.name,
-                            scope: gotoScope
+                            scope: gotoScope,
                         });
                         break;
                     }
@@ -569,7 +573,8 @@ const setExtraInfo = (ast) => {
             // set scope info
             if (node.body.findIndex(n => n.type === 'LocalStatement' || (n.type === 'FunctionDeclaration' && n.isLocal)) !== -1 ||
                 (node.type === 'FunctionDeclaration' &&
-                    (node.parameters.length > 0 || (node.identifier && node.identifier.type === 'MemberExpression'))) ||
+                    (node.parameters.length > 0 ||
+                        (node.identifier && node.identifier.type === 'MemberExpression'))) ||
                 node.type === 'ForNumericStatement' ||
                 node.type === 'ForGenericStatement') {
                 scopeID += 1;
@@ -600,7 +605,7 @@ const parse = (data) => {
         scope: false,
         comments: false,
         luaVersion: '5.3',
-        encodingMode: 'x-user-defined'
+        encodingMode: 'x-user-defined',
     });
     checkGoto(ast);
     setExtraInfo(ast);

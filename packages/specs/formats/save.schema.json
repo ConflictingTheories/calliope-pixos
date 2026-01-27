@@ -4,9 +4,9 @@
   "title": "PixoSpritz Save File",
   "description": "Schema for .pxsave game save files with cross-game compatibility",
   "type": "object",
-  
+
   "required": ["version", "format", "gameId", "timestamp", "player"],
-  
+
   "properties": {
     "version": {
       "type": "string",
@@ -60,7 +60,7 @@
       "contentMediaType": "image/png",
       "description": "Base64-encoded screenshot thumbnail"
     },
-    
+
     "player": {
       "type": "object",
       "required": ["zone", "position"],
@@ -125,19 +125,15 @@
         }
       }
     },
-    
+
     "flags": {
       "type": "object",
       "description": "Game state flags (persistent variables)",
       "additionalProperties": {
-        "oneOf": [
-          { "type": "boolean" },
-          { "type": "number" },
-          { "type": "string" }
-        ]
+        "oneOf": [{ "type": "boolean" }, { "type": "number" }, { "type": "string" }]
       }
     },
-    
+
     "zones": {
       "type": "object",
       "description": "Per-zone state (opened chests, defeated enemies, etc.)",
@@ -159,7 +155,7 @@
         }
       }
     },
-    
+
     "quests": {
       "type": "array",
       "description": "Quest progress tracking",
@@ -178,7 +174,7 @@
         }
       }
     },
-    
+
     "portable": {
       "type": "object",
       "description": "Cross-game compatible data",
@@ -210,7 +206,7 @@
         }
       }
     },
-    
+
     "meta": {
       "type": "object",
       "description": "Additional metadata",

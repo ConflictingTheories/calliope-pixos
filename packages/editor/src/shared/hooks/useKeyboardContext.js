@@ -13,7 +13,7 @@ import { KeyboardManager, ContextPriority } from '../services/KeyboardManager.js
 
 /**
  * Hook to register a keyboard shortcut context
- * 
+ *
  * @param {string} contextId - Unique identifier for this context
  * @param {Object} config - Context configuration
  * @param {number} config.priority - Priority level (use ContextPriority)
@@ -22,7 +22,7 @@ import { KeyboardManager, ContextPriority } from '../services/KeyboardManager.js
  * @param {Function} config.canHandle - Optional predicate for conditional handling
  * @param {boolean} config.active - Whether context is initially active (default: true)
  * @param {Array} deps - Dependencies array for re-registration
- * 
+ *
  * @example
  * useKeyboardContext('map-editor', {
  *   priority: ContextPriority.EDITOR,
@@ -101,7 +101,7 @@ export function useKeyboardContext(contextId, config, deps = []) {
   return {
     activate: () => KeyboardManager.activateContext(contextId),
     deactivate: () => KeyboardManager.deactivateContext(contextId),
-    setEnabled: (enabled) => KeyboardManager.setContextEnabled(contextId, enabled),
+    setEnabled: enabled => KeyboardManager.setContextEnabled(contextId, enabled),
   };
 }
 
@@ -114,8 +114,12 @@ export function useShortcutConfig() {
   useEffect(() => {
     KeyboardManager.init();
 
-    const unsubscribe = KeyboardManager.subscribe((event) => {
-      if (event === 'shortcutChanged' || event === 'shortcutReset' || event === 'allShortcutsReset') {
+    const unsubscribe = KeyboardManager.subscribe(event => {
+      if (
+        event === 'shortcutChanged' ||
+        event === 'shortcutReset' ||
+        event === 'allShortcutsReset'
+      ) {
         setShortcuts(KeyboardManager.getAllShortcuts());
       }
     });
@@ -127,7 +131,7 @@ export function useShortcutConfig() {
     KeyboardManager.setCustomShortcut(action, shortcut);
   }, []);
 
-  const resetShortcut = useCallback((action) => {
+  const resetShortcut = useCallback(action => {
     KeyboardManager.resetShortcut(action);
   }, []);
 
@@ -135,11 +139,11 @@ export function useShortcutConfig() {
     KeyboardManager.resetAllShortcuts();
   }, []);
 
-  const checkConflicts = useCallback((shortcut) => {
+  const checkConflicts = useCallback(shortcut => {
     return KeyboardManager.checkConflicts(shortcut);
   }, []);
 
-  const getDisplayString = useCallback((action) => {
+  const getDisplayString = useCallback(action => {
     return KeyboardManager.getShortcutDisplayString(action);
   }, []);
 
@@ -186,7 +190,7 @@ export function useActiveContexts() {
 
     updateContexts();
 
-    const unsubscribe = KeyboardManager.subscribe((event) => {
+    const unsubscribe = KeyboardManager.subscribe(event => {
       if (event.startsWith('context')) {
         updateContexts();
       }

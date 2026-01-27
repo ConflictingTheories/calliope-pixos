@@ -8,6 +8,7 @@
 ## One-Page Executive Summary
 
 ### Project Status
+
 - **Overall Progress**: 40% towards production (MVP working, needs consolidation)
 - **Current Packages**: 8 functional, 2 incomplete (core-c, arm-linux)
 - **Main Gaps**: Testing (15% coverage), documentation, features, platform support
@@ -34,10 +35,10 @@
 ## Top 20 Priorities (Priority Order)
 
 ### Immediate (Weeks 1-4)
+
 1. **[P0] Code cleanup - deprecated features** (core-js)
    - Files: patrol.js, changezone.js, dialogue.js, prompt.js
    - Effort: 3-4 days | Impact: Code quality
-   
 2. **[P0] Comprehensive test suite setup** (all packages)
    - Vitest configuration, CI/CD integration
    - Effort: 3 days | Impact: Foundation for testing
@@ -55,6 +56,7 @@
    - Effort: 2-3 days | Impact: Code cleanliness
 
 ### Weeks 5-12
+
 6. **[P1] Physics system implementation** (core-js)
    - AABB collision, layers, response system
    - Effort: 5-7 days | Impact: Core gameplay feature
@@ -71,11 +73,12 @@
    - Autocompletion, linting, Monaco integration
    - Effort: 5-7 days | Impact: Creator experience
 
-10. **[P2] Advanced A* pathfinding** (core-js)
+10. **[P2] Advanced A\* pathfinding** (core-js)
     - Optimize current implementation
     - Effort: 4-5 days | Impact: Gameplay quality
 
 ### Weeks 13-20
+
 11. **[P2] Delta synchronization** (server)
     - Reduce network traffic, increase scalability
     - Effort: 5-7 days | Impact: Performance at scale
@@ -97,6 +100,7 @@
     - Effort: 5-7 days | Impact: Developer experience
 
 ### Weeks 21-26
+
 16. **[P3] Enhanced transition system** (core-js)
     - Wipes, pixelate, dissolve effects
     - Effort: 3 days | Impact: Polish
@@ -123,14 +127,14 @@
 
 ### Should we implement C engine + ARM platform?
 
-| Factor | Web-Only | With Platform Support |
-|--------|----------|----------------------|
-| Timeline to v1.0 | 26-34 weeks | 40-50+ weeks |
-| Implementation effort | 1 developer | 2-3 developers |
-| Market reach | 95% | 99% |
-| Development cost | $X | $3X |
-| Time-to-market | 6-8 months | 10-12 months |
-| Risk level | Low | High |
+| Factor                | Web-Only    | With Platform Support |
+| --------------------- | ----------- | --------------------- |
+| Timeline to v1.0      | 26-34 weeks | 40-50+ weeks          |
+| Implementation effort | 1 developer | 2-3 developers        |
+| Market reach          | 95%         | 99%                   |
+| Development cost      | $X          | $3X                   |
+| Time-to-market        | 6-8 months  | 10-12 months          |
+| Risk level            | Low         | High                  |
 
 **Recommendation**: Ship web version first (26-34 weeks), evaluate market demand, then decide on platform expansion.
 
@@ -142,15 +146,15 @@
 
 **Focus**: Quality, testing, documentation
 
-| Task | Effort | Assigned | Status |
-|------|--------|----------|--------|
-| Deprecated code cleanup | 3-4d | - | Not started |
-| Test infrastructure | 3d | - | Not started |
-| API documentation | 8-12d | - | Not started |
-| Event system refactor | 4-5d | - | Not started |
-| Design system migration | 5-7d | - | Not started |
-| Server cleanup | 3-4d | - | Not started |
-| PixoScript stdlib fixes | 4-5d | - | Not started |
+| Task                    | Effort | Assigned | Status      |
+| ----------------------- | ------ | -------- | ----------- |
+| Deprecated code cleanup | 3-4d   | -        | Not started |
+| Test infrastructure     | 3d     | -        | Not started |
+| API documentation       | 8-12d  | -        | Not started |
+| Event system refactor   | 4-5d   | -        | Not started |
+| Design system migration | 5-7d   | -        | Not started |
+| Server cleanup          | 3-4d   | -        | Not started |
+| PixoScript stdlib fixes | 4-5d   | -        | Not started |
 
 **Subtotal**: 30-40 days effort
 **With contingency**: 8-10 weeks
@@ -161,16 +165,16 @@
 
 **Focus**: Gameplay systems, developer experience, market reach
 
-| Task | Effort | Priority | Status |
-|------|--------|----------|--------|
-| Physics system | 5-7d | P1 | Not started |
-| Instanced rendering | 4-5d | P1 | Not started |
-| A* pathfinding | 4-5d | P2 | Not started |
-| PixoScript support (editor) | 5-7d | P1 | Not started |
-| Coroutines | 4-5d | P2 | Not started |
-| Mobile support | 5-7d | P1 | Not started |
-| Unified map editor | 5-7d | P2 | Not started |
-| Delta sync (server) | 5-7d | P2 | Not started |
+| Task                        | Effort | Priority | Status      |
+| --------------------------- | ------ | -------- | ----------- |
+| Physics system              | 5-7d   | P1       | Not started |
+| Instanced rendering         | 4-5d   | P1       | Not started |
+| A\* pathfinding             | 4-5d   | P2       | Not started |
+| PixoScript support (editor) | 5-7d   | P1       | Not started |
+| Coroutines                  | 4-5d   | P2       | Not started |
+| Mobile support              | 5-7d   | P1       | Not started |
+| Unified map editor          | 5-7d   | P2       | Not started |
+| Delta sync (server)         | 5-7d   | P2       | Not started |
 
 **Subtotal**: 37-50 days effort
 **With contingency**: 8-10 weeks
@@ -181,15 +185,15 @@
 
 **Focus**: Performance, UX, documentation, beta
 
-| Task | Effort | Priority | Status |
-|------|--------|----------|--------|
-| Performance optimization | 6-8d | P2 | Not started |
-| Transition system | 3d | P3 | Not started |
-| Camera effects | 3-4d | P3 | Not started |
-| Source maps | 3-4d | P2 | Not started |
-| Tutorials | 10-15d | P1 | Not started |
-| Website content | 8-12d | P2 | Not started |
-| Bug fixes & polish | 8d | - | Not started |
+| Task                     | Effort | Priority | Status      |
+| ------------------------ | ------ | -------- | ----------- |
+| Performance optimization | 6-8d   | P2       | Not started |
+| Transition system        | 3d     | P3       | Not started |
+| Camera effects           | 3-4d   | P3       | Not started |
+| Source maps              | 3-4d   | P2       | Not started |
+| Tutorials                | 10-15d | P1       | Not started |
+| Website content          | 8-12d  | P2       | Not started |
+| Bug fixes & polish       | 8d     | -        | Not started |
 
 **Subtotal**: 41-50 days effort
 **With contingency**: 6-8 weeks
@@ -228,14 +232,14 @@ Production Target:   █████████████████░░�
 
 ### Test Coverage by Package
 
-| Package | Current | Phase 1 | Phase 2 | Phase 3 |
-|---------|---------|---------|---------|---------|
-| core-js | 20% | 50% | 70% | 80% |
-| editor | 5% | 30% | 50% | 60% |
-| console | 10% | 40% | 60% | 70% |
-| server | 15% | 50% | 70% | 80% |
-| script | 20% | 60% | 75% | 85% |
-| math | 40% | 80% | 90% | 95% |
+| Package     | Current | Phase 1 | Phase 2 | Phase 3 |
+| ----------- | ------- | ------- | ------- | ------- |
+| core-js     | 20%     | 50%     | 70%     | 80%     |
+| editor      | 5%      | 30%     | 50%     | 60%     |
+| console     | 10%     | 40%     | 60%     | 70%     |
+| server      | 15%     | 50%     | 70%     | 80%     |
+| script      | 20%     | 60%     | 75%     | 85%     |
+| math        | 40%     | 80%     | 90%     | 95%     |
 | **Overall** | **15%** | **48%** | **65%** | **75%** |
 
 ---
@@ -288,6 +292,7 @@ SCRIPT ENGINE (pixoscript)
 ## Known Issues & Blockers
 
 ### Critical (Must Fix for v1.0)
+
 1. **No physics system** - Blocks gameplay features
    - Impact: Can't build collision-based games
    - Fix effort: 5-7 days
@@ -299,6 +304,7 @@ SCRIPT ENGINE (pixoscript)
    - Status: Phase 1 priority
 
 ### Important (Should Fix)
+
 3. **Mobile input problems** - Limits market reach
    - Impact: Poor mobile experience
    - Fix effort: 5-7 days
@@ -315,6 +321,7 @@ SCRIPT ENGINE (pixoscript)
    - Status: Phase 3
 
 ### Nice-to-Have (Polish)
+
 6. **ARM platform incomplete** - Niche market
 7. **No advanced scripting features** - Power users
 8. **Limited asset formats** - Creator flexibility
@@ -324,6 +331,7 @@ SCRIPT ENGINE (pixoscript)
 ## Success Metrics by Phase
 
 ### Phase 1 Completion Criteria
+
 - [ ] 50%+ test coverage
 - [ ] All PENDING/CLEANUP items addressed
 - [ ] Complete API documentation published
@@ -332,6 +340,7 @@ SCRIPT ENGINE (pixoscript)
 - [ ] No deprecated code in production
 
 ### Phase 2 Completion Criteria
+
 - [ ] 65%+ test coverage
 - [ ] Physics system functional
 - [ ] All planned features implemented
@@ -340,6 +349,7 @@ SCRIPT ENGINE (pixoscript)
 - [ ] Server handles 100+ concurrent players
 
 ### Phase 3 Completion Criteria
+
 - [ ] 75%+ test coverage
 - [ ] Performance benchmarks met
 - [ ] Tutorial series complete
@@ -401,6 +411,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 ```
 
 ### Hosting & Infrastructure
+
 - Server hosting: $50-200/month
 - CDN (Netlify): $19-99/month
 - Domain: $12/year
@@ -411,6 +422,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 ## Rollout Strategy
 
 ### Beta Phase (Week 24-26)
+
 - [ ] Soft launch to 50 beta testers
 - [ ] Gather feedback on UX, performance, features
 - [ ] Fix bugs discovered
@@ -418,6 +430,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Setup community channels (Discord, Forum)
 
 ### v1.0 Release (Week 26-34)
+
 - [ ] Public launch
 - [ ] Marketing push (Twitter, Reddit, Game Dev communities)
 - [ ] Press releases to game dev publications
@@ -425,6 +438,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Community game jam announcement
 
 ### Post-Release (Month 9+)
+
 - [ ] Monthly updates with new features
 - [ ] Asset store launch planning
 - [ ] Platform expansion (mobile, desktop, ARM)
@@ -436,6 +450,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 ## Quick Implementation Checklist
 
 ### START HERE (This Week)
+
 - [ ] Review this roadmap with team
 - [ ] Create GitHub projects for Phase 1-3
 - [ ] Set up test infrastructure (Vitest)
@@ -443,6 +458,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Start Phase 1 documentation
 
 ### PHASE 1 (Weeks 1-8)
+
 - [ ] Complete code cleanup
 - [ ] Achieve 50%+ test coverage
 - [ ] Publish API documentation
@@ -451,6 +467,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Fix server cleanup
 
 ### PHASE 2 (Weeks 9-16)
+
 - [ ] Implement physics system
 - [ ] Add instanced rendering
 - [ ] Complete PixoScript editor support
@@ -459,6 +476,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Implement delta sync
 
 ### PHASE 3 (Weeks 17-22)
+
 - [ ] Performance optimization
 - [ ] Enhanced transitions
 - [ ] Source maps
@@ -467,6 +485,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - [ ] Beta testing
 
 ### LAUNCH (Week 26+)
+
 - [ ] v1.0 Release
 - [ ] Marketing campaign
 - [ ] Community launch
@@ -477,6 +496,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 ## Communication & Tracking
 
 ### Weekly Standup Agenda
+
 1. Progress on current phase priorities
 2. Blockers and challenges
 3. Test coverage update
@@ -484,6 +504,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 5. Any scope changes needed
 
 ### Monthly Review
+
 1. Phase progress vs. estimates
 2. Risk assessment
 3. Community feedback
@@ -491,6 +512,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 5. Release readiness assessment
 
 ### Metrics to Track
+
 - Code coverage % (target: 80%+)
 - Lines of deprecated code (target: 0%)
 - GitHub issues (target: <20 open)
@@ -502,6 +524,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 ## Resources & References
 
 ### Key Documents in This Repo
+
 - `PROJECT_COMPLETION_ROADMAP.md` - Detailed phase breakdown
 - `PENDING.md` (each package) - Feature lists
 - `CLEANUP.md` (each package) - Code quality tasks
@@ -509,6 +532,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - `MISSING_FEATURES_PLANNING.md` (core-js) - Feature deep-dives
 
 ### External Resources
+
 - Vitest docs: https://vitest.dev
 - TypeDoc: https://typedoc.org
 - WebGL2 specs: https://www.khronos.org/webgl/
@@ -516,6 +540,7 @@ SCENARIO 3: 3 Developers, 11-14 weeks (parallel)
 - Buildroot: https://buildroot.org (for ARM)
 
 ### Community
+
 - Discord: TBD
 - GitHub: https://github.com/ConflictingTheories/calliope-pixos
 - Website: https://pixospritz.com

@@ -52,8 +52,8 @@ export default class Mouse {
       this.position = { x: 0, y: 0 };
       /** @type {MouseMovement} */
       this.movement = { x: 0, y: 0 };
-  /** @type {MouseHookCallback[]} */
-  this._hooks = []; // raw mouse event hooks
+      /** @type {MouseHookCallback[]} */
+      this._hooks = []; // raw mouse event hooks
       Mouse._instance = this;
     }
     return Mouse._instance;
@@ -70,7 +70,7 @@ export default class Mouse {
     canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
     // Prevent context menu on right click
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   /**
@@ -88,7 +88,8 @@ export default class Mouse {
     this.position.y = (e.clientY - rect.top) * scaleY;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = true;
-      if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseDown', e.button, this.position);
+      if (process.env.NODE_ENV === 'development')
+        console.log('mouse:onMouseDown', e.button, this.position);
     }
     this._notifyHooks(e, 'down');
   }
@@ -108,7 +109,8 @@ export default class Mouse {
     this.position.y = (e.clientY - rect.top) * scaleY;
     if (e.button >= 0 && e.button < 3) {
       this.buttons[e.button] = false;
-      if (process.env.NODE_ENV === 'development') console.log('mouse:onMouseUp', e.button, this.position);
+      if (process.env.NODE_ENV === 'development')
+        console.log('mouse:onMouseUp', e.button, this.position);
     }
     this._notifyHooks(e, 'up');
   }
@@ -119,17 +121,17 @@ export default class Mouse {
    * @returns {void}
    */
   onMouseMove(e) {
-  const canvas = e.target; // Use the actual event target
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const newX = (e.clientX - rect.left) * scaleX;
-  const newY = (e.clientY - rect.top) * scaleY;
-  this.movement.x = newX - this.position.x;
-  this.movement.y = newY - this.position.y;
-  this.position.x = newX;
-  this.position.y = newY;
-  this._notifyHooks(e, 'move');
+    const canvas = e.target; // Use the actual event target
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const newX = (e.clientX - rect.left) * scaleX;
+    const newY = (e.clientY - rect.top) * scaleY;
+    this.movement.x = newX - this.position.x;
+    this.movement.y = newY - this.position.y;
+    this.position.x = newX;
+    this.position.y = newY;
+    this._notifyHooks(e, 'move');
   }
 
   /**
@@ -141,9 +143,12 @@ export default class Mouse {
    */
   _notifyHooks(event, type) {
     try {
-      this._hooks.forEach((h) => {
-        try { h(event, type); } catch (errInner) {
-          if (process.env.NODE_ENV === 'development') console.warn('Error in mouse hook callback:', errInner);
+      this._hooks.forEach(h => {
+        try {
+          h(event, type);
+        } catch (errInner) {
+          if (process.env.NODE_ENV === 'development')
+            console.warn('Error in mouse hook callback:', errInner);
         }
       });
     } catch (err) {
@@ -159,7 +164,7 @@ export default class Mouse {
    * @returns {boolean} True if the button is pressed.
    */
   isButtonPressed(button) {
-    const buttonMap = { 'left': 0, 'middle': 1, 'right': 2 };
+    const buttonMap = { left: 0, middle: 1, right: 2 };
     if (typeof button === 'string') {
       button = buttonMap[button];
     }
@@ -188,7 +193,7 @@ export default class Mouse {
    * @returns {void}
    */
   addHook(cb) {
-  if (typeof cb === 'function') this._hooks.push(cb);
+    if (typeof cb === 'function') this._hooks.push(cb);
   }
 
   /**

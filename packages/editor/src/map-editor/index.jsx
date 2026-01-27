@@ -14,17 +14,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { collect } from 'react-recollect';
-import {
-  Panel,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Button,
-  Message,
-  Input,
-  Checkbox,
-} from '../ui';
+import { Panel, Container, Row, Col, ButtonGroup, Button, Message, Input, Checkbox } from '../ui';
 import { debug } from '../shared/debug-logger.js';
 
 // Define a simple colour palette corresponding to tile indices.  In a
@@ -47,7 +37,6 @@ const TILE_COLOURS = [
  * updated cells matrix (passed through the optional onSave prop).
  */
 function MapEditor({ content, onSave }) {
-
   // Support multiple layers: layers is an array of grids (arrays of arrays)
   const [layers, setLayers] = useState([]);
   const [currentLayer, setCurrentLayer] = useState(0);
@@ -86,14 +75,14 @@ function MapEditor({ content, onSave }) {
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     dragStart.current = { x: e.clientX, y: e.clientY };
-    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+    setCamera(prev => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
   }
   function handleWheel(e) {
     e.stopPropagation();
     e.preventDefault();
     let zoom = cameraRef.current.zoom + (e.deltaY < 0 ? 0.1 : -0.1);
     zoom = Math.max(0.5, Math.min(2, zoom));
-    setCamera((prev) => ({ ...prev, zoom }));
+    setCamera(prev => ({ ...prev, zoom }));
   }
 
   // Touch support for pan/zoom
@@ -111,7 +100,7 @@ function MapEditor({ content, onSave }) {
     const dx = e.touches[0].clientX - dragStart.current.x;
     const dy = e.touches[0].clientY - dragStart.current.y;
     dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+    setCamera(prev => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
   }
 
   // Push a snapshot of the current state into the history.  This should
@@ -123,7 +112,7 @@ function MapEditor({ content, onSave }) {
       attributes: JSON.parse(JSON.stringify(newAttributes)),
       currentLayer: newCurrentLayer,
     };
-    setHistory((prev) => {
+    setHistory(prev => {
       // Drop redo history if the user has undone and then makes a change
       const trimmed = prev.slice(0, historyIndex + 1);
       const updated = [...trimmed, snapshot];
@@ -169,12 +158,12 @@ function MapEditor({ content, onSave }) {
           newLayers = map.layers;
           newAttributes = Array.isArray(map.attributes)
             ? map.attributes
-            : map.layers.map((grid) => grid.map((row) => row.map(() => ({}))));
+            : map.layers.map(grid => grid.map(row => row.map(() => ({}))));
         } else if (map && Array.isArray(map.cells)) {
           newLayers = [map.cells];
           newAttributes = Array.isArray(map.attributes)
             ? map.attributes
-            : [map.cells.map((row) => row.map(() => ({})))];
+            : [map.cells.map(row => row.map(() => ({})))];
         }
         if (newLayers) {
           setLayers(newLayers);
@@ -182,11 +171,13 @@ function MapEditor({ content, onSave }) {
           setCurrentLayer(0);
           setSelectedCell({ layer: 0, x: null, y: null });
           // Initialize history with the parsed state
-          setHistory([{
-            layers: JSON.parse(JSON.stringify(newLayers)),
-            attributes: JSON.parse(JSON.stringify(newAttributes)),
-            currentLayer: 0,
-          }]);
+          setHistory([
+            {
+              layers: JSON.parse(JSON.stringify(newLayers)),
+              attributes: JSON.parse(JSON.stringify(newAttributes)),
+              currentLayer: 0,
+            },
+          ]);
           setHistoryIndex(0);
           setError(null);
           return;
@@ -198,12 +189,10 @@ function MapEditor({ content, onSave }) {
     }
     // Initialise an empty layer if no valid map loaded
     const emptyGrid = Array.from({ length: defaultSize }, () =>
-      Array.from({ length: defaultSize }, () => 0),
+      Array.from({ length: defaultSize }, () => 0)
     );
     const initLayers = [emptyGrid];
-    const initAttributes = [
-      emptyGrid.map((row) => row.map(() => ({}))),
-    ];
+    const initAttributes = [emptyGrid.map(row => row.map(() => ({})))];
     setLayers(initLayers);
     setAttributes(initAttributes);
     setCurrentLayer(0);
@@ -228,7 +217,7 @@ function MapEditor({ content, onSave }) {
         row.map((cell, i) => {
           if (j === y && i === x) return selectedTile;
           return cell;
-        }),
+        })
       );
     });
     setLayers(newLayers);
@@ -241,13 +230,10 @@ function MapEditor({ content, onSave }) {
   function addLayer() {
     const defaultSize = layers[0] ? layers[0].length : 16;
     const emptyGrid = Array.from({ length: defaultSize }, () =>
-      Array.from({ length: defaultSize }, () => 0),
+      Array.from({ length: defaultSize }, () => 0)
     );
     const newLayers = [...layers, emptyGrid];
-    const newAttributes = [
-      ...attributes,
-      emptyGrid.map((row) => row.map(() => ({}))),
-    ];
+    const newAttributes = [...attributes, emptyGrid.map(row => row.map(() => ({})))];
     setLayers(newLayers);
     setAttributes(newAttributes);
     const newCurrentLayer = layers.length;
@@ -261,9 +247,8 @@ function MapEditor({ content, onSave }) {
   // Serialise and dispatch the updated layers via onSave
   function handleSave() {
     // When saving, include both layers and attributes if multiple layers
-    const mapObject = layers.length > 1
-      ? { layers, attributes }
-      : { cells: layers[0], attributes: attributes[0] };
+    const mapObject =
+      layers.length > 1 ? { layers, attributes } : { cells: layers[0], attributes: attributes[0] };
     if (onSave) {
       onSave(mapObject);
     } else {
@@ -280,7 +265,7 @@ function MapEditor({ content, onSave }) {
       {error && (
         <Row style={{ marginBottom: '0.5rem' }}>
           <Col sm={24} md={24} lg={24}>
-            <Message type='error' description={error} />
+            <Message type="error" description={error} />
           </Col>
         </Row>
       )}
@@ -298,17 +283,17 @@ function MapEditor({ content, onSave }) {
                   <span style={{ marginRight: '0.5rem' }}>Layer:</span>
                   <select
                     value={currentLayer}
-                    onChange={(e) => setCurrentLayer(Number(e.target.value))}
+                    onChange={e => setCurrentLayer(Number(e.target.value))}
                   >
-                    {layerOptions.map((opt) => (
+                    {layerOptions.map(opt => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>
                     ))}
                   </select>
                   <Button
-                    appearance='primary'
-                    size='sm'
+                    appearance="primary"
+                    size="sm"
                     style={{ marginLeft: '1rem' }}
                     onClick={addLayer}
                   >
@@ -351,11 +336,11 @@ function MapEditor({ content, onSave }) {
                             boxSizing: 'border-box',
                             // Highlight selected cell
                             outline:
-                            selectedCell.layer === currentLayer &&
-                            selectedCell.x === x &&
-                            selectedCell.y === y
-                              ? '2px solid #fff'
-                              : 'none',
+                              selectedCell.layer === currentLayer &&
+                              selectedCell.x === x &&
+                              selectedCell.y === y
+                                ? '2px solid #fff'
+                                : 'none',
                           }}
                         ></td>
                       ))}
@@ -386,14 +371,24 @@ function MapEditor({ content, onSave }) {
         </Col>
       </Row>
       <Row style={{ paddingTop: '1rem' }}>
-        <Button appearance='primary' onClick={handleSave}>
+        <Button appearance="primary" onClick={handleSave}>
           Save Changes
         </Button>
         {/* Undo / Redo Controls */}
-        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={undo} disabled={historyIndex <= 0}>
+        <Button
+          appearance="default"
+          style={{ marginLeft: '0.5rem' }}
+          onClick={undo}
+          disabled={historyIndex <= 0}
+        >
           Undo
         </Button>
-        <Button appearance='default' style={{ marginLeft: '0.5rem' }} onClick={redo} disabled={historyIndex >= history.length - 1}>
+        <Button
+          appearance="default"
+          style={{ marginLeft: '0.5rem' }}
+          onClick={redo}
+          disabled={historyIndex >= history.length - 1}
+        >
           Redo
         </Button>
       </Row>
@@ -401,12 +396,22 @@ function MapEditor({ content, onSave }) {
       {selectedCell.x !== null && selectedCell.y !== null && (
         <Row style={{ marginTop: '1rem' }}>
           <Col sm={24} md={24} lg={24}>
-            <Panel bordered header={<strong>Cell Attributes (x:{selectedCell.x}, y:{selectedCell.y}, layer:{selectedCell.layer})</strong>}>
+            <Panel
+              bordered
+              header={
+                <strong>
+                  Cell Attributes (x:{selectedCell.x}, y:{selectedCell.y}, layer:
+                  {selectedCell.layer})
+                </strong>
+              }
+            >
               <Row style={{ marginBottom: '0.5rem' }}>
                 <Col sm={12} md={12} lg={12}>
                   <Checkbox
-                    checked={!!attributes[selectedCell.layer]?.[selectedCell.y]?.[selectedCell.x]?.walkable}
-                    onChange={(checked) => {
+                    checked={
+                      !!attributes[selectedCell.layer]?.[selectedCell.y]?.[selectedCell.x]?.walkable
+                    }
+                    onChange={checked => {
                       // Compute new attributes grid
                       const next = attributes.map((layerGrid, l) =>
                         layerGrid.map((row, j) =>
@@ -419,8 +424,8 @@ function MapEditor({ content, onSave }) {
                               return { ...attr, walkable: checked };
                             }
                             return attr;
-                          }),
-                        ),
+                          })
+                        )
                       );
                       setAttributes(next);
                       // Record history snapshot after attribute change
@@ -432,11 +437,12 @@ function MapEditor({ content, onSave }) {
                 </Col>
                 <Col sm={12} md={12} lg={12}>
                   <Input
-                    placeholder='Event identifier'
+                    placeholder="Event identifier"
                     value={
-                      attributes[selectedCell.layer]?.[selectedCell.y]?.[selectedCell.x]?.event || ''
+                      attributes[selectedCell.layer]?.[selectedCell.y]?.[selectedCell.x]?.event ||
+                      ''
                     }
-                    onChange={(val) => {
+                    onChange={val => {
                       const next = attributes.map((layerGrid, l) =>
                         layerGrid.map((row, j) =>
                           row.map((attr, i) => {
@@ -448,8 +454,8 @@ function MapEditor({ content, onSave }) {
                               return { ...attr, event: val };
                             }
                             return attr;
-                          }),
-                        ),
+                          })
+                        )
                       );
                       setAttributes(next);
                       pushHistorySnapshot(layers, next, currentLayer);
@@ -459,7 +465,7 @@ function MapEditor({ content, onSave }) {
               </Row>
               <Row>
                 <Button
-                  appearance='default'
+                  appearance="default"
                   onClick={() => setSelectedCell({ layer: currentLayer, x: null, y: null })}
                 >
                   Done

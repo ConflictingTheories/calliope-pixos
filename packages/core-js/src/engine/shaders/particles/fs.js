@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-export default function() {
+export default function () {
   return `
     precision mediump float;
 

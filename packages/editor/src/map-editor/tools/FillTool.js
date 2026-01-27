@@ -44,13 +44,13 @@ export default class FillTool extends BaseTool {
   _fill(x, y, mapData, options) {
     const { selectedTile, layer = 0, mapWidth, mapHeight } = options;
     const cells = mapData.cells || mapData.layers?.[layer];
-    
+
     if (!cells || !this.isInBounds(x, y, mapWidth, mapHeight)) {
       return null;
     }
 
     const targetTile = cells[y]?.[x];
-    
+
     // Don't fill if target is same as selected
     if (targetTile === selectedTile) {
       return null;
@@ -66,7 +66,7 @@ export default class FillTool extends BaseTool {
 
       if (visited.has(key)) continue;
       if (!this.isInBounds(current.x, current.y, mapWidth, mapHeight)) continue;
-      
+
       const currentTile = cells[current.y]?.[current.x];
       if (currentTile !== targetTile) continue;
 

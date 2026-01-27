@@ -20,7 +20,7 @@ function TemplateCard({ template, onSelect }) {
   const difficultyColors = {
     beginner: 'green',
     intermediate: 'yellow',
-    advanced: 'red'
+    advanced: 'red',
   };
 
   return (
@@ -36,14 +36,14 @@ function TemplateCard({ template, onSelect }) {
         backgroundColor: 'var(--rs-bg-card)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.5rem'
+        gap: '0.5rem',
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         e.currentTarget.style.borderColor = 'var(--rs-primary-500)';
         e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'var(--rs-border-primary)';
         e.currentTarget.style.transform = 'translateY(0)';
         e.currentTarget.style.boxShadow = 'none';
@@ -54,12 +54,14 @@ function TemplateCard({ template, onSelect }) {
         <span style={{ fontWeight: 'bold', fontSize: '1rem' }}>{template.name}</span>
       </div>
 
-      <p style={{
-        fontSize: '0.85rem',
-        color: 'var(--rs-text-secondary)',
-        margin: 0,
-        flex: 1
-      }}>
+      <p
+        style={{
+          fontSize: '0.85rem',
+          color: 'var(--rs-text-secondary)',
+          margin: 0,
+          flex: 1,
+        }}
+      >
         {template.description}
       </p>
 
@@ -68,7 +70,9 @@ function TemplateCard({ template, onSelect }) {
           {template.difficulty}
         </Tag>
         {template.tags.slice(0, 2).map(tag => (
-          <Tag key={tag} size="sm">{tag}</Tag>
+          <Tag key={tag} size="sm">
+            {tag}
+          </Tag>
         ))}
       </div>
     </div>
@@ -86,13 +90,16 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Category options for the picker
-  const categoryOptions = useMemo(() => [
-    { label: 'All Templates', value: null },
-    ...templates.categories.map(cat => ({
-      label: `${cat.icon} ${cat.name}`,
-      value: cat.id
-    }))
-  ], []);
+  const categoryOptions = useMemo(
+    () => [
+      { label: 'All Templates', value: null },
+      ...templates.categories.map(cat => ({
+        label: `${cat.icon} ${cat.name}`,
+        value: cat.id,
+      })),
+    ],
+    []
+  );
 
   // Filter templates based on search and category
   const filteredTemplates = useMemo(() => {
@@ -116,7 +123,7 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
     });
   }, [searchQuery, selectedCategory]);
 
-  const handleSelect = (template) => {
+  const handleSelect = template => {
     if (onSelectTemplate) {
       onSelectTemplate(template);
     }
@@ -127,9 +134,7 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       bordered
       header={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-            🎮 Choose a Template
-          </span>
+          <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>🎮 Choose a Template</span>
           {onClose && (
             <Button appearance="subtle" size="sm" onClick={onClose}>
               ✕
@@ -140,25 +145,23 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       style={{
         maxWidth: '800px',
         margin: '0 auto',
-        backgroundColor: 'var(--rs-bg-well)'
+        backgroundColor: 'var(--rs-bg-well)',
       }}
     >
       {/* Search and Filter Bar */}
-      <div style={{
-        display: 'flex',
-        gap: '1rem',
-        marginBottom: '1rem',
-        flexWrap: 'wrap'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1rem',
+          marginBottom: '1rem',
+          flexWrap: 'wrap',
+        }}
+      >
         <InputGroup style={{ flex: 1, minWidth: '200px' }}>
           <InputGroup.Addon>
             <SearchIcon />
           </InputGroup.Addon>
-          <Input
-            placeholder="Search templates..."
-            value={searchQuery}
-            onChange={setSearchQuery}
-          />
+          <Input placeholder="Search templates..." value={searchQuery} onChange={setSearchQuery} />
         </InputGroup>
 
         <SelectPicker
@@ -172,41 +175,43 @@ export default function TemplateSelector({ onSelectTemplate, onClose }) {
       </div>
 
       {/* Template Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-        gap: '1rem',
-        maxHeight: '400px',
-        overflowY: 'auto',
-        padding: '0.5rem'
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gap: '1rem',
+          maxHeight: '400px',
+          overflowY: 'auto',
+          padding: '0.5rem',
+        }}
+      >
         {filteredTemplates.length > 0 ? (
           filteredTemplates.map(template => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onSelect={handleSelect}
-            />
+            <TemplateCard key={template.id} template={template} onSelect={handleSelect} />
           ))
         ) : (
-          <div style={{
-            gridColumn: '1 / -1',
-            textAlign: 'center',
-            padding: '2rem',
-            color: 'var(--rs-text-secondary)'
-          }}>
+          <div
+            style={{
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              padding: '2rem',
+              color: 'var(--rs-text-secondary)',
+            }}
+          >
             No templates found matching your criteria.
           </div>
         )}
       </div>
 
       {/* Create Blank Project Option */}
-      <div style={{
-        marginTop: '1rem',
-        paddingTop: '1rem',
-        borderTop: '1px solid var(--rs-border-primary)',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          marginTop: '1rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid var(--rs-border-primary)',
+          textAlign: 'center',
+        }}
+      >
         <Button
           appearance="ghost"
           onClick={() => handleSelect({ id: 'blank', name: 'Blank Project', files: {} })}

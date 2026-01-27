@@ -1,5 +1,5 @@
 {
-    "name":"explore",
-    "update":"update.pxs",
-    "setup": "setup.pxs"
+  "name": "explore",
+  "update": "update.pxs",
+  "setup": "setup.pxs"
 }

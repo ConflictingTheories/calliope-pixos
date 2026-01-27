@@ -17,8 +17,10 @@
 // Check for debug mode via localStorage or environment
 const isDebugMode = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('pixospritz_debug') === 'true' ||
-           new URLSearchParams(window.location.search).has('debug');
+    return (
+      localStorage.getItem('pixospritz_debug') === 'true' ||
+      new URLSearchParams(window.location.search).has('debug')
+    );
   }
   return process.env.NODE_ENV === 'development';
 };
@@ -28,7 +30,7 @@ let _debugEnabled = isDebugMode();
 
 /**
  * Enable/disable debug logging at runtime
- * @param {boolean} enabled 
+ * @param {boolean} enabled
  */
 export function setDebugEnabled(enabled) {
   _debugEnabled = enabled;

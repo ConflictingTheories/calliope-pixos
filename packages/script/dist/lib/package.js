@@ -43,8 +43,11 @@ const getLibPackage = (execModule, cfg) => {
             if (!cfg.loadFile) {
                 throw new LuaError('package.searchers requires the config.loadFile function');
             }
-            return [(moduleName, path) => execModule(cfg.loadFile(path), moduleName), res];
-        }
+            return [
+                (moduleName, path) => execModule(cfg.loadFile(path), moduleName),
+                res,
+            ];
+        },
     ]);
     function _require(modname) {
         const MODNAME = coerceArgToString(modname, 'require', 1);
@@ -70,7 +73,7 @@ const getLibPackage = (execModule, cfg) => {
         loaded,
         preload,
         searchers,
-        searchpath
+        searchpath,
     });
     return { libPackage, _require };
 };

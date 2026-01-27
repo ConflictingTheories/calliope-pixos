@@ -64,7 +64,7 @@ export class Camera {
    * Sets the camera target and updates the view.
    * @param {Vector} target The new camera target.
    */
-  setTarget = (target) => {
+  setTarget = target => {
     this.cameraTarget = target;
     this.updateViewFromAngles();
   };
@@ -80,23 +80,38 @@ export class Camera {
     // transforms do not accumulate across frames.
     set(create(), this.uViewMat);
     translate(this.uViewMat, this.uViewMat, [0.0, 0.0, -15.0]);
-    rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.x), [1, 0, 0]);
-    rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.y), [0, 1, 0]);
-    rotate(this.uViewMat, this.uViewMat, degToRad(this.cameraAngle * this.cameraVector.z), [0, 0, 1]);
+    rotate(
+      this.uViewMat,
+      this.uViewMat,
+      degToRad(this.cameraAngle * this.cameraVector.x),
+      [1, 0, 0]
+    );
+    rotate(
+      this.uViewMat,
+      this.uViewMat,
+      degToRad(this.cameraAngle * this.cameraVector.y),
+      [0, 1, 0]
+    );
+    rotate(
+      this.uViewMat,
+      this.uViewMat,
+      degToRad(this.cameraAngle * this.cameraVector.z),
+      [0, 0, 1]
+    );
     negate(this.cameraPosition, this.cameraOffset);
     translate(this.uViewMat, this.uViewMat, this.cameraOffset.toArray());
-    
+
     // Update cameraDir based on cameraVector.z for sprite rendering
     this.cameraDir = Direction.adjustCameraDirection(this.cameraVector);
-  }
+  };
 
   /**
    * Changes the camera angle.
    * @param {number} dTheta - The angle delta.
    */
-  changeAngle = (dTheta) => {
+  changeAngle = dTheta => {
     this.lookAt(this.cameraPosition.toArray(), this.cameraOffset.toArray(), dTheta);
-  }
+  };
 
   /**
    * Manually positions the camera and makes it look at a target.
@@ -108,7 +123,11 @@ export class Camera {
     // Compute forward (z) axis from pos -> target. If degenerate (pos==target)
     // fall back to a safe forward vector to avoid NaNs in the view matrix.
     let forwardArr = normalize(subtractVectors(pos, target));
-    if (!Number.isFinite(forwardArr[0]) || !Number.isFinite(forwardArr[1]) || !Number.isFinite(forwardArr[2])) {
+    if (
+      !Number.isFinite(forwardArr[0]) ||
+      !Number.isFinite(forwardArr[1]) ||
+      !Number.isFinite(forwardArr[2])
+    ) {
       forwardArr = [0, 0, 1];
     }
     let zAxis = new Vector(...forwardArr);
@@ -122,97 +141,120 @@ export class Camera {
     const yAxis = zAxis.cross(xAxis).normal();
     // Build matrix in same layout used elsewhere in engine
     const viewMatrix = [
-      xAxis.x, xAxis.y, xAxis.z, 0,
-      yAxis.x, yAxis.y, yAxis.z, 0,
-      zAxis.x, zAxis.y, zAxis.z, 0,
-      pos.x, pos.y, pos.z, 1,
+      xAxis.x,
+      xAxis.y,
+      xAxis.z,
+      0,
+      yAxis.x,
+      yAxis.y,
+      yAxis.z,
+      0,
+      zAxis.x,
+      zAxis.y,
+      zAxis.z,
+      0,
+      pos.x,
+      pos.y,
+      pos.z,
+      1,
     ];
     this.uViewMat = set(viewMatrix, this.uViewMat);
-  }
+  };
 
   /**
    * Initializes camera position and angles from an existing view matrix.
    * @param {Float32Array} viewMat - The view matrix.
    */
-  setFromViewMatrix = (viewMat) => {
+  setFromViewMatrix = viewMat => {
     if (!viewMat) return;
     // position stored at indices 12,13,14 in our matrix layout
     try {
-  this.cameraPosition = new Vector(viewMat[12], viewMat[13], viewMat[14]);
-  // zAxis stored at indices 8,9,10 --- note zAxis = normalize(pos - target)
-  const zx = viewMat[8];
-  const zy = viewMat[9];
-  const zz = viewMat[10];
-  // forward vector is -zAxis
-  const fx = -zx;
-  const fy = -zy;
-  const fz = -zz;
-  // compute yaw and pitch from forward vector
-  // For Z-up coordinate system we treat X/Y as horizontal plane and Z as up.
-  // yaw is angle in XY plane, pitch is elevation around horizontal plane.
-  this.yaw = Math.atan2(fy, fx);
-  this.pitch = Math.asin(fz / Math.max(1e-6, Math.hypot(fx, fy, fz)));
-  // attempt to compute distance and target: assume target is along forward from position
-  const forwardLen = Math.hypot(fx, fy, fz);
-  const approxForward = new Vector(fx / (forwardLen || 1), fy / (forwardLen || 1), fz / (forwardLen || 1));
-  // pick a reasonable distance if not set
-  this.cameraDistance = this.cameraDistance || 15.0;
-  this.cameraTarget = this.cameraPosition.add(approxForward.mul(this.cameraDistance * -1));
+      this.cameraPosition = new Vector(viewMat[12], viewMat[13], viewMat[14]);
+      // zAxis stored at indices 8,9,10 --- note zAxis = normalize(pos - target)
+      const zx = viewMat[8];
+      const zy = viewMat[9];
+      const zz = viewMat[10];
+      // forward vector is -zAxis
+      const fx = -zx;
+      const fy = -zy;
+      const fz = -zz;
+      // compute yaw and pitch from forward vector
+      // For Z-up coordinate system we treat X/Y as horizontal plane and Z as up.
+      // yaw is angle in XY plane, pitch is elevation around horizontal plane.
+      this.yaw = Math.atan2(fy, fx);
+      this.pitch = Math.asin(fz / Math.max(1e-6, Math.hypot(fx, fy, fz)));
+      // attempt to compute distance and target: assume target is along forward from position
+      const forwardLen = Math.hypot(fx, fy, fz);
+      const approxForward = new Vector(
+        fx / (forwardLen || 1),
+        fy / (forwardLen || 1),
+        fz / (forwardLen || 1)
+      );
+      // pick a reasonable distance if not set
+      this.cameraDistance = this.cameraDistance || 15.0;
+      this.cameraTarget = this.cameraPosition.add(approxForward.mul(this.cameraDistance * -1));
     } catch (err) {
       // fallback: leave defaults
     }
-  }
+  };
 
   /**
    * Updates the view matrix from camera position, yaw, and pitch.
    */
   updateViewFromAngles = () => {
-  // Ensure camera parameters are finite and sane
-  if (!Number.isFinite(this.yaw)) this.yaw = 0;
-  if (!Number.isFinite(this.pitch)) this.pitch = 0;
-  if (!Number.isFinite(this.cameraDistance) || this.cameraDistance <= 0) this.cameraDistance = Math.max(0.1, Math.abs(this.cameraDistance) || 15.0);
-  // Compute camera world-space position (eye) from target + spherical coords
-  // Z is up. yaw is angle around Z axis in XY plane. pitch is elevation.
-  const ex = this.cameraTarget.x + this.cameraDistance * Math.cos(this.pitch) * Math.cos(this.yaw);
-  const ey = this.cameraTarget.y + this.cameraDistance * Math.cos(this.pitch) * Math.sin(this.yaw);
-  const ez = this.cameraTarget.z + this.cameraDistance * Math.sin(this.pitch);
-  const pos = new Vector(ex, ey, ez);
-  // update stored cameraPosition
-  this.cameraPosition = new Vector(pos.x, pos.y, pos.z);
-  const target = new Vector(this.cameraTarget.x, this.cameraTarget.y, this.cameraTarget.z);
-  // world up (Z-up coordinate system)
-  const up = new Vector(0, 0, 1);
-  this.lookAt(pos, target, up);
-  
-  // Update cameraDir and cameraVector for sprite rendering
-  // Convert yaw (radians) to 8-directional facing
-  // yaw = 0 is East (+X), increases counter-clockwise
-  let yawDeg = (this.yaw * 180 / Math.PI) % 360;
-  if (yawDeg < 0) yawDeg += 360;
-  
-  // Map yaw to 8 directions (N, NE, E, SE, S, SW, W, NW)
-  // Adjust so 0° = North, 90° = West, 180° = South, 270° = East
-  let adjustedYaw = (90 - yawDeg + 360) % 360;
-  let octant = Math.round(adjustedYaw / 45) % 8;
-  
-  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  this.cameraDir = directions[octant];
-  
-  // Update cameraVector for legacy compatibility
-  this.cameraVector.z = octant;
-  }
+    // Ensure camera parameters are finite and sane
+    if (!Number.isFinite(this.yaw)) this.yaw = 0;
+    if (!Number.isFinite(this.pitch)) this.pitch = 0;
+    if (!Number.isFinite(this.cameraDistance) || this.cameraDistance <= 0)
+      this.cameraDistance = Math.max(0.1, Math.abs(this.cameraDistance) || 15.0);
+    // Compute camera world-space position (eye) from target + spherical coords
+    // Z is up. yaw is angle around Z axis in XY plane. pitch is elevation.
+    const ex =
+      this.cameraTarget.x + this.cameraDistance * Math.cos(this.pitch) * Math.cos(this.yaw);
+    const ey =
+      this.cameraTarget.y + this.cameraDistance * Math.cos(this.pitch) * Math.sin(this.yaw);
+    const ez = this.cameraTarget.z + this.cameraDistance * Math.sin(this.pitch);
+    const pos = new Vector(ex, ey, ez);
+    // update stored cameraPosition
+    this.cameraPosition = new Vector(pos.x, pos.y, pos.z);
+    const target = new Vector(this.cameraTarget.x, this.cameraTarget.y, this.cameraTarget.z);
+    // world up (Z-up coordinate system)
+    const up = new Vector(0, 0, 1);
+    this.lookAt(pos, target, up);
+
+    // Update cameraDir and cameraVector for sprite rendering
+    // Convert yaw (radians) to 8-directional facing
+    // yaw = 0 is East (+X), increases counter-clockwise
+    let yawDeg = ((this.yaw * 180) / Math.PI) % 360;
+    if (yawDeg < 0) yawDeg += 360;
+
+    // Map yaw to 8 directions (N, NE, E, SE, S, SW, W, NW)
+    // Adjust so 0° = North, 90° = West, 180° = South, 270° = East
+    let adjustedYaw = (90 - yawDeg + 360) % 360;
+    let octant = Math.round(adjustedYaw / 45) % 8;
+
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    this.cameraDir = directions[octant];
+
+    // Update cameraVector for legacy compatibility
+    this.cameraVector.z = octant;
+  };
 
   /**
    * Translates the camera in the specified direction.
    * @param {string} direction - The direction: 'UP', 'LEFT', 'RIGHT', 'DOWN'.
    */
-  translateCam = (direction) => {
+  translateCam = direction => {
     const speed = 0.5; // units per tick
     // Move the camera target in local camera plane (so camera orbits remain consistent)
-  // forward points in the direction camera is facing (may have Z component)
-  const forward = new Vector(Math.cos(this.pitch) * Math.cos(this.yaw), Math.cos(this.pitch) * Math.sin(this.yaw), Math.sin(this.pitch)).normal();
-  // right vector is perpendicular in XY plane (no Z component) for strafing
-  const right = new Vector(-Math.sin(this.yaw), Math.cos(this.yaw), 0).normal();
+    // forward points in the direction camera is facing (may have Z component)
+    const forward = new Vector(
+      Math.cos(this.pitch) * Math.cos(this.yaw),
+      Math.cos(this.pitch) * Math.sin(this.yaw),
+      Math.sin(this.pitch)
+    ).normal();
+    // right vector is perpendicular in XY plane (no Z component) for strafing
+    const right = new Vector(-Math.sin(this.yaw), Math.cos(this.yaw), 0).normal();
     switch (direction) {
       case 'UP': // forward
         this.cameraTarget = this.cameraTarget.add(forward.mul(speed));
@@ -228,13 +270,13 @@ export class Camera {
         break;
     }
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Rotates the camera in the specified direction.
    * @param {string} direction - The direction: 'LEFT', 'RIGHT', 'UP', 'DOWN'.
    */
-  rotateCam = (direction) => {
+  rotateCam = direction => {
     const speed = 0.05; // radians
     switch (direction) {
       case 'LEFT':
@@ -251,16 +293,16 @@ export class Camera {
         break;
     }
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Zooms the camera in/out (positive delta zooms in).
    * @param {number} delta - The zoom delta.
    */
-  zoom = (delta) => {
+  zoom = delta => {
     this.cameraDistance = Math.max(0.1, this.cameraDistance + delta);
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Pans the camera clockwise.
@@ -269,7 +311,7 @@ export class Camera {
   panCW = (radians = Math.PI / 4) => {
     this.yaw -= radians;
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Pans the camera counter-clockwise.
@@ -278,7 +320,7 @@ export class Camera {
   panCCW = (radians = Math.PI / 4) => {
     this.yaw += radians;
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Pitches the camera clockwise.
@@ -287,7 +329,7 @@ export class Camera {
   pitchCW = (radians = Math.PI / 4) => {
     this.pitch -= radians;
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Pitches the camera counter-clockwise.
@@ -296,7 +338,7 @@ export class Camera {
   pitchCCW = (radians = Math.PI / 4) => {
     this.pitch += radians;
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Tilts the camera clockwise.
@@ -306,7 +348,7 @@ export class Camera {
     // tilt around forward axis — modify pitch slightly
     this.pitch -= radians * 0.1;
     this.updateViewFromAngles();
-  }
+  };
 
   /**
    * Tilts the camera counter-clockwise.
@@ -315,7 +357,7 @@ export class Camera {
   tiltCCW = (radians = Math.PI / 4) => {
     this.pitch += radians * 0.1;
     this.updateViewFromAngles();
-  }
+  };
 }
 
 /**

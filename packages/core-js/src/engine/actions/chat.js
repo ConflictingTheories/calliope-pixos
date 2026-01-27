@@ -59,13 +59,19 @@ export default {
   tick: function (time) {
     if (!this.loaded) return false;
     if (this.options && this.options.autoclose) {
-      this.endTime = this.endTime ? this.endTime : this.options.endTime ?? new Date().getTime() + 10000;
+      this.endTime = this.endTime
+        ? this.endTime
+        : (this.options.endTime ?? new Date().getTime() + 10000);
       if (time > this.endTime) {
         this.completed = true;
       }
     }
     this.checkInput(time);
-    this.textbox = this.engine.hud.scrollText(this.prompt + this.text, this.scrolling, this.options);
+    this.textbox = this.engine.hud.scrollText(
+      this.prompt + this.text,
+      this.scrolling,
+      this.options
+    );
     return this.completed;
   },
 

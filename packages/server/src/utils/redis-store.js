@@ -10,7 +10,7 @@
 
 /**
  * Redis Store for persistent state management
- * 
+ *
  * Features:
  * - Zone state persistence
  * - Session recovery data
@@ -30,15 +30,15 @@ export class RedisStore {
     this.prefix = options.prefix || 'pixospritz:';
     this.sessionTtl = options.sessionTtl || 300;
     this.zoneTtl = options.zoneTtl || 3600;
-    
+
     /** @type {any} Redis client (optional dependency) */
     this.client = null;
     this.connected = false;
-    
+
     /** @type {Map<string, any>} Fallback in-memory store */
     this.memoryStore = new Map();
     this.memoryTtls = new Map();
-    
+
     // Cleanup interval for memory TTLs
     this.cleanupInterval = setInterval(() => this.cleanupExpired(), 60000);
   }
@@ -56,24 +56,24 @@ export class RedisStore {
     try {
       // Dynamic import to make redis an optional dependency
       const { createClient } = await import('redis');
-      
+
       this.client = createClient({ url: this.url });
-      
-      this.client.on('error', (err) => {
+
+      this.client.on('error', err => {
         console.error('[RedisStore] Redis error:', err.message);
         this.connected = false;
       });
-      
+
       this.client.on('connect', () => {
         console.log('[RedisStore] Connected to Redis');
         this.connected = true;
       });
-      
+
       this.client.on('disconnect', () => {
         console.log('[RedisStore] Disconnected from Redis');
         this.connected = false;
       });
-      
+
       await this.client.connect();
       this.connected = true;
       return true;
@@ -101,14 +101,14 @@ export class RedisStore {
 
   /**
    * Save zone state
-   * @param {string} zoneId 
-   * @param {object} state 
+   * @param {string} zoneId
+   * @param {object} state
    * @returns {Promise<boolean>}
    */
   async saveZoneState(zoneId, state) {
     const key = this.key('zone', zoneId);
     const data = JSON.stringify(state);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.setEx(key, this.zoneTtl, data);
@@ -117,21 +117,21 @@ export class RedisStore {
         console.error('[RedisStore] Failed to save zone state:', error.message);
       }
     }
-    
+
     // Fallback to memory
     this.memoryStore.set(key, data);
-    this.memoryTtls.set(key, Date.now() + (this.zoneTtl * 1000));
+    this.memoryTtls.set(key, Date.now() + this.zoneTtl * 1000);
     return true;
   }
 
   /**
    * Load zone state
-   * @param {string} zoneId 
+   * @param {string} zoneId
    * @returns {Promise<object|null>}
    */
   async loadZoneState(zoneId) {
     const key = this.key('zone', zoneId);
-    
+
     if (this.connected && this.client) {
       try {
         const data = await this.client.get(key);
@@ -140,7 +140,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to load zone state:', error.message);
       }
     }
-    
+
     // Fallback to memory
     const data = this.memoryStore.get(key);
     if (data) {
@@ -157,12 +157,12 @@ export class RedisStore {
 
   /**
    * Delete zone state
-   * @param {string} zoneId 
+   * @param {string} zoneId
    * @returns {Promise<boolean>}
    */
   async deleteZoneState(zoneId) {
     const key = this.key('zone', zoneId);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.del(key);
@@ -171,7 +171,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to delete zone state:', error.message);
       }
     }
-    
+
     // Fallback to memory
     this.memoryStore.delete(key);
     this.memoryTtls.delete(key);
@@ -184,17 +184,17 @@ export class RedisStore {
 
   /**
    * Save session for reconnection
-   * @param {string} clientId 
-   * @param {object} sessionData 
+   * @param {string} clientId
+   * @param {object} sessionData
    * @returns {Promise<boolean>}
    */
   async saveSession(clientId, sessionData) {
     const key = this.key('session', clientId);
     const data = JSON.stringify({
       ...sessionData,
-      savedAt: Date.now()
+      savedAt: Date.now(),
     });
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.setEx(key, this.sessionTtl, data);
@@ -203,21 +203,21 @@ export class RedisStore {
         console.error('[RedisStore] Failed to save session:', error.message);
       }
     }
-    
+
     // Fallback to memory
     this.memoryStore.set(key, data);
-    this.memoryTtls.set(key, Date.now() + (this.sessionTtl * 1000));
+    this.memoryTtls.set(key, Date.now() + this.sessionTtl * 1000);
     return true;
   }
 
   /**
    * Load session for reconnection
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {Promise<object|null>}
    */
   async loadSession(clientId) {
     const key = this.key('session', clientId);
-    
+
     if (this.connected && this.client) {
       try {
         const data = await this.client.get(key);
@@ -226,7 +226,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to load session:', error.message);
       }
     }
-    
+
     // Fallback to memory
     const data = this.memoryStore.get(key);
     if (data) {
@@ -243,12 +243,12 @@ export class RedisStore {
 
   /**
    * Delete session
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {Promise<boolean>}
    */
   async deleteSession(clientId) {
     const key = this.key('session', clientId);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.del(key);
@@ -257,7 +257,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to delete session:', error.message);
       }
     }
-    
+
     // Fallback to memory
     this.memoryStore.delete(key);
     this.memoryTtls.delete(key);
@@ -266,12 +266,12 @@ export class RedisStore {
 
   /**
    * Extend session TTL (heartbeat)
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {Promise<boolean>}
    */
   async extendSession(clientId) {
     const key = this.key('session', clientId);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.expire(key, this.sessionTtl);
@@ -280,10 +280,10 @@ export class RedisStore {
         console.error('[RedisStore] Failed to extend session:', error.message);
       }
     }
-    
+
     // Fallback to memory
     if (this.memoryStore.has(key)) {
-      this.memoryTtls.set(key, Date.now() + (this.sessionTtl * 1000));
+      this.memoryTtls.set(key, Date.now() + this.sessionTtl * 1000);
       return true;
     }
     return false;
@@ -295,14 +295,14 @@ export class RedisStore {
 
   /**
    * Save player position in a zone
-   * @param {string} zoneId 
-   * @param {string} playerId 
-   * @param {object} position 
+   * @param {string} zoneId
+   * @param {string} playerId
+   * @param {object} position
    * @returns {Promise<boolean>}
    */
   async savePlayerPosition(zoneId, playerId, position) {
     const key = this.key('zone-players', zoneId);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.hSet(key, playerId, JSON.stringify(position));
@@ -312,9 +312,9 @@ export class RedisStore {
         console.error('[RedisStore] Failed to save player position:', error.message);
       }
     }
-    
+
     // Fallback: Store in zone state
-    const state = await this.loadZoneState(zoneId) || { players: {} };
+    const state = (await this.loadZoneState(zoneId)) || { players: {} };
     state.players = state.players || {};
     state.players[playerId] = position;
     return this.saveZoneState(zoneId, state);
@@ -322,12 +322,12 @@ export class RedisStore {
 
   /**
    * Get all player positions in a zone
-   * @param {string} zoneId 
+   * @param {string} zoneId
    * @returns {Promise<object>}
    */
   async getZonePlayers(zoneId) {
     const key = this.key('zone-players', zoneId);
-    
+
     if (this.connected && this.client) {
       try {
         const data = await this.client.hGetAll(key);
@@ -340,7 +340,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to get zone players:', error.message);
       }
     }
-    
+
     // Fallback
     const state = await this.loadZoneState(zoneId);
     return state?.players || {};
@@ -348,13 +348,13 @@ export class RedisStore {
 
   /**
    * Remove player from zone
-   * @param {string} zoneId 
-   * @param {string} playerId 
+   * @param {string} zoneId
+   * @param {string} playerId
    * @returns {Promise<boolean>}
    */
   async removePlayerFromZone(zoneId, playerId) {
     const key = this.key('zone-players', zoneId);
-    
+
     if (this.connected && this.client) {
       try {
         await this.client.hDel(key, playerId);
@@ -363,7 +363,7 @@ export class RedisStore {
         console.error('[RedisStore] Failed to remove player from zone:', error.message);
       }
     }
-    
+
     // Fallback
     const state = await this.loadZoneState(zoneId);
     if (state?.players?.[playerId]) {
@@ -397,9 +397,9 @@ export class RedisStore {
   async getStats() {
     const stats = {
       connected: this.connected,
-      memoryEntries: this.memoryStore.size
+      memoryEntries: this.memoryStore.size,
     };
-    
+
     if (this.connected && this.client) {
       try {
         const info = await this.client.info('memory');
@@ -408,7 +408,7 @@ export class RedisStore {
         stats.redisError = error.message;
       }
     }
-    
+
     return stats;
   }
 
@@ -417,7 +417,7 @@ export class RedisStore {
    */
   async destroy() {
     clearInterval(this.cleanupInterval);
-    
+
     if (this.client) {
       try {
         await this.client.quit();
@@ -425,7 +425,7 @@ export class RedisStore {
         console.error('[RedisStore] Error during shutdown:', error.message);
       }
     }
-    
+
     this.memoryStore.clear();
     this.memoryTtls.clear();
   }

@@ -1,4 +1,4 @@
-async (_this) => {
+async _this => {
   // Eth Account
   const account = (await window.ethereum.request({ method: 'eth_requestAccounts' }))[0];
   // Params
@@ -49,9 +49,9 @@ async (_this) => {
     },
   });
   // Setup
-  var from = account;
-  var params = [from, msgParams];
-  var method = 'eth_signTypedData_v4';
+  let from = account;
+  let params = [from, msgParams];
+  let method = 'eth_signTypedData_v4';
   // Sign
   window.web3.currentProvider.sendAsync(
     {

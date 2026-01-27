@@ -49,9 +49,25 @@ export class Controller {
     /** @type {Object} */
     this.layout = { x: this.width - this.buttonOffset.x, y: this.height - this.buttonOffset.y };
     /** @type {ControllerStick} */
-    this.stick = new ControllerStick(this.ctx, this.layout, this.touches, this.colours, this.radius, this.gamepad);
+    this.stick = new ControllerStick(
+      this.ctx,
+      this.layout,
+      this.touches,
+      this.colours,
+      this.radius,
+      this.gamepad
+    );
     /** @type {ControllerButtons} */
-    this.buttons = new ControllerButtons(this.ctx, this.layout, this.touches, this.start, this.select, this.colours, this.radius, this.gamepad);
+    this.buttons = new ControllerButtons(
+      this.ctx,
+      this.layout,
+      this.touches,
+      this.start,
+      this.select,
+      this.colours,
+      this.radius,
+      this.gamepad
+    );
   }
   /**
    * Initializes the controller components.

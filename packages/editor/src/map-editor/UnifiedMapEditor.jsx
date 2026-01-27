@@ -33,7 +33,16 @@ import {
 /**
  * Enhanced MapEditor with 3D rendering
  */
-function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAtlas, zip, entryName }) {
+function UnifiedMapEditor({
+  content,
+  onSave,
+  tileset,
+  geometry,
+  tiles,
+  textureAtlas,
+  zip,
+  entryName,
+}) {
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
@@ -129,9 +138,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
         if (fullPath.startsWith('sprites/') && fullPath.endsWith('.json')) {
           // Extract type path (e.g., "sprites/characters/male.json" -> "characters/male")
-          const typePath = fullPath
-            .replace('sprites/', '')
-            .replace('.json', '');
+          const typePath = fullPath.replace('sprites/', '').replace('.json', '');
 
           // Categorize as object or sprite based on path
           if (typePath.startsWith('objects/') || typePath.startsWith('furniture/')) {
@@ -197,7 +204,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       if (parsedMap) {
         setTriggers({
           selectTrigger: parsedMap.selectTrigger || '',
-          scripts: parsedMap.scripts || []
+          scripts: parsedMap.scripts || [],
         });
       }
 
@@ -291,7 +298,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         console.error('[MapEditor3D] GL context lost after image load!');
       }
     };
-    img.onerror = (e) => {
+    img.onerror = e => {
       console.error('[MapEditor3D] Failed to load texture image:', e);
     };
     img.src = textureAtlas;
@@ -299,7 +306,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
 
       switch (e.key.toLowerCase()) {
@@ -334,35 +341,38 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
   }, []);
 
   // Initialize WebGL program
-  const handleWebGLInit = useCallback((gl) => {
-    debug('MapEditor3D', ' WebGL initialized');
-    glRef.current = gl;
+  const handleWebGLInit = useCallback(
+    gl => {
+      debug('MapEditor3D', ' WebGL initialized');
+      glRef.current = gl;
 
-    // Create shader program
-    const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
-    if (program) {
-      shaderProgramRef.current = program;
-      debug('MapEditor3D', ' Shader program created');
+      // Create shader program
+      const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
+      if (program) {
+        shaderProgramRef.current = program;
+        debug('MapEditor3D', ' Shader program created');
 
-      // If we already have a texture atlas, load it now
-      if (textureAtlas && !textureRef.current) {
-        debug('MapEditor3D', ' Texture atlas available, loading now...');
-        const img = new Image();
-        img.onload = () => {
-          debug('MapEditor3D', ' Texture image loaded in init:', img.width, 'x', img.height);
-          const texture = createTextureFromImage(gl, img);
-          textureRef.current = texture;
-          debug('MapEditor3D', ' WebGL texture created in init:', texture);
-        };
-        img.onerror = (e) => {
-          console.error('[MapEditor3D] Failed to load texture in init:', e);
-        };
-        img.src = textureAtlas;
+        // If we already have a texture atlas, load it now
+        if (textureAtlas && !textureRef.current) {
+          debug('MapEditor3D', ' Texture atlas available, loading now...');
+          const img = new Image();
+          img.onload = () => {
+            debug('MapEditor3D', ' Texture image loaded in init:', img.width, 'x', img.height);
+            const texture = createTextureFromImage(gl, img);
+            textureRef.current = texture;
+            debug('MapEditor3D', ' WebGL texture created in init:', texture);
+          };
+          img.onerror = e => {
+            console.error('[MapEditor3D] Failed to load texture in init:', e);
+          };
+          img.src = textureAtlas;
+        }
+      } else {
+        console.error('[MapEditor3D] Failed to create shader program');
       }
-    } else {
-      console.error('[MapEditor3D] Failed to create shader program');
-    }
-  }, [textureAtlas]);
+    },
+    [textureAtlas]
+  );
 
   // Render callback for WebGL3DCanvas
   const handleRender = useCallback(
@@ -396,15 +406,15 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
             uColor,
             uShowGrid,
             uTexture,
-            uIsHovered
+            uIsHovered,
           },
           tilesetInfo: {
             hasTileset: !!tileset,
             hasTextures: !!tileset?.textures,
             textureCount: Object.keys(tileset?.textures || {}).length,
             tileSize: tileset?.tileSize,
-            sheetSize: tileset?.sheetSize
-          }
+            sheetSize: tileset?.sheetSize,
+          },
         });
         window._renderDebugLogged = true;
       }
@@ -484,7 +494,18 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         );
       });
     },
-    [cells, heights, hoveredCell, tiles, geometry, tileset, textureRef.current, sprites, objects, animatedTiles]
+    [
+      cells,
+      heights,
+      hoveredCell,
+      tiles,
+      geometry,
+      tileset,
+      textureRef.current,
+      sprites,
+      objects,
+      animatedTiles,
+    ]
   );
 
   // Render a tile at given position
@@ -526,16 +547,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       if (!geometry || !geometry[geometryName]) continue;
 
       const geom = geometry[geometryName];
-      renderGeometry(
-        gl,
-        program,
-        geom,
-        textureName,
-        heightOffset,
-        uUseTexture,
-        uColor,
-        uTexture
-      );
+      renderGeometry(gl, program, geom, textureName, heightOffset, uUseTexture, uColor, uTexture);
     }
   }
 
@@ -558,19 +570,15 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
     for (let i = 0; i < geom.vertices.length; i++) {
       const tri = geom.vertices[i];
-      const texTri = geom.surfaces?.[i] || [[0, 0], [1, 0], [1, 1]];
+      const texTri = geom.surfaces?.[i] || [
+        [0, 0],
+        [1, 0],
+        [1, 1],
+      ];
 
       // Calculate normal
-      const v1 = [
-        tri[1][0] - tri[0][0],
-        tri[1][1] - tri[0][1],
-        tri[1][2] - tri[0][2],
-      ];
-      const v2 = [
-        tri[2][0] - tri[0][0],
-        tri[2][1] - tri[0][1],
-        tri[2][2] - tri[0][2],
-      ];
+      const v1 = [tri[1][0] - tri[0][0], tri[1][1] - tri[0][1], tri[1][2] - tri[0][2]];
+      const v2 = [tri[2][0] - tri[0][0], tri[2][1] - tri[0][1], tri[2][2] - tri[0][2]];
       const normal = [
         v1[1] * v2[2] - v1[2] * v2[1],
         v1[2] * v2[0] - v1[0] * v2[2],
@@ -634,7 +642,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
           texturePos: tileset?.textures?.[textureName],
           tileSize: tileset?.tileSize,
           sheetSize: tileset?.sheetSize,
-          firstTexCoords: texCoords.slice(0, 6)
+          firstTexCoords: texCoords.slice(0, 6),
         });
         window._textureDebugNames.add(textureName);
       }
@@ -687,47 +695,119 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
     // Create a simple cube
     const vertices = [
       // Front face
-      -size, -size, size,
-      size, -size, size,
-      size, size, size,
-      -size, -size, size,
-      size, size, size,
-      -size, size, size,
+      -size,
+      -size,
+      size,
+      size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      -size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      -size,
+      size,
+      size,
       // Back face
-      -size, -size, -size,
-      -size, size, -size,
-      size, size, -size,
-      -size, -size, -size,
-      size, size, -size,
-      size, -size, -size,
+      -size,
+      -size,
+      -size,
+      -size,
+      size,
+      -size,
+      size,
+      size,
+      -size,
+      -size,
+      -size,
+      -size,
+      size,
+      size,
+      -size,
+      size,
+      -size,
+      -size,
       // Top face
-      -size, size, -size,
-      -size, size, size,
-      size, size, size,
-      -size, size, -size,
-      size, size, size,
-      size, size, -size,
+      -size,
+      size,
+      -size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      size,
+      -size,
+      size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      size,
+      -size,
       // Bottom face
-      -size, -size, -size,
-      size, -size, -size,
-      size, -size, size,
-      -size, -size, -size,
-      size, -size, size,
-      -size, -size, size,
+      -size,
+      -size,
+      -size,
+      size,
+      -size,
+      -size,
+      size,
+      -size,
+      size,
+      -size,
+      -size,
+      -size,
+      size,
+      -size,
+      size,
+      -size,
+      -size,
+      size,
       // Right face
-      size, -size, -size,
-      size, size, -size,
-      size, size, size,
-      size, -size, -size,
-      size, size, size,
-      size, -size, size,
+      size,
+      -size,
+      -size,
+      size,
+      size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      -size,
+      -size,
+      size,
+      size,
+      size,
+      size,
+      -size,
+      size,
       // Left face
-      -size, -size, -size,
-      -size, -size, size,
-      -size, size, size,
-      -size, -size, -size,
-      -size, size, size,
-      -size, size, -size,
+      -size,
+      -size,
+      -size,
+      -size,
+      -size,
+      size,
+      -size,
+      size,
+      size,
+      -size,
+      -size,
+      -size,
+      -size,
+      size,
+      size,
+      -size,
+      size,
+      -size,
     ];
 
     const normals = [];
@@ -812,7 +892,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         button: event.button,
         type: event.type,
         currentTool,
-        editorMode
+        editorMode,
       });
 
       const cellCoords = screenToCell(screenX, screenY, camera, glRef.current.canvas);
@@ -822,7 +902,16 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       }
 
       const { x, y } = cellCoords;
-      debug('MapEditor3D', ' Cell coords:', x, y, 'tile:', cells[y]?.[x], 'editorMode:', editorMode);
+      debug(
+        'MapEditor3D',
+        ' Cell coords:',
+        x,
+        y,
+        'tile:',
+        cells[y]?.[x],
+        'editorMode:',
+        editorMode
+      );
 
       // Handle different editor modes - each mode is completely separate
       if (editorMode === 'sprites') {
@@ -876,7 +965,16 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         }
       }
     },
-    [cells, currentTool, selectedTile, currentHeight, editorMode, spriteTypeInput, spriteIdInput, spriteFacing]
+    [
+      cells,
+      currentTool,
+      selectedTile,
+      currentHeight,
+      editorMode,
+      spriteTypeInput,
+      spriteIdInput,
+      spriteFacing,
+    ]
   );
 
   // Convert screen coordinates to cell coordinates
@@ -925,12 +1023,9 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
     const fov = Math.PI / 4;
     const tanFov = Math.tan(fov / 2);
 
-    const rayDirX =
-      viewNormX + rightX * normX * tanFov * aspect + actualUpX * normY * tanFov;
-    const rayDirY =
-      viewNormY + rightY * normX * tanFov * aspect + actualUpY * normY * tanFov;
-    const rayDirZ =
-      viewNormZ + rightZ * normX * tanFov * aspect + actualUpZ * normY * tanFov;
+    const rayDirX = viewNormX + rightX * normX * tanFov * aspect + actualUpX * normY * tanFov;
+    const rayDirY = viewNormY + rightY * normX * tanFov * aspect + actualUpY * normY * tanFov;
+    const rayDirZ = viewNormZ + rightZ * normX * tanFov * aspect + actualUpZ * normY * tanFov;
 
     const rayLen = Math.sqrt(rayDirX ** 2 + rayDirY ** 2 + rayDirZ ** 2);
     const rayNormX = rayDirX / rayLen;
@@ -1121,7 +1216,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       id: spriteIdInput,
       type: spriteTypeInput,
       pos: [x, y, currentHeight],
-      facing: spriteFacing
+      facing: spriteFacing,
     };
 
     setSprites([...sprites, newSprite]);
@@ -1152,7 +1247,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       id: spriteIdInput,
       type: spriteTypeInput,
       pos: [x, y, currentHeight],
-      facing: spriteFacing
+      facing: spriteFacing,
     };
 
     setObjects([...objects, newObject]);
@@ -1181,7 +1276,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
     const newAnimatedTile = {
       type: spriteTypeInput,
-      pos: [x, y, currentHeight]
+      pos: [x, y, currentHeight],
     };
 
     setAnimatedTiles([...animatedTiles, newAnimatedTile]);
@@ -1197,22 +1292,24 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
   // Get available tiles
   const tileOptions = tiles
     ? Object.keys(tiles)
-      .sort()
-      .map((key) => ({ label: key, value: key }))
+        .sort()
+        .map(key => ({ label: key, value: key }))
     : [];
 
   // Show loading/error states
   if (!cells.length) {
     return (
       <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div style={{
-          background: '#1a3a52',
-          border: '1px solid #4fc1ff',
-          borderRadius: '3px',
-          padding: '10px',
-          fontSize: '13px',
-          color: '#4fc1ff'
-        }}>
+        <div
+          style={{
+            background: '#1a3a52',
+            border: '1px solid #4fc1ff',
+            borderRadius: '3px',
+            padding: '10px',
+            fontSize: '13px',
+            color: '#4fc1ff',
+          }}
+        >
           ℹ️ No map data loaded. Please load a map from the package.
         </div>
       </div>
@@ -1222,21 +1319,30 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
   if (!tiles || Object.keys(tiles).length === 0) {
     return (
       <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div style={{
-          background: '#4d3319',
-          border: '1px solid #ce9178',
-          borderRadius: '3px',
-          padding: '10px',
-          fontSize: '13px',
-          color: '#ce9178',
-          marginBottom: '1rem'
-        }}>
-          ⚠️ Map loaded but tileset data is missing. Please ensure the tileset file exists and is properly referenced in the map.
+        <div
+          style={{
+            background: '#4d3319',
+            border: '1px solid #ce9178',
+            borderRadius: '3px',
+            padding: '10px',
+            fontSize: '13px',
+            color: '#ce9178',
+            marginBottom: '1rem',
+          }}
+        >
+          ⚠️ Map loaded but tileset data is missing. Please ensure the tileset file exists and is
+          properly referenced in the map.
         </div>
         <div style={{ fontSize: '13px' }}>
-          <p style={{ margin: '5px 0' }}>Map file loaded successfully, but cannot render 3D view without tileset data.</p>
-          <p style={{ margin: '5px 0' }}>Expected tileset: <strong>{map?.tileset || 'unknown'}</strong></p>
-          <p style={{ margin: '5px 0' }}>Cells dimensions: {cells.length} x {cells[0]?.length || 0}</p>
+          <p style={{ margin: '5px 0' }}>
+            Map file loaded successfully, but cannot render 3D view without tileset data.
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            Expected tileset: <strong>{map?.tileset || 'unknown'}</strong>
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            Cells dimensions: {cells.length} x {cells[0]?.length || 0}
+          </p>
         </div>
       </div>
     );
@@ -1247,39 +1353,54 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      background: '#1e1e1e',
-      color: '#d4d4d4',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        background: '#1e1e1e',
+        color: '#d4d4d4',
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      }}
+    >
       {/* Sidebar */}
-      <div style={{
-        width: '320px',
-        background: '#252526',
-        borderRight: '1px solid #3e3e42',
-        overflowY: 'auto',
-        padding: '10px'
-      }}>
+      <div
+        style={{
+          width: '320px',
+          background: '#252526',
+          borderRight: '1px solid #3e3e42',
+          overflowY: 'auto',
+          padding: '10px',
+        }}
+      >
         {/* Tools Section */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
-          }}>
-            🎨 Tile Tools {editorMode !== 'tiles' && <span style={{ fontSize: '10px', color: '#888', fontWeight: 'normal' }}>(Tile mode only)</span>}
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+            }}
+          >
+            🎨 Tile Tools{' '}
+            {editorMode !== 'tiles' && (
+              <span style={{ fontSize: '10px', color: '#888', fontWeight: 'normal' }}>
+                (Tile mode only)
+              </span>
+            )}
           </div>
           <div style={{ padding: '10px', opacity: editorMode === 'tiles' ? 1 : 0.5 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}
+            >
               <button
                 disabled={editorMode !== 'tiles'}
                 style={{
@@ -1289,14 +1410,19 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
                 onClick={() => editorMode === 'tiles' && setCurrentTool('paint')}
-                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c')}
+                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={e =>
+                  editorMode === 'tiles' &&
+                  (e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c')
+                }
               >
                 🖌️ Paint Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click to paint • Shift+Drag to paint multiple</div>
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
+                  Click to paint • Shift+Drag to paint multiple
+                </div>
               </button>
               <button
                 disabled={editorMode !== 'tiles'}
@@ -1307,14 +1433,19 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
                 onClick={() => editorMode === 'tiles' && setCurrentTool('erase')}
-                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c')}
+                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={e =>
+                  editorMode === 'tiles' &&
+                  (e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c')
+                }
               >
                 🗑️ Erase Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click to erase • Right-click also erases</div>
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
+                  Click to erase • Right-click also erases
+                </div>
               </button>
               <button
                 disabled={editorMode !== 'tiles'}
@@ -1325,24 +1456,36 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
                 onClick={() => editorMode === 'tiles' && setCurrentTool('pick')}
-                onMouseOver={(e) => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={(e) => editorMode === 'tiles' && (e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c')}
+                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
+                onMouseOut={e =>
+                  editorMode === 'tiles' &&
+                  (e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c')
+                }
               >
                 🔍 Pick Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>Click a tile to select it</div>
+                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
+                  Click a tile to select it
+                </div>
               </button>
             </div>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Selected Tile:
               </label>
               <select
                 value={selectedTile}
-                onChange={(e) => setSelectedTile(e.target.value)}
+                onChange={e => setSelectedTile(e.target.value)}
                 style={{
                   background: '#3c3c3c',
                   color: '#d4d4d4',
@@ -1350,17 +1493,26 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '6px 8px',
                   borderRadius: '3px',
                   fontSize: '13px',
-                  width: '100%'
+                  width: '100%',
                 }}
               >
                 {tileOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Height:
               </label>
               <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
@@ -1375,7 +1527,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     padding: '6px 12px',
                     borderRadius: '3px',
                     cursor: 'pointer',
-                    fontSize: '16px'
+                    fontSize: '16px',
                   }}
                 >
                   −
@@ -1383,7 +1535,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 <input
                   type="number"
                   value={currentHeight}
-                  onChange={(e) => setCurrentHeight(parseFloat(e.target.value) || 0)}
+                  onChange={e => setCurrentHeight(parseFloat(e.target.value) || 0)}
                   step={0.5}
                   style={{
                     flex: 1,
@@ -1393,7 +1545,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     padding: '6px 8px',
                     borderRadius: '3px',
                     fontSize: '13px',
-                    textAlign: 'center'
+                    textAlign: 'center',
                   }}
                 />
                 <button
@@ -1407,7 +1559,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     padding: '6px 12px',
                     borderRadius: '3px',
                     cursor: 'pointer',
-                    fontSize: '16px'
+                    fontSize: '16px',
                   }}
                 >
                   +
@@ -1425,10 +1577,10 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: 'pointer',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
-                onMouseOver={(e) => e.target.style.background = '#1177bb'}
-                onMouseOut={(e) => e.target.style.background = '#0e639c'}
+                onMouseOver={e => (e.target.style.background = '#1177bb')}
+                onMouseOut={e => (e.target.style.background = '#0e639c')}
               >
                 💾 Save Changes
               </button>
@@ -1442,10 +1594,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
-                onMouseOver={(e) => { if (historyIndex > 0) e.target.style.background = '#1177bb'; }}
-                onMouseOut={(e) => { if (historyIndex > 0) e.target.style.background = '#0e639c'; }}
+                onMouseOver={e => {
+                  if (historyIndex > 0) e.target.style.background = '#1177bb';
+                }}
+                onMouseOut={e => {
+                  if (historyIndex > 0) e.target.style.background = '#0e639c';
+                }}
               >
                 ↶ Undo
               </button>
@@ -1459,17 +1615,28 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 16px',
                   borderRadius: '3px',
                   cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '13px'
+                  fontSize: '13px',
                 }}
-                onMouseOver={(e) => { if (historyIndex < history.length - 1) e.target.style.background = '#1177bb'; }}
-                onMouseOut={(e) => { if (historyIndex < history.length - 1) e.target.style.background = '#0e639c'; }}
+                onMouseOver={e => {
+                  if (historyIndex < history.length - 1) e.target.style.background = '#1177bb';
+                }}
+                onMouseOut={e => {
+                  if (historyIndex < history.length - 1) e.target.style.background = '#0e639c';
+                }}
               >
                 ↷ Redo
               </button>
             </div>
 
             <div style={{ marginTop: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 View Projection:
               </label>
               <div style={{ display: 'flex', gap: '5px' }}>
@@ -1482,7 +1649,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     padding: '8px',
                     borderRadius: '3px',
                     cursor: 'pointer',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                   onClick={() => setViewMode('2D')}
                 >
@@ -1497,7 +1664,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     padding: '8px',
                     borderRadius: '3px',
                     cursor: 'pointer',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                   onClick={() => setViewMode('3D')}
                 >
@@ -1509,19 +1676,23 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         </div>
 
         {/* Mode Selector */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
-          }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+            }}
+          >
             🎯 Editor Mode
           </div>
           <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -1534,12 +1705,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('tiles')}
             >
               <div>🟦 Tile Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells
+              </div>
             </button>
             <button
               style={{
@@ -1550,12 +1723,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('sprites')}
             >
               <div>🎭 Sprite Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {sprites.length} sprites</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                Click to place • {sprites.length} sprites
+              </div>
             </button>
             <button
               style={{
@@ -1566,12 +1741,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('objects')}
             >
               <div>📦 Object Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {objects.length} objects</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                Click to place • {objects.length} objects
+              </div>
             </button>
             <button
               style={{
@@ -1582,12 +1759,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('attributes')}
             >
               <div>📝 Attribute Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click a cell to edit walkable/events</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                Click a cell to edit walkable/events
+              </div>
             </button>
             <button
               style={{
@@ -1598,12 +1777,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('animatedTiles')}
             >
               <div>✨ Animated Tile Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>Click to place • {animatedTiles.length} animated tiles</div>
+              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                Click to place • {animatedTiles.length} animated tiles
+              </div>
             </button>
             <button
               style={{
@@ -1614,7 +1795,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('triggers')}
             >
@@ -1629,7 +1810,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 borderRadius: '3px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                textAlign: 'left'
+                textAlign: 'left',
               }}
               onClick={() => setEditorMode('lights')}
             >
@@ -1640,33 +1821,54 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
         {/* Sprites/Objects Editor */}
         {(editorMode === 'sprites' || editorMode === 'objects') && (
-          <div style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42'
-            }}>
+          <div
+            style={{
+              background: '#2d2d30',
+              border: '1px solid #3e3e42',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                background: '#37373d',
+                padding: '10px',
+                fontWeight: 'bold',
+                borderBottom: '1px solid #3e3e42',
+              }}
+            >
               {editorMode === 'sprites' ? '🎭 Sprite Placement' : '📦 Object Placement'}
             </div>
             <div style={{ padding: '10px' }}>
-              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#4ec9b0', background: '#1e3a32', padding: '8px', borderRadius: '3px', border: '1px solid #2d5a4a' }}>
-                <strong>➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}</strong><br />
-                <span style={{ fontSize: '10px', color: '#8ec9b0' }}>• Select type and facing below, then click on any tile</span>
+              <div
+                style={{
+                  marginBottom: '10px',
+                  fontSize: '11px',
+                  color: '#4ec9b0',
+                  background: '#1e3a32',
+                  padding: '8px',
+                  borderRadius: '3px',
+                  border: '1px solid #2d5a4a',
+                }}
+              >
+                <strong>
+                  ➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}
+                </strong>
+                <br />
+                <span style={{ fontSize: '10px', color: '#8ec9b0' }}>
+                  • Select type and facing below, then click on any tile
+                </span>
               </div>
 
               <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>ID:</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                  ID:
+                </label>
                 <input
                   type="text"
                   value={spriteIdInput}
-                  onChange={(e) => setSpriteIdInput(e.target.value)}
+                  onChange={e => setSpriteIdInput(e.target.value)}
                   placeholder="e.g., avatar, chest1"
                   style={{
                     width: '100%',
@@ -1675,17 +1877,20 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     border: '1px solid #3e3e42',
                     padding: '6px 8px',
                     borderRadius: '3px',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                 />
               </div>
 
               <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Type:</label>
-                {availableSprites.length > 0 || editorMode === 'objects' && availableObjects.length > 0 ? (
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                  Type:
+                </label>
+                {availableSprites.length > 0 ||
+                (editorMode === 'objects' && availableObjects.length > 0) ? (
                   <select
                     value={spriteTypeInput}
-                    onChange={(e) => setSpriteTypeInput(e.target.value)}
+                    onChange={e => setSpriteTypeInput(e.target.value)}
                     style={{
                       width: '100%',
                       background: '#3c3c3c',
@@ -1693,12 +1898,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       border: '1px solid #3e3e42',
                       padding: '6px 8px',
                       borderRadius: '3px',
-                      fontSize: '12px'
+                      fontSize: '12px',
                     }}
                   >
                     <option value="">-- Select Type --</option>
                     {(editorMode === 'sprites' ? availableSprites : availableObjects).map(type => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 ) : (
@@ -1706,7 +1913,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     <input
                       type="text"
                       value={spriteTypeInput}
-                      onChange={(e) => setSpriteTypeInput(e.target.value)}
+                      onChange={e => setSpriteTypeInput(e.target.value)}
                       placeholder="e.g., characters/male, furniture/chest"
                       style={{
                         width: '100%',
@@ -1715,21 +1922,24 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                         border: '1px solid #3e3e42',
                         padding: '6px 8px',
                         borderRadius: '3px',
-                        fontSize: '12px'
+                        fontSize: '12px',
                       }}
                     />
                     <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
-                      No {editorMode === 'sprites' ? 'sprites' : 'objects'} found in package. Enter manually.
+                      No {editorMode === 'sprites' ? 'sprites' : 'objects'} found in package. Enter
+                      manually.
                     </div>
                   </>
                 )}
               </div>
 
               <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Facing:</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                  Facing:
+                </label>
                 <select
                   value={spriteFacing}
-                  onChange={(e) => setSpriteFacing(e.target.value)}
+                  onChange={e => setSpriteFacing(e.target.value)}
                   style={{
                     width: '100%',
                     background: '#3c3c3c',
@@ -1737,7 +1947,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     border: '1px solid #3e3e42',
                     padding: '6px 8px',
                     borderRadius: '3px',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                 >
                   <option value="Down">Down</option>
@@ -1747,25 +1957,32 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 </select>
               </div>
 
-              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
+              <div
+                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+              >
                 <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
                   Placed {editorMode === 'sprites' ? 'Sprites' : 'Objects'}:
                 </div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {(editorMode === 'sprites' ? sprites : objects).map((item, idx) => (
-                    <div key={idx} style={{
-                      background: '#1e1e1e',
-                      padding: '8px',
-                      marginBottom: '5px',
-                      borderRadius: '3px',
-                      fontSize: '11px'
-                    }}>
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1e1e1e',
+                        padding: '8px',
+                        marginBottom: '5px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                      }}
+                    >
                       <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>{item.id}</div>
                       <div style={{ color: '#888' }}>Type: {item.type}</div>
                       <div style={{ color: '#888' }}>Pos: [{item.pos.join(', ')}]</div>
                       <div style={{ color: '#888' }}>Facing: {item.facing}</div>
                       <button
-                        onClick={() => editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)}
+                        onClick={() =>
+                          editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)
+                        }
                         style={{
                           marginTop: '5px',
                           background: '#5a1d1d',
@@ -1774,7 +1991,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                           padding: '4px 8px',
                           borderRadius: '2px',
                           cursor: 'pointer',
-                          fontSize: '10px'
+                          fontSize: '10px',
                         }}
                       >
                         🗑️ Remove
@@ -1794,33 +2011,52 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
         {/* Animated Tiles Editor */}
         {editorMode === 'animatedTiles' && (
-          <div style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42'
-            }}>
+          <div
+            style={{
+              background: '#2d2d30',
+              border: '1px solid #3e3e42',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                background: '#37373d',
+                padding: '10px',
+                fontWeight: 'bold',
+                borderBottom: '1px solid #3e3e42',
+              }}
+            >
               ✨ Animated Tile Placement
             </div>
             <div style={{ padding: '10px' }}>
-              <div style={{ marginBottom: '10px', fontSize: '11px', color: '#ce9178', background: '#3a2a1e', padding: '8px', borderRadius: '3px', border: '1px solid #5a4a3e' }}>
-                <strong>➤ Click on map to place animated tile</strong><br />
-                <span style={{ fontSize: '10px', color: '#daa178' }}>• Select sprite type below, then click on any tile</span>
+              <div
+                style={{
+                  marginBottom: '10px',
+                  fontSize: '11px',
+                  color: '#ce9178',
+                  background: '#3a2a1e',
+                  padding: '8px',
+                  borderRadius: '3px',
+                  border: '1px solid #5a4a3e',
+                }}
+              >
+                <strong>➤ Click on map to place animated tile</strong>
+                <br />
+                <span style={{ fontSize: '10px', color: '#daa178' }}>
+                  • Select sprite type below, then click on any tile
+                </span>
               </div>
 
               <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Sprite Type:</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                  Sprite Type:
+                </label>
                 {availableSprites.length > 0 ? (
                   <select
                     value={spriteTypeInput}
-                    onChange={(e) => setSpriteTypeInput(e.target.value)}
+                    onChange={e => setSpriteTypeInput(e.target.value)}
                     style={{
                       width: '100%',
                       background: '#3c3c3c',
@@ -1828,12 +2064,14 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       border: '1px solid #3e3e42',
                       padding: '6px 8px',
                       borderRadius: '3px',
-                      fontSize: '12px'
+                      fontSize: '12px',
                     }}
                   >
                     <option value="">-- Select Sprite Type --</option>
                     {availableSprites.map(type => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 ) : (
@@ -1841,7 +2079,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     <input
                       type="text"
                       value={spriteTypeInput}
-                      onChange={(e) => setSpriteTypeInput(e.target.value)}
+                      onChange={e => setSpriteTypeInput(e.target.value)}
                       placeholder="e.g., effects/spurt, effects/fire"
                       style={{
                         width: '100%',
@@ -1850,7 +2088,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                         border: '1px solid #3e3e42',
                         padding: '6px 8px',
                         borderRadius: '3px',
-                        fontSize: '12px'
+                        fontSize: '12px',
                       }}
                     />
                     <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
@@ -1860,19 +2098,24 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 )}
               </div>
 
-              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
+              <div
+                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+              >
                 <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
                   Placed Animated Tiles:
                 </div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {animatedTiles.map((tile, idx) => (
-                    <div key={idx} style={{
-                      background: '#1e1e1e',
-                      padding: '8px',
-                      marginBottom: '5px',
-                      borderRadius: '3px',
-                      fontSize: '11px'
-                    }}>
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1e1e1e',
+                        padding: '8px',
+                        marginBottom: '5px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                      }}
+                    >
                       <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Tile #{idx + 1}</div>
                       <div style={{ color: '#888' }}>Type: {tile.type}</div>
                       <div style={{ color: '#888' }}>Pos: [{tile.pos.join(', ')}]</div>
@@ -1886,7 +2129,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                           padding: '4px 8px',
                           borderRadius: '2px',
                           cursor: 'pointer',
-                          fontSize: '10px'
+                          fontSize: '10px',
                         }}
                       >
                         🗑️ Remove
@@ -1906,19 +2149,23 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
         {/* Attribute Editor */}
         {editorMode === 'attributes' && (
-          <div style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42'
-            }}>
+          <div
+            style={{
+              background: '#2d2d30',
+              border: '1px solid #3e3e42',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                background: '#37373d',
+                padding: '10px',
+                fontWeight: 'bold',
+                borderBottom: '1px solid #3e3e42',
+              }}
+            >
               📝 Cell Attributes
             </div>
             <div style={{ padding: '10px' }}>
@@ -1933,11 +2180,18 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   </div>
 
                   <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
                       <input
                         type="checkbox"
                         checked={!!attributes[selectedCell.y]?.[selectedCell.x]?.walkable}
-                        onChange={(e) => {
+                        onChange={e => {
                           const next = attributes.map((row, j) =>
                             row.map((attr, i) => {
                               if (j === selectedCell.y && i === selectedCell.x) {
@@ -1955,11 +2209,13 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   </div>
 
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Event / Script:</label>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                      Event / Script:
+                    </label>
                     <input
                       type="text"
                       value={attributes[selectedCell.y]?.[selectedCell.x]?.event || ''}
-                      onChange={(e) => {
+                      onChange={e => {
                         const val = e.target.value;
                         const next = attributes.map((row, j) =>
                           row.map((attr, i) => {
@@ -1980,7 +2236,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                         border: '1px solid #3e3e42',
                         padding: '6px 8px',
                         borderRadius: '3px',
-                        fontSize: '12px'
+                        fontSize: '12px',
                       }}
                     />
                     <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
@@ -1998,7 +2254,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       padding: '8px',
                       borderRadius: '3px',
                       cursor: 'pointer',
-                      fontSize: '11px'
+                      fontSize: '11px',
                     }}
                   >
                     Done
@@ -2011,19 +2267,23 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
 
         {/* Triggers Editor */}
         {editorMode === 'triggers' && (
-          <div style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42'
-            }}>
+          <div
+            style={{
+              background: '#2d2d30',
+              border: '1px solid #3e3e42',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                background: '#37373d',
+                padding: '10px',
+                fontWeight: 'bold',
+                borderBottom: '1px solid #3e3e42',
+              }}
+            >
               ⚡ Triggers & Scripts
             </div>
             <div style={{ padding: '10px' }}>
@@ -2034,7 +2294,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 <input
                   type="text"
                   value={triggers.selectTrigger}
-                  onChange={(e) => setTriggers({ ...triggers, selectTrigger: e.target.value })}
+                  onChange={e => setTriggers({ ...triggers, selectTrigger: e.target.value })}
                   placeholder="e.g., tile/select_test"
                   style={{
                     width: '100%',
@@ -2043,7 +2303,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     border: '1px solid #3e3e42',
                     padding: '6px 8px',
                     borderRadius: '3px',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                 />
                 <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
@@ -2051,8 +2311,17 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 </div>
               </div>
 
-              <div style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div
+                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
                   <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Scripts (on load):</div>
                   <button
                     onClick={() => {
@@ -2066,7 +2335,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       padding: '4px 8px',
                       borderRadius: '2px',
                       cursor: 'pointer',
-                      fontSize: '10px'
+                      fontSize: '10px',
                     }}
                   >
                     + Add
@@ -2074,18 +2343,21 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 </div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {triggers.scripts.map((script, idx) => (
-                    <div key={idx} style={{
-                      background: '#1e1e1e',
-                      padding: '8px',
-                      marginBottom: '5px',
-                      borderRadius: '3px'
-                    }}>
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1e1e1e',
+                        padding: '8px',
+                        marginBottom: '5px',
+                        borderRadius: '3px',
+                      }}
+                    >
                       <div style={{ marginBottom: '5px' }}>
                         <label style={{ fontSize: '10px', color: '#888' }}>ID:</label>
                         <input
                           type="text"
                           value={script.id}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newScripts = [...triggers.scripts];
                             newScripts[idx].id = e.target.value;
                             setTriggers({ ...triggers, scripts: newScripts });
@@ -2098,7 +2370,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                             padding: '4px 6px',
                             borderRadius: '2px',
                             fontSize: '11px',
-                            marginTop: '2px'
+                            marginTop: '2px',
                           }}
                         />
                       </div>
@@ -2107,7 +2379,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                         <input
                           type="text"
                           value={script.trigger}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newScripts = [...triggers.scripts];
                             newScripts[idx].trigger = e.target.value;
                             setTriggers({ ...triggers, scripts: newScripts });
@@ -2121,7 +2393,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                             padding: '4px 6px',
                             borderRadius: '2px',
                             fontSize: '11px',
-                            marginTop: '2px'
+                            marginTop: '2px',
                           }}
                         />
                       </div>
@@ -2137,7 +2409,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                           padding: '4px 8px',
                           borderRadius: '2px',
                           cursor: 'pointer',
-                          fontSize: '10px'
+                          fontSize: '10px',
                         }}
                       >
                         🗑️ Remove
@@ -2156,22 +2428,26 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         )}
 
         {/* Tiles Section */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <span>🎨 Tiles ({Object.keys(tiles || {}).length})</span>
             <button
               onClick={() => setShowTileEditor(!showTileEditor)}
@@ -2182,7 +2458,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 padding: '4px 8px',
                 borderRadius: '3px',
                 cursor: 'pointer',
-                fontSize: '10px'
+                fontSize: '10px',
               }}
               title="Toggle inline tile editor"
             >
@@ -2192,21 +2468,25 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
           <div style={{ padding: '10px' }}>
             {/* Inline Tile Editor Panel */}
             {showTileEditor && editingTileName && tiles[editingTileName] && (
-              <div style={{
-                background: '#252526',
-                border: '1px solid #0e639c',
-                borderRadius: '4px',
-                padding: '10px',
-                marginBottom: '10px'
-              }}>
-                <div style={{
-                  fontWeight: 'bold',
-                  color: '#7dd3fc',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
+              <div
+                style={{
+                  background: '#252526',
+                  border: '1px solid #0e639c',
+                  borderRadius: '4px',
+                  padding: '10px',
+                  marginBottom: '10px',
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 'bold',
+                    color: '#7dd3fc',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
                   <span>Editing: {editingTileName}</span>
                   <button
                     onClick={() => setEditingTileName(null)}
@@ -2215,9 +2495,11 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       border: 'none',
                       color: '#888',
                       cursor: 'pointer',
-                      fontSize: '14px'
+                      fontSize: '14px',
                     }}
-                  >✕</button>
+                  >
+                    ✕
+                  </button>
                 </div>
                 <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px' }}>
                   Layers: {Math.floor(tiles[editingTileName].length / 3)}
@@ -2230,19 +2512,34 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       layers.push({ geom: arr[i], tex: arr[i + 1], z: arr[i + 2] });
                     }
                     return layers.map((layer, idx) => (
-                      <div key={idx} style={{
-                        display: 'grid',
-                        gridTemplateColumns: '60px 60px 40px',
-                        gap: '4px',
-                        marginBottom: '4px',
-                        fontSize: '9px',
-                        background: '#2d2d30',
-                        padding: '4px',
-                        borderRadius: '2px'
-                      }}>
-                        <span title="Geometry" style={{ color: '#a78bfa', overflow: 'hidden', textOverflow: 'ellipsis' }}>{layer.geom}</span>
-                        <span title="Texture" style={{ color: '#7dd3fc', overflow: 'hidden', textOverflow: 'ellipsis' }}>{layer.tex}</span>
-                        <span title="Z-Offset" style={{ color: '#fbbf24' }}>z:{layer.z}</span>
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '60px 60px 40px',
+                          gap: '4px',
+                          marginBottom: '4px',
+                          fontSize: '9px',
+                          background: '#2d2d30',
+                          padding: '4px',
+                          borderRadius: '2px',
+                        }}
+                      >
+                        <span
+                          title="Geometry"
+                          style={{ color: '#a78bfa', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        >
+                          {layer.geom}
+                        </span>
+                        <span
+                          title="Texture"
+                          style={{ color: '#7dd3fc', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        >
+                          {layer.tex}
+                        </span>
+                        <span title="Z-Offset" style={{ color: '#fbbf24' }}>
+                          z:{layer.z}
+                        </span>
                       </div>
                     ));
                   })()}
@@ -2252,55 +2549,62 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                 </div>
               </div>
             )}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
-              gap: '8px',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              marginBottom: '10px'
-            }}>
-              {Object.keys(tiles || {}).sort().map(tileName => (
-                <div
-                  key={tileName}
-                  onClick={() => setSelectedTile(tileName)}
-                  onDoubleClick={() => {
-                    setShowTileEditor(true);
-                    setEditingTileName(tileName);
-                  }}
-                  style={{
-                    background: selectedTile === tileName ? '#0e639c' : '#3c3c3c',
-                    border: `2px solid ${selectedTile === tileName ? '#1177bb' : editingTileName === tileName ? '#a78bfa' : '#3e3e42'}`,
-                    padding: '6px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    borderRadius: '3px',
-                    fontSize: '9px',
-                    wordWrap: 'break-word',
-                    transition: 'all 0.2s',
-                    position: 'relative'
-                  }}
-                  onMouseOver={(e) => {
-                    if (selectedTile !== tileName) {
-                      e.currentTarget.style.borderColor = '#0e639c';
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (selectedTile !== tileName) {
-                      e.currentTarget.style.borderColor = editingTileName === tileName ? '#a78bfa' : '#3e3e42';
-                    }
-                  }}
-                >
-                  <div>{tileName}</div>
-                  <div style={{
-                    fontSize: '8px',
-                    color: '#888',
-                    marginTop: '2px'
-                  }}>
-                    {Math.floor(tiles[tileName].length / 3)} parts
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
+                gap: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                marginBottom: '10px',
+              }}
+            >
+              {Object.keys(tiles || {})
+                .sort()
+                .map(tileName => (
+                  <div
+                    key={tileName}
+                    onClick={() => setSelectedTile(tileName)}
+                    onDoubleClick={() => {
+                      setShowTileEditor(true);
+                      setEditingTileName(tileName);
+                    }}
+                    style={{
+                      background: selectedTile === tileName ? '#0e639c' : '#3c3c3c',
+                      border: `2px solid ${selectedTile === tileName ? '#1177bb' : editingTileName === tileName ? '#a78bfa' : '#3e3e42'}`,
+                      padding: '6px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      wordWrap: 'break-word',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                    }}
+                    onMouseOver={e => {
+                      if (selectedTile !== tileName) {
+                        e.currentTarget.style.borderColor = '#0e639c';
+                      }
+                    }}
+                    onMouseOut={e => {
+                      if (selectedTile !== tileName) {
+                        e.currentTarget.style.borderColor =
+                          editingTileName === tileName ? '#a78bfa' : '#3e3e42';
+                      }
+                    }}
+                  >
+                    <div>{tileName}</div>
+                    <div
+                      style={{
+                        fontSize: '8px',
+                        color: '#888',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {Math.floor(tiles[tileName].length / 3)} parts
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
             <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>
               Click to select • Double-click to inspect layers
@@ -2309,52 +2613,71 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         </div>
 
         {/* Geometry Section */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <span>📐 Geometry ({Object.keys(geometry || {}).length})</span>
           </div>
           <div style={{ padding: '10px' }}>
             {/* Inline Geometry Inspector */}
             {editingGeometryName && geometry[editingGeometryName] && (
-              <div style={{
-                background: '#1e1e2e',
-                border: '1px solid #a78bfa',
-                borderRadius: '4px',
-                padding: '10px',
-                marginBottom: '10px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
+              <div
+                style={{
+                  background: '#1e1e2e',
+                  border: '1px solid #a78bfa',
+                  borderRadius: '4px',
+                  padding: '10px',
                   marginBottom: '10px',
-                  borderBottom: '1px solid #3e3e42',
-                  paddingBottom: '8px'
-                }}>
-                  <span style={{ fontWeight: 'bold', color: '#a78bfa' }}>🔍 {editingGeometryName}</span>
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '10px',
+                    borderBottom: '1px solid #3e3e42',
+                    paddingBottom: '8px',
+                  }}
+                >
+                  <span style={{ fontWeight: 'bold', color: '#a78bfa' }}>
+                    🔍 {editingGeometryName}
+                  </span>
                   <button
                     onClick={() => setEditingGeometryName(null)}
-                    style={{ background: '#333', border: '1px solid #555', color: '#fff', padding: '2px 8px', borderRadius: '3px', cursor: 'pointer' }}
-                  >×</button>
+                    style={{
+                      background: '#333',
+                      border: '1px solid #555',
+                      color: '#fff',
+                      padding: '2px 8px',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ×
+                  </button>
                 </div>
                 <div style={{ fontSize: '11px', color: '#aaa' }}>
-                  Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} |
-                  Surfaces: {geometry[editingGeometryName]?.surfaces?.length || 0} |
-                  Type: {geometry[editingGeometryName]?.type_bitmask || 0}
+                  Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} | Surfaces:{' '}
+                  {geometry[editingGeometryName]?.surfaces?.length || 0} | Type:{' '}
+                  {geometry[editingGeometryName]?.type_bitmask || 0}
                 </div>
                 {geometry[editingGeometryName]?.vertices && (
                   <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
@@ -2364,78 +2687,87 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                       </div>
                     ))}
                     {geometry[editingGeometryName].vertices.length > 6 && (
-                      <div style={{ fontStyle: 'italic' }}>... {geometry[editingGeometryName].vertices.length - 6} more</div>
+                      <div style={{ fontStyle: 'italic' }}>
+                        ... {geometry[editingGeometryName].vertices.length - 6} more
+                      </div>
                     )}
                   </div>
                 )}
               </div>
             )}
             <div style={{ maxHeight: '150px', overflowY: 'auto', marginBottom: '10px' }}>
-              {Object.keys(geometry || {}).sort().map(geomName => (
-                <div
-                  key={geomName}
-                  onClick={() => setEditingGeometryName(geomName)}
-                  style={{
-                    background: '#3c3c3c',
-                    padding: '6px 8px',
-                    marginBottom: '5px',
-                    borderRadius: '3px',
-                    fontSize: '11px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    border: `2px solid ${editingGeometryName === geomName ? '#a78bfa' : '#3e3e42'}`
-                  }}
-                  onMouseOver={(e) => {
-                    if (editingGeometryName !== geomName) {
-                      e.currentTarget.style.borderColor = '#0e639c';
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = editingGeometryName === geomName ? '#a78bfa' : '#3e3e42';
-                  }}
-                >
-                  <span>{geomName}</span>
-                  <span style={{ color: '#888', fontSize: '10px' }}>
-                    {geometry[geomName]?.vertices?.length || 0} △
-                  </span>
-                </div>
-              ))}
+              {Object.keys(geometry || {})
+                .sort()
+                .map(geomName => (
+                  <div
+                    key={geomName}
+                    onClick={() => setEditingGeometryName(geomName)}
+                    style={{
+                      background: '#3c3c3c',
+                      padding: '6px 8px',
+                      marginBottom: '5px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      border: `2px solid ${editingGeometryName === geomName ? '#a78bfa' : '#3e3e42'}`,
+                    }}
+                    onMouseOver={e => {
+                      if (editingGeometryName !== geomName) {
+                        e.currentTarget.style.borderColor = '#0e639c';
+                      }
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.borderColor =
+                        editingGeometryName === geomName ? '#a78bfa' : '#3e3e42';
+                    }}
+                  >
+                    <span>{geomName}</span>
+                    <span style={{ color: '#888', fontSize: '10px' }}>
+                      {geometry[geomName]?.vertices?.length || 0} △
+                    </span>
+                  </div>
+                ))}
             </div>
-            <div style={{ fontSize: '11px', color: '#888' }}>
-              Click to inspect geometry details
-            </div>
+            <div style={{ fontSize: '11px', color: '#888' }}>Click to inspect geometry details</div>
           </div>
         </div>
 
         {/* Texture Preview Section */}
         {textureAtlas && (
-          <div style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42'
-            }}>
+          <div
+            style={{
+              background: '#2d2d30',
+              border: '1px solid #3e3e42',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                background: '#37373d',
+                padding: '10px',
+                fontWeight: 'bold',
+                borderBottom: '1px solid #3e3e42',
+              }}
+            >
               🖼️ Texture Atlas
             </div>
             <div style={{ padding: '10px' }}>
-              <div style={{
-                width: '100%',
-                height: '150px',
-                background: '#1e1e1e',
-                border: '1px solid #3e3e42',
-                borderRadius: '3px',
-                overflow: 'hidden',
-                position: 'relative'
-              }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: '150px',
+                  background: '#1e1e1e',
+                  border: '1px solid #3e3e42',
+                  borderRadius: '3px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
                 <img
                   src={textureAtlas}
                   alt="Texture Atlas"
@@ -2443,71 +2775,100 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    imageRendering: 'pixelated'
+                    imageRendering: 'pixelated',
                   }}
                 />
               </div>
               <div style={{ fontSize: '10px', color: '#888', marginTop: '5px' }}>
-                Tile size: {tileset?.tileSize || 16}px |
-                Sheet: {tileset?.sheetSize?.[0] || 512}×{tileset?.sheetSize?.[1] || 512}
+                Tile size: {tileset?.tileSize || 16}px | Sheet: {tileset?.sheetSize?.[0] || 512}×
+                {tileset?.sheetSize?.[1] || 512}
               </div>
             </div>
           </div>
         )}
 
         {/* Map Settings Section */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
-          }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+            }}
+          >
             ⚙️ Map Settings
           </div>
           <div style={{ padding: '10px' }}>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Expected Tileset:
               </label>
-              <div style={{
-                background: '#3c3c3c',
-                padding: '6px 8px',
-                borderRadius: '3px',
-                fontSize: '11px',
-                border: '1px solid #3e3e42'
-              }}>
+              <div
+                style={{
+                  background: '#3c3c3c',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '11px',
+                  border: '1px solid #3e3e42',
+                }}
+              >
                 {map?.tileset || 'unknown'}
               </div>
             </div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Current Size:
               </label>
-              <div style={{
-                background: '#3c3c3c',
-                padding: '6px 8px',
-                borderRadius: '3px',
-                fontSize: '11px',
-                border: '1px solid #3e3e42'
-              }}>
+              <div
+                style={{
+                  background: '#3c3c3c',
+                  padding: '6px 8px',
+                  borderRadius: '3px',
+                  fontSize: '11px',
+                  border: '1px solid #3e3e42',
+                }}
+              >
                 {cells[0]?.length || 0} × {cells.length} cells
               </div>
             </div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Map Width:
               </label>
               <input
                 type="number"
                 value={newMapWidth}
-                onChange={(e) => setNewMapWidth(parseInt(e.target.value) || 1)}
+                onChange={e => setNewMapWidth(parseInt(e.target.value) || 1)}
                 min="1"
                 style={{
                   background: '#3c3c3c',
@@ -2516,18 +2877,25 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '6px 8px',
                   borderRadius: '3px',
                   fontSize: '13px',
-                  width: '100%'
+                  width: '100%',
                 }}
               />
             </div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', color: '#cccccc' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontSize: '12px',
+                  color: '#cccccc',
+                }}
+              >
                 Map Height:
               </label>
               <input
                 type="number"
                 value={newMapHeight}
-                onChange={(e) => setNewMapHeight(parseInt(e.target.value) || 1)}
+                onChange={e => setNewMapHeight(parseInt(e.target.value) || 1)}
                 min="1"
                 style={{
                   background: '#3c3c3c',
@@ -2536,7 +2904,7 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '6px 8px',
                   borderRadius: '3px',
                   fontSize: '13px',
-                  width: '100%'
+                  width: '100%',
                 }}
               />
             </div>
@@ -2551,10 +2919,10 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 12px',
                   borderRadius: '3px',
                   cursor: 'pointer',
-                  fontSize: '12px'
+                  fontSize: '12px',
                 }}
-                onMouseOver={(e) => e.target.style.background = '#1177bb'}
-                onMouseOut={(e) => e.target.style.background = '#0e639c'}
+                onMouseOver={e => (e.target.style.background = '#1177bb')}
+                onMouseOut={e => (e.target.style.background = '#0e639c')}
               >
                 Resize
               </button>
@@ -2572,10 +2940,10 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
                   padding: '8px 12px',
                   borderRadius: '3px',
                   cursor: 'pointer',
-                  fontSize: '12px'
+                  fontSize: '12px',
                 }}
-                onMouseOver={(e) => e.target.style.background = '#4e4e52'}
-                onMouseOut={(e) => e.target.style.background = '#3e3e42'}
+                onMouseOver={e => (e.target.style.background = '#4e4e52')}
+                onMouseOut={e => (e.target.style.background = '#3e3e42')}
               >
                 Clear
               </button>
@@ -2584,39 +2952,66 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         </div>
 
         {/* Help Section */}
-        <div style={{
-          background: '#2d2d30',
-          border: '1px solid #3e3e42',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            background: '#37373d',
-            padding: '10px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #3e3e42'
-          }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            border: '1px solid #3e3e42',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: '#37373d',
+              padding: '10px',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #3e3e42',
+            }}
+          >
             ❓ Help
           </div>
           <div style={{ padding: '10px', fontSize: '11px', lineHeight: '1.6' }}>
-            <strong>Keyboard Shortcuts:</strong><br />
-            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>P</code> - Paint tool<br />
-            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>E</code> - Erase tool<br />
-            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>I</code> - Pick tool<br />
-            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>R</code> - Reset camera<br />
+            <strong>Keyboard Shortcuts:</strong>
             <br />
-            <strong>Visual Markers:</strong><br />
-            <span style={{ color: '#4fc14f' }}>🟢 Green cube</span> - Sprite<br />
-            <span style={{ color: '#4f9fcf' }}>🔵 Blue cube</span> - Object<br />
-            <span style={{ color: '#e5c14f' }}>🟡 Yellow cube</span> - Animated Tile<br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>
+              P
+            </code>{' '}
+            - Paint tool
             <br />
-            <strong>Editing:</strong><br />
-            • <strong>Shift+Click</strong> - Paint<br />
-            • <strong>Shift+Right-Click</strong> - Erase<br />
-            • Regular drag rotates camera<br />
-            • Middle mouse pans<br />
-            • Scroll wheel zooms
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>
+              E
+            </code>{' '}
+            - Erase tool
+            <br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>
+              I
+            </code>{' '}
+            - Pick tool
+            <br />
+            <code style={{ background: '#1e1e1e', padding: '2px 4px', borderRadius: '2px' }}>
+              R
+            </code>{' '}
+            - Reset camera
+            <br />
+            <br />
+            <strong>Visual Markers:</strong>
+            <br />
+            <span style={{ color: '#4fc14f' }}>🟢 Green cube</span> - Sprite
+            <br />
+            <span style={{ color: '#4f9fcf' }}>🔵 Blue cube</span> - Object
+            <br />
+            <span style={{ color: '#e5c14f' }}>🟡 Yellow cube</span> - Animated Tile
+            <br />
+            <br />
+            <strong>Editing:</strong>
+            <br />• <strong>Shift+Click</strong> - Paint
+            <br />• <strong>Shift+Right-Click</strong> - Erase
+            <br />
+            • Regular drag rotates camera
+            <br />
+            • Middle mouse pans
+            <br />• Scroll wheel zooms
           </div>
         </div>
       </div>
@@ -2624,14 +3019,16 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Toolbar */}
-        <div style={{
-          background: '#2d2d30',
-          borderBottom: '1px solid #3e3e42',
-          padding: '10px',
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            background: '#2d2d30',
+            borderBottom: '1px solid #3e3e42',
+            padding: '10px',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ fontSize: '13px', color: '#cccccc' }}>
             Drag to rotate • Middle mouse to pan • Scroll to zoom
           </span>
@@ -2640,19 +3037,21 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         {/* Canvas */}
         <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
           {error && (
-            <div style={{
-              position: 'absolute',
-              top: 10,
-              left: 10,
-              right: 10,
-              background: '#5a1d1d',
-              border: '1px solid #be1100',
-              borderRadius: '3px',
-              padding: '10px',
-              zIndex: 100,
-              fontSize: '13px',
-              color: '#f48771'
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                right: 10,
+                background: '#5a1d1d',
+                border: '1px solid #be1100',
+                borderRadius: '3px',
+                padding: '10px',
+                zIndex: 100,
+                fontSize: '13px',
+                color: '#f48771',
+              }}
+            >
               {error}
             </div>
           )}
@@ -2675,21 +3074,24 @@ function UnifiedMapEditor({ content, onSave, tileset, geometry, tiles, textureAt
         </div>
 
         {/* Status bar */}
-        <div style={{
-          background: '#007acc',
-          color: 'white',
-          padding: '4px 10px',
-          fontSize: '12px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            background: '#007acc',
+            color: 'white',
+            padding: '4px 10px',
+            fontSize: '12px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span>
-            Mode: {editorMode} | Tool: {currentTool} | Tile: {selectedTile} | Height: {currentHeight.toFixed(1)}
+            Mode: {editorMode} | Tool: {currentTool} | Tile: {selectedTile} | Height:{' '}
+            {currentHeight.toFixed(1)}
           </span>
           <span>
-            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'} |
-            Sprites: {sprites.length} | Objects: {objects.length} | Animated: {animatedTiles.length}
+            {hoveredCell ? `Cell: ${hoveredCell.x}, ${hoveredCell.y}` : 'Ready'} | Sprites:{' '}
+            {sprites.length} | Objects: {objects.length} | Animated: {animatedTiles.length}
           </span>
         </div>
       </div>

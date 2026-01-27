@@ -11,11 +11,11 @@
 export { useHistory, createHistoryKeyHandler } from './useHistory.js';
 
 // Keyboard shortcuts
-export { 
-  useKeyboardShortcuts, 
-  useShortcut, 
+export {
+  useKeyboardShortcuts,
+  useShortcut,
   getShortcutDisplay,
-  DEFAULT_SHORTCUTS 
+  DEFAULT_SHORTCUTS,
 } from './useKeyboardShortcuts.js';
 
 // Keyboard context (uses KeyboardManager service)
@@ -34,20 +34,16 @@ export { useSelection } from './useSelection.js';
 export { useClipboard, useClipboardShortcuts } from './useClipboard.js';
 
 // Project context
-export { 
-  useProject, 
-  ProjectProvider, 
-  AssetTypes 
-} from './useProject.js';
+export { useProject, ProjectProvider, AssetTypes } from './useProject.js';
 
 // Asset library
 export { useAssetLibrary } from './useAssetLibrary.js';
 
 // Editor settings
-export { 
-  useSettings, 
-  SettingsProvider, 
-  useSetting, 
+export {
+  useSettings,
+  SettingsProvider,
+  useSetting,
   SettingCategories,
-  DEFAULT_SETTINGS 
+  DEFAULT_SETTINGS,
 } from './useSettings.js';

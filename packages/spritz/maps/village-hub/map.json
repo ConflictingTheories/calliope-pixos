@@ -5,7 +5,7 @@
   "tileset": "village",
   "audioSrc": "fields.mp3",
   "mode": "explore",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -110,7 +110,7 @@
       "selectTrigger": "sprite/portal_enter"
     }
   ],
-  
+
   "lights": [
     {
       "id": "sun-light",
@@ -138,7 +138,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "village-intro",
@@ -147,7 +147,11 @@
           "sprite": "village-elder",
           "action": "dialogue",
           "args": [
-            ["Welcome, brave hero!", "The four elemental trials await you.", "Speak to the Knight Guard to learn more."],
+            [
+              "Welcome, brave hero!",
+              "The four elemental trials await you.",
+              "Speak to the Knight Guard to learn more."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -161,7 +165,12 @@
           "sprite": "knight-guard",
           "action": "dialogue",
           "args": [
-            ["Greetings, warrior!", "Beyond these portals lie the Elemental Chambers.", "Defeat the Fire, Water, Earth, and Air Elementals.", "Only then will the path to the Dark Lord open."],
+            [
+              "Greetings, warrior!",
+              "Beyond these portals lie the Elemental Chambers.",
+              "Defeat the Fire, Water, Earth, and Air Elementals.",
+              "Only then will the path to the Dark Lord open."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -169,14 +178,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "village-load",
       "trigger": "zone/village_hub_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "village-well",
@@ -204,7 +213,7 @@
       "pos": [15, 6, 0.5]
     }
   ],
-  
+
   "menu": {
     "main-menu": {
       "text": "The Elemental Trials",

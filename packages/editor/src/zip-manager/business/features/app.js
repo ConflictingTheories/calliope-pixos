@@ -33,8 +33,14 @@ function getAppFeatures({
   } = constants;
 
   function initAppFeatures() {
-    stylesheetService.setStyle(NO_ENTRIES_CUSTOM_PROPERTY_NAME, JSON.stringify(messages.NO_ENTRIES_LABEL));
-    stylesheetService.setStyle(FOLDER_SEPARATOR_CUSTOM_PROPERTY_NAME, JSON.stringify(FOLDER_SEPARATOR));
+    stylesheetService.setStyle(
+      NO_ENTRIES_CUSTOM_PROPERTY_NAME,
+      JSON.stringify(messages.NO_ENTRIES_LABEL)
+    );
+    stylesheetService.setStyle(
+      FOLDER_SEPARATOR_CUSTOM_PROPERTY_NAME,
+      JSON.stringify(FOLDER_SEPARATOR)
+    );
     documentService.setDocumentLanguage(i18nService.getLanguageId());
     documentService.removeDocumentAttribute(APP_LOADING_ATTRIBUTE_NAME);
   }

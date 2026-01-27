@@ -1,8 +1,5 @@
 /* global AudioContext, webkitAudioContext */
 
- 
- 
-
 // jsSID by Hermit (Mihaly Horvath) : a javascript SID emulator and player for the Web Audio API
 // (Year 2016) http://hermit.sidrip.com
 
@@ -15,7 +12,7 @@
 // - Read SID chip address
 // - Now handles suspend/resume
 
-var sidLibrary,
+let sidLibrary,
   audioContext,
   out,
   endcallback,
@@ -28,7 +25,7 @@ var sidLibrary,
   buffercallback;
 
 function jsSID(bufferlen, background_noise) {
-  var jsSID_audioCtx, jsSID_scriptNode;
+  let jsSID_audioCtx, jsSID_scriptNode;
   this.author = 'Hermit';
   this.sourcecode = 'http://hermit.uw.hu';
   this.version = '0.9.1.7';
@@ -40,7 +37,7 @@ function jsSID(bufferlen, background_noise) {
   } else {
     audioContext = jsSID_audioCtx = new webkitAudioContext();
   }
-  var samplerate = jsSID_audioCtx.sampleRate;
+  let samplerate = jsSID_audioCtx.sampleRate;
   if (typeof jsSID_audioCtx.createJavaScriptNode === 'function') {
     jsSID_scriptNode = jsSID_audioCtx.createJavaScriptNode(bufferlen, 0, 1);
   } else {
@@ -51,9 +48,9 @@ function jsSID(bufferlen, background_noise) {
 
   jsSID_scriptNode.onaudioprocess = function (e) {
     //scriptNode will be replaced by AudioWorker in new browsers sooner or later
-    var outBuffer = e.outputBuffer;
-    var outData = outBuffer.getChannelData(0);
-    for (var sample = 0; sample < outBuffer.length; sample++) {
+    let outBuffer = e.outputBuffer;
+    let outData = outBuffer.getChannelData(0);
+    for (let sample = 0; sample < outBuffer.length; sample++) {
       outData[sample] = play();
     }
     if (typeof buffercallback !== 'undefined') buffercallback();
@@ -75,7 +72,7 @@ function jsSID(bufferlen, background_noise) {
     subtune = subt;
 
     // SID-file format information can be found at HVSC
-    var i,
+    let i,
       strend,
       offs = filedata[7];
     loadaddr =
@@ -104,23 +101,18 @@ function jsSID(bufferlen, background_noise) {
       if (strend != 0) strend = SIDinfo[i] = filedata[0x56 + i];
       else strend = SIDinfo[i] = 0;
     }
-    initaddr =
-      filedata[0xa] + filedata[0xb]
-        ? filedata[0xa] * 256 + filedata[0xb]
-        : loadaddr;
+    initaddr = filedata[0xa] + filedata[0xb] ? filedata[0xa] * 256 + filedata[0xb] : loadaddr;
     playaddr = playaddf = filedata[0xc] * 256 + filedata[0xd];
     subtune_amount = filedata[0xf];
     preferred_SID_model[0] = (filedata[0x77] & 0x30) >= 0x20 ? 8580 : 6581;
     preferred_SID_model[1] = (filedata[0x77] & 0xc0) >= 0x80 ? 8580 : 6581;
     preferred_SID_model[2] = (filedata[0x76] & 3) >= 3 ? 8580 : 6581;
     SID_address[1] =
-      filedata[0x7a] >= 0x42 &&
-      (filedata[0x7a] < 0x80 || filedata[0x7a] >= 0xe0)
+      filedata[0x7a] >= 0x42 && (filedata[0x7a] < 0x80 || filedata[0x7a] >= 0xe0)
         ? 0xd000 + filedata[0x7a] * 16
         : 0;
     SID_address[2] =
-      filedata[0x7b] >= 0x42 &&
-      (filedata[0x7b] < 0x80 || filedata[0x7b] >= 0xe0)
+      filedata[0x7b] >= 0x42 && (filedata[0x7b] < 0x80 || filedata[0x7b] >= 0xe0)
         ? 0xd000 + filedata[0x7b] * 16
         : 0;
     SIDamount = 1 + (SID_address[1] > 0) + (SID_address[2] > 0);
@@ -225,7 +217,7 @@ function jsSID(bufferlen, background_noise) {
     PAL_FRAMERATE = 50, //NTSC_FRAMERATE = 60;
     SID_CHANNEL_AMOUNT = 3,
     OUTPUT_SCALEDOWN = 0x10000 * SID_CHANNEL_AMOUNT * 16;
-  var SIDamount_vol = [0, 1, 0.6, 0.4];
+  let SIDamount_vol = [0, 1, 0.6, 0.4];
   //how much to attenuate with more 2SID/3SID to avoid master-output overflows
 
   //SID playback related arrays/variables - avoiding internal/automatic variables to retain speed
@@ -251,9 +243,9 @@ function jsSID(bufferlen, background_noise) {
     finished = 0,
     loadcallback = null,
     startcallback = null;
-  (endcallback = null), (playtime = 0), (ended = 0);
-  var clk_ratio = C64_PAL_CPUCLK / samplerate;
-  var frame_sampleperiod = samplerate / PAL_FRAMERATE;
+  ((endcallback = null), (playtime = 0), (ended = 0));
+  let clk_ratio = C64_PAL_CPUCLK / samplerate;
+  let frame_sampleperiod = samplerate / PAL_FRAMERATE;
   //samplerate/(PAL_FRAMERATE*framespeed);
   var framecnt = 1,
     volume = 0.5,
@@ -275,7 +267,7 @@ function jsSID(bufferlen, background_noise) {
       A = subtune;
       memory[1] = 0x37;
       memory[0xdc05] = 0;
-      for (var timeout = 100000; timeout >= 0; timeout--) {
+      for (let timeout = 100000; timeout >= 0; timeout--) {
         if (CPU()) break;
       }
       if (timermode[subtune] || memory[0xdc05]) {
@@ -284,8 +276,7 @@ function jsSID(bufferlen, background_noise) {
           memory[0xdc04] = 0x24;
           memory[0xdc05] = 0x40;
         }
-        frame_sampleperiod =
-          (memory[0xdc04] + memory[0xdc05] * 256) / clk_ratio;
+        frame_sampleperiod = (memory[0xdc04] + memory[0xdc05] * 256) / clk_ratio;
       } else frame_sampleperiod = samplerate / PAL_FRAMERATE;
       //Vsync timing
       //frame_sampleperiod = (memory[0xDC05]!=0 || (!timermode[subtune] && playaddf))? samplerate/PAL_FRAMERATE : (memory[0xDC04] + memory[0xDC05]*256) / clk_ratio;
@@ -328,22 +319,13 @@ function jsSID(bufferlen, background_noise) {
             finished = 1;
             break;
           } else CPUtime += cycles;
-          if (
-            (memory[1] & 3) > 1 &&
-            pPC < 0xe000 &&
-            (PC == 0xea31 || PC == 0xea81)
-          ) {
+          if ((memory[1] & 3) > 1 && pPC < 0xe000 && (PC == 0xea31 || PC == 0xea81)) {
             finished = 1;
             break;
           }
           //IRQ player ROM return handling
-          if (
-            (addr == 0xdc05 || addr == 0xdc04) &&
-            memory[1] & 3 &&
-            timermode[subtune]
-          )
-            frame_sampleperiod =
-              (memory[0xdc04] + memory[0xdc05] * 256) / clk_ratio;
+          if ((addr == 0xdc05 || addr == 0xdc04) && memory[1] & 3 && timermode[subtune])
+            frame_sampleperiod = (memory[0xdc04] + memory[0xdc05] * 256) / clk_ratio;
           //Galway/Rubicon workaround
           if (storadd >= 0xd420 && storadd < 0xd800 && memory[1] & 3) {
             //CJ in the USA workaround (writing above $d420, except SID2/SID3)
@@ -391,7 +373,7 @@ function jsSID(bufferlen, background_noise) {
     } else frame_sampleperiod = samplerate / (PAL_FRAMERATE * multi);
   }
 
-  var //CPU (and CIA/VIC-IRQ) emulation constants and variables - avoiding internal/automatic variables to retain speed
+  let //CPU (and CIA/VIC-IRQ) emulation constants and variables - avoiding internal/automatic variables to retain speed
     flagsw = [0x01, 0x21, 0x04, 0x24, 0x00, 0x40, 0x08, 0x28],
     branchflag = [0x80, 0x40, 0x01, 0x02];
   var PC = 0,
@@ -495,8 +477,7 @@ function jsSID(bufferlen, background_noise) {
           ST &= 20;
           ST |= (A & 128) | (A > 255);
           A &= 0xff;
-          ST |=
-            (!A << 1) | ((!((T ^ memory[addr]) & 0x80) && (T ^ A) & 0x80) >> 1);
+          ST |= (!A << 1) | ((!((T ^ memory[addr]) & 0x80) && (T ^ A) & 0x80) >> 1);
           break;
         //ADC
         case 0xe0:
@@ -505,8 +486,7 @@ function jsSID(bufferlen, background_noise) {
           ST &= 20;
           ST |= (A & 128) | (A >= 0);
           A &= 0xff;
-          ST |=
-            (!A << 1) | (((T ^ memory[addr]) & 0x80 && (T ^ A) & 0x80) >> 1);
+          ST |= (!A << 1) | (((T ^ memory[addr]) & 0x80 && (T ^ A) & 0x80) >> 1);
           break;
         //SBC
         case 0xc0:
@@ -550,8 +530,7 @@ function jsSID(bufferlen, background_noise) {
       switch (IR & 0x1f) {
         //addressing modes
         case 0x1e:
-          addr =
-            memory[++PC] + memory[++PC] * 256 + ((IR & 0xc0) != 0x80 ? X : Y);
+          addr = memory[++PC] + memory[++PC] * 256 + ((IR & 0xc0) != 0x80 ? X : Y);
           cycles = 5;
           break;
         //abs,x / abs,y
@@ -895,7 +874,7 @@ function jsSID(bufferlen, background_noise) {
   //So I advise to keep them here. As they have 'var' in the declaration, they are in this scope and won't interfere with anything outside jsSID.
   //(The same is true for CPU emulation and player.)
 
-  var //SID emulation constants and variables
+  let //SID emulation constants and variables
     GATE_BITMASK = 0x01,
     SYNC_BITMASK = 0x02,
     RING_BITMASK = 0x04,
@@ -917,22 +896,21 @@ function jsSID(bufferlen, background_noise) {
     envcnt = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     expcnt = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     prevSR = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var phaseaccu = [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  let phaseaccu = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     prevaccu = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     sourceMSBrise = [0, 0, 0],
     sourceMSB = [0, 0, 0];
-  var noise_LFSR = [
-    0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8,
-    0x7ffff8, 0x7ffff8
+  let noise_LFSR = [
+    0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8, 0x7ffff8,
   ];
-  var prevwfout = [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  let prevwfout = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     prevwavdata = [0, 0, 0, 0, 0, 0, 0, 0, 0],
     combiwf;
-  var prevlowpass = [0, 0, 0],
+  let prevlowpass = [0, 0, 0],
     prevbandpass = [0, 0, 0],
     cutoff_ratio_8580 = (-2 * 3.14 * (12500 / 256)) / samplerate,
     cutoff_ratio_6581 = (-2 * 3.14 * (20000 / 256)) / samplerate;
-  var prevgate,
+  let prevgate,
     chnadd,
     ctrl,
     wf,
@@ -954,7 +932,7 @@ function jsSID(bufferlen, background_noise) {
   //           21:cutoffl 22:cutoffh 23:flsw_reso 24:vol_ftype 25:potX 26:potY 27:OSC3 28:ENV3
 
   function initSID() {
-    var i;
+    let i;
     for (i = 0xd400; i <= 0xd7ff; i++) memory[i] = 0;
     for (i = 0xde00; i <= 0xdfff; i++) memory[i] = 0;
     for (i = 0; i < 9; i++) {
@@ -970,7 +948,7 @@ function jsSID(bufferlen, background_noise) {
 
     //treating 2SID and 3SID channels uniformly (0..5 / 0..8), this probably avoids some extra code
     for (
-      var channel = num * SID_CHANNEL_AMOUNT;
+      let channel = num * SID_CHANNEL_AMOUNT;
       channel < (num + 1) * SID_CHANNEL_AMOUNT;
       channel++
     ) {
@@ -986,12 +964,10 @@ function jsSID(bufferlen, background_noise) {
       if (prevgate != (ctrl & GATE_BITMASK)) {
         //gatebit-change?
         if (prevgate) {
-          ADSRstate[channel] &=
-            0xff - (GATE_BITMASK | ATTACK_BITMASK | DECAYSUSTAIN_BITMASK);
+          ADSRstate[channel] &= 0xff - (GATE_BITMASK | ATTACK_BITMASK | DECAYSUSTAIN_BITMASK);
         } //falling edge (with Whittaker workaround this never happens, but should be here)
         else {
-          ADSRstate[channel] =
-            GATE_BITMASK | ATTACK_BITMASK | DECAYSUSTAIN_BITMASK;
+          ADSRstate[channel] = GATE_BITMASK | ATTACK_BITMASK | DECAYSUSTAIN_BITMASK;
           //rising edge, also sets hold_zero_bit=0
           if ((SR & 0xf) > (prevSR[channel] & 0xf)) tmp = 1;
           //assume SR->GATE write order: workaround to have crisp soundstarts by triggering delay-bug
@@ -1017,11 +993,7 @@ function jsSID(bufferlen, background_noise) {
       }
       step = ADSRstep[step];
 
-      if (
-        ratecnt[channel] >= period &&
-        ratecnt[channel] < period + clk_ratio &&
-        tmp == 0
-      ) {
+      if (ratecnt[channel] >= period && ratecnt[channel] < period + clk_ratio && tmp == 0) {
         //ratecounter shot (matches rateperiod) (in genuine SID ratecounter is LFSR)
         ratecnt[channel] -= period;
         //compensation for timing instead of simply setting 0 on rate-counter overload
@@ -1132,13 +1104,10 @@ function jsSID(bufferlen, background_noise) {
           //(this would be enough for simple but aliased-at-high-pitches pulse)
           if (wf & TRI_BITMASK) {
             if (wf & SAW_BITMASK) {
-              wfout = wfout
-                ? combinedWF(channel, PulseTriSaw_8580, tmp >> 4, 1)
-                : 0;
+              wfout = wfout ? combinedWF(channel, PulseTriSaw_8580, tmp >> 4, 1) : 0;
             } //pulse+saw+triangle (waveform nearly identical to tri+saw)
             else {
-              tmp =
-                phaseaccu[channel] ^ (ctrl & RING_BITMASK ? sourceMSB[num] : 0);
+              tmp = phaseaccu[channel] ^ (ctrl & RING_BITMASK ? sourceMSB[num] : 0);
               wfout = wfout
                 ? combinedWF(
                     channel,
@@ -1163,8 +1132,7 @@ function jsSID(bufferlen, background_noise) {
         //The waveform at the output essentially becomes an asymmetric triangle, more-and-more approaching symmetric shape towards high frequencies.
         //(If you check a recording from the real SID, you can see a similar shape, the high-pitch sawtooth waves are triangle-like...)
         //But for deep sounds the sawtooth is really close to a sawtooth, as there is no aliasing there, but deep sounds should be sharp...
-        if (wf & TRI_BITMASK)
-          wfout = combinedWF(channel, TriSaw_8580, wfout >> 4, 1);
+        if (wf & TRI_BITMASK) wfout = combinedWF(channel, TriSaw_8580, wfout >> 4, 1);
         //saw+triangle
         else {
           step = accuadd / 0x1200000;
@@ -1192,10 +1160,7 @@ function jsSID(bufferlen, background_noise) {
         //routing the channel signal to either the filter or the unfiltered master output depending on filter-switch SID-registers
         if (memory[SIDaddr + 0x17] & FILTSW[channel])
           filtin += (wfout - 0x8000) * (envcnt[channel] / 256);
-        else if (
-          channel % SID_CHANNEL_AMOUNT != 2 ||
-          !(memory[SIDaddr + 0x18] & OFF3_BITMASK)
-        )
+        else if (channel % SID_CHANNEL_AMOUNT != 2 || !(memory[SIDaddr + 0x18] & OFF3_BITMASK))
           output += (wfout - 0x8000) * (envcnt[channel] / 256);
       }
     }
@@ -1215,10 +1180,7 @@ function jsSID(bufferlen, background_noise) {
     } else {
       if (cutoff < 24) cutoff = 0.035;
       else cutoff = 1 - 1.263 * Math.exp(cutoff * cutoff_ratio_6581);
-      resonance =
-        memory[SIDaddr + 0x17] > 0x5f
-          ? 8 / (memory[SIDaddr + 0x17] >> 4)
-          : 1.41;
+      resonance = memory[SIDaddr + 0x17] > 0x5f ? 8 / (memory[SIDaddr + 0x17] >> 4) : 1.41;
     }
     tmp = filtin + prevbandpass[num] * resonance + prevlowpass[num];
     if (memory[SIDaddr + 0x18] & HIGHPASS_BITMASK) output -= tmp;
@@ -1287,15 +1249,13 @@ function jsSID(bufferlen, background_noise) {
 
   function createCombinedWF(wfarray, bitmul, bitstrength, treshold) {
     //I found out how the combined waveform works (neighboring bits affect each other recursively)
-    for (var i = 0; i < 4096; i++) {
+    for (let i = 0; i < 4096; i++) {
       wfarray[i] = 0;
       //neighbour-bit strength and DAC MOSFET treshold is approximately set by ears'n'trials
-      for (var j = 0; j < 12; j++) {
-        var bitlevel = 0;
-        for (var k = 0; k < 12; k++) {
-          bitlevel +=
-            (bitmul / Math.pow(bitstrength, Math.abs(k - j))) *
-            (((i >> k) & 1) - 0.5);
+      for (let j = 0; j < 12; j++) {
+        let bitlevel = 0;
+        for (let k = 0; k < 12; k++) {
+          bitlevel += (bitmul / Math.pow(bitstrength, Math.abs(k - j))) * (((i >> k) & 1) - 0.5);
         }
         wfarray[i] += bitlevel >= treshold ? Math.pow(2, j) : 0;
       }
@@ -1311,7 +1271,7 @@ function jsSID(bufferlen, background_noise) {
   PulseTriSaw_8580 = new Array(4096);
   createCombinedWF(PulseTriSaw_8580, 0.8, 2.5, 0.64);
 
-  var period0 = Math.max(clk_ratio, 9);
+  let period0 = Math.max(clk_ratio, 9);
   var ADSRperiods = [
     period0,
     32 * 1,
@@ -1328,26 +1288,9 @@ function jsSID(bufferlen, background_noise) {
     3907 * 1,
     11720 * 1,
     19532 * 1,
-    31251 * 1
+    31251 * 1,
   ];
-  var ADSRstep = [
-    Math.ceil(period0 / 9),
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1
-  ];
+  var ADSRstep = [Math.ceil(period0 / 9), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
   //prescaler values that slow down the envelope-counter as it decays and approaches zero level
   var ADSR_exptable = [
@@ -1606,7 +1549,7 @@ function jsSID(bufferlen, background_noise) {
     1,
     1,
     1,
-    1
+    1,
   ];
 }
 

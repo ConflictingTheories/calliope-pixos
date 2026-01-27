@@ -35,7 +35,7 @@ export default class Store {
    */
   all = () => {
     return Object.assign({}, this.store);
-  }
+  };
 
   /**
    * Gets list of keys (no values).
@@ -43,7 +43,7 @@ export default class Store {
    */
   keys = () => {
     return Object.keys(this.store);
-  }
+  };
 
   /**
    * Gets list of values from store (no keys).
@@ -51,7 +51,7 @@ export default class Store {
    */
   values = () => {
     return Object.keys(this.store).map(key => this.store[key]);
-  }
+  };
 
   /**
    * Returns size of keystore.
@@ -59,8 +59,7 @@ export default class Store {
    */
   size = () => {
     return Object.keys(this.store).length;
-  }
-
+  };
 
   /**
    * Fetches value from store.
@@ -68,12 +67,12 @@ export default class Store {
    * @returns {any} The value associated with the key.
    * @throws {string} If the key does not exist.
    */
-  get = (key) => {
+  get = key => {
     if (!this.store[key]) {
       throw 'no key set';
     }
     return this.store[key];
-  }
+  };
 
   /**
    * Adds key to store but only if not existing.
@@ -83,11 +82,11 @@ export default class Store {
    * @throws {string} If the key already exists.
    */
   add = (key, value) => {
-    if (!!this.store[key]) {
+    if (this.store[key]) {
       throw 'key already exists';
     }
     return (this.store[key] = { ...value });
-  }
+  };
 
   /**
    * Sets key in store (no checks for existing - just overwrites).
@@ -97,14 +96,14 @@ export default class Store {
    */
   set = (key, changes) => {
     return (this.store[key] = { ...changes });
-  }
+  };
 
   /**
    * Deletes key from store.
    * @param {string} key - The key to delete.
    * @returns {null} Null.
    */
-  delete = (key) => {
+  delete = key => {
     return (this.store[key] = null);
-  }
+  };
 }

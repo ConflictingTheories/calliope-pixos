@@ -14,13 +14,13 @@
 /**
  * CollisionMask - Bit-mask system for collision layers.
  * Allows filtering collisions by layer (e.g., players don't collide with items).
- * 
+ *
  * Usage:
  *   const PLAYER_LAYER = 0x01;  // Bit 0
  *   const ENEMY_LAYER = 0x02;   // Bit 1
  *   const ITEM_LAYER = 0x04;    // Bit 2
  *   const WALL_LAYER = 0x08;    // Bit 3
- * 
+ *
  *   body.collisionLayer = PLAYER_LAYER;
  *   body.collisionMask = ENEMY_LAYER | WALL_LAYER; // Collide with enemies and walls
  */
@@ -29,15 +29,15 @@ export default class CollisionMask {
    * Predefined collision layers.
    */
   static Layers = {
-    DEFAULT: 0x01,      // Bit 0
-    PLAYER: 0x02,       // Bit 1
-    ENEMY: 0x04,        // Bit 2
-    ITEM: 0x08,         // Bit 3
-    WALL: 0x10,         // Bit 4
-    TRIGGER: 0x20,      // Bit 5
-    PROJECTILE: 0x40,   // Bit 6
-    NPC: 0x80,          // Bit 7
-    ALL: 0xFF,          // All layers
+    DEFAULT: 0x01, // Bit 0
+    PLAYER: 0x02, // Bit 1
+    ENEMY: 0x04, // Bit 2
+    ITEM: 0x08, // Bit 3
+    WALL: 0x10, // Bit 4
+    TRIGGER: 0x20, // Bit 5
+    PROJECTILE: 0x40, // Bit 6
+    NPC: 0x80, // Bit 7
+    ALL: 0xff, // All layers
   };
 
   /**

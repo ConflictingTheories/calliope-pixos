@@ -5,7 +5,7 @@
   "tileset": "village",
   "audioSrc": "jungle-rhythm.mp3",
   "mode": "tactics",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -61,7 +61,7 @@
       "facing": "Down"
     }
   ],
-  
+
   "lights": [
     {
       "id": "earth-glow-1",
@@ -100,7 +100,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "earth-trial-intro",
@@ -109,7 +109,11 @@
           "sprite": "earth-elemental",
           "action": "dialogue",
           "args": [
-            ["The ground trembles at my awakening...", "I am the mountain, unyielding and eternal!", "Can your spirit match the weight of the world?"],
+            [
+              "The ground trembles at my awakening...",
+              "I am the mountain, unyielding and eternal!",
+              "Can your spirit match the weight of the world?"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -124,7 +128,11 @@
           "sprite": "earth-elemental",
           "action": "dialogue",
           "args": [
-            ["Your roots... run deep...", "The Earth Shard acknowledges your strength.", "Stand firm, hero. The final trial approaches."],
+            [
+              "Your roots... run deep...",
+              "The Earth Shard acknowledges your strength.",
+              "Stand firm, hero. The final trial approaches."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -132,14 +140,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "earth-chamber-load",
       "trigger": "zone/earth_chamber_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "boulder-1",
@@ -174,6 +182,6 @@
       "pos": [8, 9, 0]
     }
   ],
-  
+
   "menu": {}
 }

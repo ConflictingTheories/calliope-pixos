@@ -3,7 +3,7 @@
   "$id": "https://pixospritz.dev/schemas/matrix.spec.json",
   "title": "Matrix Specification",
   "description": "Shared matrix math specifications for JS and C engines",
-  
+
   "definitions": {
     "Matrix4": {
       "description": "4x4 transformation matrix in column-major order (WebGL/OpenGL compatible)",
@@ -19,7 +19,7 @@
       },
       "required": ["data"]
     },
-    
+
     "Matrix3": {
       "description": "3x3 matrix for rotations and normals",
       "type": "object",
@@ -34,7 +34,7 @@
       "required": ["data"]
     }
   },
-  
+
   "operations": {
     "Matrix4": {
       "identity": {
@@ -145,14 +145,26 @@
       }
     }
   },
-  
+
   "layout": {
     "description": "Column-major order for WebGL/OpenGL compatibility",
     "indexMapping": {
-      "m00": 0, "m10": 1, "m20": 2, "m30": 3,
-      "m01": 4, "m11": 5, "m21": 6, "m31": 7,
-      "m02": 8, "m12": 9, "m22": 10, "m32": 11,
-      "m03": 12, "m13": 13, "m23": 14, "m33": 15
+      "m00": 0,
+      "m10": 1,
+      "m20": 2,
+      "m30": 3,
+      "m01": 4,
+      "m11": 5,
+      "m21": 6,
+      "m31": 7,
+      "m02": 8,
+      "m12": 9,
+      "m22": 10,
+      "m32": 11,
+      "m03": 12,
+      "m13": 13,
+      "m23": 14,
+      "m33": 15
     },
     "translationIndices": [12, 13, 14],
     "scaleIndices": [0, 5, 10]

@@ -86,7 +86,17 @@ export class ColorTexture extends Loadable {
     const pixel = new Uint8Array([...this.color]);
 
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      internalFormat,
+      width,
+      height,
+      border,
+      srcFormat,
+      srcType,
+      pixel
+    );
     this.loaded = true;
     this.onLoadActions.run();
   }

@@ -20,7 +20,13 @@ import { Direction, mergeDeep } from '@Engine/utils/enums.js';
 import Resources from '@Engine/utils/resources.js';
 import ActionQueue from '@Engine/core/queue/index.js';
 import { Vector } from '@Engine/utils/math/vector.js';
-import { EventLoader, SpriteLoader, TilesetLoader, ActionLoader, ObjectLoader } from '@Engine/utils/loaders/index.js';
+import {
+  EventLoader,
+  SpriteLoader,
+  TilesetLoader,
+  ActionLoader,
+  ObjectLoader,
+} from '@Engine/utils/loaders/index.js';
 import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import { debug } from '@Engine/utils/debug-logger.js';
@@ -119,9 +125,10 @@ export default class Zone extends Loadable {
     if (
       this.loaded ||
       !this.tileset?.loaded ||
-      !this.spriteList.every((s) => s.loaded) ||
-      !this.objectList.every((o) => o.loaded)
-    ) return;
+      !this.spriteList.every(s => s.loaded) ||
+      !this.objectList.every(o => o.loaded)
+    )
+      return;
 
     this.loaded = true;
     this.loadScripts(true);
@@ -164,13 +171,16 @@ export default class Zone extends Loadable {
       const rawCells = cellData.cells ? cellData.cells : cellData;
       this.cells = typeof rawCells === 'function' ? rawCells(this.bounds, this) : rawCells;
 
-      this.sprites = typeof data.sprites === 'function' ? data.sprites(this.bounds, this) : data.sprites || [];
-      this.objects = typeof data.objects === 'function' ? data.objects(this.bounds, this) : data.objects || [];
+      this.sprites =
+        typeof data.sprites === 'function' ? data.sprites(this.bounds, this) : data.sprites || [];
+      this.objects =
+        typeof data.objects === 'function' ? data.objects(this.bounds, this) : data.objects || [];
 
       this.tileset = await this.tsLoader.load(data.tileset, this.spritzName);
       this.attachTilesetListeners();
 
-      if (this.audioSrc) this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true);
+      if (this.audioSrc)
+        this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true);
 
       await Promise.all([
         Promise.all(this.sprites.map(this.loadSprite)),
@@ -185,8 +195,7 @@ export default class Zone extends Loadable {
       await this.finalize();
       // If the zone JSON declares a mode, load mode scripts from the spritz package
       try {
-        if (data.mode)
-          await this.loadMode(data.mode);
+        if (data.mode) await this.loadMode(data.mode);
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
@@ -200,14 +209,17 @@ export default class Zone extends Loadable {
    */
   load = async () => {
     try {
-      const mapModule = await import('../../../../spritz/' + this.spritzName + '/maps/' + this.id + '/map.js');
+      const mapModule = await import(
+        '../../../../spritz/' + this.spritzName + '/maps/' + this.id + '/map.js'
+      );
       const data = mapModule.default;
       Object.assign(this, data);
 
       // dynamic cells (such as randomly generated)
       if (typeof this.cells === 'function') this.cells = this.cells(this.bounds, this);
       // Background audio
-      if (this.audioSrc) this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true);
+      if (this.audioSrc)
+        this.audio = this.engine.resourceManager.audioLoader.load(this.audioSrc, true);
 
       // Load in tileset assets
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
@@ -233,8 +245,7 @@ export default class Zone extends Loadable {
       await this.finalize();
       // If zone specifies a default mode name on the map data, attempt to load it from spritz package
       try {
-        if (data.mode)
-          await this.loadMode(data.mode);
+        if (data.mode) await this.loadMode(data.mode);
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
@@ -242,9 +253,8 @@ export default class Zone extends Loadable {
       try {
         this.engine.networkManager.joinZone(this.id);
       } catch (e) {
-        console.warn('Network Error :: could not send zone commend to server')
+        console.warn('Network Error :: could not send zone commend to server');
       }
-
     } catch (e) {
       console.error('Error parsing zone ' + this.id, e);
     }
@@ -294,12 +304,16 @@ export default class Zone extends Loadable {
     if (jsFile) {
       const triggerScript = await jsFile.async('string');
       // new Function isolates scope; it receives (zone, engine) and must return a function
-      const factory = new Function('zone', 'engine', `${triggerScript}; return (typeof module !== 'undefined' && module.exports) ? module.exports : (typeof exports !== 'undefined' ? exports : (typeof trigger === 'function' ? trigger : null));`);
+      const factory = new Function(
+        'zone',
+        'engine',
+        `${triggerScript}; return (typeof module !== 'undefined' && module.exports) ? module.exports : (typeof exports !== 'undefined' ? exports : (typeof trigger === 'function' ? trigger : null));`
+      );
       const fn = factory(this, this.engine);
       if (typeof fn === 'function') return fn.bind(this, this);
     }
 
-    return () => { };
+    return () => {};
   };
 
   /**
@@ -342,12 +356,14 @@ export default class Zone extends Loadable {
             const res = await ui.run(updateScript);
             // If the script returned a callable (Lua function) we invoke it
             if (typeof res === 'function') res(time, params);
-          } catch (e) { console.warn('mode update exec failed', e); }
+          } catch (e) {
+            console.warn('mode update exec failed', e);
+          }
         };
       }
       if (teardownFile) {
         const tdScript = await teardownFile.async('string');
-        handlers.teardown = async (params) => {
+        handlers.teardown = async params => {
           try {
             const td = new PixoScriptInterpreter(this.engine);
             td.setScope({ zone: this });
@@ -376,7 +392,7 @@ export default class Zone extends Loadable {
    * Loads a mode.
    * @param {string} modeName - The mode name.
    */
-  loadMode = async (modeName) => {
+  loadMode = async modeName => {
     try {
       const world = this.world;
       await this.loadModeFromZip(modeName, world.spritz.zip);
@@ -397,21 +413,25 @@ export default class Zone extends Loadable {
       // Zone extensions
       if (zoneJson.extends?.length) {
         let extension = {};
-        await Promise.all(zoneJson.extends.map(async (file) => {
-          const str = await zip.file('maps/' + file + '/map.json').async('string');
-          extension = mergeDeep(extension, JSON.parse(str));
-        }));
+        await Promise.all(
+          zoneJson.extends.map(async file => {
+            const str = await zip.file('maps/' + file + '/map.json').async('string');
+            extension = mergeDeep(extension, JSON.parse(str));
+          })
+        );
         zoneJson = Object.assign(extension, { ...zoneJson, extends: null });
       }
 
       // Cell extensions
       if (cellJson.extends?.length) {
         let cells = [];
-        await Promise.all(cellJson.extends.map(async (file) => {
-          const str = await zip.file('maps/' + file + '/cells.json').async('string');
-          const parsed = JSON.parse(str);
-          cells = cells.concat(parsed.cells ? parsed.cells : parsed);
-        }));
+        await Promise.all(
+          cellJson.extends.map(async file => {
+            const str = await zip.file('maps/' + file + '/cells.json').async('string');
+            const parsed = JSON.parse(str);
+            cells = cells.concat(parsed.cells ? parsed.cells : parsed);
+          })
+        );
         cellJson = cells.concat(cellJson.cells || []);
       }
 
@@ -435,12 +455,16 @@ export default class Zone extends Loadable {
       // Menus
       if (zoneJson.menu) {
         const menus = {};
-        await Promise.all(Object.keys(zoneJson.menu).map(async (id) => {
-          const menu = { ...zoneJson.menu[id], id };
-          if (menu.onOpen) menu.onOpen = (await this.loadTriggerFromZip(menu.onOpen, zip)).bind(this, this);
-          if (menu.trigger) menu.trigger = (await this.loadTriggerFromZip(menu.trigger, zip)).bind(this, this);
-          menus[id] = menu;
-        }));
+        await Promise.all(
+          Object.keys(zoneJson.menu).map(async id => {
+            const menu = { ...zoneJson.menu[id], id };
+            if (menu.onOpen)
+              menu.onOpen = (await this.loadTriggerFromZip(menu.onOpen, zip)).bind(this, this);
+            if (menu.trigger)
+              menu.trigger = (await this.loadTriggerFromZip(menu.trigger, zip)).bind(this, this);
+            menus[id] = menu;
+          })
+        );
         this.menus = menus;
         this.world.startMenu(this.menus);
       }
@@ -464,20 +488,44 @@ export default class Zone extends Loadable {
 
       // Audio
       if (zoneJson.mode) {
-        try { this.mode = zoneJson.mode } catch (e) { console.error('audio load', e); }
+        try {
+          this.mode = zoneJson.mode;
+        } catch (e) {
+          console.error('audio load', e);
+        }
       }
 
       // Audio
       if (zoneJson.audioSrc) {
-        try { this.audio = await this.engine.resourceManager.audioLoader.loadFromZip(zip, zoneJson.audioSrc, true); } catch (e) { console.error('audio load', e); }
+        try {
+          this.audio = await this.engine.resourceManager.audioLoader.loadFromZip(
+            zip,
+            zoneJson.audioSrc,
+            true
+          );
+        } catch (e) {
+          console.error('audio load', e);
+        }
       }
 
       // Lights
       try {
         this.lights = zoneJson.lights ?? [];
         const lm = this.engine.renderManager.lightManager;
-        for (const l of this.lights) lm.addLight(l.id, l.pos, l.color, l.attenuation, l.direction, l.density, l.scatteringCoefficients, l.enabled);
-      } catch (e) { console.error('lights', e); }
+        for (const l of this.lights)
+          lm.addLight(
+            l.id,
+            l.pos,
+            l.color,
+            l.attenuation,
+            l.direction,
+            l.density,
+            l.scatteringCoefficients,
+            l.enabled
+          );
+      } catch (e) {
+        console.error('lights', e);
+      }
 
       // Tileset + size
       this.tileset = tileset;
@@ -488,14 +536,16 @@ export default class Zone extends Loadable {
         try {
           const fn = new Function('bounds', 'zone', `return (${this.sprites})(bounds, zone);`);
           this.sprites = fn.call(this, this.bounds, this);
-        } catch (e) { console.error('sprite fn', e); }
+        } catch (e) {
+          console.error('sprite fn', e);
+        }
       }
       this.sprites = this.sprites || [];
       this.objects = this.objects || [];
 
       await Promise.all([
-        Promise.all(this.sprites.map((s) => this.loadSpriteFromZip(s, zip, skipCache))),
-        Promise.all(this.objects.map((o) => this.loadObjectFromZip(o, zip))),
+        Promise.all(this.sprites.map(s => this.loadSpriteFromZip(s, zip, skipCache))),
+        Promise.all(this.objects.map(o => this.loadObjectFromZip(o, zip))),
       ]);
 
       this.attachTilesetListeners();
@@ -507,14 +557,12 @@ export default class Zone extends Loadable {
       // be done via scripts - so possibly something which could be fully scripted instead of this kind of logic - and instead
       // I will likely move this to the world object - and then it will be the 'initial' mode.
       try {
-        if (this.mode)
-          await this.loadMode(this.mode);
+        if (this.mode) await this.loadMode(this.mode);
       } catch (e) {
         console.warn('zone mode load failed', e);
       }
 
       await this.finalize();
-
     } catch (e) {
       console.error('Error parsing json zone ' + this.id, e);
     }
@@ -538,7 +586,9 @@ export default class Zone extends Loadable {
 
     // Guard: Check if cells are properly loaded
     if (!this.cells || this.cells.length === 0) {
-      console.error('[Zone.onTilesetDefinitionLoaded] No cells data - tileset may be missing tiles definition');
+      console.error(
+        '[Zone.onTilesetDefinitionLoaded] No cells data - tileset may be missing tiles definition'
+      );
       return;
     }
 
@@ -571,9 +621,10 @@ export default class Zone extends Loadable {
         let walk = Direction.All;
 
         // Get height override for this cell if heights data exists
-        const heightOverride = this.heights && this.heights[j] && typeof this.heights[j][i] === 'number'
-          ? this.heights[j][i]
-          : null;
+        const heightOverride =
+          this.heights && this.heights[j] && typeof this.heights[j][i] === 'number'
+            ? this.heights[j][i]
+            : null;
 
         // Debug first few cells - show null/number for diagnostics
         if (k < 5) {
@@ -641,10 +692,10 @@ export default class Zone extends Loadable {
    * Loads an object.
    * @param {object} data - The object data.
    */
-  loadObject = async (data) => {
+  loadObject = async data => {
     data.zone = this;
     if (!this.objectDict[data.id]) {
-      const obj = await this.objectLoader.load(data, (o) => o.onLoad(o));
+      const obj = await this.objectLoader.load(data, o => o.onLoad(o));
       this.world.objectDict[data.id] = this.objectDict[data.id] = obj;
       this.objectList.push(obj);
       this.world.objectList.push(obj);
@@ -660,7 +711,9 @@ export default class Zone extends Loadable {
     console.log(`Zone: Loading object ${data.id} from zip`);
     data.zone = this;
     if (!this.objectDict[data.id]) {
-      const obj = await this.objectLoader.loadFromZip(zip, data, async (o) => o.onLoadFromZip(o, zip));
+      const obj = await this.objectLoader.loadFromZip(zip, data, async o =>
+        o.onLoadFromZip(o, zip)
+      );
       console.log(`Zone: Object ${data.id} loaded successfully, loaded=${obj.loaded}`);
       this.world.objectDict[data.id] = this.objectDict[data.id] = obj;
       this.objectList.push(obj);
@@ -672,10 +725,10 @@ export default class Zone extends Loadable {
    * Loads a sprite.
    * @param {object} data - The sprite data.
    */
-  loadSprite = async (data) => {
+  loadSprite = async data => {
     data.zone = this;
     if (!this.spriteDict[data.id]) {
-      const spr = await this.spriteLoader.load(data.type, this.spritzName, (s) => s.onLoad(data));
+      const spr = await this.spriteLoader.load(data.type, this.spritzName, s => s.onLoad(data));
       this.world.spriteDict[data.id] = this.spriteDict[data.id] = spr;
       this.spriteList.push(spr);
       this.world.spriteList.push(spr);
@@ -690,7 +743,9 @@ export default class Zone extends Loadable {
   loadSpriteFromZip = async (data, zip) => {
     data.zone = this;
     if (!this.spriteDict[data.id]) {
-      const spr = await this.spriteLoader.loadFromZip(zip, data.type, this.spritzName, async (s) => s.onLoadFromZip(data, zip));
+      const spr = await this.spriteLoader.loadFromZip(zip, data.type, this.spritzName, async s =>
+        s.onLoadFromZip(data, zip)
+      );
       this.world.spriteDict[data.id] = this.spriteDict[data.id] = spr;
       this.spriteList.push(spr);
       this.world.spriteList.push(spr);
@@ -701,7 +756,7 @@ export default class Zone extends Loadable {
    * Adds a sprite.
    * @param {object} sprite - The sprite.
    */
-  addSprite = (sprite) => {
+  addSprite = sprite => {
     sprite.zone = this;
     this.world.spriteDict[sprite.id] = this.spriteDict[sprite.id] = sprite;
     this.spriteList.push(sprite);
@@ -712,9 +767,11 @@ export default class Zone extends Loadable {
    * Removes a sprite.
    * @param {string} id - The sprite ID.
    */
-  removeSprite = (id) => {
-    const keep = (s) => {
-      if (s.id !== id) return true; s.removeAllActions(); return false;
+  removeSprite = id => {
+    const keep = s => {
+      if (s.id !== id) return true;
+      s.removeAllActions();
+      return false;
     };
     this.spriteList = this.spriteList.filter(keep);
     this.world.spriteList = this.world.spriteList.filter(keep);
@@ -734,7 +791,7 @@ export default class Zone extends Loadable {
    * @param {string} id - The sprite ID.
    * @returns {object|null} The sprite.
    */
-  getSpriteById = (id) => this.spriteDict[id];
+  getSpriteById = id => this.spriteDict[id];
 
   /**
    * Adds a portal.
@@ -748,9 +805,13 @@ export default class Zone extends Loadable {
     const h = this.getHeight(x, y);
     if (h !== 0) return sprites;
 
-    const make = (portal) => { portal.pos = new Vector(x, y, h); sprites.push(portal); };
+    const make = portal => {
+      portal.pos = new Vector(x, y, h);
+      sprites.push(portal);
+    };
     if (this.portals.length > 0) {
-      if (((x * y) % 3) === 0) make(this.portals.shift()); else make(this.portals.pop());
+      if ((x * y) % 3 === 0) make(this.portals.shift());
+      else make(this.portals.pop());
     }
     return sprites;
   };
@@ -767,8 +828,10 @@ export default class Zone extends Loadable {
       return 0;
     }
 
-    const i = Math.floor(x), j = Math.floor(y);
-    const dp0 = x - i, dp1 = y - j;
+    const i = Math.floor(x),
+      j = Math.floor(y);
+    const dp0 = x - i,
+      dp1 = y - j;
 
     // index into cells
     const idx = (j - this.bounds[1]) * this.size[0] + (i - this.bounds[0]);
@@ -776,18 +839,24 @@ export default class Zone extends Loadable {
     const n = Math.floor(cell.length / 3);
 
     // Get height override from heights.json if it exists for this cell
-    const heightOverride = this.heights && this.heights[j - this.bounds[1]] && typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number'
-      ? this.heights[j - this.bounds[1]][i - this.bounds[0]]
-      : null;
+    const heightOverride =
+      this.heights &&
+      this.heights[j - this.bounds[1]] &&
+      typeof this.heights[j - this.bounds[1]][i - this.bounds[0]] === 'number'
+        ? this.heights[j - this.bounds[1]][i - this.bounds[0]]
+        : null;
 
     // local helper without allocations
-    const triUV = (t) => {
+    const triUV = t => {
       const ux = t[1][0] - t[0][0];
       const uy = t[1][1] - t[0][1];
       const vx = t[2][0] - t[0][0];
       const vy = t[2][1] - t[0][1];
       const d = 1 / (ux * vy - uy * vx);
-      const T0 = d * vy, T1 = -d * vx, T2 = -d * uy, T3 = d * ux;
+      const T0 = d * vy,
+        T1 = -d * vx,
+        T2 = -d * uy,
+        T3 = d * ux;
       const px = dp0 - t[0][0];
       const py = dp1 - t[0][1];
       return [px * T0 + py * T1, px * T2 + py * T3];
@@ -796,7 +865,7 @@ export default class Zone extends Loadable {
     for (let l = 0; l < n; l++) {
       const poly = this.tileset.getTileWalkPoly(cell[3 * l]);
       if (!poly) continue;
-      const baseZ = (typeof cell[3 * l + 2] === 'number') ? cell[3 * l + 2] : 0;
+      const baseZ = typeof cell[3 * l + 2] === 'number' ? cell[3 * l + 2] : 0;
       // Add heightOverride to baseZ (heights.json is an offset, not a replacement)
       const heightOffset = heightOverride !== null ? heightOverride : 0;
 
@@ -805,10 +874,14 @@ export default class Zone extends Loadable {
         const w = uv[0] + uv[1];
         if (uv[0] >= 0 && uv[1] >= 0 && w <= 1) {
           const t = poly[p];
-          const computed = baseZ + heightOffset + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
+          const computed =
+            baseZ + heightOffset + (1 - w) * t[0][2] + uv[0] * t[1][2] + uv[1] * t[2][2];
           if (this.engine?.debug) {
             this.__getHeightLogCount = (this.__getHeightLogCount || 0) + 1;
-            if (this.__getHeightLogCount < 4) console.log(`[Zone.getHeight] sample (x=${x},y=${y}) -> i=${i}, j=${j}, baseZ=${baseZ}, heightOffset=${heightOffset}, uv=[${uv[0].toFixed(2)},${uv[1].toFixed(2)}], w=${w.toFixed(2)}, computed=${computed.toFixed(2)}`);
+            if (this.__getHeightLogCount < 4)
+              console.log(
+                `[Zone.getHeight] sample (x=${x},y=${y}) -> i=${i}, j=${j}, baseZ=${baseZ}, heightOffset=${heightOffset}, uv=[${uv[0].toFixed(2)},${uv[1].toFixed(2)}], w=${w.toFixed(2)}, computed=${computed.toFixed(2)}`
+              );
           }
           return computed;
         }
@@ -820,18 +893,21 @@ export default class Zone extends Loadable {
     if (n > 0) {
       const poly = this.tileset.getTileWalkPoly(cell[0]);
       if (poly && poly.length > 0) {
-        const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+        const baseZ = typeof cell[2] === 'number' ? cell[2] : 0;
         const heightOffset = heightOverride !== null ? heightOverride : 0;
         // Use first triangle's average as fallback
         const t = poly[0];
         const avgZ = baseZ + heightOffset + (t[0][2] + t[1][2] + t[2][2]) / 3;
-        if (this.engine?.debug) console.log(`[Zone.getHeight] walkPoly fallback for (${x},${y}), using avg of first tri = ${avgZ.toFixed(2)}`);
+        if (this.engine?.debug)
+          console.log(
+            `[Zone.getHeight] walkPoly fallback for (${x},${y}), using avg of first tri = ${avgZ.toFixed(2)}`
+          );
         return avgZ;
       }
     }
 
     // Final fallback: add heightOffset to cell base z
-    const baseZ = (typeof cell[2] === 'number') ? cell[2] : 0;
+    const baseZ = typeof cell[2] === 'number' ? cell[2] : 0;
     const heightOffset = heightOverride !== null ? heightOverride : 0;
     return baseZ + heightOffset;
   };
@@ -937,12 +1013,16 @@ export default class Zone extends Loadable {
 
     // Build selected set once per frame
     const sel = this.selectedTiles;
-    this.selectedSet = (sel && sel.length) ? new Set(sel.map((t) => `${t[0]},${t[1]}`)) : null;
-    this.highlight = (this.engine.frameCount & 0x8) ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    this.selectedSet = sel && sel.length ? new Set(sel.map(t => `${t[0]},${t[1]}`)) : null;
+    this.highlight = this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1];
 
     // look into this
-    const ensureSortedByY = (arr) => {
-      for (let i = 1; i < arr.length; i++) if (arr[i - 1].pos.y > arr[i].pos.y) { arr.sort((a, b) => a.pos.y - b.pos.y); break; }
+    const ensureSortedByY = arr => {
+      for (let i = 1; i < arr.length; i++)
+        if (arr[i - 1].pos.y > arr[i].pos.y) {
+          arr.sort((a, b) => a.pos.y - b.pos.y);
+          break;
+        }
     };
     ensureSortedByY(this.spriteList);
     ensureSortedByY(this.objectList);
@@ -955,7 +1035,8 @@ export default class Zone extends Loadable {
     let oi = 0; // object index
 
     // Need to update to handle the different directions (there are some issues with clipping on other angles)
-    const drawForward = this.engine.renderManager.camera.cameraDir === 'N' ||
+    const drawForward =
+      this.engine.renderManager.camera.cameraDir === 'N' ||
       this.engine.renderManager.camera.cameraDir === 'NE' ||
       this.engine.renderManager.camera.cameraDir === 'NW' ||
       this.engine.renderManager.camera.cameraDir === 'E';
@@ -963,14 +1044,18 @@ export default class Zone extends Loadable {
     if (drawForward) {
       for (let j = 0; j < this.size[1]; j++) {
         this.drawRow(j, this.selectedSet, this.highlight, rm, shaderProgram, pickerProgram, gl);
-        while (oi < this.objectList.length && (this.objectList[oi].pos.y - this.bounds[1]) <= j) this.objectList[oi++].draw();
-        while (si < this.spriteList.length && (this.spriteList[si].pos.y - this.bounds[1]) <= j) this.spriteList[si++].draw(this.engine);
+        while (oi < this.objectList.length && this.objectList[oi].pos.y - this.bounds[1] <= j)
+          this.objectList[oi++].draw();
+        while (si < this.spriteList.length && this.spriteList[si].pos.y - this.bounds[1] <= j)
+          this.spriteList[si++].draw(this.engine);
       }
     } else {
       for (let j = this.size[1] - 1; j >= 0; j--) {
         this.drawRow(j, this.selectedSet, this.highlight, rm, shaderProgram, pickerProgram, gl);
-        while (oi < this.objectList.length && (this.bounds[1] - this.objectList[oi].pos.y) <= j) this.objectList[oi++].draw();
-        while (si < this.spriteList.length && (this.bounds[1] - this.spriteList[si].pos.y) <= j) this.spriteList[si++].draw(this.engine);
+        while (oi < this.objectList.length && this.bounds[1] - this.objectList[oi].pos.y <= j)
+          this.objectList[oi++].draw();
+        while (si < this.spriteList.length && this.bounds[1] - this.spriteList[si].pos.y <= j)
+          this.spriteList[si++].draw(this.engine);
       }
     }
 
@@ -995,7 +1080,7 @@ export default class Zone extends Loadable {
    * Checks input.
    * @param {number} time - The time.
    */
-  checkInput = async (time) => {
+  checkInput = async time => {
     if (time <= this.lastKey + 200) return;
     this.engine.gamepad.checkInput();
     this.lastKey = time;
@@ -1008,7 +1093,8 @@ export default class Zone extends Loadable {
    * @param {number} y - The y position.
    * @returns {boolean} Whether in zone.
    */
-  isInZone = (x, y) => (x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3]);
+  isInZone = (x, y) =>
+    x >= this.bounds[0] && y >= this.bounds[1] && x < this.bounds[2] && y < this.bounds[3];
 
   /**
    * Handles selection.
@@ -1019,14 +1105,16 @@ export default class Zone extends Loadable {
     // allow active mode to intercept selection
     try {
       if (this.world?.modeManager && this.world.modeManager.handleSelect) {
-        debug('Zone', 'Running Custom Select Handler')
+        debug('Zone', 'Running Custom Select Handler');
         const handled = await this.world.modeManager.handleSelect(this, row, cell, 'tile');
         if (handled) return; // mode consumed selection
       }
-    } catch (e) { console.warn('mode selection handler error', e); }
+    } catch (e) {
+      console.warn('mode selection handler error', e);
+    }
     // toggle select
     let removed = false;
-    this.selectedTiles = this.selectedTiles.filter((t) => {
+    this.selectedTiles = this.selectedTiles.filter(t => {
       const keep = !(t[0] === row && t[1] === cell);
       if (!keep) removed = true;
       return keep;
@@ -1043,7 +1131,11 @@ export default class Zone extends Loadable {
       if (!file) throw new Error('No Lua Script Found');
       const luaScript = await file.async('string');
       const interpreter = new PixoScriptInterpreter(this.engine);
-      interpreter.setScope({ _this: this, zone: this, subject: new interpreter.pxs.Table([row, cell]) });
+      interpreter.setScope({
+        _this: this,
+        zone: this,
+        subject: new interpreter.pxs.Table([row, cell]),
+      });
       interpreter.initLibrary();
       return await interpreter.run(luaScript);
     } catch (e) {
@@ -1066,7 +1158,7 @@ export default class Zone extends Loadable {
       const s = this.spriteDict[sId];
       if (s.pos.x !== x || s.pos.y !== y) continue;
       if (!s.walkable && !s.blocking && s.override) return true; // bypass/override
-      if (!s.walkable && s.blocking) return false;             // blocking
+      if (!s.walkable && s.blocking) return false; // blocking
     }
 
     // objects (AABB-lite checks)
@@ -1074,16 +1166,20 @@ export default class Zone extends Loadable {
       const o = this.objectDict[oId];
       const minX = o.pos.x - o.scale.x * (o.size.x / 2);
       const minY = o.pos.y - o.scale.y * (o.size.y / 2);
-      const withinX = (xx, a, b, inc = false) => (inc ? (xx >= a && xx <= b) : (xx > a && xx < b));
+      const withinX = (xx, a, b, inc = false) => (inc ? xx >= a && xx <= b : xx > a && xx < b);
       const xHit = withinX(x, minX, o.pos.x, true);
       const yHit = withinX(y, minY, o.pos.y, true);
 
       if (!o.walkable && xHit && yHit && !o.blocking && o.override) return true;
-      if (!o.walkable && ((o.pos.x === x && o.pos.y === y) || (xHit && yHit)) && o.blocking) return false;
+      if (!o.walkable && ((o.pos.x === x && o.pos.y === y) || (xHit && yHit)) && o.blocking)
+        return false;
     }
 
     // tile walkability
-    return (this.walkability[(y - this.bounds[1]) * this.size[0] + (x - this.bounds[0])] & direction) !== 0;
+    return (
+      (this.walkability[(y - this.bounds[1]) * this.size[0] + (x - this.bounds[0])] & direction) !==
+      0
+    );
   };
 
   /**
@@ -1094,13 +1190,13 @@ export default class Zone extends Loadable {
    * @param {boolean} [include=false] - Whether inclusive.
    * @returns {boolean} Whether within.
    */
-  within = (x, a, b, include = false) => (include ? (x >= a && x <= b) : (x > a && x < b));
+  within = (x, a, b, include = false) => (include ? x >= a && x <= b : x > a && x < b);
 
   /**
    * Triggers a script.
    * @param {string} id - The script ID.
    */
-  triggerScript = (id) => {
+  triggerScript = id => {
     for (const x of this.scripts) if (x.id === id) this.runWhenLoaded(x.trigger.bind(this));
   };
 
@@ -1111,10 +1207,19 @@ export default class Zone extends Loadable {
    * @param {boolean} [running=false] - Whether running.
    * @returns {Promise} The promise.
    */
-  moveSprite = async (id, location, running = false) => new Promise(async (resolve) => {
-    const sprite = this.getSpriteById(id);
-    await sprite.addAction(new ActionLoader(this.engine, 'patrol', [sprite.pos.toArray(), location, running ? 200 : 600, this], sprite, resolve));
-  });
+  moveSprite = async (id, location, running = false) =>
+    new Promise(async resolve => {
+      const sprite = this.getSpriteById(id);
+      await sprite.addAction(
+        new ActionLoader(
+          this.engine,
+          'patrol',
+          [sprite.pos.toArray(), location, running ? 200 : 600, this],
+          sprite,
+          resolve
+        )
+      );
+    });
 
   /**
    * Shows sprite dialogue.
@@ -1123,17 +1228,20 @@ export default class Zone extends Loadable {
    * @param {object} [options={ autoclose: true }] - The options.
    * @returns {Promise} The promise.
    */
-  spriteDialogue = async (id, dialogue, options = { autoclose: true }) => new Promise(async (resolve) => {
-    const sprite = this.getSpriteById(id);
-    await sprite.addAction(new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve));
-  });
+  spriteDialogue = async (id, dialogue, options = { autoclose: true }) =>
+    new Promise(async resolve => {
+      const sprite = this.getSpriteById(id);
+      await sprite.addAction(
+        new ActionLoader(this.engine, 'dialogue', [dialogue, false, options], sprite, resolve)
+      );
+    });
 
   /**
    * Runs actions.
    * @param {object[]} actions - The actions.
    * @returns {Promise} The promise.
    */
-  runActions = async (actions) => {
+  runActions = async actions => {
     const scope = this;
     let p = Promise.resolve();
     for (const action of actions) {
@@ -1146,19 +1254,37 @@ export default class Zone extends Loadable {
             if (sprite && action.action) {
               const args = [...action.args];
               const options = args.pop();
-              await sprite.addAction(new ActionLoader(scope.engine, action.action, [...args, { ...options }], sprite, () => { }));
+              await sprite.addAction(
+                new ActionLoader(
+                  scope.engine,
+                  action.action,
+                  [...args, { ...options }],
+                  sprite,
+                  () => {}
+                )
+              );
             }
           }
           if (action.trigger) {
             const avatar = action.scope.getSpriteById('avatar');
-            if (avatar) await avatar.addAction(new ActionLoader(scope.engine, 'script', [action.trigger, action.scope, () => { }], avatar));
+            if (avatar)
+              await avatar.addAction(
+                new ActionLoader(
+                  scope.engine,
+                  'script',
+                  [action.trigger, action.scope, () => {}],
+                  avatar
+                )
+              );
           }
         } catch (e) {
           console.warn('runActions error', e?.message || e);
         }
       });
     }
-    return p.catch((err) => { if (this.engine?.debug) console.warn('runActions chain', err); });
+    return p.catch(err => {
+      if (this.engine?.debug) console.warn('runActions chain', err);
+    });
   };
 
   /**
@@ -1174,7 +1300,9 @@ export default class Zone extends Loadable {
         x.currentStep = x.currentStep || 0;
         if (x.currentStep > seq.length) continue;
         if (x.id === id) await this.runActions(x.actions);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 }

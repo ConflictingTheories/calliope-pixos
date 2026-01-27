@@ -17,11 +17,7 @@ import {
   calculateFrameCoordinates,
   generateSpriteConfigFromLayout,
 } from './dsl-specifications.js';
-import {
-  validateSpriteConfig,
-  validateCutscene,
-  validateScript,
-} from './asset-validation.js';
+import { validateSpriteConfig, validateCutscene, validateScript } from './asset-validation.js';
 
 /**
  * Generate a sprite configuration JSON with GUARANTEED valid frame coordinates
@@ -98,12 +94,9 @@ Only provide these optional properties as JSON:
 Keep the dialogue SHORT (1-2 sentences) and character-appropriate.
 Return ONLY valid JSON.`;
 
-    const aiMetadata = await aiService.chatCompletion(
-      prompt,
-      systemPrompt,
-      null,
-      { temperature: 0.5 }
-    );
+    const aiMetadata = await aiService.chatCompletion(prompt, systemPrompt, null, {
+      temperature: 0.5,
+    });
 
     // Merge AI suggestions, keeping our correct frame data
     if (aiMetadata && typeof aiMetadata === 'object') {
@@ -140,9 +133,10 @@ export async function generateCutscene(description, options = {}) {
     long: '10-15 dialogue exchanges, ~2 minutes',
   };
 
-  const charList = characters.length > 0
-    ? `Use these characters: ${characters.map(c => c.toUpperCase()).join(', ')}`
-    : 'Create 2-3 appropriate characters (use UPPERCASE names like HERO, MERCHANT, GUARD)';
+  const charList =
+    characters.length > 0
+      ? `Use these characters: ${characters.map(c => c.toUpperCase()).join(', ')}`
+      : 'Create 2-3 appropriate characters (use UPPERCASE names like HERO, MERCHANT, GUARD)';
 
   const systemPrompt = getSystemPrompt('cutscene', { mood, characters });
 
@@ -172,7 +166,10 @@ Write engaging, natural dialogue that fits the scene.`;
   // Clean up result
   if (typeof result === 'string') {
     // Remove markdown code blocks if present
-    result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
+    result = result
+      .replace(/^```\w*\n?/gm, '')
+      .replace(/```$/gm, '')
+      .trim();
   }
 
   // Validate and fix
@@ -299,16 +296,14 @@ Keep the core structure but add specific logic for: ${description}
 
 Return ONLY the Lua script, no explanations.`;
 
-  let result = await aiService.chatCompletion(
-    prompt,
-    systemPrompt,
-    null,
-    { temperature: 0.4 }
-  );
+  let result = await aiService.chatCompletion(prompt, systemPrompt, null, { temperature: 0.4 });
 
   // Clean up result
   if (typeof result === 'string') {
-    result = result.replace(/^```\w*\n?/gm, '').replace(/```$/gm, '').trim();
+    result = result
+      .replace(/^```\w*\n?/gm, '')
+      .replace(/```$/gm, '')
+      .trim();
   }
 
   // Validate
@@ -361,12 +356,9 @@ Return ONLY valid JSON with this exact structure:
 Keep dialogue SHORT (1-2 sentences). Match the ${personality} personality.`;
 
   try {
-    const states = await aiService.chatCompletion(
-      prompt,
-      systemPrompt,
-      NPC_STATES_SCHEMA,
-      { temperature: 0.5 }
-    );
+    const states = await aiService.chatCompletion(prompt, systemPrompt, NPC_STATES_SCHEMA, {
+      temperature: 0.5,
+    });
 
     return states;
   } catch (error) {
@@ -471,12 +463,7 @@ Return ONLY valid JSON with this structure:
 
 Add appropriate NPCs, objects, and lights for: ${description}`;
 
-  const result = await aiService.chatCompletion(
-    prompt,
-    systemPrompt,
-    null,
-    { temperature: 0.4 }
-  );
+  const result = await aiService.chatCompletion(prompt, systemPrompt, null, { temperature: 0.4 });
 
   return result;
 }

@@ -1,75 +1,82 @@
-import * as pkg from 'printj'
-const { sprintf } = pkg
-import { Table } from '../Table.js'
-import { LuaError } from '../LuaError.js'
-import { tostring, posrelat, coerceArgToNumber, coerceArgToString, hasOwnProperty, LuaType } from '../utils.js'
+import * as pkg from 'printj';
+const { sprintf } = pkg;
+import { Table } from '../Table.js';
+import { LuaError } from '../LuaError.js';
+import {
+  tostring,
+  posrelat,
+  coerceArgToNumber,
+  coerceArgToString,
+  hasOwnProperty,
+  LuaType,
+} from '../utils.js';
 
 const ROSETTA_STONE: Record<string, string> = {
-    '([^a-zA-Z0-9%(])-': '$1*?',
-    '([^%])-([^a-zA-Z0-9?])': '$1*?$2',
-    '([^%])\\.': '$1[\\s\\S]',
-    '(.)-$': '$1*?',
-    '%a': '[a-zA-Z]',
-    '%A': '[^a-zA-Z]',
-    '%c': '[\x00-\x1f]',
-    '%C': '[^\x00-\x1f]',
-    '%d': '\\d',
-    '%D': '[^d]',
-    '%l': '[a-z]',
-    '%L': '[^a-z]',
-    '%p': '[.,"\'?!;:#$%&()*+-/<>=@\\[\\]\\\\^_{}|~]',
-    '%P': '[^.,"\'?!;:#$%&()*+-/<>=@\\[\\]\\\\^_{}|~]',
-    '%s': '[ \\t\\n\\f\\v\\r]',
-    '%S': '[^ \t\n\f\v\r]',
-    '%u': '[A-Z]',
-    '%U': '[^A-Z]',
-    '%w': '[a-zA-Z0-9]',
-    '%W': '[^a-zA-Z0-9]',
-    '%x': '[a-fA-F0-9]',
-    '%X': '[^a-fA-F0-9]',
-    '%([^a-zA-Z])': '\\$1'
-}
+  '([^a-zA-Z0-9%(])-': '$1*?',
+  '([^%])-([^a-zA-Z0-9?])': '$1*?$2',
+  '([^%])\\.': '$1[\\s\\S]',
+  '(.)-$': '$1*?',
+  '%a': '[a-zA-Z]',
+  '%A': '[^a-zA-Z]',
+  '%c': '[\x00-\x1f]',
+  '%C': '[^\x00-\x1f]',
+  '%d': '\\d',
+  '%D': '[^d]',
+  '%l': '[a-z]',
+  '%L': '[^a-z]',
+  '%p': '[.,"\'?!;:#$%&()*+-/<>=@\\[\\]\\\\^_{}|~]',
+  '%P': '[^.,"\'?!;:#$%&()*+-/<>=@\\[\\]\\\\^_{}|~]',
+  '%s': '[ \\t\\n\\f\\v\\r]',
+  '%S': '[^ \t\n\f\v\r]',
+  '%u': '[A-Z]',
+  '%U': '[^A-Z]',
+  '%w': '[a-zA-Z0-9]',
+  '%W': '[^a-zA-Z0-9]',
+  '%x': '[a-fA-F0-9]',
+  '%X': '[^a-fA-F0-9]',
+  '%([^a-zA-Z])': '\\$1',
+};
 
 function translatePattern(pattern: string): string {
-    // TODO Add support for balanced character matching (not sure this is easily achieveable).
+  // TODO Add support for balanced character matching (not sure this is easily achieveable).
 
-    // Replace single backslash with double backslashes
-    let tPattern = pattern.replace(/\\/g, '\\\\')
+  // Replace single backslash with double backslashes
+  let tPattern = pattern.replace(/\\/g, '\\\\');
 
-    for (const i in ROSETTA_STONE) {
-        if (hasOwnProperty(ROSETTA_STONE, i)) {
-            tPattern = tPattern.replace(new RegExp(i, 'g'), ROSETTA_STONE[i])
-        }
+  for (const i in ROSETTA_STONE) {
+    if (hasOwnProperty(ROSETTA_STONE, i)) {
+      tPattern = tPattern.replace(new RegExp(i, 'g'), ROSETTA_STONE[i]);
+    }
+  }
+
+  let nestingLevel = 0;
+
+  for (let i = 0, l = tPattern.length; i < l; i++) {
+    if (i && tPattern.substr(i - 1, 1) === '\\') {
+      continue;
     }
 
-    let nestingLevel = 0
+    // Remove nested square brackets caused by substitutions
+    const character = tPattern.substr(i, 1);
 
-    for (let i = 0, l = tPattern.length; i < l; i++) {
-        if (i && tPattern.substr(i - 1, 1) === '\\') {
-            continue
-        }
+    if (character === '[' || character === ']') {
+      if (character === ']') {
+        nestingLevel -= 1;
+      }
 
-        // Remove nested square brackets caused by substitutions
-        const character = tPattern.substr(i, 1)
+      if (nestingLevel > 0) {
+        tPattern = tPattern.substr(0, i) + tPattern.substr(i + 1);
+        i -= 1;
+        l -= 1;
+      }
 
-        if (character === '[' || character === ']') {
-            if (character === ']') {
-                nestingLevel -= 1
-            }
-
-            if (nestingLevel > 0) {
-                tPattern = tPattern.substr(0, i) + tPattern.substr(i + 1)
-                i -= 1
-                l -= 1
-            }
-
-            if (character === '[') {
-                nestingLevel += 1
-            }
-        }
+      if (character === '[') {
+        nestingLevel += 1;
+      }
     }
+  }
 
-    return tPattern
+  return tPattern;
 }
 
 /**
@@ -80,13 +87,13 @@ function translatePattern(pattern: string): string {
  * Numeric codes are not necessarily portable across platforms.
  */
 function byte(s: LuaType, i: LuaType, j: LuaType): number[] {
-    const S = coerceArgToString(s, 'byte', 1)
-    const I = i === undefined ? 1 : coerceArgToNumber(i, 'byte', 2)
-    const J = j === undefined ? I : coerceArgToNumber(j, 'byte', 3)
+  const S = coerceArgToString(s, 'byte', 1);
+  const I = i === undefined ? 1 : coerceArgToNumber(i, 'byte', 2);
+  const J = j === undefined ? I : coerceArgToNumber(j, 'byte', 3);
 
-    return S.substring(I - 1, J)
-        .split('')
-        .map(c => c.charCodeAt(0))
+  return S.substring(I - 1, J)
+    .split('')
+    .map(c => c.charCodeAt(0));
 }
 
 /**
@@ -96,12 +103,12 @@ function byte(s: LuaType, i: LuaType, j: LuaType): number[] {
  * Numeric codes are not necessarily portable across platforms.
  */
 function char(...bytes: LuaType[]): string {
-    return bytes
-        .map((b, i) => {
-            const B = coerceArgToNumber(b, 'char', i)
-            return String.fromCharCode(B)
-        })
-        .join('')
+  return bytes
+    .map((b, i) => {
+      const B = coerceArgToNumber(b, 'char', i);
+      return String.fromCharCode(B);
+    })
+    .join('');
 }
 
 /**
@@ -115,71 +122,71 @@ function char(...bytes: LuaType[]): string {
  * If the pattern has captures, then in a successful match the captured values are also returned, after the two indices.
  */
 function find(s: LuaType, pattern: LuaType, init: LuaType, plain: LuaType): (number | string)[] {
-    const S = coerceArgToString(s, 'find', 1)
-    const P = coerceArgToString(pattern, 'find', 2)
-    const INIT = init === undefined ? 1 : coerceArgToNumber(init, 'find', 3)
-    const PLAIN = plain === undefined ? false : coerceArgToNumber(plain, 'find', 4)
+  const S = coerceArgToString(s, 'find', 1);
+  const P = coerceArgToString(pattern, 'find', 2);
+  const INIT = init === undefined ? 1 : coerceArgToNumber(init, 'find', 3);
+  const PLAIN = plain === undefined ? false : coerceArgToNumber(plain, 'find', 4);
 
-    // Regex
-    if (!PLAIN) {
-        const regex = new RegExp(translatePattern(P))
-        const index = S.substr(INIT - 1).search(regex)
+  // Regex
+  if (!PLAIN) {
+    const regex = new RegExp(translatePattern(P));
+    const index = S.substr(INIT - 1).search(regex);
 
-        if (index < 0) return
+    if (index < 0) return;
 
-        const match = S.substr(INIT - 1).match(regex)
-        const result = [index + INIT, index + INIT + match[0].length - 1]
+    const match = S.substr(INIT - 1).match(regex);
+    const result = [index + INIT, index + INIT + match[0].length - 1];
 
-        match.shift()
-        return [...result, ...match]
-    }
+    match.shift();
+    return [...result, ...match];
+  }
 
-    // Plain
-    const index = S.indexOf(P, INIT - 1)
-    return index === -1 ? undefined : [index + 1, index + P.length]
+  // Plain
+  const index = S.indexOf(P, INIT - 1);
+  return index === -1 ? undefined : [index + 1, index + P.length];
 }
 
 function format(formatstring: string, ...args: LuaType[]): string {
-    // Pattern with all constraints:
-    // /%%|%([-+ #0]{0,5})?(\d{0,2})?(?:\.(\d{0,2}))?([AEGXacdefgioqsux])/g
-    const PATTERN = /%%|%([-+ #0]*)?(\d*)?(?:\.(\d*))?(.)/g
+  // Pattern with all constraints:
+  // /%%|%([-+ #0]{0,5})?(\d{0,2})?(?:\.(\d{0,2}))?([AEGXacdefgioqsux])/g
+  const PATTERN = /%%|%([-+ #0]*)?(\d*)?(?:\.(\d*))?(.)/g;
 
-    let i = -1
-    return formatstring.replace(PATTERN, (format, flags, width, precision, modifier) => {
-        if (format === '%%') return '%'
-        if (!modifier.match(/[AEGXacdefgioqsux]/)) {
-            throw new LuaError(`invalid option '%${format}' to 'format'`)
-        }
-        if (flags && flags.length > 5) {
-            throw new LuaError(`invalid format (repeated flags)`)
-        }
-        if (width && width.length > 2) {
-            throw new LuaError(`invalid format (width too long)`)
-        }
-        if (precision && precision.length > 2) {
-            throw new LuaError(`invalid format (precision too long)`)
-        }
+  let i = -1;
+  return formatstring.replace(PATTERN, (format, flags, width, precision, modifier) => {
+    if (format === '%%') return '%';
+    if (!modifier.match(/[AEGXacdefgioqsux]/)) {
+      throw new LuaError(`invalid option '%${format}' to 'format'`);
+    }
+    if (flags && flags.length > 5) {
+      throw new LuaError(`invalid format (repeated flags)`);
+    }
+    if (width && width.length > 2) {
+      throw new LuaError(`invalid format (width too long)`);
+    }
+    if (precision && precision.length > 2) {
+      throw new LuaError(`invalid format (precision too long)`);
+    }
 
-        i += 1
-        const arg = args[i]
-        if (arg === undefined) {
-            throw new LuaError(`bad argument #${i} to 'format' (no value)`)
-        }
-        if (/A|a|E|e|f|G|g/.test(modifier)) {
-            return sprintf(format, coerceArgToNumber(arg, 'format', i))
-        }
-        if (/c|d|i|o|u|X|x/.test(modifier)) {
-            return sprintf(format, coerceArgToNumber(arg, 'format', i))
-        }
+    i += 1;
+    const arg = args[i];
+    if (arg === undefined) {
+      throw new LuaError(`bad argument #${i} to 'format' (no value)`);
+    }
+    if (/A|a|E|e|f|G|g/.test(modifier)) {
+      return sprintf(format, coerceArgToNumber(arg, 'format', i));
+    }
+    if (/c|d|i|o|u|X|x/.test(modifier)) {
+      return sprintf(format, coerceArgToNumber(arg, 'format', i));
+    }
 
-        if (modifier === 'q') {
-            return `"${(arg as string).replace(/([\n"])/g, '\\$1')}"`
-        }
-        if (modifier === 's') {
-            return sprintf(format, tostring(arg))
-        }
-        return sprintf(format, arg)
-    })
+    if (modifier === 'q') {
+      return `"${(arg as string).replace(/([\n"])/g, '\\$1')}"`;
+    }
+    if (modifier === 's') {
+      return sprintf(format, tostring(arg));
+    }
+    return sprintf(format, arg);
+  });
 }
 
 /**
@@ -187,20 +194,20 @@ function format(formatstring: string, ...args: LuaType[]): string {
  * over the string s. If pattern specifies no captures, then the whole match is produced in each call.
  */
 function gmatch(s: LuaType, pattern: LuaType): () => string[] {
-    const S = coerceArgToString(s, 'gmatch', 1)
-    const P = translatePattern(coerceArgToString(pattern, 'gmatch', 2))
+  const S = coerceArgToString(s, 'gmatch', 1);
+  const P = translatePattern(coerceArgToString(pattern, 'gmatch', 2));
 
-    const reg = new RegExp(P, 'g')
-    const matches = S.match(reg)
+  const reg = new RegExp(P, 'g');
+  const matches = S.match(reg);
 
-    return () => {
-        const match = matches.shift()
-        if (match === undefined) return []
+  return () => {
+    const match = matches.shift();
+    if (match === undefined) return [];
 
-        const groups = new RegExp(P).exec(match)
-        groups.shift()
-        return groups.length ? groups : [match]
-    }
+    const groups = new RegExp(P).exec(match);
+    groups.shift();
+    return groups.length ? groups : [match];
+  };
 }
 
 /**
@@ -225,39 +232,43 @@ function gmatch(s: LuaType, pattern: LuaType): () => string[] {
  * (that is, the original match is kept in the string).
  */
 function gsub(s: LuaType, pattern: LuaType, repl: LuaType, n?: LuaType): string {
-    let S = coerceArgToString(s, 'gsub', 1)
-    const N = n === undefined ? Infinity : coerceArgToNumber(n, 'gsub', 3)
-    const P = translatePattern(coerceArgToString(pattern, 'gsub', 2))
+  let S = coerceArgToString(s, 'gsub', 1);
+  const N = n === undefined ? Infinity : coerceArgToNumber(n, 'gsub', 3);
+  const P = translatePattern(coerceArgToString(pattern, 'gsub', 2));
 
-    const REPL = ((): ((strs: string[]) => string) => {
-        if (typeof repl === 'function')
-            return strs => {
-                const ret = repl(strs[0])[0]
-                return ret === undefined ? strs[0] : ret
-            }
+  const REPL = ((): ((strs: string[]) => string) => {
+    if (typeof repl === 'function')
+      return strs => {
+        const ret = repl(strs[0])[0];
+        return ret === undefined ? strs[0] : ret;
+      };
 
-        if (repl instanceof Table) return strs => repl.get(strs[0]).toString()
+    if (repl instanceof Table) return strs => repl.get(strs[0]).toString();
 
-        return strs => `${repl}`.replace(/%([0-9])/g, (_, i) => strs[i])
-    })()
+    return strs => `${repl}`.replace(/%([0-9])/g, (_, i) => strs[i]);
+  })();
 
-    let result = ''
-    let count = 0
-    let match
-    let lastMatch
-    while (count < N && S && (match = S.match(P))) {
-        const prefix =
-            // eslint-disable-next-line no-nested-ternary
-            match[0].length > 0 ? S.substr(0, match.index) : lastMatch === undefined ? '' : S.substr(0, 1)
+  let result = '';
+  let count = 0;
+  let match;
+  let lastMatch;
+  while (count < N && S && (match = S.match(P))) {
+    const prefix =
+      // eslint-disable-next-line no-nested-ternary
+      match[0].length > 0
+        ? S.substr(0, match.index)
+        : lastMatch === undefined
+          ? ''
+          : S.substr(0, 1);
 
-        lastMatch = match[0]
-        result += `${prefix}${REPL(match)}`
-        S = S.substr(`${prefix}${lastMatch}`.length)
+    lastMatch = match[0];
+    result += `${prefix}${REPL(match)}`;
+    S = S.substr(`${prefix}${lastMatch}`.length);
 
-        count += 1
-    }
+    count += 1;
+  }
 
-    return `${result}${S}`
+  return `${result}${S}`;
 }
 
 /**
@@ -265,8 +276,8 @@ function gsub(s: LuaType, pattern: LuaType, repl: LuaType, n?: LuaType): string 
  * Embedded zeros are counted, so "a\000bc\000" has length 5.
  */
 function len(s: LuaType): number {
-    const str = coerceArgToString(s, 'len', 1)
-    return str.length
+  const str = coerceArgToString(s, 'len', 1);
+  return str.length;
 }
 
 /**
@@ -275,8 +286,8 @@ function len(s: LuaType): number {
  * The definition of what an uppercase letter is depends on the current locale.
  */
 function lower(s: LuaType): string {
-    const str = coerceArgToString(s, 'lower', 1)
-    return str.toLowerCase()
+  const str = coerceArgToString(s, 'lower', 1);
+  return str.toLowerCase();
 }
 
 /**
@@ -286,21 +297,21 @@ function lower(s: LuaType): string {
  * A third, optional numeric argument init specifies where to start the search; its default value is 1 and can be negative.
  */
 function match(s: LuaType, pattern: LuaType, init: LuaType = 0): string | RegExpMatchArray {
-    let str = coerceArgToString(s, 'match', 1)
-    const patt = coerceArgToString(pattern, 'match', 2)
-    const ini = coerceArgToNumber(init, 'match', 3)
+  let str = coerceArgToString(s, 'match', 1);
+  const patt = coerceArgToString(pattern, 'match', 2);
+  const ini = coerceArgToNumber(init, 'match', 3);
 
-    str = str.substr(ini)
-    const matches = str.match(new RegExp(translatePattern(patt)))
+  str = str.substr(ini);
+  const matches = str.match(new RegExp(translatePattern(patt)));
 
-    if (!matches) {
-        return
-    } else if (!matches[1]) {
-        return matches[0]
-    }
+  if (!matches) {
+    return;
+  } else if (!matches[1]) {
+    return matches[0];
+  }
 
-    matches.shift()
-    return matches
+  matches.shift();
+  return matches;
 }
 
 /**
@@ -309,21 +320,16 @@ function match(s: LuaType, pattern: LuaType, init: LuaType = 0): string | RegExp
  * Returns the empty string if n is not positive.
  */
 function rep(s: LuaType, n: LuaType, sep?: LuaType): string {
-    const str = coerceArgToString(s, 'rep', 1)
-    const num = coerceArgToNumber(n, 'rep', 2)
-    const SEP = sep === undefined ? '' : coerceArgToString(sep, 'rep', 3)
-    return Array(num)
-        .fill(str)
-        .join(SEP)
+  const str = coerceArgToString(s, 'rep', 1);
+  const num = coerceArgToNumber(n, 'rep', 2);
+  const SEP = sep === undefined ? '' : coerceArgToString(sep, 'rep', 3);
+  return Array(num).fill(str).join(SEP);
 }
 
 /** Returns a string that is the string s reversed. */
 function reverse(s: LuaType): string {
-    const str = coerceArgToString(s, 'reverse', 1)
-    return str
-        .split('')
-        .reverse()
-        .join('')
+  const str = coerceArgToString(s, 'reverse', 1);
+  return str.split('').reverse().join('');
 }
 
 /**
@@ -337,15 +343,15 @@ function reverse(s: LuaType): string {
  * the function returns the empty string.
  */
 function sub(s: LuaType, i: LuaType = 1, j: LuaType = -1): string {
-    const S = coerceArgToString(s, 'sub', 1)
-    let start = posrelat(coerceArgToNumber(i, 'sub', 2), S.length)
-    let end = posrelat(coerceArgToNumber(j, 'sub', 3), S.length)
+  const S = coerceArgToString(s, 'sub', 1);
+  let start = posrelat(coerceArgToNumber(i, 'sub', 2), S.length);
+  let end = posrelat(coerceArgToNumber(j, 'sub', 3), S.length);
 
-    if (start < 1) start = 1
-    if (end > S.length) end = S.length
+  if (start < 1) start = 1;
+  if (end > S.length) end = S.length;
 
-    if (start <= end) return S.substr(start - 1, end - start + 1)
-    return ''
+  if (start <= end) return S.substr(start - 1, end - start + 1);
+  return '';
 }
 
 /**
@@ -354,26 +360,26 @@ function sub(s: LuaType, i: LuaType = 1, j: LuaType = -1): string {
  * The definition of what a lowercase letter is depends on the current locale.
  */
 function upper(s: LuaType): string {
-    const S = coerceArgToString(s, 'upper', 1)
-    return S.toUpperCase()
+  const S = coerceArgToString(s, 'upper', 1);
+  return S.toUpperCase();
 }
 
 const libString = new Table({
-    byte,
-    char,
-    find,
-    format,
-    gmatch,
-    gsub,
-    len,
-    lower,
-    match,
-    rep,
-    reverse,
-    sub,
-    upper
-})
+  byte,
+  char,
+  find,
+  format,
+  gmatch,
+  gsub,
+  len,
+  lower,
+  match,
+  rep,
+  reverse,
+  sub,
+  upper,
+});
 
-const metatable = new Table({ __index: libString })
+const metatable = new Table({ __index: libString });
 
-export { libString, metatable }
+export { libString, metatable };

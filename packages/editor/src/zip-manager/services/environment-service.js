@@ -7,7 +7,6 @@ function getMaximumWorkers() {
 }
 
 function isMacOSPlatform() {
-   
   const { platform } = navigator;
   return platform !== undefined && MACOS_PLATFORMS.includes(platform);
 }

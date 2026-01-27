@@ -27,9 +27,9 @@ export const EXTENDED_COMMANDS = {
     params: {
       x: { type: 'number', default: 0, description: 'Target X position' },
       y: { type: 'number', default: 0, description: 'Target Y position' },
-      duration: { type: 'number', default: 500, description: 'Duration in ms' }
+      duration: { type: 'number', default: 500, description: 'Duration in ms' },
     },
-    generate: (params) => `@camera pan [x=${params.x},y=${params.y},duration=${params.duration}]`
+    generate: params => `@camera pan [x=${params.x},y=${params.y},duration=${params.duration}]`,
   },
 
   cameraZoom: {
@@ -39,9 +39,9 @@ export const EXTENDED_COMMANDS = {
     icon: '🔍',
     params: {
       factor: { type: 'number', default: 1.5, description: 'Zoom factor (1 = normal)' },
-      duration: { type: 'number', default: 500, description: 'Duration in ms' }
+      duration: { type: 'number', default: 500, description: 'Duration in ms' },
     },
-    generate: (params) => `@camera zoom [factor=${params.factor},duration=${params.duration}]`
+    generate: params => `@camera zoom [factor=${params.factor},duration=${params.duration}]`,
   },
 
   cameraShake: {
@@ -51,9 +51,9 @@ export const EXTENDED_COMMANDS = {
     icon: '📳',
     params: {
       intensity: { type: 'number', default: 5, description: 'Shake intensity (pixels)' },
-      duration: { type: 'number', default: 500, description: 'Duration in ms' }
+      duration: { type: 'number', default: 500, description: 'Duration in ms' },
     },
-    generate: (params) => `@camera shake [intensity=${params.intensity},duration=${params.duration}]`
+    generate: params => `@camera shake [intensity=${params.intensity},duration=${params.duration}]`,
   },
 
   cameraReset: {
@@ -62,9 +62,9 @@ export const EXTENDED_COMMANDS = {
     category: 'camera',
     icon: '🔄',
     params: {
-      duration: { type: 'number', default: 300, description: 'Duration in ms' }
+      duration: { type: 'number', default: 300, description: 'Duration in ms' },
     },
-    generate: (params) => `@camera reset [duration=${params.duration}]`
+    generate: params => `@camera reset [duration=${params.duration}]`,
   },
 
   // ===== SCREEN EFFECTS =====
@@ -75,9 +75,9 @@ export const EXTENDED_COMMANDS = {
     icon: '🌅',
     params: {
       duration: { type: 'number', default: 500, description: 'Fade duration in ms' },
-      color: { type: 'color', default: '#000000', description: 'Fade color' }
+      color: { type: 'color', default: '#000000', description: 'Fade color' },
     },
-    generate: (params) => `@effect fadeIn [duration=${params.duration},color=${params.color}]`
+    generate: params => `@effect fadeIn [duration=${params.duration},color=${params.color}]`,
   },
 
   fadeOut: {
@@ -87,9 +87,9 @@ export const EXTENDED_COMMANDS = {
     icon: '🌆',
     params: {
       duration: { type: 'number', default: 500, description: 'Fade duration in ms' },
-      color: { type: 'color', default: '#000000', description: 'Fade color' }
+      color: { type: 'color', default: '#000000', description: 'Fade color' },
     },
-    generate: (params) => `@effect fadeOut [duration=${params.duration},color=${params.color}]`
+    generate: params => `@effect fadeOut [duration=${params.duration},color=${params.color}]`,
   },
 
   pixelate: {
@@ -99,9 +99,9 @@ export const EXTENDED_COMMANDS = {
     icon: '🔳',
     params: {
       factor: { type: 'number', default: 8, description: 'Pixel size factor' },
-      duration: { type: 'number', default: 500, description: 'Duration in ms' }
+      duration: { type: 'number', default: 500, description: 'Duration in ms' },
     },
-    generate: (params) => `@effect pixelate [factor=${params.factor},duration=${params.duration}]`
+    generate: params => `@effect pixelate [factor=${params.factor},duration=${params.duration}]`,
   },
 
   flash: {
@@ -111,9 +111,9 @@ export const EXTENDED_COMMANDS = {
     icon: '⚡',
     params: {
       color: { type: 'color', default: '#ffffff', description: 'Flash color' },
-      duration: { type: 'number', default: 100, description: 'Flash duration in ms' }
+      duration: { type: 'number', default: 100, description: 'Flash duration in ms' },
     },
-    generate: (params) => `@effect flash [color=${params.color},duration=${params.duration}]`
+    generate: params => `@effect flash [color=${params.color},duration=${params.duration}]`,
   },
 
   blur: {
@@ -123,9 +123,9 @@ export const EXTENDED_COMMANDS = {
     icon: '🌫️',
     params: {
       amount: { type: 'number', default: 5, description: 'Blur amount (pixels)' },
-      duration: { type: 'number', default: 300, description: 'Duration in ms' }
+      duration: { type: 'number', default: 300, description: 'Duration in ms' },
     },
-    generate: (params) => `@effect blur [amount=${params.amount},duration=${params.duration}]`
+    generate: params => `@effect blur [amount=${params.amount},duration=${params.duration}]`,
   },
 
   vignette: {
@@ -135,9 +135,10 @@ export const EXTENDED_COMMANDS = {
     icon: '⭕',
     params: {
       intensity: { type: 'number', default: 0.5, description: 'Vignette intensity (0-1)' },
-      duration: { type: 'number', default: 300, description: 'Duration in ms' }
+      duration: { type: 'number', default: 300, description: 'Duration in ms' },
     },
-    generate: (params) => `@effect vignette [intensity=${params.intensity},duration=${params.duration}]`
+    generate: params =>
+      `@effect vignette [intensity=${params.intensity},duration=${params.duration}]`,
   },
 
   clearEffects: {
@@ -146,9 +147,9 @@ export const EXTENDED_COMMANDS = {
     category: 'effects',
     icon: '🧹',
     params: {
-      duration: { type: 'number', default: 300, description: 'Transition duration' }
+      duration: { type: 'number', default: 300, description: 'Transition duration' },
     },
-    generate: (params) => `@effect clear [duration=${params.duration}]`
+    generate: params => `@effect clear [duration=${params.duration}]`,
   },
 
   // ===== TEXT DISPLAY =====
@@ -162,9 +163,14 @@ export const EXTENDED_COMMANDS = {
       x: { type: 'number', default: 50, description: 'X position (%)' },
       y: { type: 'number', default: 50, description: 'Y position (%)' },
       duration: { type: 'number', default: 2000, description: 'Display duration in ms' },
-      style: { type: 'select', options: ['normal', 'title', 'subtitle', 'caption'], default: 'normal' }
+      style: {
+        type: 'select',
+        options: ['normal', 'title', 'subtitle', 'caption'],
+        default: 'normal',
+      },
     },
-    generate: (params) => `@text show [text="${params.text}",x=${params.x},y=${params.y},duration=${params.duration},style=${params.style}]`
+    generate: params =>
+      `@text show [text="${params.text}",x=${params.x},y=${params.y},duration=${params.duration},style=${params.style}]`,
   },
 
   typewriter: {
@@ -174,9 +180,9 @@ export const EXTENDED_COMMANDS = {
     icon: '⌨️',
     params: {
       text: { type: 'string', default: 'Text', description: 'Text to display' },
-      speed: { type: 'number', default: 50, description: 'Delay per character (ms)' }
+      speed: { type: 'number', default: 50, description: 'Delay per character (ms)' },
     },
-    generate: (params) => `@text typewriter [text="${params.text}",speed=${params.speed}]`
+    generate: params => `@text typewriter [text="${params.text}",speed=${params.speed}]`,
   },
 
   clearText: {
@@ -185,7 +191,7 @@ export const EXTENDED_COMMANDS = {
     category: 'text',
     icon: '🗑️',
     params: {},
-    generate: () => '@text clear'
+    generate: () => '@text clear',
   },
 
   // ===== SPRITE MANIPULATION =====
@@ -199,9 +205,14 @@ export const EXTENDED_COMMANDS = {
       x: { type: 'number', default: 0, description: 'Target X position' },
       y: { type: 'number', default: 0, description: 'Target Y position' },
       duration: { type: 'number', default: 500, description: 'Duration in ms' },
-      easing: { type: 'select', options: ['linear', 'easeIn', 'easeOut', 'easeInOut'], default: 'easeInOut' }
+      easing: {
+        type: 'select',
+        options: ['linear', 'easeIn', 'easeOut', 'easeInOut'],
+        default: 'easeInOut',
+      },
     },
-    generate: (params) => `@sprite ${params.id} move [x=${params.x},y=${params.y},duration=${params.duration},easing=${params.easing}]`
+    generate: params =>
+      `@sprite ${params.id} move [x=${params.x},y=${params.y},duration=${params.duration},easing=${params.easing}]`,
   },
 
   spriteFade: {
@@ -212,9 +223,10 @@ export const EXTENDED_COMMANDS = {
     params: {
       id: { type: 'string', default: 'sprite1', description: 'Sprite ID' },
       alpha: { type: 'number', default: 0, description: 'Target alpha (0-1)' },
-      duration: { type: 'number', default: 300, description: 'Duration in ms' }
+      duration: { type: 'number', default: 300, description: 'Duration in ms' },
     },
-    generate: (params) => `@sprite ${params.id} fade [alpha=${params.alpha},duration=${params.duration}]`
+    generate: params =>
+      `@sprite ${params.id} fade [alpha=${params.alpha},duration=${params.duration}]`,
   },
 
   spriteScale: {
@@ -225,9 +237,10 @@ export const EXTENDED_COMMANDS = {
     params: {
       id: { type: 'string', default: 'sprite1', description: 'Sprite ID' },
       factor: { type: 'number', default: 1.5, description: 'Scale factor' },
-      duration: { type: 'number', default: 300, description: 'Duration in ms' }
+      duration: { type: 'number', default: 300, description: 'Duration in ms' },
     },
-    generate: (params) => `@sprite ${params.id} scale [factor=${params.factor},duration=${params.duration}]`
+    generate: params =>
+      `@sprite ${params.id} scale [factor=${params.factor},duration=${params.duration}]`,
   },
 
   spriteRotate: {
@@ -238,9 +251,10 @@ export const EXTENDED_COMMANDS = {
     params: {
       id: { type: 'string', default: 'sprite1', description: 'Sprite ID' },
       angle: { type: 'number', default: 360, description: 'Rotation angle (degrees)' },
-      duration: { type: 'number', default: 500, description: 'Duration in ms' }
+      duration: { type: 'number', default: 500, description: 'Duration in ms' },
     },
-    generate: (params) => `@sprite ${params.id} rotate [angle=${params.angle},duration=${params.duration}]`
+    generate: params =>
+      `@sprite ${params.id} rotate [angle=${params.angle},duration=${params.duration}]`,
   },
 
   spriteAnimate: {
@@ -251,9 +265,10 @@ export const EXTENDED_COMMANDS = {
     params: {
       id: { type: 'string', default: 'sprite1', description: 'Sprite ID' },
       animation: { type: 'string', default: 'idle', description: 'Animation name' },
-      loop: { type: 'boolean', default: true, description: 'Loop animation' }
+      loop: { type: 'boolean', default: true, description: 'Loop animation' },
     },
-    generate: (params) => `@sprite ${params.id} animate [animation=${params.animation},loop=${params.loop}]`
+    generate: params =>
+      `@sprite ${params.id} animate [animation=${params.animation},loop=${params.loop}]`,
   },
 
   // ===== CONDITIONS =====
@@ -265,9 +280,9 @@ export const EXTENDED_COMMANDS = {
     params: {
       variable: { type: 'string', default: 'flag', description: 'Variable name' },
       operator: { type: 'select', options: ['==', '!=', '>', '<', '>=', '<='], default: '==' },
-      value: { type: 'string', default: 'true', description: 'Value to compare' }
+      value: { type: 'string', default: 'true', description: 'Value to compare' },
     },
-    generate: (params) => `@if ${params.variable} ${params.operator} ${params.value}`
+    generate: params => `@if ${params.variable} ${params.operator} ${params.value}`,
   },
 
   elseCondition: {
@@ -276,7 +291,7 @@ export const EXTENDED_COMMANDS = {
     category: 'conditions',
     icon: '↔️',
     params: {},
-    generate: () => '@else'
+    generate: () => '@else',
   },
 
   endifCondition: {
@@ -285,7 +300,7 @@ export const EXTENDED_COMMANDS = {
     category: 'conditions',
     icon: '🔚',
     params: {},
-    generate: () => '@endif'
+    generate: () => '@endif',
   },
 
   setVariable: {
@@ -295,9 +310,9 @@ export const EXTENDED_COMMANDS = {
     icon: '📦',
     params: {
       variable: { type: 'string', default: 'flag', description: 'Variable name' },
-      value: { type: 'string', default: 'true', description: 'Value to set' }
+      value: { type: 'string', default: 'true', description: 'Value to set' },
     },
-    generate: (params) => `@set ${params.variable} = ${params.value}`
+    generate: params => `@set ${params.variable} = ${params.value}`,
   },
 
   // ===== TIMING CONTROLS =====
@@ -307,9 +322,9 @@ export const EXTENDED_COMMANDS = {
     category: 'timing',
     icon: '⏱️',
     params: {
-      duration: { type: 'number', default: 1000, description: 'Wait duration in ms' }
+      duration: { type: 'number', default: 1000, description: 'Wait duration in ms' },
     },
-    generate: (params) => `wait ${params.duration}`
+    generate: params => `wait ${params.duration}`,
   },
 
   waitInput: {
@@ -318,7 +333,7 @@ export const EXTENDED_COMMANDS = {
     category: 'timing',
     icon: '⌨️',
     params: {},
-    generate: () => 'waitInput'
+    generate: () => 'waitInput',
   },
 
   sync: {
@@ -327,7 +342,7 @@ export const EXTENDED_COMMANDS = {
     category: 'timing',
     icon: '🔄',
     params: {},
-    generate: () => '@sync'
+    generate: () => '@sync',
   },
 
   parallel: {
@@ -336,7 +351,7 @@ export const EXTENDED_COMMANDS = {
     category: 'timing',
     icon: '⚡',
     params: {},
-    generate: () => '@parallel'
+    generate: () => '@parallel',
   },
 
   endParallel: {
@@ -345,7 +360,7 @@ export const EXTENDED_COMMANDS = {
     category: 'timing',
     icon: '🔚',
     params: {},
-    generate: () => '@endparallel'
+    generate: () => '@endparallel',
   },
 
   // ===== CHOICE SYSTEM =====
@@ -355,7 +370,7 @@ export const EXTENDED_COMMANDS = {
     category: 'dialogue',
     icon: '🔀',
     params: {},
-    generate: () => '@choice'
+    generate: () => '@choice',
   },
 
   option: {
@@ -365,9 +380,9 @@ export const EXTENDED_COMMANDS = {
     icon: '➡️',
     params: {
       text: { type: 'string', default: 'Option', description: 'Option text' },
-      label: { type: 'string', default: 'target', description: 'Jump target label' }
+      label: { type: 'string', default: 'target', description: 'Jump target label' },
     },
-    generate: (params) => `- ${params.text} -> ${params.label}`
+    generate: params => `- ${params.text} -> ${params.label}`,
   },
 
   endChoice: {
@@ -376,7 +391,7 @@ export const EXTENDED_COMMANDS = {
     category: 'dialogue',
     icon: '🔚',
     params: {},
-    generate: () => '@endchoice'
+    generate: () => '@endchoice',
   },
 
   label: {
@@ -385,9 +400,9 @@ export const EXTENDED_COMMANDS = {
     category: 'dialogue',
     icon: '🏷️',
     params: {
-      label: { type: 'string', default: 'label', description: 'Label name' }
+      label: { type: 'string', default: 'label', description: 'Label name' },
     },
-    generate: (params) => `::${params.label}`
+    generate: params => `::${params.label}`,
   },
 
   jump: {
@@ -396,10 +411,10 @@ export const EXTENDED_COMMANDS = {
     category: 'dialogue',
     icon: '⤵️',
     params: {
-      label: { type: 'string', default: 'label', description: 'Target label' }
+      label: { type: 'string', default: 'label', description: 'Target label' },
     },
-    generate: (params) => `@jump ${params.label}`
-  }
+    generate: params => `@jump ${params.label}`,
+  },
 };
 
 /**
@@ -422,7 +437,7 @@ export function getCommandsByCategory() {
  */
 export function parseExtendedCommand(line) {
   const trimmed = line.trim();
-  
+
   // Camera commands
   const cameraMatch = trimmed.match(/^@camera\s+(pan|zoom|shake|reset)\s*\[(.*?)\]?$/);
   if (cameraMatch) {
@@ -430,7 +445,7 @@ export function parseExtendedCommand(line) {
     const params = parseParams(paramsStr);
     return { type: `camera${capitalize(action)}`, params };
   }
-  
+
   // Effect commands
   const effectMatch = trimmed.match(/^@effect\s+(\w+)\s*\[(.*?)\]?$/);
   if (effectMatch) {
@@ -438,7 +453,7 @@ export function parseExtendedCommand(line) {
     const params = parseParams(paramsStr);
     return { type: effect, params };
   }
-  
+
   // Text commands
   const textMatch = trimmed.match(/^@text\s+(\w+)\s*\[(.*?)\]?$/);
   if (textMatch) {
@@ -446,7 +461,7 @@ export function parseExtendedCommand(line) {
     const params = parseParams(paramsStr);
     return { type: action === 'show' ? 'showText' : action, params };
   }
-  
+
   // Sprite commands
   const spriteMatch = trimmed.match(/^@sprite\s+(\w+)\s+(\w+)\s*\[(.*?)\]?$/);
   if (spriteMatch) {
@@ -454,15 +469,18 @@ export function parseExtendedCommand(line) {
     const params = { id, ...parseParams(paramsStr) };
     return { type: `sprite${capitalize(action)}`, params };
   }
-  
+
   // Condition commands
   if (trimmed.startsWith('@if ')) {
     const match = trimmed.match(/^@if\s+(\w+)\s*(==|!=|>|<|>=|<=)\s*(.+)$/);
     if (match) {
-      return { type: 'ifCondition', params: { variable: match[1], operator: match[2], value: match[3] } };
+      return {
+        type: 'ifCondition',
+        params: { variable: match[1], operator: match[2], value: match[3] },
+      };
     }
   }
-  
+
   if (trimmed === '@else') return { type: 'elseCondition', params: {} };
   if (trimmed === '@endif') return { type: 'endifCondition', params: {} };
   if (trimmed === '@sync') return { type: 'sync', params: {} };
@@ -471,37 +489,37 @@ export function parseExtendedCommand(line) {
   if (trimmed === '@choice') return { type: 'choice', params: {} };
   if (trimmed === '@endchoice') return { type: 'endChoice', params: {} };
   if (trimmed === 'waitInput') return { type: 'waitInput', params: {} };
-  
+
   // Wait command
   const waitMatch = trimmed.match(/^wait\s+(\d+)$/);
   if (waitMatch) {
     return { type: 'wait', params: { duration: parseInt(waitMatch[1], 10) } };
   }
-  
+
   // Set variable
   const setMatch = trimmed.match(/^@set\s+(\w+)\s*=\s*(.+)$/);
   if (setMatch) {
     return { type: 'setVariable', params: { variable: setMatch[1], value: setMatch[2] } };
   }
-  
+
   // Jump
   const jumpMatch = trimmed.match(/^@jump\s+(\w+)$/);
   if (jumpMatch) {
     return { type: 'jump', params: { label: jumpMatch[1] } };
   }
-  
+
   // Label
   const labelMatch = trimmed.match(/^::(\w+)$/);
   if (labelMatch) {
     return { type: 'label', params: { label: labelMatch[1] } };
   }
-  
+
   // Choice option
   const optionMatch = trimmed.match(/^-\s+(.+?)\s*->\s*(\w+)$/);
   if (optionMatch) {
     return { type: 'option', params: { text: optionMatch[1], label: optionMatch[2] } };
   }
-  
+
   return null;
 }
 
@@ -509,7 +527,7 @@ export function parseExtendedCommand(line) {
 function parseParams(str) {
   const params = {};
   if (!str) return params;
-  
+
   const regex = /(\w+)=(["']?)([^,\]"']+)\2/g;
   let match;
   while ((match = regex.exec(str)) !== null) {

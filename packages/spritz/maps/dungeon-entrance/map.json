@@ -5,7 +5,7 @@
   "tileset": "sewer",
   "audioSrc": "dungeon-beat.mp3",
   "mode": "explore",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -82,7 +82,7 @@
       "facing": "Up"
     }
   ],
-  
+
   "lights": [
     {
       "id": "fire-glow",
@@ -126,7 +126,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "dungeon-welcome",
@@ -135,7 +135,13 @@
           "sprite": "dungeon-guide",
           "action": "dialogue",
           "args": [
-            ["Welcome to the Dungeon of Elements!", "Four trials await you in the cardinal directions.", "Fire to the northwest, Water to the northeast,", "Earth to the southwest, Air to the southeast.", "Complete all four to unlock the Boss Chamber!"],
+            [
+              "Welcome to the Dungeon of Elements!",
+              "Four trials await you in the cardinal directions.",
+              "Fire to the northwest, Water to the northeast,",
+              "Earth to the southwest, Air to the southeast.",
+              "Complete all four to unlock the Boss Chamber!"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -143,14 +149,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "dungeon-load",
       "trigger": "zone/dungeon_entrance_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "center-pillar",
@@ -160,6 +166,6 @@
       "useScale": [0.8, 0.8, 2.0]
     }
   ],
-  
+
   "menu": {}
 }

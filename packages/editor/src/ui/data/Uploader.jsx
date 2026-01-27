@@ -4,7 +4,7 @@
 import React, { useRef, useState } from 'react';
 import './Uploader.css';
 
-export function Uploader({ 
+export function Uploader({
   action,
   accept,
   multiple = false,
@@ -21,7 +21,7 @@ export function Uploader({
   onError,
   onSuccess,
   style,
-  ...props 
+  ...props
 }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -32,7 +32,7 @@ export function Uploader({
     }
   };
 
-  const handleChange = async (e) => {
+  const handleChange = async e => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
@@ -40,7 +40,7 @@ export function Uploader({
       fileKey: `${Date.now()}-${index}`,
       name: file.name,
       blobFile: file,
-      status: 'inited'
+      status: 'inited',
     }));
 
     onChange?.([...fileList, ...newFileList]);
@@ -50,15 +50,15 @@ export function Uploader({
         try {
           fileItem.status = 'uploading';
           onChange?.([...fileList, ...newFileList]);
-          
+
           const formData = new FormData();
           formData.append('file', fileItem.blobFile);
-          
+
           const response = await fetch(action, {
             method: 'POST',
-            body: formData
+            body: formData,
           });
-          
+
           if (response.ok) {
             fileItem.status = 'finished';
             onSuccess?.(await response.json(), fileItem);
@@ -78,7 +78,7 @@ export function Uploader({
     e.target.value = '';
   };
 
-  const handleDragEnter = (e) => {
+  const handleDragEnter = e => {
     e.preventDefault();
     e.stopPropagation();
     if (!disabled && draggable) {
@@ -86,18 +86,18 @@ export function Uploader({
     }
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = e => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = e => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = e => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -109,7 +109,7 @@ export function Uploader({
     handleChange(event);
   };
 
-  const handleRemove = (fileItem) => {
+  const handleRemove = fileItem => {
     const newList = fileList.filter(f => f.fileKey !== fileItem.fileKey);
     onChange?.(newList);
     onRemove?.(fileItem);
@@ -120,8 +120,10 @@ export function Uploader({
     draggable && 'px-uploader-draggable',
     isDragging && 'px-uploader-dragging',
     disabled && 'px-uploader-disabled',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style} {...props}>
@@ -142,7 +144,7 @@ export function Uploader({
           </div>
         )}
       </div>
-      
+
       <input
         ref={inputRef}
         type="file"
@@ -158,9 +160,7 @@ export function Uploader({
           {fileList.map(file => (
             <li key={file.fileKey} className={`px-uploader-item px-uploader-item-${file.status}`}>
               <span className="px-uploader-item-name">{file.name}</span>
-              {file.status === 'uploading' && (
-                <span className="px-uploader-item-progress" />
-              )}
+              {file.status === 'uploading' && <span className="px-uploader-item-progress" />}
               <button
                 type="button"
                 className="px-uploader-item-remove"

@@ -50,7 +50,7 @@ export default class Hud {
     // setup anything needed at the start (run once)
     /** @type {CanvasRenderingContext2D} */
     this.ctx = this.engine.ctx;
-  }
+  };
 
   /**
    * Registers an active HUD element to be re-rendered each frame.
@@ -61,15 +61,15 @@ export default class Hud {
     if (element && typeof element.render === 'function') {
       this.activeElements.set(id, element);
     }
-  }
+  };
 
   /**
    * Unregisters a HUD element.
    * @param {string} id - Unique identifier for the element.
    */
-  unregisterElement = (id) => {
+  unregisterElement = id => {
     this.activeElements.delete(id);
-  }
+  };
 
   /**
    * Re-renders all active HUD elements.
@@ -86,7 +86,7 @@ export default class Hud {
         console.warn(`Error rendering HUD element ${id}:`, e);
       }
     }
-  }
+  };
 
   /**
    * Draws a button
@@ -116,7 +116,7 @@ export default class Hud {
     ctx.fill();
 
     // Light gradient effect on top of the button
-    var grad = ctx.createLinearGradient(x, y, x, y + h / 2);
+    let grad = ctx.createLinearGradient(x, y, x, y + h / 2);
     grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
     ctx.fillStyle = grad;
@@ -132,16 +132,14 @@ export default class Hud {
     ctx.strokeStyle = '#fff';
     ctx.rect(x, y, w, h);
     ctx.stroke();
-
-  }
-
+  };
 
   /**
    * Clears the HUD overlay.
    */
   clearHud = () => {
     this.ctx.clearRect(0, 0, this.engine.ctx.canvas.width, this.engine.ctx.canvas.height);
-  }
+  };
 
   /**
    * Renders the inventory UI if visible.
@@ -150,7 +148,7 @@ export default class Hud {
     if (this.inventoryUI) {
       this.inventoryUI.render();
     }
-  }
+  };
 
   /**
    * Handles canvas resize events. Updates internal references if needed.
@@ -164,23 +162,23 @@ export default class Hud {
     // HUD-specific resize handling if needed in the future.
     // Re-acquire context reference in case it changed
     this.ctx = this.engine.ctx;
-  }
+  };
 
   /**
    * Sets the backdrop image for cutscenes.
    * @param {Image|null} image - The backdrop image.
    */
-  setBackdrop = (image) => {
+  setBackdrop = image => {
     this.backdropImage = image;
-  }
+  };
 
   /**
    * Sets the cutout images for cutscenes.
    * @param {Array} cutouts - Array of {image, position} objects.
    */
-  setCutouts = (cutouts) => {
+  setCutouts = cutouts => {
     this.cutoutImages = cutouts;
-  }
+  };
 
   /**
    * Applies style configuration to the canvas context.
@@ -191,7 +189,7 @@ export default class Hud {
    * @param {string} [styleConfig.fillStyle='#ffffff'] - Fill color.
    * @param {number} [styleConfig.globalAlpha=1.0] - Global alpha.
    */
-  applyStyle = (styleConfig) => {
+  applyStyle = styleConfig => {
     // Apply style to the context
     const defaultStyle = {
       font: '20px invasion2000',
@@ -202,7 +200,7 @@ export default class Hud {
     };
 
     Object.assign(this.ctx, defaultStyle, styleConfig);
-  }
+  };
 
   /**
    * Writes text to the HUD.
@@ -222,12 +220,26 @@ export default class Hud {
 
     if (src) {
       // Draw portrait if set
-      this.ctx.drawImage(src, x ?? this.ctx.canvas.clientWidth / 2, y ?? this.ctx.canvas.clientHeight / 2, 76, 76);
-      this.ctx.fillText(text, x ?? this.ctx.canvas.clientWidth / 2 + 80, y ?? this.ctx.canvas.clientHeight / 2);
+      this.ctx.drawImage(
+        src,
+        x ?? this.ctx.canvas.clientWidth / 2,
+        y ?? this.ctx.canvas.clientHeight / 2,
+        76,
+        76
+      );
+      this.ctx.fillText(
+        text,
+        x ?? this.ctx.canvas.clientWidth / 2 + 80,
+        y ?? this.ctx.canvas.clientHeight / 2
+      );
     } else {
-      this.ctx.fillText(text, x ?? this.ctx.canvas.clientWidth / 2, y ?? this.ctx.canvas.clientHeight / 2);
+      this.ctx.fillText(
+        text,
+        x ?? this.ctx.canvas.clientWidth / 2,
+        y ?? this.ctx.canvas.clientHeight / 2
+      );
     }
-  }
+  };
 
   /**
    * Draws the active mode name in the HUD (top-left).
@@ -236,12 +248,17 @@ export default class Hud {
     try {
       const mode = this.engine?.spritz?.world?.modeManager?.getMode();
       if (!mode) return;
-      this.applyStyle({ font: '18px invasion2000', textAlign: 'left', textBaseline: 'top', fillStyle: '#ff0' });
+      this.applyStyle({
+        font: '18px invasion2000',
+        textAlign: 'left',
+        textBaseline: 'top',
+        fillStyle: '#ff0',
+      });
       this.ctx.fillText(`MODE: ${mode}`, 12, 12);
     } catch (e) {
       // ignore
     }
-  }
+  };
 
   /**
    * Draws height debug overlay showing tile and sprite heights.
@@ -263,14 +280,18 @@ export default class Hud {
         const modelMat = rm.uModelMat;
         const viewMat = camera.uViewMat;
         const projMat = rm.uProjMat;
-        
+
         // Transform: world -> clip -> NDC -> screen
         const vec4 = [worldX, worldY, worldZ, 1.0];
         // model * vec
-        let x = modelMat[0] * vec4[0] + modelMat[4] * vec4[1] + modelMat[8] * vec4[2] + modelMat[12];
-        let y = modelMat[1] * vec4[0] + modelMat[5] * vec4[1] + modelMat[9] * vec4[2] + modelMat[13];
-        let z = modelMat[2] * vec4[0] + modelMat[6] * vec4[1] + modelMat[10] * vec4[2] + modelMat[14];
-        let w = modelMat[3] * vec4[0] + modelMat[7] * vec4[1] + modelMat[11] * vec4[2] + modelMat[15];
+        let x =
+          modelMat[0] * vec4[0] + modelMat[4] * vec4[1] + modelMat[8] * vec4[2] + modelMat[12];
+        let y =
+          modelMat[1] * vec4[0] + modelMat[5] * vec4[1] + modelMat[9] * vec4[2] + modelMat[13];
+        let z =
+          modelMat[2] * vec4[0] + modelMat[6] * vec4[1] + modelMat[10] * vec4[2] + modelMat[14];
+        let w =
+          modelMat[3] * vec4[0] + modelMat[7] * vec4[1] + modelMat[11] * vec4[2] + modelMat[15];
         // view * (model * vec)
         const vx = viewMat[0] * x + viewMat[4] * y + viewMat[8] * z + viewMat[12] * w;
         const vy = viewMat[1] * x + viewMat[5] * y + viewMat[9] * z + viewMat[13] * w;
@@ -290,10 +311,15 @@ export default class Hud {
         return { x: screenX, y: screenY, behind: pw < 0 };
       };
 
-      this.applyStyle({ font: '12px monospace', textAlign: 'center', textBaseline: 'middle', fillStyle: '#0f0' });
+      this.applyStyle({
+        font: '12px monospace',
+        textAlign: 'center',
+        textBaseline: 'middle',
+        fillStyle: '#0f0',
+      });
 
       // Draw tile heights
-      world.zoneList.forEach((zone) => {
+      world.zoneList.forEach(zone => {
         if (!zone.loaded || !zone.zoneData?.cells) return;
         const cells = zone.zoneData.cells;
         for (let row = 0; row < cells.length; row++) {
@@ -313,8 +339,13 @@ export default class Hud {
       });
 
       // Draw sprite heights
-      this.applyStyle({ font: '14px monospace', textAlign: 'center', textBaseline: 'bottom', fillStyle: '#ff0' });
-      world.spriteList.forEach((sprite) => {
+      this.applyStyle({
+        font: '14px monospace',
+        textAlign: 'center',
+        textBaseline: 'bottom',
+        fillStyle: '#ff0',
+      });
+      world.spriteList.forEach(sprite => {
         if (!sprite.pos) return;
         try {
           const screenPos = projectToScreen(sprite.pos.x, sprite.pos.y, sprite.pos.z + 0.5);
@@ -328,8 +359,13 @@ export default class Hud {
       });
 
       // Draw object heights
-      this.applyStyle({ font: '14px monospace', textAlign: 'center', textBaseline: 'bottom', fillStyle: '#f0f' });
-      world.objectList.forEach((obj) => {
+      this.applyStyle({
+        font: '14px monospace',
+        textAlign: 'center',
+        textBaseline: 'bottom',
+        fillStyle: '#f0f',
+      });
+      world.objectList.forEach(obj => {
         if (!obj.pos) return;
         try {
           const screenPos = projectToScreen(obj.pos.x, obj.pos.y, obj.pos.z + 0.5);
@@ -344,7 +380,7 @@ export default class Hud {
     } catch (e) {
       console.warn('drawHeightDebugOverlay error:', e);
     }
-  }
+  };
 
   /**
    * Draws the backdrop and cutouts for cutscenes.
@@ -377,7 +413,7 @@ export default class Hud {
         }
       }
     });
-  }
+  };
 
   /**
    * Creates a scrolling textbox for dialogue.
@@ -396,26 +432,33 @@ export default class Hud {
     const cacheKey = text + JSON.stringify(options);
     if (!this._cachedTextbox || this._cachedTextboxKey !== cacheKey) {
       this._cachedTextbox = new textScrollBox(this.engine.ctx);
-      this._cachedTextbox.init(text, 10, (2 * this.engine.ctx.canvas.height) / 3, this.engine.ctx.canvas.width - 20, this.engine.ctx.canvas.height / 3 - 20, options);
+      this._cachedTextbox.init(
+        text,
+        10,
+        (2 * this.engine.ctx.canvas.height) / 3,
+        this.engine.ctx.canvas.width - 20,
+        this.engine.ctx.canvas.height / 3 - 20,
+        options
+      );
       this._cachedTextbox.setOptions(options);
       this._cachedTextboxKey = cacheKey;
     }
-    
+
     let txt = this._cachedTextbox;
     if (scrolling) {
       txt.scroll((Math.sin(new Date().getTime() / 3000) + 1) * txt.maxScroll * 0.5); // default oscillate
     }
     txt.render();
     return txt;
-  }
-  
+  };
+
   /**
    * Clears the cached textbox (call when dialogue ends).
    */
   clearTextboxCache = () => {
     this._cachedTextbox = null;
     this._cachedTextboxKey = null;
-  }
+  };
 
   /**
    * Sets a greeting text.
@@ -506,13 +549,13 @@ export class textScrollBox {
     this.dirty = true; // Force re-fitting text
     this.setOptions(options);
     this.cleanit();
-  }
+  };
 
   /**
    * Cleans and formats the text.
    * @param {boolean} [dontFitText=false] - Whether to skip fitting text.
    */
-  cleanit = (dontFitText) => {
+  cleanit = dontFitText => {
     if (this.dirty) {
       this.setFont();
       this.getTextPos();
@@ -521,20 +564,20 @@ export class textScrollBox {
         this.fitText();
       }
     }
-  }
+  };
 
   /**
    * Applies options to the textbox.
    * @param {Object} options - The options to apply.
    */
-  setOptions = (options) => {
-    Object.keys(this).forEach((key) => {
+  setOptions = options => {
+    Object.keys(this).forEach(key => {
       if (options[key] !== undefined) {
         this[key] = options[key];
         this.dirty = true;
       }
     });
-  }
+  };
 
   /**
    * Applies the font settings.
@@ -542,7 +585,7 @@ export class textScrollBox {
   setFont = () => {
     this.fontStr = this.fontSize + 'px ' + this.font;
     this.textHeight = this.fontSize + Math.ceil(this.fontSize * 0.25);
-  }
+  };
 
   /**
    * Gets the text position.
@@ -555,7 +598,7 @@ export class textScrollBox {
     } else {
       this.textPos = Math.floor((this.width - -this.scrollBox.width) / 2);
     }
-  }
+  };
 
   /**
    * Fits the text to the textbox.
@@ -595,7 +638,7 @@ export class textScrollBox {
     this.maxScroll = (this.lines.length + 0.5) * this.textHeight - this.height;
     // Calculate total character count for typewriter
     this.totalChars = this.lines.reduce((sum, line) => sum + line.length, 0);
-  }
+  };
 
   /**
    * Draws the textbox border with optional glow effect.
@@ -606,10 +649,10 @@ export class textScrollBox {
     let bw = this.border.lineWidth / 2;
     ctx.lineJoin = this.border.corner;
     ctx.lineWidth = this.border.lineWidth;
-    
+
     const boxX = portrait ? this.x + 84 : this.x;
     const boxWidth = portrait ? this.width - 84 : this.width;
-    
+
     // Animated glow effect
     if (this.border.glow) {
       const time = Date.now() * 0.003;
@@ -619,13 +662,13 @@ export class textScrollBox {
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
     }
-    
+
     ctx.strokeStyle = this.border.style;
     ctx.strokeRect(boxX - bw, this.y - bw, boxWidth + 2 * bw, this.height + 2 * bw);
-    
+
     // Reset shadow
     ctx.shadowBlur = 0;
-  }
+  };
 
   /**
    * Draws the scrollbar on the side.
@@ -634,7 +677,12 @@ export class textScrollBox {
     let { ctx } = this;
     let scale = this.height / (this.lines.length * this.textHeight);
     ctx.fillStyle = this.scrollBox.background;
-    ctx.fillRect(this.x + this.width - this.scrollBox.width, this.y, this.scrollBox.width, this.height);
+    ctx.fillRect(
+      this.x + this.width - this.scrollBox.width,
+      this.y,
+      this.scrollBox.width,
+      this.height
+    );
     ctx.fillStyle = this.scrollBox.color;
     let barsize = this.height * scale;
     if (barsize > this.height) {
@@ -646,7 +694,7 @@ export class textScrollBox {
     ctx.beginPath();
     ctx.roundRect(barX, barY, this.scrollBox.width, barsize, 3);
     ctx.fill();
-  }
+  };
 
   /**
    * Draws the portrait with a decorative frame.
@@ -659,7 +707,7 @@ export class textScrollBox {
     ctx.strokeRect(this.x - 2, this.y + 36, 80, 80);
     // Draw portrait
     ctx.drawImage(this.portrait.image, this.x, this.y + 38, 76, 76);
-  }
+  };
 
   /**
    * Draws the speaker name above the dialogue box.
@@ -668,37 +716,37 @@ export class textScrollBox {
     if (!this.speaker) return;
     let { ctx } = this;
     ctx.save(); // Save context state
-    
+
     const nameX = this.portrait ? this.x + 90 : this.x + 10;
     const nameY = this.y - 28;
-    
+
     // Draw name background pill
     ctx.font = 'bold 18px ' + this.font;
     const nameWidth = ctx.measureText(this.speaker).width + 20;
-    
+
     ctx.fillStyle = 'rgba(20, 30, 50, 0.95)';
     ctx.beginPath();
     ctx.roundRect(nameX - 10, nameY - 6, nameWidth, 26, 6);
     ctx.fill();
-    
+
     ctx.strokeStyle = this.speakerColor;
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     // Draw name text
     ctx.fillStyle = this.speakerColor;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText(this.speaker, nameX, nameY);
-    
+
     ctx.restore(); // Restore context state
-  }
+  };
 
   /**
    * Scrolls to a position.
    * @param {number} pos - The scroll position.
    */
-  scroll = (pos) => {
+  scroll = pos => {
     this.cleanit();
     this.scrollY = -pos;
     if (this.scrollY > 0) {
@@ -706,13 +754,13 @@ export class textScrollBox {
     } else if (this.scrollY < -this.maxScroll) {
       this.scrollY = -this.maxScroll;
     }
-  }
+  };
 
   /**
    * Scrolls by lines.
    * @param {number} x - The number of lines to scroll.
    */
-  scrollLines = (x) => {
+  scrollLines = x => {
     this.cleanit();
     this.scrollY = -this.textHeight * x;
     if (this.scrollY > 0) {
@@ -720,7 +768,7 @@ export class textScrollBox {
     } else if (this.scrollY < -this.maxScroll) {
       this.scrollY = -this.maxScroll;
     }
-  }
+  };
 
   /**
    * Skips the typewriter effect and shows all text immediately.
@@ -728,7 +776,7 @@ export class textScrollBox {
   skipTypewriter = () => {
     this.typewriterComplete = true;
     this.typewriterIndex = this.totalChars || 0;
-  }
+  };
 
   /**
    * Checks if typewriter animation is complete.
@@ -736,7 +784,7 @@ export class textScrollBox {
    */
   isTypewriterComplete = () => {
     return this.typewriterComplete || !this.typewriterEnabled;
-  }
+  };
 
   /**
    * Renders the textbox with typewriter effect.
@@ -747,12 +795,12 @@ export class textScrollBox {
     ctx.font = this.fontStr;
     ctx.textAlign = this.align;
     ctx.textBaseline = 'top';
-    
+
     // Draw speaker name if present
     if (this.speaker) {
       this.drawSpeakerName();
     }
-    
+
     if (this.portrait) {
       this.drawBorder(true);
       this.drawPortrait();
@@ -779,25 +827,25 @@ export class textScrollBox {
       ctx.clip();
       ctx.setTransform(1, 0, 0, 1, this.x, Math.floor(this.y + this.scrollY));
     }
-    
+
     ctx.fillStyle = this.fontStyle;
-    
+
     // Typewriter effect: calculate how many chars to show based on time
     if (this.typewriterEnabled && !this.typewriterComplete) {
       const elapsed = Date.now() - this.typewriterStartTime;
       const charsToShow = Math.floor(elapsed / this.typewriterSpeed);
-      
+
       if (charsToShow >= this.totalChars) {
         this.typewriterComplete = true;
       }
-      
+
       // Draw text with typewriter effect
       let charCount = 0;
       for (let i = 0; i < this.lines.length; i++) {
         const line = this.lines[i];
         const lineStart = charCount;
         const lineEnd = charCount + line.length;
-        
+
         if (charsToShow <= lineStart) {
           // Haven't reached this line yet - don't draw
           break;
@@ -809,7 +857,7 @@ export class textScrollBox {
           const visibleChars = charsToShow - lineStart;
           const visibleText = line.substring(0, visibleChars);
           ctx.fillText(visibleText, this.textPos, Math.floor(i * this.textHeight) + 2);
-          
+
           // Draw cursor
           const cursorX = this.textPos + ctx.measureText(visibleText).width;
           const cursorY = Math.floor(i * this.textHeight) + 2;
@@ -825,7 +873,7 @@ export class textScrollBox {
         ctx.fillText(this.lines[i], this.textPos, Math.floor(i * this.textHeight) + 2);
       }
     }
-    
+
     ctx.restore(); // remove the clipping
-  }
+  };
 }

@@ -16,16 +16,19 @@ assets/
 ## Image Specifications
 
 ### Favicon
+
 - Format: PNG
 - Size: 32x32 or 64x64 pixels
 - Transparent background recommended
 
 ### Game Card Images
+
 - Format: PNG or JPG
 - Size: 640x360 pixels (16:9 aspect ratio)
 - Optimized for web (< 200KB recommended)
 
 ### Screenshots
+
 - Format: PNG or JPG
 - Size: 1920x1080 or 1280x720 pixels
 - Optimized for web
@@ -47,6 +50,7 @@ To add a new game to the catalog:
 3. The website will automatically display the new game card
 
 Example:
+
 ```json
 {
   "id": "your-game",

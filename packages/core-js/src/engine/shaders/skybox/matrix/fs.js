@@ -12,7 +12,7 @@
 \*                                                 */
 
 export default function fs() {
-    return `
+  return `
     precision highp float;
     uniform mat4 uViewDirectionProjectionInverse;
     varying vec4 vPosition;

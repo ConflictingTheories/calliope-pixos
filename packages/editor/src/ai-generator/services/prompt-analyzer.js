@@ -8,7 +8,7 @@
  * asset requirements, and determine which generators to invoke.
  */
 
-import { animation } from "../../design-system";
+import { animation } from '../../design-system';
 
 /**
  * Asset types that can be generated
@@ -40,19 +40,46 @@ export const ASSET_TYPES = {
   MONSTER: 'monster',
   ITEM: 'item',
   EFFECT: 'effect',
-  TEXTURE: 'texture'
+  TEXTURE: 'texture',
 };
 
 /**
  * Keywords associated with each asset type
  */
 const ASSET_KEYWORDS = {
-  [ASSET_TYPES.SPRITE]: ['sprite', 'character sprite', 'player sprite', 'enemy sprite', 'object sprite'],
+  [ASSET_TYPES.SPRITE]: [
+    'sprite',
+    'character sprite',
+    'player sprite',
+    'enemy sprite',
+    'object sprite',
+  ],
   [ASSET_TYPES.PORTRAIT]: ['portrait', 'face', 'avatar', 'profile', 'headshot', 'bust'],
-  [ASSET_TYPES.SPRITESHEET]: ['spritesheet', 'sprite sheet', 'animation sheet', 'walk cycle', 'animation frames'],
-  [ASSET_TYPES.TILESET]: ['tileset', 'tile set', 'tiles', 'terrain', 'floor', 'wall', 'environment', 'ground'],
+  [ASSET_TYPES.SPRITESHEET]: [
+    'spritesheet',
+    'sprite sheet',
+    'animation sheet',
+    'walk cycle',
+    'animation frames',
+  ],
+  [ASSET_TYPES.TILESET]: [
+    'tileset',
+    'tile set',
+    'tiles',
+    'terrain',
+    'floor',
+    'wall',
+    'environment',
+    'ground',
+  ],
   [ASSET_TYPES.TILE]: ['tiles', 'floor tiles', 'wall tiles', 'pillars'],
-  [ASSET_TYPES.GEOMETRY]: ['tile geometry', 'world geometry', 'map geometry', 'geometry', 'tile shapes'],
+  [ASSET_TYPES.GEOMETRY]: [
+    'tile geometry',
+    'world geometry',
+    'map geometry',
+    'geometry',
+    'tile shapes',
+  ],
   [ASSET_TYPES.MAP]: ['map', 'level', 'dungeon', 'world', 'area', 'zone', 'room', 'cells'],
   [ASSET_TYPES.AUDIO]: ['audio', 'sound', 'voice'],
   [ASSET_TYPES.MUSIC]: ['music', 'soundtrack', 'bgm', 'background music', 'theme', 'melody'],
@@ -71,7 +98,16 @@ const ASSET_KEYWORDS = {
   [ASSET_TYPES.CHARACTER]: ['character', 'hero', 'protagonist', 'player', 'adventurer', 'warrior'],
   [ASSET_TYPES.MONSTER]: ['monster', 'enemy', 'creature', 'boss', 'mob', 'beast', 'demon'],
   [ASSET_TYPES.ITEM]: ['item', 'weapon', 'armor', 'potion', 'key', 'treasure', 'loot'],
-  [ASSET_TYPES.SHADER]: ['shader', 'skybox', 'billboarding', 'shaders', 'glsl', 'hlsl', 'es 300', 'webgl'],
+  [ASSET_TYPES.SHADER]: [
+    'shader',
+    'skybox',
+    'billboarding',
+    'shaders',
+    'glsl',
+    'hlsl',
+    'es 300',
+    'webgl',
+  ],
   [ASSET_TYPES.EFFECT]: ['effect', 'particle', 'spell', 'magic', 'explosion', 'glow'],
 };
 
@@ -145,14 +181,38 @@ export const SPRITE_PRESETS = {
  * Keywords that indicate a full game generation request
  */
 const GAME_KEYWORDS = [
-  'create a game', 'make a game', 'build a game', 'generate a game',
-  'rpg where', 'rpg game', 'adventure game', 'puzzle game', 'action game',
-  'game where', 'game with', 'full game', 'complete game', 'entire game',
-  'playable game', 'game package', 'game project', 'create a spritz', 'new spritz',
+  'create a game',
+  'make a game',
+  'build a game',
+  'generate a game',
+  'rpg where',
+  'rpg game',
+  'adventure game',
+  'puzzle game',
+  'action game',
+  'game where',
+  'game with',
+  'full game',
+  'complete game',
+  'entire game',
+  'playable game',
+  'game package',
+  'game project',
+  'create a spritz',
+  'new spritz',
   // Complex multi-asset indicators
-  'multiple npcs', 'several npcs', 'different dungeons', 'various locations',
-  'intro cutscene', 'quest dialogues', 'boss fight', 'final boss',
-  'collect crystals', 'collect items', 'save the', 'defeat the',
+  'multiple npcs',
+  'several npcs',
+  'different dungeons',
+  'various locations',
+  'intro cutscene',
+  'quest dialogues',
+  'boss fight',
+  'final boss',
+  'collect crystals',
+  'collect items',
+  'save the',
+  'defeat the',
 ];
 
 /**
@@ -169,16 +229,30 @@ function isGameGenerationRequest(lowerPrompt) {
   }
 
   // Heuristic: If prompt mentions 3+ different character types, it's likely a game
-  const characterTypes = ['player', 'npc', 'enemy', 'boss', 'merchant', 'shopkeeper', 'mentor', 'villain', 'hero'];
+  const characterTypes = [
+    'player',
+    'npc',
+    'enemy',
+    'boss',
+    'merchant',
+    'shopkeeper',
+    'mentor',
+    'villain',
+    'hero',
+  ];
   const mentionedTypes = characterTypes.filter(type => lowerPrompt.includes(type));
   if (mentionedTypes.length >= 3) {
     return true;
   }
 
   // Heuristic: If prompt mentions locations + characters + story elements
-  const hasLocations = /\b(dungeon|town|forest|castle|cave|temple|village|world)\b/.test(lowerPrompt);
+  const hasLocations = /\b(dungeon|town|forest|castle|cave|temple|village|world)\b/.test(
+    lowerPrompt
+  );
   const hasCharacters = /\b(character|npc|enemy|player|hero|protagonist)\b/.test(lowerPrompt);
-  const hasStory = /\b(quest|mission|story|adventure|journey|cutscene|dialogue)\b/.test(lowerPrompt);
+  const hasStory = /\b(quest|mission|story|adventure|journey|cutscene|dialogue)\b/.test(
+    lowerPrompt
+  );
 
   if (hasLocations && hasCharacters && hasStory) {
     return true;
@@ -238,13 +312,21 @@ export function analyzePrompt(prompt) {
   }
 
   // Analyze for audio requirements
-  if (detectedTypes.has(ASSET_TYPES.AUDIO) || detectedTypes.has(ASSET_TYPES.MUSIC) || detectedTypes.has(ASSET_TYPES.SFX)) {
+  if (
+    detectedTypes.has(ASSET_TYPES.AUDIO) ||
+    detectedTypes.has(ASSET_TYPES.MUSIC) ||
+    detectedTypes.has(ASSET_TYPES.SFX)
+  ) {
     result.audioConfig = analyzeAudioRequirements(lowerPrompt);
   }
 
   // Analyze for text/dialogue requirements
-  if (detectedTypes.has(ASSET_TYPES.DIALOGUE) || detectedTypes.has(ASSET_TYPES.SCRIPT) ||
-    detectedTypes.has(ASSET_TYPES.CUTSCENE) || detectedTypes.has(ASSET_TYPES.CONFIG)) {
+  if (
+    detectedTypes.has(ASSET_TYPES.DIALOGUE) ||
+    detectedTypes.has(ASSET_TYPES.SCRIPT) ||
+    detectedTypes.has(ASSET_TYPES.CUTSCENE) ||
+    detectedTypes.has(ASSET_TYPES.CONFIG)
+  ) {
     result.textConfig = analyzeTextRequirements(lowerPrompt, detectedTypes);
   }
 
@@ -261,9 +343,14 @@ export function analyzePrompt(prompt) {
  * Check if detected types include a sprite-like asset
  */
 function hasSpriteLikeAsset(types) {
-  return types.has(ASSET_TYPES.SPRITE) || types.has(ASSET_TYPES.CHARACTER) ||
-    types.has(ASSET_TYPES.NPC) || types.has(ASSET_TYPES.MONSTER) ||
-    types.has(ASSET_TYPES.ITEM) || types.has(ASSET_TYPES.EFFECT);
+  return (
+    types.has(ASSET_TYPES.SPRITE) ||
+    types.has(ASSET_TYPES.CHARACTER) ||
+    types.has(ASSET_TYPES.NPC) ||
+    types.has(ASSET_TYPES.MONSTER) ||
+    types.has(ASSET_TYPES.ITEM) ||
+    types.has(ASSET_TYPES.EFFECT)
+  );
 }
 
 /**
@@ -296,12 +383,21 @@ function analyzeSpriteRequirements(prompt, types) {
   }
 
   // Check for spritesheet specifics
-  if (prompt.includes('spritesheet') || prompt.includes('animation') || prompt.includes('walk cycle')) {
+  if (
+    prompt.includes('spritesheet') ||
+    prompt.includes('animation') ||
+    prompt.includes('walk cycle')
+  ) {
     config.needsSpritesheet = true;
   }
 
   // Check for actions/states
-  if (prompt.includes('action') || prompt.includes('attack') || prompt.includes('idle') || prompt.includes('walk')) {
+  if (
+    prompt.includes('action') ||
+    prompt.includes('attack') ||
+    prompt.includes('idle') ||
+    prompt.includes('walk')
+  ) {
     config.needsActions = true;
     config.actions = extractActions(prompt);
   }
@@ -327,9 +423,17 @@ function analyzeSpriteRequirements(prompt, types) {
   }
 
   // Check for direction count
-  if (prompt.includes('8 direction') || prompt.includes('eight direction') || prompt.includes('8-direction')) {
+  if (
+    prompt.includes('8 direction') ||
+    prompt.includes('eight direction') ||
+    prompt.includes('8-direction')
+  ) {
     config.directions = 8;
-  } else if (prompt.includes('4 direction') || prompt.includes('four direction') || prompt.includes('4-direction')) {
+  } else if (
+    prompt.includes('4 direction') ||
+    prompt.includes('four direction') ||
+    prompt.includes('4-direction')
+  ) {
     config.directions = 4;
   }
 
@@ -342,17 +446,15 @@ function analyzeSpriteRequirements(prompt, types) {
   // Check for art style
   if (prompt.includes('16-bit') || prompt.includes('16 bit')) config.style = '16-bit pixel art';
   else if (prompt.includes('8-bit') || prompt.includes('8 bit')) config.style = '8-bit pixel art';
-  else if (prompt.includes('32-bit') || prompt.includes('32 bit')) config.style = '32-bit pixel art';
+  else if (prompt.includes('32-bit') || prompt.includes('32 bit'))
+    config.style = '32-bit pixel art';
   else if (prompt.includes('retro')) config.style = 'retro pixel art';
   else if (prompt.includes('modern')) config.style = 'modern pixel art';
 
   // Calculate sheet size based on frames and directions
   const totalCols = config.framesPerDirection;
   const totalRows = config.directions;
-  config.sheetSize = [
-    totalCols * config.tileSize[0],
-    totalRows * config.tileSize[1],
-  ];
+  config.sheetSize = [totalCols * config.tileSize[0], totalRows * config.tileSize[1]];
 
   return config;
 }
@@ -362,8 +464,22 @@ function analyzeSpriteRequirements(prompt, types) {
  */
 function extractActions(prompt) {
   const actionKeywords = [
-    'idle', 'walk', 'run', 'attack', 'hit', 'die', 'jump', 'fall',
-    'cast', 'block', 'dodge', 'climb', 'swim', 'fly', 'crouch', 'talk',
+    'idle',
+    'walk',
+    'run',
+    'attack',
+    'hit',
+    'die',
+    'jump',
+    'fall',
+    'cast',
+    'block',
+    'dodge',
+    'climb',
+    'swim',
+    'fly',
+    'crouch',
+    'talk',
   ];
 
   const found = actionKeywords.filter(action => prompt.includes(action));
@@ -385,7 +501,11 @@ function analyzeAudioRequirements(prompt) {
   if (prompt.includes('music') || prompt.includes('bgm') || prompt.includes('soundtrack')) {
     config.type = 'music';
     config.duration = 30;
-  } else if (prompt.includes('voice') || prompt.includes('speech') || prompt.includes('narration')) {
+  } else if (
+    prompt.includes('voice') ||
+    prompt.includes('speech') ||
+    prompt.includes('narration')
+  ) {
     config.type = 'voice';
   }
 
@@ -475,7 +595,17 @@ function extractMetadata(prompt) {
   }
 
   // Extract theme
-  const themes = ['medieval', 'futuristic', 'nature', 'urban', 'underwater', 'space', 'forest', 'desert', 'ice'];
+  const themes = [
+    'medieval',
+    'futuristic',
+    'nature',
+    'urban',
+    'underwater',
+    'space',
+    'forest',
+    'desert',
+    'ice',
+  ];
   for (const theme of themes) {
     if (prompt.toLowerCase().includes(theme)) {
       metadata.theme = theme;
@@ -484,7 +614,9 @@ function extractMetadata(prompt) {
   }
 
   // Extract color mentions
-  const colorMatch = prompt.match(/\b(red|blue|green|yellow|purple|orange|pink|black|white|gold|silver|brown)\b/i);
+  const colorMatch = prompt.match(
+    /\b(red|blue|green|yellow|purple|orange|pink|black|white|gold|silver|brown)\b/i
+  );
   if (colorMatch) {
     metadata.color = colorMatch[1].toLowerCase();
   }

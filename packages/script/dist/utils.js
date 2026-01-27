@@ -162,4 +162,4 @@ function coerceArgToFunction(value, funcName, index) {
 }
 const ensureArray = (value) => (value instanceof Array ? value : [value]);
 const hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-export { type, tostring, posrelat, coerceToBoolean, coerceToNumber, coerceToString, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction, ensureArray, hasOwnProperty };
+export { type, tostring, posrelat, coerceToBoolean, coerceToNumber, coerceToString, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction, ensureArray, hasOwnProperty, };

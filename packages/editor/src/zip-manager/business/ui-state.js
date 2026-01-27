@@ -1,17 +1,27 @@
 import { filesystemService } from '../services/index.js';
 
-function getUIState({ entries, highlightedIds, selectedFolder, clipboardData, history, dialogs, getOptions }) {
+function getUIState({
+  entries,
+  highlightedIds,
+  selectedFolder,
+  clipboardData,
+  history,
+  dialogs,
+  getOptions,
+}) {
   const entriesEmpty = !entries.length;
-  const parentFolderHighlighted = !highlightedIds.length || (selectedFolder.parent && highlightedIds.includes(selectedFolder.parent.id));
-  const subFolderHighlighted = highlightedIds.find((id) => {
-    const entry = selectedFolder.children.find((entry) => entry.id === id);
+  const parentFolderHighlighted =
+    !highlightedIds.length ||
+    (selectedFolder.parent && highlightedIds.includes(selectedFolder.parent.id));
+  const subFolderHighlighted = highlightedIds.find(id => {
+    const entry = selectedFolder.children.find(entry => entry.id === id);
     if (entry) {
       return entry.directory;
     }
     return false;
   });
   const clipboardDataEmpty = !clipboardData;
-  const selectedFolderEntries = entries.filter((entry) => entry !== selectedFolder.parent);
+  const selectedFolderEntries = entries.filter(entry => entry !== selectedFolder.parent);
   const disabledExportZip = entriesEmpty || !selectedFolderEntries.length;
   const disabledReset = entriesEmpty;
   const disabledNavigation = entriesEmpty;
@@ -21,13 +31,20 @@ function getUIState({ entries, highlightedIds, selectedFolder, clipboardData, hi
   const disabledCut = parentFolderHighlighted;
   const disabledPaste =
     clipboardDataEmpty ||
-    (clipboardData.cut && clipboardData.entries.find((entry) => selectedFolder == entry || selectedFolder.isDescendantOf(entry)));
+    (clipboardData.cut &&
+      clipboardData.entries.find(
+        entry => selectedFolder == entry || selectedFolder.isDescendantOf(entry)
+      ));
   const disabledResetClipboardData = clipboardDataEmpty;
-  const disabledExtract = parentFolderHighlighted || !highlightedIds.length || (!filesystemService.savePickersSupported() && subFolderHighlighted);
+  const disabledExtract =
+    parentFolderHighlighted ||
+    !highlightedIds.length ||
+    (!filesystemService.savePickersSupported() && subFolderHighlighted);
   const disabledHighlightAll =
     !selectedFolder ||
     !selectedFolderEntries.length ||
-    (selectedFolderEntries.length === highlightedIds.length && selectedFolderEntries.every((entry) => highlightedIds.includes(entry.id)));
+    (selectedFolderEntries.length === highlightedIds.length &&
+      selectedFolderEntries.every(entry => highlightedIds.includes(entry.id)));
   const disabledRename = highlightedIds.length !== 1 || parentFolderHighlighted;
   const disabledDelete = parentFolderHighlighted;
   const disabledEnterEntry = highlightedIds.length !== 1;
@@ -47,8 +64,14 @@ function getUIState({ entries, highlightedIds, selectedFolder, clipboardData, hi
   const hiddenDownloadManager = options.hideDownloadManager;
   const hiddenInfobar = options.hideInfobar;
   const hiddenExportPassword = !options.promptForExportPassword;
-  const highlightedEntries = (selectedFolder && selectedFolder.children.filter((entry) => highlightedIds.includes(entry.id))) || [];
-  const highlightedEntry = highlightedIds.length === 1 && selectedFolder && selectedFolder.children.find((entry) => entry.id === highlightedIds[0]);
+  const highlightedEntries =
+    (selectedFolder &&
+      selectedFolder.children.filter(entry => highlightedIds.includes(entry.id))) ||
+    [];
+  const highlightedEntry =
+    highlightedIds.length === 1 &&
+    selectedFolder &&
+    selectedFolder.children.find(entry => entry.id === highlightedIds[0]);
   const ancestorFolders = getAncestors(selectedFolder);
 
   return {

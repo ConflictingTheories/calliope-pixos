@@ -3,16 +3,8 @@
   "version": "1.0.0",
   "description": "PixoSpritz Example Assets and demo - Shared game assets, sprites, maps, and content",
   "scripts": {},
-  "files": [
-    "**/*"
-  ],
-  "keywords": [
-    "pixospritz",
-    "assets",
-    "sprites",
-    "maps",
-    "textures"
-  ],
+  "files": ["**/*"],
+  "keywords": ["pixospritz", "assets", "sprites", "maps", "textures"],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",

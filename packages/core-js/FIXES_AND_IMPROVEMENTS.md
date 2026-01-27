@@ -12,16 +12,17 @@ This document summarizes the major fixes and improvements made to the core-js ga
 
 **Problem**: Controller stick and touch buttons were not responding properly on mobile devices and small screens.
 
-**Root Cause**: 
+**Root Cause**:
+
 - Touch coordinates were being handled inconsistently between canvas pixel space and CSS pixel space
 - Missing null checks caused crashes when touches were undefined
 - No validation that touch objects existed before processing
 
 **Solution**:
+
 - **File**: `src/engine/core/input/gamepad/ControllerStick.js`
   - Added null/undefined check for touch objects before processing
   - Added documentation clarifying that coordinates are already in canvas pixel space
-  
 - **File**: `src/engine/core/input/gamepad/ControllerButtons.js`
   - Added safety checks to prevent accessing undefined touch properties
   - Improved condition logic to return early if touch is invalid or assigned to stick
@@ -35,11 +36,13 @@ This document summarizes the major fixes and improvements made to the core-js ga
 **Problem**: Menus were not being displayed on screen, making navigation impossible.
 
 **Root Cause**:
+
 - The HUD canvas was cleared at the start of each frame (line 251 in `index.js`)
 - Menu buttons were drawn during event tick (via `world.tickOuter()` → `event.tick()`)
 - **CRITICAL BUG**: `gamepad.render()` called `clearRect()` on the entire HUD canvas (line 517 in `gamepad/index.js`), erasing all previously drawn menus
 
 **Solution**:
+
 - **File**: `src/engine/core/input/gamepad/index.js` (line 517)
   - Commented out `this.engine.gp.clearRect()` call
   - Gamepad now draws on top of existing HUD content instead of clearing it
@@ -54,6 +57,7 @@ This document summarizes the major fixes and improvements made to the core-js ga
 **Problem**: Two OBJ loading systems coexisted - old complex library and new simplified ObjHelper. Old code was completely unused.
 
 **Actions Taken**:
+
 1. **Deleted entire old OBJ library**: `src/engine/utils/obj/` directory removed
    - `layout.js` - Complex vertex attribute layout system (unused)
    - `mesh.js` - Advanced mesh parsing with tangent/bitangent calculation (unused)
@@ -67,7 +71,8 @@ This document summarizes the major fixes and improvements made to the core-js ga
      - Removed `this.objLoader = OBJ;` from constructor
      - Updated documentation
 
-**Impact**: 
+**Impact**:
+
 - Codebase is cleaner and easier to maintain
 - No confusion about which loader to use
 - Reduced bundle size
@@ -98,6 +103,7 @@ This document summarizes the major fixes and improvements made to the core-js ga
 ## 🏗️ ARCHITECTURE OBSERVATIONS
 
 ### Render Pipeline Flow
+
 ```
 render() [index.js]
   ├─ hud.clearHud() [line 251] - Clears HUD canvas
@@ -119,6 +125,7 @@ render() [index.js]
 These TODO comments remain in the codebase but are not blocking issues:
 
 ### High-Value Future Enhancements
+
 1. **Picker Shader Optimization** (`src/engine/core/index.js:263`)
    - Use 1x1 pixel framebuffer instead of full-screen render
    - Reduce overhead for object selection
@@ -133,6 +140,7 @@ These TODO comments remain in the codebase but are not blocking issues:
    - More sophisticated dialogue flow control
 
 ### Nice-to-Have Improvements
+
 4. **Prompt Mouse/Touch Handler** (`src/engine/actions/prompt.js:147`)
    - Reimplement interactive prompt system with touch support
 
@@ -151,6 +159,7 @@ These TODO comments remain in the codebase but are not blocking issues:
 ## 🧪 TESTING RECOMMENDATIONS
 
 ### Critical Test Cases
+
 1. **Mobile Touch Controls**:
    - Test on actual iOS/Android devices (not just browser dev tools)
    - Verify joystick responds to touch drag
@@ -170,6 +179,7 @@ These TODO comments remain in the codebase but are not blocking issues:
    - Test with and without MTL files
 
 ### Regression Testing
+
 - Ensure gamepad controls still render correctly
 - Verify no performance degradation from removing clearRect
 - Check that debug overlays still work
@@ -179,11 +189,13 @@ These TODO comments remain in the codebase but are not blocking issues:
 ## 📊 METRICS
 
 ### Code Reduction
+
 - **Deleted**: ~2000 lines of unused OBJ library code
 - **Modified**: 4 core files for bug fixes
 - **Net Impact**: Cleaner, more maintainable codebase
 
 ### Bug Severity
+
 - **Critical** (2): Mobile controls broken, menus invisible → **FIXED ✅**
 - **Major** (1): Dead code accumulation → **RESOLVED ✅**
 - **Minor** (46): Remaining TODO items → **DOCUMENTED 📋**
@@ -205,16 +217,19 @@ These TODO comments remain in the codebase but are not blocking issues:
 ## 🚀 NEXT STEPS
 
 ### Immediate (If time permits)
+
 1. Test fixes on actual mobile devices
 2. Review console package for similar issues
 3. Add unit tests for touch coordinate normalization
 
 ### Short-term (Future sprints)
+
 1. Implement remaining high-value TODOs
 2. Centralize resource management as noted in ResourceManager
 3. Add tangent/bitangent calculation to ObjHelper if normal mapping is needed
 
 ### Long-term (Architectural)
+
 1. Consider separating HUD into dedicated layers/channels
 2. Evaluate moving to a component-based rendering system
 3. Implement comprehensive test suite
@@ -224,6 +239,7 @@ These TODO comments remain in the codebase but are not blocking issues:
 ## 📞 CONTACT
 
 If issues persist or new bugs are discovered related to these fixes, please check:
+
 1. Browser console for JavaScript errors
 2. Touch event coordinate values in gamepad debug mode
 3. HUD canvas state in browser dev tools

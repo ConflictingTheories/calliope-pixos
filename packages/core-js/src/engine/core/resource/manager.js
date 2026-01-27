@@ -44,7 +44,7 @@ export default class ResourceManager {
       // ASSETS
       /** @type {Object.<string, Texture>} */
       this.textures = {};
-       /** @type {Object.<string, ColorTexture>} */
+      /** @type {Object.<string, ColorTexture>} */
       this.colors = {};
       /** @type {Object.<string, Speech>} */
       this.speeches = {};
@@ -99,11 +99,11 @@ export default class ResourceManager {
    * @param {string} src - The texture source URL.
    * @returns {Texture} The loaded texture.
    */
-  loadTexture = (src) => {
+  loadTexture = src => {
     if (this.textures[src]) return this.textures[src];
     this.textures[src] = new Texture(src, this.engine);
     return this.textures[src];
-  }
+  };
 
   /**
    * Loads a texture from a zip file.
@@ -119,7 +119,7 @@ export default class ResourceManager {
     let dataUrl = URL.createObjectURL(blob);
     this.textures[src] = new Texture(dataUrl, this.engine);
     return this.textures[src];
-  }
+  };
 
   /**
    * Loads a speech instance.
@@ -131,5 +131,5 @@ export default class ResourceManager {
     if (this.speeches[src]) return this.speeches[src];
     this.speeches[src] = new Speech(canvas, this.engine, src);
     return this.speeches[src];
-  }
+  };
 }

@@ -41,7 +41,7 @@ export default class Database {
    */
   dbGet = async (store, key) => {
     return await this.db[store].get(key);
-  }
+  };
 
   /**
    * add key to db store and returns id
@@ -51,7 +51,7 @@ export default class Database {
    */
   dbAdd = async (store, value) => {
     return await this.db[store].add({ ...value });
-  }
+  };
 
   /**
    * update key to db store returns number of rows
@@ -62,7 +62,7 @@ export default class Database {
    */
   dbUpdate = async (store, id, changes) => {
     return await this.db[store].update(id, { ...changes });
-  }
+  };
 
   /**
    * update key to db store returns number of rows
@@ -72,5 +72,5 @@ export default class Database {
    */
   dbRemove = async (store, id) => {
     return await this.db[store].delete(id);
-  }
+  };
 }

@@ -1,9 +1,11 @@
 # Pixospritz - Sprites Specification
 
 ## Introduction
+
 Sprites are visual entities rendered in the game world. They can represent characters, objects, effects, or UI elements. Sprites support animation, selection, interaction, and can be controlled by the player, AI, or scripts. Animated sprites are supported natively and can be layered with other scene elements.
 
 ## Format & Template
+
 A sprite is defined in the package or zone data as an object with the following properties:
 
 ```json
@@ -30,6 +32,7 @@ A sprite is defined in the package or zone data as an object with the following 
 - `isSelected`: Selection state (updated by engine on click/pick).
 
 ## Engine Features
+
 - Sprites are rendered after tiles/objects, respecting depth and layering.
 - Animated sprites update per frame.
 - Sprites can be selected via mouse/gamepad and trigger actions.
@@ -37,6 +40,7 @@ A sprite is defined in the package or zone data as an object with the following 
 - Sprites support custom shaders and effects.
 
 ## Tips
+
 - Use descriptive IDs and types for sprites to simplify scripting and event handling.
 - Group related sprites (e.g., NPCs, effects) for batch operations.
 - Use animation for dynamic feedback and immersion.

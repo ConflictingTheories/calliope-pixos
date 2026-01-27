@@ -28,16 +28,16 @@ export default class EraserTool extends BaseTool {
 
   onMove(x, y, imageData, options) {
     if (!this.isDrawing) return [];
-    
+
     const { width, height } = options;
-    
+
     if (this.lastX !== -1 && this.lastY !== -1) {
       const linePixels = this.getLinePixels(this.lastX, this.lastY, x, y, width, height);
       this.lastX = x;
       this.lastY = y;
       return linePixels.map(p => ({ x: p.x, y: p.y, r: 0, g: 0, b: 0, a: 0 }));
     }
-    
+
     this.lastX = x;
     this.lastY = y;
     return this._erase(x, y, options);
@@ -52,6 +52,15 @@ export default class EraserTool extends BaseTool {
   getPreview(x, y, options) {
     const { width, height } = options;
     const brushPixels = this.getBrushPixels(x, y, width, height);
-    return brushPixels.map(p => ({ x: p.x, y: p.y, r: 255, g: 0, b: 0, a: 100, preview: true, eraser: true }));
+    return brushPixels.map(p => ({
+      x: p.x,
+      y: p.y,
+      r: 255,
+      g: 0,
+      b: 0,
+      a: 100,
+      preview: true,
+      eraser: true,
+    }));
   }
 }

@@ -5,19 +5,19 @@ export default class ClientManager {
   constructor() {
     /** @type {Map<string, Client>} */
     this.clients = new Map();
-    
+
     /** @type {Map<string, DisconnectedSession>} - Sessions awaiting reconnection */
     this.disconnectedSessions = new Map();
-    
+
     /** Session timeout in ms (default: 5 minutes) */
     this.sessionTimeout = parseInt(process.env.SESSION_TIMEOUT) || 5 * 60 * 1000;
-    
+
     // Cleanup expired sessions periodically
     this.cleanupInterval = setInterval(() => this.cleanupExpiredSessions(), 60000);
   }
 
   /**
-   * @param {string} id 
+   * @param {string} id
    * @returns {Client|undefined}
    */
   getClient(id) {
@@ -26,14 +26,14 @@ export default class ClientManager {
   }
 
   /**
-   * @param {string} clientId 
-   * @param {object} clientData 
+   * @param {string} clientId
+   * @param {object} clientData
    * @returns {void}
    */
   setClient(clientId, clientData) {
     // Check if this is a reconnection
     const existingSession = this.disconnectedSessions.get(clientId);
-    
+
     if (existingSession) {
       // Reconnection - restore session state
       console.log(`[ClientManager] Client ${clientId} reconnected, restoring session`);
@@ -41,19 +41,19 @@ export default class ClientManager {
         ...clientData,
         zoneId: existingSession.zoneId,
         avatar: existingSession.avatar,
-        sessionId: existingSession.sessionId
+        sessionId: existingSession.sessionId,
       });
       this.clients.set(clientId, client);
       this.disconnectedSessions.delete(clientId);
-      
-      client.sendMessage('reconnected', { 
+
+      client.sendMessage('reconnected', {
         clientId,
         restored: true,
-        zoneId: existingSession.zoneId
+        zoneId: existingSession.zoneId,
       });
       return;
     }
-    
+
     // New connection
     const client = new Client(clientId, clientData);
     this.clients.set(clientId, client);
@@ -64,27 +64,29 @@ export default class ClientManager {
 
   /**
    * Handle client disconnect with session preservation
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {DisconnectedSession|null}
    */
   handleDisconnect(clientId) {
     const client = this.clients.get(clientId);
     if (!client) return null;
-    
+
     // Preserve session for potential reconnection
     const session = {
       clientId,
       zoneId: client.getZoneId(),
       avatar: client.getAvatar(),
       sessionId: client.sessionId,
-      disconnectTime: Date.now()
+      disconnectTime: Date.now(),
     };
-    
+
     this.disconnectedSessions.set(clientId, session);
     this.clients.delete(clientId);
-    
-    console.log(`[ClientManager] Client ${clientId} disconnected, session preserved for ${this.sessionTimeout / 1000}s`);
-    
+
+    console.log(
+      `[ClientManager] Client ${clientId} disconnected, session preserved for ${this.sessionTimeout / 1000}s`
+    );
+
     return session;
   }
 
@@ -94,14 +96,14 @@ export default class ClientManager {
   cleanupExpiredSessions() {
     const now = Date.now();
     let cleaned = 0;
-    
+
     for (const [clientId, session] of this.disconnectedSessions) {
       if (now - session.disconnectTime > this.sessionTimeout) {
         this.disconnectedSessions.delete(clientId);
         cleaned++;
       }
     }
-    
+
     if (cleaned > 0) {
       console.log(`[ClientManager] Cleaned up ${cleaned} expired sessions`);
     }
@@ -109,7 +111,7 @@ export default class ClientManager {
 
   /**
    * Check if a session exists for reconnection
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {boolean}
    */
   hasDisconnectedSession(clientId) {
@@ -118,7 +120,7 @@ export default class ClientManager {
 
   /**
    * Get a disconnected session
-   * @param {string} clientId 
+   * @param {string} clientId
    * @returns {DisconnectedSession|undefined}
    */
   getDisconnectedSession(clientId) {
@@ -162,39 +164,39 @@ export class Client {
   }
 
   /**
- * 
- * @return {string} zoneId 
- */
+   *
+   * @return {string} zoneId
+   */
   getZoneId() {
     return this.zoneId;
   }
 
   /**
-   * 
-   * @param {string} zoneId 
+   *
+   * @param {string} zoneId
    */
   setZoneId(zoneId) {
     this.zoneId = zoneId;
   }
 
   /**
-* 
-* @return {string} 
-*/
+   *
+   * @return {string}
+   */
   getAvatar() {
     return this.avatar;
   }
 
   /**
-   * 
-   * @param {string} avatar 
+   *
+   * @param {string} avatar
    */
   setAvatar(avatar) {
     this.avatar = avatar;
   }
 
   /**
-   * 
+   *
    * @returns {boolean}
    */
   isReady() {
@@ -202,9 +204,9 @@ export class Client {
   }
 
   /**
-   * 
-   * @param {string} type 
-   * @param {any} payload 
+   *
+   * @param {string} type
+   * @param {any} payload
    */
   sendMessage(type, payload) {
     this.ws.send(JSON.stringify({ type, payload }));

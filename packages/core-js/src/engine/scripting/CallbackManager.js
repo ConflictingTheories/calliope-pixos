@@ -47,40 +47,65 @@ export default class CallbackManager {
   constructor(engine) {
     /** @type {import('../core/index.js').default} */
     this.engine = engine;
-    
+
     /** @type {Map<string, CallbackRegistration[]>} Event name -> registrations */
     this.callbacks = new Map();
-    
+
     /** @type {Map<string, CallbackRegistration[]>} Wildcard patterns */
     this.wildcardCallbacks = new Map();
-    
+
     /** @type {number} Unique ID counter */
     this.idCounter = 0;
-    
+
     /** @type {Set<string>} IDs to remove after current emission */
     this.pendingRemovals = new Set();
-    
+
     /** @type {boolean} Currently emitting an event */
     this.isEmitting = false;
-    
+
     /** @type {CallbackEvent[]} Event queue for deferred processing */
     this.eventQueue = [];
-    
+
     /** @type {boolean} Process events immediately or queue them */
     this.deferredMode = false;
-    
+
     // Register built-in event types
     this.builtInEvents = [
-      'zone:enter', 'zone:exit', 'zone:load', 'zone:unload',
-      'sprite:click', 'sprite:hover', 'sprite:collide', 'sprite:spawn', 'sprite:destroy',
-      'trigger:enter', 'trigger:exit', 'trigger:activate',
-      'action:start', 'action:complete', 'action:cancel',
-      'player:move', 'player:interact', 'player:damage', 'player:heal',
-      'game:start', 'game:pause', 'game:resume', 'game:stop',
-      'cutscene:start', 'cutscene:end', 'cutscene:skip',
-      'menu:open', 'menu:close', 'menu:select',
-      'input:key', 'input:gamepad', 'input:mouse',
-      'update', 'render', 'physics'
+      'zone:enter',
+      'zone:exit',
+      'zone:load',
+      'zone:unload',
+      'sprite:click',
+      'sprite:hover',
+      'sprite:collide',
+      'sprite:spawn',
+      'sprite:destroy',
+      'trigger:enter',
+      'trigger:exit',
+      'trigger:activate',
+      'action:start',
+      'action:complete',
+      'action:cancel',
+      'player:move',
+      'player:interact',
+      'player:damage',
+      'player:heal',
+      'game:start',
+      'game:pause',
+      'game:resume',
+      'game:stop',
+      'cutscene:start',
+      'cutscene:end',
+      'cutscene:skip',
+      'menu:open',
+      'menu:close',
+      'menu:select',
+      'input:key',
+      'input:gamepad',
+      'input:mouse',
+      'update',
+      'render',
+      'physics',
     ];
   }
 
@@ -100,9 +125,9 @@ export default class CallbackManager {
       context: options.context || null,
       priority: options.priority || 0,
       once: options.once || false,
-      filter: options.filter || null
+      filter: options.filter || null,
     };
-    
+
     if (event.includes('*')) {
       // Wildcard registration
       if (!this.wildcardCallbacks.has(event)) {
@@ -118,7 +143,7 @@ export default class CallbackManager {
       this.callbacks.get(event).push(registration);
       this.sortByPriority(this.callbacks.get(event));
     }
-    
+
     debug('CallbackManager', `Registered callback ${id} for event: ${event}`);
     return id;
   }
@@ -145,7 +170,7 @@ export default class CallbackManager {
       this.pendingRemovals.add(id);
       return true;
     }
-    
+
     return this.removeById(id);
   }
 
@@ -164,7 +189,7 @@ export default class CallbackManager {
         return true;
       }
     }
-    
+
     for (const [pattern, registrations] of this.wildcardCallbacks) {
       const idx = registrations.findIndex(r => r.id === id);
       if (idx >= 0) {
@@ -173,7 +198,7 @@ export default class CallbackManager {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -201,21 +226,21 @@ export default class CallbackManager {
       propagationStopped: false,
       target: data.target || null,
       source: data.source || null,
-      
+
       preventDefault() {
         this.defaultPrevented = true;
       },
-      
+
       stopPropagation() {
         this.propagationStopped = true;
-      }
+      },
     };
-    
+
     if (this.deferredMode) {
       this.eventQueue.push(callbackEvent);
       return callbackEvent;
     }
-    
+
     this.processEvent(callbackEvent);
     return callbackEvent;
   }
@@ -227,32 +252,32 @@ export default class CallbackManager {
   processEvent(event) {
     this.isEmitting = true;
     const toRemove = [];
-    
+
     // Get direct callbacks
     const directCallbacks = this.callbacks.get(event.type) || [];
-    
+
     // Get wildcard callbacks
     const wildcardMatches = this.getWildcardMatches(event.type);
-    
+
     // Combine and sort by priority
     const allCallbacks = [...directCallbacks, ...wildcardMatches];
     this.sortByPriority(allCallbacks);
-    
+
     for (const registration of allCallbacks) {
       if (event.propagationStopped) break;
-      
+
       // Check filter
       if (registration.filter && !this.matchesFilter(event.data, registration.filter)) {
         continue;
       }
-      
+
       try {
         if (registration.context) {
           registration.handler.call(registration.context, event);
         } else {
           registration.handler(event);
         }
-        
+
         if (registration.once) {
           toRemove.push(registration.id);
         }
@@ -260,14 +285,14 @@ export default class CallbackManager {
         console.error(`CallbackManager: Error in callback for ${event.type}:`, error);
       }
     }
-    
+
     this.isEmitting = false;
-    
+
     // Clean up once callbacks and pending removals
     for (const id of toRemove) {
       this.removeById(id);
     }
-    
+
     for (const id of this.pendingRemovals) {
       this.removeById(id);
     }
@@ -281,13 +306,13 @@ export default class CallbackManager {
    */
   getWildcardMatches(event) {
     const matches = [];
-    
+
     for (const [pattern, registrations] of this.wildcardCallbacks) {
       if (this.matchesPattern(event, pattern)) {
         matches.push(...registrations);
       }
     }
-    
+
     return matches;
   }
 
@@ -299,11 +324,14 @@ export default class CallbackManager {
    */
   matchesPattern(event, pattern) {
     // Convert pattern to regex
-    const regexStr = '^' + pattern
-      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.') + '$';
-    
+    const regexStr =
+      '^' +
+      pattern
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/\*/g, '.*')
+        .replace(/\?/g, '.') +
+      '$';
+
     return new RegExp(regexStr).test(event);
   }
 
@@ -361,25 +389,31 @@ export default class CallbackManager {
    */
   registerZoneCallbacks(zoneId, callbacks) {
     const ids = [];
-    
+
     if (callbacks.onEnter) {
-      ids.push(this.on('zone:enter', callbacks.onEnter, {
-        filter: { zoneId }
-      }));
+      ids.push(
+        this.on('zone:enter', callbacks.onEnter, {
+          filter: { zoneId },
+        })
+      );
     }
-    
+
     if (callbacks.onExit) {
-      ids.push(this.on('zone:exit', callbacks.onExit, {
-        filter: { zoneId }
-      }));
+      ids.push(
+        this.on('zone:exit', callbacks.onExit, {
+          filter: { zoneId },
+        })
+      );
     }
-    
+
     if (callbacks.onLoad) {
-      ids.push(this.on('zone:load', callbacks.onLoad, {
-        filter: { zoneId }
-      }));
+      ids.push(
+        this.on('zone:load', callbacks.onLoad, {
+          filter: { zoneId },
+        })
+      );
     }
-    
+
     return ids;
   }
 
@@ -391,25 +425,31 @@ export default class CallbackManager {
    */
   registerSpriteCallbacks(spriteId, callbacks) {
     const ids = [];
-    
+
     if (callbacks.onClick) {
-      ids.push(this.on('sprite:click', callbacks.onClick, {
-        filter: { spriteId }
-      }));
+      ids.push(
+        this.on('sprite:click', callbacks.onClick, {
+          filter: { spriteId },
+        })
+      );
     }
-    
+
     if (callbacks.onHover) {
-      ids.push(this.on('sprite:hover', callbacks.onHover, {
-        filter: { spriteId }
-      }));
+      ids.push(
+        this.on('sprite:hover', callbacks.onHover, {
+          filter: { spriteId },
+        })
+      );
     }
-    
+
     if (callbacks.onCollide) {
-      ids.push(this.on('sprite:collide', callbacks.onCollide, {
-        filter: { spriteId }
-      }));
+      ids.push(
+        this.on('sprite:collide', callbacks.onCollide, {
+          filter: { spriteId },
+        })
+      );
     }
-    
+
     return ids;
   }
 
@@ -421,25 +461,31 @@ export default class CallbackManager {
    */
   registerTriggerCallbacks(triggerId, callbacks) {
     const ids = [];
-    
+
     if (callbacks.onEnter) {
-      ids.push(this.on('trigger:enter', callbacks.onEnter, {
-        filter: { triggerId }
-      }));
+      ids.push(
+        this.on('trigger:enter', callbacks.onEnter, {
+          filter: { triggerId },
+        })
+      );
     }
-    
+
     if (callbacks.onExit) {
-      ids.push(this.on('trigger:exit', callbacks.onExit, {
-        filter: { triggerId }
-      }));
+      ids.push(
+        this.on('trigger:exit', callbacks.onExit, {
+          filter: { triggerId },
+        })
+      );
     }
-    
+
     if (callbacks.onActivate) {
-      ids.push(this.on('trigger:activate', callbacks.onActivate, {
-        filter: { triggerId }
-      }));
+      ids.push(
+        this.on('trigger:activate', callbacks.onActivate, {
+          filter: { triggerId },
+        })
+      );
     }
-    
+
     return ids;
   }
 
@@ -450,9 +496,13 @@ export default class CallbackManager {
    * @returns {string} Registration ID.
    */
   onUpdate(handler, priority = 0) {
-    return this.on('update', (event) => {
-      handler(event.data.dt, event.data.time);
-    }, { priority });
+    return this.on(
+      'update',
+      event => {
+        handler(event.data.dt, event.data.time);
+      },
+      { priority }
+    );
   }
 
   /**
@@ -460,10 +510,7 @@ export default class CallbackManager {
    * @returns {string[]} List of event names.
    */
   getRegisteredEvents() {
-    return [
-      ...this.callbacks.keys(),
-      ...this.wildcardCallbacks.keys()
-    ];
+    return [...this.callbacks.keys(), ...this.wildcardCallbacks.keys()];
   }
 
   /**
@@ -493,22 +540,24 @@ export default class CallbackManager {
    */
   getLuaBindings() {
     const manager = this;
-    
+
     return {
       on: (event, handler) => manager.on(event, handler),
       once: (event, handler) => manager.once(event, handler),
-      off: (id) => manager.off(id),
+      off: id => manager.off(id),
       emit: (event, data) => manager.emit(event, data?.toObject?.() || data),
-      
+
       // Convenience methods
       on_zone_enter: (zoneId, handler) => manager.on('zone:enter', handler, { filter: { zoneId } }),
       on_zone_exit: (zoneId, handler) => manager.on('zone:exit', handler, { filter: { zoneId } }),
-      on_sprite_click: (spriteId, handler) => manager.on('sprite:click', handler, { filter: { spriteId } }),
-      on_trigger_enter: (triggerId, handler) => manager.on('trigger:enter', handler, { filter: { triggerId } }),
-      on_action_start: (handler) => manager.on('action:start', handler),
-      on_action_complete: (handler) => manager.on('action:complete', handler),
-      on_update: (handler) => manager.onUpdate(handler),
-      on_event: (pattern, handler) => manager.on(pattern, handler)
+      on_sprite_click: (spriteId, handler) =>
+        manager.on('sprite:click', handler, { filter: { spriteId } }),
+      on_trigger_enter: (triggerId, handler) =>
+        manager.on('trigger:enter', handler, { filter: { triggerId } }),
+      on_action_start: handler => manager.on('action:start', handler),
+      on_action_complete: handler => manager.on('action:complete', handler),
+      on_update: handler => manager.onUpdate(handler),
+      on_event: (pattern, handler) => manager.on(pattern, handler),
     };
   }
 }

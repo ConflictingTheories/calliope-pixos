@@ -30,10 +30,8 @@ function calculateEventTimings(events) {
   let currentTime = 0;
   return events.map((event, idx) => {
     const config = EVENT_CONFIGS[event.type] || EVENT_CONFIGS.action;
-    const duration = event.duration 
-      ? event.duration * 1000 
-      : config.defaultDuration;
-    
+    const duration = event.duration ? event.duration * 1000 : config.defaultDuration;
+
     const timing = {
       ...event,
       idx,
@@ -41,7 +39,7 @@ function calculateEventTimings(events) {
       duration,
       endTime: currentTime + duration,
     };
-    
+
     currentTime += duration;
     return timing;
   });
@@ -90,14 +88,14 @@ export default function Timeline({
   const [isDraggingScrubber, setIsDraggingScrubber] = useState(false);
   const [isDraggingEvent, setIsDraggingEvent] = useState(null);
   const [dragOffset, setDragOffset] = useState(0);
-  
+
   const timelineRef = useRef(null);
   const rulerRef = useRef(null);
   const tracksRef = useRef(null);
 
   // Calculate event timings
   const timedEvents = useMemo(() => calculateEventTimings(events), [events]);
-  
+
   // Total duration of timeline
   const totalDuration = useMemo(() => {
     if (timedEvents.length === 0) return 5000;
@@ -124,7 +122,7 @@ export default function Timeline({
   /**
    * Handle scrubber drag
    */
-  const handleScrubberMouseDown = useCallback((e) => {
+  const handleScrubberMouseDown = useCallback(e => {
     e.preventDefault();
     e.stopPropagation();
     setIsDraggingScrubber(true);
@@ -133,17 +131,20 @@ export default function Timeline({
   /**
    * Handle mouse move for scrubber dragging
    */
-  const handleMouseMove = useCallback((e) => {
-    if (!isDraggingScrubber || !rulerRef.current) return;
-    
-    const rect = rulerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left + scrollLeft;
-    const time = Math.max(0, Math.min(totalDuration, x / (zoom * 0.1)));
-    
-    if (onSeek) {
-      onSeek(time);
-    }
-  }, [isDraggingScrubber, scrollLeft, zoom, totalDuration, onSeek]);
+  const handleMouseMove = useCallback(
+    e => {
+      if (!isDraggingScrubber || !rulerRef.current) return;
+
+      const rect = rulerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left + scrollLeft;
+      const time = Math.max(0, Math.min(totalDuration, x / (zoom * 0.1)));
+
+      if (onSeek) {
+        onSeek(time);
+      }
+    },
+    [isDraggingScrubber, scrollLeft, zoom, totalDuration, onSeek]
+  );
 
   /**
    * Handle mouse up
@@ -168,39 +169,45 @@ export default function Timeline({
   /**
    * Handle click on ruler to seek
    */
-  const handleRulerClick = useCallback((e) => {
-    if (!rulerRef.current || isDraggingScrubber) return;
-    
-    const rect = rulerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left + scrollLeft;
-    const time = Math.max(0, Math.min(totalDuration, x / (zoom * 0.1)));
-    
-    if (onSeek) {
-      onSeek(time);
-    }
-  }, [scrollLeft, zoom, totalDuration, onSeek, isDraggingScrubber]);
+  const handleRulerClick = useCallback(
+    e => {
+      if (!rulerRef.current || isDraggingScrubber) return;
+
+      const rect = rulerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left + scrollLeft;
+      const time = Math.max(0, Math.min(totalDuration, x / (zoom * 0.1)));
+
+      if (onSeek) {
+        onSeek(time);
+      }
+    },
+    [scrollLeft, zoom, totalDuration, onSeek, isDraggingScrubber]
+  );
 
   /**
    * Handle event click
    */
-  const handleEventClick = useCallback((e, idx) => {
-    e.stopPropagation();
-    if (onSelectEvent) {
-      onSelectEvent(idx);
-    }
-  }, [onSelectEvent]);
+  const handleEventClick = useCallback(
+    (e, idx) => {
+      e.stopPropagation();
+      if (onSelectEvent) {
+        onSelectEvent(idx);
+      }
+    },
+    [onSelectEvent]
+  );
 
   /**
    * Handle scroll
    */
-  const handleScroll = useCallback((e) => {
+  const handleScroll = useCallback(e => {
     setScrollLeft(e.target.scrollLeft);
   }, []);
 
   /**
    * Handle zoom change
    */
-  const handleZoom = useCallback((delta) => {
+  const handleZoom = useCallback(delta => {
     setZoom(prev => Math.max(0.1, Math.min(2, prev + delta)));
   }, []);
 
@@ -212,14 +219,10 @@ export default function Timeline({
       {/* Toolbar */}
       <div className="timeline-toolbar">
         <div className="timeline-controls">
-          <button 
-            className="timeline-btn"
-            onClick={onStop}
-            title="Stop (Reset to start)"
-          >
+          <button className="timeline-btn" onClick={onStop} title="Stop (Reset to start)">
             ⏹
           </button>
-          <button 
+          <button
             className={`timeline-btn timeline-btn-primary ${isPlaying ? 'active' : ''}`}
             onClick={isPlaying ? onPause : onPlay}
             title={isPlaying ? 'Pause' : 'Play'}
@@ -235,32 +238,20 @@ export default function Timeline({
         </div>
 
         <div className="timeline-zoom-controls">
-          <button 
-            className="timeline-btn"
-            onClick={() => handleZoom(-0.1)}
-            title="Zoom Out"
-          >
+          <button className="timeline-btn" onClick={() => handleZoom(-0.1)} title="Zoom Out">
             −
           </button>
           <span className="timeline-zoom-label">{Math.round(zoom * 100)}%</span>
-          <button 
-            className="timeline-btn"
-            onClick={() => handleZoom(0.1)}
-            title="Zoom In"
-          >
+          <button className="timeline-btn" onClick={() => handleZoom(0.1)} title="Zoom In">
             +
           </button>
         </div>
       </div>
 
       {/* Timeline area */}
-      <div 
-        ref={timelineRef}
-        className="timeline-scroll-area"
-        onScroll={handleScroll}
-      >
+      <div ref={timelineRef} className="timeline-scroll-area" onScroll={handleScroll}>
         {/* Ruler */}
-        <div 
+        <div
           ref={rulerRef}
           className="timeline-ruler"
           style={{ width: timelineWidth }}
@@ -272,9 +263,7 @@ export default function Timeline({
               className={`timeline-tick ${tick.major ? 'major' : 'minor'}`}
               style={{ left: tick.time * zoom * 0.1 }}
             >
-              {tick.major && (
-                <span className="timeline-tick-label">{formatTime(tick.time)}</span>
-              )}
+              {tick.major && <span className="timeline-tick-label">{formatTime(tick.time)}</span>}
             </div>
           ))}
 
@@ -290,11 +279,7 @@ export default function Timeline({
         </div>
 
         {/* Tracks */}
-        <div 
-          ref={tracksRef}
-          className="timeline-tracks"
-          style={{ width: timelineWidth }}
-        >
+        <div ref={tracksRef} className="timeline-tracks" style={{ width: timelineWidth }}>
           {/* Single track for now - could be expanded to multiple tracks */}
           <div className="timeline-track">
             <div className="timeline-track-label">Events</div>
@@ -302,7 +287,7 @@ export default function Timeline({
               {timedEvents.map((event, idx) => {
                 const config = EVENT_CONFIGS[event.type] || EVENT_CONFIGS.action;
                 const isSelected = selectedIndex === idx;
-                
+
                 return (
                   <div
                     key={idx}
@@ -312,22 +297,17 @@ export default function Timeline({
                       width: Math.max(20, event.duration * zoom * 0.1),
                       '--event-color': config.color,
                     }}
-                    onClick={(e) => handleEventClick(e, idx)}
+                    onClick={e => handleEventClick(e, idx)}
                     title={`${config.label}: ${event.speaker || event.command || ''}`}
                   >
                     <span className="timeline-event-icon">{config.icon}</span>
-                    <span className="timeline-event-label">
-                      {event.speaker || event.type}
-                    </span>
+                    <span className="timeline-event-label">{event.speaker || event.type}</span>
                   </div>
                 );
               })}
 
               {/* Current time indicator line */}
-              <div 
-                className="timeline-playhead"
-                style={{ left: scrubberPosition }}
-              />
+              <div className="timeline-playhead" style={{ left: scrubberPosition }} />
             </div>
           </div>
         </div>
@@ -341,12 +321,12 @@ export default function Timeline({
  */
 export function useTimelinePlayback(events, options = {}) {
   const { speed = 1, onComplete } = options;
-  
+
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const animationRef = useRef(null);
   const lastTimeRef = useRef(null);
-  
+
   const timedEvents = useMemo(() => calculateEventTimings(events), [events]);
   const totalDuration = useMemo(() => {
     if (timedEvents.length === 0) return 0;
@@ -360,14 +340,14 @@ export function useTimelinePlayback(events, options = {}) {
       return;
     }
 
-    const animate = (timestamp) => {
+    const animate = timestamp => {
       if (lastTimeRef.current === null) {
         lastTimeRef.current = timestamp;
       }
-      
+
       const delta = (timestamp - lastTimeRef.current) * speed;
       lastTimeRef.current = timestamp;
-      
+
       setCurrentTime(prev => {
         const next = prev + delta;
         if (next >= totalDuration) {
@@ -377,12 +357,12 @@ export function useTimelinePlayback(events, options = {}) {
         }
         return next;
       });
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     animationRef.current = requestAnimationFrame(animate);
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -396,9 +376,12 @@ export function useTimelinePlayback(events, options = {}) {
     setIsPlaying(false);
     setCurrentTime(0);
   }, []);
-  const seek = useCallback((time) => {
-    setCurrentTime(Math.max(0, Math.min(totalDuration, time)));
-  }, [totalDuration]);
+  const seek = useCallback(
+    time => {
+      setCurrentTime(Math.max(0, Math.min(totalDuration, time)));
+    },
+    [totalDuration]
+  );
 
   // Get current event index
   const currentEventIndex = useMemo(() => {

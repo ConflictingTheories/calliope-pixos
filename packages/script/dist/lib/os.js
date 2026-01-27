@@ -14,7 +14,7 @@ const MONTHS = [
     'September',
     'October',
     'November',
-    'December'
+    'December',
 ];
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const DATE_FORMAT_HANDLERS = {
@@ -63,7 +63,7 @@ const DATE_FORMAT_HANDLERS = {
             return 'UTC';
         const match = date.toString().match(/[A-Z][A-Z][A-Z]/);
         return match ? match[0] : '';
-    }
+    },
 };
 function isDST(date) {
     const year = date.getFullYear();
@@ -94,7 +94,7 @@ function date(input = '%c', time) {
             sec: parseInt(DATE_FORMAT_HANDLERS.S(date, utc), 10),
             wday: parseInt(DATE_FORMAT_HANDLERS.w(date, utc), 10) + 1,
             yday: parseInt(DATE_FORMAT_HANDLERS.j(date, utc), 10),
-            isdst: isDST(date)
+            isdst: isDST(date),
         });
     }
     return string.replace(/%[%YybBmUWjdaAwHIMScxXpZ]/g, f => DATE_FORMAT_HANDLERS[f[1]](date, utc));
@@ -150,7 +150,7 @@ const getLibOS = (cfg) => {
         exit,
         setlocale,
         time,
-        difftime
+        difftime,
     });
 };
 export { getLibOS };

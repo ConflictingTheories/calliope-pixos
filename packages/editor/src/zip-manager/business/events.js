@@ -12,7 +12,7 @@ function getEventHandlers({
 }) {
   function isInputElement(element) {
     if (!element) return false;
-    
+
     // Check if we're inside the cutscene tool at all - if so, ignore all zip manager keyboard shortcuts
     let current = element;
     while (current) {
@@ -23,21 +23,23 @@ function getEventHandlers({
       }
       current = current.parentElement;
     }
-    
+
     // Check if it's an input element
     const tagName = element.tagName.toLowerCase();
     const isEditable = element.isContentEditable;
     const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
-    
+
     // Check if it's inside an rsuite component or any interactive component
     current = element;
     while (current) {
       // Check for rsuite classes
       if (current.className && typeof current.className === 'string') {
-        if (current.className.includes('rs-picker') || 
-            current.className.includes('rs-input') ||
-            current.className.includes('rs-btn') ||
-            current.className.includes('editor-panel')) {
+        if (
+          current.className.includes('rs-picker') ||
+          current.className.includes('rs-input') ||
+          current.className.includes('rs-btn') ||
+          current.className.includes('editor-panel')
+        ) {
           return true;
         }
       }
@@ -47,7 +49,7 @@ function getEventHandlers({
       }
       current = current.parentElement;
     }
-    
+
     return isInput || isEditable;
   }
 

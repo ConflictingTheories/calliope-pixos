@@ -92,13 +92,13 @@ make
 
 ### Build Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `PLATFORM_ARM_LINUX` | OFF | Enable ARM Linux build |
-| `USE_GLES3` | OFF | Use GLES 3.0 instead of 2.0 |
-| `NETWORK_SUPPORT` | ON | Enable optional networking |
-| `ENABLE_AUDIO` | ON | Enable audio via miniaudio |
-| `ENABLE_LUA` | ON | Enable Lua 5.4 scripting |
+| Option               | Default | Description                 |
+| -------------------- | ------- | --------------------------- |
+| `PLATFORM_ARM_LINUX` | OFF     | Enable ARM Linux build      |
+| `USE_GLES3`          | OFF     | Use GLES 3.0 instead of 2.0 |
+| `NETWORK_SUPPORT`    | ON      | Enable optional networking  |
+| `ENABLE_AUDIO`       | ON      | Enable audio via miniaudio  |
+| `ENABLE_LUA`         | ON      | Enable Lua 5.4 scripting    |
 
 ## Platform Abstraction
 
@@ -111,11 +111,11 @@ PlatformContext* ctx = platform_init(640, 480, "Game", true);
 // Main loop
 while (!platform_should_close(ctx)) {
     platform_poll_events(ctx);
-    
+
     // Render with OpenGL/GLES
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // ... render ...
-    
+
     platform_swap_buffers(ctx);
 }
 
@@ -159,16 +159,16 @@ input_action_get_movement(&input, &mx, &my);
 
 ### RG353V Button Mapping
 
-| Button | evdev Code | Action |
-|--------|------------|--------|
-| D-pad Up | KEY_UP (103) | ACTION_MOVE_UP |
-| D-pad Down | KEY_DOWN (108) | ACTION_MOVE_DOWN |
-| D-pad Left | KEY_LEFT (105) | ACTION_MOVE_LEFT |
-| D-pad Right | KEY_RIGHT (106) | ACTION_MOVE_RIGHT |
-| A | BTN_SOUTH (304) | ACTION_CONFIRM |
-| B | BTN_EAST (305) | ACTION_CANCEL |
-| Start | BTN_START (315) | ACTION_MENU |
-| Select | BTN_SELECT (314) | ACTION_MAP |
+| Button      | evdev Code       | Action            |
+| ----------- | ---------------- | ----------------- |
+| D-pad Up    | KEY_UP (103)     | ACTION_MOVE_UP    |
+| D-pad Down  | KEY_DOWN (108)   | ACTION_MOVE_DOWN  |
+| D-pad Left  | KEY_LEFT (105)   | ACTION_MOVE_LEFT  |
+| D-pad Right | KEY_RIGHT (106)  | ACTION_MOVE_RIGHT |
+| A           | BTN_SOUTH (304)  | ACTION_CONFIRM    |
+| B           | BTN_EAST (305)   | ACTION_CANCEL     |
+| Start       | BTN_START (315)  | ACTION_MENU       |
+| Select      | BTN_SELECT (314) | ACTION_MAP        |
 
 ## JSON Asset Loading
 
@@ -199,19 +199,19 @@ When disabled, all network-related code is excluded from compilation.
 
 ## Feature Parity with WebGL
 
-| Feature | WebGL | C (Desktop) | C (ARM) | Status |
-|---------|-------|-------------|---------|--------|
-| Sprite rendering | ✅ | ✅ | ✅ | Complete |
-| 8-directional animation | ✅ | ✅ | ✅ | Complete |
-| Tile rendering | ✅ | ✅ | ✅ | Complete |
-| Point lights | ✅ | ✅ | ✅ | Complete |
-| JSON asset loading | ✅ | ✅ | ✅ | Complete |
-| Gamepad input | ✅ | ⚠️ | ✅ | In progress |
-| Lua scripting | ✅ | ✅ | ✅ | Complete |
-| Audio playback | ✅ | ✅ | ✅ | Complete |
-| Cutscene system | ✅ | ❌ | ❌ | Planned |
-| HUD/UI overlay | ✅ | ❌ | ❌ | Planned |
-| Network multiplayer | ✅ | ❌ | ❌ | Optional |
+| Feature                 | WebGL | C (Desktop) | C (ARM) | Status      |
+| ----------------------- | ----- | ----------- | ------- | ----------- |
+| Sprite rendering        | ✅    | ✅          | ✅      | Complete    |
+| 8-directional animation | ✅    | ✅          | ✅      | Complete    |
+| Tile rendering          | ✅    | ✅          | ✅      | Complete    |
+| Point lights            | ✅    | ✅          | ✅      | Complete    |
+| JSON asset loading      | ✅    | ✅          | ✅      | Complete    |
+| Gamepad input           | ✅    | ⚠️          | ✅      | In progress |
+| Lua scripting           | ✅    | ✅          | ✅      | Complete    |
+| Audio playback          | ✅    | ✅          | ✅      | Complete    |
+| Cutscene system         | ✅    | ❌          | ❌      | Planned     |
+| HUD/UI overlay          | ✅    | ❌          | ❌      | Planned     |
+| Network multiplayer     | ✅    | ❌          | ❌      | Optional    |
 
 ## Audio System
 

@@ -1,19 +1,19 @@
 /*                                                 *\
-** ----------------------------------------------- **
-**          Calliope - Pixos Game Engine           **
-** ----------------------------------------------- **
-**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
-**                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
-** ----------------------------------------------- **
-*                                                 */
+ ** ----------------------------------------------- **
+ **          Calliope - Pixos Game Engine           **
+ ** ----------------------------------------------- **
+ **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+ **                                                 **
+ **    Any unauthorized distribution or transfer    **
+ **       of this work is strictly prohibited.      **
+ **                                                 **
+ **               All Rights Reserved.              **
+ ** ----------------------------------------------- **
+ *                                                 */
 
 /**
  * Effect Shader Library - Post-processing visual effects
- * 
+ *
  * Each effect exports a vertex shader (vs) and fragment shader (fs)
  * for use with the post-processing pipeline.
  */
@@ -81,7 +81,7 @@ export const crt = {
         
         gl_FragColor = vec4(color, 1.0);
     }
-  `
+  `,
 };
 
 /**
@@ -127,7 +127,7 @@ export const bloom = {
         
         gl_FragColor = vec4(color.rgb + bloom * uIntensity, color.a);
     }
-  `
+  `,
 };
 
 /**
@@ -158,7 +158,7 @@ export const scanlines = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -187,7 +187,7 @@ export const chromaticAberration = {
         
         gl_FragColor = vec4(r, g, b, 1.0);
     }
-  `
+  `,
 };
 
 /**
@@ -211,7 +211,7 @@ export const posterize = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -238,7 +238,7 @@ export const grayscale = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -266,7 +266,7 @@ export const sepia = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -308,7 +308,7 @@ export const thermal = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -348,7 +348,7 @@ export const displacement = {
         
         gl_FragColor = texture2D(uTexture, uv);
     }
-  `
+  `,
 };
 
 /**
@@ -374,7 +374,7 @@ export const vignette = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -394,7 +394,7 @@ export const pixelate = {
         vec2 pixelatedUV = floor(vUV * uResolution / uPixelSize) * uPixelSize / uResolution;
         gl_FragColor = texture2D(uTexture, pixelatedUV);
     }
-  `
+  `,
 };
 
 /**
@@ -426,7 +426,7 @@ export const filmGrain = {
         
         gl_FragColor = color;
     }
-  `
+  `,
 };
 
 /**
@@ -444,7 +444,7 @@ export const effects = {
   displacement,
   vignette,
   pixelate,
-  filmGrain
+  filmGrain,
 };
 
 export default effects;

@@ -81,7 +81,7 @@ function GeometryEditor3D({ content, onSave }) {
   }, [content]);
 
   // Initialize WebGL
-  const handleWebGLInit = useCallback((gl) => {
+  const handleWebGLInit = useCallback(gl => {
     glRef.current = gl;
     const program = createProgram(gl, defaultVertexShader, defaultFragmentShader);
     if (program) {
@@ -127,13 +127,7 @@ function GeometryEditor3D({ content, onSave }) {
       gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
 
       // Render geometry
-      renderGeometry(
-        gl,
-        program,
-        geometryData[selectedGeometry],
-        uColor,
-        uIsHovered
-      );
+      renderGeometry(gl, program, geometryData[selectedGeometry], uColor, uIsHovered);
     },
     [selectedGeometry, geometryData, selectedTriangle, showWireframe]
   );
@@ -145,17 +139,12 @@ function GeometryEditor3D({ content, onSave }) {
     geom.vertices.forEach((tri, idx) => {
       const isSelected = idx === selectedTriangle;
       gl.uniform1i(uIsHovered, isSelected);
-      gl.uniform3f(
-        uColor,
-        isSelected ? 1.0 : 0.6,
-        isSelected ? 0.8 : 0.6,
-        isSelected ? 0.3 : 0.6
-      );
+      gl.uniform3f(uColor, isSelected ? 1.0 : 0.6, isSelected ? 0.8 : 0.6, isSelected ? 0.3 : 0.6);
 
       const vertices = [];
       const normals = [];
 
-      tri.forEach((v) => {
+      tri.forEach(v => {
         vertices.push(v[0], v[1], v[2]);
       });
 
@@ -184,11 +173,7 @@ function GeometryEditor3D({ content, onSave }) {
 
       const texBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array([0, 0, 1, 0, 1, 1]),
-        gl.STATIC_DRAW
-      );
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 1, 1]), gl.STATIC_DRAW);
       const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
       gl.enableVertexAttribArray(aTexCoord);
       gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
@@ -355,7 +340,10 @@ function GeometryEditor3D({ content, onSave }) {
               />
             </div>
             <div style={{ marginTop: '0.5rem' }}>
-              <Checkbox checked={showWireframe} onChange={(v, checked) => setShowWireframe(checked)}>
+              <Checkbox
+                checked={showWireframe}
+                onChange={(v, checked) => setShowWireframe(checked)}
+              >
                 Show Wireframe
               </Checkbox>
             </div>
@@ -365,19 +353,17 @@ function GeometryEditor3D({ content, onSave }) {
         <Col sm={12}>
           <Panel bordered header={<strong>Geometry Editor</strong>}>
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                Select Geometry:
-              </label>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Select Geometry:</label>
               <select
                 value={selectedGeometry || ''}
-                onChange={(e) => {
+                onChange={e => {
                   setSelectedGeometry(e.target.value);
                   setSelectedTriangle(-1);
                 }}
                 style={{ width: '100%', padding: '0.5rem' }}
               >
                 <option value="">-- Select --</option>
-                {geometryKeys.map((key) => (
+                {geometryKeys.map(key => (
                   <option key={key} value={key}>
                     {key}
                   </option>
@@ -407,9 +393,7 @@ function GeometryEditor3D({ content, onSave }) {
                       borderRadius: '3px',
                       cursor: 'pointer',
                       border:
-                        selectedTriangle === triIdx
-                          ? '2px solid #1177bb'
-                          : '2px solid transparent',
+                        selectedTriangle === triIdx ? '2px solid #1177bb' : '2px solid transparent',
                     }}
                     onClick={() => setSelectedTriangle(triIdx)}
                   >
@@ -429,21 +413,21 @@ function GeometryEditor3D({ content, onSave }) {
                           size="xs"
                           value={vert[0]}
                           step={0.1}
-                          onChange={(val) => updateVertex(triIdx, vertIdx, 0, val)}
+                          onChange={val => updateVertex(triIdx, vertIdx, 0, val)}
                           style={{ width: '60px' }}
                         />
                         <InputNumber
                           size="xs"
                           value={vert[1]}
                           step={0.1}
-                          onChange={(val) => updateVertex(triIdx, vertIdx, 1, val)}
+                          onChange={val => updateVertex(triIdx, vertIdx, 1, val)}
                           style={{ width: '60px' }}
                         />
                         <InputNumber
                           size="xs"
                           value={vert[2]}
                           step={0.1}
-                          onChange={(val) => updateVertex(triIdx, vertIdx, 2, val)}
+                          onChange={val => updateVertex(triIdx, vertIdx, 2, val)}
                           style={{ width: '60px' }}
                         />
                       </div>

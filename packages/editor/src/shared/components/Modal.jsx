@@ -6,7 +6,7 @@
  *
  * A consistent modal/dialog component for the editor.
  * Supports header, footer, and various sizes.
- * 
+ *
  * Usage:
  *   <Modal
  *     open={isOpen}
@@ -28,7 +28,7 @@ import '../styles/modal.css';
 
 /**
  * Modal - Dialog component
- * 
+ *
  * @param {Object} props
  * @param {boolean} props.open - Whether modal is open
  * @param {function} props.onClose - Callback to close modal
@@ -53,24 +53,30 @@ function Modal({
   closeOnEscape = true,
   footer,
   children,
-  className = ''
+  className = '',
 }) {
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
 
   // Handle escape key
-  const handleKeyDown = useCallback((e) => {
-    if (closeOnEscape && e.key === 'Escape') {
-      onClose?.();
-    }
-  }, [closeOnEscape, onClose]);
+  const handleKeyDown = useCallback(
+    e => {
+      if (closeOnEscape && e.key === 'Escape') {
+        onClose?.();
+      }
+    },
+    [closeOnEscape, onClose]
+  );
 
   // Handle overlay click
-  const handleOverlayClick = useCallback((e) => {
-    if (closeOnOverlay && e.target === e.currentTarget) {
-      onClose?.();
-    }
-  }, [closeOnOverlay, onClose]);
+  const handleOverlayClick = useCallback(
+    e => {
+      if (closeOnOverlay && e.target === e.currentTarget) {
+        onClose?.();
+      }
+    },
+    [closeOnOverlay, onClose]
+  );
 
   // Manage focus and body scroll
   useEffect(() => {
@@ -100,24 +106,20 @@ function Modal({
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
     >
-      <div
-        ref={modalRef}
-        className={`modal modal--${size} ${className}`}
-        tabIndex={-1}
-      >
+      <div ref={modalRef} className={`modal modal--${size} ${className}`} tabIndex={-1}>
         {/* Header */}
         {(title || showClose) && (
           <div className="modal__header">
             <div className="modal__title-wrapper">
               {icon && <span className="modal__icon">{icon}</span>}
-              {title && <h2 id="modal-title" className="modal__title">{title}</h2>}
+              {title && (
+                <h2 id="modal-title" className="modal__title">
+                  {title}
+                </h2>
+              )}
             </div>
             {showClose && (
-              <button
-                className="modal__close"
-                onClick={onClose}
-                aria-label="Close modal"
-              >
+              <button className="modal__close" onClick={onClose} aria-label="Close modal">
                 <CloseIcon />
               </button>
             )}
@@ -125,16 +127,10 @@ function Modal({
         )}
 
         {/* Content */}
-        <div className="modal__content">
-          {children}
-        </div>
+        <div className="modal__content">{children}</div>
 
         {/* Footer */}
-        {footer && (
-          <div className="modal__footer">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="modal__footer">{footer}</div>}
       </div>
     </div>
   );
@@ -178,7 +174,10 @@ function ConfirmModal({
           </button>
           <button
             className={`modal__button modal__button--${variant}`}
-            onClick={() => { onConfirm?.(); onClose?.(); }}
+            onClick={() => {
+              onConfirm?.();
+              onClose?.();
+            }}
           >
             {confirmText}
           </button>

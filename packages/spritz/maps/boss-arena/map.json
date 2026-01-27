@@ -5,7 +5,7 @@
   "tileset": "sewer",
   "audioSrc": "deep-unknown-beat.mp3",
   "mode": "fight",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -105,7 +105,7 @@
       "facing": "Up"
     }
   ],
-  
+
   "lights": [
     {
       "id": "darkness-core",
@@ -158,7 +158,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "final-battle-intro",
@@ -167,7 +167,12 @@
           "sprite": "dark-lord",
           "action": "dialogue",
           "args": [
-            ["So... you've collected all four shards.", "Impressive, mortal. But futile.", "I am the Dark Lord, master of all elements!", "Your journey ends HERE!"],
+            [
+              "So... you've collected all four shards.",
+              "Impressive, mortal. But futile.",
+              "I am the Dark Lord, master of all elements!",
+              "Your journey ends HERE!"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -182,7 +187,11 @@
           "sprite": "dark-lord",
           "action": "dialogue",
           "args": [
-            ["Impossible... defeated... by a mortal...", "The darkness... fades...", "You have saved... the kingdom..."],
+            [
+              "Impossible... defeated... by a mortal...",
+              "The darkness... fades...",
+              "You have saved... the kingdom..."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -191,14 +200,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "boss-arena-load",
       "trigger": "zone/boss_arena_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "throne",
@@ -262,7 +271,7 @@
       "pos": [10, 5, 0.5]
     }
   ],
-  
+
   "menu": {
     "boss-menu": {
       "text": "FINAL BATTLE",

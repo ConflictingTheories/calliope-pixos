@@ -12,7 +12,12 @@
 import { analyzePrompt, DIRECTIONS } from './prompt-analyzer.js';
 import { generatePortrait, generateSpritesheet, base64ToBlob } from './image-generator.js';
 import { generateSpeech, createAudioBlob } from './audio-generator.js';
-import { generateSpriteConfig, generateCutscene, generateScript, generateNPCStates } from './text-generator.js';
+import {
+  generateSpriteConfig,
+  generateCutscene,
+  generateScript,
+  generateNPCStates,
+} from './text-generator.js';
 
 /**
  * Asset type to folder mapping for organizing generated files
@@ -59,8 +64,8 @@ export const GenerationStatus = {
 export class AssetOrchestrator {
   constructor(options = {}) {
     this.writeFile = options.writeFile;
-    this.onProgress = options.onProgress || (() => { });
-    this.onStatusChange = options.onStatusChange || (() => { });
+    this.onProgress = options.onProgress || (() => {});
+    this.onStatusChange = options.onStatusChange || (() => {});
     this.generatedAssets = [];
     this.errors = [];
   }
@@ -142,7 +147,6 @@ export class AssetOrchestrator {
       }
 
       results.success = results.errors.length === 0;
-
     } catch (error) {
       results.success = false;
       results.errors.push({
@@ -174,7 +178,9 @@ export class AssetOrchestrator {
       errors: [],
     };
 
-    const spriteName = this.sanitizeName(metadata.name || this.extractName(description) || 'new-sprite');
+    const spriteName = this.sanitizeName(
+      metadata.name || this.extractName(description) || 'new-sprite'
+    );
     const folderPath = `sprites/${config.preset || 'characters'}`;
 
     try {
@@ -201,7 +207,7 @@ export class AssetOrchestrator {
         try {
           const portraitBase64 = await generatePortrait(description, {
             style: config.style || 'pixel art',
-            onRetry: (retryInfo) => {
+            onRetry: retryInfo => {
               this.onStatusChange({
                 phase: 'rate-limited',
                 message: `Portrait: ${retryInfo.message}`,
@@ -225,7 +231,6 @@ export class AssetOrchestrator {
 
           // Update JSON to reference portrait
           spriteJson.portraitSrc = `${spriteName}_portrait.png`;
-
         } catch (error) {
           results.errors.push({
             phase: 'portrait',
@@ -248,7 +253,7 @@ export class AssetOrchestrator {
       try {
         const spritesheetBase64 = await generateSpritesheet(description, {
           ...config,
-          onRetry: (retryInfo) => {
+          onRetry: retryInfo => {
             this.onStatusChange({
               phase: 'rate-limited',
               message: `Spritesheet: ${retryInfo.message}`,
@@ -272,7 +277,6 @@ export class AssetOrchestrator {
 
         // Update JSON to reference spritesheet
         spriteJson.src = `${spriteName}.png`;
-
       } catch (error) {
         results.errors.push({
           phase: 'spritesheet',
@@ -301,7 +305,6 @@ export class AssetOrchestrator {
           if (states && states.states) {
             spriteJson.states = states.states;
           }
-
         } catch (error) {
           results.errors.push({
             phase: 'scripts',
@@ -315,7 +318,6 @@ export class AssetOrchestrator {
       if (jsonAsset) {
         jsonAsset.content = JSON.stringify(spriteJson, null, 2);
       }
-
     } catch (error) {
       results.errors.push({
         phase: 'sprite-package',
@@ -339,9 +341,10 @@ export class AssetOrchestrator {
 
     // Calculate frame positions based on layout
     const frames = {};
-    const directionOrder = directions === 8
-      ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW']  // Standard 8-direction layout
-      : ['S', 'E', 'N', 'W'];  // Standard 4-direction layout
+    const directionOrder =
+      directions === 8
+        ? ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW'] // Standard 8-direction layout
+        : ['S', 'E', 'N', 'W']; // Standard 4-direction layout
 
     for (let d = 0; d < directionOrder.length; d++) {
       const direction = directionOrder[d];
@@ -441,7 +444,6 @@ export class AssetOrchestrator {
           message: 'Music and SFX generation requires a specialized audio generation API',
         };
       }
-
     } catch (error) {
       result.error = {
         phase: 'audio',
@@ -508,7 +510,6 @@ export class AssetOrchestrator {
         content,
         contentType: ext === 'json' ? 'application/json' : 'text/plain',
       };
-
     } catch (error) {
       result.error = {
         phase: 'text',
@@ -545,7 +546,6 @@ export class AssetOrchestrator {
 
         await writeFile(asset.path, content);
         results.success.push(asset);
-
       } catch (error) {
         results.failed.push({
           asset,
@@ -580,7 +580,7 @@ export class AssetOrchestrator {
       this.onProgress({
         step: i + 1,
         total,
-        message: `Retrying ${ctx.type}...`
+        message: `Retrying ${ctx.type}...`,
       });
 
       try {
@@ -590,7 +590,7 @@ export class AssetOrchestrator {
 
             const portraitBase64 = await generatePortrait(ctx.description, {
               style: ctx.config.style || 'pixel art',
-              onRetry: (retryInfo) => {
+              onRetry: retryInfo => {
                 this.onStatusChange({
                   phase: 'rate-limited',
                   message: `Portrait: ${retryInfo.message}`,
@@ -618,7 +618,7 @@ export class AssetOrchestrator {
 
             const spritesheetBase64 = await generateSpritesheet(ctx.description, {
               ...ctx.config,
-              onRetry: (retryInfo) => {
+              onRetry: retryInfo => {
                 this.onStatusChange({
                   phase: 'rate-limited',
                   message: `Spritesheet: ${retryInfo.message}`,
@@ -646,7 +646,7 @@ export class AssetOrchestrator {
 
             const audioData = await generateSpeech(ctx.text, {
               voice: ctx.config.voice,
-              onRetry: (retryInfo) => {
+              onRetry: retryInfo => {
                 this.onStatusChange({
                   phase: 'rate-limited',
                   message: `Audio: ${retryInfo.message}`,
@@ -729,7 +729,11 @@ export class AssetOrchestrator {
     for (const word of words) {
       if (word.length > 3 && /^[a-z]+$/i.test(word)) {
         const lower = word.toLowerCase();
-        if (!['create', 'generate', 'make', 'build', 'with', 'that', 'this', 'have', 'has'].includes(lower)) {
+        if (
+          !['create', 'generate', 'make', 'build', 'with', 'that', 'this', 'have', 'has'].includes(
+            lower
+          )
+        ) {
           return lower;
         }
       }

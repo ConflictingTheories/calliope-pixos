@@ -1,6 +1,6 @@
 import { test, describe, expect } from 'vitest';
-import { 
-  create, 
+import {
+  create,
   create3,
   from,
   perspective,
@@ -15,7 +15,7 @@ import {
   subtractVectors,
   normalize,
   isPowerOf2,
-  set
+  set,
 } from '../src/matrix4.js';
 
 describe('Matrix4 creation', () => {
@@ -56,7 +56,7 @@ describe('Matrix4 projection', () => {
     const near = 0.1;
     const far = 100;
     const matrix = perspective(fovy, aspect, near, far);
-    
+
     // Check that diagonal elements are non-zero
     expect(matrix[0] !== 0).toBeTruthy();
     expect(matrix[5] !== 0).toBeTruthy();
@@ -69,7 +69,7 @@ describe('Matrix4 projection', () => {
     const aspect = 1;
     const near = 0.1;
     const matrix = perspective(fovy, aspect, near, Infinity);
-    
+
     expect(matrix[10]).toBe(-1);
   });
 
@@ -86,7 +86,7 @@ describe('Matrix4 transforms', () => {
     const identity = create();
     const result = create();
     translate(result, identity, [5, 10, 15]);
-    
+
     expect(result[12]).toBe(5);
     expect(result[13]).toBe(10);
     expect(result[14]).toBe(15);
@@ -96,9 +96,9 @@ describe('Matrix4 transforms', () => {
     const identity = create();
     const result = create();
     const angle = Math.PI / 2;
-    
+
     rotate(result, identity, angle, [0, 0, 1]);
-    
+
     // After 90 degree Z rotation, x -> y and y -> -x
     expect(Math.abs(result[0]) < 0.0001).toBeTruthy(); // cos(90) ≈ 0
     expect(Math.abs(result[1] - 1) < 0.0001).toBeTruthy(); // sin(90) = 1
@@ -110,7 +110,7 @@ describe('Matrix4 transforms', () => {
     const identity = create();
     const result = create();
     scale(result, identity, [2, 3, 4]);
-    
+
     expect(result[0]).toBe(2);
     expect(result[5]).toBe(3);
     expect(result[10]).toBe(4);
@@ -122,9 +122,9 @@ describe('Matrix4 operations', () => {
     const identity1 = create();
     const identity2 = create();
     const result = create();
-    
+
     multiply(result, identity1, identity2);
-    
+
     // Should be identity
     expect(result[0]).toBe(1);
     expect(result[5]).toBe(1);
@@ -135,9 +135,9 @@ describe('Matrix4 operations', () => {
   test('invert identity matrix equals identity', () => {
     const identity = create();
     const result = create();
-    
+
     invert(result, identity);
-    
+
     expect(result[0]).toBe(1);
     expect(result[5]).toBe(1);
     expect(result[10]).toBe(1);
@@ -147,16 +147,11 @@ describe('Matrix4 operations', () => {
   test.skip('transpose swaps elements correctly', () => {
     // NOTE: transpose function not exported from matrix4.js
     // This test is skipped until the function is implemented and exported
-    const matrix = from([
-      1, 2, 3, 4,
-      5, 6, 7, 8,
-      9, 10, 11, 12,
-      13, 14, 15, 16
-    ]);
+    const matrix = from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     const result = create();
-    
+
     transpose(result, matrix);
-    
+
     // Check transposed positions
     expect(result[1]).toBe(5);
     expect(result[4]).toBe(2);
@@ -167,9 +162,9 @@ describe('Matrix4 operations', () => {
   test('set copies matrix values', () => {
     const src = from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     const dest = create();
-    
+
     set(src, dest);
-    
+
     for (let i = 0; i < 16; i++) {
       expect(dest[i]).toBe(src[i]);
     }
@@ -181,9 +176,9 @@ describe('lookAt', () => {
     const eye = [0, 0, 5];
     const center = [0, 0, 0];
     const up = [0, 1, 0];
-    
+
     const matrix = lookAt(eye, center, up);
-    
+
     // Should be a valid 4x4 matrix
     expect(matrix.length).toBe(16);
     // Eye looking down -Z, so Z component should be negative
@@ -194,9 +189,9 @@ describe('lookAt', () => {
     const eye = [0, 0, 0];
     const center = [0, 0, 0];
     const up = [0, 1, 0];
-    
+
     const matrix = lookAt(eye, center, up);
-    
+
     // Should return identity when eye == center
     expect(matrix[0]).toBe(1);
     expect(matrix[5]).toBe(1);
@@ -209,9 +204,9 @@ describe('normalFromMat4', () => {
   test('creates valid normal matrix from identity', () => {
     const identity = create();
     const normal = create3();
-    
+
     normalFromMat4(normal, identity);
-    
+
     // Normal matrix of identity should be identity
     expect(normal[0]).toBe(1);
     expect(normal[4]).toBe(1);
@@ -224,21 +219,21 @@ describe('Vector operations', () => {
     const a = [5, 10, 15];
     const b = [1, 2, 3];
     const result = subtractVectors(a, b);
-    
+
     expect(result).toEqual([4, 8, 12]);
   });
 
   test('normalize creates unit vector', () => {
     const v = [0, 0, 5];
     const result = normalize(v);
-    
+
     expect(result).toEqual([0, 0, 1]);
   });
 
   test('normalize handles zero vector', () => {
     const v = [0, 0, 0];
     const result = normalize(v);
-    
+
     // Should return default direction
     expect(result).toEqual([0, 0, 1]);
   });
@@ -246,7 +241,7 @@ describe('Vector operations', () => {
   test('normalize handles small vectors', () => {
     const v = [0.0000001, 0, 0];
     const result = normalize(v);
-    
+
     // Should handle very small vectors gracefully
     expect(result[0] !== Infinity).toBeTruthy();
   });

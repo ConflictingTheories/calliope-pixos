@@ -6,7 +6,7 @@
  *
  * A layer hierarchy panel for managing layers in editors.
  * Supports drag-and-drop reordering, visibility toggle, and locking.
- * 
+ *
  * Usage:
  *   <LayerPanel
  *     layers={layers}
@@ -36,7 +36,7 @@ import '../styles/layer-panel.css';
 
 /**
  * LayerPanel - Layer hierarchy management component
- * 
+ *
  * @param {Object} props
  * @param {string} [props.title='Layers'] - Panel title
  * @param {Layer[]} props.layers - Array of layer objects
@@ -67,7 +67,7 @@ function LayerPanel({
   onDelete,
   onDuplicate,
   allowReorder = true,
-  className = ''
+  className = '',
 }) {
   const [draggedId, setDraggedId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
@@ -76,25 +76,31 @@ function LayerPanel({
   const dragNodeRef = useRef(null);
 
   // Handle drag start
-  const handleDragStart = useCallback((e, layer) => {
-    if (!allowReorder) return;
-    setDraggedId(layer.id);
-    dragNodeRef.current = e.target;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', layer.id);
+  const handleDragStart = useCallback(
+    (e, layer) => {
+      if (!allowReorder) return;
+      setDraggedId(layer.id);
+      dragNodeRef.current = e.target;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', layer.id);
 
-    // Add dragging class after a tick to avoid it being included in drag image
-    setTimeout(() => {
-      e.target.classList.add('layer-item--dragging');
-    }, 0);
-  }, [allowReorder]);
+      // Add dragging class after a tick to avoid it being included in drag image
+      setTimeout(() => {
+        e.target.classList.add('layer-item--dragging');
+      }, 0);
+    },
+    [allowReorder]
+  );
 
   // Handle drag over
-  const handleDragOver = useCallback((e, layer) => {
-    e.preventDefault();
-    if (!allowReorder || layer.id === draggedId) return;
-    setDragOverId(layer.id);
-  }, [allowReorder, draggedId]);
+  const handleDragOver = useCallback(
+    (e, layer) => {
+      e.preventDefault();
+      if (!allowReorder || layer.id === draggedId) return;
+      setDragOverId(layer.id);
+    },
+    [allowReorder, draggedId]
+  );
 
   // Handle drag leave
   const handleDragLeave = useCallback(() => {
@@ -102,27 +108,30 @@ function LayerPanel({
   }, []);
 
   // Handle drop
-  const handleDrop = useCallback((e, targetLayer) => {
-    e.preventDefault();
-    if (!allowReorder || !draggedId || draggedId === targetLayer.id) {
+  const handleDrop = useCallback(
+    (e, targetLayer) => {
+      e.preventDefault();
+      if (!allowReorder || !draggedId || draggedId === targetLayer.id) {
+        setDraggedId(null);
+        setDragOverId(null);
+        return;
+      }
+
+      const draggedIndex = layers.findIndex(l => l.id === draggedId);
+      const targetIndex = layers.findIndex(l => l.id === targetLayer.id);
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        const newOrder = [...layers];
+        const [removed] = newOrder.splice(draggedIndex, 1);
+        newOrder.splice(targetIndex, 0, removed);
+        onReorder?.(newOrder);
+      }
+
       setDraggedId(null);
       setDragOverId(null);
-      return;
-    }
-
-    const draggedIndex = layers.findIndex(l => l.id === draggedId);
-    const targetIndex = layers.findIndex(l => l.id === targetLayer.id);
-
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-      const newOrder = [...layers];
-      const [removed] = newOrder.splice(draggedIndex, 1);
-      newOrder.splice(targetIndex, 0, removed);
-      onReorder?.(newOrder);
-    }
-
-    setDraggedId(null);
-    setDragOverId(null);
-  }, [allowReorder, draggedId, layers, onReorder]);
+    },
+    [allowReorder, draggedId, layers, onReorder]
+  );
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
@@ -134,7 +143,7 @@ function LayerPanel({
   }, []);
 
   // Start editing layer name
-  const startEditing = useCallback((layer) => {
+  const startEditing = useCallback(layer => {
     setEditingId(layer.id);
     setEditingName(layer.name);
   }, []);
@@ -155,13 +164,16 @@ function LayerPanel({
   }, []);
 
   // Handle name input keydown
-  const handleNameKeyDown = useCallback((e) => {
-    if (e.key === 'Enter') {
-      saveEditing();
-    } else if (e.key === 'Escape') {
-      cancelEditing();
-    }
-  }, [saveEditing, cancelEditing]);
+  const handleNameKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter') {
+        saveEditing();
+      } else if (e.key === 'Escape') {
+        cancelEditing();
+      }
+    },
+    [saveEditing, cancelEditing]
+  );
 
   return (
     <div className={`layer-panel ${className}`}>
@@ -170,11 +182,7 @@ function LayerPanel({
         <span className="layer-panel__title">{title}</span>
         <div className="layer-panel__actions">
           {onAdd && (
-            <button
-              className="layer-panel__action"
-              onClick={onAdd}
-              title="Add Layer"
-            >
+            <button className="layer-panel__action" onClick={onAdd} title="Add Layer">
               <PlusIcon />
             </button>
           )}
@@ -191,10 +199,10 @@ function LayerPanel({
               key={layer.id}
               className={`layer-item ${selectedLayerId === layer.id ? 'layer-item--selected' : ''} ${dragOverId === layer.id ? 'layer-item--drag-over' : ''}`}
               draggable={allowReorder && !layer.locked}
-              onDragStart={(e) => handleDragStart(e, layer)}
-              onDragOver={(e) => handleDragOver(e, layer)}
+              onDragStart={e => handleDragStart(e, layer)}
+              onDragOver={e => handleDragOver(e, layer)}
               onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, layer)}
+              onDrop={e => handleDrop(e, layer)}
               onDragEnd={handleDragEnd}
               onClick={() => onSelect?.(layer.id)}
               onDoubleClick={() => onRename && startEditing(layer)}
@@ -210,7 +218,7 @@ function LayerPanel({
               {onVisibilityToggle && (
                 <button
                   className={`layer-item__visibility ${layer.visible !== false ? 'layer-item__visibility--visible' : ''}`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onVisibilityToggle(layer.id, layer.visible === false);
                   }}
@@ -222,10 +230,7 @@ function LayerPanel({
 
               {/* Color Indicator */}
               {layer.color && (
-                <span
-                  className="layer-item__color"
-                  style={{ backgroundColor: layer.color }}
-                />
+                <span className="layer-item__color" style={{ backgroundColor: layer.color }} />
               )}
 
               {/* Layer Name */}
@@ -235,11 +240,11 @@ function LayerPanel({
                     type="text"
                     className="layer-item__name-input"
                     value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
+                    onChange={e => setEditingName(e.target.value)}
                     onBlur={saveEditing}
                     onKeyDown={handleNameKeyDown}
                     autoFocus
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   />
                 ) : (
                   <span className="layer-item__name-text">{layer.name}</span>
@@ -250,7 +255,7 @@ function LayerPanel({
               {onLockToggle && (
                 <button
                   className={`layer-item__lock ${layer.locked ? 'layer-item__lock--locked' : ''}`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onLockToggle(layer.id, !layer.locked);
                   }}
@@ -264,7 +269,7 @@ function LayerPanel({
               {onDelete && (
                 <button
                   className="layer-item__delete"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onDelete(layer.id);
                   }}

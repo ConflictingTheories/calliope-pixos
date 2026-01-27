@@ -103,7 +103,8 @@ export class ObjectLoader {
           allTextures.push(...(mesh.textures || []));
 
           // Add indices with offset
-          const meshIndices = mesh.indices || new Array(mesh.vertices.length / 3).fill(0).map((_, i) => i);
+          const meshIndices =
+            mesh.indices || new Array(mesh.vertices.length / 3).fill(0).map((_, i) => i);
           allIndices.push(...meshIndices.map(i => i + vertexOffset));
 
           totalVertices += mesh.vertices.length / 3;
@@ -115,7 +116,7 @@ export class ObjectLoader {
         vertexNormals: allNormals,
         textures: allTextures,
         indices: allIndices,
-        materials: materials
+        materials: materials,
       };
     }
 
@@ -132,7 +133,7 @@ export class ObjectLoader {
       compositeMesh.materialsByIndex[0] = {
         Kd: [0.7, 0.7, 0.7],
         Ks: [0.1, 0.1, 0.2],
-        Ns: 2
+        Ns: 2,
       };
     }
     compositeMesh.indicesPerMaterial = [compositeMesh.indices];

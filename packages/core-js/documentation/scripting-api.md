@@ -699,4 +699,4 @@ end
 
 ---
 
-*This API reference covers the core PixoSpritz engine functionality available to PixoScript.*
+_This API reference covers the core PixoSpritz engine functionality available to PixoScript._

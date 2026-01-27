@@ -55,47 +55,40 @@ export default class PixoScriptLibrary {
         const { networkManager } = engine;
         if (networkManager && networkManager.ws) {
           const sent = networkManager.sendAction(action.toObject());
-          if (action)
-            return () => Promise.resolve(sent);
+          if (action) return () => Promise.resolve(sent);
           return sent;
         }
-        if (action)
-          return () => Promise.resolve(false);
+        if (action) return () => Promise.resolve(false);
         return false;
       },
       // flag functions
       all_flags: (action = false) => {
         const flags = engine.store.all();
-        if (action)
-          return () => Promise.resolve(flags);
+        if (action) return () => Promise.resolve(flags);
         return flags;
       },
       has_flag: (key, action = false) => {
         debug('PixoScript', 'checking flag via lua', key, action);
         const hasFlag = engine.store.keys().includes(key);
-        if (action)
-          return () => Promise.resolve(hasFlag);
+        if (action) return () => Promise.resolve(hasFlag);
         return hasFlag;
       },
       set_flag: (key, value, action = false) => {
         debug('PixoScript', 'setting flag via lua', key, action);
         const flag = engine.store.set(key, value.toObject());
-        if (action)
-          return () => Promise.resolve(flag);
+        if (action) return () => Promise.resolve(flag);
         return flag;
       },
       add_flag: (key, value, action = false) => {
         debug('PixoScript', 'adding flag via lua', key, action);
         engine.store.add(key, value.toObject());
-        if (action)
-          return () => Promise.resolve(true);
+        if (action) return () => Promise.resolve(true);
         return true;
       },
       get_flag: (key, action = false) => {
         debug('PixoScript', 'getting flag via lua', key, action);
         const flag = engine.store.get(key);
-        if (action)
-          return () => Promise.resolve(flag);
+        if (action) return () => Promise.resolve(flag);
         return flag;
       },
       // world functions
@@ -104,7 +97,11 @@ export default class PixoScriptLibrary {
         return engine.spritz.world.removeAllZones();
       },
       load_zone_from_zip: (z, zip) => {
-        debug('PixoScript', 'loading zone from zip via lua', { world: engine.spritz.world, z, zip });
+        debug('PixoScript', 'loading zone from zip via lua', {
+          world: engine.spritz.world,
+          z,
+          zip,
+        });
         // When loading zones via Lua we allow the world to manage screen
         // transitions. Passing `undefined` (or omitting the parameter) causes
         // World.loadZoneFromZip() to use its default transition settings
@@ -138,7 +135,7 @@ export default class PixoScriptLibrary {
         try {
           // Convert Lua table to JS array of step objects
           const arr = this.pixoscript.utils.ensureArray(steps.toObject());
-          const jsSteps = arr.map((item) => {
+          const jsSteps = arr.map(item => {
             // `item` may be a Lua Table; convert to JS object
             return item && typeof item.toObject === 'function' ? item.toObject() : item;
           });
@@ -154,7 +151,7 @@ export default class PixoScriptLibrary {
        * cancel the currently playing cutscene.
        * @param {string} name
        */
-      start_cutscene: (name) => {
+      start_cutscene: name => {
         try {
           engine.cutsceneManager.start(name);
         } catch (e) {
@@ -178,7 +175,7 @@ export default class PixoScriptLibrary {
        * Set the backdrop for the current cutscene.
        * @param {string} backdrop - The backdrop label to set.
        */
-      set_backdrop: (backdrop) => {
+      set_backdrop: backdrop => {
         try {
           engine.cutsceneManager.setBackdrop({ backdrop });
         } catch (e) {
@@ -204,19 +201,19 @@ export default class PixoScriptLibrary {
        * Play a cutscene by name. Supports both:
        * 1. Pre-registered cutscene names (registered via register_cutscene)
        * 2. File paths to .pxc cutscene files
-       * 
+       *
        * Returns a function that can be yielded in a Lua script.
-       * 
+       *
        * Example Lua:
        *   pixos.sync({ pixos.play_cutscene('intro') })
        *   pixos.sync({ pixos.play_cutscene('cutscenes/opening.pxc') })
-       * 
+       *
        * @param {string} cutscene - Cutscene name or file path
        * @returns {function} Async function that resolves when cutscene completes
        */
-      play_cutscene: (cutscene) => {
+      play_cutscene: cutscene => {
         return () =>
-          new Promise(async (resolve) => {
+          new Promise(async resolve => {
             try {
               // Check if this is a file path (ends with .pxc) or a registered cutscene name
               if (typeof cutscene === 'string' && cutscene.endsWith('.pxc')) {
@@ -224,7 +221,7 @@ export default class PixoScriptLibrary {
                 const scriptText = await engine.assetLoader.load(cutscene);
                 if (scriptText) {
                   const player = new PxcPlayer(engine, {
-                    onEnd: () => resolve()
+                    onEnd: () => resolve(),
                   });
                   await player.playCutscene(scriptText);
                 } else {
@@ -262,9 +259,9 @@ export default class PixoScriptLibrary {
 
       /**
        * TODO - This is working well - but I need to fix up older cutscene methods,
-       * and consolidate everything together. Zones, etc, should all work using the 
+       * and consolidate everything together. Zones, etc, should all work using the
        * same system.
-       * 
+       *
        * Run an ad-hoc cutscene defined by a Lua table of steps. Returns a
        * function that can be yielded in a Lua script and executed via
        * pixos.sync. The returned function resolves when the cutscene
@@ -279,13 +276,13 @@ export default class PixoScriptLibrary {
        *   }
        *   pixos.sync({ pixos.run_cutscene(steps) })
        */
-      run_cutscene: (steps) => {
+      run_cutscene: steps => {
         // Return an async function that the Lua runtime will call
         return () =>
-          new Promise((resolve) => {
+          new Promise(resolve => {
             try {
               const arr = this.pixoscript.utils.ensureArray(steps.toObject());
-              const jsSteps = arr.map((item) => {
+              const jsSteps = arr.map(item => {
                 return item && typeof item.toObject === 'function' ? item.toObject() : item;
               });
               // Generate a unique name for this temporary cutscene
@@ -309,34 +306,54 @@ export default class PixoScriptLibrary {
       },
       run_transition: (effect = 'fade', direction = 'out', duration = 500) => {
         return () => {
-          new Promise((resolve) => {
+          new Promise(resolve => {
             const rm = engine.renderManager;
             if (!rm) resolve();
             return rm.startTransition({ effect, direction, duration }).then(() => resolve());
-          })
-        }
+          });
+        };
       },
       sprite_dialogue: (spriteId, dialogue, options = {}) => {
         return () =>
-          new Promise((resolve) => {
-            debug('PixoScript', 'playing dialogue via lua', { zone: envScope.zone, spriteId, dialogue });
+          new Promise(resolve => {
+            debug('PixoScript', 'playing dialogue via lua', {
+              zone: envScope.zone,
+              spriteId,
+              dialogue,
+            });
             options.onClose = () => resolve();
             return envScope.zone.spriteDialogue(spriteId, dialogue, options).then(() => {
-              debug('PixoScript', 'played dialogue via lua', { zone: envScope.zone, spriteId, dialogue });
+              debug('PixoScript', 'played dialogue via lua', {
+                zone: envScope.zone,
+                spriteId,
+                dialogue,
+              });
             });
           });
       },
       move_sprite: (spriteId, location, running) => {
         return () =>
-          new Promise((resolve) => {
-            debug('PixoScript', 'moving sprite via lua', { zone: envScope.zone, spriteId, location, running });
-            return envScope.zone.moveSprite(spriteId, this.pixoscript.utils.ensureArray(location.toObject()), running).then(() => {
-              debug('PixoScript', 'moved sprite via lua', { zone: envScope.zone, spriteId, location, running });
-              resolve();
+          new Promise(resolve => {
+            debug('PixoScript', 'moving sprite via lua', {
+              zone: envScope.zone,
+              spriteId,
+              location,
+              running,
             });
+            return envScope.zone
+              .moveSprite(spriteId, this.pixoscript.utils.ensureArray(location.toObject()), running)
+              .then(() => {
+                debug('PixoScript', 'moved sprite via lua', {
+                  zone: envScope.zone,
+                  spriteId,
+                  location,
+                  running,
+                });
+                resolve();
+              });
           });
       },
-      load_scripts: (scripts) => {
+      load_scripts: scripts => {
         debug('PixoScript', 'loading scripts via lua', { scripts, envScope });
         return envScope.zone.loadScripts(scripts);
       },
@@ -350,13 +367,13 @@ export default class PixoScriptLibrary {
       /**
        * Play a .pxc cutscene file
        * Returns a function that resolves when cutscene completes
-       * 
+       *
        * Example:
        *   pixos.sync({ pixos.play_pxc_cutscene('cutscenes/intro.pxc') })
        */
       play_pxc_cutscene: (filePath, options = {}) => {
         return () =>
-          new Promise(async (resolve) => {
+          new Promise(async resolve => {
             try {
               // Load the .pxc file from asset loader
               const scriptText = await engine.assetLoader.load(filePath);
@@ -369,24 +386,27 @@ export default class PixoScriptLibrary {
 
               // Create PxcPlayer instance with callbacks
               const callbacks = {
-                onDialogueShow: options.onDialogueShow || ((data) => {
-                  debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
-                }),
-                onBackdropChange: options.onBackdropChange || ((url, opts) => {
-                  debug('PxcPlayer', 'Backdrop:', url);
-                }),
+                onDialogueShow:
+                  options.onDialogueShow ||
+                  (data => {
+                    debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
+                  }),
+                onBackdropChange:
+                  options.onBackdropChange ||
+                  ((url, opts) => {
+                    debug('PxcPlayer', 'Backdrop:', url);
+                  }),
                 onEnd: () => {
                   debug('PxcPlayer', 'Cutscene ended');
                   if (options.onEnd) options.onEnd();
                   resolve();
-                }
+                },
               };
 
               const player = new PxcPlayer(engine, callbacks);
 
               // Play the cutscene
               await player.playCutscene(scriptText);
-
             } catch (e) {
               console.error('[PixoScript] Error playing .pxc cutscene:', e);
               resolve();
@@ -397,7 +417,7 @@ export default class PixoScriptLibrary {
       /**
        * Play inline .pxc cutscene script
        * Returns a function that resolves when cutscene completes
-       * 
+       *
        * Example:
        *   local script = [[
        *     @backdrop textures/room.gif
@@ -409,30 +429,33 @@ export default class PixoScriptLibrary {
        */
       play_pxc_script: (scriptText, options = {}) => {
         return () =>
-          new Promise(async (resolve) => {
+          new Promise(async resolve => {
             try {
               debug('PixoScript', 'Playing inline .pxc script');
 
               // Create PxcPlayer instance with callbacks
               const callbacks = {
-                onDialogueShow: options.onDialogueShow || ((data) => {
-                  debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
-                }),
-                onBackdropChange: options.onBackdropChange || ((url, opts) => {
-                  debug('PxcPlayer', 'Backdrop:', url);
-                }),
+                onDialogueShow:
+                  options.onDialogueShow ||
+                  (data => {
+                    debug('PxcPlayer', 'Dialogue:', data.actor, data.text);
+                  }),
+                onBackdropChange:
+                  options.onBackdropChange ||
+                  ((url, opts) => {
+                    debug('PxcPlayer', 'Backdrop:', url);
+                  }),
                 onEnd: () => {
                   debug('PxcPlayer', 'Cutscene ended');
                   if (options.onEnd) options.onEnd();
                   resolve();
-                }
+                },
               };
 
               const player = new PxcPlayer(engine, callbacks);
 
               // Play the cutscene
               await player.playCutscene(scriptText);
-
             } catch (e) {
               console.error('[PixoScript] Error playing inline .pxc script:', e);
               resolve();
@@ -457,7 +480,7 @@ export default class PixoScriptLibrary {
       pan_camera: (from, to, duration) => {
         debug('PixoScript', 'panning camera via lua', { from, to, duration });
         return () =>
-          new Promise((resolve) => {
+          new Promise(resolve => {
             engine.spritz.world.addEvent(
               new EventLoader(
                 engine,
@@ -504,18 +527,22 @@ export default class PixoScriptLibrary {
       /**
        * Focus camera on a target position with support for different camera modes.
        * Returns a function that can be yielded in a Lua script.
-       * 
+       *
        * Example Lua:
        *   pixos.sync({ pixos.focus_camera({ x = 10, y = 10, z = 0 }, { mode = 'isometric', duration = 1.0 }) })
        *   pixos.focus_camera({ x = 5, y = 5, z = 0 }, { mode = 'top-down', instant = true })
-       * 
+       *
        * @param {table} target - Target position { x, y, z }
        * @param {table} options - Options: mode ('orbital', 'top-down', 'isometric', 'fps'), duration, distance, yaw, pitch, bind, instant
        * @returns {function} Async function that resolves when focus completes
        */
       focus_camera: (target, options = {}) => {
-        const targetObj = target && typeof target.toObject === 'function' ? target.toObject() : target || { x: 0, y: 0, z: 0 };
-        const opts = options && typeof options.toObject === 'function' ? options.toObject() : options || {};
+        const targetObj =
+          target && typeof target.toObject === 'function'
+            ? target.toObject()
+            : target || { x: 0, y: 0, z: 0 };
+        const opts =
+          options && typeof options.toObject === 'function' ? options.toObject() : options || {};
 
         // If instant, apply immediately
         if (opts.instant) {
@@ -542,7 +569,7 @@ export default class PixoScriptLibrary {
 
         // Animated transition via camera event
         return () =>
-          new Promise((resolve) => {
+          new Promise(resolve => {
             debug('PixoScript', 'focusing camera via lua', { target: targetObj, options: opts });
             engine.spritz.world.addEvent(
               new EventLoader(
@@ -572,11 +599,11 @@ export default class PixoScriptLibrary {
 
       /**
        * Zoom camera in or out.
-       * 
+       *
        * Example Lua:
        *   pixos.zoom_camera(5.0) -- zoom to distance 5
        *   pixos.zoom_camera(-2.0, true) -- zoom delta (closer by 2)
-       * 
+       *
        * @param {number} value - Zoom value (distance or delta)
        * @param {boolean} isDelta - If true, value is delta; if false, absolute distance
        */
@@ -594,14 +621,18 @@ export default class PixoScriptLibrary {
 
       /**
        * Get current camera state for debugging or state management.
-       * 
+       *
        * @returns {table} Camera state: { target, position, yaw, pitch, distance, direction }
        */
       get_camera_state: () => {
         const camera = engine.renderManager.camera;
         return new this.pixoscript.Table({
           target: { x: camera.cameraTarget.x, y: camera.cameraTarget.y, z: camera.cameraTarget.z },
-          position: { x: camera.cameraPosition.x, y: camera.cameraPosition.y, z: camera.cameraPosition.z },
+          position: {
+            x: camera.cameraPosition.x,
+            y: camera.cameraPosition.y,
+            z: camera.cameraPosition.z,
+          },
           yaw: camera.yaw,
           pitch: camera.pitch,
           distance: camera.cameraDistance,
@@ -637,7 +668,7 @@ export default class PixoScriptLibrary {
           console.warn('register_action_hook failed', e);
         }
       },
-      is_action_active: (action) => {
+      is_action_active: action => {
         try {
           return engine.inputManager ? engine.inputManager.isActionActive(action) : false;
         } catch (e) {
@@ -645,7 +676,7 @@ export default class PixoScriptLibrary {
           return false;
         }
       },
-      get_action_input: (action) => {
+      get_action_input: action => {
         try {
           return engine.inputManager ? engine.inputManager.getActionInput(action) : null;
         } catch (e) {
@@ -667,12 +698,12 @@ export default class PixoScriptLibrary {
           console.warn('pixos.play_sound failed', e);
         }
       },
-      play_music: (src) => {
+      play_music: src => {
         try {
           debug('PixoScript', `play_music: ${src}`);
           const loader = engine.resourceManager.audioLoader || engine.audioLoader;
           if (loader) {
-            // loop defaults to true for music via loader logic if we pass true? 
+            // loop defaults to true for music via loader logic if we pass true?
             // Loader.load(src, loop). If loop is true, it stops others.
             const instance = loader.load(src, true);
             instance.playAudio();
@@ -686,11 +717,11 @@ export default class PixoScriptLibrary {
           const loader = engine.resourceManager.audioLoader || engine.audioLoader;
           if (loader && loader.instances) {
             Object.values(loader.instances).forEach(track => {
-              // Heuristic: if it's looping, it's likely music? 
+              // Heuristic: if it's looping, it's likely music?
               // Or just stop everything? The user asked for stop_music.
               // The loader logic stops others when a new loop starts.
               // We'll pause all looping tracks.
-              // Checking implementation of AudioTrack... it doesn't expose 'loop' property publicly 
+              // Checking implementation of AudioTrack... it doesn't expose 'loop' property publicly
               // but we passed it to constructor.
               // Let's just pause all for now or check if we can identify music.
               track.pauseAudio();
@@ -700,7 +731,7 @@ export default class PixoScriptLibrary {
           console.warn('pixos.stop_music failed', e);
         }
       },
-      stop_audio: (src) => {
+      stop_audio: src => {
         try {
           const loader = engine.resourceManager.audioLoader || engine.audioLoader;
           if (loader && loader.instances[src]) {
@@ -710,7 +741,7 @@ export default class PixoScriptLibrary {
           console.warn('pixos.stop_audio failed', e);
         }
       },
-      set_volume: (volume) => {
+      set_volume: volume => {
         // TODO: Implement global volume control in AudioSystem/Loader
         debug('PixoScript', 'set_volume not fully implemented', volume);
       },
@@ -723,14 +754,16 @@ export default class PixoScriptLibrary {
             debug('PixoScript', `set_effect ${name} ${active}`, params);
             // Example: engine.renderManager.setEffect(name, active, params);
           }
-        } catch (e) { console.warn('pixos.set_effect failed', e); }
+        } catch (e) {
+          console.warn('pixos.set_effect failed', e);
+        }
       },
 
       // sprite functions
       // ...
 
       // math functions
-      vector: (tbl) => {
+      vector: tbl => {
         let [x, y, z] = this.pixoscript.utils.ensureArray(tbl.toObject());
         return new engine.utils.Vector(x, y, z);
       },
@@ -739,25 +772,25 @@ export default class PixoScriptLibrary {
       },
 
       // misc utils & functions
-      sync: async (p) => {
+      sync: async p => {
         for (const a of p.toObject()) {
           await a();
         }
       },
-      as_obj: (tbl) => {
+      as_obj: tbl => {
         return tbl.toObject();
       },
-      as_array: (tbl) => {
+      as_array: tbl => {
         return this.pixoscript.utils.ensureArray(tbl.toObject());
       },
-      as_table: (obj) => {
+      as_table: obj => {
         const table = new this.pixoscript.Table();
         for (const [key, value] of Object.entries(obj)) {
           table.set(key, value);
         }
         return table;
       },
-      log: (msg) => {
+      log: msg => {
         debug('PixoScript', msg);
       },
       to: (obj, tbl) => {
@@ -780,7 +813,11 @@ export default class PixoScriptLibrary {
         }
       },
       get_mode: () => {
-        try { return engine.spritz.world.modeManager.getMode(); } catch (e) { return null; }
+        try {
+          return engine.spritz.world.modeManager.getMode();
+        } catch (e) {
+          return null;
+        }
       },
       set_mode_mappings: (name, params) => {
         try {
@@ -805,7 +842,10 @@ export default class PixoScriptLibrary {
           if (!world || !world.modeManager) return;
           // handlers may be a Lua table; convert to JS object safely
           const h = {};
-          const asObj = handlers && typeof handlers.toObject === 'function' ? handlers.toObject() : handlers || {};
+          const asObj =
+            handlers && typeof handlers.toObject === 'function'
+              ? handlers.toObject()
+              : handlers || {};
           if (asObj.setup) h.setup = asObj.setup;
           if (asObj.update) h.update = asObj.update;
           if (asObj.teardown) h.teardown = asObj.teardown;
@@ -813,15 +853,17 @@ export default class PixoScriptLibrary {
           if (asObj.on_select) h.on_select = asObj.on_select;
           if (asObj.picker !== undefined) h.picker = asObj.picker;
           world.modeManager.register(name, h);
-        } catch (e) { console.warn('register_mode failed', e); }
+        } catch (e) {
+          console.warn('register_mode failed', e);
+        }
       },
       from: (obj, key) => {
         return obj[key];
       },
-      length: (tbl) => {
+      length: tbl => {
         return tbl.length || 0;
       },
-      callback_finish: (success) => {
+      callback_finish: success => {
         debug('PixoScript', 'callback finish', { success });
         if (envScope.finish) {
           envScope.finish(success > 0);
@@ -925,7 +967,7 @@ export default class PixoScriptLibrary {
         }
       },
       // skybox shader switching
-      set_skybox_shader: async (shaderName) => {
+      set_skybox_shader: async shaderName => {
         if (engine.renderManager?.skyboxManager?.setSkyboxShader) {
           await engine.renderManager.skyboxManager.setSkyboxShader(shaderName);
         }
@@ -933,8 +975,12 @@ export default class PixoScriptLibrary {
       // particle system
       emit_particles: (posTbl, cfgTbl) => {
         try {
-          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
-          const cfg = cfgTbl && typeof cfgTbl.toObject === 'function' ? cfgTbl.toObject() : cfgTbl || {};
+          const pos =
+            posTbl && typeof posTbl.toObject === 'function'
+              ? posTbl.toObject()
+              : posTbl || [0, 0, 0];
+          const cfg =
+            cfgTbl && typeof cfgTbl.toObject === 'function' ? cfgTbl.toObject() : cfgTbl || {};
           if (engine.renderManager && engine.renderManager.particleManager) {
             // allow shorthand preset names
             if (cfg.preset) {
@@ -949,7 +995,10 @@ export default class PixoScriptLibrary {
       },
       create_particles: (posTbl, presetName) => {
         try {
-          const pos = posTbl && typeof posTbl.toObject === 'function' ? posTbl.toObject() : posTbl || [0, 0, 0];
+          const pos =
+            posTbl && typeof posTbl.toObject === 'function'
+              ? posTbl.toObject()
+              : posTbl || [0, 0, 0];
           const preset = presetName || null;
           if (engine.renderManager && engine.renderManager.particleManager) {
             const cfg = preset ? engine.renderManager.particleManager.preset(preset) : {};

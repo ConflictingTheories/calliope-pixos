@@ -4,7 +4,7 @@
 import React from 'react';
 import './Button.css';
 
-export function Button({ 
+export function Button({
   children,
   appearance = 'default',
   color,
@@ -17,7 +17,7 @@ export function Button({
   onClick,
   type = 'button',
   style,
-  ...props 
+  ...props
 }) {
   const classes = [
     'px-btn',
@@ -28,13 +28,15 @@ export function Button({
     disabled && 'px-btn-disabled',
     loading && 'px-btn-loading',
     active && 'px-btn-active',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <button 
+    <button
       type={type}
-      className={classes} 
+      className={classes}
       style={style}
       disabled={disabled || loading}
       onClick={onClick}

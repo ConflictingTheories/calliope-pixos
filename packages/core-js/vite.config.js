@@ -4,13 +4,13 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  
+
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.jsx'),
       name: 'pixospritz-core',
-      fileName: (format) => `bundle.${format === 'umd' ? 'js' : 'js'}`,
-      formats: ['umd']
+      fileName: format => `bundle.${format === 'umd' ? 'js' : 'js'}`,
+      formats: ['umd'],
     },
     outDir: 'dist',
     rollupOptions: {
@@ -18,16 +18,16 @@ export default defineConfig({
       output: {
         globals: {
           react: 'React',
-          'react-dom': 'ReactDOM'
+          'react-dom': 'ReactDOM',
         },
         // Ensure UMD build uses the correct format
-        format: 'umd'
-      }
+        format: 'umd',
+      },
     },
     sourcemap: true,
-    minify: 'terser'
+    minify: 'terser',
   },
-  
+
   resolve: {
     alias: {
       '@Components': path.resolve(__dirname, 'src/components'),
@@ -35,10 +35,10 @@ export default defineConfig({
       '@Sprites': path.resolve(__dirname, 'src/sprites'),
       '@Tilesets': path.resolve(__dirname, 'src/tilesets'),
       '@Spritz': path.resolve(__dirname, 'src/spritz'),
-    }
+    },
   },
-  
+
   define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
-  }
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+  },
 });

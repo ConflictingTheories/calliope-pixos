@@ -5,40 +5,46 @@ This directory contains 3D OBJ models used for objects and decorations in the ga
 ## Available Models
 
 ### Props
-| Model | Description |
-|-------|-------------|
+
+| Model       | Description            |
+| ----------- | ---------------------- |
 | `apple.obj` | Collectible apple item |
-| `book.obj` | Readable book prop |
-| `die.obj` | Dice for randomization |
+| `book.obj`  | Readable book prop     |
+| `die.obj`   | Dice for randomization |
 
 ### Furniture
-| Model | Description |
-|-------|-------------|
-| `bed.obj` | Bed furniture |
+
+| Model       | Description     |
+| ----------- | --------------- |
+| `bed.obj`   | Bed furniture   |
 | `chair.obj` | Chair furniture |
 
 ### Characters
-| Model | Description |
-|-------|-------------|
+
+| Model        | Description        |
+| ------------ | ------------------ |
 | `person.obj` | Basic person model |
-| `robot.obj` | Robot character |
+| `robot.obj`  | Robot character    |
 
 ### Environment
-| Model | Description |
-|-------|-------------|
-| `cactus_short.obj` | Short cactus plant |
-| `cactus_tall.obj` | Tall cactus plant |
-| `cube.obj` | Basic cube primitive |
+
+| Model              | Description          |
+| ------------------ | -------------------- |
+| `cactus_short.obj` | Short cactus plant   |
+| `cactus_tall.obj`  | Tall cactus plant    |
+| `cube.obj`         | Basic cube primitive |
 
 ## File Format
 
 Each model consists of:
+
 - `*.obj` - Wavefront OBJ geometry file
 - `*.mtl` - Material definition (optional)
 
 ## Textures
 
 Some models reference textures stored in the `textures/` directory:
+
 - `6bf488141a8a487599953582478eca36.jpeg`
 - `98a91fc2e52c4db6a4be147a471e98ca.jpeg`
 - Various other texture maps
@@ -46,6 +52,7 @@ Some models reference textures stored in the `textures/` directory:
 ## Usage in Maps
 
 Objects are placed in maps via the `objects` array:
+
 ```json
 {
   "objects": [
@@ -71,6 +78,7 @@ Objects are placed in maps via the `objects` array:
 ## Editor Support
 
 Models can be previewed in the PixoSpritz Editor:
+
 - `demos/obj-model-viewer.html` - Standalone model viewer
 - Model Preview panel in main editor
 

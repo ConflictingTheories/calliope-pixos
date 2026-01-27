@@ -14,12 +14,12 @@ import { DEFAULT_SHORTCUTS, getShortcutDisplay } from '../hooks/useKeyboardShort
  * Shortcut context priorities (higher = handled first)
  */
 export const ContextPriority = {
-  MODAL: 100,        // Modal dialogs (highest priority)
-  OVERLAY: 80,       // Overlays, dropdowns, context menus
-  EDITOR: 60,        // Active editor (map, sprite, script, cutscene)
-  PANEL: 40,         // Side panels
-  GLOBAL: 20,        // Global shortcuts
-  DEFAULT: 0,        // Fallback
+  MODAL: 100, // Modal dialogs (highest priority)
+  OVERLAY: 80, // Overlays, dropdowns, context menus
+  EDITOR: 60, // Active editor (map, sprite, script, cutscene)
+  PANEL: 40, // Side panels
+  GLOBAL: 20, // Global shortcuts
+  DEFAULT: 0, // Fallback
 };
 
 /**
@@ -40,10 +40,10 @@ class KeyboardManagerClass {
    */
   init() {
     if (this._initialized) return;
-    
+
     window.addEventListener('keydown', this._handleKeyDown.bind(this), true);
     this._initialized = true;
-    
+
     // Load custom shortcuts from localStorage
     this._loadCustomShortcuts();
   }
@@ -53,7 +53,7 @@ class KeyboardManagerClass {
    */
   destroy() {
     if (!this._initialized) return;
-    
+
     window.removeEventListener('keydown', this._handleKeyDown.bind(this), true);
     this.contexts.clear();
     this.activeContexts.clear();
@@ -78,10 +78,10 @@ class KeyboardManagerClass {
       canHandle: config.canHandle || (() => true),
       enabled: true,
     };
-    
+
     this.contexts.set(id, context);
     this._notifyListeners('contextRegistered', { id, context });
-    
+
     return () => this.unregisterContext(id);
   }
 
@@ -200,13 +200,13 @@ class KeyboardManagerClass {
   checkConflicts(shortcut) {
     const conflicts = [];
     const all = this.getAllShortcuts();
-    
+
     for (const [action, existing] of Object.entries(all)) {
       if (this._shortcutsMatch(shortcut, existing)) {
         conflicts.push({ action, shortcut: existing });
       }
     }
-    
+
     return conflicts;
   }
 
@@ -240,7 +240,7 @@ class KeyboardManagerClass {
 
   _handleKeyDown(event) {
     if (!this.enabled) return;
-    
+
     // Skip if in input field (unless Escape)
     if (this._isInputElement(event.target) && event.key !== 'Escape') {
       return;
@@ -248,23 +248,23 @@ class KeyboardManagerClass {
 
     // Get active contexts sorted by priority
     const activeContexts = this.getActiveContextsSorted();
-    
+
     // Try each context in priority order
     for (const context of activeContexts) {
       if (!context.canHandle(event)) continue;
-      
+
       // Check context's shortcuts
       const shortcuts = { ...context.shortcuts, ...this.customShortcuts };
-      
+
       for (const [action, shortcut] of Object.entries(shortcuts)) {
         if (this._matchesShortcut(event, shortcut) && context.handlers[action]) {
           event.preventDefault();
           event.stopPropagation();
           context.handlers[action](event);
-          this._notifyListeners('shortcutHandled', { 
-            action, 
+          this._notifyListeners('shortcutHandled', {
+            action,
             contextId: context.id,
-            event 
+            event,
           });
           return;
         }
@@ -274,29 +274,32 @@ class KeyboardManagerClass {
 
   _matchesShortcut(event, shortcut) {
     if (!shortcut) return false;
-    
+
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    
+
     // Check key (case insensitive)
-    if (event.key.toLowerCase() !== shortcut.key.toLowerCase() && 
-        event.key !== shortcut.key) {
+    if (event.key.toLowerCase() !== shortcut.key.toLowerCase() && event.key !== shortcut.key) {
       return false;
     }
-    
+
     // Check modifiers
     const requiresCtrl = shortcut.ctrl || false;
     const requiresMeta = shortcut.meta || false;
     const requiresShift = shortcut.shift || false;
     const requiresAlt = shortcut.alt || false;
-    
-    const modifierPressed = isMac 
-      ? (requiresMeta || requiresCtrl) ? event.metaKey : !event.metaKey && !event.ctrlKey
-      : (requiresCtrl || requiresMeta) ? event.ctrlKey : !event.ctrlKey && !event.metaKey;
-    
+
+    const modifierPressed = isMac
+      ? requiresMeta || requiresCtrl
+        ? event.metaKey
+        : !event.metaKey && !event.ctrlKey
+      : requiresCtrl || requiresMeta
+        ? event.ctrlKey
+        : !event.ctrlKey && !event.metaKey;
+
     if ((requiresCtrl || requiresMeta) && !modifierPressed) return false;
     if (requiresShift !== event.shiftKey) return false;
     if (requiresAlt !== event.altKey) return false;
-    
+
     return true;
   }
 
@@ -335,10 +338,7 @@ class KeyboardManagerClass {
 
   _saveCustomShortcuts() {
     try {
-      localStorage.setItem(
-        'pixospritz-custom-shortcuts', 
-        JSON.stringify(this.customShortcuts)
-      );
+      localStorage.setItem('pixospritz-custom-shortcuts', JSON.stringify(this.customShortcuts));
     } catch {
       // Ignore storage errors
     }

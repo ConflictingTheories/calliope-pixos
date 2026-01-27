@@ -4,7 +4,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import './Slider.css';
 
-export function Slider({ 
+export function Slider({
   value: controlledValue,
   defaultValue = 0,
   min = 0,
@@ -19,7 +19,7 @@ export function Slider({
   onChange,
   onChangeCommitted,
   style,
-  ...props 
+  ...props
 }) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [isDragging, setIsDragging] = useState(false);
@@ -29,43 +29,46 @@ export function Slider({
   const value = controlledValue !== undefined ? controlledValue : internalValue;
   const percentage = ((value - min) / (max - min)) * 100;
 
-  const calculateValue = useCallback((clientX, clientY) => {
-    if (!trackRef.current) return value;
-    const rect = trackRef.current.getBoundingClientRect();
-    
-    let ratio;
-    if (vertical) {
-      ratio = 1 - (clientY - rect.top) / rect.height;
-    } else {
-      ratio = (clientX - rect.left) / rect.width;
-    }
-    
-    ratio = Math.max(0, Math.min(1, ratio));
-    let newValue = min + ratio * (max - min);
-    
-    // Snap to step
-    newValue = Math.round(newValue / step) * step;
-    newValue = Math.max(min, Math.min(max, newValue));
-    
-    return newValue;
-  }, [min, max, step, vertical, value]);
+  const calculateValue = useCallback(
+    (clientX, clientY) => {
+      if (!trackRef.current) return value;
+      const rect = trackRef.current.getBoundingClientRect();
 
-  const handleMouseDown = (e) => {
+      let ratio;
+      if (vertical) {
+        ratio = 1 - (clientY - rect.top) / rect.height;
+      } else {
+        ratio = (clientX - rect.left) / rect.width;
+      }
+
+      ratio = Math.max(0, Math.min(1, ratio));
+      let newValue = min + ratio * (max - min);
+
+      // Snap to step
+      newValue = Math.round(newValue / step) * step;
+      newValue = Math.max(min, Math.min(max, newValue));
+
+      return newValue;
+    },
+    [min, max, step, vertical, value]
+  );
+
+  const handleMouseDown = e => {
     if (disabled) return;
     setIsDragging(true);
     setShowTooltip(true);
-    
+
     const newValue = calculateValue(e.clientX, e.clientY);
     setInternalValue(newValue);
     onChange?.(newValue);
 
-    const handleMouseMove = (moveEvent) => {
+    const handleMouseMove = moveEvent => {
       const moveValue = calculateValue(moveEvent.clientX, moveEvent.clientY);
       setInternalValue(moveValue);
       onChange?.(moveValue);
     };
 
-    const handleMouseUp = (upEvent) => {
+    const handleMouseUp = upEvent => {
       setIsDragging(false);
       setShowTooltip(false);
       const finalValue = calculateValue(upEvent.clientX, upEvent.clientY);
@@ -78,7 +81,7 @@ export function Slider({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const newValue = parseFloat(e.target.value);
     setInternalValue(newValue);
     onChange?.(newValue);
@@ -89,47 +92,38 @@ export function Slider({
     vertical && 'px-slider-vertical',
     disabled && 'px-slider-disabled',
     isDragging && 'px-slider-dragging',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style} {...props}>
-      <div 
-        ref={trackRef}
-        className="px-slider-track"
-        onMouseDown={handleMouseDown}
-      >
+      <div ref={trackRef} className="px-slider-track" onMouseDown={handleMouseDown}>
         {progress && (
-          <div 
+          <div
             className="px-slider-progress"
-            style={vertical 
-              ? { height: `${percentage}%` }
-              : { width: `${percentage}%` }
-            }
+            style={vertical ? { height: `${percentage}%` } : { width: `${percentage}%` }}
           />
         )}
-        <div 
+        <div
           className="px-slider-handle"
-          style={vertical 
-            ? { bottom: `${percentage}%` }
-            : { left: `${percentage}%` }
-          }
+          style={vertical ? { bottom: `${percentage}%` } : { left: `${percentage}%` }}
           onMouseEnter={() => tooltip && setShowTooltip(true)}
           onMouseLeave={() => !isDragging && setShowTooltip(false)}
         >
-          {tooltip && showTooltip && (
-            <div className="px-slider-tooltip">{value}</div>
-          )}
+          {tooltip && showTooltip && <div className="px-slider-tooltip">{value}</div>}
         </div>
         {graduated && (
           <div className="px-slider-graduations">
             {Array.from({ length: Math.floor((max - min) / step) + 1 }).map((_, i) => (
-              <span 
-                key={i} 
+              <span
+                key={i}
                 className="px-slider-graduation-mark"
-                style={vertical
-                  ? { bottom: `${(i * step / (max - min)) * 100}%` }
-                  : { left: `${(i * step / (max - min)) * 100}%` }
+                style={
+                  vertical
+                    ? { bottom: `${((i * step) / (max - min)) * 100}%` }
+                    : { left: `${((i * step) / (max - min)) * 100}%` }
                 }
               />
             ))}

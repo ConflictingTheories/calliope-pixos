@@ -23,7 +23,7 @@ import {
 
 /**
  * WebGL3DCanvas - A reusable 3D canvas with camera controls
- * 
+ *
  * @param {Function} onRender - Callback to render scene. Receives (gl, projectionMatrix, viewMatrix, camera)
  * @param {Function} onInit - Optional callback when WebGL initializes. Receives (gl)
  * @param {Object} initialCamera - Initial camera settings
@@ -128,12 +128,7 @@ export default function WebGL3DCanvas({
 
     const viewMatrix = createMat4();
     if (viewMode === '2D') {
-      lookAt(
-        viewMatrix,
-        [camX, camY, camZ],
-        [camera.centerX, camera.centerY, 0],
-        [0, 1, 0]
-      );
+      lookAt(viewMatrix, [camX, camY, camZ], [camera.centerX, camera.centerY, 0], [0, 1, 0]);
     } else {
       lookAt(
         viewMatrix,
@@ -163,7 +158,7 @@ export default function WebGL3DCanvas({
 
   // Mouse event handlers
   const handleMouseDown = useCallback(
-    (e) => {
+    e => {
       // Call onCellClick for shift+mousedown (painting)
       if (e.shiftKey && onCellClick) {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -184,7 +179,7 @@ export default function WebGL3DCanvas({
   );
 
   const handleMouseMove = useCallback(
-    (e) => {
+    e => {
       // Always notify hover for cell highlighting and drag painting
       if (onCellHover) {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -212,14 +207,14 @@ export default function WebGL3DCanvas({
           forward = Math.sin(camera.angleY + Math.PI / 2);
         }
 
-        setCamera((prev) => ({
+        setCamera(prev => ({
           ...prev,
-          centerX: prev.centerX - (right * deltaX) * panSpeed,
-          centerY: prev.centerY + (viewMode === '2D' ? deltaY : (forward * deltaY)) * panSpeed,
+          centerX: prev.centerX - right * deltaX * panSpeed,
+          centerY: prev.centerY + (viewMode === '2D' ? deltaY : forward * deltaY) * panSpeed,
         }));
       } else {
         // Rotate camera
-        setCamera((prev) => ({
+        setCamera(prev => ({
           ...prev,
           angleY: prev.angleY - deltaX * 0.005,
           angleX: Math.max(
@@ -237,19 +232,19 @@ export default function WebGL3DCanvas({
     setIsPanning(false);
   }, []);
 
-  const handleWheel = useCallback((e) => {
+  const handleWheel = useCallback(e => {
     e.preventDefault();
     const zoomSpeed = 0.1;
     const delta = e.deltaY > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
 
-    setCamera((prev) => ({
+    setCamera(prev => ({
       ...prev,
       distance: Math.max(5, Math.min(100, prev.distance * delta)),
     }));
   }, []);
 
   const handleClick = useCallback(
-    (e) => {
+    e => {
       // Only trigger click if not dragging and not shift-clicking
       if (Math.abs(e.clientX - lastMousePos.x) > 5 || Math.abs(e.clientY - lastMousePos.y) > 5) {
         return;
@@ -282,7 +277,7 @@ export default function WebGL3DCanvas({
   }, [initialCamera]);
 
   const toggleGrid = useCallback(() => {
-    setShowGrid((prev) => !prev);
+    setShowGrid(prev => !prev);
   }, []);
 
   return (
@@ -301,7 +296,7 @@ export default function WebGL3DCanvas({
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
         onClick={handleClick}
-        onContextMenu={(e) => {
+        onContextMenu={e => {
           if (e.shiftKey) {
             e.preventDefault(); // Prevent context menu for Shift+Right-Click (erase)
             if (onCellClick) {

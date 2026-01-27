@@ -93,22 +93,10 @@ export default class ParticleManager {
 
     // A simple unit quad centered at origin (two triangles)
     const quad = [
-      -0.5, -0.5, 0,
-      -0.5, 0.5, 0,
-      0.5, 0.5, 0,
-      -0.5, -0.5, 0,
-      0.5, 0.5, 0,
-      0.5, -0.5, 0,
+      -0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0,
     ];
     // Simple UVs (not used when not texturing)
-    const uvs = [
-      0, 0,
-      0, 1,
-      1, 1,
-      0, 0,
-      1, 1,
-      1, 0,
-    ];
+    const uvs = [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0];
 
     this.vertexPosBuf = this.renderManager.createBuffer(quad, gl.STATIC_DRAW, 3);
     this.vertexTexBuf = this.renderManager.createBuffer(uvs, gl.STATIC_DRAW, 2);
@@ -151,10 +139,12 @@ export default class ParticleManager {
     // Sort particles back-to-front for proper alpha blending
     const cameraPos = this.renderManager.camera.cameraPosition;
     const sortedParticles = [...this.particles].sort((a, b) => {
-      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) +
+      const distA =
+        Math.pow(a.pos[0] - cameraPos.x, 2) +
         Math.pow(a.pos[1] - cameraPos.y, 2) +
         Math.pow(a.pos[2] - cameraPos.z, 2);
-      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) +
+      const distB =
+        Math.pow(b.pos[0] - cameraPos.x, 2) +
         Math.pow(b.pos[1] - cameraPos.y, 2) +
         Math.pow(b.pos[2] - cameraPos.z, 2);
       return distB - distA;
@@ -204,8 +194,14 @@ export default class ParticleManager {
    */
   emit = (position = [0, 0, 0], config = {}) => {
     /** @type {number[]} */
-    let pos = Array.isArray(position) ? position : position.toArray ? position.toArray() : [0, 0, 0];
-    let x = pos[0], y = pos[1], zOffset = pos[2] || 0;
+    let pos = Array.isArray(position)
+      ? position
+      : position.toArray
+        ? position.toArray()
+        : [0, 0, 0];
+    let x = pos[0],
+      y = pos[1],
+      zOffset = pos[2] || 0;
     /** @type {import('../../scene/zone.js').Zone|null} */
     let zone = this.engine.spritz.world.zoneContaining(x, y);
     let z = zOffset;
@@ -259,16 +255,50 @@ export default class ParticleManager {
    * @param {string} name - The preset name.
    * @returns {ParticleConfig|null} The preset config or null if not found.
    */
-  preset = (name) => {
+  preset = name => {
     switch ((name || '').toLowerCase()) {
       case 'sparks':
-        return { count: 12, life: 700, speed: 0.06, spread: 1.2, size: 0.15, color: [1, 0.8, 0.2], gravity: [0, -0.002, 0] };
+        return {
+          count: 12,
+          life: 700,
+          speed: 0.06,
+          spread: 1.2,
+          size: 0.15,
+          color: [1, 0.8, 0.2],
+          gravity: [0, -0.002, 0],
+        };
       case 'flame':
-        return { count: 200, life: 2000, speed: 0.02, spread: 0.8, size: 0.06, color: [1, 0.5, 0.1], gravity: [0, -0.0003, 0], drag: 0.995 };
+        return {
+          count: 200,
+          life: 2000,
+          speed: 0.02,
+          spread: 0.8,
+          size: 0.06,
+          color: [1, 0.5, 0.1],
+          gravity: [0, -0.0003, 0],
+          drag: 0.995,
+        };
       case 'water':
-        return { count: 20, life: 800, speed: 0.05, spread: 1.5, size: 0.12, color: [0.6, 0.7, 1.0], gravity: [0, -0.003, 0], drag: 0.996 };
+        return {
+          count: 20,
+          life: 800,
+          speed: 0.05,
+          spread: 1.5,
+          size: 0.12,
+          color: [0.6, 0.7, 1.0],
+          gravity: [0, -0.003, 0],
+          drag: 0.996,
+        };
       case 'weapon':
-        return { count: 6, life: 600, speed: 0.08, spread: 0.3, size: 0.18, color: [1, 1, 0.6], gravity: [0, -0.001, 0] };
+        return {
+          count: 6,
+          life: 600,
+          speed: 0.08,
+          spread: 0.3,
+          size: 0.18,
+          color: [1, 1, 0.6],
+          gravity: [0, -0.001, 0],
+        };
       default:
         return null;
     }
@@ -279,7 +309,7 @@ export default class ParticleManager {
    * @param {number} timestamp - Current timestamp.
    * @returns {void}
    */
-  update = (timestamp) => {
+  update = timestamp => {
     if (!this.lastUpdateTime) this.lastUpdateTime = timestamp;
     const dt = timestamp - this.lastUpdateTime;
     this.lastUpdateTime = timestamp;
@@ -455,10 +485,12 @@ export default class ParticleManager {
     // Sort particles back-to-front based on distance from camera
     const cameraPos = rm.camera.cameraPosition;
     const sortedParticles = [...this.particles].sort((a, b) => {
-      const distA = Math.pow(a.pos[0] - cameraPos.x, 2) +
+      const distA =
+        Math.pow(a.pos[0] - cameraPos.x, 2) +
         Math.pow(a.pos[1] - cameraPos.y, 2) +
         Math.pow(a.pos[2] - cameraPos.z, 2);
-      const distB = Math.pow(b.pos[0] - cameraPos.x, 2) +
+      const distB =
+        Math.pow(b.pos[0] - cameraPos.x, 2) +
         Math.pow(b.pos[1] - cameraPos.y, 2) +
         Math.pow(b.pos[2] - cameraPos.z, 2);
       return distB - distA; // Back to front
@@ -470,7 +502,7 @@ export default class ParticleManager {
       // Set model matrix translation only (billboarding handled in shader)
       const m = rm.uModelMat;
       // Reset to identity
-      for (let i = 0; i < 16; i++) m[i] = (i % 5 === 0) ? 1 : 0;
+      for (let i = 0; i < 16; i++) m[i] = i % 5 === 0 ? 1 : 0;
       // Set translation
       m[12] = p.pos[0];
       m[13] = p.pos[1];
@@ -523,7 +555,7 @@ export default class ParticleManager {
    * Sets whether to use instanced rendering.
    * @param {boolean} enabled - Whether to use instancing.
    */
-  setInstancingEnabled = (enabled) => {
+  setInstancingEnabled = enabled => {
     this.useInstancing = enabled;
   };
 }

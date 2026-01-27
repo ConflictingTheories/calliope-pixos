@@ -46,7 +46,6 @@ export const TOOL_REGISTRY = {
 export function createTool(toolName, options = {}) {
   const ToolClass = TOOL_REGISTRY[toolName];
   if (!ToolClass) {
-    // eslint-disable-next-line no-console
     console.warn(`Unknown tool: ${toolName}, falling back to brush`);
     return new BrushTool(options);
   }

@@ -56,7 +56,7 @@ export default class Speech {
    * Runs an action when loaded or adds to queue.
    * @param {function(): void} action - The action to run.
    */
-  runWhenLoaded = (action) => {
+  runWhenLoaded = action => {
     if (this.loaded) action();
     else this.onLoadActions.add(action);
   };
@@ -124,7 +124,14 @@ export default class Speech {
   scrollText = (text, scrolling = false, options = {}) => {
     let txt = new textScrollBox(this.ctx);
     if (options.portrait) {
-      txt.init(text, 10, 10, this.canvas.width - 20 - 84, (2 * this.canvas.height) / 3 - 20, options);
+      txt.init(
+        text,
+        10,
+        10,
+        this.canvas.width - 20 - 84,
+        (2 * this.canvas.height) / 3 - 20,
+        options
+      );
     } else {
       txt.init(text, 10, 10, this.canvas.width - 20, (2 * this.canvas.height) / 3 - 20, options);
     }

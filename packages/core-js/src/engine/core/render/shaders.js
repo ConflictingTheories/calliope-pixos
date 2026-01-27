@@ -71,7 +71,6 @@ export function fetchTransitionShaderFiles(type) {
   return [vsSource, fsSource];
 }
 
-
 /**
  * Fetches vertex and fragment shader source code for skybox effects.
  * @param {string} type - The type of skybox effect (e.g., 'cosmic', 'morning', 'sky').

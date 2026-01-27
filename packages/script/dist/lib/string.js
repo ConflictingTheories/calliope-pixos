@@ -2,7 +2,7 @@ import * as pkg from 'printj';
 const { sprintf } = pkg;
 import { Table } from '../Table.js';
 import { LuaError } from '../LuaError.js';
-import { tostring, posrelat, coerceArgToNumber, coerceArgToString, hasOwnProperty } from '../utils.js';
+import { tostring, posrelat, coerceArgToNumber, coerceArgToString, hasOwnProperty, } from '../utils.js';
 const ROSETTA_STONE = {
     '([^a-zA-Z0-9%(])-': '$1*?',
     '([^%])-([^a-zA-Z0-9?])': '$1*?$2',
@@ -26,7 +26,7 @@ const ROSETTA_STONE = {
     '%W': '[^a-zA-Z0-9]',
     '%x': '[a-fA-F0-9]',
     '%X': '[^a-fA-F0-9]',
-    '%([^a-zA-Z])': '\\$1'
+    '%([^a-zA-Z])': '\\$1',
 };
 function translatePattern(pattern) {
     // TODO Add support for balanced character matching (not sure this is easily achieveable).
@@ -219,7 +219,11 @@ function gsub(s, pattern, repl, n) {
     while (count < N && S && (match = S.match(P))) {
         const prefix = 
         // eslint-disable-next-line no-nested-ternary
-        match[0].length > 0 ? S.substr(0, match.index) : lastMatch === undefined ? '' : S.substr(0, 1);
+        match[0].length > 0
+            ? S.substr(0, match.index)
+            : lastMatch === undefined
+                ? ''
+                : S.substr(0, 1);
         lastMatch = match[0];
         result += `${prefix}${REPL(match)}`;
         S = S.substr(`${prefix}${lastMatch}`.length);
@@ -274,17 +278,12 @@ function rep(s, n, sep) {
     const str = coerceArgToString(s, 'rep', 1);
     const num = coerceArgToNumber(n, 'rep', 2);
     const SEP = sep === undefined ? '' : coerceArgToString(sep, 'rep', 3);
-    return Array(num)
-        .fill(str)
-        .join(SEP);
+    return Array(num).fill(str).join(SEP);
 }
 /** Returns a string that is the string s reversed. */
 function reverse(s) {
     const str = coerceArgToString(s, 'reverse', 1);
-    return str
-        .split('')
-        .reverse()
-        .join('');
+    return str.split('').reverse().join('');
 }
 /**
  * Returns the substring of s that starts at i and continues until j; i and j can be negative.
@@ -330,7 +329,7 @@ const libString = new Table({
     rep,
     reverse,
     sub,
-    upper
+    upper,
 });
 const metatable = new Table({ __index: libString });
 export { libString, metatable };

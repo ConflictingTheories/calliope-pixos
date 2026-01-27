@@ -1,17 +1,17 @@
-import { Table } from '../Table.js'
+import { Table } from '../Table.js';
 import {
-    LuaType,
-    coerceToBoolean,
-    coerceArgToNumber,
-    coerceArgToString,
-    coerceArgToTable,
-    coerceArgToFunction
-} from '../utils.js'
-import { LuaError } from '../LuaError.js'
+  LuaType,
+  coerceToBoolean,
+  coerceArgToNumber,
+  coerceArgToString,
+  coerceArgToTable,
+  coerceArgToFunction,
+} from '../utils.js';
+import { LuaError } from '../LuaError.js';
 
 function getn(table: LuaType): number {
-    const TABLE = coerceArgToTable(table, 'getn', 1)
-    return TABLE.getn()
+  const TABLE = coerceArgToTable(table, 'getn', 1);
+  return TABLE.getn();
 }
 
 /**
@@ -20,15 +20,15 @@ function getn(table: LuaType): number {
  * If i is greater than j, returns the empty string.
  */
 function concat(table: LuaType, sep: LuaType = '', i: LuaType = 1, j?: LuaType): string {
-    const TABLE = coerceArgToTable(table, 'concat', 1)
-    const SEP = coerceArgToString(sep, 'concat', 2)
-    const I = coerceArgToNumber(i, 'concat', 3)
-    const J = j === undefined ? maxn(TABLE) : coerceArgToNumber(j, 'concat', 4)
+  const TABLE = coerceArgToTable(table, 'concat', 1);
+  const SEP = coerceArgToString(sep, 'concat', 2);
+  const I = coerceArgToNumber(i, 'concat', 3);
+  const J = j === undefined ? maxn(TABLE) : coerceArgToNumber(j, 'concat', 4);
 
-    return []
-        .concat(TABLE.numValues)
-        .splice(I, J - I + 1)
-        .join(SEP)
+  return []
+    .concat(TABLE.numValues)
+    .splice(I, J - I + 1)
+    .join(SEP);
 }
 
 /**
@@ -36,17 +36,17 @@ function concat(table: LuaType, sep: LuaType = '', i: LuaType = 1, j?: LuaType):
  * The default value for pos is #list+1, so that a call table.insert(t,x) inserts x at the end of list t.
  */
 function insert(table: LuaType, pos: LuaType, value?: LuaType): void {
-    const TABLE = coerceArgToTable(table, 'insert', 1)
-    const POS = value === undefined ? TABLE.numValues.length : coerceArgToNumber(pos, 'insert', 2)
-    const VALUE = value === undefined ? pos : value
+  const TABLE = coerceArgToTable(table, 'insert', 1);
+  const POS = value === undefined ? TABLE.numValues.length : coerceArgToNumber(pos, 'insert', 2);
+  const VALUE = value === undefined ? pos : value;
 
-    TABLE.numValues.splice(POS, 0, undefined)
-    TABLE.set(POS, VALUE)
+  TABLE.numValues.splice(POS, 0, undefined);
+  TABLE.set(POS, VALUE);
 }
 
 function maxn(table: LuaType): number {
-    const TABLE = coerceArgToTable(table, 'maxn', 1)
-    return TABLE.numValues.length - 1
+  const TABLE = coerceArgToTable(table, 'maxn', 1);
+  return TABLE.numValues.length - 1;
 }
 
 /**
@@ -61,31 +61,31 @@ function maxn(table: LuaType): number {
  * Returns the destination table a2.
  */
 function move(a1: LuaType, f: LuaType, e: LuaType, t: LuaType, a2?: LuaType): Table {
-    const A1 = coerceArgToTable(a1, 'move', 1)
-    const F = coerceArgToNumber(f, 'move', 2)
-    const E = coerceArgToNumber(e, 'move', 3)
-    const T = coerceArgToNumber(t, 'move', 4)
-    const A2 = a2 === undefined ? A1 : coerceArgToTable(a2, 'move', 5)
+  const A1 = coerceArgToTable(a1, 'move', 1);
+  const F = coerceArgToNumber(f, 'move', 2);
+  const E = coerceArgToNumber(e, 'move', 3);
+  const T = coerceArgToNumber(t, 'move', 4);
+  const A2 = a2 === undefined ? A1 : coerceArgToTable(a2, 'move', 5);
 
-    if (E >= F) {
-        if (F <= 0 && E >= Number.MAX_SAFE_INTEGER + F) throw new LuaError('too many elements to move')
-        const n = E - F + 1 // number of elements to movea
-        if (T > Number.MAX_SAFE_INTEGER - n + 1) throw new LuaError('destination wrap around')
+  if (E >= F) {
+    if (F <= 0 && E >= Number.MAX_SAFE_INTEGER + F) throw new LuaError('too many elements to move');
+    const n = E - F + 1; // number of elements to movea
+    if (T > Number.MAX_SAFE_INTEGER - n + 1) throw new LuaError('destination wrap around');
 
-        if (T > E || T <= F || A2 !== A1) {
-            for (let i = 0; i < n; i++) {
-                const v = A1.get(F + i)
-                A2.set(T + i, v)
-            }
-        } else {
-            for (let i = n - 1; i >= 0; i--) {
-                const v = A1.get(F + i)
-                A2.set(T + i, v)
-            }
-        }
+    if (T > E || T <= F || A2 !== A1) {
+      for (let i = 0; i < n; i++) {
+        const v = A1.get(F + i);
+        A2.set(T + i, v);
+      }
+    } else {
+      for (let i = n - 1; i >= 0; i--) {
+        const v = A1.get(F + i);
+        A2.set(T + i, v);
+      }
     }
+  }
 
-    return A2
+  return A2;
 }
 
 /**
@@ -93,9 +93,9 @@ function move(a1: LuaType, f: LuaType, e: LuaType, t: LuaType, a2?: LuaType): Ta
  * Note that the resulting table may not be a sequence.
  */
 function pack(...args: LuaType[]): Table {
-    const table = new Table(args)
-    table.rawset('n', args.length)
-    return table
+  const table = new Table(args);
+  table.rawset('n', args.length);
+  return table;
 }
 
 /**
@@ -107,24 +107,24 @@ function pack(...args: LuaType[]): Table {
  * The default value for pos is #list, so that a call table.remove(l) removes the last element of list l.
  */
 function remove(table: LuaType, pos?: LuaType): LuaType {
-    const TABLE = coerceArgToTable(table, 'remove', 1)
-    const max = TABLE.getn()
-    const POS = pos === undefined ? max : coerceArgToNumber(pos, 'remove', 2)
+  const TABLE = coerceArgToTable(table, 'remove', 1);
+  const max = TABLE.getn();
+  const POS = pos === undefined ? max : coerceArgToNumber(pos, 'remove', 2);
 
-    if (POS > max || POS < 0) {
-        return
-    }
+  if (POS > max || POS < 0) {
+    return;
+  }
 
-    const vals = TABLE.numValues
-    const result = vals.splice(POS, 1)[0]
+  const vals = TABLE.numValues;
+  const result = vals.splice(POS, 1)[0];
 
-    let i = POS
-    while (i < max && vals[i] === undefined) {
-        delete vals[i]
-        i += 1
-    }
+  let i = POS;
+  while (i < max && vals[i] === undefined) {
+    delete vals[i];
+    i += 1;
+  }
 
-    return result
+  return result;
 }
 
 /**
@@ -141,20 +141,20 @@ function remove(table: LuaType, pos?: LuaType): LuaType {
  * their relative positions changed by the sort.
  */
 function sort(table: Table, comp?: Function): void {
-    const TABLE = coerceArgToTable(table, 'sort', 1)
+  const TABLE = coerceArgToTable(table, 'sort', 1);
 
-    let sortFunc: (a: LuaType, b: LuaType) => number
+  let sortFunc: (a: LuaType, b: LuaType) => number;
 
-    if (comp) {
-        const COMP = coerceArgToFunction(comp, 'sort', 2)
-        sortFunc = (a, b) => (coerceToBoolean(COMP(a, b)[0]) ? -1 : 1)
-    } else {
-        sortFunc = (a, b) => (a < b ? -1 : 1)
-    }
+  if (comp) {
+    const COMP = coerceArgToFunction(comp, 'sort', 2);
+    sortFunc = (a, b) => (coerceToBoolean(COMP(a, b)[0]) ? -1 : 1);
+  } else {
+    sortFunc = (a, b) => (a < b ? -1 : 1);
+  }
 
-    const arr = TABLE.numValues
-    arr.shift()
-    arr.sort(sortFunc).unshift(undefined)
+  const arr = TABLE.numValues;
+  arr.shift();
+  arr.sort(sortFunc).unshift(undefined);
 }
 
 /**
@@ -165,23 +165,23 @@ function sort(table: Table, comp?: Function): void {
  * By default, i is 1 and j is #list.
  */
 function unpack(table: LuaType, i?: LuaType, j?: LuaType): LuaType[] {
-    const TABLE = coerceArgToTable(table, 'unpack', 1)
-    const I = i === undefined ? 1 : coerceArgToNumber(i, 'unpack', 2)
-    const J = j === undefined ? TABLE.getn() : coerceArgToNumber(j, 'unpack', 3)
+  const TABLE = coerceArgToTable(table, 'unpack', 1);
+  const I = i === undefined ? 1 : coerceArgToNumber(i, 'unpack', 2);
+  const J = j === undefined ? TABLE.getn() : coerceArgToNumber(j, 'unpack', 3);
 
-    return TABLE.numValues.slice(I, J + 1)
+  return TABLE.numValues.slice(I, J + 1);
 }
 
 const libTable = new Table({
-    getn,
-    concat,
-    insert,
-    maxn,
-    move,
-    pack,
-    remove,
-    sort,
-    unpack
-})
+  getn,
+  concat,
+  insert,
+  maxn,
+  move,
+  pack,
+  remove,
+  sort,
+  unpack,
+});
 
-export { libTable }
+export { libTable };

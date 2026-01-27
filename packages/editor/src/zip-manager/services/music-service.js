@@ -4,7 +4,12 @@ import WebAudioTinySynth from './lib/webaudio-tinysynth/webaudio-tinysynth-core-
 import * as libxm from './lib/libxm/libxm-es6.js';
 import * as jsSID from './lib/jsSID/jsSID.js';
 
-import { MUSIC_TRACK_PATH_PREFIX, MIDI_CONTENT_TYPE, XM_CONTENT_TYPE, SID_CONTENT_TYPE } from './music-service-constants.js';
+import {
+  MUSIC_TRACK_PATH_PREFIX,
+  MIDI_CONTENT_TYPE,
+  XM_CONTENT_TYPE,
+  SID_CONTENT_TYPE,
+} from './music-service-constants.js';
 
 const MUSIC_TRACK_RELATIVE_PATH_PREFIX = './' + MUSIC_TRACK_PATH_PREFIX;
 const MUSIC_TRACKS_INFO = [
@@ -63,7 +68,9 @@ function initMIDI() {
   if (!midiLibrary) {
     midiLibrary = new WebAudioTinySynth({ quality: 1, useReverb: 1 });
     midiLibrary.setLoop(true);
-    midiLibrary.setTimbre(1, 49, [{ w: 'n0', f: 150, v: 0.2, d: 0.1, r: 0.1, h: 0.05, t: 0, p: 0.1 }]);
+    midiLibrary.setTimbre(1, 49, [
+      { w: 'n0', f: 150, v: 0.2, d: 0.1, r: 0.1, h: 0.05, t: 0, p: 0.1 },
+    ]);
     midiLibrary.setTimbre(1, 53, [{ w: 'n0', f: 440, v: 0.3, d: 0.1, p: 0.9, t: 0, r: 0.1 }]);
     midiLibrary.setTimbre(0, 28, [
       { w: 'sine', v: 0.8, d: 1, f: -1 },

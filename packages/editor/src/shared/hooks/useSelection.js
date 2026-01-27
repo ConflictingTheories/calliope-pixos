@@ -6,7 +6,7 @@
  *
  * A hook for managing multi-select state in editors.
  * Supports single and multi-selection with keyboard modifiers.
- * 
+ *
  * Usage:
  *   const {
  *     selected,
@@ -31,7 +31,7 @@ import { useState, useCallback, useMemo } from 'react';
 
 /**
  * useSelection - Hook for managing selection state
- * 
+ *
  * @template T
  * @param {SelectionOptions} [options={}]
  * @returns {{
@@ -54,7 +54,7 @@ export function useSelection(options = {}) {
     items = [],
     getKey = (item, index) => item?.id ?? index,
     allowMultiple = true,
-    onChange = null
+    onChange = null,
   } = options;
 
   const [selected, setSelected] = useState(new Set());
@@ -73,9 +73,12 @@ export function useSelection(options = {}) {
   }, [itemKeys]);
 
   // Check if a key is selected
-  const isSelected = useCallback((key) => {
-    return selected.has(key);
-  }, [selected]);
+  const isSelected = useCallback(
+    key => {
+      return selected.has(key);
+    },
+    [selected]
+  );
 
   // Get selected items
   const selectedItems = useMemo(() => {
@@ -83,73 +86,88 @@ export function useSelection(options = {}) {
   }, [items, selected, getKey]);
 
   // Update selection and notify
-  const updateSelection = useCallback((newSelected, newLastSelected = lastSelected) => {
-    setSelected(newSelected);
-    setLastSelected(newLastSelected);
-    onChange?.(newSelected, selectedItems);
-  }, [onChange, lastSelected, selectedItems]);
+  const updateSelection = useCallback(
+    (newSelected, newLastSelected = lastSelected) => {
+      setSelected(newSelected);
+      setLastSelected(newLastSelected);
+      onChange?.(newSelected, selectedItems);
+    },
+    [onChange, lastSelected, selectedItems]
+  );
 
   // Select a single item (or add to selection if additive)
-  const select = useCallback((key, additive = false) => {
-    if (!additive || !allowMultiple) {
-      // Single selection
-      const newSelected = new Set([key]);
-      updateSelection(newSelected, key);
-    } else {
-      // Add to existing selection
-      const newSelected = new Set(selected);
-      newSelected.add(key);
-      updateSelection(newSelected, key);
-    }
-  }, [allowMultiple, selected, updateSelection]);
+  const select = useCallback(
+    (key, additive = false) => {
+      if (!additive || !allowMultiple) {
+        // Single selection
+        const newSelected = new Set([key]);
+        updateSelection(newSelected, key);
+      } else {
+        // Add to existing selection
+        const newSelected = new Set(selected);
+        newSelected.add(key);
+        updateSelection(newSelected, key);
+      }
+    },
+    [allowMultiple, selected, updateSelection]
+  );
 
   // Toggle selection of an item
-  const toggle = useCallback((key) => {
-    const newSelected = new Set(selected);
-    if (newSelected.has(key)) {
-      newSelected.delete(key);
-    } else {
-      newSelected.add(key);
-    }
-    updateSelection(newSelected, key);
-  }, [selected, updateSelection]);
+  const toggle = useCallback(
+    key => {
+      const newSelected = new Set(selected);
+      if (newSelected.has(key)) {
+        newSelected.delete(key);
+      } else {
+        newSelected.add(key);
+      }
+      updateSelection(newSelected, key);
+    },
+    [selected, updateSelection]
+  );
 
   // Select a range of items (for shift-click)
-  const selectRange = useCallback((startKey, endKey) => {
-    if (!allowMultiple) {
-      select(endKey);
-      return;
-    }
+  const selectRange = useCallback(
+    (startKey, endKey) => {
+      if (!allowMultiple) {
+        select(endKey);
+        return;
+      }
 
-    const startIndex = keyToIndex.get(startKey);
-    const endIndex = keyToIndex.get(endKey);
+      const startIndex = keyToIndex.get(startKey);
+      const endIndex = keyToIndex.get(endKey);
 
-    if (startIndex === undefined || endIndex === undefined) {
-      select(endKey);
-      return;
-    }
+      if (startIndex === undefined || endIndex === undefined) {
+        select(endKey);
+        return;
+      }
 
-    const minIndex = Math.min(startIndex, endIndex);
-    const maxIndex = Math.max(startIndex, endIndex);
+      const minIndex = Math.min(startIndex, endIndex);
+      const maxIndex = Math.max(startIndex, endIndex);
 
-    const newSelected = new Set(selected);
-    for (let i = minIndex; i <= maxIndex; i++) {
-      newSelected.add(itemKeys[i]);
-    }
+      const newSelected = new Set(selected);
+      for (let i = minIndex; i <= maxIndex; i++) {
+        newSelected.add(itemKeys[i]);
+      }
 
-    updateSelection(newSelected, endKey);
-  }, [allowMultiple, keyToIndex, itemKeys, selected, select, updateSelection]);
+      updateSelection(newSelected, endKey);
+    },
+    [allowMultiple, keyToIndex, itemKeys, selected, select, updateSelection]
+  );
 
   // Handle click with keyboard modifiers
-  const handleSelect = useCallback((key, event) => {
-    if (event?.shiftKey && lastSelected !== null && allowMultiple) {
-      selectRange(lastSelected, key);
-    } else if ((event?.ctrlKey || event?.metaKey) && allowMultiple) {
-      toggle(key);
-    } else {
-      select(key);
-    }
-  }, [lastSelected, allowMultiple, selectRange, toggle, select]);
+  const handleSelect = useCallback(
+    (key, event) => {
+      if (event?.shiftKey && lastSelected !== null && allowMultiple) {
+        selectRange(lastSelected, key);
+      } else if ((event?.ctrlKey || event?.metaKey) && allowMultiple) {
+        toggle(key);
+      } else {
+        select(key);
+      }
+    },
+    [lastSelected, allowMultiple, selectRange, toggle, select]
+  );
 
   // Clear all selections
   const clear = useCallback(() => {
@@ -166,50 +184,59 @@ export function useSelection(options = {}) {
   }, [allowMultiple, itemKeys, select, updateSelection]);
 
   // Deselect specific items
-  const deselect = useCallback((keys) => {
-    const keysToRemove = Array.isArray(keys) ? keys : [keys];
-    const newSelected = new Set(selected);
-    keysToRemove.forEach(key => newSelected.delete(key));
-    updateSelection(newSelected);
-  }, [selected, updateSelection]);
+  const deselect = useCallback(
+    keys => {
+      const keysToRemove = Array.isArray(keys) ? keys : [keys];
+      const newSelected = new Set(selected);
+      keysToRemove.forEach(key => newSelected.delete(key));
+      updateSelection(newSelected);
+    },
+    [selected, updateSelection]
+  );
 
   // Set selection directly
-  const setSelection = useCallback((keys) => {
-    const newSelected = new Set(Array.isArray(keys) ? keys : [keys]);
-    updateSelection(newSelected, keys[keys.length - 1] ?? null);
-  }, [updateSelection]);
+  const setSelection = useCallback(
+    keys => {
+      const newSelected = new Set(Array.isArray(keys) ? keys : [keys]);
+      updateSelection(newSelected, keys[keys.length - 1] ?? null);
+    },
+    [updateSelection]
+  );
 
   // Move selection (for keyboard navigation)
-  const moveSelection = useCallback((direction) => {
-    if (itemKeys.length === 0) return;
+  const moveSelection = useCallback(
+    direction => {
+      if (itemKeys.length === 0) return;
 
-    let currentIndex = 0;
-    if (lastSelected !== null) {
-      currentIndex = keyToIndex.get(lastSelected) ?? 0;
-    }
+      let currentIndex = 0;
+      if (lastSelected !== null) {
+        currentIndex = keyToIndex.get(lastSelected) ?? 0;
+      }
 
-    let newIndex;
-    switch (direction) {
-    case 'up':
-    case 'left':
-      newIndex = Math.max(0, currentIndex - 1);
-      break;
-    case 'down':
-    case 'right':
-      newIndex = Math.min(itemKeys.length - 1, currentIndex + 1);
-      break;
-    case 'first':
-      newIndex = 0;
-      break;
-    case 'last':
-      newIndex = itemKeys.length - 1;
-      break;
-    default:
-      return;
-    }
+      let newIndex;
+      switch (direction) {
+        case 'up':
+        case 'left':
+          newIndex = Math.max(0, currentIndex - 1);
+          break;
+        case 'down':
+        case 'right':
+          newIndex = Math.min(itemKeys.length - 1, currentIndex + 1);
+          break;
+        case 'first':
+          newIndex = 0;
+          break;
+        case 'last':
+          newIndex = itemKeys.length - 1;
+          break;
+        default:
+          return;
+      }
 
-    select(itemKeys[newIndex]);
-  }, [itemKeys, lastSelected, keyToIndex, select]);
+      select(itemKeys[newIndex]);
+    },
+    [itemKeys, lastSelected, keyToIndex, select]
+  );
 
   return {
     // State
@@ -230,7 +257,7 @@ export function useSelection(options = {}) {
     selectAll,
     deselect,
     setSelection,
-    moveSelection
+    moveSelection,
   };
 }
 

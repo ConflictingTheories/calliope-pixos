@@ -34,12 +34,7 @@ export default class EraserTool extends BaseTool {
 
     const changes = [];
     if (this.lastErasedCell) {
-      const line = this._bresenhamLine(
-        this.lastErasedCell.x,
-        this.lastErasedCell.y,
-        x,
-        y
-      );
+      const line = this._bresenhamLine(this.lastErasedCell.x, this.lastErasedCell.y, x, y);
       for (const point of line) {
         const result = this._erase(point.x, point.y, mapData, options);
         if (result) changes.push(...result.cells);
@@ -93,8 +88,14 @@ export default class EraserTool extends BaseTool {
       points.push({ x, y });
       if (x === x1 && y === y1) break;
       const e2 = 2 * err;
-      if (e2 > -dy) { err -= dy; x += sx; }
-      if (e2 < dx) { err += dx; y += sy; }
+      if (e2 > -dy) {
+        err -= dy;
+        x += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y += sy;
+      }
     }
 
     return points;

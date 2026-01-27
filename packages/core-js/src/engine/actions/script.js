@@ -29,7 +29,11 @@ export default {
   // Trigger interactions in sprites
   triggerScript: function () {
     if (!this.triggerId) this.completed = true;
-    Promise.all(this.zone.scripts.filter((x) => x.id === this.triggerId).map(async (x) => await x.trigger.call(this.zone))).then(() => {
+    Promise.all(
+      this.zone.scripts
+        .filter(x => x.id === this.triggerId)
+        .map(async x => await x.trigger.call(this.zone))
+    ).then(() => {
       this.completed = true;
     });
   },

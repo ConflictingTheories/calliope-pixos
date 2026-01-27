@@ -14,7 +14,7 @@
 /**
  * PxcPlayer - .pxc Cutscene Player
  * Plays SpritzCut DSL format cutscenes with audio, backdrops, and dialogue
- * 
+ *
  * This is the enhanced engine version that renders directly to the HUD canvas
  * and integrates with the engine's resource loading system.
  */
@@ -28,10 +28,10 @@ export default class PxcPlayer {
       onCutsceneStart: callbacks.onStart || callbacks.onCutsceneStart || null,
       onCutsceneEnd: callbacks.onEnd || callbacks.onCutsceneEnd || null,
     };
-    
+
     // Character definitions from @char commands
     this.characters = {};
-    
+
     // Visual state
     this.currentBackdrop = null;
     this.backdropImage = null;
@@ -41,25 +41,25 @@ export default class PxcPlayer {
     this.currentText = '';
     this.displayedText = '';
     this.isTyping = false;
-    
+
     // Playback state
     this.isPlaying = false;
     this.isPaused = false;
     this.skipRequested = false;
-    
+
     // Configuration
     this.typewriterSpeed = 40; // ms per character
     this.autoAdvance = false;
     this.autoAdvanceDelay = 1500; // ms to wait after text completes
-    
+
     // Audio refs
     this.bgmAudio = null;
     this.sfxAudio = null;
     this.voiceAudio = null;
-    
+
     // Resource cache
     this.resourceCache = {};
-    
+
     // Dialogue box styling
     this.dialogueStyle = {
       boxColor: 'rgba(20, 30, 50, 0.9)',
@@ -85,7 +85,7 @@ export default class PxcPlayer {
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i].trim();
-      
+
       // Skip empty lines and comments
       if (!line || line.startsWith('#')) continue;
 
@@ -93,7 +93,7 @@ export default class PxcPlayer {
       if (multilineMode && line.includes('"""')) {
         line = line.replace('"""', '').trim();
         if (line) multilineText.push(line);
-        
+
         currentDialogue.text = multilineText.join('\n');
         events.push(currentDialogue);
         currentDialogue = null;
@@ -119,7 +119,7 @@ export default class PxcPlayer {
       if (line.startsWith('wait ')) {
         events.push({
           type: 'wait',
-          duration: parseInt(line.replace('wait', '').trim())
+          duration: parseInt(line.replace('wait', '').trim()),
         });
         continue;
       }
@@ -152,7 +152,7 @@ export default class PxcPlayer {
             actor: speaker.trim(),
             text: '', // Will be filled when multiline ends
             isCutin,
-            meta
+            meta,
           };
           continue;
         }
@@ -163,7 +163,7 @@ export default class PxcPlayer {
           actor: speaker.trim(),
           text: text.replace(/^["']|["']$/g, ''),
           isCutin,
-          meta
+          meta,
         });
       }
     }
@@ -189,7 +189,7 @@ export default class PxcPlayer {
         return {
           type: 'backdrop',
           url: remaining || args.url || args.file,
-          options: args
+          options: args,
         };
 
       case 'char':
@@ -208,7 +208,7 @@ export default class PxcPlayer {
           name: charName,
           sprite: charArgs.sprite,
           portrait: charArgs.portrait,
-          options: charArgs
+          options: charArgs,
         };
 
       case 'action':
@@ -220,7 +220,7 @@ export default class PxcPlayer {
           type: 'action',
           actor: actorName,
           verb: verb,
-          args: args
+          args: args,
         };
 
       case 'do':
@@ -228,7 +228,7 @@ export default class PxcPlayer {
         return {
           type: 'hook',
           action: hookAction,
-          args: args
+          args: args,
         };
 
       case 'transition':
@@ -236,7 +236,7 @@ export default class PxcPlayer {
           type: 'transition',
           effect: remaining || args.effect || 'fade',
           direction: args.direction || 'out',
-          options: args
+          options: args,
         };
 
       case 'end':
@@ -254,7 +254,7 @@ export default class PxcPlayer {
   parseBracket(bracketContent) {
     const result = {};
     const pairs = bracketContent.split(',');
-    
+
     for (const pair of pairs) {
       const trimmed = pair.trim();
       if (trimmed.includes('=')) {
@@ -270,7 +270,7 @@ export default class PxcPlayer {
         result[trimmed] = true;
       }
     }
-    
+
     return result;
   }
 
@@ -279,7 +279,7 @@ export default class PxcPlayer {
    */
   async loadAsset(path, isBackdrop = false) {
     if (!path) return null;
-    
+
     // Check cache first
     if (this.resourceCache[path]) {
       return this.resourceCache[path];
@@ -349,7 +349,7 @@ export default class PxcPlayer {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = (err) => reject(err);
+      img.onerror = err => reject(err);
       img.src = url;
     });
   }
@@ -382,7 +382,7 @@ export default class PxcPlayer {
 
     this.isPlaying = false;
     this.cleanup();
-    
+
     if (this.callbacks.onCutsceneEnd) {
       this.callbacks.onCutsceneEnd();
     }
@@ -394,7 +394,7 @@ export default class PxcPlayer {
   async playCutsceneFile(filePath) {
     try {
       let scriptText = null;
-      
+
       // Try loading from zip
       if (this.engine?.spritz?.world?.zip) {
         const zipEntry = this.engine.spritz.world.zip.getEntry(filePath);
@@ -402,13 +402,13 @@ export default class PxcPlayer {
           scriptText = await zipEntry.async('string');
         }
       }
-      
+
       // Try loading via fetch
       if (!scriptText) {
         const response = await fetch(filePath);
         scriptText = await response.text();
       }
-      
+
       if (scriptText) {
         await this.playCutscene(scriptText);
       } else {
@@ -471,11 +471,11 @@ export default class PxcPlayer {
   async showBackdrop(url, options = {}) {
     this.currentBackdrop = url;
     console.log('[PxcPlayer] Backdrop:', url, options);
-    
+
     try {
       const imageUrl = await this.loadAsset(url, true);
       this.backdropImage = await this.loadImage(imageUrl);
-      
+
       // Set backdrop in HUD for rendering
       if (this.engine?.hud) {
         this.engine.hud.setBackdrop(this.backdropImage);
@@ -483,7 +483,7 @@ export default class PxcPlayer {
     } catch (err) {
       console.warn('[PxcPlayer] Failed to load backdrop:', url, err);
     }
-    
+
     if (this.callbacks.onBackdropChange) {
       this.callbacks.onBackdropChange(url, options);
     }
@@ -500,7 +500,7 @@ export default class PxcPlayer {
   async defineCharacter(name, sprite, portrait, options = {}) {
     this.characters[name] = { sprite, portrait, options };
     console.log('[PxcPlayer] Defined character:', name, sprite, portrait);
-    
+
     // Pre-load character portrait if available
     const portraitPath = portrait || sprite;
     if (portraitPath) {
@@ -571,7 +571,7 @@ export default class PxcPlayer {
         expression: event.meta?.expression || 'neutral',
         position: event.meta?.position || 'center',
         isCutin: event.isCutin,
-        meta: event.meta
+        meta: event.meta,
       });
     }
 
@@ -583,7 +583,7 @@ export default class PxcPlayer {
     }
 
     this.isTyping = false;
-    
+
     if (this.callbacks.onDialogueHide) {
       this.callbacks.onDialogueHide();
     }
@@ -595,27 +595,27 @@ export default class PxcPlayer {
   async typeText(text) {
     const chars = text.split('');
     this.displayedText = '';
-    
+
     for (let i = 0; i < chars.length; i++) {
       if (!this.isPlaying || this.skipRequested) {
         this.displayedText = text; // Show full text on skip
         break;
       }
-      
+
       this.displayedText += chars[i];
-      
+
       // Render the current state to HUD
       this.renderDialogue();
-      
+
       // Calculate delay (longer for punctuation)
       let delay = this.typewriterSpeed;
       if (/[.,!?;:]/.test(chars[i])) {
         delay += this.typewriterSpeed * 1.5;
       }
-      
+
       await this.wait(delay);
     }
-    
+
     // Final render
     this.renderDialogue();
   }
@@ -625,11 +625,11 @@ export default class PxcPlayer {
    */
   renderDialogue() {
     if (!this.engine?.hud?.ctx) return;
-    
+
     const ctx = this.engine.hud.ctx;
     const canvas = ctx.canvas;
     const style = this.dialogueStyle;
-    
+
     // Use HUD's scrollText for consistent rendering
     if (this.engine.hud.scrollText) {
       const options = {
@@ -642,19 +642,23 @@ export default class PxcPlayer {
           corner: 'round',
         },
       };
-      
+
       // Draw cutscene elements (backdrop) first
       if (this.engine.hud.drawCutsceneElements) {
         this.engine.hud.drawCutsceneElements();
       }
-      
+
       // Draw speaker name
       ctx.font = style.speakerFont;
       ctx.fillStyle = style.speakerColor;
       ctx.textAlign = 'left';
       const boxY = (2 * canvas.height) / 3;
-      ctx.fillText(this.currentSpeaker, style.padding + (this.portraitImage ? style.portraitSize + 10 : 0), boxY - 25);
-      
+      ctx.fillText(
+        this.currentSpeaker,
+        style.padding + (this.portraitImage ? style.portraitSize + 10 : 0),
+        boxY - 25
+      );
+
       // Draw dialogue text with scrollbox
       this.engine.hud.scrollText(this.displayedText, false, options);
     }
@@ -665,7 +669,7 @@ export default class PxcPlayer {
    */
   async doAction(actor, verb, args = {}) {
     console.log('[PxcPlayer] Action:', actor, verb, args);
-    
+
     switch (verb) {
       case 'moveTo':
         // Animate portrait movement
@@ -739,16 +743,18 @@ export default class PxcPlayer {
    */
   playBgm(audioPath) {
     this.stopBgm(); // Stop previous BGM
-    
+
     console.log('[PxcPlayer] Playing BGM:', audioPath);
-    
-    this.loadAsset(audioPath).then(audioUrl => {
-      if (!audioUrl) return;
-      this.bgmAudio = new Audio(audioUrl);
-      this.bgmAudio.loop = true;
-      this.bgmAudio.volume = 0.7;
-      this.bgmAudio.play().catch(e => console.warn('[PxcPlayer] BGM autoplay blocked:', e));
-    }).catch(e => console.error('[PxcPlayer] Failed to load BGM:', e));
+
+    this.loadAsset(audioPath)
+      .then(audioUrl => {
+        if (!audioUrl) return;
+        this.bgmAudio = new Audio(audioUrl);
+        this.bgmAudio.loop = true;
+        this.bgmAudio.volume = 0.7;
+        this.bgmAudio.play().catch(e => console.warn('[PxcPlayer] BGM autoplay blocked:', e));
+      })
+      .catch(e => console.error('[PxcPlayer] Failed to load BGM:', e));
   }
 
   /**
@@ -756,13 +762,15 @@ export default class PxcPlayer {
    */
   playSfx(audioPath) {
     console.log('[PxcPlayer] Playing SFX:', audioPath);
-    
-    this.loadAsset(audioPath).then(audioUrl => {
-      if (!audioUrl) return;
-      const sfx = new Audio(audioUrl);
-      sfx.volume = 0.8;
-      sfx.play().catch(e => console.warn('[PxcPlayer] SFX autoplay blocked:', e));
-    }).catch(e => console.error('[PxcPlayer] Failed to load SFX:', e));
+
+    this.loadAsset(audioPath)
+      .then(audioUrl => {
+        if (!audioUrl) return;
+        const sfx = new Audio(audioUrl);
+        sfx.volume = 0.8;
+        sfx.play().catch(e => console.warn('[PxcPlayer] SFX autoplay blocked:', e));
+      })
+      .catch(e => console.error('[PxcPlayer] Failed to load SFX:', e));
   }
 
   /**
@@ -770,20 +778,20 @@ export default class PxcPlayer {
    */
   async playVoiceBlocking(audioPath) {
     console.log('[PxcPlayer] Playing Voice:', audioPath);
-    
-    return new Promise(async (resolve) => {
+
+    return new Promise(async resolve => {
       try {
         const audioUrl = await this.loadAsset(audioPath);
         if (!audioUrl) {
           resolve();
           return;
         }
-        
+
         // Stop previous voice
         if (this.voiceAudio) {
           this.voiceAudio.pause();
         }
-        
+
         this.voiceAudio = new Audio(audioUrl);
         this.voiceAudio.volume = 1.0;
         this.voiceAudio.onended = () => {
@@ -794,7 +802,7 @@ export default class PxcPlayer {
           this.voiceAudio = null;
           resolve();
         };
-        
+
         this.voiceAudio.play().catch(e => {
           console.warn('[PxcPlayer] Voice autoplay blocked:', e);
           resolve();
@@ -836,7 +844,7 @@ export default class PxcPlayer {
    */
   async doTransition(effect, options = {}) {
     console.log('[PxcPlayer] Transition:', effect, options);
-    
+
     if (this.engine?.renderManager) {
       const duration = options.duration || 500;
       const direction = options.direction || 'out';
@@ -858,16 +866,16 @@ export default class PxcPlayer {
    */
   waitForInput() {
     return new Promise(resolve => {
-      const handler = (e) => {
+      const handler = e => {
         // Ignore if modifier keys are held
         if (e.ctrlKey || e.altKey || e.metaKey) return;
-        
+
         document.removeEventListener('click', handler);
         document.removeEventListener('keydown', handler);
         document.removeEventListener('touchend', handler);
         resolve();
       };
-      
+
       document.addEventListener('click', handler);
       document.addEventListener('keydown', handler);
       document.addEventListener('touchend', handler);
@@ -908,13 +916,13 @@ export default class PxcPlayer {
     this.currentSpeaker = '';
     this.currentText = '';
     this.displayedText = '';
-    
+
     // Clear HUD backdrop
     if (this.engine?.hud) {
       this.engine.hud.setBackdrop(null);
       this.engine.hud.setCutouts([]);
     }
-    
+
     // Revoke object URLs from cache
     Object.values(this.resourceCache).forEach(url => {
       if (url && typeof url === 'string' && url.startsWith('blob:')) {

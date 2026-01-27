@@ -30,10 +30,10 @@ export default class BrushTool extends BaseTool {
 
   onMove(x, y, imageData, options) {
     if (!this.isDrawing) return [];
-    
+
     const { width, height } = options;
     const allPixels = [];
-    
+
     if (this.lastX !== -1 && this.lastY !== -1) {
       const linePixels = this.getLinePixels(this.lastX, this.lastY, x, y, width, height);
       for (const p of linePixels) {
@@ -42,7 +42,7 @@ export default class BrushTool extends BaseTool {
     } else {
       allPixels.push(...this._paint(x, y, options));
     }
-    
+
     this.lastX = x;
     this.lastY = y;
     return allPixels;
@@ -67,15 +67,15 @@ export default class BrushTool extends BaseTool {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist <= radius + 0.5) {
           let alpha = color.a;
-          
+
           // Soft edge falloff
           if (this.softEdge && radius > 0) {
-            const falloff = 1 - (dist / (radius + 0.5));
+            const falloff = 1 - dist / (radius + 0.5);
             alpha = Math.round(color.a * falloff * this.opacity);
           } else {
             alpha = Math.round(color.a * this.opacity);
           }
-          
+
           pixels.push({ x, y, r: color.r, g: color.g, b: color.b, a: alpha });
         }
       }

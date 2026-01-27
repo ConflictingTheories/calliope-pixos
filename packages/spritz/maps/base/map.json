@@ -23,9 +23,30 @@
       "zones": ["room"]
     },
 
-    { "id": "tree", "type": "furniture/tree", "fixed": true, "pos": [8, 13, 0], "facing": "Up", "isLit": true},
-    { "id": "fireplace", "type": "furniture/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true},
-    { "id": "fireplace", "type": "effects/fireplace", "fixed": true, "pos": [11, 1, 0], "facing": "Up", "isLit": true},
+    {
+      "id": "tree",
+      "type": "furniture/tree",
+      "fixed": true,
+      "pos": [8, 13, 0],
+      "facing": "Up",
+      "isLit": true
+    },
+    {
+      "id": "fireplace",
+      "type": "furniture/fireplace",
+      "fixed": true,
+      "pos": [11, 1, 0],
+      "facing": "Up",
+      "isLit": true
+    },
+    {
+      "id": "fireplace",
+      "type": "effects/fireplace",
+      "fixed": true,
+      "pos": [11, 1, 0],
+      "facing": "Up",
+      "isLit": true
+    },
 
     { "id": "chest", "type": "objects/chests/wood", "pos": [8, 14, 0], "facing": "Down" },
     { "id": "chestmetal", "type": "objects/chests/metal", "pos": [9, 13, 0], "facing": "Right" },
@@ -74,7 +95,11 @@
           "sprite": "air-knight",
           "action": "dialogue",
           "args": [
-            ["Long ago, in a dungeon far far away", "The sewer was backing up, and well...everyone was losing their $%#t", "But one had a plan..."],
+            [
+              "Long ago, in a dungeon far far away",
+              "The sewer was backing up, and well...everyone was losing their $%#t",
+              "But one had a plan..."
+            ],
             false,
             { "autoclose": true }
           ]

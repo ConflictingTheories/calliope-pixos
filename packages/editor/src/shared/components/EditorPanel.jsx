@@ -6,7 +6,7 @@
  *
  * A resizable panel component for editor layouts.
  * Supports collapsing, resizing, and multiple layout positions.
- * 
+ *
  * Usage:
  *   <EditorPanel
  *     title="Properties"
@@ -28,7 +28,7 @@ import '../styles/editor-panel.css';
 
 /**
  * EditorPanel - Resizable panel for editor layouts
- * 
+ *
  * @param {Object} props
  * @param {string} [props.title] - Panel title
  * @param {React.ReactNode} [props.icon] - Icon to show next to title
@@ -61,10 +61,12 @@ function EditorPanel({
   onCollapse,
   headerActions,
   children,
-  className = ''
+  className = '',
 }) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const [size, setSize] = useState(position === 'top' || position === 'bottom' ? defaultHeight : defaultWidth);
+  const [size, setSize] = useState(
+    position === 'top' || position === 'bottom' ? defaultHeight : defaultWidth
+  );
   const [isResizing, setIsResizing] = useState(false);
   const panelRef = useRef(null);
   const startPosRef = useRef(0);
@@ -73,32 +75,38 @@ function EditorPanel({
   const isHorizontal = position === 'left' || position === 'right';
 
   // Handle mouse down on resize handle
-  const handleResizeStart = useCallback((e) => {
-    e.preventDefault();
-    setIsResizing(true);
-    startPosRef.current = isHorizontal ? e.clientX : e.clientY;
-    startSizeRef.current = size;
+  const handleResizeStart = useCallback(
+    e => {
+      e.preventDefault();
+      setIsResizing(true);
+      startPosRef.current = isHorizontal ? e.clientX : e.clientY;
+      startSizeRef.current = size;
 
-    document.body.style.cursor = isHorizontal ? 'ew-resize' : 'ns-resize';
-    document.body.style.userSelect = 'none';
-  }, [isHorizontal, size]);
+      document.body.style.cursor = isHorizontal ? 'ew-resize' : 'ns-resize';
+      document.body.style.userSelect = 'none';
+    },
+    [isHorizontal, size]
+  );
 
   // Handle mouse move during resize
-  const handleResizeMove = useCallback((e) => {
-    if (!isResizing) return;
+  const handleResizeMove = useCallback(
+    e => {
+      if (!isResizing) return;
 
-    const currentPos = isHorizontal ? e.clientX : e.clientY;
-    let delta = currentPos - startPosRef.current;
+      const currentPos = isHorizontal ? e.clientX : e.clientY;
+      let delta = currentPos - startPosRef.current;
 
-    // Invert delta for right and bottom panels
-    if (position === 'right' || position === 'bottom') {
-      delta = -delta;
-    }
+      // Invert delta for right and bottom panels
+      if (position === 'right' || position === 'bottom') {
+        delta = -delta;
+      }
 
-    const newSize = Math.min(maxSize, Math.max(minSize, startSizeRef.current + delta));
-    setSize(newSize);
-    onResize?.(newSize);
-  }, [isResizing, isHorizontal, position, minSize, maxSize, onResize]);
+      const newSize = Math.min(maxSize, Math.max(minSize, startSizeRef.current + delta));
+      setSize(newSize);
+      onResize?.(newSize);
+    },
+    [isResizing, isHorizontal, position, minSize, maxSize, onResize]
+  );
 
   // Handle mouse up to end resize
   const handleResizeEnd = useCallback(() => {
@@ -127,21 +135,29 @@ function EditorPanel({
   }, [isCollapsed, onCollapse]);
 
   // Keyboard support
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleCollapse();
-    }
-  }, [toggleCollapse]);
+  const handleKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleCollapse();
+      }
+    },
+    [toggleCollapse]
+  );
 
   // Determine resize handle position
   const getResizeHandlePosition = () => {
     switch (position) {
-      case 'left': return 'right';
-      case 'right': return 'left';
-      case 'top': return 'bottom';
-      case 'bottom': return 'top';
-      default: return 'right';
+      case 'left':
+        return 'right';
+      case 'right':
+        return 'left';
+      case 'top':
+        return 'bottom';
+      case 'bottom':
+        return 'top';
+      default:
+        return 'right';
     }
   };
 
@@ -175,8 +191,12 @@ function EditorPanel({
           <div className="editor-panel__header-right">
             {headerActions}
             {collapsible && (
-              <span className={`editor-panel__collapse-icon ${isCollapsed ? 'editor-panel__collapse-icon--collapsed' : ''}`}>
-                <ChevronIcon direction={isCollapsed ? (isHorizontal ? position : position) : 'down'} />
+              <span
+                className={`editor-panel__collapse-icon ${isCollapsed ? 'editor-panel__collapse-icon--collapsed' : ''}`}
+              >
+                <ChevronIcon
+                  direction={isCollapsed ? (isHorizontal ? position : position) : 'down'}
+                />
               </span>
             )}
           </div>
@@ -184,11 +204,7 @@ function EditorPanel({
       )}
 
       {/* Content */}
-      {!isCollapsed && (
-        <div className="editor-panel__content">
-          {children}
-        </div>
-      )}
+      {!isCollapsed && <div className="editor-panel__content">{children}</div>}
 
       {/* Resize Handle */}
       {resizable && !isCollapsed && (

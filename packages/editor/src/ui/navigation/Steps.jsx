@@ -4,32 +4,34 @@
 import React from 'react';
 import './Steps.css';
 
-export function Steps({ 
+export function Steps({
   children,
   current = 0,
   vertical = false,
   small = false,
   className = '',
   style,
-  ...props 
+  ...props
 }) {
   const classes = [
     'px-steps',
     vertical && 'px-steps-vertical',
     small && 'px-steps-small',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const items = React.Children.map(children, (child, index) => {
     if (!React.isValidElement(child)) return child;
-    
+
     let status = 'wait';
     if (index < current) status = 'finish';
     else if (index === current) status = 'process';
-    
+
     return React.cloneElement(child, {
       stepNumber: index + 1,
-      status: child.props.status || status
+      status: child.props.status || status,
     });
   });
 
@@ -40,37 +42,29 @@ export function Steps({
   );
 }
 
-Steps.Item = function StepsItem({ 
+Steps.Item = function StepsItem({
   title,
   description,
   icon,
   status = 'wait',
   stepNumber,
   className = '',
-  ...props 
+  ...props
 }) {
-  const classes = [
-    'px-steps-item',
-    `px-steps-item-${status}`,
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ['px-steps-item', `px-steps-item-${status}`, className].filter(Boolean).join(' ');
 
   const statusIcons = {
     finish: '✓',
-    error: '✕'
+    error: '✕',
   };
 
   return (
     <div className={classes} {...props}>
       <div className="px-steps-item-tail" />
-      <div className="px-steps-item-icon">
-        {icon || statusIcons[status] || stepNumber}
-      </div>
+      <div className="px-steps-item-icon">{icon || statusIcons[status] || stepNumber}</div>
       <div className="px-steps-item-content">
         <div className="px-steps-item-title">{title}</div>
-        {description && (
-          <div className="px-steps-item-description">{description}</div>
-        )}
+        {description && <div className="px-steps-item-description">{description}</div>}
       </div>
     </div>
   );

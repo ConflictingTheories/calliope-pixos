@@ -131,7 +131,7 @@ export default class Touch {
    */
   _notifyHooks(event, type) {
     try {
-      this.hooks.forEach((h) => h(event, type));
+      this.hooks.forEach(h => h(event, type));
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(`Error in touch hook (${type}):`, err);

@@ -7,7 +7,7 @@ import { Authenticator } from '../auth/index.js';
 
 /**
  * PixoSpritz WebSocket API Server
- * 
+ *
  * Handles multiplayer connections, zone management, and action broadcasting.
  * Includes security features: rate limiting, input validation, connection tracking.
  */
@@ -18,22 +18,22 @@ export default class API {
     this.clientManager = new ClientManager();
     this.zoneHandler = new ZoneHandler(this.clientManager);
     this.actionQueue = [];
-    
+
     // Security: Rate limiting (60 messages per second per client)
     this.rateLimiter = new RateLimiter(60, 1000);
-    
+
     // Security: Message validation
     this.messageValidator = new MessageValidator();
-    
+
     // Security: Connection tracking (max 5 connections per IP)
     this.connectionTracker = new ConnectionTracker(5);
-    
+
     // Security: JWT Authentication (optional in dev, required in production)
     this.authenticator = new Authenticator({
       required: process.env.NODE_ENV === 'production',
-      tokenExpiry: parseInt(process.env.JWT_EXPIRY) || 3600
+      tokenExpiry: parseInt(process.env.JWT_EXPIRY) || 3600,
     });
-    
+
     console.log(`[API] WebSocket server initialized on port ${port}`);
   }
 
@@ -43,7 +43,7 @@ export default class API {
   listen() {
     this.wss.on('connection', (ws, req) => {
       const ip = req.socket.remoteAddress || 'unknown';
-      
+
       // Security: JWT Authentication
       const authResult = this.authenticator.authenticate(req);
       if (!authResult.authenticated) {
@@ -51,25 +51,27 @@ export default class API {
         ws.close(4001, authResult.error || 'Unauthorized');
         return;
       }
-      
+
       // Use authenticated userId or generate a new one
       const clientId = authResult.userId || randomUUID();
-      
+
       // Security: Check connection limit per IP
       if (!this.connectionTracker.addConnection(clientId, ip)) {
         console.warn(`[API] Connection rejected from ${ip}: too many connections`);
         ws.close(4429, 'Too many connections from this IP');
         return;
       }
-      
+
       // Store client with IP and auth info
-      this.clientManager.setClient(clientId, { 
-        ws, 
+      this.clientManager.setClient(clientId, {
+        ws,
         ip,
         isGuest: authResult.isGuest || false,
-        sessionId: authResult.sessionId
+        sessionId: authResult.sessionId,
       });
-      console.log(`[API] Client ${clientId} connected from ${ip} (${authResult.isGuest ? 'guest' : 'authenticated'})`);
+      console.log(
+        `[API] Client ${clientId} connected from ${ip} (${authResult.isGuest ? 'guest' : 'authenticated'})`
+      );
 
       ws.on('message', message => this.onMessage(clientId, message));
 
@@ -82,8 +84,8 @@ export default class API {
         this.zoneHandler.handleDisconnect(clientId);
         console.log(`[API] Client ${clientId} disconnected`);
       });
-      
-      ws.on('error', (error) => {
+
+      ws.on('error', error => {
         console.error(`[API] WebSocket error for client ${clientId}:`, error.message);
       });
     });
@@ -91,8 +93,8 @@ export default class API {
 
   /**
    * Handle avatar updates
-   * @param {string} clientId 
-   * @param {any} payload 
+   * @param {string} clientId
+   * @param {any} payload
    */
   handleUpdateAvatar(clientId, payload) {
     const client = this.clientManager.getClient(clientId);
@@ -103,16 +105,16 @@ export default class API {
 
     // Broadcast avatar update to other clients in the same zone
     this.zoneHandler.broadcastToZone(
-      client.getZoneId(), 
-      { type: 'avatar-update', payload: { clientId, avatar: payload.avatar } }, 
+      client.getZoneId(),
+      { type: 'avatar-update', payload: { clientId, avatar: payload.avatar } },
       clientId
     );
   }
 
   /**
    * Handle incoming WebSocket messages
-   * @param {string} clientId 
-   * @param {any} message 
+   * @param {string} clientId
+   * @param {any} message
    */
   onMessage(clientId, message) {
     // Security: Rate limiting
@@ -120,44 +122,48 @@ export default class API {
     if (!rateLimitResult.allowed) {
       const client = this.clientManager.getClient(clientId);
       if (client?.ws?.readyState === 1) {
-        client.ws.send(JSON.stringify({
-          type: 'error',
-          payload: {
-            code: 'RATE_LIMIT',
-            message: 'Too many requests',
-            retryAfter: rateLimitResult.retryAfter
-          }
-        }));
+        client.ws.send(
+          JSON.stringify({
+            type: 'error',
+            payload: {
+              code: 'RATE_LIMIT',
+              message: 'Too many requests',
+              retryAfter: rateLimitResult.retryAfter,
+            },
+          })
+        );
       }
       return;
     }
 
     try {
       const data = JSON.parse(message);
-      
+
       // Security: Validate message structure
       if (!data.type || typeof data.type !== 'string') {
         throw new Error('Invalid message: missing or invalid type');
       }
-      
+
       // Security: Validate and sanitize payload
       if (data.payload) {
         const validation = this.messageValidator.validate(data.type, data.payload);
         if (!validation.valid) {
           const client = this.clientManager.getClient(clientId);
           if (client?.ws?.readyState === 1) {
-            client.ws.send(JSON.stringify({
-              type: 'error',
-              payload: {
-                code: 'VALIDATION_ERROR',
-                message: 'Invalid message payload',
-                errors: validation.errors
-              }
-            }));
+            client.ws.send(
+              JSON.stringify({
+                type: 'error',
+                payload: {
+                  code: 'VALIDATION_ERROR',
+                  message: 'Invalid message payload',
+                  errors: validation.errors,
+                },
+              })
+            );
           }
           return;
         }
-        
+
         // Sanitize payload
         data.payload = this.messageValidator.sanitize(data.payload);
       }
@@ -191,13 +197,15 @@ export default class API {
       console.error(`[API] Failed to process message from ${clientId}:`, error.message);
       const client = this.clientManager.getClient(clientId);
       if (client?.ws?.readyState === 1) {
-        client.ws.send(JSON.stringify({
-          type: 'error',
-          payload: {
-            code: 'PARSE_ERROR',
-            message: 'Failed to parse message'
-          }
-        }));
+        client.ws.send(
+          JSON.stringify({
+            type: 'error',
+            payload: {
+              code: 'PARSE_ERROR',
+              message: 'Failed to parse message',
+            },
+          })
+        );
       }
     }
   }
@@ -210,14 +218,14 @@ export default class API {
       const { clientId, action } = this.actionQueue.shift();
       const client = this.clientManager.getClient(clientId);
       if (client && client.getZoneId()) {
-        this.zoneHandler.broadcastToZone(
-          client.getZoneId(), 
-          { type: 'action', payload: { clientId, ...action } }
-        );
+        this.zoneHandler.broadcastToZone(client.getZoneId(), {
+          type: 'action',
+          payload: { clientId, ...action },
+        });
       }
     }
   }
-  
+
   /**
    * Graceful shutdown
    */
@@ -227,7 +235,7 @@ export default class API {
     this.authenticator.destroy();
     this.wss.close();
   }
-  
+
   /**
    * Generate a new authentication token for a user
    * @param {string} userId - User identifier
@@ -238,4 +246,3 @@ export default class API {
     return this.authenticator.generateToken(userId, claims);
   }
 }
-

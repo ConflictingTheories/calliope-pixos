@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import './InputNumber.css';
 
-export function InputNumber({ 
+export function InputNumber({
   value: controlledValue,
   defaultValue = 0,
   min,
@@ -16,32 +16,32 @@ export function InputNumber({
   className = '',
   onChange,
   style,
-  ...props 
+  ...props
 }) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const value = controlledValue !== undefined ? controlledValue : internalValue;
 
-  const clamp = (val) => {
+  const clamp = val => {
     let clamped = val;
     if (min !== undefined) clamped = Math.max(min, clamped);
     if (max !== undefined) clamped = Math.min(max, clamped);
     return clamped;
   };
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const newValue = parseFloat(e.target.value) || 0;
     const clamped = clamp(newValue);
     setInternalValue(clamped);
     onChange?.(clamped, e);
   };
 
-  const handleStep = (direction) => {
-    const newValue = clamp(value + (step * direction));
+  const handleStep = direction => {
+    const newValue = clamp(value + step * direction);
     setInternalValue(newValue);
     onChange?.(newValue);
   };
 
-  const handleWheel = (e) => {
+  const handleWheel = e => {
     if (!scrollable || disabled) return;
     e.preventDefault();
     const direction = e.deltaY < 0 ? 1 : -1;
@@ -52,12 +52,14 @@ export function InputNumber({
     'px-input-number',
     `px-input-number-${size}`,
     disabled && 'px-input-number-disabled',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={classes} style={style}>
-      <button 
+      <button
         type="button"
         className="px-input-number-btn px-input-number-minus"
         onClick={() => handleStep(-1)}
@@ -77,7 +79,7 @@ export function InputNumber({
         onWheel={handleWheel}
         {...props}
       />
-      <button 
+      <button
         type="button"
         className="px-input-number-btn px-input-number-plus"
         onClick={() => handleStep(1)}

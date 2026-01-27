@@ -3,7 +3,7 @@
   "$id": "https://pixospritz.dev/schemas/shader-types.json",
   "title": "Shader Type Constants",
   "description": "Shared shader type identifiers and configurations",
-  
+
   "categories": {
     "core": "Essential rendering shaders",
     "effect": "Post-processing effects",
@@ -12,7 +12,7 @@
     "particle": "Particle system shaders",
     "utility": "Utility/debug shaders"
   },
-  
+
   "shaders": {
     "core": {
       "SPRITE": {
@@ -36,7 +36,7 @@
         "features": ["texture", "alpha", "billboard"]
       }
     },
-    
+
     "effect": {
       "BLUR": {
         "description": "Gaussian blur",
@@ -79,7 +79,7 @@
         "uniforms": ["uIntensity", "uTime"]
       }
     },
-    
+
     "transition": {
       "FADE": {
         "description": "Simple fade to color",
@@ -114,7 +114,7 @@
         "uniforms": ["uProgress", "uCenter", "uStrength"]
       }
     },
-    
+
     "skybox": {
       "SKY_GRADIENT": {
         "description": "Simple gradient sky",
@@ -145,7 +145,7 @@
         "uniforms": ["uTime"]
       }
     },
-    
+
     "particle": {
       "PARTICLE_POINT": {
         "description": "Point sprite particles",
@@ -164,7 +164,7 @@
         "uniforms": ["uTexture", "uWidth"]
       }
     },
-    
+
     "utility": {
       "PICKER": {
         "description": "Object picking via color ID",
@@ -184,7 +184,7 @@
       }
     }
   },
-  
+
   "uniformTypes": {
     "float": "Single float value",
     "vec2": "2-component vector",
@@ -197,7 +197,7 @@
     "int": "Integer value",
     "bool": "Boolean value"
   },
-  
+
   "blendModes": {
     "NORMAL": { "src": "SRC_ALPHA", "dst": "ONE_MINUS_SRC_ALPHA" },
     "ADDITIVE": { "src": "SRC_ALPHA", "dst": "ONE" },

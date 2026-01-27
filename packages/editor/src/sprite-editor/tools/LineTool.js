@@ -37,11 +37,18 @@ export default class LineTool extends BaseTool {
     }
 
     const { color, width, height } = options;
-    const linePixels = this.getLinePixels(this.startPoint.x, this.startPoint.y, x, y, width, height);
-    
+    const linePixels = this.getLinePixels(
+      this.startPoint.x,
+      this.startPoint.y,
+      x,
+      y,
+      width,
+      height
+    );
+
     this.startPoint = null;
     super.onEnd(x, y, imageData, options);
-    
+
     return linePixels.map(p => ({ x: p.x, y: p.y, ...color }));
   }
 
@@ -53,7 +60,14 @@ export default class LineTool extends BaseTool {
     }
 
     const { color, width, height } = options;
-    const linePixels = this.getLinePixels(this.startPoint.x, this.startPoint.y, x, y, width, height);
+    const linePixels = this.getLinePixels(
+      this.startPoint.x,
+      this.startPoint.y,
+      x,
+      y,
+      width,
+      height
+    );
     return linePixels.map(p => ({ x: p.x, y: p.y, ...color, preview: true }));
   }
 }

@@ -35,13 +35,13 @@ export default class EyedropperTool extends BaseTool {
 
   _pick(x, y, imageData, options) {
     const { width, height } = options;
-    
+
     if (x < 0 || x >= width || y < 0 || y >= height) {
       return [];
     }
 
     const color = this.getPixelColor(imageData, x, y);
-    
+
     if (this.onColorPicked) {
       this.onColorPicked(color);
     }

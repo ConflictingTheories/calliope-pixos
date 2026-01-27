@@ -38,29 +38,29 @@ export const [EditorName] = ({ project, onSave }) => {
   const { canUndo, canRedo, undo, redo, recordAction } = useHistory();
   const { selection, select, deselect, selectAll } = useSelection();
   const { assets, loadAsset } = useAssetLibrary();
-  
+
   // 2. WebGL/Canvas reference
   const canvasRef = useRef(null);
   const rendererRef = useRef(null);
-  
+
   // 3. Lifecycle & initialization
   React.useEffect(() => {
     const renderer = initializeRenderer(canvasRef.current);
     rendererRef.current = renderer;
     return () => renderer.dispose();
   }, []);
-  
+
   // 4. Event handlers (use useCallback to prevent re-renders)
-  const handleToolChange = useCallback((tool) => {
+  const handleToolChange = useCallback(tool => {
     setCurrentTool(tool);
   }, []);
-  
+
   const handleSave = useCallback(() => {
     const data = serializeToJSON();
     recordAction({ type: 'save', data });
     onSave(data);
   }, [recordAction, onSave]);
-  
+
   // 5. Render method
   return (
     <div className={styles.container}>
@@ -95,20 +95,20 @@ export class [SystemName] {
     this.initialized = false;
     this.listeners = new Map();
   }
-  
+
   // Lifecycle
   async initialize() {
     if (this.initialized) return;
     // Setup code
     this.initialized = true;
   }
-  
+
   async dispose() {
     if (!this.initialized) return;
     // Cleanup code
     this.initialized = false;
   }
-  
+
   // Event system
   on(eventType, callback) {
     if (!this.listeners.has(eventType)) {
@@ -117,13 +117,13 @@ export class [SystemName] {
     this.listeners.get(eventType).push(callback);
     return () => this.off(eventType, callback);
   }
-  
+
   off(eventType, callback) {
     const listeners = this.listeners.get(eventType) || [];
     const index = listeners.indexOf(callback);
     if (index > -1) listeners.splice(index, 1);
   }
-  
+
   emit(eventType, data) {
     const listeners = this.listeners.get(eventType) || [];
     listeners.forEach(cb => {
@@ -134,13 +134,13 @@ export class [SystemName] {
       }
     });
   }
-  
+
   // Main update loop
   update(deltaTime) {
     if (!this.initialized || !this.config.enabled) return;
     // Update logic
   }
-  
+
   // Public API
   // ... system-specific methods
 }
@@ -155,26 +155,29 @@ import { useState, useCallback } from 'react';
 export const useHistory = (initialState = null) => {
   const [history, setHistory] = useState([initialState]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const recordAction = useCallback((action) => {
-    const newHistory = history.slice(0, currentIndex + 1);
-    newHistory.push(action);
-    setHistory(newHistory);
-    setCurrentIndex(newHistory.length - 1);
-  }, [history, currentIndex]);
-  
+
+  const recordAction = useCallback(
+    action => {
+      const newHistory = history.slice(0, currentIndex + 1);
+      newHistory.push(action);
+      setHistory(newHistory);
+      setCurrentIndex(newHistory.length - 1);
+    },
+    [history, currentIndex]
+  );
+
   const undo = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   }, [currentIndex]);
-  
+
   const redo = useCallback(() => {
     if (currentIndex < history.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   }, [currentIndex, history.length]);
-  
+
   return {
     current: history[currentIndex],
     history,
@@ -183,35 +186,35 @@ export const useHistory = (initialState = null) => {
     canRedo: currentIndex < history.length - 1,
     recordAction,
     undo,
-    redo
+    redo,
   };
 };
 
 // packages/editor/src/hooks/useSelection.js
 export const useSelection = () => {
   const [selected, setSelected] = useState(new Set());
-  
-  const select = useCallback((item) => {
+
+  const select = useCallback(item => {
     setSelected(prev => new Set([...prev, item]));
   }, []);
-  
-  const deselect = useCallback((item) => {
+
+  const deselect = useCallback(item => {
     setSelected(prev => {
       const next = new Set(prev);
       next.delete(item);
       return next;
     });
   }, []);
-  
-  const selectAll = useCallback((items) => {
+
+  const selectAll = useCallback(items => {
     setSelected(new Set(items));
   }, []);
-  
+
   const clearSelection = useCallback(() => {
     setSelected(new Set());
   }, []);
-  
-  const toggleSelection = useCallback((item) => {
+
+  const toggleSelection = useCallback(item => {
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(item)) {
@@ -222,7 +225,7 @@ export const useSelection = () => {
       return next;
     });
   }, []);
-  
+
   return {
     selected,
     select,
@@ -230,8 +233,8 @@ export const useSelection = () => {
     selectAll,
     clearSelection,
     toggleSelection,
-    isSelected: (item) => selected.has(item),
-    count: selected.size
+    isSelected: item => selected.has(item),
+    count: selected.size,
   };
 };
 ```
@@ -275,24 +278,28 @@ export const useSelection = () => {
 ### Integration Points When Adding Features
 
 **When adding to core:**
+
 - Update `packages/core-js/src/index.js` to export new classes
 - Add tests in `packages/core-js/__tests__/`
 - Document API in `packages/core-js/documentation/`
 - Update `PENDING.md` with completion
 
 **When adding to script:**
+
 - Update `packages/script/src/stdlib/` with new functions
 - Add type definitions in `packages/script/src/types/`
 - Add tests in `packages/script/__tests__/`
 - Update scripting API docs
 
 **When adding to editor:**
+
 - Create component in `packages/editor/src/[feature]/`
 - Add to editor menu/toolbar
 - Add shortcuts if applicable
 - Update editor README
 
 **When adding to server:**
+
 - Create system in `packages/server/src/systems/`
 - Add WebSocket message handler
 - Add tests for protocol
@@ -311,26 +318,26 @@ import { MyClass } from '../src/MyClass';
 
 describe('MyClass', () => {
   let instance;
-  
+
   beforeEach(() => {
     instance = new MyClass();
   });
-  
+
   afterEach(() => {
     instance?.dispose();
   });
-  
+
   describe('initialization', () => {
     it('should initialize with default config', () => {
       expect(instance.config.enabled).toBe(true);
     });
-    
+
     it('should accept custom config', () => {
       const custom = new MyClass({ enabled: false });
       expect(custom.config.enabled).toBe(false);
     });
   });
-  
+
   describe('update', () => {
     it('should update when enabled', () => {
       const spy = vi.fn();
@@ -338,7 +345,7 @@ describe('MyClass', () => {
       instance.update(0.016);
       expect(spy).toHaveBeenCalled();
     });
-    
+
     it('should not update when disabled', () => {
       instance.config.enabled = false;
       const spy = vi.fn();
@@ -347,7 +354,7 @@ describe('MyClass', () => {
       expect(spy).not.toHaveBeenCalled();
     });
   });
-  
+
   describe('event system', () => {
     it('should emit events', () => {
       const handler = vi.fn();
@@ -355,7 +362,7 @@ describe('MyClass', () => {
       instance.emit('test', { data: 'value' });
       expect(handler).toHaveBeenCalledWith({ data: 'value' });
     });
-    
+
     it('should allow unsubscribing', () => {
       const handler = vi.fn();
       const unsubscribe = instance.on('test', handler);
@@ -377,30 +384,30 @@ test.describe('Creating a game', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
   });
-  
+
   test('should create a new project', async ({ page }) => {
     // Click "New Project"
     await page.click('button:has-text("New Project")');
-    
+
     // Fill in project name
     await page.fill('input[placeholder="Project name"]', 'Test Game');
-    
+
     // Verify project created
     await expect(page.locator('text=Test Game')).toBeVisible();
   });
-  
+
   test('should add a sprite to project', async ({ page }) => {
     // Create project first
     await page.click('button:has-text("New Project")');
     await page.fill('input[placeholder="Project name"]', 'Test Game');
-    
+
     // Go to sprite editor
     await page.click('button:has-text("Sprites")');
-    
+
     // Create new sprite
     await page.click('button:has-text("New Sprite")');
     await page.fill('input[placeholder="Sprite name"]', 'Player');
-    
+
     // Verify sprite created
     await expect(page.locator('text=Player')).toBeVisible();
   });
@@ -423,8 +430,12 @@ recordAction({
   spriteId: 'sprite-1',
   from: { x: 0, y: 0 },
   to: { x: 10, y: 10 },
-  undo: () => { /* restore sprite position */ },
-  redo: () => { /* apply move */ }
+  undo: () => {
+    /* restore sprite position */
+  },
+  redo: () => {
+    /* apply move */
+  },
 });
 
 // Later: Perform undo/redo
@@ -436,7 +447,7 @@ redo(); // Goes forward one action
 
 ```javascript
 // Any system can emit/listen to events:
-system.on('sprite:created', (sprite) => {
+system.on('sprite:created', sprite => {
   console.log('Sprite created:', sprite);
 });
 
@@ -472,8 +483,13 @@ showModal({
   content: <ExportForm />,
   actions: [
     { label: 'Cancel', onClick: closeModal },
-    { label: 'Export', onClick: () => { /* export */ closeModal(); } }
-  ]
+    {
+      label: 'Export',
+      onClick: () => {
+        /* export */ closeModal();
+      },
+    },
+  ],
 });
 ```
 
@@ -484,6 +500,7 @@ showModal({
 ### Organizational Principles
 
 1. **Feature-based structure** (preferred for editor)
+
    ```
    packages/editor/src/
    ├── features/
@@ -530,6 +547,7 @@ showModal({
 ### Common File Patterns
 
 **Index files** - Re-export public API:
+
 ```javascript
 // packages/core-js/src/engine/index.js
 export { RenderManager } from './systems/RenderManager';
@@ -539,21 +557,23 @@ export { Entity } from './entities/Entity';
 ```
 
 **Config files** - Centralize constants:
+
 ```javascript
 // packages/editor/src/config/constants.js
 export const GRID_SIZE = 16;
 export const TOOL_TYPES = {
   BRUSH: 'brush',
   ERASER: 'eraser',
-  FILL: 'fill'
+  FILL: 'fill',
 };
 export const COLORS = {
   PRIMARY: '#ff6b9d',
-  SECONDARY: '#4ecdc4'
+  SECONDARY: '#4ecdc4',
 };
 ```
 
 **Utils files** - Helper functions:
+
 ```javascript
 // packages/core-js/src/engine/utils/mathUtils.js
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -568,6 +588,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 ### Before Starting Each Phase
 
 **Checkpoint: Phase 0 Completion**
+
 - [ ] All React deprecation warnings fixed
 - [ ] No console.log statements in production code
 - [ ] OBJ loader integrated and tested
@@ -578,6 +599,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 - [ ] Reconnection handling works
 
 **Checkpoint: Phase 1 Kickoff**
+
 - [ ] Design system CSS complete and tested
 - [ ] Shared component library working
 - [ ] All hooks properly exported and documented
@@ -587,6 +609,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 ### During Phase Implementation
 
 **Checkpoint: Feature Complete**
+
 - [ ] Code written and peer reviewed
 - [ ] 90%+ test coverage for feature
 - [ ] Acceptance criteria verified
@@ -595,6 +618,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 - [ ] No console errors/warnings
 
 **Checkpoint: Integration**
+
 - [ ] All dependencies resolved
 - [ ] Integrated with existing systems
 - [ ] Works with other concurrent features
@@ -604,6 +628,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 ### Before Phase Completion
 
 **Checkpoint: Phase Integration**
+
 - [ ] All tasks in phase complete
 - [ ] Cross-feature integration tested
 - [ ] Documentation complete
@@ -617,6 +642,7 @@ export const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y)
 ### Example Task: Task 1.1.1 - Unified Design System
 
 **Step 1: Setup**
+
 ```bash
 # Create the file
 touch packages/editor/src/design-system/design-system.css
@@ -624,6 +650,7 @@ touch packages/editor/src/design-system/index.js
 ```
 
 **Step 2: Define tokens**
+
 ```css
 /* packages/editor/src/design-system/design-system.css */
 :root {
@@ -633,32 +660,32 @@ touch packages/editor/src/design-system/index.js
   --color-accent: #ffd93d;
   --color-bg-dark: #1a1a2e;
   --color-bg-light: #f5f5f5;
-  
+
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-size-sm: 0.75rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.5rem;
-  
+
   /* Spacing */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
-  
+
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.2);
-  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+
   /* Border radius */
   --radius-sharp: 0;
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-pill: 9999px;
-  
+
   /* Transitions */
   --transition-fast: 150ms;
   --transition-normal: 300ms;
@@ -667,30 +694,32 @@ touch packages/editor/src/design-system/index.js
 ```
 
 **Step 3: Create component library starter**
+
 ```javascript
 // packages/editor/src/design-system/index.js
 export const designTokens = {
   colors: {
     primary: 'var(--color-primary)',
     secondary: 'var(--color-secondary)',
-    accent: 'var(--color-accent)'
+    accent: 'var(--color-accent)',
   },
   spacing: {
     xs: 'var(--space-xs)',
     sm: 'var(--space-sm)',
     md: 'var(--space-md)',
     lg: 'var(--space-lg)',
-    xl: 'var(--space-xl)'
+    xl: 'var(--space-xl)',
   },
   transitions: {
     fast: 'var(--transition-fast)',
     normal: 'var(--transition-normal)',
-    slow: 'var(--transition-slow)'
-  }
+    slow: 'var(--transition-slow)',
+  },
 };
 ```
 
 **Step 4: Create shared component**
+
 ```javascript
 // packages/editor/src/components/shared/EditorToolbar.jsx
 import React from 'react';
@@ -716,6 +745,7 @@ export const EditorToolbar = ({ tools, onToolChange, currentTool }) => {
 ```
 
 **Step 5: Create tests**
+
 ```javascript
 // packages/editor/__tests__/design-system.test.js
 import { describe, it, expect } from 'vitest';
@@ -727,7 +757,7 @@ describe('Design System', () => {
     expect(designTokens.colors.secondary).toBeDefined();
     expect(designTokens.colors.accent).toBeDefined();
   });
-  
+
   it('should have all required spacing tokens', () => {
     expect(designTokens.spacing.xs).toBeDefined();
     expect(designTokens.spacing.sm).toBeDefined();
@@ -737,37 +767,43 @@ describe('Design System', () => {
 ```
 
 **Step 6: Document**
-```markdown
+
+````markdown
 # Design System
 
 ## Color Tokens
+
 - `--color-primary`: #ff6b9d (main brand color)
 - `--color-secondary`: #4ecdc4 (secondary actions)
 - `--color-accent`: #ffd93d (highlights)
 
 ## Usage in Components
+
 ```jsx
 import { designTokens } from 'design-system';
 
-<div style={{ color: designTokens.colors.primary }}>
-  Primary text
-</div>
+<div style={{ color: designTokens.colors.primary }}>Primary text</div>;
 ```
+````
 
 ## Migration Checklist
+
 - [ ] EditorToolbar using tokens
 - [ ] EditorPanel using tokens
 - [ ] All editors using tokens
+
 ```
 
 **Step 7: Update PENDING.md**
 ```
+
 - [x] Task 1.1.1: Unified Design System (COMPLETED)
   - CSS tokens defined
   - Component library starter created
   - Tests written
   - Documentation complete
-```
+
+````
 
 **Step 8: Commit**
 ```bash
@@ -782,7 +818,7 @@ git commit -m "feat: implement unified design system with CSS tokens
 - Update documentation with usage guide
 
 Closes #TASK-1.1.1"
-```
+````
 
 ---
 
@@ -797,7 +833,7 @@ git checkout -b feat/task-number-name
 # 2. Watch tests while developing
 npm run test:watch --workspace=[package-name]
 
-# 3. Watch build while developing  
+# 3. Watch build while developing
 npm run dev --workspace=[package-name]
 
 # 4. Test in isolation

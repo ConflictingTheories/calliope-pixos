@@ -46,11 +46,11 @@ main {
 
 ### Directives
 
-| Directive | Description |
-|-----------|-------------|
-| `@shader "name"` | Names the shader |
-| `@vertex` | Starts vertex shader section |
-| `@fragment` | Starts fragment shader section |
+| Directive        | Description                      |
+| ---------------- | -------------------------------- |
+| `@shader "name"` | Names the shader                 |
+| `@vertex`        | Starts vertex shader section     |
+| `@fragment`      | Starts fragment shader section   |
 | `@effect "name"` | Defines a reusable effect preset |
 
 ### Variable Declarations
@@ -79,17 +79,17 @@ let temp: vec3
 
 ### Type Aliases
 
-| Alias | GLSL Type | Description |
-|-------|-----------|-------------|
-| `color` | `vec4` | RGBA color |
-| `color3` | `vec3` | RGB color |
-| `point` | `vec3` | 3D position |
-| `point2` | `vec2` | 2D position |
-| `direction` | `vec3` | Direction vector |
-| `normal` | `vec3` | Surface normal |
-| `matrix` | `mat4` | 4x4 matrix |
-| `texture` | `sampler2D` | 2D texture |
-| `cubemap` | `samplerCube` | Cube map |
+| Alias       | GLSL Type     | Description      |
+| ----------- | ------------- | ---------------- |
+| `color`     | `vec4`        | RGBA color       |
+| `color3`    | `vec3`        | RGB color        |
+| `point`     | `vec3`        | 3D position      |
+| `point2`    | `vec2`        | 2D position      |
+| `direction` | `vec3`        | Direction vector |
+| `normal`    | `vec3`        | Surface normal   |
+| `matrix`    | `mat4`        | 4x4 matrix       |
+| `texture`   | `sampler2D`   | 2D texture       |
+| `cubemap`   | `samplerCube` | Cube map         |
 
 ## Built-in Functions
 
@@ -192,8 +192,8 @@ shaderManager.use('glow');
 
 // Or transpile manually
 const glsl = PXSLTranspiler.transpile(pxslSource);
-console.log(glsl.vs);  // Vertex shader GLSL
-console.log(glsl.fs);  // Fragment shader GLSL
+console.log(glsl.vs); // Vertex shader GLSL
+console.log(glsl.fs); // Fragment shader GLSL
 ```
 
 ## Built-in Shader Library

@@ -21,11 +21,11 @@ export class Authenticator {
    */
   constructor(options = {}) {
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     this.required = options.required ?? isProduction;
     this.jwtManager = new JwtManager(options.secret, options.tokenExpiry || 3600);
     this.tokenStore = new TokenStore();
-    
+
     if (!this.required) {
       console.log('[Authenticator] Running in development mode - authentication optional');
     }
@@ -42,10 +42,10 @@ export class Authenticator {
     // If no token and auth not required, allow with guest status
     if (!token) {
       if (!this.required) {
-        return { 
-          authenticated: true, 
+        return {
+          authenticated: true,
           isGuest: true,
-          userId: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          userId: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         };
       }
       return { authenticated: false, error: 'No token provided' };
@@ -58,7 +58,7 @@ export class Authenticator {
 
     // Verify token
     const result = this.jwtManager.verify(token);
-    
+
     if (!result.valid) {
       return { authenticated: false, error: result.error };
     }
@@ -68,7 +68,7 @@ export class Authenticator {
       isGuest: false,
       userId: result.payload.userId,
       sessionId: result.payload.sessionId,
-      payload: result.payload
+      payload: result.payload,
     };
   }
 
@@ -82,13 +82,13 @@ export class Authenticator {
     return this.jwtManager.generate({
       userId,
       sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      ...additionalClaims
+      ...additionalClaims,
     });
   }
 
   /**
    * Revoke a token (for logout)
-   * @param {string} token 
+   * @param {string} token
    */
   revokeToken(token) {
     this.tokenStore.revoke(token);
@@ -114,7 +114,7 @@ export class GuestAuthenticator {
   static generateGuest() {
     return {
       userId: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      isGuest: true
+      isGuest: true,
     };
   }
 }

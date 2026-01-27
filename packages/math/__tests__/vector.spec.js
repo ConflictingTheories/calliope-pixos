@@ -1,16 +1,16 @@
 import { test, describe, expect } from 'vitest';
-import { 
-  Coord, 
-  Vector, 
-  Vector4, 
-  V3, 
+import {
+  Coord,
+  Vector,
+  Vector4,
+  V3,
   vec3,
-  degToRad, 
+  degToRad,
   radToDeg,
   negate,
   lerp,
   lineRectCollide,
-  rectRectCollide
+  rectRectCollide,
 } from '../src/vector.js';
 
 describe('Coord', () => {

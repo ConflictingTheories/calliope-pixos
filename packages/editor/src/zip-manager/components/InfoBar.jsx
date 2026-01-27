@@ -55,17 +55,17 @@ function ThemeColorPicker({ accentColor, onSetAccentColor, messages }) {
         aria-label={messages?.ACCENT_COLOR_LABEL || 'Choose accent color'}
         title="Change theme color"
       >
-        <span 
-          className="theme-picker__swatch" 
+        <span
+          className="theme-picker__swatch"
           style={{ backgroundColor: accentColor || '#ff6b9d' }}
         />
         <span className="theme-picker__label">Theme</span>
       </button>
-      <input 
-        type="color" 
+      <input
+        type="color"
         value={accentColor || '#ff6b9d'}
-        onChange={handleChange} 
-        ref={colorInputRef} 
+        onChange={handleChange}
+        ref={colorInputRef}
         tabIndex={-1}
         className="theme-picker__input"
       />

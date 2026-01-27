@@ -37,5 +37,5 @@ export default {
     if (newFrame != this.sprite.animFrame) this.sprite.setFrame(newFrame);
 
     return time >= endTime;
-  }
+  },
 };

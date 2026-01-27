@@ -5,10 +5,10 @@
  * Copyright (c) 2022-2025 Kyle Derby MacInnis
  *
  * A notification toast system for the editor.
- * 
+ *
  * Usage:
  *   import { useToast, ToastContainer } from './Toast';
- *   
+ *
  *   function App() {
  *     const toast = useToast();
  *     return (
@@ -47,50 +47,68 @@ const ToastContext = createContext(null);
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const removeToast = useCallback((id) => {
+  const removeToast = useCallback(id => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const addToast = useCallback((toast) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newToast = {
-      id,
-      duration: 4000,
-      ...toast
-    };
+  const addToast = useCallback(
+    toast => {
+      const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const newToast = {
+        id,
+        duration: 4000,
+        ...toast,
+      };
 
-    setToasts(prev => [...prev, newToast]);
+      setToasts(prev => [...prev, newToast]);
 
-    // Auto-remove after duration (if not persistent)
-    if (newToast.duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-        newToast.onClose?.();
-      }, newToast.duration);
-    }
+      // Auto-remove after duration (if not persistent)
+      if (newToast.duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+          newToast.onClose?.();
+        }, newToast.duration);
+      }
 
-    return id;
-  }, [removeToast]);
+      return id;
+    },
+    [removeToast]
+  );
 
-  const toast = useCallback((message, options = {}) => {
-    return addToast({ message, type: 'info', ...options });
-  }, [addToast]);
+  const toast = useCallback(
+    (message, options = {}) => {
+      return addToast({ message, type: 'info', ...options });
+    },
+    [addToast]
+  );
 
-  toast.info = useCallback((message, options = {}) => {
-    return addToast({ message, type: 'info', ...options });
-  }, [addToast]);
+  toast.info = useCallback(
+    (message, options = {}) => {
+      return addToast({ message, type: 'info', ...options });
+    },
+    [addToast]
+  );
 
-  toast.success = useCallback((message, options = {}) => {
-    return addToast({ message, type: 'success', ...options });
-  }, [addToast]);
+  toast.success = useCallback(
+    (message, options = {}) => {
+      return addToast({ message, type: 'success', ...options });
+    },
+    [addToast]
+  );
 
-  toast.warning = useCallback((message, options = {}) => {
-    return addToast({ message, type: 'warning', ...options });
-  }, [addToast]);
+  toast.warning = useCallback(
+    (message, options = {}) => {
+      return addToast({ message, type: 'warning', ...options });
+    },
+    [addToast]
+  );
 
-  toast.error = useCallback((message, options = {}) => {
-    return addToast({ message, type: 'error', ...options });
-  }, [addToast]);
+  toast.error = useCallback(
+    (message, options = {}) => {
+      return addToast({ message, type: 'error', ...options });
+    },
+    [addToast]
+  );
 
   toast.remove = removeToast;
 
@@ -124,7 +142,7 @@ function createStandaloneToast() {
   toast.success = (message, options) => toast(message, { ...options, type: 'success' });
   toast.warning = (message, options) => toast(message, { ...options, type: 'warning' });
   toast.error = (message, options) => toast(message, { ...options, type: 'error' });
-  toast.remove = () => { };
+  toast.remove = () => {};
   return toast;
 }
 
@@ -159,10 +177,7 @@ function ToastItem({ toast, onClose }) {
   }, [toast, onClose]);
 
   return (
-    <div
-      className={`toast toast--${toast.type} ${isExiting ? 'toast--exiting' : ''}`}
-      role="alert"
-    >
+    <div className={`toast toast--${toast.type} ${isExiting ? 'toast--exiting' : ''}`} role="alert">
       <div className="toast__icon">
         <ToastIcon type={toast.type} />
       </div>

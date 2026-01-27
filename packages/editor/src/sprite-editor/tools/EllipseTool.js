@@ -40,7 +40,7 @@ export default class EllipseTool extends BaseTool {
     const pixels = this._getEllipsePixels(this.startPoint.x, this.startPoint.y, x, y, options);
     this.startPoint = null;
     super.onEnd(x, y, imageData, options);
-    
+
     return pixels;
   }
 
@@ -62,16 +62,16 @@ export default class EllipseTool extends BaseTool {
       // Filled ellipse - scan each row
       for (let y = Math.floor(centerY - radiusY); y <= Math.ceil(centerY + radiusY); y++) {
         if (y < 0 || y >= height) continue;
-        
+
         // Calculate x range for this y
         const dy = y - centerY;
         const term = 1 - (dy * dy) / (radiusY * radiusY);
         if (term < 0) continue;
-        
+
         const xRange = radiusX * Math.sqrt(term);
         const startX = Math.max(0, Math.floor(centerX - xRange));
         const endX = Math.min(width - 1, Math.ceil(centerX + xRange));
-        
+
         for (let x = startX; x <= endX; x++) {
           pixels.push({ x, y, ...color });
         }
@@ -152,8 +152,10 @@ export default class EllipseTool extends BaseTool {
       return [{ x, y, ...color, preview: true }];
     }
 
-    return this._getEllipsePixels(this.startPoint.x, this.startPoint.y, x, y, options)
-      .map(p => ({ ...p, preview: true }));
+    return this._getEllipsePixels(this.startPoint.x, this.startPoint.y, x, y, options).map(p => ({
+      ...p,
+      preview: true,
+    }));
   }
 
   toggleFilled() {

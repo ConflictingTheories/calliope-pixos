@@ -21,22 +21,18 @@ const CATEGORY_INFO = {
   sprites: { label: 'Sprites', icon: '🎭' },
   conditions: { label: 'Conditions', icon: '❓' },
   timing: { label: 'Timing', icon: '⏱️' },
-  dialogue: { label: 'Dialogue & Choice', icon: '💬' }
+  dialogue: { label: 'Dialogue & Choice', icon: '💬' },
 };
 
 /**
  * DSLCommandPalette - Command palette for DSL insertion
- * 
+ *
  * @param {Object} props
  * @param {boolean} props.open - Whether palette is open
  * @param {function} props.onClose - Close callback
  * @param {function} props.onInsert - Callback to insert command (receives string)
  */
-function DSLCommandPalette({
-  open,
-  onClose,
-  onInsert
-}) {
+function DSLCommandPalette({ open, onClose, onInsert }) {
   const [search, setSearch] = useState('');
   const [selectedCommand, setSelectedCommand] = useState(null);
   const [params, setParams] = useState({});
@@ -47,26 +43,27 @@ function DSLCommandPalette({
   // Filter commands by search
   const filteredCommands = useMemo(() => {
     if (!search.trim()) return categorizedCommands;
-    
+
     const searchLower = search.toLowerCase();
     const filtered = {};
-    
+
     for (const [cat, commands] of Object.entries(categorizedCommands)) {
-      const matching = commands.filter(cmd => 
-        cmd.key.toLowerCase().includes(searchLower) ||
-        cmd.description.toLowerCase().includes(searchLower) ||
-        cmd.syntax.toLowerCase().includes(searchLower)
+      const matching = commands.filter(
+        cmd =>
+          cmd.key.toLowerCase().includes(searchLower) ||
+          cmd.description.toLowerCase().includes(searchLower) ||
+          cmd.syntax.toLowerCase().includes(searchLower)
       );
       if (matching.length > 0) {
         filtered[cat] = matching;
       }
     }
-    
+
     return filtered;
   }, [categorizedCommands, search]);
 
   // Handle command selection
-  const handleSelectCommand = useCallback((cmd) => {
+  const handleSelectCommand = useCallback(cmd => {
     setSelectedCommand(cmd);
     // Initialize params with defaults
     const defaults = {};
@@ -100,67 +97,64 @@ function DSLCommandPalette({
   // Render parameter input based on type
   const renderParamInput = (key, param) => {
     switch (param.type) {
-    case 'number':
-      return (
-        <InputNumber
-          size="sm"
-          value={params[key]}
-          onChange={(val) => handleParamChange(key, val)}
-          step={param.step || 1}
-        />
-      );
-    case 'string':
-      return (
-        <Input
-          size="sm"
-          value={params[key] || ''}
-          onChange={(val) => handleParamChange(key, val)}
-          placeholder={param.description}
-        />
-      );
-    case 'color':
-      return (
-        <div className="dsl-param-color">
-          <input
-            type="color"
-            value={params[key] || '#000000'}
-            onChange={(e) => handleParamChange(key, e.target.value)}
+      case 'number':
+        return (
+          <InputNumber
+            size="sm"
+            value={params[key]}
+            onChange={val => handleParamChange(key, val)}
+            step={param.step || 1}
           />
+        );
+      case 'string':
+        return (
           <Input
             size="sm"
             value={params[key] || ''}
-            onChange={(val) => handleParamChange(key, val)}
-            style={{ width: 80 }}
+            onChange={val => handleParamChange(key, val)}
+            placeholder={param.description}
           />
-        </div>
-      );
-    case 'boolean':
-      return (
-        <Toggle
-          checked={params[key] || false}
-          onChange={(val) => handleParamChange(key, val)}
-        />
-      );
-    case 'select':
-      return (
-        <SelectPicker
-          size="sm"
-          data={param.options.map(o => ({ label: o, value: o }))}
-          value={params[key]}
-          onChange={(val) => handleParamChange(key, val)}
-          cleanable={false}
-          searchable={false}
-          style={{ width: 150 }}
-        />
-      );
-    default:
-      return (
-        <Input
-          size="sm"
-          value={params[key] || ''}
-          onChange={(val) => handleParamChange(key, val)}
-        />
-      );
+        );
+      case 'color':
+        return (
+          <div className="dsl-param-color">
+            <input
+              type="color"
+              value={params[key] || '#000000'}
+              onChange={e => handleParamChange(key, e.target.value)}
+            />
+            <Input
+              size="sm"
+              value={params[key] || ''}
+              onChange={val => handleParamChange(key, val)}
+              style={{ width: 80 }}
+            />
+          </div>
+        );
+      case 'boolean':
+        return (
+          <Toggle checked={params[key] || false} onChange={val => handleParamChange(key, val)} />
+        );
+      case 'select':
+        return (
+          <SelectPicker
+            size="sm"
+            data={param.options.map(o => ({ label: o, value: o }))}
+            value={params[key]}
+            onChange={val => handleParamChange(key, val)}
+            cleanable={false}
+            searchable={false}
+            style={{ width: 150 }}
+          />
+        );
+      default:
+        return (
+          <Input
+            size="sm"
+            value={params[key] || ''}
+            onChange={val => handleParamChange(key, val)}
+          />
+        );
     }
   };
 

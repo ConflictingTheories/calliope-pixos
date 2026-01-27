@@ -6,17 +6,17 @@
  *
  * A reusable undo/redo hook for all editors.
  * Provides a consistent history management pattern across the editor suite.
- * 
+ *
  * Usage:
  *   const { current, push, undo, redo, canUndo, canRedo, clear, reset } = useHistory(initialState, options);
- *   
+ *
  *   // Push new state
  *   push(newMapState);
- *   
+ *
  *   // Undo/Redo
  *   if (canUndo) undo();
  *   if (canRedo) redo();
- *   
+ *
  *   // Reset to initial state
  *   reset(newInitialState);
  */
@@ -33,7 +33,7 @@ import { useState, useMemo, useCallback } from 'react';
 
 /**
  * Custom hook for managing undo/redo history
- * 
+ *
  * @template T
  * @param {T} initialState - The initial state value
  * @param {HistoryOptions} [options={}] - Configuration options
@@ -51,12 +51,7 @@ import { useState, useMemo, useCallback } from 'react';
  * }}
  */
 export function useHistory(initialState, options = {}) {
-  const {
-    maxHistory = 100,
-    onChange = null,
-    enableMerging = false,
-    mergeWindow = 500
-  } = options;
+  const { maxHistory = 100, onChange = null, enableMerging = false, mergeWindow = 500 } = options;
 
   const [history, setHistory] = useState([initialState]);
   const [index, setIndex] = useState(0);
@@ -75,48 +70,51 @@ export function useHistory(initialState, options = {}) {
    * Push a new state to history
    * Truncates any future states (redo stack) when pushing new state
    */
-  const push = useCallback((newState) => {
-    const now = Date.now();
-    
-    setHistory(prev => {
-      // If merging is enabled and within the merge window, replace the current state
-      if (enableMerging && (now - lastPushTime) < mergeWindow && prev.length > 1) {
-        const newHistory = [...prev];
-        newHistory[index] = newState;
-        return newHistory;
-      }
-      
-      // Normal push: truncate future and add new state
-      const newHistory = [...prev.slice(0, index + 1), newState];
-      
-      // Keep history under maxHistory limit
-      if (newHistory.length > maxHistory) {
-        return newHistory.slice(newHistory.length - maxHistory);
-      }
-      
-      return newHistory;
-    });
+  const push = useCallback(
+    newState => {
+      const now = Date.now();
 
-    // Update index only if not merging
-    if (!enableMerging || (now - lastPushTime) >= mergeWindow) {
-      setIndex(i => Math.min(i + 1, maxHistory - 1));
-    }
-    
-    setLastPushTime(now);
-    
-    if (onChange) {
-      onChange({ type: 'push', state: newState });
-    }
-  }, [index, maxHistory, onChange, enableMerging, mergeWindow, lastPushTime]);
+      setHistory(prev => {
+        // If merging is enabled and within the merge window, replace the current state
+        if (enableMerging && now - lastPushTime < mergeWindow && prev.length > 1) {
+          const newHistory = [...prev];
+          newHistory[index] = newState;
+          return newHistory;
+        }
+
+        // Normal push: truncate future and add new state
+        const newHistory = [...prev.slice(0, index + 1), newState];
+
+        // Keep history under maxHistory limit
+        if (newHistory.length > maxHistory) {
+          return newHistory.slice(newHistory.length - maxHistory);
+        }
+
+        return newHistory;
+      });
+
+      // Update index only if not merging
+      if (!enableMerging || now - lastPushTime >= mergeWindow) {
+        setIndex(i => Math.min(i + 1, maxHistory - 1));
+      }
+
+      setLastPushTime(now);
+
+      if (onChange) {
+        onChange({ type: 'push', state: newState });
+      }
+    },
+    [index, maxHistory, onChange, enableMerging, mergeWindow, lastPushTime]
+  );
 
   /**
    * Undo to the previous state
    */
   const undo = useCallback(() => {
     if (!canUndo) return;
-    
+
     setIndex(i => i - 1);
-    
+
     if (onChange) {
       onChange({ type: 'undo', state: history[index - 1] });
     }
@@ -127,9 +125,9 @@ export function useHistory(initialState, options = {}) {
    */
   const redo = useCallback(() => {
     if (!canRedo) return;
-    
+
     setIndex(i => i + 1);
-    
+
     if (onChange) {
       onChange({ type: 'redo', state: history[index + 1] });
     }
@@ -141,7 +139,7 @@ export function useHistory(initialState, options = {}) {
   const clear = useCallback(() => {
     setHistory([current]);
     setIndex(0);
-    
+
     if (onChange) {
       onChange({ type: 'clear', state: current });
     }
@@ -151,28 +149,34 @@ export function useHistory(initialState, options = {}) {
    * Reset history with a new initial state
    * @param {T} [newState] - Optional new initial state (defaults to original initialState)
    */
-  const reset = useCallback((newState = initialState) => {
-    setHistory([newState]);
-    setIndex(0);
-    
-    if (onChange) {
-      onChange({ type: 'reset', state: newState });
-    }
-  }, [initialState, onChange]);
+  const reset = useCallback(
+    (newState = initialState) => {
+      setHistory([newState]);
+      setIndex(0);
+
+      if (onChange) {
+        onChange({ type: 'reset', state: newState });
+      }
+    },
+    [initialState, onChange]
+  );
 
   /**
    * Go to a specific index in history
    * @param {number} targetIndex - The index to navigate to
    */
-  const goTo = useCallback((targetIndex) => {
-    if (targetIndex < 0 || targetIndex >= history.length) return;
-    
-    setIndex(targetIndex);
-    
-    if (onChange) {
-      onChange({ type: 'goto', state: history[targetIndex] });
-    }
-  }, [history, onChange]);
+  const goTo = useCallback(
+    targetIndex => {
+      if (targetIndex < 0 || targetIndex >= history.length) return;
+
+      setIndex(targetIndex);
+
+      if (onChange) {
+        onChange({ type: 'goto', state: history[targetIndex] });
+      }
+    },
+    [history, onChange]
+  );
 
   return {
     current,
@@ -185,32 +189,35 @@ export function useHistory(initialState, options = {}) {
     reset,
     goTo,
     historyLength: history.length,
-    currentIndex: index
+    currentIndex: index,
   };
 }
 
 /**
  * Create a keyboard shortcut handler for undo/redo
- * 
+ *
  * @param {{undo: function, redo: function, canUndo: boolean, canRedo: boolean}} historyMethods
  * @returns {function} Event handler for keydown events
  */
 export function createHistoryKeyHandler({ undo, redo, canUndo, canRedo }) {
-  return (event) => {
+  return event => {
     // Ctrl+Z / Cmd+Z = Undo
     if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
       event.preventDefault();
       if (canUndo) undo();
       return true;
     }
-    
+
     // Ctrl+Y / Cmd+Shift+Z = Redo
-    if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.shiftKey && event.key === 'z'))) {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      (event.key === 'y' || (event.shiftKey && event.key === 'z'))
+    ) {
       event.preventDefault();
       if (canRedo) redo();
       return true;
     }
-    
+
     return false;
   };
 }

@@ -49,14 +49,33 @@ export default class LightManager {
    * @param {boolean} [enabled=true] - Whether the light is enabled.
    * @returns {string} The light ID.
    */
-  addLight = (id, pos, color, attenuation = [0.8, 0.8, 0.8], direction = [1, 1, 1], density = 1.0, scatteringCoefficients = [1, 1, 1], enabled = true) => {
+  addLight = (
+    id,
+    pos,
+    color,
+    attenuation = [0.8, 0.8, 0.8],
+    direction = [1, 1, 1],
+    density = 1.0,
+    scatteringCoefficients = [1, 1, 1],
+    enabled = true
+  ) => {
     const { shaderProgram } = this.renderManager;
     let index = this.lights.length;
     if (index >= shaderProgram.maxLights) return;
-    let light = new PointLight(this.renderManager.engine, id, color, pos, attenuation, direction, density, scatteringCoefficients, enabled);
+    let light = new PointLight(
+      this.renderManager.engine,
+      id,
+      color,
+      pos,
+      attenuation,
+      direction,
+      density,
+      scatteringCoefficients,
+      enabled
+    );
     this.lights[id] = light;
     return id;
-  }
+  };
 
   /**
    * Updates an existing light source.
@@ -69,7 +88,16 @@ export default class LightManager {
    * @param {number[]} [scatteringCoefficients] - The new scattering coefficients.
    * @param {boolean} [enabled] - Whether to enable/disable.
    */
-  updateLight = (id, pos, color, attenuation, direction, density, scatteringCoefficients, enabled) => {
+  updateLight = (
+    id,
+    pos,
+    color,
+    attenuation,
+    direction,
+    density,
+    scatteringCoefficients,
+    enabled
+  ) => {
     let light = this.lights[id];
     if (!light) return;
     if (pos) light.pos = pos;
@@ -80,15 +108,15 @@ export default class LightManager {
     if (scatteringCoefficients) light.scatteringCoefficients = scatteringCoefficients;
     if (enabled) light.enabled = enabled;
     this.lights[id] = light;
-  }
+  };
 
   /**
    * Removes a light source from the renderer.
    * @param {string} id - The light ID to remove.
    */
-  removeLight = (id) => {
+  removeLight = id => {
     delete this.lights[id];
-  }
+  };
 
   /**
    * Updates point lighting for all lights.
@@ -98,7 +126,7 @@ export default class LightManager {
     for (let i = 0; i < keys.length; i++) {
       this.lights[keys[i]].tick();
     }
-  }
+  };
 
   /**
    * Renders lights to the scene.
@@ -117,7 +145,7 @@ export default class LightManager {
 
       this.lights[keys[i]].draw(lightUniforms[i]);
     }
-  }
+  };
 
   /**
    * Sets matrix uniforms and renders lights to the frame.
@@ -128,7 +156,7 @@ export default class LightManager {
 
     // render point lights to scene
     this.render();
-  }
+  };
 }
 
 /**
@@ -147,7 +175,17 @@ export class PointLight {
    * @param {number[]} scatteringCoefficients - The scattering coefficients.
    * @param {boolean} enabled - Whether the light is enabled.
    */
-  constructor(engine, id, color, position, attenuation, direction, density, scatteringCoefficients, enabled) {
+  constructor(
+    engine,
+    id,
+    color,
+    position,
+    attenuation,
+    direction,
+    density,
+    scatteringCoefficients,
+    enabled
+  ) {
     /** @type {GLEngine} */
     this.engine = engine;
     /** @type {string} */
@@ -176,13 +214,13 @@ export class PointLight {
   tick = () => {
     // for (var i = 0; i < 3; i++) this.color[i] += Math.sin((0.0005 * this.frame * 180) / Math.PI) * 0.002;
     this.frame++;
-  }
+  };
 
   /**
    * Draws the light to the scene.
    * @param {Object} lightUniforms - The light uniforms object.
    */
-  draw = (lightUniforms) => {
+  draw = lightUniforms => {
     const { gl } = this.engine;
     gl.uniform1f(lightUniforms.enabled, this.enabled);
     gl.uniform3fv(lightUniforms.position, this.pos);
@@ -193,5 +231,5 @@ export class PointLight {
     gl.uniform3fv(lightUniforms.direction, this.direction);
     gl.uniform3fv(lightUniforms.scatteringCoefficients, this.scatteringCoefficients);
     gl.uniform1f(lightUniforms.density, this.density);
-  }
+  };
 }

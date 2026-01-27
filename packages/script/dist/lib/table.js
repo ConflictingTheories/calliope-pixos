@@ -1,5 +1,5 @@
 import { Table } from '../Table.js';
-import { coerceToBoolean, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction } from '../utils.js';
+import { coerceToBoolean, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction, } from '../utils.js';
 import { LuaError } from '../LuaError.js';
 function getn(table) {
     const TABLE = coerceArgToTable(table, 'getn', 1);
@@ -155,6 +155,6 @@ const libTable = new Table({
     pack,
     remove,
     sort,
-    unpack
+    unpack,
 });
 export { libTable };

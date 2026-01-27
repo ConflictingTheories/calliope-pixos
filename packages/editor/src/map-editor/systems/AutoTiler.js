@@ -14,37 +14,37 @@
  * Used to compute tile variants based on surrounding tiles
  */
 const NEIGHBOR_BITS = {
-  N:  0b00000001,  // North (top)
-  NE: 0b00000010,  // North-East
-  E:  0b00000100,  // East (right)
-  SE: 0b00001000,  // South-East
-  S:  0b00010000,  // South (bottom)
-  SW: 0b00100000,  // South-West
-  W:  0b01000000,  // West (left)
-  NW: 0b10000000,  // North-West
+  N: 0b00000001, // North (top)
+  NE: 0b00000010, // North-East
+  E: 0b00000100, // East (right)
+  SE: 0b00001000, // South-East
+  S: 0b00010000, // South (bottom)
+  SW: 0b00100000, // South-West
+  W: 0b01000000, // West (left)
+  NW: 0b10000000, // North-West
 };
 
 /**
  * 4-directional neighbor offsets (for 16-tile sets)
  */
 const NEIGHBORS_4 = [
-  { dx: 0, dy: -1, bit: NEIGHBOR_BITS.N },  // North
-  { dx: 1, dy: 0, bit: NEIGHBOR_BITS.E },   // East
-  { dx: 0, dy: 1, bit: NEIGHBOR_BITS.S },   // South
-  { dx: -1, dy: 0, bit: NEIGHBOR_BITS.W },  // West
+  { dx: 0, dy: -1, bit: NEIGHBOR_BITS.N }, // North
+  { dx: 1, dy: 0, bit: NEIGHBOR_BITS.E }, // East
+  { dx: 0, dy: 1, bit: NEIGHBOR_BITS.S }, // South
+  { dx: -1, dy: 0, bit: NEIGHBOR_BITS.W }, // West
 ];
 
 /**
  * 8-directional neighbor offsets (for 47-tile sets)
  */
 const NEIGHBORS_8 = [
-  { dx: 0, dy: -1, bit: NEIGHBOR_BITS.N },   // North
-  { dx: 1, dy: -1, bit: NEIGHBOR_BITS.NE },  // North-East
-  { dx: 1, dy: 0, bit: NEIGHBOR_BITS.E },    // East
-  { dx: 1, dy: 1, bit: NEIGHBOR_BITS.SE },   // South-East
-  { dx: 0, dy: 1, bit: NEIGHBOR_BITS.S },    // South
-  { dx: -1, dy: 1, bit: NEIGHBOR_BITS.SW },  // South-West
-  { dx: -1, dy: 0, bit: NEIGHBOR_BITS.W },   // West
+  { dx: 0, dy: -1, bit: NEIGHBOR_BITS.N }, // North
+  { dx: 1, dy: -1, bit: NEIGHBOR_BITS.NE }, // North-East
+  { dx: 1, dy: 0, bit: NEIGHBOR_BITS.E }, // East
+  { dx: 1, dy: 1, bit: NEIGHBOR_BITS.SE }, // South-East
+  { dx: 0, dy: 1, bit: NEIGHBOR_BITS.S }, // South
+  { dx: -1, dy: 1, bit: NEIGHBOR_BITS.SW }, // South-West
+  { dx: -1, dy: 0, bit: NEIGHBOR_BITS.W }, // West
   { dx: -1, dy: -1, bit: NEIGHBOR_BITS.NW }, // North-West
 ];
 
@@ -53,22 +53,22 @@ const NEIGHBORS_8 = [
  * Maps bitmask (N|E|S|W) to tile index in tileset
  */
 const AUTOTILE_16 = {
-  0b0000: 0,   // Isolated
-  0b0001: 1,   // N
-  0b0010: 2,   // E
-  0b0011: 3,   // N+E
-  0b0100: 4,   // S
-  0b0101: 5,   // N+S
-  0b0110: 6,   // E+S
-  0b0111: 7,   // N+E+S
-  0b1000: 8,   // W
-  0b1001: 9,   // N+W
-  0b1010: 10,  // E+W
-  0b1011: 11,  // N+E+W
-  0b1100: 12,  // S+W
-  0b1101: 13,  // N+S+W
-  0b1110: 14,  // E+S+W
-  0b1111: 15,  // All sides
+  0b0000: 0, // Isolated
+  0b0001: 1, // N
+  0b0010: 2, // E
+  0b0011: 3, // N+E
+  0b0100: 4, // S
+  0b0101: 5, // N+S
+  0b0110: 6, // E+S
+  0b0111: 7, // N+E+S
+  0b1000: 8, // W
+  0b1001: 9, // N+W
+  0b1010: 10, // E+W
+  0b1011: 11, // N+E+W
+  0b1100: 12, // S+W
+  0b1101: 13, // N+S+W
+  0b1110: 14, // E+S+W
+  0b1111: 15, // All sides
 };
 
 /**
@@ -137,7 +137,7 @@ export default class AutoTiler {
       }
 
       const neighborTile = cells[ny]?.[nx];
-      
+
       // Check if neighbor matches
       if (this._tilesMatch(neighborTile, tileset.matchTiles)) {
         bitmask |= neighbor.bit;
@@ -157,14 +157,13 @@ export default class AutoTiler {
     // For 4-dir mode, use the standard 16-tile mapping
     if (tileset.mode === '4-dir') {
       const mask4 = bitmask & 0b01010101; // Mask to cardinal directions only
-      const normalized = (
-        ((mask4 & NEIGHBOR_BITS.N) ? 0b0001 : 0) |
-        ((mask4 & NEIGHBOR_BITS.E) ? 0b0010 : 0) |
-        ((mask4 & NEIGHBOR_BITS.S) ? 0b0100 : 0) |
-        ((mask4 & NEIGHBOR_BITS.W) ? 0b1000 : 0)
-      );
+      const normalized =
+        (mask4 & NEIGHBOR_BITS.N ? 0b0001 : 0) |
+        (mask4 & NEIGHBOR_BITS.E ? 0b0010 : 0) |
+        (mask4 & NEIGHBOR_BITS.S ? 0b0100 : 0) |
+        (mask4 & NEIGHBOR_BITS.W ? 0b1000 : 0);
       const variantIndex = AUTOTILE_16[normalized] ?? 0;
-      
+
       // If tileset has base tile, offset by variant
       if (tileset.baseTile !== undefined) {
         return tileset.baseTile + variantIndex;
@@ -198,7 +197,7 @@ export default class AutoTiler {
       if (nx >= 0 && nx < mapWidth && ny >= 0 && ny < mapHeight) {
         const neighborTile = cells[ny]?.[nx];
         const tileset = this._getTilesetForTile(neighborTile);
-        
+
         if (tileset) {
           const newVariant = this.getTileVariant(nx, ny, neighborTile, mapData, options);
           if (newVariant !== neighborTile) {
@@ -245,25 +244,21 @@ export default class AutoTiler {
    */
   _cleanCorners(bitmask) {
     let cleaned = bitmask;
-    
+
     // NE corner requires N and E
-    if ((bitmask & NEIGHBOR_BITS.NE) && 
-        !((bitmask & NEIGHBOR_BITS.N) && (bitmask & NEIGHBOR_BITS.E))) {
+    if (bitmask & NEIGHBOR_BITS.NE && !(bitmask & NEIGHBOR_BITS.N && bitmask & NEIGHBOR_BITS.E)) {
       cleaned &= ~NEIGHBOR_BITS.NE;
     }
     // SE corner requires S and E
-    if ((bitmask & NEIGHBOR_BITS.SE) && 
-        !((bitmask & NEIGHBOR_BITS.S) && (bitmask & NEIGHBOR_BITS.E))) {
+    if (bitmask & NEIGHBOR_BITS.SE && !(bitmask & NEIGHBOR_BITS.S && bitmask & NEIGHBOR_BITS.E)) {
       cleaned &= ~NEIGHBOR_BITS.SE;
     }
     // SW corner requires S and W
-    if ((bitmask & NEIGHBOR_BITS.SW) && 
-        !((bitmask & NEIGHBOR_BITS.S) && (bitmask & NEIGHBOR_BITS.W))) {
+    if (bitmask & NEIGHBOR_BITS.SW && !(bitmask & NEIGHBOR_BITS.S && bitmask & NEIGHBOR_BITS.W)) {
       cleaned &= ~NEIGHBOR_BITS.SW;
     }
     // NW corner requires N and W
-    if ((bitmask & NEIGHBOR_BITS.NW) && 
-        !((bitmask & NEIGHBOR_BITS.N) && (bitmask & NEIGHBOR_BITS.W))) {
+    if (bitmask & NEIGHBOR_BITS.NW && !(bitmask & NEIGHBOR_BITS.N && bitmask & NEIGHBOR_BITS.W)) {
       cleaned &= ~NEIGHBOR_BITS.NW;
     }
 
@@ -283,9 +278,11 @@ export default class AutoTiler {
    */
   _getTilesetForTile(tile) {
     for (const [name, config] of Object.entries(this.tilesets)) {
-      if (config.matchTiles.includes(tile) || 
-          config.matchTiles.includes(String(tile)) ||
-          tile === name) {
+      if (
+        config.matchTiles.includes(tile) ||
+        config.matchTiles.includes(String(tile)) ||
+        tile === name
+      ) {
         return config;
       }
     }

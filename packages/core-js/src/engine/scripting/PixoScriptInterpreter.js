@@ -26,7 +26,7 @@ export default class PixoScriptInterpreter {
     this._scriptCache = new Map();
   }
 
-  setScope = (scope) => {
+  setScope = scope => {
     this.scope = scope;
   };
 
@@ -48,19 +48,19 @@ export default class PixoScriptInterpreter {
     // Create config with virtual filesystem handlers
     const config = {
       PIXOSCRIPT_PATH: './?.pxs;./?/init.pxs',
-      fileExists: (path) => {
+      fileExists: path => {
         // Check if path exists in our script cache
         const normalizedPath = path.replace(/^\.\//, '');
         return this._scriptCache.has(normalizedPath);
       },
-      loadFile: (path) => {
+      loadFile: path => {
         const normalizedPath = path.replace(/^\.\//, '');
         const content = this._scriptCache.get(normalizedPath);
         if (!content) {
           throw new Error(`Script not found: ${path}`);
         }
         return content;
-      }
+      },
     };
 
     this.env = this.pixoscript.createEnv(config);
@@ -73,7 +73,7 @@ export default class PixoScriptInterpreter {
     this.env.loadLib('pixos', this.library);
   };
 
-  run = async (script) => {
+  run = async script => {
     if (!this.env) this.createEnv();
     if (!this.library) this.initLibrary();
     try {
@@ -93,7 +93,7 @@ export default class PixoScriptInterpreter {
         const end = Math.min(lines.length, lineNum + 1);
 
         for (let i = start; i < end; i++) {
-          const marker = i === (lineNum - 1) ? '> ' : '  ';
+          const marker = i === lineNum - 1 ? '> ' : '  ';
           console.error(`${marker}${i + 1}: ${lines[i]}`);
         }
       }

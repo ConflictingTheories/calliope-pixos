@@ -3,41 +3,68 @@
   "$id": "https://pixospritz.dev/schemas/directions.json",
   "title": "Direction Constants",
   "description": "Shared direction values for 8-directional movement",
-  
+
   "directions": {
-    "N":  { "index": 0, "name": "North",     "angle": 0,       "vector": [0, -1] },
-    "NE": { "index": 1, "name": "NorthEast", "angle": 0.7854,  "vector": [1, -1] },
-    "E":  { "index": 2, "name": "East",      "angle": 1.5708,  "vector": [1, 0] },
-    "SE": { "index": 3, "name": "SouthEast", "angle": 2.3562,  "vector": [1, 1] },
-    "S":  { "index": 4, "name": "South",     "angle": 3.1416,  "vector": [0, 1] },
-    "SW": { "index": 5, "name": "SouthWest", "angle": 3.927,   "vector": [-1, 1] },
-    "W":  { "index": 6, "name": "West",      "angle": 4.7124,  "vector": [-1, 0] },
-    "NW": { "index": 7, "name": "NorthWest", "angle": 5.4978,  "vector": [-1, -1] }
+    "N": { "index": 0, "name": "North", "angle": 0, "vector": [0, -1] },
+    "NE": { "index": 1, "name": "NorthEast", "angle": 0.7854, "vector": [1, -1] },
+    "E": { "index": 2, "name": "East", "angle": 1.5708, "vector": [1, 0] },
+    "SE": { "index": 3, "name": "SouthEast", "angle": 2.3562, "vector": [1, 1] },
+    "S": { "index": 4, "name": "South", "angle": 3.1416, "vector": [0, 1] },
+    "SW": { "index": 5, "name": "SouthWest", "angle": 3.927, "vector": [-1, 1] },
+    "W": { "index": 6, "name": "West", "angle": 4.7124, "vector": [-1, 0] },
+    "NW": { "index": 7, "name": "NorthWest", "angle": 5.4978, "vector": [-1, -1] }
   },
-  
+
   "byIndex": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
-  
+
   "opposite": {
-    "N": "S", "NE": "SW", "E": "W", "SE": "NW",
-    "S": "N", "SW": "NE", "W": "E", "NW": "SE"
+    "N": "S",
+    "NE": "SW",
+    "E": "W",
+    "SE": "NW",
+    "S": "N",
+    "SW": "NE",
+    "W": "E",
+    "NW": "SE"
   },
-  
+
   "clockwise": {
-    "N": "NE", "NE": "E", "E": "SE", "SE": "S",
-    "S": "SW", "SW": "W", "W": "NW", "NW": "N"
+    "N": "NE",
+    "NE": "E",
+    "E": "SE",
+    "SE": "S",
+    "S": "SW",
+    "SW": "W",
+    "W": "NW",
+    "NW": "N"
   },
-  
+
   "counterClockwise": {
-    "N": "NW", "NW": "W", "W": "SW", "SW": "S",
-    "S": "SE", "SE": "E", "E": "NE", "NE": "N"
+    "N": "NW",
+    "NW": "W",
+    "W": "SW",
+    "SW": "S",
+    "S": "SE",
+    "SE": "E",
+    "E": "NE",
+    "NE": "N"
   },
-  
+
   "aliases": {
-    "UP": "N", "DOWN": "S", "LEFT": "W", "RIGHT": "E",
-    "NORTH": "N", "SOUTH": "S", "EAST": "E", "WEST": "W",
-    "NORTHEAST": "NE", "NORTHWEST": "NW", "SOUTHEAST": "SE", "SOUTHWEST": "SW"
+    "UP": "N",
+    "DOWN": "S",
+    "LEFT": "W",
+    "RIGHT": "E",
+    "NORTH": "N",
+    "SOUTH": "S",
+    "EAST": "E",
+    "WEST": "W",
+    "NORTHEAST": "NE",
+    "NORTHWEST": "NW",
+    "SOUTHEAST": "SE",
+    "SOUTHWEST": "SW"
   },
-  
+
   "facingToDirection": {
     "description": "Convert facing index (0-7) to direction key",
     "implementation": {
@@ -45,7 +72,7 @@
       "c": "direction_from_facing(facing)"
     }
   },
-  
+
   "angleToDirection": {
     "description": "Convert angle in radians to nearest direction",
     "algorithm": [
@@ -55,7 +82,7 @@
       "4. Return byIndex[result % 8]"
     ]
   },
-  
+
   "vectorToDirection": {
     "description": "Convert movement vector to direction",
     "algorithm": [

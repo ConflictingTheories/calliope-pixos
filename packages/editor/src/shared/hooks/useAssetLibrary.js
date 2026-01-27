@@ -6,7 +6,7 @@
  *
  * A hook for managing and accessing the asset library.
  * Provides filtering, searching, and asset management.
- * 
+ *
  * Usage:
  *   const {
  *     assets,
@@ -30,7 +30,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 /**
  * useAssetLibrary - Hook for managing assets
- * 
+ *
  * @param {AssetLibraryOptions} [options={}]
  * @returns {{
  *   assets: Array,
@@ -49,20 +49,15 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
  * }}
  */
 export function useAssetLibrary(options = {}) {
-  const {
-    initialAssets = [],
-    onImport = null,
-    onExport = null,
-    onChange = null
-  } = options;
+  const { initialAssets = [], onImport = null, onExport = null, onChange = null } = options;
 
   const [assets, setAssets] = useState(initialAssets);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState({
-    type: null,      // Asset type filter
-    tags: [],        // Tags filter
-    sortBy: 'name',  // Sort field
-    sortDir: 'asc'   // Sort direction
+    type: null, // Asset type filter
+    tags: [], // Tags filter
+    sortBy: 'name', // Sort field
+    sortDir: 'asc', // Sort direction
   });
 
   // Notify on changes
@@ -81,18 +76,17 @@ export function useAssetLibrary(options = {}) {
 
     // Apply tags filter
     if (filter.tags && filter.tags.length > 0) {
-      result = result.filter(asset => 
-        filter.tags.some(tag => (asset.tags || []).includes(tag))
-      );
+      result = result.filter(asset => filter.tags.some(tag => (asset.tags || []).includes(tag)));
     }
 
     // Apply search
     if (search.trim()) {
       const query = search.toLowerCase();
-      result = result.filter(asset => 
-        asset.name?.toLowerCase().includes(query) ||
-        asset.description?.toLowerCase().includes(query) ||
-        (asset.tags || []).some(tag => tag.toLowerCase().includes(query))
+      result = result.filter(
+        asset =>
+          asset.name?.toLowerCase().includes(query) ||
+          asset.description?.toLowerCase().includes(query) ||
+          (asset.tags || []).some(tag => tag.toLowerCase().includes(query))
       );
     }
 
@@ -113,18 +107,21 @@ export function useAssetLibrary(options = {}) {
   }, [assets, search, filter]);
 
   // Get asset by ID
-  const getAsset = useCallback((id) => {
-    return assets.find(asset => asset.id === id) || null;
-  }, [assets]);
+  const getAsset = useCallback(
+    id => {
+      return assets.find(asset => asset.id === id) || null;
+    },
+    [assets]
+  );
 
   // Add new asset
-  const addAsset = useCallback((asset) => {
+  const addAsset = useCallback(asset => {
     const newAsset = {
       id: `asset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       tags: [],
-      ...asset
+      ...asset,
     };
 
     setAssets(prev => [...prev, newAsset]);
@@ -133,101 +130,108 @@ export function useAssetLibrary(options = {}) {
 
   // Update existing asset
   const updateAsset = useCallback((id, updates) => {
-    setAssets(prev => prev.map(asset => 
-      asset.id === id 
-        ? { ...asset, ...updates, updatedAt: Date.now() }
-        : asset
-    ));
+    setAssets(prev =>
+      prev.map(asset => (asset.id === id ? { ...asset, ...updates, updatedAt: Date.now() } : asset))
+    );
   }, []);
 
   // Remove asset
-  const removeAsset = useCallback((id) => {
+  const removeAsset = useCallback(id => {
     setAssets(prev => prev.filter(asset => asset.id !== id));
   }, []);
 
   // Import asset from file
-  const importAsset = useCallback(async (file) => {
-    if (onImport) {
-      const imported = await onImport(file);
-      if (imported) {
-        return addAsset(imported);
-      }
-      return null;
-    }
-
-    // Default file import handling
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        try {
-          const assetType = getAssetTypeFromFile(file);
-          const asset = addAsset({
-            name: file.name.replace(/\.[^/.]+$/, ''),
-            type: assetType,
-            fileName: file.name,
-            mimeType: file.type,
-            size: file.size,
-            data: e.target.result
-          });
-          resolve(asset);
-        } catch (err) {
-          reject(err);
+  const importAsset = useCallback(
+    async file => {
+      if (onImport) {
+        const imported = await onImport(file);
+        if (imported) {
+          return addAsset(imported);
         }
-      };
-
-      reader.onerror = () => reject(reader.error);
-
-      // Read as appropriate format
-      if (file.type.startsWith('image/')) {
-        reader.readAsDataURL(file);
-      } else if (file.type.startsWith('audio/')) {
-        reader.readAsArrayBuffer(file);
-      } else {
-        reader.readAsText(file);
+        return null;
       }
-    });
-  }, [onImport, addAsset]);
+
+      // Default file import handling
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = e => {
+          try {
+            const assetType = getAssetTypeFromFile(file);
+            const asset = addAsset({
+              name: file.name.replace(/\.[^/.]+$/, ''),
+              type: assetType,
+              fileName: file.name,
+              mimeType: file.type,
+              size: file.size,
+              data: e.target.result,
+            });
+            resolve(asset);
+          } catch (err) {
+            reject(err);
+          }
+        };
+
+        reader.onerror = () => reject(reader.error);
+
+        // Read as appropriate format
+        if (file.type.startsWith('image/')) {
+          reader.readAsDataURL(file);
+        } else if (file.type.startsWith('audio/')) {
+          reader.readAsArrayBuffer(file);
+        } else {
+          reader.readAsText(file);
+        }
+      });
+    },
+    [onImport, addAsset]
+  );
 
   // Export asset
-  const exportAsset = useCallback(async (id) => {
-    const asset = getAsset(id);
-    if (!asset) return null;
+  const exportAsset = useCallback(
+    async id => {
+      const asset = getAsset(id);
+      if (!asset) return null;
 
-    if (onExport) {
-      return onExport(asset);
-    }
+      if (onExport) {
+        return onExport(asset);
+      }
 
-    // Default export handling
-    const data = asset.data;
-    const mimeType = asset.mimeType || 'application/octet-stream';
-    
-    if (typeof data === 'string' && data.startsWith('data:')) {
-      // Data URL - extract blob
-      const response = await fetch(data);
-      return response.blob();
-    } else if (data instanceof ArrayBuffer) {
-      return new Blob([data], { type: mimeType });
-    } else if (typeof data === 'object') {
-      return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    } else {
-      return new Blob([String(data)], { type: 'text/plain' });
-    }
-  }, [getAsset, onExport]);
+      // Default export handling
+      const data = asset.data;
+      const mimeType = asset.mimeType || 'application/octet-stream';
+
+      if (typeof data === 'string' && data.startsWith('data:')) {
+        // Data URL - extract blob
+        const response = await fetch(data);
+        return response.blob();
+      } else if (data instanceof ArrayBuffer) {
+        return new Blob([data], { type: mimeType });
+      } else if (typeof data === 'object') {
+        return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      } else {
+        return new Blob([String(data)], { type: 'text/plain' });
+      }
+    },
+    [getAsset, onExport]
+  );
 
   // Import multiple files
-  const importMultiple = useCallback(async (files) => {
-    const imported = [];
-    for (const file of files) {
-      try {
-        const asset = await importAsset(file);
-        if (asset) imported.push(asset);
-      } catch {
-        // Continue with other files
+  const importMultiple = useCallback(
+    async files => {
+      const imported = [];
+      for (const file of files) {
+        try {
+          const asset = await importAsset(file);
+          if (asset) imported.push(asset);
+        } catch {
+          // Continue with other files
+        }
       }
-    }
-    return imported;
-  }, [importAsset]);
+      return imported;
+    },
+    [importAsset]
+  );
 
   // Clear all assets
   const clear = useCallback(() => {
@@ -265,20 +269,20 @@ export function useAssetLibrary(options = {}) {
     // Search & Filter
     setSearch,
     setFilter,
-    
+
     // CRUD operations
     getAsset,
     addAsset,
     updateAsset,
     removeAsset,
-    
+
     // Import/Export
     importAsset,
     importMultiple,
     exportAsset,
-    
+
     // Utilities
-    clear
+    clear,
   };
 }
 

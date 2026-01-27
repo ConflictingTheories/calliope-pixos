@@ -1,6 +1,7 @@
 # PENDING.md
 
 ## Major Todos
+
 - Refactor editor modules for better separation
 - Improve documentation for all tools
 - Add more tests for asset editors
@@ -28,11 +29,13 @@
 - Visual Timeline and Branching Dialogue for cutscene editor.
 
 ## Roadmap Items
+
 - Support for collaborative editing
 - Advanced cutscene and map design tools
 - Plugin system for editor extensions
 
 ## Comments & Cleanup
+
 - Remove deprecated editor features
 - Standardize UI components
 - Audit dependencies and update as needed

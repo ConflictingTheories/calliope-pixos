@@ -19,7 +19,7 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
         }
       }
     }
-    await Promise.all(entries.map(async (entry) => saveFile(entry, filename, options, parentHandle)));
+    await Promise.all(entries.map(async entry => saveFile(entry, filename, options, parentHandle)));
   }
 
   async function saveFile(entry, filename, options, parentHandle) {
@@ -60,7 +60,8 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
 
   async function saveFileEntry(name, entry, options, download, parentHandle) {
     const { signal } = download.controller;
-    const onprogress = (progressValue, progressMax) => onDownloadProgress(download.id, progressValue, progressMax);
+    const onprogress = (progressValue, progressMax) =>
+      onDownloadProgress(download.id, progressValue, progressMax);
     let fileHandle, writable, blob;
     if (filesystemService.savePickersSupported()) {
       if (parentHandle) {
@@ -75,7 +76,7 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
     } else {
       ({ writable, blob } = getWritableBlob());
     }
-    setDownloads((downloads) => {
+    setDownloads(downloads => {
       let { nextId } = downloads;
       download.id = nextId;
       nextId = nextId + 1;
@@ -91,9 +92,8 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
   }
 
   function getWritableBlob() {
-     
     const { readable, writable } = new TransformStream({});
-     
+
     const blob = new Response(readable).blob();
     return {
       blob,
@@ -117,9 +117,9 @@ function getCommonFeatures({ dialogs, setDownloads, setDialogs, removeDownload }
   }
 
   function onDownloadProgress(downloadId, progressValue, progressMax) {
-    setDownloads((downloads) => ({
+    setDownloads(downloads => ({
       ...downloads,
-      queue: downloads.queue.map((download) => {
+      queue: downloads.queue.map(download => {
         if (download.id === downloadId) {
           download = {
             ...download,

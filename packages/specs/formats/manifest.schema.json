@@ -4,9 +4,9 @@
   "title": "PixoSpritz Game Manifest",
   "description": "Schema for .pxz game package manifest files",
   "type": "object",
-  
+
   "required": ["title", "version", "initialZones"],
-  
+
   "properties": {
     "title": {
       "type": "string",

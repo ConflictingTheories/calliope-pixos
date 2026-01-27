@@ -6,7 +6,7 @@
  *
  * A hook for managing clipboard operations in editors.
  * Supports copy, cut, paste with serialization.
- * 
+ *
  * Usage:
  *   const { copy, cut, paste, hasContent, canPaste } = useClipboard({
  *     serialize: (items) => JSON.stringify(items),
@@ -31,7 +31,7 @@ let internalClipboard = null;
 
 /**
  * useClipboard - Hook for clipboard operations
- * 
+ *
  * @template T
  * @param {ClipboardOptions} [options={}]
  * @returns {{
@@ -46,11 +46,11 @@ let internalClipboard = null;
  */
 export function useClipboard(options = {}) {
   const {
-    serialize = (items) => JSON.stringify(items),
-    deserialize = (data) => JSON.parse(data),
+    serialize = items => JSON.stringify(items),
+    deserialize = data => JSON.parse(data),
     onCopy = null,
     onCut = null,
-    onPaste = null
+    onPaste = null,
   } = options;
 
   const [hasContent, setHasContent] = useState(false);
@@ -67,56 +67,62 @@ export function useClipboard(options = {}) {
   /**
    * Copy items to clipboard
    */
-  const copy = useCallback(async (items) => {
-    try {
-      const data = serialize(items);
-      
-      // Store in internal clipboard
-      internalClipboard = { data, items, operation: 'copy' };
-      setHasContent(true);
-      setLastOperation('copy');
+  const copy = useCallback(
+    async items => {
+      try {
+        const data = serialize(items);
 
-      // Try to use system clipboard
-      if (hasClipboardAPI) {
-        try {
-          await navigator.clipboard.writeText(data);
-        } catch {
-          // System clipboard may fail due to permissions, fall back to internal
+        // Store in internal clipboard
+        internalClipboard = { data, items, operation: 'copy' };
+        setHasContent(true);
+        setLastOperation('copy');
+
+        // Try to use system clipboard
+        if (hasClipboardAPI) {
+          try {
+            await navigator.clipboard.writeText(data);
+          } catch {
+            // System clipboard may fail due to permissions, fall back to internal
+          }
         }
-      }
 
-      onCopy?.(items);
-    } catch {
-      // Clipboard copy failed silently
-    }
-  }, [serialize, hasClipboardAPI, onCopy]);
+        onCopy?.(items);
+      } catch {
+        // Clipboard copy failed silently
+      }
+    },
+    [serialize, hasClipboardAPI, onCopy]
+  );
 
   /**
    * Cut items to clipboard (copy + mark for removal)
    */
-  const cut = useCallback(async (items) => {
-    try {
-      const data = serialize(items);
-      
-      // Store in internal clipboard
-      internalClipboard = { data, items, operation: 'cut' };
-      setHasContent(true);
-      setLastOperation('cut');
+  const cut = useCallback(
+    async items => {
+      try {
+        const data = serialize(items);
 
-      // Try to use system clipboard
-      if (hasClipboardAPI) {
-        try {
-          await navigator.clipboard.writeText(data);
-        } catch {
-          // System clipboard may fail due to permissions, fall back to internal
+        // Store in internal clipboard
+        internalClipboard = { data, items, operation: 'cut' };
+        setHasContent(true);
+        setLastOperation('cut');
+
+        // Try to use system clipboard
+        if (hasClipboardAPI) {
+          try {
+            await navigator.clipboard.writeText(data);
+          } catch {
+            // System clipboard may fail due to permissions, fall back to internal
+          }
         }
-      }
 
-      onCut?.(items);
-    } catch {
-      // Clipboard cut failed silently
-    }
-  }, [serialize, hasClipboardAPI, onCut]);
+        onCut?.(items);
+      } catch {
+        // Clipboard cut failed silently
+      }
+    },
+    [serialize, hasClipboardAPI, onCut]
+  );
 
   /**
    * Paste items from clipboard
@@ -128,14 +134,14 @@ export function useClipboard(options = {}) {
       // First try internal clipboard (more reliable)
       if (internalClipboard) {
         items = internalClipboard.items;
-        
+
         // Clear clipboard if it was a cut operation
         if (internalClipboard.operation === 'cut') {
           internalClipboard = null;
           setHasContent(false);
           setLastOperation(null);
         }
-      } 
+      }
       // Fall back to system clipboard
       else if (hasClipboardAPI) {
         try {
@@ -191,13 +197,13 @@ export function useClipboard(options = {}) {
     canPaste,
     wasCut,
     clear,
-    getContent
+    getContent,
   };
 }
 
 /**
  * useClipboardShortcuts - Hook to set up clipboard keyboard shortcuts
- * 
+ *
  * @param {Object} options
  * @param {function} options.getSelected - Function to get selected items
  * @param {function} options.onPaste - Handler for pasted items
@@ -210,38 +216,38 @@ export function useClipboardShortcuts({ getSelected, onPaste, onCut, enabled = t
   useEffect(() => {
     if (!enabled) return;
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modKey = isMac ? e.metaKey : e.ctrlKey;
 
       if (!modKey) return;
 
       switch (e.key.toLowerCase()) {
-      case 'c':
-        e.preventDefault();
-        const copyItems = getSelected();
-        if (copyItems && (Array.isArray(copyItems) ? copyItems.length > 0 : true)) {
-          clipboard.copy(copyItems);
-        }
-        break;
-
-      case 'x':
-        e.preventDefault();
-        const cutItems = getSelected();
-        if (cutItems && (Array.isArray(cutItems) ? cutItems.length > 0 : true)) {
-          clipboard.cut(cutItems);
-          onCut?.(cutItems);
-        }
-        break;
-
-      case 'v':
-        e.preventDefault();
-        clipboard.paste().then(items => {
-          if (items) {
-            onPaste(items);
+        case 'c':
+          e.preventDefault();
+          const copyItems = getSelected();
+          if (copyItems && (Array.isArray(copyItems) ? copyItems.length > 0 : true)) {
+            clipboard.copy(copyItems);
           }
-        });
-        break;
+          break;
+
+        case 'x':
+          e.preventDefault();
+          const cutItems = getSelected();
+          if (cutItems && (Array.isArray(cutItems) ? cutItems.length > 0 : true)) {
+            clipboard.cut(cutItems);
+            onCut?.(cutItems);
+          }
+          break;
+
+        case 'v':
+          e.preventDefault();
+          clipboard.paste().then(items => {
+            if (items) {
+              onPaste(items);
+            }
+          });
+          break;
       }
     };
 

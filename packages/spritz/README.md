@@ -13,6 +13,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 ## 🗺️ Game Zones
 
 ### Village Hub (`village-hub`)
+
 - **Tileset**: village
 - **Mode**: explore
 - **Music**: fields.mp3
@@ -26,6 +27,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Main menu system
 
 ### Dungeon Entrance (`dungeon-entrance`)
+
 - **Tileset**: sewer
 - **Mode**: explore
 - **Music**: dungeon-beat.mp3
@@ -37,6 +39,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Elemental light effects
 
 ### Fire Chamber (`fire-chamber`)
+
 - **Tileset**: sewer
 - **Mode**: tactics
 - **Music**: brass-loop.mp3
@@ -49,6 +52,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Inferno shader
 
 ### Water Chamber (`water-chamber`)
+
 - **Tileset**: common
 - **Mode**: tactics
 - **Music**: ocean-waves.mp3
@@ -60,6 +64,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Coral decorations
 
 ### Earth Chamber (`earth-chamber`)
+
 - **Tileset**: village
 - **Mode**: tactics
 - **Music**: jungle-rhythm.mp3
@@ -71,6 +76,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Boulder objects
 
 ### Air Chamber (`air-chamber`)
+
 - **Tileset**: common
 - **Mode**: tactics
 - **Music**: icy-passage.mp3
@@ -82,6 +88,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
   - Floating platforms
 
 ### Boss Arena (`boss-arena`)
+
 - **Tileset**: sewer
 - **Mode**: fight
 - **Music**: deep-unknown-beat.mp3
@@ -97,19 +104,20 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 
 ## 🎬 Cutscenes
 
-| Cutscene | File | Description |
-|----------|------|-------------|
-| Game Intro | `game-intro.pxc` | Story setup, meet Elder and Knight |
-| Fire Trial | `fire-trial.pxc` | Fire Elemental battle and victory |
+| Cutscene    | File              | Description                        |
+| ----------- | ----------------- | ---------------------------------- |
+| Game Intro  | `game-intro.pxc`  | Story setup, meet Elder and Knight |
+| Fire Trial  | `fire-trial.pxc`  | Fire Elemental battle and victory  |
 | Water Trial | `water-trial.pxc` | Water Elemental battle and victory |
 | Earth Trial | `earth-trial.pxc` | Earth Elemental battle and victory |
-| Air Trial | `air-trial.pxc` | Air Elemental battle and victory |
-| Final Boss | `final-boss.pxc` | Dark Lord confrontation |
-| Victory | `victory.pxc` | Celebration and credits |
+| Air Trial   | `air-trial.pxc`   | Air Elemental battle and victory   |
+| Final Boss  | `final-boss.pxc`  | Dark Lord confrontation            |
+| Victory     | `victory.pxc`     | Celebration and credits            |
 
 ## 🎵 Audio Used
 
 ### Background Music
+
 - `fields.mp3` - Village theme
 - `dungeon-beat.mp3` - Dungeon exploration
 - `brass-loop.mp3` - Fire trial battle
@@ -123,35 +131,42 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 - `lonely-mountain.mp3` - Reflective moments
 
 ### Sound Effects
+
 - `organ.mp3` - Dramatic reveals
 - `dungeon-beat.mp3` - Battle starts
 
 ## 👾 Sprites Used
 
 ### Characters
+
 - `characters/male` - The Hero
 - `characters/female` - Village Elder, Witch
 
 ### NPCs
+
 - `npc/air-knight` - Knight Guard, Dungeon Guide, Dark Lord
 
 ### Monsters
+
 - `monsters/fire_elemental` - Fire trial boss
 - `monsters/water_elemental` - Water trial boss
 - `monsters/earth_elemental` - Earth trial boss
 - `monsters/air_elemental` - Air trial boss
 
 ### Furniture
+
 - `furniture/door` - Zone transitions
 - `furniture/portal` - Elemental portals
 - `furniture/fireplace` - Decorative
 - `furniture/tree` - Decorative
 
 ### Effects
+
 - `effects/fireplace` - Fire particles
 - `effects/spurt` - Lava/water spurts
 
 ### Chests
+
 - `objects/chests/wood` - Basic chest
 - `objects/chests/blue` - Water chest
 - `objects/chests/red` - Fire chest
@@ -160,34 +175,38 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 ## 🎮 Game Modes
 
 ### Explore Mode
+
 - Free movement and interaction
 - Used in village and dungeon entrance
 - Standard NPC dialogue
 
 ### Tactics Mode
+
 - Turn-based elemental trials
 - Tile/sprite selection with effects
 - Click to select, particles on action
 
 ### Fight Mode
+
 - Action combat for boss battle
 - Real-time movement and attacks
 
 ## 💾 Game Flags
 
-| Flag | Purpose |
-|------|---------|
-| `intro_played` | Tracks if intro cutscene shown |
-| `fire_trial_complete` | Fire trial completion |
-| `water_trial_complete` | Water trial completion |
-| `earth_trial_complete` | Earth trial completion |
-| `air_trial_complete` | Air trial completion |
-| `boss_door_opened` | Boss chamber accessible |
-| `boss_defeated` | Game complete |
+| Flag                   | Purpose                        |
+| ---------------------- | ------------------------------ |
+| `intro_played`         | Tracks if intro cutscene shown |
+| `fire_trial_complete`  | Fire trial completion          |
+| `water_trial_complete` | Water trial completion         |
+| `earth_trial_complete` | Earth trial completion         |
+| `air_trial_complete`   | Air trial completion           |
+| `boss_door_opened`     | Boss chamber accessible        |
+| `boss_defeated`        | Game complete                  |
 
 ## 📜 Scripts/Triggers
 
 ### Zone Scripts
+
 - `village_hub_load.pxs` - Village initialization
 - `dungeon_entrance_load.pxs` - Dungeon hub setup
 - `fire_chamber_load.pxs` - Fire trial logic
@@ -197,17 +216,20 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 - `boss_arena_load.pxs` - Final boss setup
 
 ### Sprite Scripts
+
 - `village_elder.pxs` - Elder NPC dialogue
 - `knight_guard.pxs` - Knight NPC dialogue
 - `dungeon_guide.pxs` - Progress tracker
 
 ### Menu Scripts
+
 - `start_game.pxs` - Begin game
 - `options.pxs` - Show options
 - `start_boss_fight.pxs` - Initiate boss battle
 - `retreat_from_boss.pxs` - Leave boss arena
 
 ### Event Scripts
+
 - `start_fire_battle.pxs` - Fire trial start
 - `start_water_battle.pxs` - Water trial start
 - `start_earth_battle.pxs` - Earth trial start
@@ -218,6 +240,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 ## ✨ Features Demonstrated
 
 ### Visual
+
 - [x] Dynamic lighting (multiple lights per zone)
 - [x] Light scattering coefficients
 - [x] Particle effects (flame, water, earth, air, magic)
@@ -227,11 +250,13 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 - [x] Backdrop transitions
 
 ### Audio
+
 - [x] Background music (BGM)
 - [x] Sound effects (SFX)
 - [x] Music transitions between zones
 
 ### Gameplay
+
 - [x] Zone transitions via portals
 - [x] NPC dialogues
 - [x] Game flags/state management
@@ -241,6 +266,7 @@ Long ago, the Dark Lord was sealed away by four Elemental Guardians. Now, a thou
 - [x] Menu system
 
 ### Cutscenes
+
 - [x] Character portraits
 - [x] Cutin animations
 - [x] Multiple backdrops

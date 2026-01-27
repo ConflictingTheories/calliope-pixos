@@ -3,9 +3,11 @@
 ## What's New in Phase 2
 
 ### 1. Physics System
+
 **Where**: `packages/core-js/src/engine/core/physics/`
 
 Create physics bodies on entities:
+
 ```lua
 entity:addPhysicsBody(width, height, {
   mass = 1,
@@ -16,6 +18,7 @@ entity:addPhysicsBody(width, height, {
 ```
 
 Handle collisions:
+
 ```lua
 function entity:onCollisionEnter(other)
   print("Collided with " .. other.name)
@@ -23,15 +26,18 @@ end
 ```
 
 Apply forces:
+
 ```lua
 entity:applyForce(forceX, forceY, forceZ)
 entity:applyImpulse(impulseX, impulseY, impulseZ)
 ```
 
 ### 2. Mobile Support
+
 **Where**: `packages/core-js/src/engine/core/MobileOptimizer.js`
 
 Automatic for all games:
+
 - ✅ iOS fullscreen
 - ✅ Android optimization
 - ✅ Touch input
@@ -41,9 +47,11 @@ Automatic for all games:
 No code changes needed - it's automatic!
 
 ### 3. Onboarding Wizard
+
 **Where**: `packages/editor/src/components/FirstTimeWizard.jsx`
 
 Shown on first run:
+
 1. Welcome
 2. Project setup
 3. Sprite creation
@@ -52,9 +60,11 @@ Shown on first run:
 6. Publish guide
 
 ### 4. Game Templates
+
 **Where**: `packages/editor/templates/`
 
 Available templates:
+
 - `empty/` - Blank project
 - `topdown/` - Adventure game
 - `platformer/` - Platformer with physics
@@ -62,9 +72,11 @@ Available templates:
 Each includes example code and comments.
 
 ### 5. Network Optimization
+
 **Where**: `packages/server/src/DeltaSynchronizer.js`
 
 Reduces network traffic 90%+:
+
 ```javascript
 const sync = new DeltaSynchronizer();
 sync.recordSnapshot(state);
@@ -73,7 +85,9 @@ socket.emit('update', sync.encodeDelta(delta));
 ```
 
 ### 6. Performance Features
+
 **Already working**:
+
 - Instanced rendering (100x faster particles)
 - Frustum culling (skip off-screen objects)
 - Level of detail (reduce quality at distance)
@@ -85,12 +99,14 @@ Automatic optimization - no configuration needed!
 ## For Game Developers
 
 ### Quick Start
+
 1. **New project** → Choose template (topdown/platformer/empty)
 2. **Add physics** → `entity:addPhysicsBody()`
 3. **Handle collisions** → `onCollisionEnter()` callback
 4. **Test on mobile** → Works automatically
 
 ### Physics Basics
+
 ```lua
 -- Create
 player:addPhysicsBody(16, 16)
@@ -109,6 +125,7 @@ player:freeze('x') -- Can't move left/right
 ```
 
 ### Collision Types
+
 ```lua
 -- Solid objects collide with each other
 entity:addPhysicsBody(w, h, { isTrigger = false })
@@ -118,6 +135,7 @@ entity:addPhysicsBody(w, h, { isTrigger = true })
 ```
 
 ### Template Usage
+
 1. Pick a template when creating project
 2. Example code is included in `game.pxs`
 3. Modify the comments' code sections
@@ -167,21 +185,25 @@ Editor (packages/editor)
 ### Key Integration Points
 
 **Physics with Scripting**:
+
 - `physics.ts` provides PixoScript API
 - Bridges engine physics to game scripts
 - Callbacks: `onCollisionEnter/Stay/Exit`
 
 **Mobile Optimization**:
+
 - `MobileOptimizer` singleton in engine
 - Auto-detects device capabilities
 - Adjusts FPS/rendering based on device
 
 **Network Sync**:
+
 - Server uses `DeltaSynchronizer`
 - Only sends changed fields
 - ~90% bandwidth reduction
 
 **Rendering**:
+
 - `InstancedRenderer` batches draws
 - `FrustumCuller` skips off-screen
 - `LODManager` reduces quality at distance
@@ -204,7 +226,7 @@ npm run test:coverage
 
 Physics update: < 2ms for 1000 bodies  
 Rendering: < 5ms for 10,000 instances  
-Network: 5-10% bandwidth of full state  
+Network: 5-10% bandwidth of full state
 
 Use browser DevTools Performance tab for detailed profiling.
 
@@ -213,6 +235,7 @@ Use browser DevTools Performance tab for detailed profiling.
 ## Known Issues & Workarounds
 
 ### Physics
+
 - Collision shapes are AABB only (no circles yet)
 - Slopes not yet supported (Phase 3)
 - Max bodies: ~5000 at 60fps (hardware dependent)
@@ -220,6 +243,7 @@ Use browser DevTools Performance tab for detailed profiling.
 **Workaround**: Use tile collision for slopes
 
 ### Mobile
+
 - iOS 14+ only for fullscreen
 - Android requires Pixel 5+ for 60fps
 - Landscape orientation recommended
@@ -227,6 +251,7 @@ Use browser DevTools Performance tab for detailed profiling.
 **Workaround**: Fallback to 30fps on older devices
 
 ### Networking
+
 - Large arrays not optimized (Phase 3)
 - No encryption (implement in backend)
 - Connection loss = full resync
@@ -237,20 +262,21 @@ Use browser DevTools Performance tab for detailed profiling.
 
 ## Resource Files
 
-| File | Purpose | Location |
-|------|---------|----------|
-| PHASE_2_COMPLETE.md | Full implementation details | Root |
-| PHASE_2_STATUS.md | Status update & metrics | Root |
-| This file | Quick reference | Root |
-| physics.test.js | Physics tests | packages/core-js/__tests__/ |
-| FirstTimeWizard.jsx | Onboarding UI | packages/editor/src/components/ |
-| game.pxs templates | Starter code | packages/editor/templates/ |
+| File                | Purpose                     | Location                        |
+| ------------------- | --------------------------- | ------------------------------- |
+| PHASE_2_COMPLETE.md | Full implementation details | Root                            |
+| PHASE_2_STATUS.md   | Status update & metrics     | Root                            |
+| This file           | Quick reference             | Root                            |
+| physics.test.js     | Physics tests               | packages/core-js/**tests**/     |
+| FirstTimeWizard.jsx | Onboarding UI               | packages/editor/src/components/ |
+| game.pxs templates  | Starter code                | packages/editor/templates/      |
 
 ---
 
 ## Checklists
 
 ### For a New Game Developer
+
 - [ ] Read tutorials (coming in Phase 3)
 - [ ] Choose a template (topdown/platformer/empty)
 - [ ] Study the example code in template
@@ -261,6 +287,7 @@ Use browser DevTools Performance tab for detailed profiling.
 - [ ] Test on mobile
 
 ### For Deploying to Production
+
 - [ ] All code tested (npm test)
 - [ ] Mobile tested on iPhone/Android
 - [ ] Network tested with delta sync
@@ -271,6 +298,7 @@ Use browser DevTools Performance tab for detailed profiling.
 - [ ] Deployed to CDN/server
 
 ### For Contributing
+
 - [ ] Read architecture overview
 - [ ] Check integration points
 - [ ] Write tests for new code
@@ -284,6 +312,7 @@ Use browser DevTools Performance tab for detailed profiling.
 ## Next Phase (Phase 3)
 
 Phase 3 will add:
+
 - ✅ Visual effects & transitions
 - ✅ Tutorial series
 - ✅ Marketing content

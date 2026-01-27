@@ -21,7 +21,8 @@ const PASTE_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'v';
 const EXTRACT_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'Entrée';
 const HIGHLIGHT_ALL_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'a';
 const RENAME_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'r';
-const DELETE_BUTTON_TOOLTIP = SHORTCUT_LABEL + ['retour arrière', 'suppr'].join(KEYS_SEPARATOR_LABEL);
+const DELETE_BUTTON_TOOLTIP =
+  SHORTCUT_LABEL + ['retour arrière', 'suppr'].join(KEYS_SEPARATOR_LABEL);
 const CREATE_FOLDER_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'd';
 const ADD_FILES_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'f';
 const IMPORT_ZIP_BUTTON_TOOLTIP = SHORTCUT_LABEL + CTRL_KEY_LABEL + 'i';
@@ -95,7 +96,8 @@ const OPTIONS_MAX_WORKERS_LABEL = 'Nombre de cœurs :';
 const OPTIONS_CHUNK_SIZE_LABEL = 'Taille des paquets (ko) :';
 const CHOOSE_ACTION_DIALOG_ADD_FILE_BUTTON_LABEL = 'Ajouter fichier';
 const CHOOSE_ACTION_TITLE = "Choisir l'action";
-const CHOOSE_ACTION_LABEL = "Un fichier zip a été selectionné, veuillez choisir l'action appropriée.";
+const CHOOSE_ACTION_LABEL =
+  "Un fichier zip a été selectionné, veuillez choisir l'action appropriée.";
 const NO_ENTRIES_LABEL = 'Glissez et déposez des fichiers et des répertoires ici';
 const INFO_LABEL = ['Code source sur ', ' GitHub ', ' Fait avec ', '♡', ' à ', 'Rennes'];
 const CITY_URL = 'https://fr.wikipedia.org/wiki/Rennes';

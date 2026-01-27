@@ -39,20 +39,24 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     } else {
       this.triggerTime = this.json.triggerTime;
     }
-  }
+  };
 
   /**
    * Updates the tile each frame.
    * @param {number} time - The current time.
    */
-  tick = (time) => {
+  tick = time => {
     if (this.lastTime == 0) {
       this.lastTime = time;
       return;
     }
     // wait enough time
     this.accumTime += time - this.lastTime;
-    if (this.accumTime < this.frameTime || (this.animFrame == 0 && this.accumTime < this.triggerTime)) return;
+    if (
+      this.accumTime < this.frameTime ||
+      (this.animFrame == 0 && this.accumTime < this.triggerTime)
+    )
+      return;
     // reset animation
     if (this.animFrame == 4) {
       this.setFrame(0);
@@ -62,17 +66,17 @@ export default class DynamicAnimatedTile extends DynamicSprite {
       this.accumTime = 0;
       this.lastTime = time;
     }
-  }
+  };
 
   /**
    * Draws the tile frame.
    * @param {GLEngine} engine - The game engine instance.
    */
-  draw = (engine) => {
+  draw = engine => {
     if (!this.loaded) return;
     const rm = engine.renderManager;
     const isPickerPass = rm.isPickerPass;
-    
+
     rm.mvPushMatrix();
     translate(rm.uModelMat, rm.uModelMat, this.pos.toArray());
     // Lie flat on the ground
@@ -85,7 +89,7 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     rm.bindBuffer(this.vertexPosBuf, rm.shaderProgram.aVertexPosition);
     rm.bindBuffer(this.vertexTexBuf, rm.shaderProgram.aTextureCoord);
     this.texture.attach();
-    
+
     // Draw - set uniforms based on render pass
     if (isPickerPass) {
       rm.effectPrograms['picker'].setMatrixUniforms({ id: this.getPickingId() });
@@ -94,5 +98,5 @@ export default class DynamicAnimatedTile extends DynamicSprite {
     }
     engine.gl.drawArrays(engine.gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
     rm.mvPopMatrix();
-  }
+  };
 }

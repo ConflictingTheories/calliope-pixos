@@ -1,6 +1,13 @@
 import './styles/TopButtonBar.css';
 
-import { AddFilesButton, CreateFolderButton, ImportZipButton, ExportZipButton, ResetButton, OptionsButton } from './Buttons.jsx';
+import {
+  AddFilesButton,
+  CreateFolderButton,
+  ImportZipButton,
+  ExportZipButton,
+  ResetButton,
+  OptionsButton,
+} from './Buttons.jsx';
 
 function TopButtonBar({
   disabledExportZipButton,

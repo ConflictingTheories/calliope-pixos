@@ -47,7 +47,7 @@ export class ActionLoader {
     if (!this.instances[type]) {
       this.instances[type] = [];
     }
-    debug('Loader', {afterLoad, runConfigure})
+    debug('Loader', { afterLoad, runConfigure });
     // New Instance (assigns properties loaded by type)
     let instance = new Action(this.type, this.sprite, this.callback);
     const actionModule = await import('../../actions/' + type + '.js');
@@ -58,7 +58,7 @@ export class ActionLoader {
     // Notify existing
     await Promise.all(
       this.instances[type].map(async function (instance) {
-        debug('Loader', {instance});
+        debug('Loader', { instance });
         if (instance.afterLoad) await instance.afterLoad(instance.instance);
       })
     );

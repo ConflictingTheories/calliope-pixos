@@ -40,11 +40,7 @@ export default function init(shaderProgram) {
   shaderProgram.scale = gl.getUniformLocation(shaderProgram, 'u_scale');
   shaderProgram.id = gl.getUniformLocation(shaderProgram, 'u_id');
 
-  shaderProgram.setMatrixUniforms = ({
-    scale = null,
-    id = null,
-    sampler = 1.0
-  }) => {
+  shaderProgram.setMatrixUniforms = ({ scale = null, id = null, sampler = 1.0 }) => {
     // NOTE: Caller (RenderManager.activatePickerShaderProgram) ensures this program is active.
     // Do NOT call gl.useProgram here - it would interfere with render pass state management.
 

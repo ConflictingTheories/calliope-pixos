@@ -94,9 +94,9 @@ export default class Avatar extends Sprite {
       lightIndex: this.lightIndex,
       lightColor: this.lightColor,
       density: this.density,
-      isSelected: this.isSelected
+      isSelected: this.isSelected,
     };
-  }
+  };
 
   /**
    * Initialization hook for the avatar.
@@ -109,19 +109,27 @@ export default class Avatar extends Sprite {
    * Updates the avatar each frame.
    * @param {number} time - The current time.
    */
-  tick = (time) => {
+  tick = time => {
     if (!this.actionList.length) {
       let ret = this.checkInput();
       if (ret) {
         this.addAction(ret).then(() => {
-          if (this.engine.networkManager && this.engine.networkManager.ws && this.engine.networkManager.ws.readyState === WebSocket.OPEN) {
+          if (
+            this.engine.networkManager &&
+            this.engine.networkManager.ws &&
+            this.engine.networkManager.ws.readyState === WebSocket.OPEN
+          ) {
             this.engine.networkManager.sendAction(ret, this);
           }
         });
       }
     }
 
-    if (this.engine.networkManager && this.engine.networkManager.ws && this.engine.networkManager.ws.readyState === WebSocket.OPEN) {
+    if (
+      this.engine.networkManager &&
+      this.engine.networkManager.ws &&
+      this.engine.networkManager.ws.readyState === WebSocket.OPEN
+    ) {
       this.engine.networkManager.updateAvatarPosition(this);
     }
 
@@ -143,7 +151,12 @@ export default class Avatar extends Sprite {
    * @returns {ActionLoader} The action loader for the menu.
    */
   openMenu = (menuConfig = {}, defaultMenus = []) => {
-    return new ActionLoader(this.engine, 'prompt', [menuConfig, defaultMenus, false, { autoclose: false }], this);
+    return new ActionLoader(
+      this.engine,
+      'prompt',
+      [menuConfig, defaultMenus, false, { autoclose: false }],
+      this
+    );
   };
 
   /**
@@ -156,7 +169,7 @@ export default class Avatar extends Sprite {
   handleWalk = (key, touchmap, forceFacing = null) => {
     let moveTime = 600;
     let facing = forceFacing !== null ? forceFacing : Direction.None;
-    
+
     // Only use key-based direction if no forced facing is provided
     if (forceFacing === null) {
       switch (key) {
@@ -173,9 +186,19 @@ export default class Avatar extends Sprite {
           facing = Direction.Right;
           break;
         case 'p':
-          return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone], this);
+          return new ActionLoader(
+            this.engine,
+            'patrol',
+            [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone],
+            this
+          );
         case 'r':
-          return new ActionLoader(this.engine, 'patrol', [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone], this);
+          return new ActionLoader(
+            this.engine,
+            'patrol',
+            [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone],
+            this
+          );
       }
     }
 
@@ -208,11 +231,21 @@ export default class Avatar extends Sprite {
       if (!z || !z.loaded || !z.isWalkable(to.x, to.y, Direction.reverse(facing))) {
         return this.faceDir(facing);
       }
-      return new ActionLoader(this.engine, 'changezone', [this.zone.id, this.pos.toArray(), z.id, to.toArray(), moveTime], this);
+      return new ActionLoader(
+        this.engine,
+        'changezone',
+        [this.zone.id, this.pos.toArray(), z.id, to.toArray(), moveTime],
+        this
+      );
     }
     if (!this.zone.isWalkable(to.x, to.y, Direction.reverse(facing))) {
       return this.faceDir(facing);
     }
-    return new ActionLoader(this.engine, 'move', [this.pos.toArray(), to.toArray(), moveTime, this.zone], this);
+    return new ActionLoader(
+      this.engine,
+      'move',
+      [this.pos.toArray(), to.toArray(), moveTime, this.zone],
+      this
+    );
   };
 }

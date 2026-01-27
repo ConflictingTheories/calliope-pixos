@@ -4,12 +4,12 @@ This directory contains custom PXSL (PixoSpritz Shader Language) shaders for vis
 
 ## Available Shaders
 
-| File | Description | Usage |
-|------|-------------|-------|
-| `glow_effect.pxsl` | Soft glow/bloom effect | Magic items, UI highlights |
-| `magic_particle.pxsl` | Sparkle particle effect | Spell casting, portals |
-| `retro_crt.pxsl` | CRT monitor simulation | Retro aesthetic |
-| `water_surface.pxsl` | Animated water surface | Lakes, rivers, pools |
+| File                  | Description             | Usage                      |
+| --------------------- | ----------------------- | -------------------------- |
+| `glow_effect.pxsl`    | Soft glow/bloom effect  | Magic items, UI highlights |
+| `magic_particle.pxsl` | Sparkle particle effect | Spell casting, portals     |
+| `retro_crt.pxsl`      | CRT monitor simulation  | Retro aesthetic            |
+| `water_surface.pxsl`  | Animated water surface  | Lakes, rivers, pools       |
 
 ## PXSL Language
 
@@ -30,9 +30,9 @@ PXSL is a simplified shader language that compiles to GLSL WebGL2. It provides:
 @vertex {
   in vec4 aVertexPosition;
   in vec2 aTextureCoord;
-  
+
   out vec2 vUV;
-  
+
   void main() {
     vUV = aTextureCoord;
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
@@ -42,10 +42,10 @@ PXSL is a simplified shader language that compiles to GLSL WebGL2. It provides:
 @fragment {
   in vec2 vUV;
   out vec4 fragColor;
-  
+
   uniform float uTime;
   uniform sampler2D uTexture;
-  
+
   void main() {
     vec4 color = texture(uTexture, vUV);
     fragColor = color;
@@ -56,20 +56,24 @@ PXSL is a simplified shader language that compiles to GLSL WebGL2. It provides:
 ## Built-in Functions
 
 ### Lighting
+
 - `calcLight(pos, normal, lightPos, color)` - Point light calculation
 - `calcAmbient(color, intensity)` - Ambient lighting
 
 ### Color
+
 - `desaturate(color, amount)` - Reduce saturation
 - `adjustBrightness(color, amount)` - Brightness adjustment
 - `blend(colorA, colorB, factor)` - Color blending
 
 ### Effects
+
 - `noise(uv)` - Procedural noise
 - `blur(texture, uv, radius)` - Gaussian blur
 - `wave(uv, amplitude, frequency, time)` - Wave distortion
 
 ### UV Transforms
+
 - `rotate(uv, angle)` - UV rotation
 - `scale(uv, factor)` - UV scaling
 - `offset(uv, delta)` - UV offset
@@ -77,6 +81,7 @@ PXSL is a simplified shader language that compiles to GLSL WebGL2. It provides:
 ## Usage in Game
 
 ### In Manifest
+
 ```json
 {
   "shaders": {
@@ -87,6 +92,7 @@ PXSL is a simplified shader language that compiles to GLSL WebGL2. It provides:
 ```
 
 ### In Scripts
+
 ```lua
 -- Apply shader to sprite
 sprite:set_shader("glow")
@@ -96,16 +102,19 @@ sprite:set_uniform("uGlowIntensity", 0.5)
 ```
 
 ### In Maps
+
 ```json
 {
-  "sprites": [{
-    "id": "magic-orb",
-    "shader": "glow",
-    "shaderParams": {
-      "uGlowIntensity": 0.8,
-      "uGlowColor": [0.5, 0.8, 1.0]
+  "sprites": [
+    {
+      "id": "magic-orb",
+      "shader": "glow",
+      "shaderParams": {
+        "uGlowIntensity": 0.8,
+        "uGlowColor": [0.5, 0.8, 1.0]
+      }
     }
-  }]
+  ]
 }
 ```
 
@@ -120,6 +129,7 @@ sprite:set_uniform("uGlowIntensity", 0.5)
 ## Shader Examples
 
 ### Glow Effect
+
 ```pxsl
 @fragment {
   void main() {
@@ -131,6 +141,7 @@ sprite:set_uniform("uGlowIntensity", 0.5)
 ```
 
 ### Water Ripple
+
 ```pxsl
 @fragment {
   void main() {

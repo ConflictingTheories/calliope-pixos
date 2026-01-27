@@ -51,21 +51,21 @@ export default class TransitionManager {
    */
   start(params = {}) {
     const { effect = 'fade', direction = 'out', duration = 1000 } = params;
-    
+
     const schedule = () => {
       this.isTransitioning = true;
       this.transitionEffect = effect;
       this.transitionDirection = direction;
       this.transitionDuration = duration;
       this.transitionStartTime = performance.now();
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.transitionCallback = resolve;
       });
     };
 
     if (this.isTransitioning) {
       const prevCallback = this.transitionCallback;
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.transitionCallback = () => {
           prevCallback?.();
           schedule().then(resolve);
@@ -177,17 +177,14 @@ export default class TransitionManager {
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(`Could not link transition shader program for effect "${effect}": ${gl.getProgramInfoLog(program)}`);
+      throw new Error(
+        `Could not link transition shader program for effect "${effect}": ${gl.getProgramInfoLog(program)}`
+      );
     }
 
     const quadBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
-    const vertices = new Float32Array([
-      -1.0, -1.0,
-      -1.0, 1.0,
-      1.0, -1.0,
-      1.0, 1.0,
-    ]);
+    const vertices = new Float32Array([-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
     const uProgress = gl.getUniformLocation(program, 'uProgress');

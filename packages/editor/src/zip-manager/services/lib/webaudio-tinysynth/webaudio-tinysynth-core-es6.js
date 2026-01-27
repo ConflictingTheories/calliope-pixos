@@ -1,7 +1,5 @@
 /* global AudioContext, requestAnimationFrame */
 
- 
-
 // Fork of https://github.com/g200kg/webaudio-tinysynth/
 // - ported to ES6
 // - removed code related to the GUI
@@ -19,7 +17,7 @@ function WebAudioTinySynthCore(target) {
       internalcontext: { type: Number, value: 1 },
       tsmode: { type: Number, value: 0 },
       voices: { type: Number, value: 64 },
-      useReverb: { type: Number, value: 1 }
+      useReverb: { type: Number, value: 1 },
     },
     program: [
       // 1-8 : Piano
@@ -165,7 +163,7 @@ function WebAudioTinySynthCore(target) {
       { name: 'Telephone Ring' },
       { name: 'Helicopter' },
       { name: 'Applause' },
-      { name: 'Gunshot' }
+      { name: 'Gunshot' },
     ],
     drummap: [
       // 35
@@ -215,21 +213,21 @@ function WebAudioTinySynthCore(target) {
       { name: 'Mute Cuica' },
       { name: 'Open Cuica' },
       { name: 'Mute Triangle' },
-      { name: 'Open Triangle' }
+      { name: 'Open Triangle' },
     ],
     program1: [
       // 1-8 : Piano
       [
         { w: 'sine', v: 0.4, d: 0.7, r: 0.1 },
-        { w: 'triangle', v: 3, d: 0.7, s: 0.1, g: 1, a: 0.01, k: -1.2 }
+        { w: 'triangle', v: 3, d: 0.7, s: 0.1, g: 1, a: 0.01, k: -1.2 },
       ],
       [
         { w: 'triangle', v: 0.4, d: 0.7, r: 0.1 },
-        { w: 'triangle', v: 4, t: 3, d: 0.4, s: 0.1, g: 1, k: -1, a: 0.01 }
+        { w: 'triangle', v: 4, t: 3, d: 0.4, s: 0.1, g: 1, k: -1, a: 0.01 },
       ],
       [
         { w: 'sine', d: 0.7, r: 0.1 },
-        { w: 'triangle', v: 4, f: 2, d: 0.5, s: 0.5, g: 1, k: -1 }
+        { w: 'triangle', v: 4, f: 2, d: 0.5, s: 0.5, g: 1, k: -1 },
       ],
       [
         { w: 'sine', d: 0.7, v: 0.2 },
@@ -242,62 +240,62 @@ function WebAudioTinySynthCore(target) {
           g: 1,
           k: -1,
           a: 0.01,
-          s: 0.5
-        }
+          s: 0.5,
+        },
       ],
       [
         { w: 'sine', v: 0.35, d: 0.7 },
-        { w: 'sine', v: 3, t: 7, f: 1, d: 1, s: 1, g: 1, k: -0.7 }
+        { w: 'sine', v: 3, t: 7, f: 1, d: 1, s: 1, g: 1, k: -0.7 },
       ],
       [
         { w: 'sine', v: 0.35, d: 0.7 },
-        { w: 'sine', v: 8, t: 7, f: 1, d: 0.5, s: 1, g: 1, k: -0.7 }
+        { w: 'sine', v: 8, t: 7, f: 1, d: 0.5, s: 1, g: 1, k: -0.7 },
       ],
       [
         { w: 'sawtooth', v: 0.34, d: 2 },
-        { w: 'sine', v: 8, f: 0.1, d: 2, s: 1, r: 2, g: 1 }
+        { w: 'sine', v: 8, f: 0.1, d: 2, s: 1, r: 2, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.34, d: 1.5 },
-        { w: 'square', v: 6, f: 0.1, d: 1.5, s: 0.5, r: 2, g: 1 }
+        { w: 'square', v: 6, f: 0.1, d: 1.5, s: 0.5, r: 2, g: 1 },
       ],
       /* 9-16 : Chromatic Perc*/
       [
         { w: 'sine', d: 0.3, r: 0.3 },
-        { w: 'sine', v: 7, t: 11, d: 0.03, g: 1 }
+        { w: 'sine', v: 7, t: 11, d: 0.03, g: 1 },
       ],
       [
         { w: 'sine', d: 0.3, r: 0.3 },
-        { w: 'sine', v: 11, t: 6, d: 0.2, s: 0.4, g: 1 }
+        { w: 'sine', v: 11, t: 6, d: 0.2, s: 0.4, g: 1 },
       ],
       [
         { w: 'sine', v: 0.2, d: 0.3, r: 0.3 },
-        { w: 'sine', v: 11, t: 5, d: 0.1, s: 0.4, g: 1 }
+        { w: 'sine', v: 11, t: 5, d: 0.1, s: 0.4, g: 1 },
       ],
       [
         { w: 'sine', v: 0.2, d: 0.6, r: 0.6 },
-        { w: 'triangle', v: 11, t: 5, f: 1, s: 0.5, g: 1 }
+        { w: 'triangle', v: 11, t: 5, f: 1, s: 0.5, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, d: 0.2, r: 0.2 },
-        { w: 'sine', v: 6, t: 5, d: 0.02, g: 1 }
+        { w: 'sine', v: 6, t: 5, d: 0.02, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, d: 0.2, r: 0.2 },
-        { w: 'sine', v: 7, t: 11, d: 0.03, g: 1 }
+        { w: 'sine', v: 7, t: 11, d: 0.03, g: 1 },
       ],
       [
         { w: 'sine', v: 0.2, d: 1, r: 1 },
-        { w: 'sine', v: 11, t: 3.5, d: 1, r: 1, g: 1 }
+        { w: 'sine', v: 11, t: 3.5, d: 1, r: 1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.2, d: 0.5, r: 0.2 },
-        { w: 'sine', v: 6, t: 2.5, d: 0.2, s: 0.1, r: 0.2, g: 1 }
+        { w: 'sine', v: 6, t: 2.5, d: 0.2, s: 0.1, r: 0.2, g: 1 },
       ],
       /* 17-24 : Organ */
       [
         { w: 'w9999', v: 0.22, s: 0.9 },
-        { w: 'w9999', v: 0.22, t: 2, f: 2, s: 0.9 }
+        { w: 'w9999', v: 0.22, t: 2, f: 2, s: 0.9 },
       ],
       [
         { w: 'w9999', v: 0.2, s: 1 },
@@ -310,161 +308,161 @@ function WebAudioTinySynthCore(target) {
           g: 1,
           h: 0.006,
           r: 0.002,
-          d: 0.002
+          d: 0.002,
         },
-        { w: 'w9999', v: 0.2, t: 2, f: 1, h: 0, s: 1 }
+        { w: 'w9999', v: 0.2, t: 2, f: 1, h: 0, s: 1 },
       ],
       [
         { w: 'w9999', v: 0.2, d: 0.1, s: 0.9 },
-        { w: 'w9999', v: 0.25, t: 4, f: 2, s: 0.5 }
+        { w: 'w9999', v: 0.25, t: 4, f: 2, s: 0.5 },
       ],
       [
         { w: 'w9999', v: 0.3, a: 0.04, s: 0.9 },
-        { w: 'w9999', v: 0.2, t: 8, f: 2, a: 0.04, s: 0.9 }
+        { w: 'w9999', v: 0.2, t: 8, f: 2, a: 0.04, s: 0.9 },
       ],
       [
         { w: 'sine', v: 0.2, a: 0.02, d: 0.05, s: 1 },
-        { w: 'sine', v: 6, t: 3, f: 1, a: 0.02, d: 0.05, s: 1, g: 1 }
+        { w: 'sine', v: 6, t: 3, f: 1, a: 0.02, d: 0.05, s: 1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.2, a: 0.02, d: 0.05, s: 0.8 },
-        { w: 'square', v: 7, t: 3, f: 1, d: 0.05, s: 1.5, g: 1 }
+        { w: 'square', v: 7, t: 3, f: 1, d: 0.05, s: 1.5, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 0.2, s: 0.5 },
-        { w: 'square', v: 1, d: 0.03, s: 2, g: 1 }
+        { w: 'square', v: 1, d: 0.03, s: 2, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 0.1, s: 0.8 },
-        { w: 'square', v: 1, a: 0.3, d: 0.1, s: 2, g: 1 }
+        { w: 'square', v: 1, a: 0.3, d: 0.1, s: 2, g: 1 },
       ],
       /* 25-32 : Guitar */
       [
         { w: 'sine', v: 0.3, d: 0.5, f: 1 },
-        { w: 'triangle', v: 5, t: 3, f: -1, d: 1, s: 0.1, g: 1 }
+        { w: 'triangle', v: 5, t: 3, f: -1, d: 1, s: 0.1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, d: 0.6, f: 1 },
-        { w: 'triangle', v: 12, t: 3, d: 0.6, s: 0.1, g: 1, f: -1 }
+        { w: 'triangle', v: 12, t: 3, d: 0.6, s: 0.1, g: 1, f: -1 },
       ],
       [
         { w: 'triangle', v: 0.3, d: 1, f: 1 },
-        { w: 'triangle', v: 6, f: -1, d: 0.4, s: 0.5, g: 1, t: 3 }
+        { w: 'triangle', v: 6, f: -1, d: 0.4, s: 0.5, g: 1, t: 3 },
       ],
       [
         { w: 'sine', v: 0.3, d: 1, f: -1 },
-        { w: 'triangle', v: 11, f: 1, d: 0.4, s: 0.5, g: 1, t: 3 }
+        { w: 'triangle', v: 11, f: 1, d: 0.4, s: 0.5, g: 1, t: 3 },
       ],
       [
         { w: 'sine', v: 0.4, d: 0.1, r: 0.01 },
-        { w: 'sine', v: 7, g: 1 }
+        { w: 'sine', v: 7, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.4, d: 1, f: 1 },
-        { w: 'square', v: 4, f: -1, d: 1, s: 0.7, g: 1 }
+        { w: 'square', v: 4, f: -1, d: 1, s: 0.7, g: 1 },
       ], //[{w:"triangle",v:0.35,d:1,f:1,},{w:"square",v:7,f:-1,d:0.3,s:0.5,g:1,}],
       [
         { w: 'triangle', v: 0.35, d: 1, f: 1 },
-        { w: 'square', v: 7, f: -1, d: 0.3, s: 0.5, g: 1 }
+        { w: 'square', v: 7, f: -1, d: 0.3, s: 0.5, g: 1 },
       ], //[{w:"triangle",v:0.4,d:1,f:1,},{w:"square",v:4,f:-1,d:1,s:0.7,g:1,}],//[{w:"triangle",v:0.4,d:1,},{w:"square",v:4,f:2,d:1,s:0.7,g:1,}],
       [
         { w: 'sine', v: 0.2, t: 1.5, a: 0.005, h: 0.2, d: 0.6 },
-        { w: 'sine', v: 11, t: 5, f: 2, d: 1, s: 0.5, g: 1 }
+        { w: 'sine', v: 11, t: 5, f: 2, d: 1, s: 0.5, g: 1 },
       ],
       /* 33-40 : Bass */
       [
         { w: 'sine', d: 0.3 },
-        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 }
+        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 },
       ],
       [
         { w: 'sine', d: 0.3 },
-        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 }
+        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 },
       ],
       [
         { w: 'w9999', d: 0.3, v: 0.7, s: 0.5 },
-        { w: 'sawtooth', v: 1.2, d: 0.02, s: 0.5, g: 1, h: 0, r: 0.02 }
+        { w: 'sawtooth', v: 1.2, d: 0.02, s: 0.5, g: 1, h: 0, r: 0.02 },
       ],
       [
         { w: 'sine', d: 0.3 },
-        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 }
+        { w: 'sine', v: 4, t: 3, d: 1, s: 1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, t: 2, d: 1 },
-        { w: 'triangle', v: 15, t: 2.5, d: 0.04, s: 0.1, g: 1 }
+        { w: 'triangle', v: 15, t: 2.5, d: 0.04, s: 0.1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, t: 2, d: 1 },
-        { w: 'triangle', v: 15, t: 2.5, d: 0.04, s: 0.1, g: 1 }
+        { w: 'triangle', v: 15, t: 2.5, d: 0.04, s: 0.1, g: 1 },
       ],
       [
         { w: 'triangle', d: 0.7 },
-        { w: 'square', v: 0.4, t: 0.5, f: 1, d: 0.2, s: 10, g: 1 }
+        { w: 'square', v: 0.4, t: 0.5, f: 1, d: 0.2, s: 10, g: 1 },
       ],
       [
         { w: 'triangle', d: 0.7 },
-        { w: 'square', v: 0.4, t: 0.5, f: 1, d: 0.2, s: 10, g: 1 }
+        { w: 'square', v: 0.4, t: 0.5, f: 1, d: 0.2, s: 10, g: 1 },
       ],
       /* 41-48 : Strings */
       [
         { w: 'sawtooth', v: 0.4, a: 0.1, d: 11 },
-        { w: 'sine', v: 5, d: 11, s: 0.2, g: 1 }
+        { w: 'sine', v: 5, d: 11, s: 0.2, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.4, a: 0.1, d: 11 },
-        { w: 'sine', v: 5, d: 11, s: 0.2, g: 1 }
+        { w: 'sine', v: 5, d: 11, s: 0.2, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.4, a: 0.1, d: 11 },
-        { w: 'sine', v: 5, t: 0.5, d: 11, s: 0.2, g: 1 }
+        { w: 'sine', v: 5, t: 0.5, d: 11, s: 0.2, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.4, a: 0.1, d: 11 },
-        { w: 'sine', v: 5, t: 0.5, d: 11, s: 0.2, g: 1 }
+        { w: 'sine', v: 5, t: 0.5, d: 11, s: 0.2, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, a: 0.1, d: 11 },
-        { w: 'sine', v: 6, f: 2.5, d: 0.05, s: 1.1, g: 1 }
+        { w: 'sine', v: 6, f: 2.5, d: 0.05, s: 1.1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, d: 0.1, r: 0.1 },
-        { w: 'square', v: 4, t: 3, d: 1, s: 0.2, g: 1 }
+        { w: 'square', v: 4, t: 3, d: 1, s: 0.2, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, d: 0.5, r: 0.5 },
-        { w: 'sine', v: 7, t: 2, f: 2, d: 1, r: 1, g: 1 }
+        { w: 'sine', v: 7, t: 2, f: 2, d: 1, r: 1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.6, h: 0.03, d: 0.3, r: 0.3, t: 0.5 },
-        { w: 'n0', v: 8, t: 1.5, d: 0.08, r: 0.08, g: 1 }
+        { w: 'n0', v: 8, t: 1.5, d: 0.08, r: 0.08, g: 1 },
       ],
       /* 49-56 : Ensamble */
       [
         { w: 'sawtooth', v: 0.3, a: 0.03, s: 0.5 },
-        { w: 'sawtooth', v: 0.2, t: 2, f: 2, d: 1, s: 2 }
+        { w: 'sawtooth', v: 0.2, t: 2, f: 2, d: 1, s: 2 },
       ],
       [
         { w: 'sawtooth', v: 0.3, f: -2, a: 0.03, s: 0.5 },
-        { w: 'sawtooth', v: 0.2, t: 2, f: 2, d: 1, s: 2 }
+        { w: 'sawtooth', v: 0.2, t: 2, f: 2, d: 1, s: 2 },
       ],
       [
         { w: 'sawtooth', v: 0.2, a: 0.02, s: 1 },
-        { w: 'sawtooth', v: 0.2, t: 2, f: 2, a: 1, d: 1, s: 1 }
+        { w: 'sawtooth', v: 0.2, t: 2, f: 2, a: 1, d: 1, s: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.2, a: 0.02, s: 1 },
-        { w: 'sawtooth', v: 0.2, f: 2, a: 0.02, d: 1, s: 1 }
+        { w: 'sawtooth', v: 0.2, f: 2, a: 0.02, d: 1, s: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.03, s: 1 },
-        { w: 'sine', v: 3, t: 5, f: 1, d: 1, s: 1, g: 1 }
+        { w: 'sine', v: 3, t: 5, f: 1, d: 1, s: 1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, a: 0.03, s: 0.9 },
-        { w: 'sine', v: 1, t: 2, f: 3, d: 0.03, s: 0.2, g: 1 }
+        { w: 'sine', v: 1, t: 2, f: 3, d: 0.03, s: 0.2, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.6, a: 0.05, s: 0.5 },
-        { w: 'sine', v: 1, f: 0.8, d: 0.2, s: 0.2, g: 1 }
+        { w: 'sine', v: 1, f: 0.8, d: 0.2, s: 0.2, g: 1 },
       ],
       [
         { w: 'square', v: 0.15, a: 0.01, d: 0.2, r: 0.2, t: 0.5, h: 0.03 },
@@ -477,141 +475,141 @@ function WebAudioTinySynthCore(target) {
           a: 0.02,
           d: 0.15,
           r: 0.15,
-          h: 0.03
+          h: 0.03,
         },
-        { g: 3, w: 'square', v: 4, f: -0.5, a: 0.01, h: 0.02, d: 0.15, r: 11 }
+        { g: 3, w: 'square', v: 4, f: -0.5, a: 0.01, h: 0.02, d: 0.15, r: 11 },
       ],
       /* 57-64 : Brass */
       [
         { w: 'square', v: 0.2, a: 0.01, d: 1, s: 0.6, r: 0.04 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.5, r: 0.08 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.04, d: 1, s: 0.4, r: 0.08 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.15, a: 0.04, s: 1 },
-        { w: 'sine', v: 2, d: 0.1, g: 1 }
+        { w: 'sine', v: 2, d: 0.1, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.5, r: 0.08 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.6, r: 0.08 },
-        { w: 'sine', v: 1, f: 0.2, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, f: 0.2, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 0.5, s: 0.7, r: 0.08 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.5, r: 0.08 },
-        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 }
+        { w: 'sine', v: 1, d: 0.1, s: 4, g: 1 },
       ],
       /* 65-72 : Reed */
       [
         { w: 'square', v: 0.2, a: 0.02, d: 2, s: 0.6 },
-        { w: 'sine', v: 2, d: 1, g: 1 }
+        { w: 'sine', v: 2, d: 1, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 2, s: 0.6 },
-        { w: 'sine', v: 2, d: 1, g: 1 }
+        { w: 'sine', v: 2, d: 1, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.6 },
-        { w: 'sine', v: 2, d: 1, g: 1 }
+        { w: 'sine', v: 2, d: 1, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.02, d: 1, s: 0.6 },
-        { w: 'sine', v: 2, d: 1, g: 1 }
+        { w: 'sine', v: 2, d: 1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, a: 0.02, d: 0.7, s: 0.5 },
-        { w: 'square', v: 5, t: 2, d: 0.2, s: 0.5, g: 1 }
+        { w: 'square', v: 5, t: 2, d: 0.2, s: 0.5, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.05, d: 0.2, s: 0.8 },
-        { w: 'sawtooth', v: 6, f: 0.1, d: 0.1, s: 0.3, g: 1 }
+        { w: 'sawtooth', v: 6, f: 0.1, d: 0.1, s: 0.3, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.03, d: 0.2, s: 0.4 },
-        { w: 'square', v: 7, f: 0.2, d: 1, s: 0.1, g: 1 }
+        { w: 'square', v: 7, f: 0.2, d: 1, s: 0.1, g: 1 },
       ],
       [
         { w: 'square', v: 0.2, a: 0.05, d: 0.1, s: 0.8 },
-        { w: 'square', v: 4, d: 0.1, s: 1.1, g: 1 }
+        { w: 'square', v: 4, d: 0.1, s: 1.1, g: 1 },
       ],
       /* 73-80 : Pipe */
       [
         { w: 'sine', a: 0.02, d: 2 },
-        { w: 'sine', v: 6, t: 2, d: 0.04, g: 1 }
+        { w: 'sine', v: 6, t: 2, d: 0.04, g: 1 },
       ],
       [
         { w: 'sine', v: 0.7, a: 0.03, d: 0.4, s: 0.4 },
-        { w: 'sine', v: 4, t: 2, f: 0.2, d: 0.4, g: 1 }
+        { w: 'sine', v: 4, t: 2, f: 0.2, d: 0.4, g: 1 },
       ],
       [
         { w: 'sine', v: 0.7, a: 0.02, d: 0.4, s: 0.6 },
-        { w: 'sine', v: 3, t: 2, d: 0, s: 1, g: 1 }
+        { w: 'sine', v: 3, t: 2, d: 0, s: 1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, a: 0.06, d: 0.3, s: 0.3 },
-        { w: 'sine', v: 7, t: 2, d: 0.2, s: 0.2, g: 1 }
+        { w: 'sine', v: 7, t: 2, d: 0.2, s: 0.2, g: 1 },
       ],
       [
         { w: 'sine', a: 0.02, d: 0.3, s: 0.3 },
-        { w: 'sawtooth', v: 3, t: 2, d: 0.3, g: 1 }
+        { w: 'sawtooth', v: 3, t: 2, d: 0.3, g: 1 },
       ],
       [
         { w: 'sine', v: 0.4, a: 0.02, d: 2, s: 0.1 },
-        { w: 'sawtooth', v: 8, t: 2, f: 1, d: 0.5, g: 1 }
+        { w: 'sawtooth', v: 8, t: 2, f: 1, d: 0.5, g: 1 },
       ],
       [
         { w: 'sine', v: 0.7, a: 0.03, d: 0.5, s: 0.3 },
-        { w: 'sine', v: 0.003, t: 0, f: 4, d: 0.1, s: 0.002, g: 1 }
+        { w: 'sine', v: 0.003, t: 0, f: 4, d: 0.1, s: 0.002, g: 1 },
       ],
       [
         { w: 'sine', v: 0.7, a: 0.02, d: 2 },
-        { w: 'sine', v: 1, t: 2, f: 1, d: 0.02, g: 1 }
+        { w: 'sine', v: 1, t: 2, f: 1, d: 0.02, g: 1 },
       ],
       /* 81-88 : SynthLead */
       [
         { w: 'square', v: 0.3, d: 1, s: 0.5 },
-        { w: 'square', v: 1, f: 0.2, d: 1, s: 0.5, g: 1 }
+        { w: 'square', v: 1, f: 0.2, d: 1, s: 0.5, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.3, d: 2, s: 0.5 },
-        { w: 'square', v: 2, f: 0.1, s: 0.5, g: 1 }
+        { w: 'square', v: 2, f: 0.1, s: 0.5, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.5, a: 0.05, d: 2, s: 0.6 },
-        { w: 'sine', v: 4, t: 2, g: 1 }
+        { w: 'sine', v: 4, t: 2, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.01, d: 2, s: 0.3 },
-        { w: 'sine', v: 22, t: 2, f: 1, d: 0.03, s: 0.2, g: 1 }
+        { w: 'sine', v: 22, t: 2, f: 1, d: 0.03, s: 0.2, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.3, d: 1, s: 0.5 },
-        { w: 'sine', v: 11, t: 11, a: 0.2, d: 0.05, s: 0.3, g: 1 }
+        { w: 'sine', v: 11, t: 11, a: 0.2, d: 0.05, s: 0.3, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.06, d: 1, s: 0.5 },
-        { w: 'sine', v: 7, f: 1, d: 1, s: 0.2, g: 1 }
+        { w: 'sine', v: 7, f: 1, d: 1, s: 0.2, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.3, a: 0.03, d: 0.7, s: 0.3, r: 0.2 },
-        { w: 'sawtooth', v: 0.3, t: 0.75, d: 0.7, a: 0.1, s: 0.3, r: 0.2 }
+        { w: 'sawtooth', v: 0.3, t: 0.75, d: 0.7, a: 0.1, s: 0.3, r: 0.2 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.01, d: 0.7, s: 0.5 },
-        { w: 'square', v: 5, t: 0.5, d: 0.7, s: 0.5, g: 1 }
+        { w: 'square', v: 5, t: 0.5, d: 0.7, s: 0.5, g: 1 },
       ],
       /* 89-96 : SynthPad */
       [
@@ -627,41 +625,41 @@ function WebAudioTinySynthCore(target) {
           s: 0.5,
           r: 0.1,
           b: 0,
-          c: 0
-        }
+          c: 0,
+        },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.05, d: 1, s: 0.7, r: 0.3 },
-        { w: 'sine', v: 2, f: 1, d: 0.3, s: 1, g: 1 }
+        { w: 'sine', v: 2, f: 1, d: 0.3, s: 1, g: 1 },
       ],
       [
         { w: 'square', v: 0.3, a: 0.03, d: 0.5, s: 0.3, r: 0.1 },
-        { w: 'square', v: 4, f: 1, a: 0.03, d: 0.1, g: 1 }
+        { w: 'square', v: 4, f: 1, a: 0.03, d: 0.1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.08, d: 1, s: 0.3, r: 0.1 },
-        { w: 'square', v: 2, f: 1, d: 0.3, s: 0.3, g: 1, t: 4, a: 0.08 }
+        { w: 'square', v: 2, f: 1, d: 0.3, s: 0.3, g: 1, t: 4, a: 0.08 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.05, d: 1, s: 0.3, r: 0.1 },
-        { w: 'sine', v: 0.1, t: 2.001, f: 1, d: 1, s: 50, g: 1 }
+        { w: 'sine', v: 0.1, t: 2.001, f: 1, d: 1, s: 50, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.03, d: 0.7, s: 0.3, r: 0.2 },
-        { w: 'sine', v: 12, t: 7, f: 1, d: 0.5, s: 1.7, g: 1 }
+        { w: 'sine', v: 12, t: 7, f: 1, d: 0.5, s: 1.7, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.05, d: 1, s: 0.3, r: 0.1 },
-        { w: 'sawtooth', v: 22, t: 6, d: 0.06, s: 0.3, g: 1 }
+        { w: 'sawtooth', v: 22, t: 6, d: 0.06, s: 0.3, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, a: 0.05, d: 11, r: 0.3 },
-        { w: 'triangle', v: 1, d: 1, s: 8, g: 1 }
+        { w: 'triangle', v: 1, d: 1, s: 8, g: 1 },
       ],
       /* 97-104 : FX */
       [
         { w: 'sawtooth', v: 0.3, d: 4, s: 0.8, r: 0.1 },
-        { w: 'square', v: 1, t: 2, f: 8, a: 1, d: 1, s: 1, r: 0.1, g: 1 }
+        { w: 'square', v: 1, t: 2, f: 8, a: 1, d: 1, s: 1, r: 0.1, g: 1 },
       ],
       [
         {
@@ -672,95 +670,95 @@ function WebAudioTinySynthCore(target) {
           t: 0.8,
           a: 0.2,
           p: 1.25,
-          q: 0.2
+          q: 0.2,
         },
-        { w: 'sawtooth', v: 0.2, a: 0.2, d: 0.3, s: 1, t: 1.2, p: 1.25, q: 0.2 }
+        { w: 'sawtooth', v: 0.2, a: 0.2, d: 0.3, s: 1, t: 1.2, p: 1.25, q: 0.2 },
       ],
       [
         { w: 'sine', v: 0.3, d: 1, s: 0.3 },
-        { w: 'square', v: 22, t: 11, d: 0.5, s: 0.1, g: 1 }
+        { w: 'square', v: 22, t: 11, d: 0.5, s: 0.1, g: 1 },
       ],
       [
         { w: 'sawtooth', v: 0.3, a: 0.04, d: 1, s: 0.8, r: 0.1 },
-        { w: 'square', v: 1, t: 0.5, d: 1, s: 2, g: 1 }
+        { w: 'square', v: 1, t: 0.5, d: 1, s: 2, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.3, d: 1, s: 0.3 },
-        { w: 'sine', v: 22, t: 6, d: 0.6, s: 0.05, g: 1 }
+        { w: 'sine', v: 22, t: 6, d: 0.6, s: 0.05, g: 1 },
       ],
       [
         { w: 'sine', v: 0.6, a: 0.1, d: 0.05, s: 0.4 },
-        { w: 'sine', v: 5, t: 5, f: 1, d: 0.05, s: 0.3, g: 1 }
+        { w: 'sine', v: 5, t: 5, f: 1, d: 0.05, s: 0.3, g: 1 },
       ],
       [
         { w: 'sine', a: 0.1, d: 0.05, s: 0.4, v: 0.8 },
-        { w: 'sine', v: 5, t: 5, f: 1, d: 0.05, s: 0.3, g: 1 }
+        { w: 'sine', v: 5, t: 5, f: 1, d: 0.05, s: 0.3, g: 1 },
       ],
       [
         { w: 'square', v: 0.3, a: 0.1, d: 0.1, s: 0.4 },
-        { w: 'square', v: 1, f: 1, d: 0.3, s: 0.1, g: 1 }
+        { w: 'square', v: 1, f: 1, d: 0.3, s: 0.1, g: 1 },
       ],
       /* 105-112 : Ethnic */
       [
         { w: 'sawtooth', v: 0.3, d: 0.5, r: 0.5 },
-        { w: 'sawtooth', v: 11, t: 5, d: 0.05, g: 1 }
+        { w: 'sawtooth', v: 11, t: 5, d: 0.05, g: 1 },
       ],
       [
         { w: 'square', v: 0.3, d: 0.2, r: 0.2 },
-        { w: 'square', v: 7, t: 3, d: 0.05, g: 1 }
+        { w: 'square', v: 7, t: 3, d: 0.05, g: 1 },
       ],
       [
         { w: 'triangle', d: 0.2, r: 0.2 },
-        { w: 'square', v: 9, t: 3, d: 0.1, r: 0.1, g: 1 }
+        { w: 'square', v: 9, t: 3, d: 0.1, r: 0.1, g: 1 },
       ],
       [
         { w: 'triangle', d: 0.3, r: 0.3 },
-        { w: 'square', v: 6, t: 3, d: 1, r: 1, g: 1 }
+        { w: 'square', v: 6, t: 3, d: 1, r: 1, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.4, d: 0.2, r: 0.2 },
-        { w: 'square', v: 22, t: 12, d: 0.1, r: 0.1, g: 1 }
+        { w: 'square', v: 22, t: 12, d: 0.1, r: 0.1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.25, a: 0.02, d: 0.05, s: 0.8 },
-        { w: 'square', v: 1, t: 2, d: 0.03, s: 11, g: 1 }
+        { w: 'square', v: 1, t: 2, d: 0.03, s: 11, g: 1 },
       ],
       [
         { w: 'sine', v: 0.3, a: 0.05, d: 11 },
-        { w: 'square', v: 7, t: 3, f: 1, s: 0.7, g: 1 }
+        { w: 'square', v: 7, t: 3, f: 1, s: 0.7, g: 1 },
       ],
       [
         { w: 'square', v: 0.3, a: 0.05, d: 0.1, s: 0.8 },
-        { w: 'square', v: 4, d: 0.1, s: 1.1, g: 1 }
+        { w: 'square', v: 4, d: 0.1, s: 1.1, g: 1 },
       ],
       /* 113-120 : Percussive */
       [
         { w: 'sine', v: 0.4, d: 0.3, r: 0.3 },
-        { w: 'sine', v: 7, t: 9, d: 0.1, r: 0.1, g: 1 }
+        { w: 'sine', v: 7, t: 9, d: 0.1, r: 0.1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.7, d: 0.1, r: 0.1 },
-        { w: 'sine', v: 22, t: 7, d: 0.05, g: 1 }
+        { w: 'sine', v: 22, t: 7, d: 0.05, g: 1 },
       ],
       [
         { w: 'sine', v: 0.6, d: 0.15, r: 0.15 },
-        { w: 'square', v: 11, t: 3.2, d: 0.1, r: 0.1, g: 1 }
+        { w: 'square', v: 11, t: 3.2, d: 0.1, r: 0.1, g: 1 },
       ],
       [
         { w: 'sine', v: 0.8, d: 0.07, r: 0.07 },
-        { w: 'square', v: 11, t: 7, r: 0.01, g: 1 }
+        { w: 'square', v: 11, t: 7, r: 0.01, g: 1 },
       ],
       [
         { w: 'triangle', v: 0.7, t: 0.5, d: 0.2, r: 0.2, p: 0.95 },
-        { w: 'n0', v: 9, g: 1, d: 0.2, r: 0.2 }
+        { w: 'n0', v: 9, g: 1, d: 0.2, r: 0.2 },
       ],
       [
         { w: 'sine', v: 0.7, d: 0.1, r: 0.1, p: 0.9 },
-        { w: 'square', v: 14, t: 2, d: 0.005, r: 0.005, g: 1 }
+        { w: 'square', v: 14, t: 2, d: 0.005, r: 0.005, g: 1 },
       ],
       [
         { w: 'square', d: 0.15, r: 0.15, p: 0.5 },
-        { w: 'square', v: 4, t: 5, d: 0.001, r: 0.001, g: 1 }
+        { w: 'square', v: 4, t: 5, d: 0.001, r: 0.001, g: 1 },
       ],
       [{ w: 'n1', v: 0.3, a: 1, s: 1, d: 0.15, r: 0, t: 0.5 }],
       /* 121-128 : SE */
@@ -777,8 +775,8 @@ function WebAudioTinySynthCore(target) {
           d: 0.1,
           r: 0.1,
           b: 0,
-          c: 0
-        }
+          c: 0,
+        },
       ],
       [{ w: 'n0', v: 0.2, a: 0.05, h: 0.02, d: 0.02, r: 0.02 }],
       [{ w: 'n0', v: 0.4, a: 1, d: 1, t: 0.25 }],
@@ -797,25 +795,25 @@ function WebAudioTinySynthCore(target) {
           s: 1,
           r: 0.1,
           b: 0,
-          c: 0
-        }
+          c: 0,
+        },
       ],
       [
         { w: 'square', v: 0.3, t: 0.25, d: 11, s: 1 },
-        { w: 'square', v: 12, t: 0, f: 8, d: 1, s: 1, r: 11, g: 1 }
+        { w: 'square', v: 12, t: 0, f: 8, d: 1, s: 1, r: 11, g: 1 },
       ],
       [
         { w: 'n0', v: 0.4, t: 0.5, a: 1, d: 11, s: 1, r: 0.5 },
-        { w: 'square', v: 1, t: 0, f: 14, d: 1, s: 1, r: 11, g: 1 }
+        { w: 'square', v: 1, t: 0, f: 14, d: 1, s: 1, r: 11, g: 1 },
       ],
       [
         { w: 'sine', t: 0, f: 1221, a: 0.2, d: 1, r: 0.25, s: 1 },
-        { g: 1, w: 'n0', v: 3, t: 0.5, d: 1, s: 1, r: 1 }
+        { g: 1, w: 'n0', v: 3, t: 0.5, d: 1, s: 1, r: 1 },
       ],
       [
         { w: 'sine', d: 0.4, r: 0.4, p: 0.1, t: 2.5, v: 1 },
-        { w: 'n0', v: 12, t: 2, d: 1, r: 1, g: 1 }
-      ]
+        { w: 'n0', v: 12, t: 2, d: 1, r: 1, g: 1 },
+      ],
     ],
     program0: [
       // 1-8 : Piano
@@ -961,16 +959,16 @@ function WebAudioTinySynthCore(target) {
       [{ w: 'triangle', d: 0.5, t: 0, f: 444, s: 1 }],
       [{ w: 'n0', v: 0.4, d: 1, t: 0, f: 22, s: 1 }],
       [{ w: 'n0', v: 0.5, a: 0.2, d: 11, t: 0, f: 44 }],
-      [{ w: 'n0', v: 0.5, t: 0.25, d: 0.4, r: 0.4 }]
+      [{ w: 'n0', v: 0.5, t: 0.25, d: 0.4, r: 0.4 }],
     ],
     drummap1: [
       /*35*/ [
         { w: 'triangle', t: 0, f: 70, v: 1, d: 0.05, h: 0.03, p: 0.9, q: 0.1 },
-        { w: 'n0', g: 1, t: 6, v: 17, r: 0.01, h: 0, p: 0 }
+        { w: 'n0', g: 1, t: 6, v: 17, r: 0.01, h: 0, p: 0 },
       ],
       [
         { w: 'triangle', t: 0, f: 88, v: 1, d: 0.05, h: 0.03, p: 0.5, q: 0.1 },
-        { w: 'n0', g: 1, t: 5, v: 42, r: 0.01, h: 0, p: 0 }
+        { w: 'n0', g: 1, t: 5, v: 42, r: 0.01, h: 0, p: 0 },
       ],
       [{ w: 'n0', f: 222, p: 0, t: 0, r: 0.01, h: 0 }],
       [
@@ -982,18 +980,18 @@ function WebAudioTinySynthCore(target) {
           t: 0,
           h: 0.03,
           p: 0.9,
-          q: 0.1
+          q: 0.1,
         },
         { w: 'n0', v: 0.6, t: 0, f: 70, h: 0.02, r: 0.01, p: 0 },
-        { g: 1, w: 'square', v: 2, t: 0, f: 360, r: 0.01, b: 0, c: 0 }
+        { g: 1, w: 'square', v: 2, t: 0, f: 360, r: 0.01, b: 0, c: 0 },
       ],
       [
         { w: 'square', f: 1150, v: 0.34, t: 0, r: 0.03, h: 0.025, d: 0.03 },
-        { g: 1, w: 'n0', t: 0, f: 13, h: 0.025, d: 0.1, s: 1, r: 0.1, v: 1 }
+        { g: 1, w: 'n0', t: 0, f: 13, h: 0.025, d: 0.1, s: 1, r: 0.1, v: 1 },
       ],
       /*40*/ [
         { w: 'triangle', f: 200, v: 1, d: 0.06, t: 0, r: 0.06 },
-        { w: 'n0', g: 1, t: 0, f: 400, v: 12, r: 0.02, d: 0.02 }
+        { w: 'n0', g: 1, t: 0, f: 400, v: 12, r: 0.02, d: 0.02 },
       ],
       [
         {
@@ -1004,9 +1002,9 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.4, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.4, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [{ w: 'n1', f: 390, v: 0.25, r: 0.01, t: 0 }],
       [
@@ -1018,9 +1016,9 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.5, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.5, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [{ w: 'n1', v: 0.25, f: 390, r: 0.03, t: 0, h: 0.005, d: 0.03 }],
       /*45*/ [
@@ -1032,13 +1030,13 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [
         { w: 'n1', v: 0.25, f: 390, t: 0, d: 0.2, r: 0.2 },
-        { w: 'n0', v: 0.3, t: 0, c: 0, f: 440, h: 0.005, d: 0.05 }
+        { w: 'n0', v: 0.3, t: 0, c: 0, f: 440, h: 0.005, d: 0.05 },
       ],
       [
         {
@@ -1049,9 +1047,9 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [
         {
@@ -1062,13 +1060,13 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [
         { w: 'n1', v: 0.3, f: 1200, d: 0.2, r: 0.2, h: 0.05, t: 0 },
-        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, p: 1.2, f: 440 }
+        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, p: 1.2, f: 440 },
       ],
       /*50*/ [
         {
@@ -1079,32 +1077,32 @@ function WebAudioTinySynthCore(target) {
           h: 0.02,
           p: 0.5,
           t: 0,
-          r: 0.12
+          r: 0.12,
         },
-        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 }
+        { g: 1, w: 'n0', v: 5, t: 0.3, h: 0.015, d: 0.005, r: 0.005 },
       ],
       [
         { w: 'n1', f: 500, v: 0.15, d: 0.4, r: 0.4, h: 0, t: 0 },
-        { w: 'n0', v: 0.1, t: 0, r: 0.01, f: 440 }
+        { w: 'n0', v: 0.1, t: 0, r: 0.01, f: 440 },
       ],
       [
         { w: 'n1', v: 0.3, f: 800, d: 0.2, r: 0.2, h: 0.05, t: 0 },
-        { w: 'square', t: 0, v: 1, d: 0.1, r: 0.1, p: 0.1, f: 220, g: 1 }
+        { w: 'square', t: 0, v: 1, d: 0.1, r: 0.1, p: 0.1, f: 220, g: 1 },
       ],
       [
         { w: 'sine', f: 1651, v: 0.15, d: 0.2, r: 0.2, h: 0, t: 0 },
         { w: 'sawtooth', g: 1, t: 1.21, v: 7.2, d: 0.1, r: 11, h: 1 },
-        { g: 1, w: 'n0', v: 3.1, t: 0.152, d: 0.002, r: 0.002 }
+        { g: 1, w: 'n0', v: 3.1, t: 0.152, d: 0.002, r: 0.002 },
       ],
       null,
       /*55*/ [
         { w: 'n1', v: 0.3, f: 1200, d: 0.2, r: 0.2, h: 0.05, t: 0 },
-        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, p: 1.2, f: 440 }
+        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, p: 1.2, f: 440 },
       ],
       null,
       [
         { w: 'n1', v: 0.3, f: 555, d: 0.25, r: 0.25, h: 0.05, t: 0 },
-        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, f: 440, a: 0.005, h: 0.02 }
+        { w: 'n1', t: 0, v: 1, d: 0.1, r: 0.1, f: 440, a: 0.005, h: 0.02 },
       ],
       [
         { w: 'sawtooth', f: 776, v: 0.2, d: 0.3, t: 0, r: 0.3 },
@@ -1119,13 +1117,13 @@ function WebAudioTinySynthCore(target) {
           d: 0.1,
           s: 1,
           r: 0.1,
-          c: 0
+          c: 0,
         },
-        { g: 11, w: 'sine', v: 0.1, t: 0, f: 22, d: 0.3, r: 0.3, b: 0, c: 0 }
+        { g: 11, w: 'sine', v: 0.1, t: 0, f: 22, d: 0.3, r: 0.3, b: 0, c: 0 },
       ],
       [
         { w: 'n1', f: 440, v: 0.15, d: 0.4, r: 0.4, h: 0, t: 0 },
-        { w: 'n0', v: 0.4, t: 0, r: 0.01, f: 440 }
+        { w: 'n0', v: 0.4, t: 0, r: 0.01, f: 440 },
       ],
       /*60*/ null,
       null,
@@ -1149,12 +1147,12 @@ function WebAudioTinySynthCore(target) {
       null,
       /*80*/ [
         { w: 'sine', f: 1720, v: 0.3, d: 0.02, t: 0, r: 0.02 },
-        { w: 'square', g: 1, t: 0, f: 2876, v: 6, d: 0.2, s: 1, r: 0.2 }
+        { w: 'square', g: 1, t: 0, f: 2876, v: 6, d: 0.2, s: 1, r: 0.2 },
       ],
       [
         { w: 'sine', f: 1720, v: 0.3, d: 0.25, t: 0, r: 0.25 },
-        { w: 'square', g: 1, t: 0, f: 2876, v: 6, d: 0.2, s: 1, r: 0.2 }
-      ]
+        { w: 'square', g: 1, t: 0, f: 2876, v: 6, d: 0.2, s: 1, r: 0.2 },
+      ],
     ],
     drummap0: [
       /*35*/ [{ w: 'triangle', t: 0, f: 110, v: 1, d: 0.05, h: 0.02, p: 0.1 }],
@@ -1167,8 +1165,8 @@ function WebAudioTinySynthCore(target) {
           d: 0.1,
           p: 0.1,
           h: 0.02,
-          r: 0.01
-        }
+          r: 0.01,
+        },
       ],
       [{ w: 'n0', f: 392, v: 0.5, d: 0.01, p: 0, t: 0, r: 0.05 }],
       [{ w: 'n0', f: 33, d: 0.05, t: 0 }],
@@ -1214,7 +1212,7 @@ function WebAudioTinySynthCore(target) {
       [{ w: 'n0', f: 330, v: 0.3, t: 0 }],
       [{ w: 'n0', f: 330, v: 0.3, t: 0, h: 0.1, r: 0.01, p: 0.7 }],
       /*80*/ [{ w: 'sine', t: 0, f: 1200, v: 0.3, r: 0.01 }],
-      [{ w: 'sine', t: 0, f: 1200, v: 0.3, d: 0.2, r: 0.2 }]
+      [{ w: 'sine', t: 0, f: 1200, v: 0.3, d: 0.2, r: 0.2 }],
     ],
     init: () => {
       const that = this;
@@ -1231,7 +1229,7 @@ function WebAudioTinySynthCore(target) {
       that.masterTuningF = 0;
       that.tuningC = [];
       that.tuningF = [];
-      (that.maxTick = 0), (that.playTick = 0), (that.playing = 0);
+      ((that.maxTick = 0), (that.playTick = 0), (that.playing = 0));
       that.releaseRatio = 3.5;
       for (let i = 0; i < 16; ++i) {
         that.pg[i] = 0;
@@ -1289,22 +1287,22 @@ function WebAudioTinySynthCore(target) {
       }
       that.isReady = 1;
     },
-    setMasterVol: (v) => {
+    setMasterVol: v => {
       const that = this;
       if (v != undefined) that.masterVol = v;
       if (that.out) that.out.gain.value = that.masterVol;
     },
-    setReverbLev: (v) => {
+    setReverbLev: v => {
       const that = this;
       if (v != undefined) that.reverbLev = v;
       const r = parseFloat(that.reverbLev);
       if (that.rev && !isNaN(r)) that.rev.gain.value = r * 8;
     },
-    setLoop: (f) => {
+    setLoop: f => {
       const that = this;
       that.loop = f;
     },
-    setVoices: (v) => {
+    setVoices: v => {
       const that = this;
       that.voices = v;
     },
@@ -1313,10 +1311,10 @@ function WebAudioTinySynthCore(target) {
       return {
         play: that.playing,
         maxTick: that.maxTick,
-        curTick: that.playTick
+        curTick: that.playTick,
       };
     },
-    locateMIDI: (tick) => {
+    locateMIDI: tick => {
       const that = this;
       let i,
         p = that.playing;
@@ -1397,8 +1395,7 @@ function WebAudioTinySynthCore(target) {
       dummy.frequency.value = 0;
       dummy.start(0);
       dummy.stop(that.audioContext.currentTime + 0.001);
-      if (that.playTick >= that.maxTick)
-        (that.playTick = 0), (that.playIndex = 0);
+      if (that.playTick >= that.maxTick) ((that.playTick = 0), (that.playIndex = 0));
       that.playTime = that.audioContext.currentTime + 0.1;
       that.tick2Time = (4 * 60) / that.song.tempo / that.song.timebase;
       that.playing = 1;
@@ -1432,7 +1429,7 @@ function WebAudioTinySynthCore(target) {
       function Msg(song, tick, s, i) {
         let v = s[i];
         datalen = 1;
-        if ((v & 0x80) == 0) (v = runst), (datalen = 0);
+        if ((v & 0x80) == 0) ((v = runst), (datalen = 0));
         runst = v;
         let len, exd, val;
         switch (v & 0xf0) {
@@ -1485,7 +1482,7 @@ function WebAudioTinySynthCore(target) {
           default:
             song.ev.push({
               t: tick,
-              m: [v, s[i + datalen], s[i + datalen + 1]]
+              m: [v, s[i + datalen], s[i + datalen + 1]],
             });
             datalen += 2;
         }
@@ -1535,15 +1532,13 @@ function WebAudioTinySynthCore(target) {
       that.locateMIDI(0);
       that.resume();
     },
-    setQuality: (q) => {
+    setQuality: q => {
       const that = this;
       if (q != undefined) that.quality = q;
       for (let i = 0; i < 128; ++i) that.setTimbre(0, i, that.program0[i]);
-      for (let i = 0; i < that.drummap0.length; ++i)
-        that.setTimbre(1, i + 35, that.drummap0[i]);
+      for (let i = 0; i < that.drummap0.length; ++i) that.setTimbre(1, i + 35, that.drummap0[i]);
       if (that.quality) {
-        for (let i = 0; i < that.program1.length; ++i)
-          that.setTimbre(0, i, that.program1[i]);
+        for (let i = 0; i < that.program1.length; ++i) that.setTimbre(0, i, that.program1[i]);
         for (let i = 0; i < that.drummap.length; ++i) {
           if (that.drummap1[i]) that.setTimbre(1, i + 35, that.drummap1[i]);
         }
@@ -1564,13 +1559,12 @@ function WebAudioTinySynthCore(target) {
         r: 0.05,
         p: 1,
         q: 1,
-        k: 0
+        k: 0,
       };
       function filldef(p) {
         for (n = 0; n < p.length; ++n) {
           for (let k in defp) {
-            if (Object.hasOwn(!p[n], k) || typeof p[n][k] == 'undefined')
-              p[n][k] = defp[k];
+            if (Object.hasOwn(!p[n], k) || typeof p[n][k] == 'undefined') p[n][k] = defp[k];
           }
         }
         return p;
@@ -1578,7 +1572,7 @@ function WebAudioTinySynthCore(target) {
       if (m && n >= 35 && n <= 81) that.drummap[n - 35].p = filldef(p);
       if (m == 0 && n >= 0 && n <= 127) that.program[n].p = filldef(p);
     },
-    _pruneNote: (nt) => {
+    _pruneNote: nt => {
       const that = this;
       for (let k = nt.o.length - 1; k >= 0; --k) {
         if (nt.o[k].frequency) {
@@ -1637,35 +1631,24 @@ function WebAudioTinySynthCore(target) {
       for (let i = 0; i < p.length; ++i) {
         pn = p[i];
         const dt = t + pn.a + pn.h;
-        if (pn.g == 0)
-          (out = that.chvol[ch]),
-            (sc = (v * v) / 16384),
-            (fp[i] = f * pn.t + pn.f);
+        if (pn.g == 0) ((out = that.chvol[ch]), (sc = (v * v) / 16384), (fp[i] = f * pn.t + pn.f));
         else if (pn.g > 10)
-          (out = g[pn.g - 11].gain),
-            (sc = 1),
-            (fp[i] = fp[pn.g - 11] * pn.t + pn.f);
+          ((out = g[pn.g - 11].gain), (sc = 1), (fp[i] = fp[pn.g - 11] * pn.t + pn.f));
         else if (o[pn.g - 1].frequency)
-          (out = o[pn.g - 1].frequency),
+          ((out = o[pn.g - 1].frequency),
             (sc = fp[pn.g - 1]),
-            (fp[i] = fp[pn.g - 1] * pn.t + pn.f);
+            (fp[i] = fp[pn.g - 1] * pn.t + pn.f));
         else
-          (out = o[pn.g - 1].playbackRate),
+          ((out = o[pn.g - 1].playbackRate),
             (sc = fp[pn.g - 1] / 440),
-            (fp[i] = fp[pn.g - 1] * pn.t + pn.f);
+            (fp[i] = fp[pn.g - 1] * pn.t + pn.f));
         switch (pn.w[0]) {
           case 'n':
             o[i] = that.audioContext.createBufferSource();
             o[i].buffer = that.noiseBuf[pn.w];
             o[i].loop = true;
             o[i].playbackRate.value = fp[i] / 440;
-            if (pn.p != 1)
-              that._setParamTarget(
-                o[i].playbackRate,
-                (fp[i] / 440) * pn.p,
-                t,
-                pn.q
-              );
+            if (pn.p != 1) that._setParamTarget(o[i].playbackRate, (fp[i] / 440) * pn.p, t, pn.q);
             if (o[i].detune) {
               that.chmod[ch].connect(o[i].detune);
               o[i].detune.value = that.bend[ch];
@@ -1674,8 +1657,7 @@ function WebAudioTinySynthCore(target) {
           default:
             o[i] = that.audioContext.createOscillator();
             o[i].frequency.value = fp[i];
-            if (pn.p != 1)
-              that._setParamTarget(o[i].frequency, fp[i] * pn.p, t, pn.q);
+            if (pn.p != 1) that._setParamTarget(o[i].frequency, fp[i] * pn.p, t, pn.q);
             if (pn.w[0] == 'w') o[i].setPeriodicWave(that.wave[pn.w]);
             else o[i].type = pn.w;
             if (o[i].detune) {
@@ -1719,7 +1701,7 @@ function WebAudioTinySynthCore(target) {
           t2: t + pn.a,
           v: vp,
           r: r,
-          f: 0
+          f: 0,
         });
     },
     _setParamTarget: (p, v, t, d) => {
@@ -1733,10 +1715,7 @@ function WebAudioTinySynthCore(target) {
           nt.g[k].gain.cancelScheduledValues(t);
           if (t == nt.t2) nt.g[k].gain.setValueAtTime(nt.v[k], t);
           else if (t < nt.t2)
-            nt.g[k].gain.setValueAtTime(
-              (nt.v[k] * (t - nt.t)) / (nt.t2 - nt.t),
-              t
-            );
+            nt.g[k].gain.setValueAtTime((nt.v[k] * (t - nt.t)) / (nt.t2 - nt.t), t);
           that._setParamTarget(nt.g[k].gain, 0, t, nt.r[k]);
         }
       }
@@ -1750,23 +1729,16 @@ function WebAudioTinySynthCore(target) {
     setChVol: (ch, v, t) => {
       const that = this;
       that.vol[ch] = (3 * v * v) / (127 * 127);
-      that.chvol[ch].gain.setValueAtTime(
-        that.vol[ch] * that.ex[ch],
-        that._tsConv(t)
-      );
+      that.chvol[ch].gain.setValueAtTime(that.vol[ch] * that.ex[ch], that._tsConv(t));
     },
     setPan: (ch, v, t) => {
       const that = this;
-      if (that.chpan[ch])
-        that.chpan[ch].pan.setValueAtTime((v - 64) / 64, that._tsConv(t));
+      if (that.chpan[ch]) that.chpan[ch].pan.setValueAtTime((v - 64) / 64, that._tsConv(t));
     },
     setExpression: (ch, v, t) => {
       const that = this;
       that.ex[ch] = (v * v) / (127 * 127);
-      that.chvol[ch].gain.setValueAtTime(
-        that.vol[ch] * that.ex[ch],
-        that._tsConv(t)
-      );
+      that.chvol[ch].gain.setValueAtTime(that.vol[ch] * that.ex[ch], that._tsConv(t));
     },
     setSustain: (ch, v, t) => {
       const that = this;
@@ -1779,7 +1751,7 @@ function WebAudioTinySynthCore(target) {
         }
       }
     },
-    allSoundOff: (ch) => {
+    allSoundOff: ch => {
       const that = this;
       for (let i = that.notetab.length - 1; i >= 0; --i) {
         const nt = that.notetab[i];
@@ -1789,7 +1761,7 @@ function WebAudioTinySynthCore(target) {
         }
       }
     },
-    resetAllControllers: (ch) => {
+    resetAllControllers: ch => {
       const that = this;
       that.bend[ch] = 0;
       that.ex[ch] = 1.0;
@@ -1808,7 +1780,7 @@ function WebAudioTinySynthCore(target) {
       const that = this;
       that.pg[ch] = v;
     },
-    _tsConv: (t) => {
+    _tsConv: t => {
       const that = this;
       if (t == undefined || t <= 0) {
         t = 0;
@@ -1828,8 +1800,7 @@ function WebAudioTinySynthCore(target) {
         if (nt.ch == ch) {
           for (let k = nt.o.length - 1; k >= 0; --k) {
             if (nt.o[k].frequency)
-              if (nt.o[k].detune)
-                nt.o[k].detune.setValueAtTime(that.bend[ch], t);
+              if (nt.o[k].detune) nt.o[k].detune.setValueAtTime(that.bend[ch], t);
           }
         }
       }
@@ -1859,7 +1830,7 @@ function WebAudioTinySynthCore(target) {
       }
       that._note(t, ch, n, v, that.program[that.pg[ch]].p);
     },
-    setTsMode: (tsmode) => {
+    setTsMode: tsmode => {
       const that = this;
       that.tsmode = tsmode;
     },
@@ -1906,10 +1877,7 @@ function WebAudioTinySynthCore(target) {
                   that.brange[ch] = (msg[2] << 7) + (that.brange[ch] & 0x7f);
                   break;
                 case 1:
-                  that.tuningF[ch] =
-                    (msg[2] << 7) +
-                    ((that.tuningF[ch] + 0x2000) & 0x7f) -
-                    0x2000;
+                  that.tuningF[ch] = (msg[2] << 7) + ((that.tuningF[ch] + 0x2000) & 0x7f) - 0x2000;
                   break;
                 case 2:
                   that.tuningC[ch] = msg[2] - 0x40;
@@ -1922,8 +1890,7 @@ function WebAudioTinySynthCore(target) {
                   that.brange[ch] = (that.brange[ch] & 0x3f80) | msg[2];
                   break;
                 case 1:
-                  that.tuningF[ch] =
-                    ((that.tuningF[ch] + 0x2000) & 0x3f80) | (msg[2] - 0x2000);
+                  that.tuningF[ch] = ((that.tuningF[ch] + 0x2000) & 0x3f80) | (msg[2] - 0x2000);
                   break;
                 case 2:
                   break;
@@ -1977,16 +1944,9 @@ function WebAudioTinySynthCore(target) {
                 that.masterTuningC = msg[6] - 0x40;
               }
             }
-            if (
-              msg[1] == 0x41 &&
-              msg[3] == 0x42 &&
-              msg[4] == 0x12 &&
-              msg[5] == 0x40
-            ) {
+            if (msg[1] == 0x41 && msg[3] == 0x42 && msg[4] == 0x12 && msg[5] == 0x40) {
               if ((msg[6] & 0xf0) == 0x10 && msg[7] == 0x15) {
-                const c = [
-                  9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15
-                ][msg[6] & 0xf];
+                const c = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][msg[6] & 0xf];
                 that.rhythm[c] = msg[8];
               }
             }
@@ -1994,7 +1954,7 @@ function WebAudioTinySynthCore(target) {
           break;
       }
     },
-    _createWave: (w) => {
+    _createWave: w => {
       const that = this;
       const imag = new Float32Array(w.length);
       const real = new Float32Array(w.length);
@@ -2013,22 +1973,10 @@ function WebAudioTinySynthCore(target) {
       that.out = that.audioContext.createGain();
       that.comp = that.audioContext.createDynamicsCompressor();
       const blen = (that.audioContext.sampleRate * 0.5) | 0;
-      that.convBuf = that.audioContext.createBuffer(
-        2,
-        blen,
-        that.audioContext.sampleRate
-      );
+      that.convBuf = that.audioContext.createBuffer(2, blen, that.audioContext.sampleRate);
       that.noiseBuf = {};
-      that.noiseBuf.n0 = that.audioContext.createBuffer(
-        1,
-        blen,
-        that.audioContext.sampleRate
-      );
-      that.noiseBuf.n1 = that.audioContext.createBuffer(
-        1,
-        blen,
-        that.audioContext.sampleRate
-      );
+      that.noiseBuf.n0 = that.audioContext.createBuffer(1, blen, that.audioContext.sampleRate);
+      that.noiseBuf.n1 = that.audioContext.createBuffer(1, blen, that.audioContext.sampleRate);
       const d1 = that.convBuf.getChannelData(0);
       const d2 = that.convBuf.getChannelData(1);
       const dn = that.noiseBuf.n0.getChannelData(0);
@@ -2088,7 +2036,7 @@ function WebAudioTinySynthCore(target) {
       that.reset();
       that.send([0x90, 60, 1]);
       that.send([0x90, 60, 0]);
-    }
+    },
   });
 }
 

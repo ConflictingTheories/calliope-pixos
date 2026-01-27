@@ -23,7 +23,11 @@ export default {
     this.lastKey = new Date().getTime();
     this.completed = false;
     this.direction = 1;
-    this.audio = await this.zone.engine.resourceManager.audioLoader.loadFromZip(this.sprite.zip, this.sprite.patrolSound ?? 'sewer-beat.mp3', true);
+    this.audio = await this.zone.engine.resourceManager.audioLoader.loadFromZip(
+      this.sprite.zip,
+      this.sprite.patrolSound ?? 'sewer-beat.mp3',
+      true
+    );
     // Determine Path to Walk
     [this.hasMoves, this.moveList] = this.sprite.zone.world.pathFind(from, to);
     if (!this.hasMoves) {
@@ -48,13 +52,20 @@ export default {
           this.moveIndex == 0
             ? this.moveList[this.moveIndex + 1]
             : this.moveIndex + 1 >= this.moveList.length
-            ? this.moveList[this.moveList.length - 1]
-            : this.moveList[this.moveIndex - 1];
-        let facing = Direction.fromOffset([Math.round(move[0] - last[0]), Math.round(move[1] - last[1])]);
+              ? this.moveList[this.moveList.length - 1]
+              : this.moveList[this.moveIndex - 1];
+        let facing = Direction.fromOffset([
+          Math.round(move[0] - last[0]),
+          Math.round(move[1] - last[1]),
+        ]);
         // Check for zone change
         if (!this.sprite.zone.isInZone(move[0], move[1])) {
           let zone = this.sprite.zone.world.zoneContaining(move[0], move[1]);
-          if (!zone || !zone.loaded || !zone.isWalkable(move[0], move[1], Direction.reverse(facing))) {
+          if (
+            !zone ||
+            !zone.loaded ||
+            !zone.isWalkable(move[0], move[1], Direction.reverse(facing))
+          ) {
             this.currentAction = this.sprite.faceDir(facing);
           } else {
             this.currentAction = new ActionLoader(
@@ -66,7 +77,12 @@ export default {
           }
         } else {
           // Load Next move
-          this.currentAction = new ActionLoader(this.sprite.engine, 'move', [last, move, this.moveLength, this.zone], this.sprite);
+          this.currentAction = new ActionLoader(
+            this.sprite.engine,
+            'move',
+            [last, move, this.moveLength, this.zone],
+            this.sprite
+          );
         }
 
         if (this.sprite.facing !== facing) {

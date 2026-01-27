@@ -6,7 +6,7 @@
  *
  * An advanced color picker component for pixel art editing.
  * Supports HSV wheel, palette swatches, and hex/rgb input.
- * 
+ *
  * Usage:
  *   <ColorPicker
  *     color="#ff6b9d"
@@ -20,7 +20,7 @@ import '../styles/color-picker.css';
 
 /**
  * ColorPicker - Advanced color selection component
- * 
+ *
  * @param {Object} props
  * @param {string} props.color - Current color (hex format)
  * @param {function} props.onChange - Callback when color changes
@@ -41,7 +41,7 @@ function ColorPicker({
   showInput = true,
   showAlpha = false,
   compact = false,
-  className = ''
+  className = '',
 }) {
   const [hsv, setHsv] = useState(() => hexToHsv(color));
   const [alpha, setAlpha] = useState(1);
@@ -61,81 +61,108 @@ function ColorPicker({
   }, [color]);
 
   // Update color when HSV changes
-  const updateColor = useCallback((newHsv, newAlpha = alpha) => {
-    const hex = hsvToHex(newHsv);
-    setHsv(newHsv);
-    setHexInput(hex);
-    onChange?.(showAlpha ? `${hex}${Math.round(newAlpha * 255).toString(16).padStart(2, '0')}` : hex);
-  }, [onChange, showAlpha, alpha]);
+  const updateColor = useCallback(
+    (newHsv, newAlpha = alpha) => {
+      const hex = hsvToHex(newHsv);
+      setHsv(newHsv);
+      setHexInput(hex);
+      onChange?.(
+        showAlpha
+          ? `${hex}${Math.round(newAlpha * 255)
+              .toString(16)
+              .padStart(2, '0')}`
+          : hex
+      );
+    },
+    [onChange, showAlpha, alpha]
+  );
 
   // Handle saturation/brightness picker
-  const handleSaturationMove = useCallback((e) => {
-    if (!saturationRef.current) return;
-    const rect = saturationRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-    updateColor({ ...hsv, s: x, v: 1 - y });
-  }, [hsv, updateColor]);
+  const handleSaturationMove = useCallback(
+    e => {
+      if (!saturationRef.current) return;
+      const rect = saturationRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      updateColor({ ...hsv, s: x, v: 1 - y });
+    },
+    [hsv, updateColor]
+  );
 
   // Handle hue slider
-  const handleHueMove = useCallback((e) => {
-    if (!hueRef.current) return;
-    const rect = hueRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    updateColor({ ...hsv, h: x * 360 });
-  }, [hsv, updateColor]);
+  const handleHueMove = useCallback(
+    e => {
+      if (!hueRef.current) return;
+      const rect = hueRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      updateColor({ ...hsv, h: x * 360 });
+    },
+    [hsv, updateColor]
+  );
 
   // Handle alpha slider
-  const handleAlphaMove = useCallback((e) => {
-    if (!alphaRef.current) return;
-    const rect = alphaRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setAlpha(x);
-    updateColor(hsv, x);
-  }, [hsv, updateColor]);
+  const handleAlphaMove = useCallback(
+    e => {
+      if (!alphaRef.current) return;
+      const rect = alphaRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      setAlpha(x);
+      updateColor(hsv, x);
+    },
+    [hsv, updateColor]
+  );
 
   // Mouse event handlers
-  const handleMouseDown = useCallback((e, type) => {
-    e.preventDefault();
-    isDragging.current = type;
+  const handleMouseDown = useCallback(
+    (e, type) => {
+      e.preventDefault();
+      isDragging.current = type;
 
-    if (type === 'saturation') handleSaturationMove(e);
-    else if (type === 'hue') handleHueMove(e);
-    else if (type === 'alpha') handleAlphaMove(e);
+      if (type === 'saturation') handleSaturationMove(e);
+      else if (type === 'hue') handleHueMove(e);
+      else if (type === 'alpha') handleAlphaMove(e);
 
-    const handleMouseMove = (e) => {
-      if (isDragging.current === 'saturation') handleSaturationMove(e);
-      else if (isDragging.current === 'hue') handleHueMove(e);
-      else if (isDragging.current === 'alpha') handleAlphaMove(e);
-    };
+      const handleMouseMove = e => {
+        if (isDragging.current === 'saturation') handleSaturationMove(e);
+        else if (isDragging.current === 'hue') handleHueMove(e);
+        else if (isDragging.current === 'alpha') handleAlphaMove(e);
+      };
 
-    const handleMouseUp = () => {
-      isDragging.current = null;
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
+      const handleMouseUp = () => {
+        isDragging.current = null;
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  }, [handleSaturationMove, handleHueMove, handleAlphaMove]);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    },
+    [handleSaturationMove, handleHueMove, handleAlphaMove]
+  );
 
   // Handle hex input change
-  const handleHexChange = useCallback((e) => {
-    const value = e.target.value;
-    setHexInput(value);
+  const handleHexChange = useCallback(
+    e => {
+      const value = e.target.value;
+      setHexInput(value);
 
-    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-      setHsv(hexToHsv(value));
-      onChange?.(value);
-    }
-  }, [onChange]);
+      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        setHsv(hexToHsv(value));
+        onChange?.(value);
+      }
+    },
+    [onChange]
+  );
 
   // Handle palette swatch click
-  const handleSwatchClick = useCallback((swatchColor) => {
-    setHsv(hexToHsv(swatchColor));
-    setHexInput(swatchColor);
-    onChange?.(swatchColor);
-  }, [onChange]);
+  const handleSwatchClick = useCallback(
+    swatchColor => {
+      setHsv(hexToHsv(swatchColor));
+      setHexInput(swatchColor);
+      onChange?.(swatchColor);
+    },
+    [onChange]
+  );
 
   // Add to palette
   const handleAddToPalette = useCallback(() => {
@@ -173,7 +200,7 @@ function ColorPicker({
             ref={saturationRef}
             className="color-picker__saturation"
             style={{ backgroundColor: hueColor }}
-            onMouseDown={(e) => handleMouseDown(e, 'saturation')}
+            onMouseDown={e => handleMouseDown(e, 'saturation')}
           >
             <div className="color-picker__saturation-white" />
             <div className="color-picker__saturation-black" />
@@ -182,7 +209,7 @@ function ColorPicker({
               style={{
                 left: `${hsv.s * 100}%`,
                 top: `${(1 - hsv.v) * 100}%`,
-                backgroundColor: currentHex
+                backgroundColor: currentHex,
               }}
             />
           </div>
@@ -191,12 +218,9 @@ function ColorPicker({
           <div
             ref={hueRef}
             className="color-picker__hue"
-            onMouseDown={(e) => handleMouseDown(e, 'hue')}
+            onMouseDown={e => handleMouseDown(e, 'hue')}
           >
-            <div
-              className="color-picker__hue-cursor"
-              style={{ left: `${(hsv.h / 360) * 100}%` }}
-            />
+            <div className="color-picker__hue-cursor" style={{ left: `${(hsv.h / 360) * 100}%` }} />
           </div>
 
           {/* Alpha Slider */}
@@ -205,14 +229,11 @@ function ColorPicker({
               ref={alphaRef}
               className="color-picker__alpha"
               style={{
-                background: `linear-gradient(to right, transparent, ${currentHex})`
+                background: `linear-gradient(to right, transparent, ${currentHex})`,
               }}
-              onMouseDown={(e) => handleMouseDown(e, 'alpha')}
+              onMouseDown={e => handleMouseDown(e, 'alpha')}
             >
-              <div
-                className="color-picker__alpha-cursor"
-                style={{ left: `${alpha * 100}%` }}
-              />
+              <div className="color-picker__alpha-cursor" style={{ left: `${alpha * 100}%` }} />
             </div>
           )}
         </div>
@@ -236,10 +257,7 @@ function ColorPicker({
 
       {/* Preview and Input */}
       <div className="color-picker__footer">
-        <div
-          className="color-picker__preview"
-          style={{ backgroundColor: currentHex }}
-        />
+        <div className="color-picker__preview" style={{ backgroundColor: currentHex }} />
         {showInput && (
           <input
             type="text"
@@ -250,11 +268,7 @@ function ColorPicker({
           />
         )}
         {onPaletteAdd && (
-          <button
-            className="color-picker__add"
-            onClick={handleAddToPalette}
-            title="Add to palette"
-          >
+          <button className="color-picker__add" onClick={handleAddToPalette} title="Add to palette">
             +
           </button>
         )}
@@ -300,9 +314,15 @@ function hexToHsv(hex) {
 
   if (d !== 0) {
     switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
     }
   }
 
@@ -319,16 +339,46 @@ function hsvToHex({ h, s, v }) {
 
   let r, g, b;
   switch (i % 6) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    case 5: r = v; g = p; b = q; break;
-    default: r = 0; g = 0; b = 0;
+    case 0:
+      r = v;
+      g = t;
+      b = p;
+      break;
+    case 1:
+      r = q;
+      g = v;
+      b = p;
+      break;
+    case 2:
+      r = p;
+      g = v;
+      b = t;
+      break;
+    case 3:
+      r = p;
+      g = q;
+      b = v;
+      break;
+    case 4:
+      r = t;
+      g = p;
+      b = v;
+      break;
+    case 5:
+      r = v;
+      g = p;
+      b = q;
+      break;
+    default:
+      r = 0;
+      g = 0;
+      b = 0;
   }
 
-  const toHex = (n) => Math.round(n * 255).toString(16).padStart(2, '0');
+  const toHex = n =>
+    Math.round(n * 255)
+      .toString(16)
+      .padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 

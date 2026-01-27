@@ -26,19 +26,19 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 
 ### Package Inventory & Status
 
-| Package | Type | Status | Version | Health |
-|---------|------|--------|---------|--------|
-| **core-js** | Engine | ✅ Functional | 1.0.1 | 🟡 Good (needs polish) |
-| **editor** | Tools | ✅ Functional | 1.0.1 | 🟡 Good (needs tests) |
-| **console** | Player | ✅ Functional | 1.0.1 | 🟡 Fair (mobile needs work) |
-| **server** | Backend | ✅ Functional | 1.0.1 | 🟡 Good (needs tests) |
-| **script** (pixoscript) | Language | ✅ Functional | 1.0.3 | 🟡 Fair (incomplete features) |
-| **math** | Utilities | ✅ Complete | 1.0.1 | 🟢 Good |
-| **specs** | Specs | ✅ Defined | 1.0.1 | 🟢 Good |
-| **website** | Marketing | ✅ Deployed | 1.0.0 | 🟡 Good |
-| **spritz** | Demo Game | ✅ Complete | 1.0.0 | 🟢 Excellent |
-| **core-c** | C Engine | 🔴 Incomplete | — | ⛔ WIP (Design phase) |
-| **arm-linux** | Platform | 🔴 Incomplete | — | ⛔ WIP (Design phase) |
+| Package                 | Type      | Status        | Version | Health                        |
+| ----------------------- | --------- | ------------- | ------- | ----------------------------- |
+| **core-js**             | Engine    | ✅ Functional | 1.0.1   | 🟡 Good (needs polish)        |
+| **editor**              | Tools     | ✅ Functional | 1.0.1   | 🟡 Good (needs tests)         |
+| **console**             | Player    | ✅ Functional | 1.0.1   | 🟡 Fair (mobile needs work)   |
+| **server**              | Backend   | ✅ Functional | 1.0.1   | 🟡 Good (needs tests)         |
+| **script** (pixoscript) | Language  | ✅ Functional | 1.0.3   | 🟡 Fair (incomplete features) |
+| **math**                | Utilities | ✅ Complete   | 1.0.1   | 🟢 Good                       |
+| **specs**               | Specs     | ✅ Defined    | 1.0.1   | 🟢 Good                       |
+| **website**             | Marketing | ✅ Deployed   | 1.0.0   | 🟡 Good                       |
+| **spritz**              | Demo Game | ✅ Complete   | 1.0.0   | 🟢 Excellent                  |
+| **core-c**              | C Engine  | 🔴 Incomplete | —       | ⛔ WIP (Design phase)         |
+| **arm-linux**           | Platform  | 🔴 Incomplete | —       | ⛔ WIP (Design phase)         |
 
 ### Key Metrics
 
@@ -107,6 +107,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 1. Core Engine (core-js)
 
 ### Current Features ✅
+
 - WebGL2 rendering with shader support
 - Sprite/tileset/map system
 - Entity/Actor system with basic pathfinding
@@ -119,6 +120,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **High Priority**:
+
 1. **Frustum Culling** (Performance)
    - Effort: 3-4 days
    - Reduces draw calls for large scenes
@@ -138,10 +140,10 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Add wipes, pixelate, dissolve effects
    - Extend DSL with new commands
 
-**Medium Priority**:
-5. **Screen Shake Effect** (Feature)
-   - Effort: 1 day
-   - Add `CameraEffects.shake()`
+**Medium Priority**: 5. **Screen Shake Effect** (Feature)
+
+- Effort: 1 day
+- Add `CameraEffects.shake()`
 
 6. **Smooth Camera Follow** (Feature)
    - Effort: 2 days
@@ -154,10 +156,10 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Code Quality Tasks
 
 **Cleanup Items** (from CLEANUP.md):
+
 - Remove deprecated actions: `patrol.js`, `changezone.js`, `dialogue.js`, `prompt.js`
   - Effort: 3-4 days
   - Reimplement mouse/touch handler support
-  
 - Refactor event handlers: `menu.js`, `chat.js`, `camera.js`
   - Effort: 4-5 days
   - Standardize interfaces
@@ -175,7 +177,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Enables: Physics-based gameplay, proper entity interaction
 
 2. **Advanced Pathfinding** (Medium Priority)
-   - A* algorithm optimization
+   - A\* algorithm optimization
    - Path smoothing/funnel
    - Dynamic obstacle avoidance
    - Effort: 4-5 days
@@ -193,11 +195,13 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Effort: 5-7 days
 
 ### Testing Gaps
+
 - Unit tests: ~20% coverage
 - Need: Render pipeline tests, physics tests, audio tests
 - Effort: 10-15 days for comprehensive suite
 
 **Recommended Priority Order**:
+
 1. Instanced rendering (performance, enables gameplay)
 2. Physics system (core gameplay mechanic)
 3. Advanced pathfinding (gameplay quality)
@@ -209,6 +213,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 2. Visual Editor (editor)
 
 ### Current Features ✅
+
 - Sprite Editor with animation support
 - Tile Editor with collision data
 - Map Editor with layers, auto-tiling, layer toggles
@@ -220,6 +225,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **High Priority - UX**:
+
 1. **First-Time User Wizard** (UX)
    - Effort: 5-7 days
    - Onboard new users effectively
@@ -232,11 +238,11 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Effort: 3-4 days
    - Context-sensitive documentation
 
-**High Priority - Features**:
-4. **Complete Design System Migration** (Code Quality)
-   - Effort: 5-7 days
-   - Audit design-system.css, remove gradients
-   - Create component library
+**High Priority - Features**: 4. **Complete Design System Migration** (Code Quality)
+
+- Effort: 5-7 days
+- Audit design-system.css, remove gradients
+- Create component library
 
 5. **Unified 2D/3D Map Editor** (Feature)
    - Effort: 5-7 days
@@ -248,9 +254,9 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Autocompletion, docs, linting
    - Monaco extension for PixoScript
 
-**Medium Priority**:
-7. **Customizable Sprite Sizes** (Feature)
-   - Effort: 2-3 days
+**Medium Priority**: 7. **Customizable Sprite Sizes** (Feature)
+
+- Effort: 2-3 days
 
 8. **Import/Export PNG/GIF/Spritesheet** (Feature)
    - Effort: 4-5 days
@@ -264,6 +270,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Code Quality Tasks
 
 **Cleanup Items** (from CLEANUP.md):
+
 - Remove deprecated event listeners
 - Refactor remove functions (app.jsx, script-editor, model-preview, tile-editor, cutscene-tool)
 - Effort: 3-4 days
@@ -275,16 +282,19 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 - Effort: 1 day (verification)
 
 **OBJ Integration**:
+
 - Integrate ObjHelper.js with engine ResourceManager
 - Effort: 2-3 days
 - Impact: Consistent model loading
 
 ### Testing Gaps
+
 - Asset editor tests: ~10% coverage
 - Need: Asset parsing, editor state, undo/redo
 - Effort: 8-10 days
 
 **Recommended Priority Order**:
+
 1. Design System Migration (improves all UI)
 2. PixoScript Language Support (critical for creators)
 3. First-Time User Wizard (growth)
@@ -296,6 +306,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 3. Game Console/Player (console)
 
 ### Current Features ✅
+
 - Play PixoSpritz games in browser
 - Load from URLs or local files
 - Support for keyboard, mouse, touch, gamepad
@@ -305,6 +316,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **High Priority**:
+
 1. **Mobile Browser Support** (Platform)
    - Effort: 5-7 days
    - iOS Safari compatibility
@@ -322,11 +334,11 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Support both modes clearly
    - Documentation
 
-**Medium Priority**:
-4. **More Asset Format Support** (Feature)
-   - Effort: 4-5 days
-   - WebP, AVIF optimization
-   - Audio format support
+**Medium Priority**: 4. **More Asset Format Support** (Feature)
+
+- Effort: 4-5 days
+- WebP, AVIF optimization
+- Audio format support
 
 5. **Advanced Fullscreen/Window Management** (Feature)
    - Effort: 3-4 days
@@ -334,17 +346,20 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Code Quality Tasks
 
 **Cleanup Items** (from CLEANUP.md):
+
 - Remove unused sample content (pixospritz/)
 - Audit UI logic for deprecated features
 - Standardize CSS and components
 - Effort: 2-3 days
 
 ### Testing Gaps
+
 - Input handling: ~10% coverage
 - Need: E2E tests for loading, input, fullscreen
 - Effort: 6-8 days
 
 **Recommended Priority Order**:
+
 1. Mobile browser support (market reach)
 2. Improved loading UX (user experience)
 3. Asset format optimization (quality)
@@ -355,6 +370,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 4. Multiplayer Server (server)
 
 ### Current Features ✅
+
 - WebSocket-based real-time communication
 - Zone/room management
 - Client session management
@@ -369,6 +385,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **High Priority**:
+
 1. **Delta Synchronization** (Performance)
    - Effort: 5-7 days
    - Reduce network traffic
@@ -380,11 +397,11 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Better validation
    - Action batching
 
-**Medium Priority**:
-3. **Advanced Matchmaking** (Feature)
-   - Effort: 5-7 days
-   - Skill-based matching
-   - Queue times prediction
+**Medium Priority**: 3. **Advanced Matchmaking** (Feature)
+
+- Effort: 5-7 days
+- Skill-based matching
+- Queue times prediction
 
 4. **Lobby Features** (Feature)
    - Effort: 3-4 days
@@ -393,17 +410,20 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Code Quality Tasks
 
 **Cleanup Items** (from CLEANUP.md):
+
 - Refactor zone/session cleanup logic (clientManager.js, zoneHandler.js)
 - Audit security cleanupInterval
 - Refactor connection/rate limiter cleanup
 - Effort: 3-4 days
 
 ### Testing Gaps
+
 - WebSocket protocol: ~15% coverage
 - Need: Protocol tests, stress tests, reconnection scenarios
 - Effort: 8-10 days
 
 **Recommended Priority Order**:
+
 1. Delta synchronization (performance, scale)
 2. Enhanced action queue (stability)
 3. Advanced matchmaking (gameplay)
@@ -414,6 +434,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 5. Scripting Language (pixoscript)
 
 ### Current Features ✅
+
 - Lua-compatible syntax parsing
 - Scope and table implementation
 - Operator overloading
@@ -423,6 +444,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **High Priority**:
+
 1. **Coroutines (Async Generators)** (Feature)
    - Effort: 4-5 days
    - Lua-style coroutines
@@ -438,11 +460,11 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - `debug.sethook`, `debug.getinfo`, `debug.traceback`
    - Profiling support
 
-**Medium Priority**:
-4. **Full API Documentation** (Documentation)
-   - Effort: 5-7 days
-   - Complete reference
-   - Tutorial examples
+**Medium Priority**: 4. **Full API Documentation** (Documentation)
+
+- Effort: 5-7 days
+- Complete reference
+- Tutorial examples
 
 5. **Parser Refactoring** (Code Quality)
    - Effort: 5-7 days
@@ -452,6 +474,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Code Quality Tasks
 
 **Cleanup Items** (from CLEANUP.md):
+
 - Remove deprecated Lua math functions
 - Update math.ts to modern equivalents
 - Implement missing os.ts, string.ts features
@@ -459,11 +482,13 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 - Effort: 4-5 days
 
 ### Testing Gaps
+
 - Parser: ~20% coverage
 - Need: Complete parser tests, runtime tests
 - Effort: 10-12 days
 
 **Recommended Priority Order**:
+
 1. Coroutines (gameplay foundation)
 2. Source maps (developer experience)
 3. Debug library (developer tools)
@@ -474,6 +499,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 6. Math Library (math)
 
 ### Current Features ✅
+
 - Vector classes (Vec2, Vec3, Vec4)
 - Matrix classes (Mat3, Mat4)
 - Geometric operations
@@ -482,6 +508,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items (from PENDING.md)
 
 **Medium Priority**:
+
 1. **Refactor for Performance** (Code Quality)
    - Effort: 3-4 days
    - Optimize hot paths
@@ -498,11 +525,13 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Collision geometry
 
 ### Testing Gaps
+
 - Coverage: ~40% (better than others)
 - Need: Edge cases, performance benchmarks
 - Effort: 3-4 days
 
 **Recommended Priority Order**:
+
 1. Physics integration (supports core engine physics)
 2. Performance optimization (general quality)
 3. Additional geometric operations (richness)
@@ -512,15 +541,18 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 7. Shared Specifications (specs)
 
 ### Current Status ✅
+
 - Math specifications defined
 - File format schemas
 - Constants defined
 - Shader code examples
 
 ### Pending Items (from PENDING.md)
+
 - Minor: None critical
 
 ### Tasks
+
 1. **Code Generation** (Optional Feature)
    - Generate C headers from specs
    - Generate TypeScript types
@@ -532,12 +564,14 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 8. C Engine (core-c) & ARM Platform
 
 ### Current Status 🔴 INCOMPLETE
+
 - Architecture documented (very thorough!)
 - Not yet implemented
 
 ### Major Milestones
 
 **Phase 1: Foundation (Months 1-2)**
+
 - [ ] CMake build system setup
 - [ ] ARM toolchain configuration (aarch64-linux-gnu)
 - [ ] GLES2/EGL graphics initialization
@@ -546,6 +580,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 - [ ] Estimated: 6-8 weeks
 
 **Phase 2: Feature Parity (Months 2-3)**
+
 - [ ] Map/zone rendering
 - [ ] Audio engine (ALSA/PulseAudio)
 - [ ] Event system
@@ -553,6 +588,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 - [ ] Estimated: 5-7 weeks
 
 **Phase 3: Platform Integration (Months 3-4)**
+
 - [ ] RK3566 device tree customization
 - [ ] U-Boot configuration
 - [ ] Buildroot rootfs generation
@@ -560,12 +596,14 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 - [ ] Estimated: 4-6 weeks
 
 **Phase 4: Optimization & Polish (Month 4-5)**
+
 - [ ] Performance optimization
 - [ ] Battery/thermal management
 - [ ] Game packaging format
 - [ ] Estimated: 3-4 weeks
 
 ### Recommended Approach
+
 - **Option A**: Hire C/ARM developer (faster, 4-6 months)
 - **Option B**: DIY with community support (slower, 8-12 months)
 - **Option C**: Skip ARM for now, focus on web (6-month speedup)
@@ -577,6 +615,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 9. Website & Marketing
 
 ### Current Status ✅
+
 - Live at pixospritz.com
 - Deployed via Netlify
 - Static site with games catalog
@@ -584,6 +623,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Pending Items
 
 **High Priority**:
+
 1. **Complete Documentation Site** (Content)
    - API reference (auto-generated)
    - Tutorial series (5+ tutorials)
@@ -597,12 +637,12 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Testimonials
    - Effort: 3-4 days
 
-**Medium Priority**:
-3. **Newsletter/Community** (Growth)
-   - Mailing list integration
-   - Discord community
-   - Forum or discussions
-   - Effort: 5-7 days
+**Medium Priority**: 3. **Newsletter/Community** (Growth)
+
+- Mailing list integration
+- Discord community
+- Forum or discussions
+- Effort: 5-7 days
 
 4. **SEO & Analytics** (Growth)
    - Meta tags, structured data
@@ -611,10 +651,12 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
    - Effort: 2-3 days
 
 ### Testing
+
 - E2E tests for site navigation
 - Effort: 2-3 days
 
 **Recommended Priority Order**:
+
 1. Complete documentation (essential for adoption)
 2. Game showcase (social proof)
 3. Community setup (long-term growth)
@@ -624,6 +666,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ## 10. Example Game (spritz)
 
 ### Current Status ✅
+
 - Complete, fully-featured example game
 - "The Elemental Trials" RPG
 - Demonstrates all engine capabilities
@@ -631,6 +674,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 ### Suggested Improvements
 
 **Enhancement Ideas**:
+
 1. **Tutorial Mode** (UX)
    - Interactive help
    - Guided walkthrough
@@ -656,6 +700,7 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 **Target**: 70%+ coverage for production release
 
 **Implementation Plan**:
+
 ```
 Phase 1 (Weeks 1-2): Unit tests for core systems
   - Math library: 100% coverage (5 days)
@@ -680,6 +725,7 @@ Total Effort: 30-34 days
 ```
 
 **Key Test Areas by Priority**:
+
 1. **Critical Path**: Game loading, rendering, input, save/load
 2. **Features**: Physics, pathfinding, scripting, audio
 3. **Quality**: Performance, memory leaks, edge cases
@@ -731,31 +777,34 @@ Total Effort: 30-34 days
 
 ### 3. Platform Support Matrix
 
-| Feature | Web | Mobile | Desktop | ARM Linux |
-|---------|-----|--------|---------|-----------|
-| Rendering | ✅ | 🟡 | ✅ | ❌ |
-| Input | ✅ | 🟡 | ✅ | ❌ |
-| Audio | ✅ | 🟡 | ✅ | ❌ |
-| Fullscreen | ✅ | 🟡 | ✅ | ❌ |
-| Save/Load | ✅ | ✅ | ✅ | ❌ |
-| Multiplayer | ✅ | ✅ | ✅ | ❌ |
-| Editor | ✅ | ❌ | 🟡 | ❌ |
-| Packaging | ✅ | ✅ | ❌ | ❌ |
+| Feature     | Web | Mobile | Desktop | ARM Linux |
+| ----------- | --- | ------ | ------- | --------- |
+| Rendering   | ✅  | 🟡     | ✅      | ❌        |
+| Input       | ✅  | 🟡     | ✅      | ❌        |
+| Audio       | ✅  | 🟡     | ✅      | ❌        |
+| Fullscreen  | ✅  | 🟡     | ✅      | ❌        |
+| Save/Load   | ✅  | ✅     | ✅      | ❌        |
+| Multiplayer | ✅  | ✅     | ✅      | ❌        |
+| Editor      | ✅  | ❌     | 🟡      | ❌        |
+| Packaging   | ✅  | ✅     | ❌      | ❌        |
 
 **Legend**: ✅ Complete, 🟡 Partial, ❌ Not started
 
 **Mobile Gaps**:
+
 - Fullscreen not reliable (Safari, Android)
 - Touch input edge cases
 - Performance optimization needed
 - Effort to fix: 5-7 days
 
 **Desktop Gaps**:
+
 - Electron packaging not set up
 - Native build system absent
 - Effort: 5-7 days
 
 **ARM Linux**:
+
 - Requires C engine completion first
 - Estimated: 16-20 weeks
 
@@ -765,30 +814,30 @@ Total Effort: 30-34 days
 
 #### Core-JS vs Core-C (Target Parity)
 
-| Feature | JS | C | Status |
-|---------|----|----|--------|
-| Sprite rendering | ✅ | ❌ | Needs implementation |
-| Map rendering | ✅ | ❌ | Needs implementation |
-| Audio playback | ✅ | ❌ | Needs implementation |
-| Input handling | ✅ | ❌ | Needs implementation |
-| Scripting | ✅ | ❌ | Needs Lua integration |
-| Physics | ❌ | ❌ | Both need implementation |
-| Pathfinding | 🟡 | ❌ | JS needs A*, C needs both |
-| Networking | 🟡 | ❌ | JS works, C needs implementation |
+| Feature          | JS  | C   | Status                           |
+| ---------------- | --- | --- | -------------------------------- |
+| Sprite rendering | ✅  | ❌  | Needs implementation             |
+| Map rendering    | ✅  | ❌  | Needs implementation             |
+| Audio playback   | ✅  | ❌  | Needs implementation             |
+| Input handling   | ✅  | ❌  | Needs implementation             |
+| Scripting        | ✅  | ❌  | Needs Lua integration            |
+| Physics          | ❌  | ❌  | Both need implementation         |
+| Pathfinding      | 🟡  | ❌  | JS needs A\*, C needs both       |
+| Networking       | 🟡  | ❌  | JS works, C needs implementation |
 
 **Parity Score**: 40% (needs C engine completion)
 
 #### Editor Features across Platforms
 
-| Feature | Editor | Console | Server |
-|---------|--------|---------|--------|
-| Sprite editing | ✅ | - | - |
-| Tile editing | ✅ | - | - |
-| Map building | ✅ | - | - |
-| Scripting | ✅ | 🟡 | 🟡 |
-| Model preview | ✅ | ❌ | - |
-| Cutscene creation | ✅ | 🟡 | - |
-| Asset management | ✅ | 🟡 | - |
+| Feature           | Editor | Console | Server |
+| ----------------- | ------ | ------- | ------ |
+| Sprite editing    | ✅     | -       | -      |
+| Tile editing      | ✅     | -       | -      |
+| Map building      | ✅     | -       | -      |
+| Scripting         | ✅     | 🟡      | 🟡     |
+| Model preview     | ✅     | ❌      | -      |
+| Cutscene creation | ✅     | 🟡      | -      |
+| Asset management  | ✅     | 🟡      | -      |
 
 **Parity Score**: 70% (reasonable, console is specialized)
 
@@ -799,6 +848,7 @@ Total Effort: 30-34 days
 **Current State**: Well-managed, no major security issues
 
 **Key Dependencies**:
+
 - React 18 (up-to-date) ✅
 - Vite (dev) (up-to-date) ✅
 - Node.js 18+ ✅
@@ -806,6 +856,7 @@ Total Effort: 30-34 days
 - RSuite UI ✅
 
 **Audit Recommendations**:
+
 1. Run `npm audit` periodically
 2. Update dependencies quarterly
 3. Monitor for security vulnerabilities
@@ -821,6 +872,7 @@ Total Effort: 30-34 days
 **Goal**: Stabilize, clean up, and improve code quality
 
 **Deliverables**:
+
 - ✅ Remove deprecated code (core-js, script, server)
 - ✅ Standardize coding patterns across packages
 - ✅ Add comprehensive test suite (70%+ coverage)
@@ -828,6 +880,7 @@ Total Effort: 30-34 days
 - ✅ Full API documentation
 
 **Key Tasks**:
+
 1. Code cleanup (8 days)
 2. Testing (30-34 days)
 3. Documentation (34-49 days)
@@ -845,6 +898,7 @@ Total Effort: 30-34 days
 **Goal**: Implement missing features for production
 
 **Deliverables**:
+
 - ✅ Physics system (core-js)
 - ✅ Advanced pathfinding (core-js)
 - ✅ Instanced rendering (core-js)
@@ -855,9 +909,10 @@ Total Effort: 30-34 days
 - ✅ Mobile support improvements (console)
 
 **Key Tasks**:
+
 1. Physics system (5-7 days)
 2. Instanced rendering (4-5 days)
-3. A* pathfinding (4-5 days)
+3. A\* pathfinding (4-5 days)
 4. Delta sync (5-7 days)
 5. Coroutines + source maps (7-9 days)
 6. Editor features (12-15 days)
@@ -875,6 +930,7 @@ Total Effort: 30-34 days
 **Goal**: Performance, UX, and production readiness
 
 **Deliverables**:
+
 - ✅ Performance optimization (frustum culling, LOD)
 - ✅ Enhanced transition system
 - ✅ Improved error handling & UX
@@ -883,6 +939,7 @@ Total Effort: 30-34 days
 - ✅ Beta release preparation
 
 **Key Tasks**:
+
 1. Performance optimization (6-8 days)
 2. Transition system (3 days)
 3. UX improvements (5-7 days)
@@ -902,6 +959,7 @@ Total Effort: 30-34 days
 **Goal**: Support additional platforms
 
 **Deliverables** (choose one or more):
+
 - ✅ Desktop (Electron) packaging: 2-3 weeks
 - ✅ Native C engine: 12-16 weeks
 - ✅ Mobile app (React Native): 8-12 weeks
@@ -912,16 +970,16 @@ Total Effort: 30-34 days
 
 ## Risk Analysis & Mitigation
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|-----------|
-| Scope creep | High | Medium | Strict prioritization, time-box features |
-| Testing complexity | High | Medium | Use existing test infrastructure, gradual expansion |
-| Performance issues in large scenes | High | Medium | Profile early, implement LOD/frustum culling |
-| Documentation maintenance | Medium | High | Auto-generate docs, invest in tooling |
-| ARM platform complexity | High | Low | Consider web-only for now, revisit later |
-| Mobile compatibility | Medium | Medium | Continuous testing on real devices |
-| Multiplayer scaling | Medium | Low | Load testing, implement delta sync |
-| Breaking API changes | Medium | Low | Semantic versioning, changelogs |
+| Risk                               | Impact | Likelihood | Mitigation                                          |
+| ---------------------------------- | ------ | ---------- | --------------------------------------------------- |
+| Scope creep                        | High   | Medium     | Strict prioritization, time-box features            |
+| Testing complexity                 | High   | Medium     | Use existing test infrastructure, gradual expansion |
+| Performance issues in large scenes | High   | Medium     | Profile early, implement LOD/frustum culling        |
+| Documentation maintenance          | Medium | High       | Auto-generate docs, invest in tooling               |
+| ARM platform complexity            | High   | Low        | Consider web-only for now, revisit later            |
+| Mobile compatibility               | Medium | Medium     | Continuous testing on real devices                  |
+| Multiplayer scaling                | Medium | Low        | Load testing, implement delta sync                  |
+| Breaking API changes               | Medium | Low        | Semantic versioning, changelogs                     |
 
 **Contingency**: Reserve 15-20% time budget for unexpected issues.
 
@@ -930,6 +988,7 @@ Total Effort: 30-34 days
 ## Success Criteria
 
 ### By End of Phase 1 (Week 16)
+
 - [ ] Zero critical bugs in main packages
 - [ ] 70%+ test coverage
 - [ ] Complete API documentation
@@ -937,6 +996,7 @@ Total Effort: 30-34 days
 - [ ] Zero console.log statements in production code
 
 ### By End of Phase 2 (Week 26)
+
 - [ ] All planned features implemented
 - [ ] 80%+ test coverage
 - [ ] Mobile support working well
@@ -944,6 +1004,7 @@ Total Effort: 30-34 days
 - [ ] Performance benchmarks met
 
 ### By End of Phase 3 (Week 34)
+
 - [ ] 1.0 release candidate ready
 - [ ] Comprehensive user documentation
 - [ ] Community established
@@ -951,6 +1012,7 @@ Total Effort: 30-34 days
 - [ ] Performance optimized for target platforms
 
 ### Production Release (Week 36-40)
+
 - [ ] 1.0 stable release
 - [ ] NPM packages published
 - [ ] Website fully operational
@@ -962,12 +1024,14 @@ Total Effort: 30-34 days
 ## Resource Requirements
 
 ### For 1 Developer (Current Plan)
+
 - **Timeline**: 30-40 weeks to production
 - **Full-time commitment**: Required
 - **Cost**: Typical salary (salary TBD)
 - **Outcome**: Complete, well-tested, documented product
 
 ### For 2 Developers (Recommended)
+
 - **Timeline**: 18-25 weeks to production
 - **Full-time commitment**: Both required
 - **Cost**: 2x salary
@@ -977,6 +1041,7 @@ Total Effort: 30-34 days
   - Developer 2: Editor, console, server, testing
 
 ### For 3 Developers (Ideal)
+
 - **Timeline**: 12-18 weeks to production
 - **Cost**: 3x salary
 - **Outcome**: Parallel development, comprehensive testing
@@ -992,17 +1057,20 @@ Total Effort: 30-34 days
 ## Funding & Business Considerations
 
 ### Monetization Opportunities
+
 1. **Donations/Sponsorship**: Patreon, GitHub Sponsors
 2. **Asset Store**: Plugins, templates, art packs
 3. **Services**: Hosting, consulting, custom development
 4. **Premium Edition**: Advanced features (future)
 
 ### Time-to-Revenue
+
 - **MVP (current)**: 3-4 months
 - **Production**: 6-9 months
 - **Revenue model**: Donations first, asset store 12+ months
 
 ### Community Building
+
 - Set up Discord server
 - Create tutorial video series
 - Launch itch.io game jam
@@ -1014,12 +1082,14 @@ Total Effort: 30-34 days
 ## Recommended Next Steps (Priority Order)
 
 ### Immediate (This Week)
+
 1. ✅ Review this roadmap
 2. [ ] Prioritize between web-only vs platform expansion
 3. [ ] Set up GitHub projects/milestones
 4. [ ] Create issue templates for tracking
 
 ### Short-term (This Month - Phase 1 Kickoff)
+
 1. [ ] Begin code cleanup (deprecated features)
 2. [ ] Set up testing infrastructure (Vitest config)
 3. [ ] Start Phase 1 documentation push
@@ -1027,6 +1097,7 @@ Total Effort: 30-34 days
 5. [ ] Set up automatic test running on CI/CD
 
 ### Medium-term (Months 2-3 - Phase 2)
+
 1. [ ] Implement physics system
 2. [ ] Add instanced rendering
 3. [ ] Complete editor features
@@ -1034,6 +1105,7 @@ Total Effort: 30-34 days
 5. [ ] Finish PixoScript improvements
 
 ### Long-term (Months 3-4 - Phase 3)
+
 1. [ ] Performance optimization
 2. [ ] Complete website content
 3. [ ] Beta testing program
@@ -1055,6 +1127,7 @@ PixoSpritz has a **solid foundation** with well-designed packages and functional
 **Estimated effort**: 30-40 weeks with focused, disciplined execution
 
 **Key decision**: Invest in breadth (multiple platforms) or depth (Web perfection)?
+
 - **Recommendation**: Perfect the web platform first (higher ROI), then expand to other platforms based on market demand.
 
 The project is **well-architected** for scalability and has strong potential for adoption in the game development community. Success depends on execution discipline, community engagement, and strategic prioritization.
@@ -1064,6 +1137,7 @@ The project is **well-architected** for scalability and has strong potential for
 ## Appendix: File Reference Guide
 
 ### Architecture & Planning Documents
+
 - [PENDING.md](packages/core-js/PENDING.md) - Core engine feature list
 - [CLEANUP.md](packages/core-js/CLEANUP.md) - Code quality tasks
 - [FIXES_AND_IMPROVEMENTS.md](packages/core-js/FIXES_AND_IMPROVEMENTS.md) - Recent improvements
@@ -1071,6 +1145,7 @@ The project is **well-architected** for scalability and has strong potential for
 - [PIXOSCRIPT_API.md](packages/core-js/PIXOSCRIPT_API.md) - Script API reference
 
 ### Package READMEs
+
 - [core-js/README.md](packages/core-js/README.md) - Engine documentation
 - [editor/README.md](packages/editor/README.md) - Editor documentation
 - [console/README.md](packages/console/README.md) - Console documentation
@@ -1079,10 +1154,12 @@ The project is **well-architected** for scalability and has strong potential for
 - [website/README.md](packages/website/README.md) - Website
 
 ### Platform Documentation
+
 - [arm-linux/README.md](packages/arm-linux/README.md) - ARM platform guide
 - [specs/README.md](packages/specs/README.md) - Specifications
 
 ### Root Documentation
+
 - [README.md](README.md) - Project overview
 - [QUICKSTART.md](QUICKSTART.md) - Setup guide
 - [package.json](package.json) - Workspace configuration

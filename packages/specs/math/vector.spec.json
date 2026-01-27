@@ -3,7 +3,7 @@
   "$id": "https://pixospritz.dev/schemas/vector.spec.json",
   "title": "Vector Specification",
   "description": "Shared vector math specifications for JS and C engines",
-  
+
   "definitions": {
     "Vector2": {
       "description": "2D vector/coordinate",
@@ -14,7 +14,7 @@
       },
       "required": ["x", "y"]
     },
-    
+
     "Vector3": {
       "description": "3D vector",
       "type": "object",
@@ -25,7 +25,7 @@
       },
       "required": ["x", "y", "z"]
     },
-    
+
     "Vector4": {
       "description": "4D vector (homogeneous coordinates)",
       "type": "object",
@@ -38,7 +38,7 @@
       "required": ["x", "y", "z", "w"]
     }
   },
-  
+
   "operations": {
     "Vector3": {
       "add": {
@@ -123,7 +123,7 @@
       }
     }
   },
-  
+
   "constants": {
     "ZERO": { "x": 0, "y": 0, "z": 0 },
     "ONE": { "x": 1, "y": 1, "z": 1 },

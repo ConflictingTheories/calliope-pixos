@@ -22,7 +22,7 @@ async function showOpenFilePicker({ multiple, description, accept } = {}) {
         });
       }
       const fileHandles = await window.showOpenFilePicker(options);
-      return Promise.all(fileHandles.map((fileHandle) => fileHandle.getFile()));
+      return Promise.all(fileHandles.map(fileHandle => fileHandle.getFile()));
     } catch (error) {
       if (error.name === ABORT_ERROR_NAME) {
         return [];
@@ -37,7 +37,7 @@ async function showOpenFilePicker({ multiple, description, accept } = {}) {
       accept: accept ? Object.keys(accept).join(',') : '',
       multiple,
     });
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       fileInputElement.onchange = ({ target }) => {
         if (target.files.length) {
           resolve(Array.from(target.files));
@@ -68,4 +68,11 @@ function saveBlob(blob, filename) {
   URL.revokeObjectURL(href);
 }
 
-export { FILESYSTEM_FILE_KIND, showOpenFilePicker, showDirectoryPicker, savePickersSupported, showSaveFilePicker, saveBlob };
+export {
+  FILESYSTEM_FILE_KIND,
+  showOpenFilePicker,
+  showDirectoryPicker,
+  savePickersSupported,
+  showSaveFilePicker,
+  saveBlob,
+};

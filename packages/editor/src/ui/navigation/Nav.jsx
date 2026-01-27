@@ -6,7 +6,7 @@ import './Nav.css';
 
 const NavContext = createContext(null);
 
-export function Nav({ 
+export function Nav({
   children,
   activeKey,
   appearance = 'default',
@@ -15,15 +15,17 @@ export function Nav({
   className = '',
   onSelect,
   style,
-  ...props 
+  ...props
 }) {
   const classes = [
     'px-nav',
     `px-nav-${appearance}`,
     vertical && 'px-nav-vertical',
     justified && 'px-nav-justified',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <NavContext.Provider value={{ activeKey, onSelect }}>
@@ -34,20 +36,20 @@ export function Nav({
   );
 }
 
-Nav.Item = function NavItem({ 
-  children, 
+Nav.Item = function NavItem({
+  children,
   eventKey,
   active,
   disabled = false,
   icon,
   className = '',
   href,
-  ...props 
+  ...props
 }) {
   const context = useContext(NavContext);
-  const isActive = active ?? (context?.activeKey === eventKey);
+  const isActive = active ?? context?.activeKey === eventKey;
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     if (disabled) {
       e.preventDefault();
       return;
@@ -63,19 +65,16 @@ Nav.Item = function NavItem({
     'px-nav-item',
     isActive && 'px-nav-item-active',
     disabled && 'px-nav-item-disabled',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const Component = href ? 'a' : 'button';
   const componentProps = href ? { href } : { type: 'button' };
 
   return (
-    <Component 
-      className={classes} 
-      onClick={handleClick}
-      {...componentProps}
-      {...props}
-    >
+    <Component className={classes} onClick={handleClick} {...componentProps} {...props}>
       {icon && <span className="px-nav-item-icon">{icon}</span>}
       {children}
     </Component>

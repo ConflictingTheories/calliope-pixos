@@ -113,13 +113,12 @@ export default class World {
     return this.networkAvatars.remoteAvatars;
   }
 
-
   /**
    * Creates an avatar in the world.
    * @param {object} avatarData - The avatar data.
    * @returns {Avatar|null} The created avatar or null.
    */
-  createAvatar = (avatarData) => {
+  createAvatar = avatarData => {
     const zone = this.zoneContaining(avatarData.x, avatarData.y);
     if (zone) {
       const avatar = new Avatar(this.engine);
@@ -128,7 +127,7 @@ export default class World {
         zone: zone,
         id: avatarData.id,
         pos: new Vector(avatarData.x, avatarData.y),
-        ...avatarData
+        ...avatarData,
       });
       zone.addSprite(avatar);
       return avatar;
@@ -140,7 +139,7 @@ export default class World {
    * Removes an avatar from the world.
    * @param {Avatar} avatar - The avatar to remove.
    */
-  removeAvatar = (avatar) => {
+  removeAvatar = avatar => {
     const zone = avatar.zone;
     if (zone) {
       zone.removeSprite(avatar);
@@ -159,7 +158,7 @@ export default class World {
    * Pushes an action to run after the current tick.
    * @param {function(): void} action - The action to run.
    */
-  runAfterTick = (action) => {
+  runAfterTick = action => {
     this.afterTickActions.add(action);
   };
 
@@ -170,8 +169,6 @@ export default class World {
     this.zoneList.sort((a, b) => a.bounds[1] - b.bounds[1]);
   };
 
-
-
   /**
    * Loads a zone from a zip archive.
    * @param {string} zoneId - The zone ID.
@@ -180,7 +177,12 @@ export default class World {
    * @param {object} [transitionParams={ effect: 'cross', duration: 500 }] - Transition parameters.
    * @returns {Promise<Zone>} The loaded zone.
    */
-  loadZoneFromZip = async (zoneId, zip, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
+  loadZoneFromZip = async (
+    zoneId,
+    zip,
+    skipCache = false,
+    transitionParams = { effect: 'cross', duration: 500 }
+  ) => {
     return this._withTransition(transitionParams, async () => {
       if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
       const engine = this.engine;
@@ -195,7 +197,7 @@ export default class World {
       await z.loadZoneFromZip(zoneJson, cellJson, zip);
 
       // audio
-      this.zoneList.map((x) => {
+      this.zoneList.map(x => {
         if (x.audio) {
           x.audio.pauseAudio();
         }
@@ -224,7 +226,12 @@ export default class World {
    * @param {object} [transitionParams={ effect: 'cross', duration: 500 }] - Transition parameters.
    * @returns {Promise<Zone>} The loaded zone.
    */
-  loadZone = async (zoneId, remotely = false, skipCache = false, transitionParams = { effect: 'cross', duration: 500 }) => {
+  loadZone = async (
+    zoneId,
+    remotely = false,
+    skipCache = false,
+    transitionParams = { effect: 'cross', duration: 500 }
+  ) => {
     return this._withTransition(transitionParams, async () => {
       if (!skipCache && this.zoneDict[zoneId]) return this.zoneDict[zoneId];
 
@@ -234,7 +241,7 @@ export default class World {
       else await z.load();
 
       // audio
-      this.zoneList.map((x) => {
+      this.zoneList.map(x => {
         if (x.audio) {
           x.audio.pauseAudio();
         }
@@ -265,7 +272,7 @@ export default class World {
     let useTransition = false;
     if (transitionParams && engine?.renderManager) {
       const rm = engine.renderManager;
-      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const timeSinceLast = now - (rm.transitionStartTime + rm.transitionDuration);
       if (!rm.isTransitioning && timeSinceLast > 100) {
         useTransition = true;
@@ -287,13 +294,12 @@ export default class World {
     return result;
   };
 
-
   /**
    * Removes a zone.
    * @param {string} zoneId - The zone ID to remove.
    */
-  removeZone = (zoneId) => {
-    this.zoneList = this.zoneList.filter((zone) => {
+  removeZone = zoneId => {
+    this.zoneList = this.zoneList.filter(zone => {
       if (zone.id !== zoneId) {
         return true;
       } else {
@@ -311,7 +317,7 @@ export default class World {
    * Removes all zones.
    */
   removeAllZones = () => {
-    this.zoneList.map((z) => {
+    this.zoneList.map(z => {
       if (z.audio) {
         z.audio.pauseAudio();
       }
@@ -326,7 +332,7 @@ export default class World {
    * Updates the world.
    * @param {number} time - The current time.
    */
-  tick = (time) => {
+  tick = time => {
     for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
   };
@@ -335,14 +341,16 @@ export default class World {
    * Checks input at the world level.
    * @param {number} time - The current time.
    */
-  checkInput = (time) => {
+  checkInput = time => {
     if (time > this.lastKey + 200) {
       this.lastKey = time;
 
       if (this.modeManager && this.modeManager.handleInput) {
         try {
           if (this.modeManager.handleInput(time)) return;
-        } catch (e) { console.warn('mode input handler error', e); }
+        } catch (e) {
+          console.warn('mode input handler error', e);
+        }
       }
       let touchmap = this.engine.gamepad.checkInput();
       if (this.engine.gamepad.keyPressed('start')) {
@@ -362,7 +370,17 @@ export default class World {
    */
   startMenu = (menuConfig, defaultMenus = ['start']) => {
     this.addEvent(
-      new EventLoader(this.engine, 'menu', [menuConfig ?? this.menuConfig, defaultMenus, false, { autoclose: false, closeOnEnter: true }], this)
+      new EventLoader(
+        this.engine,
+        'menu',
+        [
+          menuConfig ?? this.menuConfig,
+          defaultMenus,
+          false,
+          { autoclose: false, closeOnEnter: true },
+        ],
+        this
+      )
     );
   };
 
@@ -370,7 +388,7 @@ export default class World {
    * Adds an event to the queue.
    * @param {object} event - The event to add.
    */
-  addEvent = (event) => {
+  addEvent = event => {
     if (this.eventDict[event.id]) this.removeAction(event.id);
     this.eventDict[event.id] = event;
     this.eventList.push(event);
@@ -380,8 +398,8 @@ export default class World {
    * Removes an action.
    * @param {string} id - The action ID.
    */
-  removeAction = (id) => {
-    this.eventList = this.eventList.filter((event) => event.id !== id);
+  removeAction = id => {
+    this.eventList = this.eventList.filter(event => event.id !== id);
     delete this.eventDict[id];
   };
 
@@ -397,7 +415,7 @@ export default class World {
    * Handles outer tick logic for events and zones.
    * @param {number} time - The current time.
    */
-  tickOuter = (time) => {
+  tickOuter = time => {
     this.checkInput(time);
     this.eventList.sort((a, b) => {
       let dt = a.startTime - b.startTime;
@@ -405,14 +423,14 @@ export default class World {
       return a.id > b.id ? 1 : -1;
     });
     let toRemove = [];
-    this.eventList.forEach((event) => {
+    this.eventList.forEach(event => {
       if (!event.loaded || event.startTime > time || (event.pausable && this.isPaused)) return;
       if (event.tick(time)) {
         toRemove.push(event);
         event.onComplete();
       }
     });
-    toRemove.forEach((event) => this.removeAction(event.id));
+    toRemove.forEach(event => this.removeAction(event.id));
     if (this.tick && !this.isPaused) this.tick(time);
     if (!this.isPaused && this.modeManager && this.modeManager.update) {
       try {
@@ -455,11 +473,7 @@ export default class World {
    * @returns {Array<Array<number>>|null} The path as array of [x, y, z] coordinates, or null if no path found.
    */
   pathFind = (from, to, options = {}) => {
-    const {
-      allowDiagonal = true,
-      smoothPath = true,
-      useLegacy = false,
-    } = options;
+    const { allowDiagonal = true, smoothPath = true, useLegacy = false } = options;
 
     // Use legacy algorithm if requested (for backward compatibility)
     if (useLegacy) {
@@ -531,17 +545,27 @@ export default class World {
       visited.push(jsonNeighbour);
       return world
         .getNeighbours(...neighbour)
-        .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
-        .map((neigh) => buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]]))
-        .filter((x) => x)
+        .sort((a, b) =>
+          Math.min(
+            Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
+            Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
+          )
+        )
+        .map(neigh => buildPath(neigh, [...path, [neighbour[0], neighbour[1], 600]]))
+        .filter(x => x)
         .flat();
     }
     // Fetch Steps
     steps = world
       .getNeighbours(x, y)
-      .sort((a, b) => Math.min(Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]), Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])))
-      .map((neighbour) => buildPath(neighbour, [[from[0], from[1], 600]]))
-      .filter((x) => x[0]);
+      .sort((a, b) =>
+        Math.min(
+          Math.abs(to[0] - a[0]) - Math.abs(to[0] - b[0]),
+          Math.abs(to[1] - a[1]) - Math.abs(to[1] - b[1])
+        )
+      )
+      .map(neighbour => buildPath(neighbour, [[from[0], from[1], 600]]))
+      .filter(x => x[0]);
     // Flatten Path from Segments
     return steps.flat();
   };
@@ -551,7 +575,7 @@ export default class World {
    * @param {string} id - The zone ID.
    * @returns {Zone|null} The zone.
    */
-  getZoneById = (id) => {
+  getZoneById = id => {
     return this.zoneDict[id];
   };
 

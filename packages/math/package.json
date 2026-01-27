@@ -15,18 +15,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "files": [
-    "src",
-    "README.md"
-  ],
-  "keywords": [
-    "pixospritz",
-    "math",
-    "vector",
-    "matrix",
-    "3d",
-    "webgl"
-  ],
+  "files": ["src", "README.md"],
+  "keywords": ["pixospritz", "math", "vector", "matrix", "3d", "webgl"],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
@@ -34,6 +24,5 @@
   },
   "author": "Kyle Derby MacInnis",
   "license": "CC-BY-NC-SA-4.0",
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

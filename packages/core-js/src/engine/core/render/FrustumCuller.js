@@ -282,9 +282,10 @@ export default class FrustumCuller {
    * @returns {Object}
    */
   getStats() {
-    const cullRate = this.debug.totalObjects > 0
-      ? (this.debug.culledObjects / this.debug.totalObjects * 100).toFixed(1)
-      : 0;
+    const cullRate =
+      this.debug.totalObjects > 0
+        ? ((this.debug.culledObjects / this.debug.totalObjects) * 100).toFixed(1)
+        : 0;
     return {
       ...this.debug,
       cullRate: `${cullRate}%`,

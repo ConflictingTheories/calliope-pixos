@@ -20,18 +20,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "files": [
-    "dist",
-    "src",
-    "README.md"
-  ],
-  "keywords": [
-    "pixospritz",
-    "game-engine",
-    "webgl",
-    "canvas",
-    "react"
-  ],
+  "files": ["dist", "src", "README.md"],
+  "keywords": ["pixospritz", "game-engine", "webgl", "canvas", "react"],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",

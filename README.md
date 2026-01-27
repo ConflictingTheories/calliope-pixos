@@ -6,16 +6,16 @@ A WebGL-based game engine and editor ecosystem for creating pixel-art games.
 
 This monorepo contains the following packages:
 
-| Package | Description |
-|---------|-------------|
-| [`pixospritz-core`](./packages/core) | Core WebGL game engine |
-| [`pixoscript`](./packages/script) | Lua-inspired scripting language |
-| [`pixospritz-math`](./packages/math) | Math utilities (vectors, matrices) |
-| [`pixospritz-editor`](./packages/editor) | Visual development tools |
-| [`pixospritz-console`](./packages/console) | Web game player |
-| [`pixospritz-server`](./packages/server) | WebSocket multiplayer server |
-| [`pixospritz-website`](./packages/website) | Documentation website |
-| [`pixospritz-assets`](./packages/assets) | Shared game assets |
+| Package                                    | Description                        |
+| ------------------------------------------ | ---------------------------------- |
+| [`pixospritz-core`](./packages/core)       | Core WebGL game engine             |
+| [`pixoscript`](./packages/script)          | Lua-inspired scripting language    |
+| [`pixospritz-math`](./packages/math)       | Math utilities (vectors, matrices) |
+| [`pixospritz-editor`](./packages/editor)   | Visual development tools           |
+| [`pixospritz-console`](./packages/console) | Web game player                    |
+| [`pixospritz-server`](./packages/server)   | WebSocket multiplayer server       |
+| [`pixospritz-website`](./packages/website) | Documentation website              |
+| [`pixospritz-assets`](./packages/assets)   | Shared game assets                 |
 
 ## 🚀 Quick Start
 
@@ -81,6 +81,7 @@ calliope-pixos/
 ## 🎮 Features
 
 ### Core Engine
+
 - WebGL2 rendering with custom shaders
 - Sprite and tileset management
 - Isometric and 2D map support
@@ -90,6 +91,7 @@ calliope-pixos/
 - Cutscene player with DSL
 
 ### Editor
+
 - Sprite Editor with animation support
 - Tile Editor with collision data
 - Map Editor with multiple layers
@@ -98,6 +100,7 @@ calliope-pixos/
 - Monaco-based script editor
 
 ### Scripting
+
 - Lua-compatible syntax
 - Game-specific extensions
 - Hot-reloading support

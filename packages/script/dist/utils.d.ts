@@ -38,4 +38,4 @@ declare function coerceArgToTable(value: LuaType, funcName: string, index: numbe
 declare function coerceArgToFunction(value: LuaType, funcName: string, index: number): Function;
 declare const ensureArray: <T>(value: T | T[]) => T[];
 declare const hasOwnProperty: (obj: Record<string, unknown> | unknown[], key: string | number) => boolean;
-export { LuaType, Config, type, tostring, posrelat, coerceToBoolean, coerceToNumber, coerceToString, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction, ensureArray, hasOwnProperty };
+export { LuaType, Config, type, tostring, posrelat, coerceToBoolean, coerceToNumber, coerceToString, coerceArgToNumber, coerceArgToString, coerceArgToTable, coerceArgToFunction, ensureArray, hasOwnProperty, };

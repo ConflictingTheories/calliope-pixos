@@ -14,7 +14,7 @@ export function Tooltip({ children, className = '', ...props }) {
   );
 }
 
-export function Whisper({ 
+export function Whisper({
   children,
   speaker,
   trigger = 'hover',
@@ -22,7 +22,7 @@ export function Whisper({
   delay = 0,
   delayHide = 0,
   className = '',
-  ...props 
+  ...props
 }) {
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -36,7 +36,7 @@ export function Whisper({
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    
+
     let top, left;
 
     switch (placement) {
@@ -119,17 +119,17 @@ export function Whisper({
   }, []);
 
   const triggerProps = {};
-  
+
   if (trigger === 'hover' || trigger.includes?.('hover')) {
     triggerProps.onMouseEnter = show;
     triggerProps.onMouseLeave = hide;
   }
-  
+
   if (trigger === 'focus' || trigger.includes?.('focus')) {
     triggerProps.onFocus = show;
     triggerProps.onBlur = hide;
   }
-  
+
   if (trigger === 'click' || trigger.includes?.('click')) {
     triggerProps.onClick = () => setVisible(v => !v);
   }
@@ -138,26 +138,28 @@ export function Whisper({
   const child = React.Children.only(children);
   const triggerElement = React.cloneElement(child, {
     ref: triggerRef,
-    ...triggerProps
+    ...triggerProps,
   });
 
-  const tooltip = visible && createPortal(
-    <div
-      ref={tooltipRef}
-      className={`px-whisper px-whisper-${placement} ${className}`}
-      style={{ 
-        position: 'fixed',
-        top: position.top,
-        left: position.left,
-        zIndex: 1060
-      }}
-      onMouseEnter={trigger === 'hover' ? show : undefined}
-      onMouseLeave={trigger === 'hover' ? hide : undefined}
-    >
-      {speaker}
-    </div>,
-    document.body
-  );
+  const tooltip =
+    visible &&
+    createPortal(
+      <div
+        ref={tooltipRef}
+        className={`px-whisper px-whisper-${placement} ${className}`}
+        style={{
+          position: 'fixed',
+          top: position.top,
+          left: position.left,
+          zIndex: 1060,
+        }}
+        onMouseEnter={trigger === 'hover' ? show : undefined}
+        onMouseLeave={trigger === 'hover' ? hide : undefined}
+      >
+        {speaker}
+      </div>,
+      document.body
+    );
 
   return (
     <>

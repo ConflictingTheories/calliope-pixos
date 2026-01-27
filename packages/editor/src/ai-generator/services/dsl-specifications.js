@@ -732,7 +732,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 4,
     tileSize: [24, 48],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 
@@ -742,7 +745,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 4,
     tileSize: [24, 32],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 
@@ -752,7 +758,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 4,
     tileSize: [24, 32],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 
@@ -762,7 +771,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 4,
     tileSize: [32, 32],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 
@@ -772,7 +784,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 4,
     tileSize: [16, 16],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 
@@ -782,7 +797,10 @@ export const SPRITESHEET_LAYOUTS = {
     framesPerDirection: 8,
     tileSize: [32, 32],
     get sheetSize() {
-      return [this.tileSize[0] * this.framesPerDirection, this.tileSize[1] * this.directions.length];
+      return [
+        this.tileSize[0] * this.framesPerDirection,
+        this.tileSize[1] * this.directions.length,
+      ];
     },
   },
 };

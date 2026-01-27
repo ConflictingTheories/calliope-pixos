@@ -10,16 +10,7 @@
 
 import { debug } from '../shared/debug-logger.js';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  Button,
-  Input,
-  SelectPicker,
-  Message,
-  Progress,
-  ButtonGroup,
-  Toggle,
-  Nav,
-} from '../ui';
+import { Button, Input, SelectPicker, Message, Progress, ButtonGroup, Toggle, Nav } from '../ui';
 
 import {
   aiService,
@@ -53,7 +44,11 @@ function AssetCard({ asset, onSave, saving }) {
         return (
           <div className="asset-card-image">
             <img
-              src={asset.base64 ? `data:image/png;base64,${asset.base64}` : URL.createObjectURL(asset.content)}
+              src={
+                asset.base64
+                  ? `data:image/png;base64,${asset.base64}`
+                  : URL.createObjectURL(asset.content)
+              }
               alt={asset.name}
             />
           </div>
@@ -68,7 +63,11 @@ function AssetCard({ asset, onSave, saving }) {
       case 'text':
         return (
           <div className="asset-card-text">
-            <pre>{typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}</pre>
+            <pre>
+              {typeof asset.content === 'string'
+                ? asset.content
+                : JSON.stringify(asset.content, null, 2)}
+            </pre>
           </div>
         );
       default:
@@ -85,12 +84,7 @@ function AssetCard({ asset, onSave, saving }) {
       {renderPreview()}
       <div className="asset-card-footer">
         <span className="asset-card-path">{asset.path}</span>
-        <Button
-          size="xs"
-          appearance="primary"
-          onClick={() => onSave(asset)}
-          loading={saving}
-        >
+        <Button size="xs" appearance="primary" onClick={() => onSave(asset)} loading={saving}>
           Save
         </Button>
       </div>
@@ -125,7 +119,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   const isConfigured = aiService.isConfigured();
 
   // Handle template selection
-  const handleSelectTemplate = useCallback((template) => {
+  const handleSelectTemplate = useCallback(template => {
     setSelectedTemplate(template);
     setPrompt(template.prompt);
     setModality('game');
@@ -134,7 +128,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
   // Warn before closing if there are unsaved results
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = e => {
       if (results?.assets?.length > 0) {
         e.preventDefault();
         e.returnValue = 'You have unsaved generated assets. Are you sure you want to leave?';
@@ -229,8 +223,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         const gameOrchestrator = createGamePackageOrchestrator({
           writeFile,
-          onProgress: (p) => setProgress(p),
-          onStatusChange: (s) => setStatus(s),
+          onProgress: p => setProgress(p),
+          onStatusChange: s => setStatus(s),
         });
 
         generationResults = await gameOrchestrator.generateGamePackage(prompt);
@@ -238,8 +232,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
         // Use regular orchestrator for individual assets
         const orchestrator = createOrchestrator({
           writeFile,
-          onProgress: (p) => setProgress(p),
-          onStatusChange: (s) => setStatus(s),
+          onProgress: p => setProgress(p),
+          onStatusChange: s => setStatus(s),
         });
 
         generationResults = await orchestrator.generateFromPrompt(prompt);
@@ -250,7 +244,6 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       if (generationResults.errors.length > 0) {
         setError(`Completed with ${generationResults.errors.length} error(s)`);
       }
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -276,8 +269,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     try {
       const orchestrator = createOrchestrator({
         writeFile,
-        onProgress: (p) => setProgress(p),
-        onStatusChange: (s) => setStatus(s),
+        onProgress: p => setProgress(p),
+        onStatusChange: s => setStatus(s),
       });
 
       const retryResults = await orchestrator.retryFailedAssets(retryableErrors);
@@ -292,7 +285,6 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       if (retryResults.errors.length > 0) {
         setError(`Retry completed with ${retryResults.errors.length} error(s)`);
       }
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -303,23 +295,25 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   }, [results, writeFile]);
 
   // Handle saving single asset
-  const handleSaveAsset = useCallback(async (asset) => {
-    if (!writeFile) return;
+  const handleSaveAsset = useCallback(
+    async asset => {
+      if (!writeFile) return;
 
-    setSavingAsset(asset.path);
-    try {
-      const orchestrator = createOrchestrator({ writeFile });
-      await orchestrator.writeAssetsToZip([asset], writeFile);
+      setSavingAsset(asset.path);
+      try {
+        const orchestrator = createOrchestrator({ writeFile });
+        await orchestrator.writeAssetsToZip([asset], writeFile);
 
-      if (refreshFolder) refreshFolder();
-      if (onFileGenerated) onFileGenerated(asset);
-
-    } catch (err) {
-      setError(`Failed to save: ${err.message}`);
-    } finally {
-      setSavingAsset(null);
-    }
-  }, [writeFile, refreshFolder, onFileGenerated]);
+        if (refreshFolder) refreshFolder();
+        if (onFileGenerated) onFileGenerated(asset);
+      } catch (err) {
+        setError(`Failed to save: ${err.message}`);
+      } finally {
+        setSavingAsset(null);
+      }
+    },
+    [writeFile, refreshFolder, onFileGenerated]
+  );
 
   // Handle saving all assets
   const handleSaveAll = useCallback(async () => {
@@ -335,8 +329,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     try {
       const orchestrator = createOrchestrator({
         writeFile,
-        onProgress: (p) => setProgress(p),
-        onStatusChange: (s) => setStatus(s),
+        onProgress: p => setProgress(p),
+        onStatusChange: s => setStatus(s),
       });
 
       const writeResults = await orchestrator.writeAssetsToZip(results.assets, writeFile);
@@ -347,11 +341,12 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       }
 
       if (writeResults.failed.length > 0) {
-        setError(`Failed to save ${writeResults.failed.length} file(s). ${writeResults.success.length} file(s) saved successfully.`);
+        setError(
+          `Failed to save ${writeResults.failed.length} file(s). ${writeResults.success.length} file(s) saved successfully.`
+        );
       } else {
         setStatus({ phase: 'saved', message: `Saved ${writeResults.success.length} file(s)` });
       }
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -369,7 +364,12 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       </header>
 
       {/* Tab Navigation */}
-      <Nav appearance="subtle" activeKey={activeTab} onSelect={setActiveTab} className="ai-generator-tabs">
+      <Nav
+        appearance="subtle"
+        activeKey={activeTab}
+        onSelect={setActiveTab}
+        className="ai-generator-tabs"
+      >
         <Nav.Item eventKey="templates" icon={<span>🎮</span>}>
           Templates
         </Nav.Item>
@@ -401,12 +401,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
             {/* Selected Template Banner */}
             {selectedTemplate && (
               <div className="ai-template-banner">
-                <span>📋 Using template: <strong>{selectedTemplate.name}</strong></span>
-                <Button
-                  size="xs"
-                  appearance="ghost"
-                  onClick={() => setSelectedTemplate(null)}
-                >
+                <span>
+                  📋 Using template: <strong>{selectedTemplate.name}</strong>
+                </span>
+                <Button size="xs" appearance="ghost" onClick={() => setSelectedTemplate(null)}>
                   Clear
                 </Button>
               </div>
@@ -424,9 +422,11 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 rows={modality === 'game' ? 5 : 3}
                 value={prompt}
                 onChange={setPrompt}
-                placeholder={modality === 'game'
-                  ? 'e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues...'
-                  : 'e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait...'}
+                placeholder={
+                  modality === 'game'
+                    ? 'e.g., Create a fantasy RPG where a young mage must collect 4 elemental crystals from different dungeons. Include a mentor NPC, shopkeeper, and final boss. The game should have an intro cutscene and quest dialogues...'
+                    : 'e.g., Create a wizard character sprite with blue robes, 8 direction walk animation, and a portrait...'
+                }
                 disabled={loading}
               />
 
@@ -453,8 +453,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
               {modality === 'game' && !loading && (
                 <div className="ai-game-hint">
-                  <strong>Full Game Generation</strong> will create: player character, NPCs, enemies,
-                  cutscenes, scripts, zones, and manifest.json - a complete playable package!
+                  <strong>Full Game Generation</strong> will create: player character, NPCs,
+                  enemies, cutscenes, scripts, zones, and manifest.json - a complete playable
+                  package!
                 </div>
               )}
             </section>
@@ -484,7 +485,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <div className="ai-analysis-label">Will generate:</div>
                 <div className="ai-analysis-tags">
                   {analysis.detectedAssets.map((asset, i) => (
-                    <span key={i} className="ai-tag">{asset}</span>
+                    <span key={i} className="ai-tag">
+                      {asset}
+                    </span>
                   ))}
                 </div>
                 {analysis.spriteConfig && (
@@ -501,7 +504,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         {/* Progress */}
         {loading && status && (
-          <section className={`ai-progress ${status.phase === 'rate-limited' ? 'ai-progress-rate-limited' : ''}`}>
+          <section
+            className={`ai-progress ${status.phase === 'rate-limited' ? 'ai-progress-rate-limited' : ''}`}
+          >
             <div className="ai-progress-status">
               <span className="ai-progress-phase">{status.phase}</span>
               <span className="ai-progress-message">{status.message}</span>
@@ -511,7 +516,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <div className="ai-countdown-timer">{countdown}s</div>
                 <div className="ai-countdown-label">until retry</div>
                 <Progress.Line
-                  percent={Math.max(0, 100 - (countdown / (status.retryInfo?.delayMs / 1000 || 60)) * 100)}
+                  percent={Math.max(
+                    0,
+                    100 - (countdown / (status.retryInfo?.delayMs / 1000 || 60)) * 100
+                  )}
                   status="active"
                   showInfo={false}
                 />
@@ -529,7 +537,13 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         {/* Error */}
         {error && (
-          <Message type="error" showIcon closable onClose={() => setError(null)} className="ai-error">
+          <Message
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError(null)}
+            className="ai-error"
+          >
             {error}
           </Message>
         )}
@@ -555,7 +569,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <strong>Characters:</strong>
                 <ul>
                   {results.concept.characters?.map((c, i) => (
-                    <li key={i}>{c.displayName || c.name} ({c.type})</li>
+                    <li key={i}>
+                      {c.displayName || c.name} ({c.type})
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -573,7 +589,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
 
         {/* Package Validation Status */}
         {results && results.validation && (
-          <section className={`ai-validation ${results.validation.isComplete ? 'ai-validation-complete' : 'ai-validation-incomplete'}`}>
+          <section
+            className={`ai-validation ${results.validation.isComplete ? 'ai-validation-complete' : 'ai-validation-incomplete'}`}
+          >
             <div className="ai-validation-header">
               {results.validation.isComplete ? (
                 <span className="ai-validation-status">✓ Package Complete</span>
@@ -581,7 +599,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <span className="ai-validation-status">⚠️ Package Incomplete</span>
               )}
               <span className="ai-validation-stats">
-                {results.validation.stats.completed}/{results.validation.stats.total} required assets
+                {results.validation.stats.completed}/{results.validation.stats.total} required
+                assets
               </span>
             </div>
 
@@ -590,7 +609,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <strong>Missing Required Assets:</strong>
                 <ul>
                   {results.validation.missing.map((item, i) => (
-                    <li key={i} className="ai-missing-item">❌ {item}</li>
+                    <li key={i} className="ai-missing-item">
+                      ❌ {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -601,7 +622,9 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
                 <strong>Generated:</strong>
                 <ul>
                   {results.validation.generated.map((item, i) => (
-                    <li key={i} className="ai-generated-item">✓ {item.path}</li>
+                    <li key={i} className="ai-generated-item">
+                      ✓ {item.path}
+                    </li>
                   ))}
                 </ul>
               </div>

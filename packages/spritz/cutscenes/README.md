@@ -5,9 +5,11 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ## Available Cutscenes
 
 ### 1. epic-quest.pxc (★ RECOMMENDED SHOWCASE)
+
 **The Elemental Challenge** - A hero's journey through the first of four elemental trials.
 
 **Features Demonstrated:**
+
 - ✅ Multiple scene transitions with fade effects
 - ✅ Character portraits with expressions (smile, worried, shocked, tired, neutral)
 - ✅ Dramatic cutin moments
@@ -20,11 +22,13 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 - ✅ User input prompts (waitInput)
 
 **Characters:**
+
 - HERO (characters/male) - The brave protagonist
 - WITCH (characters/female) - The mystical guide
 - AIR_KNIGHT (npc/air-knight) - The elemental guardian
 
 **Audio Used:**
+
 - opening.mp3 - Opening atmosphere
 - organ.mp3 - Ominous moments
 - distorted-communication.mp3 - Supernatural events
@@ -38,6 +42,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 - lonely-mountain.mp3 - Epic conclusion
 
 **Backdrops:**
+
 - textures/room.gif - Starting chamber
 - textures/sewer.gif - Dark underground
 - textures/room.png - Air temple interior
@@ -50,9 +55,11 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ---
 
 ### 2. elemental-gathering.pxc (★ ADVANCED SHOWCASE)
+
 **The Tavern Summit** - Four elemental spirits meet with a hero to discuss prophecy.
 
 **Features Demonstrated:**
+
 - ✅ Multi-character dialogue (5 distinct characters)
 - ✅ Direct portrait references (using portrait files without sprite JSON)
 - ✅ Character alternation (left/right positioning)
@@ -62,6 +69,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 - ✅ Consistent pacing across long dialogue
 
 **Characters:**
+
 - HERO (characters/male) - The mortal champion
 - FIRE (fire_portrait.gif) - Spirit of Flame
 - WATER (water_portrait.gif) - Spirit of Water
@@ -69,6 +77,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 - AIR (air_portrait.gif) - Spirit of Air
 
 **Audio Used:**
+
 - menu.mp3 - Tavern ambiance
 - distorted-communication.mp3 - Spirit appearance
 - organ.mp3 - Ominous revelation
@@ -80,6 +89,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 - lonely-mountain.mp3 - Epic sendoff
 
 **Backdrops:**
+
 - textures/room.png - Mystic tavern
 - textures/darkness.gif - Spirit realm transition
 
@@ -89,9 +99,11 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ---
 
 ### 3. shakespeare.pxc (CLASSIC LITERATURE)
+
 **Macbeth - The Murder of Duncan** - A thrilling adaptation of Shakespeare's tragedy.
 
 **Features:**
+
 - Classic dramatic dialogue
 - Placeholder sprites (data: references)
 - Multi-line Shakespearean verse
@@ -100,9 +112,11 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ---
 
 ### 4. showcase-demo.pxc (BASIC DEMO)
+
 **Quick Feature Showcase** - Brief demonstration of core features.
 
 **Features:**
+
 - Basic backdrop usage
 - Portrait display
 - Sound effect triggers
@@ -111,9 +125,11 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ---
 
 ### 5. demo.pxc (MINIMAL EXAMPLE)
+
 **Harbor Scene** - Compact example showing minimal DSL syntax.
 
 **Features:**
+
 - Clean layout
 - Action chaining
 - Compact dialogue format
@@ -144,17 +160,20 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ## Asset Requirements
 
 ### For Characters
+
 - **Option A**: Sprite JSON file (e.g., `characters/male.json`)
   - Must include `portraitSrc` field pointing to portrait image
 - **Option B**: Direct portrait reference (e.g., `fire_portrait.gif`)
   - Place in `textures/` directory
 
 ### For Backdrops
+
 - Place image files in `textures/` directory
 - Supported formats: .gif, .png, .jpg, .jpeg
 - Recommended size: 1600x900 or larger
 
 ### For Audio
+
 - Place audio files in `audio/` directory
 - Supported formats: .mp3, .wav, .ogg
 - Use descriptive filenames
@@ -162,6 +181,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ## Best Practices from Examples
 
 ### From epic-quest.pxc:
+
 1. **Build Tension Gradually**: Start calm, increase intensity
 2. **Use Cutins Sparingly**: Reserve for dramatic moments
 3. **Match Audio to Mood**: Each scene has appropriate music
@@ -169,6 +189,7 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 5. **Clear Scene Breaks**: Use comments and transitions between scenes
 
 ### From elemental-gathering.pxc:
+
 1. **Character Alternation**: Switch left/right positions for natural conversation flow
 2. **Consistent Pacing**: Maintain rhythm in multi-character dialogue
 3. **World-Building**: Use dialogue to establish lore and setting
@@ -177,20 +198,25 @@ This directory contains comprehensive cutscene examples that demonstrate the ful
 ## Technical Notes
 
 ### Sprite Loading
+
 The cutscene player automatically:
+
 - Extracts `portraitSrc` from sprite JSON files
 - Falls back to sprite `src` if no portrait defined
 - Handles direct portrait references (no JSON needed)
 - Generates placeholders for missing assets
 
 ### Asset Paths
+
 All paths are relative to the spritz package root:
+
 - `characters/male` → `sprites/characters/male.json`
 - `textures/room.gif` → `textures/room.gif`
 - `audio/brass-loop.mp3` → `audio/brass-loop.mp3`
 - `fire_portrait` → searches `textures/fire_portrait.gif`
 
 ### Performance Tips
+
 - Preload audio with `@do playSfx` before playing
 - Use appropriate wait times (800-1500ms for scene changes)
 - Keep backdrop images optimized (< 2MB recommended)
@@ -199,6 +225,7 @@ All paths are relative to the spritz package root:
 ## Customization Ideas
 
 Based on these examples, you could create:
+
 - **Tutorial Cutscenes**: Step-by-step game instructions
 - **Character Backstories**: Flashback sequences
 - **Boss Introductions**: Dramatic villain reveals
@@ -211,16 +238,19 @@ Based on these examples, you could create:
 ## Troubleshooting
 
 **Portraits not loading?**
+
 - Check if sprite JSON has `portraitSrc` field
 - Try direct portrait reference (e.g., `hero_portrait`)
 - Verify file exists in `textures/` directory
 
 **Audio not playing?**
+
 - Ensure file is in `audio/` directory
 - Check file format (.mp3 recommended)
 - Verify browser audio support (some browsers require user interaction first)
 
 **Slow playback?**
+
 - Reduce backdrop image sizes
 - Use compressed audio formats
 - Adjust speed slider in editor

@@ -36,13 +36,13 @@ The main engine class that orchestrates the game loop, rendering, and all subsys
 import GLEngine from 'pixospritz-core';
 
 const engine = new GLEngine(
-  canvas,      // HTMLCanvasElement - WebGL canvas
-  hudCanvas,   // HTMLCanvasElement - HUD canvas
-  mipmap,      // HTMLCanvasElement - Mipmap canvas
+  canvas, // HTMLCanvasElement - WebGL canvas
+  hudCanvas, // HTMLCanvasElement - HUD canvas
+  mipmap, // HTMLCanvasElement - Mipmap canvas
   gamepadCanvas, // HTMLCanvasElement - Gamepad overlay canvas
-  fileUpload,  // HTMLInputElement - File input
-  width,       // number - Viewport width
-  height       // number - Viewport height
+  fileUpload, // HTMLInputElement - File input
+  width, // number - Viewport width
+  height // number - Viewport height
 );
 ```
 
@@ -136,7 +136,7 @@ await world.loadZone(zoneId);
 // Find path between two points (A* pathfinding)
 const path = world.pathFind([x1, y1], [x2, y2], {
   allowDiagonal: true,
-  smoothPath: true
+  smoothPath: true,
 });
 
 // Get zone containing a point
@@ -258,17 +258,15 @@ const hit = physics.raycast(origin, direction);
 import CollisionMask from 'pixospritz-core/engine/core/physics/CollisionMask';
 
 // Predefined layers
-CollisionMask.Layers.PLAYER   // 0x02
-CollisionMask.Layers.ENEMY     // 0x04
-CollisionMask.Layers.ITEM      // 0x08
-CollisionMask.Layers.WALL      // 0x10
-CollisionMask.Layers.TRIGGER   // 0x20
-CollisionMask.Layers.ALL       // 0xFF
+CollisionMask.Layers.PLAYER; // 0x02
+CollisionMask.Layers.ENEMY; // 0x04
+CollisionMask.Layers.ITEM; // 0x08
+CollisionMask.Layers.WALL; // 0x10
+CollisionMask.Layers.TRIGGER; // 0x20
+CollisionMask.Layers.ALL; // 0xFF
 
 // Check if bodies should collide
-const shouldCollide = CollisionMask.shouldCollide(
-  layerA, maskA, layerB, maskB
-);
+const shouldCollide = CollisionMask.shouldCollide(layerA, maskA, layerB, maskB);
 ```
 
 #### Collision Events
@@ -276,15 +274,15 @@ const shouldCollide = CollisionMask.shouldCollide(
 Bodies can implement collision callbacks:
 
 ```javascript
-body.onCollisionEnter = (other) => {
+body.onCollisionEnter = other => {
   console.log('Collision started with', other);
 };
 
-body.onCollisionStay = (other) => {
+body.onCollisionStay = other => {
   // Called every frame during collision
 };
 
-body.onCollisionExit = (other) => {
+body.onCollisionExit = other => {
   console.log('Collision ended with', other);
 };
 ```
@@ -295,16 +293,16 @@ body.onCollisionExit = (other) => {
 
 ### Pathfinder
 
-A* pathfinding with path smoothing.
+A\* pathfinding with path smoothing.
 
 ```javascript
 import Pathfinder from 'pixospritz-core/engine/core/scene/Pathfinder';
 
 const pathfinder = new Pathfinder(zone);
 const path = pathfinder.findPath(startX, startY, endX, endY, {
-  allowDiagonal: true,    // Allow 8-directional movement
-  smoothPath: true,       // Apply path smoothing
-  maxIterations: 10000    // Maximum search iterations
+  allowDiagonal: true, // Allow 8-directional movement
+  smoothPath: true, // Apply path smoothing
+  maxIterations: 10000, // Maximum search iterations
 });
 
 // Returns: Array<[x, y, z]> or null if no path found
@@ -312,7 +310,7 @@ const path = pathfinder.findPath(startX, startY, endX, endY, {
 
 ### BinaryHeap
 
-Priority queue for A* algorithm.
+Priority queue for A\* algorithm.
 
 ```javascript
 import BinaryHeap from 'pixospritz-core/engine/core/scene/BinaryHeap';
@@ -376,17 +374,20 @@ Represents a single inventory item.
 ```javascript
 import Item from 'pixospritz-core/engine/core/inventory/Item';
 
-const item = new Item({
-  id: 'potion_health',
-  name: 'Health Potion',
-  description: 'Restores 50 HP',
-  icon: 'items/potion_red.png',
-  stackable: true,
-  maxStack: 99,
-  category: 'consumable',
-  usable: true,
-  onUse: 'scripts/use_potion.pxs'
-}, quantity);
+const item = new Item(
+  {
+    id: 'potion_health',
+    name: 'Health Potion',
+    description: 'Restores 50 HP',
+    icon: 'items/potion_red.png',
+    stackable: true,
+    maxStack: 99,
+    category: 'consumable',
+    usable: true,
+    onUse: 'scripts/use_potion.pxs',
+  },
+  quantity
+);
 ```
 
 #### Properties
@@ -449,7 +450,7 @@ const saveManager = engine.saveManager;
 ```javascript
 // Save game to slot
 await saveManager.saveGame(slotId, name, {
-  captureScreenshot: true
+  captureScreenshot: true,
 });
 
 // Load game from slot
@@ -483,7 +484,7 @@ const slot = new SaveSlot(slotId, {
   name: 'Before Boss',
   timestamp: Date.now(),
   zone: 'boss_chamber',
-  gameId: 'my-game'
+  gameId: 'my-game',
 });
 ```
 
@@ -808,9 +809,7 @@ const hudCanvas = document.getElementById('hud-canvas');
 const gamepadCanvas = document.getElementById('gamepad-canvas');
 const fileUpload = document.getElementById('file-upload');
 
-const engine = new GLEngine(
-  canvas, hudCanvas, null, gamepadCanvas, fileUpload, 800, 600
-);
+const engine = new GLEngine(canvas, hudCanvas, null, gamepadCanvas, fileUpload, 800, 600);
 
 await engine.init();
 engine.render();
@@ -851,13 +850,16 @@ engine.hud.inventoryUI.show();
 const physics = engine.physicsManager;
 
 // Add sprite as physics body
-physics.addBody(sprite, 32, 32, 
-  CollisionMask.Layers.PLAYER, 
+physics.addBody(
+  sprite,
+  32,
+  32,
+  CollisionMask.Layers.PLAYER,
   CollisionMask.Layers.WALL | CollisionMask.Layers.ENEMY
 );
 
 // Implement collision callbacks
-sprite.onCollisionEnter = (other) => {
+sprite.onCollisionEnter = other => {
   console.log('Collided with', other.id);
 };
 ```
@@ -868,7 +870,7 @@ sprite.onCollisionEnter = (other) => {
 const world = engine.spritz.world;
 const path = world.pathFind([10, 10], [50, 50], {
   allowDiagonal: true,
-  smoothPath: true
+  smoothPath: true,
 });
 
 if (path) {
@@ -888,7 +890,7 @@ if (path) {
 ```typescript
 interface SaveData {
   version: string;
-  format: "pxsave";
+  format: 'pxsave';
   gameId: string;
   timestamp: string; // ISO 8601
   player: {
@@ -920,4 +922,4 @@ interface ItemDefinition {
 
 ---
 
-*For PixoScript API reference, see [Scripting API Documentation](../core-js/documentation/scripting-api.md)*
+_For PixoScript API reference, see [Scripting API Documentation](../core-js/documentation/scripting-api.md)_

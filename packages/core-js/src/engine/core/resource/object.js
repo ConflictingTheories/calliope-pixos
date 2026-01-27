@@ -56,7 +56,7 @@ export default class ModelObject extends Loadable {
    * @param {*} instanceData
    * @returns
    */
-  onLoad = (instanceData) => {
+  onLoad = instanceData => {
     if (this.loaded) return;
 
     // Zone Information
@@ -87,9 +87,12 @@ export default class ModelObject extends Loadable {
     let mesh = instanceData.mesh;
 
     // Mesh bounds
-    let maxX, minX = null;
-    let maxY, minY = null;
-    let maxZ, minZ = null;
+    let maxX,
+      minX = null;
+    let maxY,
+      minY = null;
+    let maxZ,
+      minZ = null;
 
     for (let i = 0; i < mesh.vertices.length; i = i + 3) {
       let v = mesh.vertices.slice(i, i + 3);
@@ -105,7 +108,11 @@ export default class ModelObject extends Loadable {
     // normalize x, y to fit in tile (todo)
     let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
-    this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
+    this.scale = new Vector(
+      1 / Math.max(size.x, size.z),
+      1 / Math.max(size.x, size.z),
+      1 / Math.max(size.x, size.z)
+    );
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
 
@@ -117,7 +124,11 @@ export default class ModelObject extends Loadable {
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
-      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(
+        this.getSpeechBubbleTexture(),
+        this.engine.gl.DYNAMIC_DRAW,
+        2
+      );
     }
 
     // load Portrait
@@ -128,11 +139,16 @@ export default class ModelObject extends Loadable {
 
     // lighting
     if (this.isLit) {
-      this.lightIndex = this.engine.renderManager.lightManager.addLight(this.id, this.pos.toArray(), this.lightColor, [0.01, 0.01, 0.01]);
+      this.lightIndex = this.engine.renderManager.lightManager.addLight(
+        this.id,
+        this.pos.toArray(),
+        this.lightColor,
+        [0.01, 0.01, 0.01]
+      );
     }
 
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
-  }
+  };
 
   /**
    * Load Object and Materials
@@ -165,7 +181,8 @@ export default class ModelObject extends Loadable {
     if (instanceData.lightColor) this.lightColor = instanceData.lightColor;
     if (instanceData.attenuation) this.attenuation = instanceData.attenuation;
     if (instanceData.density) this.density = instanceData.density;
-    if (instanceData.scatteringCoefficients) this.scatteringCoefficients = instanceData.scatteringCoefficients;
+    if (instanceData.scatteringCoefficients)
+      this.scatteringCoefficients = instanceData.scatteringCoefficients;
     if (instanceData.direction) this.direction = instanceData.direction;
     if (instanceData.rotation) this.rotation = instanceData.rotation;
     if (instanceData.facing && instanceData.facing !== 0) this.facing = instanceData.facing;
@@ -199,7 +216,11 @@ export default class ModelObject extends Loadable {
     // normalize x, y to fit in tile (todo)
     let size = new Vector(maxX - minX, maxZ - minZ, maxY - minY);
     this.size = size;
-    this.scale = new Vector(1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z), 1 / Math.max(size.x, size.z));
+    this.scale = new Vector(
+      1 / Math.max(size.x, size.z),
+      1 / Math.max(size.x, size.z),
+      1 / Math.max(size.x, size.z)
+    );
     if (instanceData.useScale) this.scale = instanceData.useScale;
     this.drawOffset = new Vector(0.5, 0.5, 0);
 
@@ -211,7 +232,11 @@ export default class ModelObject extends Loadable {
     if (this.enableSpeech) {
       this.speech = this.engine.resourceManager.loadSpeech(this.id, this.engine.mipmap);
       this.speech.runWhenLoaded(this.onTilesetOrTextureLoaded);
-      this.speechTexBuf = this.engine.renderManager.createBuffer(this.getSpeechBubbleTexture(), this.engine.gl.DYNAMIC_DRAW, 2);
+      this.speechTexBuf = this.engine.renderManager.createBuffer(
+        this.getSpeechBubbleTexture(),
+        this.engine.gl.DYNAMIC_DRAW,
+        2
+      );
     }
 
     // load Portrait
@@ -236,21 +261,27 @@ export default class ModelObject extends Loadable {
 
     //
     this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded);
-  }
+  };
 
   /**
    * Definition Loaded
    */
   onTilesetDefinitionLoaded = () => {
     this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded);
-  }
+  };
 
   /**
    * After Tileset / Texture Loaded
    * @returns
    */
   onTilesetOrTextureLoaded = () => {
-    if (!this || this.loaded || (this.enableSpeech && this.speech && !this.speech.loaded) || (this.portrait && !this.portrait.loaded)) return;
+    if (
+      !this ||
+      this.loaded ||
+      (this.enableSpeech && this.speech && !this.speech.loaded) ||
+      (this.portrait && !this.portrait.loaded)
+    )
+      return;
 
     console.log(`Object ${this.id} loaded successfully, adding to physics manager`);
     this.init(); // Hook for sprite implementations
@@ -264,7 +295,7 @@ export default class ModelObject extends Loadable {
     this.loaded = true;
     this.engine.physicsManager.addStaticBody(this); // Objects are usually static
     this.onLoadActions.run();
-  }
+  };
 
   /**
    * Speech Area texture
@@ -279,7 +310,7 @@ export default class ModelObject extends Loadable {
       [0.0, 0.0],
       [1.0, 0.0],
     ].flat(3);
-  }
+  };
 
   /**
    * speech bubble position
@@ -294,18 +325,18 @@ export default class ModelObject extends Loadable {
       new Vector(...[0, 0, 2]).toArray(),
       new Vector(...[2, 0, 2]).toArray(),
     ].flat(3);
-  }
+  };
 
   /**
    * bind texture
    * @param {*} texture
    */
-  attach = (texture) => {
+  attach = texture => {
     let { gl } = this.engine;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(this.engine.renderManager.shaderProgram.diffuseMapUniform, 0);
-  }
+  };
 
   /**
    * draw obj model with materials and textures (needs work)
@@ -316,7 +347,13 @@ export default class ModelObject extends Loadable {
     const isPickerPass = rm.isPickerPass;
 
     // draw each piece of the object (per material)
-    if (mesh && mesh.indicesPerMaterial && mesh.indicesPerMaterial.length >= 1 && mesh.materialsByIndex && Object.keys(mesh.materialsByIndex).length > 0) {
+    if (
+      mesh &&
+      mesh.indicesPerMaterial &&
+      mesh.indicesPerMaterial.length >= 1 &&
+      mesh.materialsByIndex &&
+      Object.keys(mesh.materialsByIndex).length > 0
+    ) {
       mesh.indicesPerMaterial.forEach((x, i) => {
         // vertices
         rm.bindBuffer(mesh.vertexBuffer, rm.shaderProgram.aVertexPosition);
@@ -349,12 +386,20 @@ export default class ModelObject extends Loadable {
         // Create and bind element buffer for indices
         const buffer = engine.gl.createBuffer();
         engine.gl.bindBuffer(engine.gl.ELEMENT_ARRAY_BUFFER, buffer);
-        engine.gl.bufferData(engine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(x), engine.gl.STATIC_DRAW);
+        engine.gl.bufferData(
+          engine.gl.ELEMENT_ARRAY_BUFFER,
+          new Uint16Array(x),
+          engine.gl.STATIC_DRAW
+        );
         const numItems = x.length;
 
         if (isPickerPass) {
           // During picker pass, only set picker shader uniforms
-          rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
+          rm.effectPrograms['picker'].setMatrixUniforms({
+            scale: this.scale,
+            id: this.getPickingId(),
+            sampler: 0.0,
+          });
         } else {
           // During normal render, set main shader uniforms
           rm.shaderProgram.setMatrixUniforms({
@@ -385,7 +430,11 @@ export default class ModelObject extends Loadable {
 
       if (isPickerPass) {
         // During picker pass, only set picker shader uniforms
-        rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 0.0 });
+        rm.effectPrograms['picker'].setMatrixUniforms({
+          scale: this.scale,
+          id: this.getPickingId(),
+          sampler: 0.0,
+        });
       } else {
         // During normal render, set main shader uniforms
         rm.shaderProgram.setMatrixUniforms({
@@ -395,9 +444,14 @@ export default class ModelObject extends Loadable {
           sampler: 0.0,
         });
       }
-      engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
+      engine.gl.drawElements(
+        engine.gl.TRIANGLES,
+        mesh.indexBuffer.numItems,
+        engine.gl.UNSIGNED_SHORT,
+        0
+      );
     }
-  }
+  };
 
   /**
    * Return id for picking (based on colour pixel translation)
@@ -411,7 +465,7 @@ export default class ModelObject extends Loadable {
       255,
     ];
     return id;
-  }
+  };
 
   /**
    * Returns the AABB for this object.
@@ -422,7 +476,7 @@ export default class ModelObject extends Loadable {
     const min = this.pos.sub(halfSize);
     const max = this.pos.add(halfSize);
     return new AABB(min, max);
-  }
+  };
 
   /**
    * draw object with textures / materials
@@ -446,13 +500,22 @@ export default class ModelObject extends Loadable {
 
     if (isPickerPass) {
       // During picker pass, only set picker shader uniforms
-      rm.effectPrograms['picker'].setMatrixUniforms({ scale: this.scale, id: this.getPickingId(), sampler: 1.0 });
+      rm.effectPrograms['picker'].setMatrixUniforms({
+        scale: this.scale,
+        id: this.getPickingId(),
+        sampler: 1.0,
+      });
     } else {
       // During normal render, set main shader uniforms
       rm.shaderProgram.setMatrixUniforms({ scale: this.scale, sampler: 1.0 });
     }
-    engine.gl.drawElements(engine.gl.TRIANGLES, mesh.indexBuffer.numItems, engine.gl.UNSIGNED_SHORT, 0);
-  }
+    engine.gl.drawElements(
+      engine.gl.TRIANGLES,
+      mesh.indexBuffer.numItems,
+      engine.gl.UNSIGNED_SHORT,
+      0
+    );
+  };
 
   /**
    * Draw Object
@@ -467,7 +530,9 @@ export default class ModelObject extends Loadable {
       this.engine.renderManager.debug.objectsDrawn++;
     }
     // Debug logging for invisible objects
-    console.log(`Drawing object ${this.id}, scale: ${this.scale.toArray()}, pos: ${this.pos.toArray()}, size: ${this.size.toArray()}`);
+    console.log(
+      `Drawing object ${this.id}, scale: ${this.scale.toArray()}, pos: ${this.pos.toArray()}, size: ${this.size.toArray()}`
+    );
     console.log(`Model matrix before: ${this.engine.renderManager.uModelMat}`);
     let { engine, mesh } = this;
     // setup obj attributes
@@ -476,18 +541,32 @@ export default class ModelObject extends Loadable {
     // initialize buffers
     engine.renderManager.mvPushMatrix();
     // position object
-    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.drawOffset.toArray());
-    translate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, this.pos.toArray());
-    rotate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, degToRad(90), [1, 0, 0]);
+    translate(
+      this.engine.renderManager.uModelMat,
+      this.engine.renderManager.uModelMat,
+      this.drawOffset.toArray()
+    );
+    translate(
+      this.engine.renderManager.uModelMat,
+      this.engine.renderManager.uModelMat,
+      this.pos.toArray()
+    );
+    rotate(
+      this.engine.renderManager.uModelMat,
+      this.engine.renderManager.uModelMat,
+      degToRad(90),
+      [1, 0, 0]
+    );
     // rotate object
     if (this.rotation && this.rotation.toArray) {
       let rotation = Math.max(...this.rotation.toArray());
       if (rotation > 0)
-        rotate(this.engine.renderManager.uModelMat, this.engine.renderManager.uModelMat, degToRad(rotation), [
-          this.rotation.x / rotation,
-          this.rotation.y / rotation,
-          this.rotation.z / rotation,
-        ]);
+        rotate(
+          this.engine.renderManager.uModelMat,
+          this.engine.renderManager.uModelMat,
+          degToRad(rotation),
+          [this.rotation.x / rotation, this.rotation.y / rotation, this.rotation.z / rotation]
+        );
     }
     console.log(`Model matrix after transforms: ${this.engine.renderManager.uModelMat}`);
     // Draw Object
@@ -504,16 +583,16 @@ export default class ModelObject extends Loadable {
     // clear obj rendering attributes
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
     engine.gl.disableVertexAttribArray(engine.renderManager.shaderProgram.aVertexNormal);
-  }
+  };
 
   /**
    * Set Facing
    * @param {*} facing
    */
-  setFacing = (facing) => {
+  setFacing = facing => {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
-  }
+  };
 
   /**
    * Add Action to Queue
@@ -530,10 +609,10 @@ export default class ModelObject extends Loadable {
    * Remove Action
    * @param {*} id
    */
-  removeAction = (id) => {
-    this.actionList = this.actionList.filter((action) => action.id !== id);
+  removeAction = id => {
+    this.actionList = this.actionList.filter(action => action.id !== id);
     delete this.actionDict[id];
-  }
+  };
 
   /**
    * Remove Action
@@ -541,14 +620,14 @@ export default class ModelObject extends Loadable {
   removeAllActions = () => {
     this.actionList = [];
     this.actionDict = {};
-  }
+  };
 
   /**
    * Outer Tick Handler
    * @param {number} time
    * @returns
    */
-  tickOuter = (time) => {
+  tickOuter = time => {
     if (!this.loaded) return;
     // Sort activities by increasing startTime, then by id
     this.actionList.sort((a, b) => {
@@ -558,7 +637,7 @@ export default class ModelObject extends Loadable {
     });
     // Run & Queue for Removal when complete
     let toRemove = [];
-    this.actionList.forEach((action) => {
+    this.actionList.forEach(action => {
       if (!action.loaded || action.startTime > time) return;
       if (action.tick(time)) {
         toRemove.push(action); // remove from backlog
@@ -566,17 +645,17 @@ export default class ModelObject extends Loadable {
       }
     });
     // clear completed activities
-    toRemove.forEach((action) => this.removeAction(action.id));
+    toRemove.forEach(action => this.removeAction(action.id));
     // tick
     if (this.tick) this.tick(time);
-  }
+  };
 
   /**
    * Hook for sprite implementations
    */
   init = () => {
     console.log('- object hook', this.id, this.pos, this.objId);
-  }
+  };
 
   /**
    * speak
@@ -596,7 +675,7 @@ export default class ModelObject extends Loadable {
         this.speech.loadImage();
       }
     }
-  }
+  };
 
   /**
    * handles interaction -- default (should be overridden in definition)
@@ -614,36 +693,36 @@ export default class ModelObject extends Loadable {
     // If completion handler passed through - call it when done
     if (finish) finish(true);
     return ret;
-  }
+  };
 
   /**
    * Set Facing
    * @param {*} facing
    */
-  setFacing = (facing) => {
+  setFacing = facing => {
     if (facing) this.facing = facing;
     this.rotation = Direction.objectSequence(facing);
-  }
+  };
 
   /**
    * Change direction
    * @param {*} facing
    * @returns
    */
-  faceDir = (facing) => {
+  faceDir = facing => {
     if (this.facing == facing || facing === Direction.None) return null;
     return new ActionLoader(this.engine, 'face', [facing], this);
-  }
+  };
 
   /**
    * set message (for chat bubbles)
    */
-  setGreeting = (greeting) => {
+  setGreeting = greeting => {
     if (this.speech.clearHud) {
       this.speech.clearHud();
     }
     this.speech.writeText(greeting);
     this.speech.loadImage();
     return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
-  }
+  };
 }

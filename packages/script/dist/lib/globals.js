@@ -1,7 +1,7 @@
 import { parse } from '../parser.js';
 import { Table } from '../Table.js';
 import { LuaError } from '../LuaError.js';
-import { type, tostring, posrelat, coerceToNumber, coerceToString, coerceToBoolean, coerceArgToNumber, coerceArgToString, coerceArgToTable, hasOwnProperty } from '../utils.js';
+import { type, tostring, posrelat, coerceToNumber, coerceToString, coerceToBoolean, coerceArgToNumber, coerceArgToString, coerceArgToTable, hasOwnProperty, } from '../utils.js';
 import { metatable as stringMetatable } from './string.js';
 const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 function ipairsIterator(table, index) {
@@ -219,7 +219,10 @@ function setmetatable(table, metatable) {
     if (TABLE.metatable && TABLE.metatable.rawget('__metatable')) {
         throw new LuaError('cannot change a protected metatable');
     }
-    TABLE.metatable = metatable === null || metatable === undefined ? null : coerceArgToTable(metatable, 'setmetatable', 2);
+    TABLE.metatable =
+        metatable === null || metatable === undefined
+            ? null
+            : coerceArgToTable(metatable, 'setmetatable', 2);
     return TABLE;
 }
 /**
@@ -338,7 +341,7 @@ function createG(cfg, execChunk) {
         tonumber,
         tostring,
         type,
-        xpcall
+        xpcall,
     });
     return _G;
 }

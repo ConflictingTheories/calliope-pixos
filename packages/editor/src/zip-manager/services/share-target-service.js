@@ -1,6 +1,10 @@
 /* global fetch, location, history */
 
-import { SHARED_FILES_PARAMETER, SHARED_FILES_RELATIVE_PATH, SHARED_FILES_FIELD_NAME } from './share-target-service-constants.js';
+import {
+  SHARED_FILES_PARAMETER,
+  SHARED_FILES_RELATIVE_PATH,
+  SHARED_FILES_FIELD_NAME,
+} from './share-target-service-constants.js';
 
 async function onShareFiles(callback) {
   const locationSearch = getLocationSearch();

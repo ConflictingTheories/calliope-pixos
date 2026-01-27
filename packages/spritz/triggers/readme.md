@@ -16,57 +16,62 @@ triggers/
 ## Trigger Categories
 
 ### Zone Triggers (`zone/`)
+
 Triggered when zones are loaded or unloaded.
 
-| File | Description |
-|------|-------------|
-| `village_hub_load.pxs` | Village hub initialization |
-| `dungeon_entrance_load.pxs` | Dungeon hub setup |
-| `fire_chamber_load.pxs` | Fire trial initialization |
-| `water_chamber_load.pxs` | Water trial initialization |
-| `earth_chamber_load.pxs` | Earth trial initialization |
-| `air_chamber_load.pxs` | Air trial initialization |
-| `boss_arena_load.pxs` | Boss arena setup |
+| File                        | Description                |
+| --------------------------- | -------------------------- |
+| `village_hub_load.pxs`      | Village hub initialization |
+| `dungeon_entrance_load.pxs` | Dungeon hub setup          |
+| `fire_chamber_load.pxs`     | Fire trial initialization  |
+| `water_chamber_load.pxs`    | Water trial initialization |
+| `earth_chamber_load.pxs`    | Earth trial initialization |
+| `air_chamber_load.pxs`      | Air trial initialization   |
+| `boss_arena_load.pxs`       | Boss arena setup           |
 
 ### Sprite Triggers (`sprite/`)
+
 Triggered when sprites are selected or interacted with.
 
-| File | Description |
-|------|-------------|
-| `village_elder.pxs` | Elder NPC dialogue |
-| `knight_guard.pxs` | Guard NPC interaction |
-| `dungeon_guide.pxs` | Guide NPC dialogue |
+| File                | Description           |
+| ------------------- | --------------------- |
+| `village_elder.pxs` | Elder NPC dialogue    |
+| `knight_guard.pxs`  | Guard NPC interaction |
+| `dungeon_guide.pxs` | Guide NPC dialogue    |
 
 ### Tile Triggers (`tile/`)
+
 Triggered when player steps on specific tiles.
 
-| File | Description |
-|------|-------------|
-| `water_step.pxs` | Water tile effects |
-| `trap_tile.pxs` | Trap activation |
-| `teleport_tile.pxs` | Teleportation |
+| File                | Description        |
+| ------------------- | ------------------ |
+| `water_step.pxs`    | Water tile effects |
+| `trap_tile.pxs`     | Trap activation    |
+| `teleport_tile.pxs` | Teleportation      |
 
 ### Event Triggers (`event/`)
+
 Triggered by game state changes.
 
-| File | Description |
-|------|-------------|
-| `battle_start.pxs` | Combat initialization |
-| `battle_victory.pxs` | Victory handling |
-| `fire_victory.pxs` | Fire trial completion |
-| `water_victory.pxs` | Water trial completion |
-| `earth_victory.pxs` | Earth trial completion |
-| `air_victory.pxs` | Air trial completion |
+| File                 | Description            |
+| -------------------- | ---------------------- |
+| `battle_start.pxs`   | Combat initialization  |
+| `battle_victory.pxs` | Victory handling       |
+| `fire_victory.pxs`   | Fire trial completion  |
+| `water_victory.pxs`  | Water trial completion |
+| `earth_victory.pxs`  | Earth trial completion |
+| `air_victory.pxs`    | Air trial completion   |
 
 ### Menu Triggers (`menu/`)
+
 Triggered by menu selections.
 
-| File | Description |
-|------|-------------|
-| `main_menu_new.pxs` | New game selection |
-| `main_menu_continue.pxs` | Continue game |
-| `pause_menu_resume.pxs` | Resume from pause |
-| `inventory_use.pxs` | Use inventory item |
+| File                     | Description        |
+| ------------------------ | ------------------ |
+| `main_menu_new.pxs`      | New game selection |
+| `main_menu_continue.pxs` | Continue game      |
+| `pause_menu_resume.pxs`  | Resume from pause  |
+| `inventory_use.pxs`      | Use inventory item |
 
 ## Trigger Script Format
 
@@ -90,17 +95,21 @@ end
 ## Trigger Registration
 
 ### In Map Files (map.json)
+
 ```json
 {
-  "sprites": [{
-    "id": "elder",
-    "selectTrigger": "sprite/village_elder"
-  }],
+  "sprites": [
+    {
+      "id": "elder",
+      "selectTrigger": "sprite/village_elder"
+    }
+  ],
   "loadTrigger": "zone/village_hub_load"
 }
 ```
 
 ### In Manifest
+
 ```json
 {
   "triggers": {
@@ -112,6 +121,7 @@ end
 ## Available Functions
 
 ### Dialogue
+
 ```lua
 show_dialogue("Message text")
 show_choice("Question?", {"Option 1", "Option 2"})
@@ -119,6 +129,7 @@ play_cutscene("cutscene-name")
 ```
 
 ### Game State
+
 ```lua
 set_flag("flag_name", true)
 get_flag("flag_name")
@@ -127,6 +138,7 @@ set_mode("explore|tactics|fight")
 ```
 
 ### Audio/Visual
+
 ```lua
 play_music("track.mp3")
 play_sound("effect.mp3")
@@ -135,6 +147,7 @@ screen_shake(intensity, duration)
 ```
 
 ### Zone/Sprite Control
+
 ```lua
 load_zone("zone-name")
 spawn_sprite("sprite_id", "type", position)

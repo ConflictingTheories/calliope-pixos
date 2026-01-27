@@ -40,8 +40,13 @@ export function validateSpriteConfig(config, layoutName = 'character4') {
   if (!fixed.sheetSize || !Array.isArray(fixed.sheetSize) || fixed.sheetSize.length !== 2) {
     fixed.sheetSize = expectedSheetSize;
     fixes.push(`Set sheetSize to ${expectedSheetSize.join('x')}`);
-  } else if (fixed.sheetSize[0] !== expectedSheetSize[0] || fixed.sheetSize[1] !== expectedSheetSize[1]) {
-    warnings.push(`sheetSize ${fixed.sheetSize.join('x')} doesn't match expected ${expectedSheetSize.join('x')}`);
+  } else if (
+    fixed.sheetSize[0] !== expectedSheetSize[0] ||
+    fixed.sheetSize[1] !== expectedSheetSize[1]
+  ) {
+    warnings.push(
+      `sheetSize ${fixed.sheetSize.join('x')} doesn't match expected ${expectedSheetSize.join('x')}`
+    );
   }
 
   // Validate and fix tileSize
@@ -90,7 +95,11 @@ export function validateSpriteConfig(config, layoutName = 'character4') {
   }
 
   // Validate hotspotOffset
-  if (!fixed.hotspotOffset || !Array.isArray(fixed.hotspotOffset) || fixed.hotspotOffset.length !== 3) {
+  if (
+    !fixed.hotspotOffset ||
+    !Array.isArray(fixed.hotspotOffset) ||
+    fixed.hotspotOffset.length !== 3
+  ) {
     fixed.hotspotOffset = [0.5, 0.5, 0];
     fixes.push('Set default hotspotOffset');
   }
@@ -210,7 +219,11 @@ export function validateManifest(manifest) {
   const errors = [];
   const warnings = [];
 
-  if (!manifest.initialZones || !Array.isArray(manifest.initialZones) || manifest.initialZones.length === 0) {
+  if (
+    !manifest.initialZones ||
+    !Array.isArray(manifest.initialZones) ||
+    manifest.initialZones.length === 0
+  ) {
     errors.push('initialZones is required and must contain at least one zone');
   }
 
@@ -256,11 +269,7 @@ export async function processPortraitImage(base64, targetSize = 256) {
       // Adjust srcY to capture more of the top
       const adjustedSrcY = Math.max(0, srcY * 0.3);
 
-      ctx.drawImage(
-        img,
-        srcX, adjustedSrcY, srcSize, srcSize,
-        0, 0, targetSize, targetSize
-      );
+      ctx.drawImage(img, srcX, adjustedSrcY, srcSize, srcSize, 0, 0, targetSize, targetSize);
 
       const result = canvas.toDataURL('image/png').split(',')[1];
       resolve(result);
@@ -332,7 +341,8 @@ export async function analyzeSpritesheet(base64, layout) {
             // Check if frame has any content (non-transparent pixels)
             let hasContent = false;
             for (let i = 3; i < pixels.length; i += 4) {
-              if (pixels[i] > 10) { // Alpha > 10
+              if (pixels[i] > 10) {
+                // Alpha > 10
                 hasContent = true;
                 break;
               }

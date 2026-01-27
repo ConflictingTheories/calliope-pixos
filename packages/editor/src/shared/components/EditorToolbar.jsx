@@ -6,7 +6,7 @@
  *
  * A reusable toolbar component for all editors.
  * Provides consistent UI for save, undo/redo, and common actions.
- * 
+ *
  * Usage:
  *   <EditorToolbar
  *     title="Map Editor"
@@ -62,7 +62,7 @@ const HelpIcon = () => (
 
 /**
  * EditorToolbar - A consistent toolbar component for all editors
- * 
+ *
  * @param {Object} props
  * @param {string} [props.title] - Editor title to display
  * @param {function} [props.onSave] - Save handler
@@ -91,21 +91,24 @@ function EditorToolbar({
   rightActions = [],
   onHelp,
   children,
-  className = ''
+  className = '',
 }) {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  const handleKeyDown = useCallback((event) => {
-    // F1 = Help
-    if (event.key === 'F1') {
-      event.preventDefault();
-      if (onHelp) {
-        onHelp();
-      } else {
-        setShowShortcuts(true);
+  const handleKeyDown = useCallback(
+    event => {
+      // F1 = Help
+      if (event.key === 'F1') {
+        event.preventDefault();
+        if (onHelp) {
+          onHelp();
+        } else {
+          setShowShortcuts(true);
+        }
       }
-    }
-  }, [onHelp]);
+    },
+    [onHelp]
+  );
 
   // Attach keyboard listener
   React.useEffect(() => {
@@ -124,19 +127,21 @@ function EditorToolbar({
         background: 'var(--rs-bg-card, #1a1d24)',
         borderBottom: '1px solid var(--rs-border-primary, #3c3f43)',
         gap: '16px',
-        flexShrink: 0
+        flexShrink: 0,
       }}
     >
       {/* Left Section: Title + History */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {title && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h3 style={{
-              margin: 0,
-              fontSize: '16px',
-              fontWeight: 600,
-              color: 'var(--rs-text-primary, #fff)'
-            }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: 600,
+                color: 'var(--rs-text-primary, #fff)',
+              }}
+            >
               {title}
             </h3>
             {hasChanges && (
@@ -144,7 +149,7 @@ function EditorToolbar({
                 content="•"
                 style={{
                   background: 'var(--rs-orange-500, #ff9800)',
-                  marginLeft: '4px'
+                  marginLeft: '4px',
                 }}
               />
             )}
@@ -156,7 +161,11 @@ function EditorToolbar({
           <>
             <Divider vertical style={{ height: '24px', margin: '0' }} />
             <ButtonGroup>
-              <Whisper placement="bottom" trigger="hover" speaker={<Tooltip>Undo (Ctrl+Z)</Tooltip>}>
+              <Whisper
+                placement="bottom"
+                trigger="hover"
+                speaker={<Tooltip>Undo (Ctrl+Z)</Tooltip>}
+              >
                 <IconButton
                   icon={<UndoIcon />}
                   size="sm"
@@ -166,7 +175,11 @@ function EditorToolbar({
                   aria-label="Undo"
                 />
               </Whisper>
-              <Whisper placement="bottom" trigger="hover" speaker={<Tooltip>Redo (Ctrl+Y)</Tooltip>}>
+              <Whisper
+                placement="bottom"
+                trigger="hover"
+                speaker={<Tooltip>Redo (Ctrl+Y)</Tooltip>}
+              >
                 <IconButton
                   icon={<RedoIcon />}
                   size="sm"

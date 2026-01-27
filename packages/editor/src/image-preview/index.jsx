@@ -7,7 +7,7 @@
  * This component renders an image using a provided data URI.
  * It receives the encoded image via the `content` prop.
  * If no content is provided the component renders a placeholder.
- * 
+ *
  * Features:
  *  - Zoom controls (mouse wheel or buttons)
  *  - Image dimensions display
@@ -35,30 +35,33 @@ function ImagePreview({ content }) {
   }, [content]);
 
   // Get image info when loaded
-  const handleImageLoad = useCallback((e) => {
-    const img = e.target;
-    let format = 'Unknown';
+  const handleImageLoad = useCallback(
+    e => {
+      const img = e.target;
+      let format = 'Unknown';
 
-    // Detect format from data URI or extension
-    if (content) {
-      if (content.startsWith('data:image/png')) format = 'PNG';
-      else if (content.startsWith('data:image/jpeg')) format = 'JPEG';
-      else if (content.startsWith('data:image/gif')) format = 'GIF';
-      else if (content.startsWith('data:image/webp')) format = 'WebP';
-      else if (content.startsWith('data:image/svg')) format = 'SVG';
-      else if (content.includes('.png')) format = 'PNG';
-      else if (content.includes('.jpg') || content.includes('.jpeg')) format = 'JPEG';
-    }
+      // Detect format from data URI or extension
+      if (content) {
+        if (content.startsWith('data:image/png')) format = 'PNG';
+        else if (content.startsWith('data:image/jpeg')) format = 'JPEG';
+        else if (content.startsWith('data:image/gif')) format = 'GIF';
+        else if (content.startsWith('data:image/webp')) format = 'WebP';
+        else if (content.startsWith('data:image/svg')) format = 'SVG';
+        else if (content.includes('.png')) format = 'PNG';
+        else if (content.includes('.jpg') || content.includes('.jpeg')) format = 'JPEG';
+      }
 
-    setImageInfo({
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-      format: format
-    });
-  }, [content]);
+      setImageInfo({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        format: format,
+      });
+    },
+    [content]
+  );
 
   // Handle mouse wheel zoom (only when Shift is held)
-  const handleWheel = useCallback((e) => {
+  const handleWheel = useCallback(e => {
     // Only zoom when Shift key is pressed, otherwise allow normal scroll
     if (!e.shiftKey) {
       return;
@@ -89,35 +92,45 @@ function ImagePreview({ content }) {
   }
 
   return (
-    <div className="editor-tool-container" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      minHeight: 0,
-      overflow: 'hidden'
-    }}>
-      <Panel bordered style={{
-        margin: '1rem',
-        flex: '1 1 auto',
+    <div
+      className="editor-tool-container"
+      style={{
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
         minHeight: 0,
-        overflow: 'hidden'
-      }}>
-        {/* Toolbar */}
-        <div style={{
+        overflow: 'hidden',
+      }}
+    >
+      <Panel
+        bordered
+        style={{
+          margin: '1rem',
+          flex: '1 1 auto',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '0.5rem',
-          background: 'var(--rs-bg-card, #1a1d24)',
-          borderRadius: '4px',
-          flexShrink: 0
-        }}>
+          flexDirection: 'column',
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Toolbar */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0.5rem',
+            background: 'var(--rs-bg-card, #1a1d24)',
+            borderRadius: '4px',
+            flexShrink: 0,
+          }}
+        >
           <div style={{ fontSize: '12px', color: '#888' }}>
             {imageInfo.width > 0 && (
               <>
-                <span>{imageInfo.width} × {imageInfo.height}px</span>
+                <span>
+                  {imageInfo.width} × {imageInfo.height}px
+                </span>
                 <span style={{ marginLeft: '1rem' }}>{imageInfo.format}</span>
                 <span style={{ marginLeft: '1rem' }}>{Math.round(zoom * 100)}%</span>
               </>
@@ -133,22 +146,14 @@ function ImagePreview({ content }) {
                   disabled={zoom <= 0.1}
                   title="Zoom Out"
                 />
-                <IconButton
-                  icon={<span>⟲</span>}
-                  onClick={zoomReset}
-                  title="Reset Zoom"
-                />
+                <IconButton icon={<span>⟲</span>} onClick={zoomReset} title="Reset Zoom" />
                 <IconButton
                   icon={<span>+</span>}
                   onClick={zoomIn}
                   disabled={zoom >= 5}
                   title="Zoom In"
                 />
-                <IconButton
-                  icon={<span>◻</span>}
-                  onClick={zoomFit}
-                  title="Fit to Width"
-                />
+                <IconButton icon={<span>◻</span>} onClick={zoomFit} title="Fit to Width" />
               </ButtonGroup>
             </ButtonToolbar>
           </div>
@@ -164,7 +169,7 @@ function ImagePreview({ content }) {
             background: 'repeating-conic-gradient(#222 0% 25%, #333 0% 50%) 50% / 20px 20px',
             borderRadius: '4px',
             padding: '1rem',
-            textAlign: 'center'
+            textAlign: 'center',
           }}
           onWheel={handleWheel}
         >
@@ -177,7 +182,7 @@ function ImagePreview({ content }) {
               maxWidth: 'none',
               transform: `scale(${zoom})`,
               transformOrigin: 'top left',
-              imageRendering: zoom > 1 ? 'pixelated' : 'auto'
+              imageRendering: zoom > 1 ? 'pixelated' : 'auto',
             }}
           />
         </div>

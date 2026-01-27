@@ -230,13 +230,7 @@ export default class AudioSystem {
   async play(sound, options = {}) {
     if (!this.context) await this.init();
 
-    const {
-      channel = 'sfx',
-      volume = 1,
-      pitch = 1,
-      loop = false,
-      position = null,
-    } = options;
+    const { channel = 'sfx', volume = 1, pitch = 1, loop = false, position = null } = options;
 
     const buffer = typeof sound === 'string' ? await this.loadBuffer(sound) : sound;
     const channelObj = this.channels.get(channel);

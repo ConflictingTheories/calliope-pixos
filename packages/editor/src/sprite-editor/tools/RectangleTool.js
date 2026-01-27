@@ -40,7 +40,7 @@ export default class RectangleTool extends BaseTool {
     const pixels = this._getRectanglePixels(this.startPoint.x, this.startPoint.y, x, y, options);
     this.startPoint = null;
     super.onEnd(x, y, imageData, options);
-    
+
     return pixels;
   }
 
@@ -70,8 +70,10 @@ export default class RectangleTool extends BaseTool {
       return [{ x, y, ...color, preview: true }];
     }
 
-    return this._getRectanglePixels(this.startPoint.x, this.startPoint.y, x, y, options)
-      .map(p => ({ ...p, preview: true }));
+    return this._getRectanglePixels(this.startPoint.x, this.startPoint.y, x, y, options).map(p => ({
+      ...p,
+      preview: true,
+    }));
   }
 
   toggleFilled() {

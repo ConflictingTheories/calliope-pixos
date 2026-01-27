@@ -200,6 +200,6 @@ const libMath = new Table({
     tanh,
     tointeger,
     type,
-    ult
+    ult,
 });
 export { libMath };

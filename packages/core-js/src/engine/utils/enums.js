@@ -119,23 +119,63 @@ export const Direction = {
   getCameraRelativeDirection(inputDir, cameraDir) {
     const mappings = {
       // Camera North: forward moves north (up in world), etc.
-      'N':  { forward: Direction.Up,    backward: Direction.Down,  left: Direction.Left,  right: Direction.Right },
+      N: {
+        forward: Direction.Up,
+        backward: Direction.Down,
+        left: Direction.Left,
+        right: Direction.Right,
+      },
       // Camera NE: forward moves up-right diagonally
-      'NE': { forward: Direction.Up,    backward: Direction.Down,  left: Direction.Up,    right: Direction.Down },
+      NE: {
+        forward: Direction.Up,
+        backward: Direction.Down,
+        left: Direction.Up,
+        right: Direction.Down,
+      },
       // Camera East: forward moves right, left moves up
-      'E':  { forward: Direction.Right, backward: Direction.Left,  left: Direction.Up,    right: Direction.Down },
-      // Camera SE: forward moves right-down diagonally  
-      'SE': { forward: Direction.Right, backward: Direction.Left,  left: Direction.Up,    right: Direction.Down },
+      E: {
+        forward: Direction.Right,
+        backward: Direction.Left,
+        left: Direction.Up,
+        right: Direction.Down,
+      },
+      // Camera SE: forward moves right-down diagonally
+      SE: {
+        forward: Direction.Right,
+        backward: Direction.Left,
+        left: Direction.Up,
+        right: Direction.Down,
+      },
       // Camera South: inverted from North
-      'S':  { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Right, right: Direction.Left },
+      S: {
+        forward: Direction.Down,
+        backward: Direction.Up,
+        left: Direction.Right,
+        right: Direction.Left,
+      },
       // Camera SW: forward moves left-down diagonally
-      'SW': { forward: Direction.Down,  backward: Direction.Up,    left: Direction.Right, right: Direction.Left },
+      SW: {
+        forward: Direction.Down,
+        backward: Direction.Up,
+        left: Direction.Right,
+        right: Direction.Left,
+      },
       // Camera West: forward moves left, right moves up
-      'W':  { forward: Direction.Left,  backward: Direction.Right, left: Direction.Down,  right: Direction.Up },
+      W: {
+        forward: Direction.Left,
+        backward: Direction.Right,
+        left: Direction.Down,
+        right: Direction.Up,
+      },
       // Camera NW: forward moves up-left diagonally
-      'NW': { forward: Direction.Left,  backward: Direction.Right, left: Direction.Down,  right: Direction.Up }
+      NW: {
+        forward: Direction.Left,
+        backward: Direction.Right,
+        left: Direction.Down,
+        right: Direction.Up,
+      },
     };
-    
+
     const mapping = mappings[cameraDir] || mappings['N'];
     return mapping[inputDir] || Direction.None;
   },
@@ -278,7 +318,7 @@ export const Direction = {
   },
 };
 
-export const isObject = (item) => {
+export const isObject = item => {
   return item && typeof item === 'object' && !Array.isArray(item);
 };
 
@@ -295,7 +335,10 @@ export const mergeDeep = (target, ...sources) => {
         mergeDeep(target[key], source[key]);
       } else {
         Object.assign(target, {
-          [key]: source[key] && Array.isArray(source[key]) ? [].concat(target[key] ?? [], source[key]) : source[key],
+          [key]:
+            source[key] && Array.isArray(source[key])
+              ? [].concat(target[key] ?? [], source[key])
+              : source[key],
         });
       }
     }

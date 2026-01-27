@@ -3,7 +3,14 @@ import { stylesheetService } from '../../services/index.js'; // Import the style
 import { themeService } from '../../services/index.js'; // Import the documentService module
 import { musicService } from '../../services/index.js'; // Import the i18nService module
 
-function getMiscFeatures({ theme, setOptions, setTheme, setMusicData, setPlayerActive, getOptions }) {
+function getMiscFeatures({
+  theme,
+  setOptions,
+  setTheme,
+  setMusicData,
+  setPlayerActive,
+  getOptions,
+}) {
   const { ACCENT_COLOR_CUSTOM_PROPERTY_NAME } = themeService;
 
   function initMiscFeatures() {
@@ -16,7 +23,7 @@ function getMiscFeatures({ theme, setOptions, setTheme, setMusicData, setPlayerA
     setPlayerActive(true);
     updateSkin();
     musicService.play({
-      onSetFrequencyData: (frequencyData) => {
+      onSetFrequencyData: frequencyData => {
         setMusicData(() => ({
           frequencyData,
         }));

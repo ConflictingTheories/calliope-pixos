@@ -34,7 +34,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
   }
 
   // keyboard & touch - use wrapper functions to guard against uninitialized engine
-  const onKeyEvent = (e) => {
+  const onKeyEvent = e => {
     try {
       if (SpritzProvider && SpritzProvider.onKeyEvent) SpritzProvider.onKeyEvent(e);
     } catch (err) {
@@ -49,7 +49,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
    * size (getBoundingClientRect). This function computes the correct canvas
    * coordinates by accounting for the scale difference and any offset.
    */
-  const onTouchEvent = (e) => {
+  const onTouchEvent = e => {
     try {
       const canvas = hudRef.current;
       if (!canvas) {
@@ -93,7 +93,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
         pageY: canvasY + rect.top,
         _canvasRect: rect,
         _scaleX: scaleX,
-        _scaleY: scaleY
+        _scaleY: scaleY,
       };
 
       if (SpritzProvider && SpritzProvider.onTouchEvent) {
@@ -107,7 +107,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
   /**
    * Handles touch/mouse events for gamepad canvas with proper coordinate transformation.
    */
-  const onGamepadTouchEvent = (e) => {
+  const onGamepadTouchEvent = e => {
     try {
       const canvas = gamepadRef.current;
       if (!canvas) {
@@ -150,7 +150,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
         pageY: canvasY + rect.top,
         _canvasRect: rect,
         _scaleX: scaleX,
-        _scaleY: scaleY
+        _scaleY: scaleY,
       };
 
       if (engine && engine.inputManager && engine.inputManager.gamepad) {
@@ -231,8 +231,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
       engine.manifestUrl = manifest;
 
       // Connect error handler
-      engine.triggerError = (err) => {
-        console.error("Engine Triggered Error:", err);
+      engine.triggerError = err => {
+        console.error('Engine Triggered Error:', err);
         setError(err);
       };
 
@@ -245,7 +245,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
       // Create ResizeObserver for proper canvas resize handling
       let resizeObserver = null;
       if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver((entries) => {
+        resizeObserver = new ResizeObserver(entries => {
           for (const entry of entries) {
             if (entry.target === canvas || entry.target === hud) {
               // Notify engine of resize
@@ -284,7 +284,7 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
       // render loop
       engine.render();
     } catch (e) {
-      console.error("WebGLView initialization error:", e);
+      console.error('WebGLView initialization error:', e);
       setError(e);
     }
 
@@ -339,8 +339,8 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
           height: canvasHeight + 'px',
           width: canvasWidth + 'px',
         }}
-        onKeyDownCapture={(e) => onKeyEvent(e.nativeEvent)}
-        onKeyUpCapture={(e) => onKeyEvent(e.nativeEvent)}
+        onKeyDownCapture={e => onKeyEvent(e.nativeEvent)}
+        onKeyUpCapture={e => onKeyEvent(e.nativeEvent)}
         tabIndex={0}
       >
         {/* Game */}
@@ -383,13 +383,15 @@ const WebGLView = ({ width, height, SpritzProvider, class: string, zipData, mani
         </div>
       </div>
       {/* Gamepad - For controls on Mobile Only - Positioned BELOW game canvas */}
-      <div style={{
-        width: canvasWidth + 'px',
-        height: showGamepad ? gamepadHeight + 'px' : '1px',
-        marginTop: showGamepad ? '10px' : '0px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
+      <div
+        style={{
+          width: canvasWidth + 'px',
+          height: showGamepad ? gamepadHeight + 'px' : '1px',
+          marginTop: showGamepad ? '10px' : '0px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         <canvas
           style={{
             position: 'absolute',

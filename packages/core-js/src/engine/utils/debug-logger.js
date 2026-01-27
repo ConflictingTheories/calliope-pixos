@@ -13,7 +13,7 @@
 
 /**
  * Debug Logger - Centralized logging utility for the core engine
- * 
+ *
  * Usage:
  *   import { debug, debugWarn, debugError } from '../utils/debug-logger.js';
  *   debug('ZoneLoader', 'Loading zone:', zoneName);
@@ -26,8 +26,10 @@
 // Check for debug mode via global variable or environment
 const isDebugMode = () => {
   if (typeof window !== 'undefined') {
-    return window.PIXOS_DEBUG === true ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('pixos_debug') === 'true');
+    return (
+      window.PIXOS_DEBUG === true ||
+      (typeof localStorage !== 'undefined' && localStorage.getItem('pixos_debug') === 'true')
+    );
   }
   return typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development';
 };
@@ -37,7 +39,7 @@ let _debugEnabled = isDebugMode();
 
 /**
  * Enable/disable debug logging at runtime
- * @param {boolean} enabled 
+ * @param {boolean} enabled
  */
 export function setDebugEnabled(enabled) {
   _debugEnabled = enabled;
@@ -66,7 +68,7 @@ const listeners = [];
 
 /**
  * Add a log listener
- * @param {function} callback 
+ * @param {function} callback
  */
 export function addLogListener(callback) {
   if (!listeners.includes(callback)) {
@@ -76,7 +78,7 @@ export function addLogListener(callback) {
 
 /**
  * Remove a log listener
- * @param {function} callback 
+ * @param {function} callback
  */
 export function removeLogListener(callback) {
   const idx = listeners.indexOf(callback);
@@ -92,7 +94,7 @@ function notifyListeners(level, component, args) {
       component,
       args,
       timestamp: Date.now(),
-      text: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+      text: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' '),
     };
     listeners.forEach(fn => fn(message));
   }

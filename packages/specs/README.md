@@ -85,29 +85,29 @@ vec3 vec3_normalize(vec3 v);
 
 ### Vector Operations
 
-| Operation | Signature | Description |
-|-----------|-----------|-------------|
-| `add` | `(a, b) -> Vector3` | Component-wise addition |
-| `sub` | `(a, b) -> Vector3` | Component-wise subtraction |
-| `scale` | `(v, s) -> Vector3` | Scalar multiplication |
-| `dot` | `(a, b) -> number` | Dot product |
-| `cross` | `(a, b) -> Vector3` | Cross product |
-| `length` | `(v) -> number` | Vector magnitude |
-| `normalize` | `(v) -> Vector3` | Unit vector |
-| `distance` | `(a, b) -> number` | Euclidean distance |
-| `lerp` | `(a, b, t) -> Vector3` | Linear interpolation |
+| Operation   | Signature              | Description                |
+| ----------- | ---------------------- | -------------------------- |
+| `add`       | `(a, b) -> Vector3`    | Component-wise addition    |
+| `sub`       | `(a, b) -> Vector3`    | Component-wise subtraction |
+| `scale`     | `(v, s) -> Vector3`    | Scalar multiplication      |
+| `dot`       | `(a, b) -> number`     | Dot product                |
+| `cross`     | `(a, b) -> Vector3`    | Cross product              |
+| `length`    | `(v) -> number`        | Vector magnitude           |
+| `normalize` | `(v) -> Vector3`       | Unit vector                |
+| `distance`  | `(a, b) -> number`     | Euclidean distance         |
+| `lerp`      | `(a, b, t) -> Vector3` | Linear interpolation       |
 
 ### Matrix Operations
 
-| Operation | Signature | Description |
-|-----------|-----------|-------------|
-| `identity` | `() -> Matrix4` | Identity matrix |
-| `multiply` | `(a, b) -> Matrix4` | Matrix multiplication |
-| `translate` | `(m, v) -> Matrix4` | Apply translation |
-| `rotate` | `(m, angle, axis) -> Matrix4` | Rotation around axis |
-| `scale` | `(m, v) -> Matrix4` | Apply scaling |
+| Operation     | Signature                             | Description            |
+| ------------- | ------------------------------------- | ---------------------- |
+| `identity`    | `() -> Matrix4`                       | Identity matrix        |
+| `multiply`    | `(a, b) -> Matrix4`                   | Matrix multiplication  |
+| `translate`   | `(m, v) -> Matrix4`                   | Apply translation      |
+| `rotate`      | `(m, angle, axis) -> Matrix4`         | Rotation around axis   |
+| `scale`       | `(m, v) -> Matrix4`                   | Apply scaling          |
 | `perspective` | `(fov, aspect, near, far) -> Matrix4` | Perspective projection |
-| `lookAt` | `(eye, target, up) -> Matrix4` | View matrix |
+| `lookAt`      | `(eye, target, up) -> Matrix4`        | View matrix            |
 
 ### Camera System
 
@@ -150,8 +150,14 @@ vec3 vec3_normalize(vec3 v);
   "sheetSize": [96, 192],
   "tileSize": [24, 48],
   "frames": {
-    "N": [[0, 0], [24, 0]],
-    "S": [[0, 48], [24, 48]]
+    "N": [
+      [0, 0],
+      [24, 0]
+    ],
+    "S": [
+      [0, 48],
+      [24, 48]
+    ]
   },
   "billboard": true
 }
@@ -167,9 +173,7 @@ vec3 vec3_normalize(vec3 v);
     { "id": "ground", "type": "tile" },
     { "id": "objects", "type": "object" }
   ],
-  "lights": [
-    { "id": "sun", "type": "directional", "pos": [0, 10, 0] }
-  ]
+  "lights": [{ "id": "sun", "type": "directional", "pos": [0, 10, 0] }]
 }
 ```
 

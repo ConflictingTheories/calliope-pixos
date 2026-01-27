@@ -14,7 +14,7 @@
 /**
  * Dialogue Action - Handles dialogue display with manual advancement,
  * scrolling sections, and completion callbacks.
- * 
+ *
  * Options:
  *   - autoclose: boolean - Auto-close after duration (default: false)
  *   - duration: number - Duration in seconds before auto-close
@@ -37,7 +37,7 @@ export default {
       manualAdvance: true,
       sections: false,
       linesPerSection: 3,
-      ...options
+      ...options,
     };
     this.completed = false;
     this.lastText = false;
@@ -113,7 +113,10 @@ export default {
 
     // Check for Dialogue Completion - autoclose mode
     if (this.options.autoclose) {
-      this.endTime = this.endTime || this.options.endTime || new Date().getTime() + (this.options.duration * 1000 || 10000);
+      this.endTime =
+        this.endTime ||
+        this.options.endTime ||
+        new Date().getTime() + (this.options.duration * 1000 || 10000);
       if (time > this.endTime) {
         this.completed = true;
       }
@@ -148,7 +151,7 @@ export default {
    */
   render: function () {
     if (!this.engine || !this.sprite || !this.displayText) return;
-    
+
     // Re-render dialogue text
     this.sprite.speak(this.displayText, false, this);
   },
@@ -249,4 +252,3 @@ export default {
     }
   },
 };
-

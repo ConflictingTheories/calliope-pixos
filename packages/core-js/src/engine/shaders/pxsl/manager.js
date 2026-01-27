@@ -38,13 +38,13 @@ export class ShaderManager {
   constructor(gl) {
     /** @type {WebGL2RenderingContext} */
     this.gl = gl;
-    
+
     /** @type {Map<string, CachedShader>} */
     this.cache = new Map();
-    
+
     /** @type {Map<string, WebGLProgram>} */
     this.programs = new Map();
-    
+
     /** @type {boolean} */
     this.debug = process.env.NODE_ENV === 'development';
   }
@@ -69,7 +69,9 @@ export class ShaderManager {
         // PXSL format - transpile
         shader = this.loadPXSL(name, source);
       } else {
-        throw new Error(`ShaderManager: Single source must be PXSL format. Use {vs, fs} for separate GLSL.`);
+        throw new Error(
+          `ShaderManager: Single source must be PXSL format. Use {vs, fs} for separate GLSL.`
+        );
       }
     } else if (source.vs && source.fs) {
       // Separate vertex and fragment shaders
@@ -91,7 +93,7 @@ export class ShaderManager {
   loadPXSL(name, source) {
     try {
       const result = PXSLTranspiler.transpile(source);
-      
+
       if (this.debug) {
         console.log(`[ShaderManager] Transpiled PXSL shader "${result.name || name}"`);
       }
@@ -143,7 +145,7 @@ export class ShaderManager {
 
     const program = this.createProgram(shader.vs, shader.fs, name);
     this.programs.set(name, program);
-    
+
     return program;
   }
 
@@ -170,7 +172,7 @@ export class ShaderManager {
 
     // Compile vertex shader
     const vertexShader = this.compileShader(gl.VERTEX_SHADER, vsSource, `${name}.vert`);
-    
+
     // Compile fragment shader
     const fragmentShader = this.compileShader(gl.FRAGMENT_SHADER, fsSource, `${name}.frag`);
 
@@ -206,22 +208,21 @@ export class ShaderManager {
   compileShader(type, source, name) {
     const { gl } = this;
     const shader = gl.createShader(type);
-    
+
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       const log = gl.getShaderInfoLog(shader);
       gl.deleteShader(shader);
-      
+
       // Add line numbers to source for debugging
-      const numberedSource = source.split('\n')
+      const numberedSource = source
+        .split('\n')
         .map((line, i) => `${(i + 1).toString().padStart(3)}: ${line}`)
         .join('\n');
-      
-      throw new Error(
-        `Shader compile error in "${name}":\n${log}\n\nSource:\n${numberedSource}`
-      );
+
+      throw new Error(`Shader compile error in "${name}":\n${log}\n\nSource:\n${numberedSource}`);
     }
 
     return shader;
@@ -237,7 +238,7 @@ export class ShaderManager {
     // Get active attributes
     const numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
     program._attributes = {};
-    
+
     for (let i = 0; i < numAttribs; i++) {
       const info = gl.getActiveAttrib(program, i);
       const location = gl.getAttribLocation(program, info.name);
@@ -248,7 +249,7 @@ export class ShaderManager {
     // Get active uniforms
     const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
     program._uniforms = {};
-    
+
     for (let i = 0; i < numUniforms; i++) {
       const info = gl.getActiveUniform(program, i);
       // Handle array uniforms (name ends with [0])
@@ -273,10 +274,9 @@ export class ShaderManager {
    * @param {string|WebGLProgram} nameOrProgram - Shader name or program
    */
   use(nameOrProgram) {
-    const program = typeof nameOrProgram === 'string' 
-      ? this.programs.get(nameOrProgram)
-      : nameOrProgram;
-    
+    const program =
+      typeof nameOrProgram === 'string' ? this.programs.get(nameOrProgram) : nameOrProgram;
+
     if (program) {
       this.gl.useProgram(program);
     }
@@ -311,7 +311,7 @@ export class ShaderManager {
     for (const program of this.programs.values()) {
       this.gl.deleteProgram(program);
     }
-    
+
     this.programs.clear();
     this.cache.clear();
   }

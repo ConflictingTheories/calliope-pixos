@@ -5,7 +5,7 @@
   "tileset": "sewer",
   "audioSrc": "brass-loop.mp3",
   "mode": "tactics",
-  
+
   "sprites": [
     {
       "id": "avatar",
@@ -73,7 +73,7 @@
       "facing": "Up"
     }
   ],
-  
+
   "lights": [
     {
       "id": "lava-light-1",
@@ -112,7 +112,7 @@
       "enabled": true
     }
   ],
-  
+
   "scenes": [
     {
       "id": "fire-trial-intro",
@@ -121,7 +121,11 @@
           "sprite": "fire-elemental",
           "action": "dialogue",
           "args": [
-            ["MORTAL! YOU DARE ENTER MY DOMAIN?!", "The flames of destruction shall consume you!", "Prove your worth... or perish!"],
+            [
+              "MORTAL! YOU DARE ENTER MY DOMAIN?!",
+              "The flames of destruction shall consume you!",
+              "Prove your worth... or perish!"
+            ],
             false,
             { "autoclose": true }
           ]
@@ -136,7 +140,11 @@
           "sprite": "fire-elemental",
           "action": "dialogue",
           "args": [
-            ["You have... bested me...", "The Fire Shard is yours.", "One quarter of the seal is broken."],
+            [
+              "You have... bested me...",
+              "The Fire Shard is yours.",
+              "One quarter of the seal is broken."
+            ],
             false,
             { "autoclose": true }
           ]
@@ -144,14 +152,14 @@
       ]
     }
   ],
-  
+
   "scripts": [
     {
       "id": "fire-chamber-load",
       "trigger": "zone/fire_chamber_load"
     }
   ],
-  
+
   "objects": [
     {
       "id": "lava-rock-1",
@@ -166,6 +174,6 @@
       "pos": [10, 6, 0]
     }
   ],
-  
+
   "menu": {}
 }

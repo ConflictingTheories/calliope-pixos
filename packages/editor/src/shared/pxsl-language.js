@@ -16,7 +16,7 @@ const PXSL_FUNCTIONS = {
   // Lighting
   diffuse: {
     signature: 'diffuse(normal: vec3, lightDir: vec3) → float',
-    description: 'Calculates diffuse lighting factor using Lambert\'s cosine law.',
+    description: "Calculates diffuse lighting factor using Lambert's cosine law.",
     example: 'let diff = diffuse(vNormal, lightDirection)',
   },
   specular: {
@@ -81,7 +81,8 @@ const PXSL_FUNCTIONS = {
 
   // Math Helpers
   remap: {
-    signature: 'remap(value: float, inMin: float, inMax: float, outMin: float, outMax: float) → float',
+    signature:
+      'remap(value: float, inMin: float, inMax: float, outMin: float, outMax: float) → float',
     description: 'Remaps a value from one range to another.',
     example: 'let normalized = remap(depth, 0.1, 100.0, 0.0, 1.0)',
   },
@@ -136,31 +137,52 @@ const PXSL_FUNCTIONS = {
  */
 const PXSL_TYPES = [
   // Standard GLSL types
-  'float', 'int', 'bool',
-  'vec2', 'vec3', 'vec4',
-  'mat2', 'mat3', 'mat4',
-  'sampler2D', 'samplerCube',
+  'float',
+  'int',
+  'bool',
+  'vec2',
+  'vec3',
+  'vec4',
+  'mat2',
+  'mat3',
+  'mat4',
+  'sampler2D',
+  'samplerCube',
   // User-friendly aliases
-  'color', 'color3',
-  'point', 'point2',
-  'direction', 'normal',
-  'matrix', 'texture', 'cubemap',
+  'color',
+  'color3',
+  'point',
+  'point2',
+  'direction',
+  'normal',
+  'matrix',
+  'texture',
+  'cubemap',
 ];
 
 /**
  * PXSL keywords
  */
 const PXSL_KEYWORDS = [
-  'input', 'output', 'uniform', 'const', 'let',
-  'main', 'if', 'else', 'for', 'while', 'return', 'discard', 'struct',
+  'input',
+  'output',
+  'uniform',
+  'const',
+  'let',
+  'main',
+  'if',
+  'else',
+  'for',
+  'while',
+  'return',
+  'discard',
+  'struct',
 ];
 
 /**
  * PXSL directives
  */
-const PXSL_DIRECTIVES = [
-  '@vertex', '@fragment', '@shader', '@effect',
-];
+const PXSL_DIRECTIVES = ['@vertex', '@fragment', '@shader', '@effect'];
 
 /**
  * Register PXSL language with Monaco
@@ -180,28 +202,61 @@ export function registerPXSLLanguage(monaco) {
     keywords: PXSL_KEYWORDS,
     types: PXSL_TYPES,
     operators: [
-      '=', '>', '<', '!', '~', '?', ':',
-      '==', '<=', '>=', '!=', '&&', '||', '++', '--',
-      '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>',
-      '+=', '-=', '*=', '/=', '&=', '|=', '^=', '%=',
+      '=',
+      '>',
+      '<',
+      '!',
+      '~',
+      '?',
+      ':',
+      '==',
+      '<=',
+      '>=',
+      '!=',
+      '&&',
+      '||',
+      '++',
+      '--',
+      '+',
+      '-',
+      '*',
+      '/',
+      '&',
+      '|',
+      '^',
+      '%',
+      '<<',
+      '>>',
+      '>>>',
+      '+=',
+      '-=',
+      '*=',
+      '/=',
+      '&=',
+      '|=',
+      '^=',
+      '%=',
     ],
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
-    
+
     tokenizer: {
       root: [
         // Directives
         [/@\w+/, 'keyword.directive'],
-        
+
         // Identifiers and keywords
-        [/[a-zA-Z_]\w*/, {
-          cases: {
-            '@keywords': 'keyword',
-            '@types': 'type',
-            '@default': 'identifier',
+        [
+          /[a-zA-Z_]\w*/,
+          {
+            cases: {
+              '@keywords': 'keyword',
+              '@types': 'type',
+              '@default': 'identifier',
+            },
           },
-        }],
+        ],
 
         // Whitespace
         { include: '@whitespace' },
@@ -209,12 +264,15 @@ export function registerPXSLLanguage(monaco) {
         // Delimiters
         [/[{}()\[\]]/, '@brackets'],
         [/[<>](?!@symbols)/, '@brackets'],
-        [/@symbols/, {
-          cases: {
-            '@operators': 'operator',
-            '@default': '',
+        [
+          /@symbols/,
+          {
+            cases: {
+              '@operators': 'operator',
+              '@default': '',
+            },
           },
-        }],
+        ],
 
         // Numbers
         [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, 'number.float'],
@@ -452,10 +510,7 @@ export function registerPXSLLanguage(monaco) {
               startColumn: word.startColumn,
               endColumn: word.endColumn,
             },
-            contents: [
-              { value: `**${directive}**` },
-              { value: doc },
-            ],
+            contents: [{ value: `**${directive}**` }, { value: doc }],
           };
         }
       }
@@ -469,10 +524,7 @@ export function registerPXSLLanguage(monaco) {
             startColumn: word.startColumn,
             endColumn: word.endColumn,
           },
-          contents: [
-            { value: `**${text}**` },
-            { value: getTypeDoc(text) },
-          ],
+          contents: [{ value: `**${text}**` }, { value: getTypeDoc(text) }],
         };
       }
 
@@ -488,10 +540,13 @@ export function registerPXSLLanguage(monaco) {
  */
 function getDirectiveDoc(directive) {
   const docs = {
-    '@vertex': 'Marks the start of the vertex shader section. Vertex shaders run once per vertex and output transformed positions.',
-    '@fragment': 'Marks the start of the fragment shader section. Fragment shaders run once per pixel and output colors.',
+    '@vertex':
+      'Marks the start of the vertex shader section. Vertex shaders run once per vertex and output transformed positions.',
+    '@fragment':
+      'Marks the start of the fragment shader section. Fragment shaders run once per pixel and output colors.',
     '@shader': 'Names the shader for identification. Usage: `@shader "my_shader"`',
-    '@effect': 'Defines a reusable effect with configurable properties. Usage: `@effect "name" { ... }`',
+    '@effect':
+      'Defines a reusable effect with configurable properties. Usage: `@effect "name" { ... }`',
   };
   return docs[directive] || '';
 }

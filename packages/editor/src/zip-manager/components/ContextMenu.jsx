@@ -59,23 +59,23 @@ function ContextMenu({
   // Adjust position to keep menu in viewport
   const getAdjustedPosition = useCallback(() => {
     if (!menuRef.current) return { left: x, top: y };
-    
+
     const menu = menuRef.current;
     const menuRect = menu.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     let adjustedX = x;
     let adjustedY = y;
-    
+
     if (x + menuRect.width > viewportWidth) {
       adjustedX = viewportWidth - menuRect.width - 10;
     }
-    
+
     if (y + menuRect.height > viewportHeight) {
       adjustedY = viewportHeight - menuRect.height - 10;
     }
-    
+
     return { left: Math.max(10, adjustedX), top: Math.max(10, adjustedY) };
   }, [x, y]);
 
@@ -84,12 +84,12 @@ function ContextMenu({
   const position = getAdjustedPosition();
   const multipleSelected = highlightedEntries && highlightedEntries.length > 1;
   const isDirectory = entry?.directory;
-  const selectionLabel = multipleSelected 
-    ? `${highlightedEntries.length} items selected` 
-    : (entry?.name || 'No selection');
+  const selectionLabel = multipleSelected
+    ? `${highlightedEntries.length} items selected`
+    : entry?.name || 'No selection';
 
   return (
-    <div 
+    <div
       ref={menuRef}
       className="context-menu"
       style={{ left: position.left, top: position.top }}
@@ -99,13 +99,16 @@ function ContextMenu({
       <div className="context-menu__header">
         <span className="context-menu__selection">{selectionLabel}</span>
       </div>
-      
+
       <div className="context-menu__divider" />
-      
+
       {/* Primary Actions */}
-      <button 
+      <button
         className="context-menu__item"
-        onClick={() => { onOpen(); onClose(); }}
+        onClick={() => {
+          onOpen();
+          onClose();
+        }}
         disabled={!entry || multipleSelected}
         role="menuitem"
       >
@@ -115,9 +118,12 @@ function ContextMenu({
       </button>
 
       {!isDirectory && (
-        <button 
+        <button
           className="context-menu__item"
-          onClick={() => { onDownload(); onClose(); }}
+          onClick={() => {
+            onDownload();
+            onClose();
+          }}
           disabled={!entry || disabledExtract}
           role="menuitem"
         >
@@ -125,13 +131,16 @@ function ContextMenu({
           <span className="context-menu__label">Download</span>
         </button>
       )}
-      
+
       <div className="context-menu__divider" />
-      
+
       {/* Edit Actions */}
-      <button 
+      <button
         className="context-menu__item"
-        onClick={() => { onCopy(); onClose(); }}
+        onClick={() => {
+          onCopy();
+          onClose();
+        }}
         disabled={disabledCopy}
         role="menuitem"
       >
@@ -139,10 +148,13 @@ function ContextMenu({
         <span className="context-menu__label">Copy</span>
         <span className="context-menu__shortcut">⌘C</span>
       </button>
-      
-      <button 
+
+      <button
         className="context-menu__item"
-        onClick={() => { onCut(); onClose(); }}
+        onClick={() => {
+          onCut();
+          onClose();
+        }}
         disabled={disabledCut}
         role="menuitem"
       >
@@ -150,10 +162,13 @@ function ContextMenu({
         <span className="context-menu__label">Cut</span>
         <span className="context-menu__shortcut">⌘X</span>
       </button>
-      
-      <button 
+
+      <button
         className="context-menu__item"
-        onClick={() => { onPaste(); onClose(); }}
+        onClick={() => {
+          onPaste();
+          onClose();
+        }}
         disabled={disabledPaste}
         role="menuitem"
       >
@@ -161,13 +176,16 @@ function ContextMenu({
         <span className="context-menu__label">Paste</span>
         <span className="context-menu__shortcut">⌘V</span>
       </button>
-      
+
       <div className="context-menu__divider" />
-      
+
       {/* File Management */}
-      <button 
+      <button
         className="context-menu__item"
-        onClick={() => { onRename(); onClose(); }}
+        onClick={() => {
+          onRename();
+          onClose();
+        }}
         disabled={disabledRename}
         role="menuitem"
       >
@@ -175,10 +193,13 @@ function ContextMenu({
         <span className="context-menu__label">Rename</span>
         <span className="context-menu__shortcut">F2</span>
       </button>
-      
-      <button 
+
+      <button
         className="context-menu__item context-menu__item--danger"
-        onClick={() => { onDelete(); onClose(); }}
+        onClick={() => {
+          onDelete();
+          onClose();
+        }}
         disabled={disabledDelete}
         role="menuitem"
       >

@@ -20,8 +20,8 @@ const binaryBooleanArithmetic = (left, right, metaMethodName, callback) => {
 // extra
 const bool = (value) => coerceToBoolean(value);
 // logical
-const and = (l, r) => coerceToBoolean(l) ? r : l;
-const or = (l, r) => coerceToBoolean(l) ? l : r;
+const and = (l, r) => (coerceToBoolean(l) ? r : l);
+const or = (l, r) => (coerceToBoolean(l) ? l : r);
 // unary
 const not = (value) => !bool(value);
 const unm = (value) => {

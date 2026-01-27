@@ -63,12 +63,12 @@ export class ControllerButtons {
     let { layout, ctx } = this;
     let { buttonsLayout } = this.gamepad;
     let width = ctx.canvas.width;
-    for (var n = 0; n < buttonsLayout.length; n++) {
-      var button = buttonsLayout[n];
+    for (let n = 0; n < buttonsLayout.length; n++) {
+      let button = buttonsLayout[n];
       var x = layout.x - button.x;
       var y = layout.y - button.y;
       if (button.r) {
-        var r = button.r;
+        let r = button.r;
         buttonsLayout[n]['hit'] = { x: [x - r, x + r * 2], y: [y - r, y + r * 2], active: false };
       } else {
         button.x = width / 3 - button.w;
@@ -94,11 +94,11 @@ export class ControllerButtons {
    */
   draw() {
     let { ctx, layout } = this;
-    for (var n = 0; n < this.gamepad.buttonsLayout.length; n++) {
-      var button = this.gamepad.buttonsLayout[n];
-      var color = button.color;
+    for (let n = 0; n < this.gamepad.buttonsLayout.length; n++) {
+      let button = this.gamepad.buttonsLayout[n];
+      let color = button.color;
       var x = layout.x - button.x;
-      var y = layout.y - button.y;
+      let y = layout.y - button.y;
       button.dx = x;
       button.dy = y;
 
@@ -131,7 +131,7 @@ export class ControllerButtons {
         ctx.fillText(button.name, x, y);
       } else {
         var w = button.w;
-        var h = button.h;
+        let h = button.h;
         var x = isNaN(button.x) ? ctx.canvas.width / 2 : button.x;
         var r = 10;
         ctx.fillStyle = color;
@@ -173,56 +173,61 @@ export class ControllerButtons {
   state(id, n, type) {
     let { gamepad } = this;
     let { touches, checkInput, width } = gamepad;
-    
+
     // Ensure touch exists and is not assigned to stick before processing
     if (!touches[id] || touches[id].id === 'stick') {
       return;
     }
-    
-    var touch = {
+
+    let touch = {
       x: touches[id].x,
       y: touches[id].y,
     };
-    var button = this.gamepad.buttonsLayout[n];
-    var name = button.name;
+    let button = this.gamepad.buttonsLayout[n];
+    let name = button.name;
 
-      var dx = parseInt(touch.x - button.dx);
-      var dy = parseInt(touch.y - button.dy);
-      var dist = width;
-      if (button.r) {
-        dist = parseInt(Math.sqrt(dx * dx + dy * dy));
+    let dx = parseInt(touch.x - button.dx);
+    let dy = parseInt(touch.y - button.dy);
+    let dist = width;
+    if (button.r) {
+      dist = parseInt(Math.sqrt(dx * dx + dy * dy));
+    } else {
+      if (
+        touch.x > button.hit.x[0] &&
+        touch.x < button.hit.x[1] &&
+        touch.y > button.hit.y[0] &&
+        touch.y < button.hit.y[1]
+      ) {
+        dist = 0;
+      }
+    }
+    if (dist < this.radius && touches[id].id != 'stick') {
+      if (!type) {
+        touches[id].id = name;
       } else {
-        if (touch.x > button.hit.x[0] && touch.x < button.hit.x[1] && touch.y > button.hit.y[0] && touch.y < button.hit.y[1]) {
-          dist = 0;
+        switch (type) {
+          case 'mousedown':
+            touches[id].id = name;
+            break;
+          case 'mouseup':
+            delete touches[id].id;
+            this.reset(n);
+            break;
         }
       }
-      if (dist < this.radius && touches[id].id != 'stick') {
-        if (!type) {
-          touches[id].id = name;
-        } else {
-          switch (type) {
-            case 'mousedown':
-              touches[id].id = name;
-              break;
-            case 'mouseup':
-              delete touches[id].id;
-              this.reset(n);
-              break;
-          }
-        }
+    }
+    if (touches[id].id == name) {
+      this.gamepad.map[name] = 1;
+      button.hit.active = true;
+      if (dist > this.radius) {
+        button.hit.active = false;
+        this.gamepad.map[name] = 0;
+        delete touches[id].id;
       }
-      if (touches[id].id == name) {
-        this.gamepad.map[name] = 1;
-        button.hit.active = true;
-        if (dist > this.radius) {
-          button.hit.active = false;
-          this.gamepad.map[name] = 0;
-          delete touches[id].id;
-        }
-        if (typeof checkInput === 'function') {
-          this.gamepad.checkInput();
-        }
+      if (typeof checkInput === 'function') {
+        this.gamepad.checkInput();
       }
+    }
   }
   /**
    * Resets the state of a button.

@@ -245,8 +245,7 @@ export default class InventoryUI {
     const panelY = (height - panelHeight) / 2;
 
     // Check if click is within inventory panel
-    if (x < panelX || x > panelX + panelWidth ||
-        y < panelY || y > panelY + panelHeight) {
+    if (x < panelX || x > panelX + panelWidth || y < panelY || y > panelY + panelHeight) {
       return false;
     }
 

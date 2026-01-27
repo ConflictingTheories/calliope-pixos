@@ -6,7 +6,7 @@
  *
  * A property inspector panel for editing entity properties.
  * Supports various input types and grouped sections.
- * 
+ *
  * Usage:
  *   <PropertyPanel
  *     title="Sprite Properties"
@@ -45,7 +45,7 @@ import '../styles/property-panel.css';
 
 /**
  * PropertyPanel - Property inspector component
- * 
+ *
  * @param {Object} props
  * @param {string} [props.title] - Panel title
  * @param {PropertyDefinition[]} props.properties - Array of property definitions
@@ -60,7 +60,7 @@ function PropertyPanel({
   onChange,
   onReset,
   showGroups = true,
-  className = ''
+  className = '',
 }) {
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
@@ -81,24 +81,27 @@ function PropertyPanel({
   }, [properties, showGroups]);
 
   // Toggle group collapse state
-  const toggleGroup = useCallback((groupName) => {
+  const toggleGroup = useCallback(groupName => {
     setCollapsedGroups(prev => ({
       ...prev,
-      [groupName]: !prev[groupName]
+      [groupName]: !prev[groupName],
     }));
   }, []);
 
   // Handle property value change
-  const handleChange = useCallback((key, value, type) => {
-    // Type conversion
-    let convertedValue = value;
-    if (type === 'number' || type === 'slider') {
-      convertedValue = parseFloat(value) || 0;
-    } else if (type === 'boolean') {
-      convertedValue = Boolean(value);
-    }
-    onChange?.(key, convertedValue);
-  }, [onChange]);
+  const handleChange = useCallback(
+    (key, value, type) => {
+      // Type conversion
+      let convertedValue = value;
+      if (type === 'number' || type === 'slider') {
+        convertedValue = parseFloat(value) || 0;
+      } else if (type === 'boolean') {
+        convertedValue = Boolean(value);
+      }
+      onChange?.(key, convertedValue);
+    },
+    [onChange]
+  );
 
   return (
     <div className={`property-panel ${className}`}>
@@ -140,12 +143,7 @@ function PropertyGroup({ name, properties, collapsed, onToggle, onChange, onRese
       {!collapsed && (
         <div className="property-group__content">
           {properties.map(prop => (
-            <PropertyRow
-              key={prop.key}
-              property={prop}
-              onChange={onChange}
-              onReset={onReset}
-            />
+            <PropertyRow key={prop.key} property={prop} onChange={onChange} onReset={onReset} />
           ))}
         </div>
       )}
@@ -161,25 +159,24 @@ function PropertyRow({ property, onChange, onReset }) {
   const hasDefaultValue = defaultValue !== undefined;
   const isDifferentFromDefault = hasDefaultValue && value !== defaultValue;
 
-  const handleReset = useCallback((e) => {
-    e.stopPropagation();
-    if (onReset) {
-      onReset(key);
-    } else {
-      onChange(key, defaultValue, type);
-    }
-  }, [key, defaultValue, type, onChange, onReset]);
+  const handleReset = useCallback(
+    e => {
+      e.stopPropagation();
+      if (onReset) {
+        onReset(key);
+      } else {
+        onChange(key, defaultValue, type);
+      }
+    },
+    [key, defaultValue, type, onChange, onReset]
+  );
 
   return (
     <div className={`property-row ${disabled ? 'property-row--disabled' : ''}`} title={tooltip}>
       <label className="property-row__label">
         {label}
         {isDifferentFromDefault && (
-          <button
-            className="property-row__reset"
-            onClick={handleReset}
-            title="Reset to default"
-          >
+          <button className="property-row__reset" onClick={handleReset} title="Reset to default">
             ↺
           </button>
         )}
@@ -187,7 +184,7 @@ function PropertyRow({ property, onChange, onReset }) {
       <div className="property-row__input">
         <PropertyInput
           property={property}
-          onChange={(val) => onChange(key, val, type)}
+          onChange={val => onChange(key, val, type)}
           disabled={disabled || readonly}
         />
       </div>
@@ -208,7 +205,7 @@ function PropertyInput({ property, onChange, disabled }) {
           type="text"
           className="property-input property-input--text"
           value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
         />
       );
@@ -222,7 +219,7 @@ function PropertyInput({ property, onChange, disabled }) {
           min={min}
           max={max}
           step={step || 1}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
         />
       );
@@ -233,7 +230,7 @@ function PropertyInput({ property, onChange, disabled }) {
           <input
             type="checkbox"
             checked={Boolean(value)}
-            onChange={(e) => onChange(e.target.checked)}
+            onChange={e => onChange(e.target.checked)}
             disabled={disabled}
           />
           <span className="property-checkbox"></span>
@@ -245,7 +242,7 @@ function PropertyInput({ property, onChange, disabled }) {
         <select
           className="property-input property-input--select"
           value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
         >
           {(options || []).map(opt => (
@@ -262,14 +259,14 @@ function PropertyInput({ property, onChange, disabled }) {
           <input
             type="color"
             value={value || '#000000'}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={e => onChange(e.target.value)}
             disabled={disabled}
           />
           <input
             type="text"
             className="property-input--color-text"
             value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={e => onChange(e.target.value)}
             disabled={disabled}
             placeholder="#000000"
           />
@@ -285,7 +282,7 @@ function PropertyInput({ property, onChange, disabled }) {
             min={min ?? 0}
             max={max ?? 100}
             step={step ?? 1}
-            onChange={(e) => onChange(parseFloat(e.target.value))}
+            onChange={e => onChange(parseFloat(e.target.value))}
             disabled={disabled}
           />
           <span className="property-slider-value">{value}</span>
@@ -297,7 +294,7 @@ function PropertyInput({ property, onChange, disabled }) {
         <textarea
           className="property-input property-input--textarea"
           value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
           rows={3}
         />
@@ -309,14 +306,14 @@ function PropertyInput({ property, onChange, disabled }) {
           <input
             type="number"
             value={value?.x ?? 0}
-            onChange={(e) => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
+            onChange={e => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
             placeholder="X"
           />
           <input
             type="number"
             value={value?.y ?? 0}
-            onChange={(e) => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
+            onChange={e => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
             placeholder="Y"
           />
@@ -329,21 +326,21 @@ function PropertyInput({ property, onChange, disabled }) {
           <input
             type="number"
             value={value?.x ?? 0}
-            onChange={(e) => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
+            onChange={e => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
             placeholder="X"
           />
           <input
             type="number"
             value={value?.y ?? 0}
-            onChange={(e) => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
+            onChange={e => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
             placeholder="Y"
           />
           <input
             type="number"
             value={value?.z ?? 0}
-            onChange={(e) => onChange({ ...value, z: parseFloat(e.target.value) || 0 })}
+            onChange={e => onChange({ ...value, z: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
             placeholder="Z"
           />
@@ -356,7 +353,7 @@ function PropertyInput({ property, onChange, disabled }) {
           type="text"
           className="property-input property-input--text"
           value={String(value ?? '')}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
         />
       );
@@ -371,7 +368,10 @@ function ChevronIcon({ collapsed }) {
       width="12"
       height="12"
       fill="currentColor"
-      style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
+      style={{
+        transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+        transition: 'transform 0.15s ease',
+      }}
     >
       <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
     </svg>

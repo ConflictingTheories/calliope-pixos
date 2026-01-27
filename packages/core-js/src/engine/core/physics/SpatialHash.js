@@ -141,7 +141,7 @@ export default class SpatialHash {
           const body1 = bodies[i];
           const body2 = bodies[j];
           const pairKey = `${body1.id || body1}-${body2.id || body2}`;
-          
+
           if (!processed.has(pairKey)) {
             processed.add(pairKey);
             pairs.push([body1, body2]);

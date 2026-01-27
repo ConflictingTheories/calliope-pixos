@@ -40,9 +40,9 @@ const createMockRenderManager = () => ({
       CLAMP_TO_EDGE: 33071,
       TRIANGLES: 4,
       UNSIGNED_SHORT: 5123,
-      FLOAT: 5126
-    }
-  }
+      FLOAT: 5126,
+    },
+  },
 });
 
 describe('TextureAtlas', () => {
@@ -72,7 +72,7 @@ describe('TextureAtlas', () => {
   describe('init', () => {
     it('should create WebGL buffers', () => {
       atlas.init();
-      
+
       expect(mockRenderManager.engine.gl.createBuffer).toHaveBeenCalledTimes(3);
       expect(atlas.batchVertexBuffer).toBeDefined();
       expect(atlas.batchTexCoordBuffer).toBeDefined();
@@ -81,7 +81,7 @@ describe('TextureAtlas', () => {
 
     it('should pre-generate index pattern', () => {
       atlas.init();
-      
+
       // Check first quad indices (0,1,2,0,2,3)
       expect(atlas.sharedIndices[0]).toBe(0);
       expect(atlas.sharedIndices[1]).toBe(1);
@@ -89,7 +89,7 @@ describe('TextureAtlas', () => {
       expect(atlas.sharedIndices[3]).toBe(0);
       expect(atlas.sharedIndices[4]).toBe(2);
       expect(atlas.sharedIndices[5]).toBe(3);
-      
+
       // Check second quad indices (4,5,6,4,6,7)
       expect(atlas.sharedIndices[6]).toBe(4);
       expect(atlas.sharedIndices[7]).toBe(5);
@@ -114,7 +114,7 @@ describe('TextureAtlas', () => {
       const entryMap = new Map();
       entryMap.set('test-entry', mockEntry);
       atlas.atlasEntries.set('test-atlas', entryMap);
-      
+
       const entry = atlas.getEntry('test-atlas', 'test-entry');
       expect(entry).toEqual(mockEntry);
     });
@@ -129,14 +129,17 @@ describe('TextureAtlas', () => {
     it('should add sprite to batch queue', () => {
       const mockEntry = {
         id: 'test',
-        u0: 0, v0: 0, u1: 0.5, v1: 0.5
+        u0: 0,
+        v0: 0,
+        u1: 0.5,
+        v1: 0.5,
       };
       const entryMap = new Map();
       entryMap.set('sprite1', mockEntry);
       atlas.atlasEntries.set('atlas1', entryMap);
-      
+
       atlas.queueSprite('atlas1', 'sprite1', 100, 100, 0, 32, 32);
-      
+
       expect(atlas.batchQueue.length).toBe(1);
       expect(atlas.batchQueue[0].textureId).toBe('atlas1');
       expect(atlas.batchQueue[0].shaderId).toBe('sprite');
@@ -147,9 +150,9 @@ describe('TextureAtlas', () => {
     it('should clear batch queue', () => {
       atlas.batchQueue.push({}, {}, {});
       atlas.compiledBatches.set('test', {});
-      
+
       atlas.clearQueue();
-      
+
       expect(atlas.batchQueue.length).toBe(0);
       expect(atlas.compiledBatches.size).toBe(0);
     });
@@ -160,9 +163,9 @@ describe('TextureAtlas', () => {
       atlas.drawCallsThisFrame = 5;
       atlas.drawCallsSaved = 10;
       atlas.batchQueue.push({}, {}, {});
-      
+
       const stats = atlas.getStats();
-      
+
       expect(stats.drawCalls).toBe(5);
       expect(stats.saved).toBe(10);
       expect(stats.sprites).toBe(3);
@@ -174,9 +177,9 @@ describe('TextureAtlas', () => {
       atlas.init();
       atlas.atlasTextures.set('test', {});
       atlas.atlasEntries.set('test', new Map());
-      
+
       atlas.dispose();
-      
+
       expect(atlas.atlasTextures.size).toBe(0);
       expect(atlas.atlasEntries.size).toBe(0);
       expect(mockRenderManager.engine.gl.deleteTexture).toHaveBeenCalled();

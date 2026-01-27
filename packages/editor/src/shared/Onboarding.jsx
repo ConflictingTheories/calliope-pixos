@@ -140,12 +140,7 @@ function OnboardingModal({ show, onComplete }) {
   const step = ONBOARDING_STEPS[currentStep];
 
   return (
-    <Modal
-      open={show}
-      onClose={handleSkip}
-      size="md"
-      className="onboarding-modal"
-    >
+    <Modal open={show} onClose={handleSkip} size="md" className="onboarding-modal">
       <Modal.Header>
         <Modal.Title>
           <span className="onboarding-title">{step.title}</span>
@@ -204,7 +199,13 @@ function WelcomeBanner({ onShowTutorial }) {
   if (dismissed) return null;
 
   return (
-    <Message type="info" showIcon closable onClose={() => setDismissed(true)} className="welcome-banner">
+    <Message
+      type="info"
+      showIcon
+      closable
+      onClose={() => setDismissed(true)}
+      className="welcome-banner"
+    >
       <span>
         Welcome back! Need a refresher?{' '}
         <Button appearance="link" size="xs" onClick={onShowTutorial}>
@@ -232,11 +233,7 @@ export function QuickTip({ context }) {
   const tip = tips[context];
   if (!tip) return null;
 
-  return (
-    <div className="quick-tip">
-      {tip}
-    </div>
-  );
+  return <div className="quick-tip">{tip}</div>;
 }
 
 export { OnboardingModal, WelcomeBanner };

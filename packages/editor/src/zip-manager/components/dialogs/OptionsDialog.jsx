@@ -29,7 +29,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
   const [maxWorkers, setMaxWorkers] = useState('0');
   const [chunkSize, setChunkSize] = useState('0');
   const defaultPasswordInputRef = useRef(null);
-  
+
   // AI Settings state
   const [aiProvider, setAiProvider] = useState(AI_PROVIDERS.OPENAI);
   const [aiApiKey, setAiApiKey] = useState('');
@@ -176,7 +176,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       setMaxWorkers(maxWorkers);
       setChunkSize(chunkSize / 1024);
       setShowSupportPanel(showSupportPanel);
-      
+
       // Load AI settings from aiService
       const aiConfig = aiService.getConfig();
       setAiProvider(aiConfig.provider || AI_PROVIDERS.OPENAI);
@@ -202,15 +202,31 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
     >
       <label>
         <span>{messages.OPTIONS_ZOOM_FACTOR_LABEL}</span>
-        <input value={zoomFactor} type="number" required min={20} max={500} step={5} onChange={handleChangeZoomFactor} />
+        <input
+          value={zoomFactor}
+          type="number"
+          required
+          min={20}
+          max={500}
+          step={5}
+          onChange={handleChangeZoomFactor}
+        />
       </label>
       <label>
         <span>{messages.OPTIONS_HIDE_NAVIGATION_BAR_LABEL}</span>
-        <input checked={hideNavigationBar} type="checkbox" onChange={handleChangeHideNavigationBar} />
+        <input
+          checked={hideNavigationBar}
+          type="checkbox"
+          onChange={handleChangeHideNavigationBar}
+        />
       </label>
       <label>
         <span>{messages.OPTIONS_HIDE_DOWNLOAD_MANAGER_LABEL}</span>
-        <input checked={hideDownloadManager} type="checkbox" onChange={handleChangeHideDownloadManager} />
+        <input
+          checked={hideDownloadManager}
+          type="checkbox"
+          onChange={handleChangeHideDownloadManager}
+        />
       </label>
       <label>
         <span>{messages.OPTIONS_HIDE_INFOBAR_LABEL}</span>
@@ -227,13 +243,19 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       <label>
         <span>{messages.OPTIONS_SELECT_SKIN_LABEL}</span>
         <select value={skin} onChange={handleChangeSkin}>
-          <option value={constants.OPTIONS_DEFAULT_SKIN}>{messages.OPTIONS_DEFAULT_SKIN_LABEL}</option>
+          <option value={constants.OPTIONS_DEFAULT_SKIN}>
+            {messages.OPTIONS_DEFAULT_SKIN_LABEL}
+          </option>
           <option value={constants.OPTIONS_DOS_SKIN}>{messages.OPTIONS_DOS_SKIN_LABEL}</option>
         </select>
       </label>
       <label>
         <span>{messages.OPTIONS_EXPORT_ZIP_PASSWORD_LABEL}</span>
-        <input checked={promptForExportPassword} type="checkbox" onChange={handleChangePromptForExportPassword} />
+        <input
+          checked={promptForExportPassword}
+          type="checkbox"
+          onChange={handleChangePromptForExportPassword}
+        />
       </label>
       <label>
         <span>{messages.OPTIONS_DEFAULT_PASSWORD_LABEL}</span>
@@ -256,7 +278,14 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
       </label>
       <label>
         <span>{messages.OPTIONS_MAX_WORKERS_LABEL}</span>
-        <input value={maxWorkers} type="number" required disabled={!bufferedWrite} min={1} onChange={handleChangeMaxWorkers} />
+        <input
+          value={maxWorkers}
+          type="number"
+          required
+          disabled={!bufferedWrite}
+          min={1}
+          onChange={handleChangeMaxWorkers}
+        />
       </label>
       <label>
         <span>{messages.OPTIONS_KEEP_ORDER_LABEL}</span>
@@ -266,14 +295,16 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
         <span>{messages.OPTIONS_CHUNK_SIZE_LABEL}</span>
         <input value={chunkSize} type="number" required min={1} onChange={handleChangeChunkSize} />
       </label>
-      
+
       {/* AI Settings Section */}
       <div className="options-section-header">AI Generator Settings</div>
       <label>
         <span>AI Provider:</span>
         <select value={aiProvider} onChange={handleChangeAiProvider}>
           {AI_PROVIDER_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
       </label>
@@ -309,9 +340,7 @@ function OptionsDialog({ data, onSetOptions, onResetOptions, onClose, messages }
           />
         </label>
       )}
-      <div className="options-help-text">
-        API keys are stored locally in your browser only.
-      </div>
+      <div className="options-help-text">API keys are stored locally in your browser only.</div>
     </Dialog>
   );
 }
