@@ -11,8 +11,17 @@
     "lint": "eslint src --ext .js,.jsx",
     "lint:fix": "eslint src --ext .js,.jsx --fix"
   },
-  "files": ["build", "README.md"],
-  "keywords": ["pixospritz", "editor", "game-editor", "sprite-editor", "map-editor"],
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "editor",
+    "game-editor",
+    "sprite-editor",
+    "map-editor"
+  ],
   "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
@@ -45,7 +54,15 @@
     "vite-plugin-pwa": "^0.20.1"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

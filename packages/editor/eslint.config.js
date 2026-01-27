@@ -37,7 +37,7 @@ export default [
       'no-func-assign': 'error',
       'use-isnan': 'error',
       'valid-typeof': 'error',
-      
+
       // Warnings (fixable)
       'linebreak-style': 'off',
       'quotes': ['warn', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
@@ -54,7 +54,7 @@ export default [
       'eol-last': ['warn', 'always'],
       'space-before-blocks': 'warn',
       'space-before-function-paren': ['warn', { anonymous: 'always', named: 'never' }],
-      
+
       // Allow leading underscores for private methods
       'no-underscore-dangle': 'off',
     },

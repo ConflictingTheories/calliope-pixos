@@ -2,7 +2,9 @@
   "name": "pixospritz-monorepo",
   "version": "1.0.0",
   "description": "PixoSpritz - A WebGL-based game engine and editor ecosystem",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "private": true,
   "scripts": {
     "clean": "rimraf packages/*/dist packages/*/build",
