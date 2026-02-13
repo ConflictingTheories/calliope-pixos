@@ -37,8 +37,8 @@ PixoSpritz is a well-structured monorepo containing a WebGL game engine, visual 
 | **specs**               | Specs     | ✅ Defined    | 1.0.1   | 🟢 Good                       |
 | **website**             | Marketing | ✅ Deployed   | 1.0.0   | 🟡 Good                       |
 | **spritz**              | Demo Game | ✅ Complete   | 1.0.0   | 🟢 Excellent                  |
-| **core-c**              | C Engine  | 🔴 Incomplete | —       | ⛔ WIP (Design phase)         |
-| **arm-linux**           | Platform  | 🔴 Incomplete | —       | ⛔ WIP (Design phase)         |
+| **core-c**              | C Engine  | 🔴 Incomplete | —       | ⛔ WIP (Needs Feature Parity) |
+| **arm-linux**           | Platform  | 🔴 Incomplete | —       | ⛔ WIP (Needs Feature Parity) |
 
 ### Key Metrics
 
