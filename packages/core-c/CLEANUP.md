@@ -10,7 +10,8 @@
 
 ## Concepts
 
-- Finish implementing the core engine and console over to the C system.
-- Refactor resource and scene management for clarity and performance.
-- Audit memory management for leaks and inefficiencies.
+- Finish implementing the core engine and console over to the C system for full feature parity.
+- Refactor resource and scene management for clarity and performance and readability and maintability.
+- Audit memory management for leaks and inefficiencies and ensure clean architectural designs without complexity or over engineering.
 - Standardize code formatting and comments across all modules.
+- Clean Game Engine Design Patterns
