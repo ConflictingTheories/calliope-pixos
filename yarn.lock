@@ -5382,7 +5382,7 @@ jest-matcher-utils@30.2.0:
 jest-message-util@30.2.0:
   version "30.2.0"
   resolved "https://registry.yarnpkg.com/jest-message-util/-/jest-message-util-30.2.0.tgz#fc97bf90d11f118b31e6131e2b67fc4f39f92152"
-  integrity sha512-y4DKFLZ2y6DxTWD4cDe07RglV88ZiNEdlRfGtqahfbIjfsw1nMCPx49Uev4IA/hWn3sDKyAnSPwoYSsAEdcimw==
+  integrity sha512-y4DKFLZ2y6DxTWD4cDe07RglV88Interactive noveldlRfGtqahfbIjfsw1nMCPx49Uev4IA/hWn3sDKyAnSPwoYSsAEdcimw==
   dependencies:
     "@babel/code-frame" "^7.27.1"
     "@jest/types" "30.2.0"

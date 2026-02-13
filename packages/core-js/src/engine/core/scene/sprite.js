@@ -623,7 +623,7 @@ export default class Sprite extends Loadable {
   /**
    * Hook for sprite implementations
    */
-  init = () => {};
+  init = () => { };
 
   /**
    * load from json specification

@@ -534,7 +534,7 @@ export default class ModelObject extends Loadable {
     engine.gl.enableVertexAttribArray(engine.renderManager.shaderProgram.aTextureCoord);
     // initialize buffers
     engine.renderManager.mvPushMatrix();
-    
+
     // position object
     translate(
       this.engine.renderManager.uModelMat,

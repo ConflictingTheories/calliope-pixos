@@ -64,7 +64,7 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
       this.lastTime = time;
       return;
     }
-    
+
     // Get the frame count for current facing direction
     const sequence = Direction.spriteSequence(
       this.facing,
@@ -72,7 +72,7 @@ export default class DynamicAnimatedSprite extends DynamicSprite {
     );
     const frames = this.frames[sequence] ?? this.frames['N'];
     const maxFrame = frames.length - 1;
-    
+
     // reset animation
     if (this.animFrame >= maxFrame) {
       this.setFrame(0);
