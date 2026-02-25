@@ -1,0 +1,536 @@
+/*
+ * ---------------------------------------------------------------
+ *           PixoSpritz – Design System
+ * ---------------------------------------------------------------
+ * Copyright (c) 2022-2025 Kyle Derby MacInnis
+ *
+ * Unified design tokens for the PixoSpritz Editor ecosystem.
+ * All colors, typography, spacing, shadows, and borders should
+ * be pulled from these CSS custom properties.
+ */
+
+/* ============================================================
+ * COLOR PALETTE
+ * ============================================================ */
+:root {
+  /* Primary Colors */
+  --color-primary: #ff6b9d;
+  --color-primary-light: #ff8eb5;
+  --color-primary-dark: #e04f7f;
+  --color-primary-subtle: rgba(255, 107, 157, 0.15);
+
+  /* Secondary Colors */
+  --color-secondary: #7c4dff;
+  --color-secondary-light: #9d7aff;
+  --color-secondary-dark: #5a2dd6;
+  --color-secondary-subtle: rgba(124, 77, 255, 0.15);
+
+  /* Accent Colors */
+  --color-accent: #00e5ff;
+  --color-accent-light: #6effff;
+  --color-accent-dark: #00b2cc;
+  --color-accent-subtle: rgba(0, 229, 255, 0.15);
+
+  /* Semantic Colors */
+  --color-success: #4ecdc4;
+  --color-success-light: #7ee8e1;
+  --color-success-dark: #38b2a7;
+  --color-success-subtle: rgba(78, 205, 196, 0.15);
+
+  --color-warning: #ffd93d;
+  --color-warning-light: #ffe066;
+  --color-warning-dark: #e6c235;
+  --color-warning-subtle: rgba(255, 217, 61, 0.15);
+
+  --color-error: #f48771;
+  --color-error-light: #f7a594;
+  --color-error-dark: #e06b52;
+  --color-error-subtle: rgba(244, 135, 113, 0.15);
+
+  --color-info: #7dd3fc;
+  --color-info-light: #a5e1fd;
+  --color-info-dark: #5bc0eb;
+  --color-info-subtle: rgba(125, 211, 252, 0.15);
+
+  /* Background Colors */
+  --color-bg: #0a0a14;
+  --color-bg-secondary: rgba(19, 19, 38, 0.92);
+  --color-bg-tertiary: rgba(28, 28, 52, 0.85);
+  --color-bg-elevated: rgba(38, 38, 72, 0.9);
+  --color-bg-overlay: rgba(0, 0, 0, 0.6);
+  --color-bg-hover: rgba(255, 255, 255, 0.02);
+  --color-bg-active: rgba(255, 255, 255, 0.06);
+  --color-bg-selected: rgba(255, 107, 157, 0.12);
+
+  /* Surface Colors (for cards, panels, etc.) */
+  --color-surface-1: rgba(15, 15, 30, 0.95);
+  --color-surface-2: rgba(20, 25, 45, 0.9);
+  --color-surface-3: rgba(30, 35, 60, 0.85);
+
+  /* Text Colors */
+  --color-text: #e4e4e7;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: rgba(228, 228, 231, 0.5);
+  --color-text-disabled: rgba(228, 228, 231, 0.3);
+  --color-text-inverse: #0a0a14;
+  --color-text-link: #7dd3fc;
+  --color-text-link-hover: #a5e1fd;
+
+  /* Border Colors */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-light: rgba(255, 255, 255, 0.15);
+  --color-border-focus: var(--color-primary);
+  --color-border-error: var(--color-error);
+}
+
+/* ============================================================
+ * TYPOGRAPHY
+ * ============================================================ */
+:root {
+  /* Font Families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+  --font-display: 'Inter', var(--font-sans);
+
+  /* Font Sizes (using 4px base unit scaled) */
+  --font-size-xs: 0.6875rem;
+  /* 11px */
+  --font-size-sm: 0.8125rem;
+  /* 13px */
+  --font-size-base: 0.875rem;
+  /* 14px */
+  --font-size-md: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+  --line-height-loose: 2;
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+}
+
+/* Typography Classes */
+.text-h1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.text-h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.text-h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+.text-h4 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+.text-h5 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.text-h6 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.text-body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.text-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.text-caption {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-muted);
+}
+
+.text-code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ============================================================
+ * SPACING SCALE (4px base unit)
+ * ============================================================ */
+:root {
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-0-5: 0.125rem;
+  /* 2px */
+  --spacing-1: 0.25rem;
+  /* 4px */
+  --spacing-1-5: 0.375rem;
+  /* 6px */
+  --spacing-2: 0.5rem;
+  /* 8px */
+  --spacing-2-5: 0.625rem;
+  /* 10px */
+  --spacing-3: 0.75rem;
+  /* 12px */
+  --spacing-3-5: 0.875rem;
+  /* 14px */
+  --spacing-4: 1rem;
+  /* 16px */
+  --spacing-5: 1.25rem;
+  /* 20px */
+  --spacing-6: 1.5rem;
+  /* 24px */
+  --spacing-7: 1.75rem;
+  /* 28px */
+  --spacing-8: 2rem;
+  /* 32px */
+  --spacing-9: 2.25rem;
+  /* 36px */
+  --spacing-10: 2.5rem;
+  /* 40px */
+  --spacing-12: 3rem;
+  /* 48px */
+  --spacing-14: 3.5rem;
+  /* 56px */
+  --spacing-16: 4rem;
+  /* 64px */
+  --spacing-20: 5rem;
+  /* 80px */
+  --spacing-24: 6rem;
+  /* 96px */
+  --spacing-32: 8rem;
+  /* 128px */
+
+  /* Semantic Spacing Aliases */
+  --spacing-xs: var(--spacing-1);
+  --spacing-sm: var(--spacing-2);
+  --spacing-md: var(--spacing-4);
+  --spacing-lg: var(--spacing-6);
+  --spacing-xl: var(--spacing-8);
+  --spacing-2xl: var(--spacing-12);
+}
+
+/* ============================================================
+ * SHADOWS (depth-based)
+ * ============================================================ */
+:root {
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.25), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3), 0 8px 10px rgba(0, 0, 0, 0.35);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.4);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  /* Colored Shadows (for interactive elements) */
+  --shadow-primary: 0 4px 14px rgba(255, 107, 157, 0.25);
+  --shadow-secondary: 0 4px 14px rgba(124, 77, 255, 0.25);
+  --shadow-accent: 0 4px 14px rgba(0, 229, 255, 0.25);
+  --shadow-success: 0 4px 14px rgba(78, 205, 196, 0.25);
+  --shadow-error: 0 4px 14px rgba(244, 135, 113, 0.25);
+
+  /* Focus Ring */
+  --shadow-focus: 0 0 0 3px var(--color-primary-subtle);
+}
+
+/* ============================================================
+ * BORDER RADIUS
+ * ============================================================ */
+:root {
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  /* 2px - subtle rounding */
+  --radius-default: 0.25rem;
+  /* 4px - standard */
+  --radius-md: 0.375rem;
+  /* 6px */
+  --radius-lg: 0.5rem;
+  /* 8px */
+  --radius-xl: 0.75rem;
+  /* 12px */
+  --radius-2xl: 1rem;
+  /* 16px */
+  --radius-3xl: 1.5rem;
+  /* 24px */
+  --radius-full: 9999px;
+  /* Pill shape */
+}
+
+/* ============================================================
+ * ANIMATION & TRANSITIONS
+ * ============================================================ */
+:root {
+  /* Duration */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --duration-slowest: 700ms;
+
+  /* Easing */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* Common Transitions */
+  --transition-colors: color var(--duration-normal) var(--ease-in-out),
+    background-color var(--duration-normal) var(--ease-in-out),
+    border-color var(--duration-normal) var(--ease-in-out);
+  --transition-opacity: opacity var(--duration-normal) var(--ease-in-out);
+  --transition-transform: transform var(--duration-normal) var(--ease-out);
+  --transition-all: all var(--duration-normal) var(--ease-in-out);
+  --transition-shadow: box-shadow var(--duration-normal) var(--ease-in-out);
+}
+
+/* Utility Keyframes */
+@keyframes ds-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ds-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes ds-bounce {
+
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ds-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ds-slide-down {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ds-scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+ * Z-INDEX SCALE
+ * ============================================================ */
+:root {
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+  --z-overlay: 900;
+  --z-max: 9999;
+}
+
+/* ============================================================
+ * BREAKPOINTS (for responsive utilities)
+ * ============================================================ */
+:root {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* ============================================================
+ * GRADIENTS
+ * ============================================================ */
+:root {
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
+  --gradient-surface: linear-gradient(135deg, var(--color-surface-1), var(--color-surface-2));
+  --gradient-panel: linear-gradient(135deg, rgba(15, 15, 30, 0.95), rgba(20, 25, 45, 0.9));
+  --gradient-shimmer: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%);
+}
+
+/* ============================================================
+ * GLASS / BACKDROP EFFECTS
+ * ============================================================ */
+:root {
+  --blur-sm: blur(4px);
+  --blur-md: blur(8px);
+  --blur-lg: blur(12px);
+  --blur-xl: blur(24px);
+
+  --backdrop-blur: blur(12px);
+  --backdrop-saturate: saturate(180%);
+}
+
+/* Glass panel utility */
+.glass {
+  background: var(--color-surface-1);
+  backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+}
+
+/* ============================================================
+ * FOCUS & ACCESSIBILITY
+ * ============================================================ */
+:root {
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-primary);
+}
+
+/* Utility focus ring */
+.focus-ring:focus,
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+}
+
+/* Focus-visible for keyboard users only */
+.focus-visible-ring:focus {
+  outline: none;
+}
+
+.focus-visible-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-bg),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,98 @@
+/**
+ * Nav Styles
+ */
+.px-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.px-nav-vertical {
+  flex-direction: column;
+}
+
+.px-nav-justified {
+  width: 100%;
+}
+
+.px-nav-justified .px-nav-item {
+  flex: 1;
+  text-align: center;
+}
+
+.px-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary, #888);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.px-nav-item:hover {
+  color: var(--text-primary, #e0e0e0);
+  background: var(--btn-subtle-hover, rgba(255, 255, 255, 0.1));
+}
+
+.px-nav-item-active {
+  color: var(--text-primary, #e0e0e0);
+  background: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-nav-item-active:hover {
+  background: var(--btn-primary-hover, #7986cb);
+}
+
+.px-nav-item-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.px-nav-item-icon {
+  font-size: 16px;
+}
+
+/* Subtle appearance */
+.px-nav-subtle .px-nav-item {
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding-bottom: 6px;
+}
+
+.px-nav-subtle .px-nav-item:hover {
+  background: transparent;
+  border-bottom-color: var(--border-color, #2a2a4a);
+}
+
+.px-nav-subtle .px-nav-item-active {
+  background: transparent;
+  border-bottom-color: var(--btn-primary-bg, #5c6bc0);
+  color: var(--btn-primary-bg, #5c6bc0);
+}
+
+/* Tabs appearance */
+.px-nav-tabs .px-nav-item {
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: -1px;
+}
+
+.px-nav-tabs .px-nav-item-active {
+  background: var(--panel-bg, #1a1a2e);
+  border-color: var(--border-color, #2a2a4a);
+}
+
+/* Pills appearance */
+.px-nav-pills .px-nav-item {
+  border-radius: 20px;
+}

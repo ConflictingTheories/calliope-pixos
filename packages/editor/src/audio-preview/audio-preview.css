@@ -1,0 +1,126 @@
+/*
+ * ---------------------------------------------------------------
+ *            Pixospritz – Audio Preview – Styles
+ * ---------------------------------------------------------------
+ */
+
+.audio-preview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 1rem);
+  padding: var(--spacing-sm, 1rem);
+  background: rgba(9, 9, 20, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: 0 25px 65px rgba(4, 4, 15, 0.5);
+}
+
+.audio-preview-empty {
+  text-align: center;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 0.95rem;
+}
+
+.audio-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 1rem);
+  padding: var(--spacing-sm, 1rem);
+  border-radius: var(--radius-lg, 20px);
+  background: linear-gradient(135deg, rgba(20, 20, 36, 0.95), rgba(12, 12, 24, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.audio-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 1rem);
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.audio-card__header h3 {
+  margin: 0.15rem 0;
+  font-size: 1.45rem;
+}
+
+.audio-card__header .subtext {
+  margin: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 0.9rem;
+}
+
+.audio-card__player {
+  width: min(360px, 100%);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md, 12px);
+  padding: 0.25rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-secondary, #4ecdc4);
+}
+
+.audio-visualizer {
+  position: relative;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #050510;
+}
+
+.audio-visualizer canvas {
+  display: block;
+  width: 100%;
+  height: 140px;
+}
+
+.pixel-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(transparent 95%, rgba(255, 255, 255, 0.05) 95%),
+    linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.05) 95%);
+  background-size: 8px 8px;
+  pointer-events: none;
+}
+
+.audio-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-xs, 0.5rem);
+}
+
+.audio-stat {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md, 12px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.audio-stat span {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.audio-stat strong {
+  display: block;
+  font-size: 1rem;
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 768px) {
+  .audio-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .audio-card__player {
+    width: 100%;
+  }
+}

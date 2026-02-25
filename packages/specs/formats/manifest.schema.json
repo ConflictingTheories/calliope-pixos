@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/manifest.schema.json",
+  "title": "PixoSpritz Game Manifest",
+  "description": "Schema for .pxz game package manifest files",
+  "type": "object",
+
+  "required": ["title", "version", "initialZones"],
+
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Game title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Game description"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Game version (semver)"
+    },
+    "author": {
+      "type": "string",
+      "description": "Game author/studio"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri"
+    },
+    "license": {
+      "type": "string"
+    },
+    "consoleVersion": {
+      "type": "string",
+      "description": "Target console/runtime version"
+    },
+    "supportedConsoleVersions": {
+      "type": "string",
+      "description": "Semver range of supported console versions",
+      "examples": [">=1.0.0 <2.0.0"]
+    },
+    "initialZones": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Starting zone(s) for new game"
+    },
+    "modes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Available game modes"
+    },
+    "maps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Map/zone IDs included in package"
+    },
+    "tilesets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tileset IDs included in package"
+    },
+    "sprites": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Sprite IDs included in package"
+    },
+    "models": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "3D model IDs included in package"
+    },
+    "textures": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Texture paths included in package"
+    },
+    "audio": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Audio file paths included in package"
+    },
+    "shaders": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Custom shader IDs"
+    },
+    "scripts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Script file paths"
+    },
+    "cutscenes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Cutscene definition paths"
+    },
+    "callbacks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Callback script paths"
+    },
+    "triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Trigger script paths"
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "Path to game thumbnail image"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Path to game icon"
+    },
+    "splash": {
+      "type": "string",
+      "description": "Path to splash screen image"
+    },
+    "settings": {
+      "type": "object",
+      "description": "Default game settings",
+      "properties": {
+        "resolution": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "fullscreen": { "type": "boolean" },
+        "musicVolume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sfxVolume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "language": { "type": "string" }
+      }
+    },
+    "saveConfig": {
+      "type": "object",
+      "description": "Save system configuration",
+      "properties": {
+        "slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "default": 3
+        },
+        "autosave": {
+          "type": "boolean",
+          "default": true
+        },
+        "autosaveInterval": {
+          "type": "integer",
+          "description": "Autosave interval in seconds",
+          "default": 300
+        },
+        "quicksave": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "compatibleSaves": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Game IDs whose saves can be imported"
+    },
+    "portableItems": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Item IDs that can be transferred between compatible games"
+    },
+    "multiplayer": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "maxPlayers": { "type": "integer", "minimum": 2 },
+        "serverUrl": { "type": "string", "format": "uri" }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "description": "Default control mappings",
+      "properties": {
+        "keyboard": { "type": "object" },
+        "gamepad": { "type": "object" },
+        "touch": { "type": "object" }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "description": "System requirements",
+      "properties": {
+        "webgl": { "type": "integer", "enum": [1, 2] },
+        "audio": { "type": "boolean" },
+        "localStorage": { "type": "boolean" },
+        "indexedDB": { "type": "boolean" }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "Custom manifest data",
+      "additionalProperties": true
+    }
+  }
+}

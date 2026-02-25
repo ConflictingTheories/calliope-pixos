@@ -1,0 +1,28 @@
+{
+  "name": "pixospritz-math",
+  "version": "1.0.1",
+  "description": "Math utilities for PixoSpritz - vectors, matrices, and geometric operations",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./vector": "./src/vector.js",
+    "./matrix4": "./src/matrix4.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "files": ["src", "README.md"],
+  "keywords": ["pixospritz", "math", "vector", "matrix", "3d", "webgl"],
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "CC-BY-NC-SA-4.0",
+  "devDependencies": {}
+}

@@ -1,0 +1,292 @@
+/**
+ * Pixospritz IDE - Master Styles
+ * Clean, professional dark theme
+ */
+
+/* Import the design system foundation */
+@import './styles/design-system.css';
+
+/* Legacy aliases for backward compatibility */
+:root {
+  /* Map old variables to new design system */
+  --color-primary: var(--brand-secondary);
+  --color-primary-dark: #e5527e;
+  --color-secondary: var(--brand-primary);
+  --color-accent: var(--brand-accent);
+  --color-purple: #a78bfa;
+
+  /* Backgrounds */
+  --color-bg: var(--bg-base);
+  --color-bg-light: var(--bg-surface);
+  --color-bg-lighter: var(--bg-elevated);
+  --color-bg-elevated: var(--bg-hover);
+  
+  /* Text */
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-secondary);
+  --color-text-dim: var(--text-tertiary);
+  
+  /* Borders */
+  --color-border: var(--border-subtle);
+  --color-border-light: var(--border-default);
+  --color-border-focus: var(--border-focus);
+
+  /* Spacing */
+  --spacing-xs: var(--space-1);
+  --spacing-sm: var(--space-2);
+  --spacing-md: var(--space-3);
+  --spacing-lg: var(--space-4);
+  --spacing-xl: var(--space-6);
+
+  /* Typography */
+  --font-primary: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-size-xs: var(--text-xs);
+  --font-size-sm: var(--text-sm);
+  --font-size-base: var(--text-base);
+  --font-size-lg: var(--text-lg);
+
+  /* Radii */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  /* Transitions */
+  --transition-fast: 0.1s ease;
+  --transition-normal: 0.2s ease;
+
+  /* Shadows */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-glow: 0 0 20px rgba(78, 205, 196, 0.15);
+
+  /* Semantic aliases */
+  --bg-primary: var(--bg-base);
+  --bg-secondary: var(--bg-surface);
+  --bg-tertiary: var(--bg-elevated);
+  --bg-elevated: var(--bg-hover);
+  --panel-surface: var(--bg-surface);
+  --panel-border: var(--border-subtle);
+  --text-primary: var(--text-primary);
+  --text-muted: var(--text-secondary);
+}
+
+/* 
+ * NOTE: Base resets, buttons, inputs, and RSuite overrides are now in 
+ * design-system.css. The styles below are kept for backward compatibility
+ * and any component-specific overrides.
+ */
+
+/* Inputs */
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.15);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-dim);
+}
+
+/* RSuite Dark Theme Overrides - Minimal & Clean */
+.rs-picker {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.rs-picker:hover,
+.rs-picker-focused {
+  border-color: var(--color-secondary) !important;
+}
+
+.rs-picker-toggle {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  padding: 5px 10px !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+.rs-picker-toggle-value,
+.rs-picker-toggle-placeholder {
+  color: var(--text-primary) !important;
+}
+
+.rs-picker-toggle-placeholder {
+  color: var(--text-muted) !important;
+}
+
+.rs-picker-menu {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--color-border-light) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  z-index: 1100 !important;
+}
+
+.rs-picker-select-menu-item {
+  color: var(--text-primary) !important;
+  font-size: var(--font-size-sm) !important;
+  padding: 6px 12px !important;
+}
+
+.rs-picker-select-menu-item:hover,
+.rs-picker-select-menu-item-focus {
+  background: rgba(78, 205, 196, 0.1) !important;
+}
+
+.rs-picker-select-menu-item-active {
+  background: rgba(78, 205, 196, 0.2) !important;
+  color: var(--color-secondary) !important;
+}
+
+/* RSuite Buttons */
+.rs-btn {
+  font-family: var(--font-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.rs-btn-primary {
+  background: var(--color-secondary) !important;
+  border: none !important;
+  color: #0a0a14 !important;
+}
+
+.rs-btn-primary:hover:not(:disabled) {
+  background: #5ed9d0 !important;
+}
+
+.rs-btn-ghost {
+  border-color: var(--color-border-light) !important;
+  color: var(--text-primary) !important;
+}
+
+.rs-btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* RSuite Inputs */
+.rs-input {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-primary) !important;
+  font-size: var(--font-size-base) !important;
+}
+
+.rs-input:focus {
+  border-color: var(--color-secondary) !important;
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.15) !important;
+}
+
+/* RSuite Modals */
+.rs-modal-wrapper {
+  z-index: 1200 !important;
+}
+
+.rs-modal-backdrop {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+.rs-modal-content {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--color-border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.rs-modal-header {
+  padding: 16px 20px 12px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.rs-modal-title {
+  color: var(--text-primary) !important;
+  font-size: var(--font-size-lg) !important;
+  font-weight: 600 !important;
+}
+
+.rs-modal-body {
+  padding: 16px 20px !important;
+}
+
+.rs-modal-footer {
+  padding: 12px 20px 16px !important;
+  border-top: 1px solid var(--color-border) !important;
+}
+
+/* RSuite Messages */
+.rs-message {
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+.rs-message-container {
+  padding: 8px 12px !important;
+}
+
+/* RSuite Forms */
+.rs-form-control-label {
+  color: var(--text-muted) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+.rs-form-help-text {
+  color: var(--text-dim) !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+/* Progress bars */
+.rs-progress-line {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.rs-progress-line-inner {
+  background: var(--color-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Compact scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Firefox scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}

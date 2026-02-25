@@ -1,0 +1,68 @@
+/**
+ * Radio Styles
+ */
+.px-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.px-radio-group-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.px-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.px-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.px-radio-control {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color, #2a2a4a);
+  border-radius: 50%;
+  background: var(--input-bg, #0d0d1a);
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.px-radio-input:checked + .px-radio-control {
+  border-color: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-radio-input:checked + .px-radio-control::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-radio-input:focus + .px-radio-control {
+  box-shadow: 0 0 0 2px var(--input-focus-shadow, rgba(92, 107, 192, 0.2));
+}
+
+.px-radio-label {
+  color: var(--text-primary, #e0e0e0);
+  font-size: 14px;
+}
+
+.px-radio-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

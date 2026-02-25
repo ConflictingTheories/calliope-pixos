@@ -1,0 +1,61 @@
+/**
+ * PixoSpritz UI Theme Variables
+ * 
+ * Override these in your app's CSS to customize the theme.
+ */
+
+:root {
+  /* Colors */
+  --panel-bg: #1a1a2e;
+  --panel-shaded-bg: #15152a;
+  --border-color: #2a2a4a;
+  
+  /* Text */
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --text-muted: #666;
+  
+  /* Inputs */
+  --input-bg: #0d0d1a;
+  --input-focus-border: #5c6bc0;
+  --input-focus-shadow: rgba(92, 107, 192, 0.2);
+  --input-disabled-bg: #1a1a2e;
+  
+  /* Buttons */
+  --btn-default-bg: #2a2a4a;
+  --btn-default-hover: #3a3a5a;
+  --btn-primary-bg: #5c6bc0;
+  --btn-primary-hover: #7986cb;
+  --btn-ghost-hover: rgba(255, 255, 255, 0.05);
+  --btn-subtle-hover: rgba(255, 255, 255, 0.1);
+  --btn-link-color: #5c6bc0;
+  
+  /* Toggle */
+  --toggle-bg: #2a2a4a;
+  
+  /* Slider */
+  --slider-track-bg: #2a2a4a;
+  
+  /* Progress */
+  --progress-track-bg: #2a2a4a;
+  
+  /* Tags */
+  --tag-bg: #2a2a4a;
+  
+  /* Placeholder */
+  --placeholder-bg: #2a2a4a;
+  --placeholder-highlight: #3a3a5a;
+}
+
+/* Light theme override example */
+[data-theme="light"] {
+  --panel-bg: #f5f5f5;
+  --panel-shaded-bg: #ffffff;
+  --border-color: #e0e0e0;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --text-muted: #9e9e9e;
+  --input-bg: #ffffff;
+  --btn-default-bg: #e0e0e0;
+  --btn-default-hover: #d0d0d0;
+}

@@ -1,5 +1,0 @@
-{
-    "name":"fight",
-    "update":"update.lua",
-    "setup": "setup.lua"
-}

@@ -1,0 +1,152 @@
+/**
+ * Template: Top-Down Adventure
+ * A starting point for RPGs, dungeon crawlers, or adventure games
+ */
+
+-- Player entity
+local player = {
+  x = 160,
+  y = 90,
+  width = 16,
+  height = 16,
+  speed = 100,
+  health = 100,
+}
+
+-- Camera configuration
+local camera = {
+  x = 0,
+  y = 0,
+  smoothing = 0.1,
+}
+
+-- Game state
+local state = {
+  paused = false,
+  dialogueActive = false,
+}
+
+function main()
+  print("Top-Down Adventure Template Loaded")
+  
+  -- Initialize player physics
+  player:addPhysicsBody(player.width, player.height, {
+    mass = 1,
+    isDynamic = true,
+    layer = 1,
+  })
+  
+  -- Setup collision callbacks
+  player.onCollisionEnter = function(other)
+    print("Player collided with: " .. other.name)
+  end
+end
+
+function update(dt)
+  if state.paused then return end
+  
+  -- Handle player input
+  handlePlayerMovement(dt)
+  
+  -- Update camera to follow player
+  updateCamera(dt)
+  
+  -- Check collisions
+  checkCollisions()
+end
+
+function handlePlayerMovement(dt)
+  local vx = 0
+  local vy = 0
+  
+  -- Input handling
+  if pixos.input.isPressed("up") or pixos.input.isPressed("w") then
+    vy = -player.speed
+  end
+  if pixos.input.isPressed("down") or pixos.input.isPressed("s") then
+    vy = player.speed
+  end
+  if pixos.input.isPressed("left") or pixos.input.isPressed("a") then
+    vx = -player.speed
+  end
+  if pixos.input.isPressed("right") or pixos.input.isPressed("d") then
+    vx = player.speed
+  end
+  
+  -- Apply velocity to physics body
+  if player.physicsBody then
+    player.physicsBody:setVelocity(vx, vy, 0)
+  end
+  
+  -- Update position if no physics
+  player.x = player.x + vx * dt
+  player.y = player.y + vy * dt
+end
+
+function updateCamera(dt)
+  -- Smooth camera follow
+  camera.x = camera.x + (player.x - camera.x - 160) * camera.smoothing
+  camera.y = camera.y + (player.y - camera.y - 90) * camera.smoothing
+  
+  -- Apply camera (editor integration)
+  if pixos.camera then
+    pixos.camera:setPosition(camera.x, camera.y)
+  end
+end
+
+function checkCollisions()
+  -- Check for enemy collisions
+  local nearby = pixos.physics_query(player.x - 64, player.y - 64, 128, 128)
+  
+  for i, other in ipairs(nearby) do
+    if other.name and string.find(other.name, "enemy") then
+      -- Handle enemy collision
+      onEnemyHit(other)
+    end
+  end
+end
+
+function onEnemyHit(enemy)
+  -- Damage player
+  player.health = player.health - 10
+  print("Player hit! Health: " .. player.health)
+  
+  -- TODO: Add hit knockback, visual effect, etc.
+end
+
+function onKeyPress(key)
+  if key == "space" then
+    -- Interact with nearby NPC/object
+    interactNearby()
+  elseif key == "p" then
+    -- Pause game
+    state.paused = not state.paused
+  elseif key == "esc" then
+    pixos.quit()
+  end
+end
+
+function interactNearby()
+  -- Find nearby interactive objects
+  local interactive = pixos.physics_query(
+    player.x - 32,
+    player.y - 32,
+    64,
+    64
+  )
+  
+  for i, obj in ipairs(interactive) do
+    if obj.onInteract then
+      obj:onInteract(player)
+    end
+  end
+end
+
+-- Rendering hook (called each frame)
+function render()
+  -- Draw player
+  -- pixos.draw.sprite(player_sprite, player.x, player.y)
+  
+  -- Draw HUD
+  -- pixos.draw.text("Health: " .. player.health, 10, 10, "white")
+end

@@ -1,0 +1,22 @@
+# Working, cleaner layout demo
+@backdrop data:harbor [fadeIn=300]
+@char ALDEN sprite=data:alden
+@char LIRA sprite=data:lira
+
+ALDEN: [expression=smile] Evening, Lira.
+LIRA: [expression=annoyed] I had to deal with bureaucracy.
+
+ALDEN:
+"""
+We can't afford mistakes now.
+We sail at dawn.
+"""
+
+*LIRA: [cutin=size=large] You'd better be right.
+
+@action ALDEN moveTo [x=40,duration=500] -> @do playSfx [name=seagull] | @transition fadeOutBackdrop [duration=500]
+
+waitInput
+
+@transition wipe [duration=420]
+@end

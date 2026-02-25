@@ -1,0 +1,46 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+**    Any unauthorized distribution or transfer    **
+**       of this work is strictly prohibited.      **
+**                                                 **
+**               All Rights Reserved.              **
+** ----------------------------------------------- **
+\*                                                 */
+
+import { debug } from '@Engine/utils/debug-logger.js';
+
+export default {
+  init: function (triggerId, zone, onCompleted = null) {
+    this.zone = zone;
+    this.world = zone.world;
+    this.lastKey = new Date().getTime();
+    this.completed = false;
+    this.onCompleted = () => debug('Script', 'script finished');
+    if (onCompleted) this.onCompleted = onCompleted;
+    // Determine Tile
+    this.triggerId = triggerId;
+    // Trigger
+    this.triggerScript();
+  },
+  // Trigger interactions in sprites
+  triggerScript: function () {
+    if (!this.triggerId) this.completed = true;
+    Promise.all(
+      this.zone.scripts
+        .filter(x => x.id === this.triggerId)
+        .map(async x => await x.trigger.call(this.zone))
+    ).then(() => {
+      this.completed = true;
+    });
+  },
+  // check input and completion
+  tick: function (time) {
+    if (!this.loaded) return;
+    if (this.completed) this.onCompleted();
+    return this.completed; // loop
+  },
+};

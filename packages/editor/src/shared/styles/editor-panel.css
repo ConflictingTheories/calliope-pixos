@@ -1,0 +1,170 @@
+/*
+ * ---------------------------------------------------------------
+ *           PixoSpritz – Editor Panel Styles
+ * ---------------------------------------------------------------
+ * Copyright (c) 2022-2025 Kyle Derby MacInnis
+ */
+
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-secondary, rgba(19, 19, 38, 0.92));
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-md, 6px);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+.editor-panel--resizing {
+  transition: none;
+  user-select: none;
+}
+
+.editor-panel--collapsed {
+  flex-shrink: 0;
+}
+
+/* Position variants */
+.editor-panel--left,
+.editor-panel--right {
+  height: 100%;
+}
+
+.editor-panel--top,
+.editor-panel--bottom {
+  width: 100%;
+}
+
+/* Header */
+.editor-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-2, 8px) var(--spacing-3, 12px);
+  background: var(--color-bg-hover, rgba(255, 255, 255, 0.02));
+  border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.editor-panel__header:hover {
+  background: var(--color-bg-active, rgba(255, 255, 255, 0.06));
+}
+
+.editor-panel__header:focus {
+  outline: none;
+  background: var(--color-bg-active, rgba(255, 255, 255, 0.06));
+}
+
+.editor-panel__header:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-primary, #ff6b9d);
+}
+
+.editor-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+}
+
+.editor-panel__header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1, 4px);
+}
+
+.editor-panel__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #a1a1aa);
+}
+
+.editor-panel__title {
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text, #e4e4e7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-panel__collapse-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, rgba(228, 228, 231, 0.5));
+  transition: transform 0.2s ease;
+}
+
+.editor-panel__collapse-icon--collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Content */
+.editor-panel__content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-2, 8px);
+}
+
+/* Resize Handle */
+.editor-panel__resize-handle {
+  position: absolute;
+  background: transparent;
+  z-index: 10;
+}
+
+.editor-panel__resize-handle:hover,
+.editor-panel__resize-handle:active {
+  background: var(--color-primary, #ff6b9d);
+}
+
+.editor-panel__resize-handle--left,
+.editor-panel__resize-handle--right {
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: ew-resize;
+}
+
+.editor-panel__resize-handle--left {
+  left: 0;
+}
+
+.editor-panel__resize-handle--right {
+  right: 0;
+}
+
+.editor-panel__resize-handle--top,
+.editor-panel__resize-handle--bottom {
+  left: 0;
+  right: 0;
+  height: 4px;
+  cursor: ns-resize;
+}
+
+.editor-panel__resize-handle--top {
+  top: 0;
+}
+
+.editor-panel__resize-handle--bottom {
+  bottom: 0;
+}
+
+/* Collapsed state adjustments */
+.editor-panel--collapsed .editor-panel__header {
+  border-bottom: none;
+}
+
+.editor-panel--collapsed.editor-panel--left,
+.editor-panel--collapsed.editor-panel--right {
+  width: auto !important;
+  min-width: auto !important;
+}
+
+.editor-panel--collapsed.editor-panel--top,
+.editor-panel--collapsed.editor-panel--bottom {
+  height: auto !important;
+  min-height: auto !important;
+}

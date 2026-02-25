@@ -1,0 +1,42 @@
+-- Elemental Shard Callback
+-- Called when a player defeats an elemental and receives a shard
+
+local sprite = pixos.get_subject();  -- The player
+local caller = pixos.get_caller();   -- The elemental
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Elemental Shard Obtained!', 
+    elemental = caller, 
+    player = sprite 
+}));
+
+-- Determine which shard based on the elemental type
+local shard_type = 'unknown_shard';
+local caller_id = pixos.from(caller, 'id') or '';
+
+if string.find(caller_id, 'fire') then
+    shard_type = 'fire_shard';
+    pixos.emit_particles(pixos.from(caller, 'pos'), { preset = 'flame', count = 50, life = 3000 });
+elseif string.find(caller_id, 'water') then
+    shard_type = 'water_shard';
+    pixos.emit_particles(pixos.from(caller, 'pos'), { preset = 'water', count = 50, life = 3000 });
+elseif string.find(caller_id, 'earth') then
+    shard_type = 'earth_shard';
+    pixos.emit_particles(pixos.from(caller, 'pos'), { preset = 'earth', count = 50, life = 3000 });
+elseif string.find(caller_id, 'air') then
+    shard_type = 'air_shard';
+    pixos.emit_particles(pixos.from(caller, 'pos'), { preset = 'air', count = 50, life = 3000 });
+end;
+
+-- Add shard to player inventory
+local inventory = pixos.from(sprite, 'inventory') or {};
+table.insert(inventory, shard_type);
+pixos.to(sprite, { inventory = inventory });
+
+pixos.log(pixos.as_obj({ msg = 'Shard added to inventory', shard = shard_type }));
+
+-- Play victory sound
+pixos.play_sfx('audio/dawns-peak.mp3');
+
+-- End callback
+pixos.callback_finish(1);

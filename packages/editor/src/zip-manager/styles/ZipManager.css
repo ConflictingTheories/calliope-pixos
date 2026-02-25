@@ -1,0 +1,67 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: var(--spacing-xs);
+  gap: var(--spacing-xs);
+  background: radial-gradient(circle at 15% 20%, rgba(255, 107, 157, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(78, 205, 196, 0.18), transparent 40%),
+    #03040a;
+  overflow: hidden;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  color: var(--text-color);
+  gap: var(--spacing-xs);
+  flex: 1;
+  overflow: hidden;
+
+main > .button-bar,
+main > .navigation-bar,
+main > .button-bar-bottom,
+main > .downloads,
+main > .info-bar {
+  padding-block: var(--smaller-gap-block-size);
+  padding-inline: var(--gap-inline-size);
+}
+}
+
+main > * {
+  padding-inline: var(--small-gap-inline-size);
+  padding-block: var(--small-gap-block-size);
+}
+
+main > .entries {
+  flex: 1;
+  min-height: 0;
+}
+
+.button-bar,
+.navigation-bar,
+.downloads,
+.button-bar-bottom,
+.info-bar {
+  flex-shrink: 0;
+}
+
+.hidden-downloads .entries {
+  resize: none;
+}
+
+.downloads,
+.main-container.hidden-downloads .button-bar-bottom {
+  border-block-end-width: 0;
+}
+
+@media (max-width: 900px) {
+  .main-container {
+    padding: var(--spacing-xs);
+  }
+}

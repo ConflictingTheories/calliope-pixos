@@ -1,0 +1,81 @@
+.navigation-bar,
+.history-buttons,
+.breadcrumb {
+  display: flex;
+}
+
+.navigation-bar {
+  column-gap: 8px;
+  padding: 6px 0;
+}
+
+.history-buttons,
+.breadcrumb li {
+  column-gap: 4px;
+}
+
+.history-buttons button {
+  font-family: monospace;
+  align-self: start;
+  padding: 3px 6px;
+  font-size: 11px;
+  min-width: 24px;
+}
+
+.history-buttons button:not([disabled]),
+.breadcrumb .breadcrumb-item-active {
+  cursor: pointer;
+}
+
+.breadcrumb,
+.breadcrumb ol,
+.breadcrumb li,
+.breadcrumb .breadcrumb-item {
+  overflow-x: hidden;
+  overflow-inline: hidden;
+}
+
+.navigation-bar,
+.breadcrumb ol {
+  flex-wrap: wrap;
+  column-gap: 4px;
+  row-gap: 4px;
+}
+
+.breadcrumb li::after {
+  content: var(--folder-separator);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+}
+
+.breadcrumb .breadcrumb-item {
+  text-decoration: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
+  margin: 1px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.1s ease;
+}
+
+.breadcrumb .breadcrumb-item:hover {
+  color: var(--color-secondary, #4ecdc4);
+}
+
+.breadcrumb .breadcrumb-item:focus-visible {
+  text-decoration: none;
+}
+
+.breadcrumb li:last-of-type .breadcrumb-item {
+  font-weight: 600;
+  color: var(--color-secondary, #4ecdc4);
+}
+
+.breadcrumb .breadcrumb-item-active {
+  text-decoration-color: var(--color-secondary, #4ecdc4);
+}
+
+.breadcrumb .breadcrumb-item-active:hover {
+  color: var(--color-secondary, #4ecdc4);
+}

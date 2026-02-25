@@ -1,0 +1,102 @@
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  max-width: 240px;
+  background: #181825;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: 4px 0;
+  animation: contextMenuFadeIn 0.1s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.context-menu__header {
+  padding: 6px 10px 4px;
+}
+
+.context-menu__selection {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.context-menu__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 3px 8px;
+}
+
+.context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-radius: 0;
+}
+
+.context-menu__item:hover:not(:disabled) {
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.context-menu__item:active:not(:disabled) {
+  background: rgba(78, 205, 196, 0.15);
+}
+
+.context-menu__item:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.context-menu__item--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.context-menu__icon {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.context-menu__label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.context-menu__shortcut {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-mono, monospace);
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+  flex-shrink: 0;
+}

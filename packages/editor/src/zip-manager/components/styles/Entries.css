@@ -1,0 +1,134 @@
+.entries {
+  flex: 1;
+  min-height: 240px;
+  max-height: 100%;
+  resize: none;
+  box-sizing: border-box;
+  padding-block-start: 0;
+  margin-block-start: var(--gap-block-size);
+}
+
+.entries ol {
+  flex-direction: column;
+  row-gap: var(--list-item-gap-block-size);
+}
+
+.entries li {
+  padding-block: 4px;
+  padding-inline: 6px;
+  outline: none;
+  column-gap: 8px;
+  cursor: pointer;
+  color: var(--text-color);
+  font-size: 12px;
+  border-radius: 4px;
+  transition: background 0.1s ease;
+}
+
+.entries li:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@supports (grid-template-columns: subgrid) {
+  .entries ol {
+    display: grid;
+    grid-template-columns: auto min-content min-content;
+    grid-template-rows: repeat(auto);
+  }
+
+  .entries li {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / 4;
+  }
+}
+
+.entries .entry-select {
+  accent-color: var(--dark-accent-color);
+  margin: 0;
+  padding: 0;
+  max-block-size: 1em;
+  margin-inline-start: var(--small-gap-inline-size);
+}
+
+.entries .entry-name {
+  display: flex;
+  user-select: none;
+  overflow-x: hidden;
+  overflow-inline: hidden;
+  column-gap: 6px;
+  flex: 1;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.entries .entry-size {
+  text-align: right;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+}
+
+.entries .entry-highlighted {
+  background: rgba(78, 205, 196, 0.15);
+  color: var(--color-secondary, #4ecdc4);
+  border: 1px solid rgba(78, 205, 196, 0.25);
+}
+
+.entries .entry-highlighted .entry-name,
+.entries .entry-highlighted .entry-size,
+.entries .entry-highlighted .list-item-button {
+  color: var(--color-secondary, #4ecdc4);
+}
+
+.entries .entry-highlighted ::selection {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+.entries .directory .entry-name::after {
+  content: var(--folder-separator);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .entries ol {
+    --no-entries-outline-width: 1px;
+    --no-entries-outline-width-negative: calc(var(--no-entries-outline-width) * -1);
+  }
+
+  .entries ol:empty {
+    block-size: 100%;
+  }
+
+  .entries ol:empty::after {
+    display: flex;
+    block-size: 100%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    font-size: 2em;
+    line-height: 1.5em;
+    text-shadow: var(--no-entries-outline-width-negative) var(--no-entries-outline-width-negative) 0 var(--accent-color),
+      var(--no-entries-outline-width-negative) 0 0 var(--accent-color),
+      var(--no-entries-outline-width-negative) var(--no-entries-outline-width) 0 var(--accent-color),
+      0 var(--no-entries-outline-width-negative) 0 var(--accent-color), 0 0 0 var(--accent-color),
+      0 var(--no-entries-outline-width) 0 var(--accent-color),
+      var(--no-entries-outline-width) var(--no-entries-outline-width-negative) 0 var(--accent-color),
+      var(--no-entries-outline-width) 0 0 var(--accent-color), var(--no-entries-outline-width) var(--no-entries-outline-width) 0 var(--accent-color);
+    color: var(--bg-color);
+    opacity: 0.5;
+  }
+
+  .entries.dragging-items ol:empty::after {
+    color: var(--accent-color);
+    text-shadow: none;
+  }
+
+  .entries ol:empty::after {
+    content: var(--message-drag-and-drop-entries);
+  }
+}

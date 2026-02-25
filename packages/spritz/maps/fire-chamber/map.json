@@ -1,0 +1,179 @@
+{
+  "name": "Fire Chamber",
+  "description": "The blazing trial of the Fire Elemental",
+  "bounds": [0, 0, 12, 12],
+  "tileset": "sewer",
+  "audioSrc": "brass-loop.mp3",
+  "mode": "tactics",
+
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [6, 10, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    {
+      "id": "fire-elemental",
+      "type": "monsters/fire_elemental",
+      "pos": [6, 3, 0],
+      "facing": "Down",
+      "selectTrigger": "sprite/fire_elemental_battle"
+    },
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [6, 11, 0],
+      "facing": "Up",
+      "zones": ["dungeon-entrance"],
+      "state": "open"
+    },
+    {
+      "id": "fire-chest",
+      "type": "objects/chests/red",
+      "pos": [2, 2, 0],
+      "facing": "South",
+      "inventory": ["fire_shard", "flame_sword"]
+    },
+    {
+      "id": "lava-spurt-1",
+      "type": "effects/spurt",
+      "pos": [1, 5, -1.0],
+      "facing": "Up"
+    },
+    {
+      "id": "lava-spurt-2",
+      "type": "effects/spurt",
+      "pos": [11, 5, -1.0],
+      "facing": "Up"
+    },
+    {
+      "id": "lava-spurt-3",
+      "type": "effects/spurt",
+      "pos": [3, 3, -1.0],
+      "facing": "Up"
+    },
+    {
+      "id": "lava-spurt-4",
+      "type": "effects/spurt",
+      "pos": [9, 3, -1.0],
+      "facing": "Up"
+    },
+    {
+      "id": "fire-effect-1",
+      "type": "effects/fireplace",
+      "pos": [4, 2, 0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "fire-effect-2",
+      "type": "effects/fireplace",
+      "pos": [8, 2, 0.5],
+      "facing": "Up"
+    }
+  ],
+
+  "lights": [
+    {
+      "id": "lava-light-1",
+      "pos": [3, 5, 0],
+      "color": [1.0, 0.2, 0.0],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "density": 0.5,
+      "enabled": true
+    },
+    {
+      "id": "lava-light-2",
+      "pos": [9, 5, 0],
+      "color": [1.0, 0.4, 0.0],
+      "direction": [0.0, 0.5, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "density": 0.5,
+      "enabled": true
+    },
+    {
+      "id": "boss-light",
+      "pos": [6, 3, 2],
+      "color": [1.0, 0.6, 0.2],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.05, 0.05, 0.02],
+      "density": 0.4,
+      "scatteringCoefficients": [0.8, 0.3, 0.1],
+      "enabled": true
+    },
+    {
+      "id": "ambient-fire",
+      "pos": [6, 6, 3],
+      "color": [0.8, 0.3, 0.1],
+      "direction": [1.0, 1.0, 1.0],
+      "attenuation": [0.02, 0.02, 0.01],
+      "enabled": true
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "fire-trial-intro",
+      "actions": [
+        {
+          "sprite": "fire-elemental",
+          "action": "dialogue",
+          "args": [
+            [
+              "MORTAL! YOU DARE ENTER MY DOMAIN?!",
+              "The flames of destruction shall consume you!",
+              "Prove your worth... or perish!"
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        },
+        { "trigger": "event/start_fire_battle" }
+      ]
+    },
+    {
+      "id": "fire-trial-victory",
+      "actions": [
+        {
+          "sprite": "fire-elemental",
+          "action": "dialogue",
+          "args": [
+            [
+              "You have... bested me...",
+              "The Fire Shard is yours.",
+              "One quarter of the seal is broken."
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "id": "fire-chamber-load",
+      "trigger": "zone/fire_chamber_load"
+    }
+  ],
+
+  "objects": [
+    {
+      "id": "lava-rock-1",
+      "type": "cactus_short",
+      "mtl": true,
+      "pos": [2, 6, 0]
+    },
+    {
+      "id": "lava-rock-2",
+      "type": "cactus_tall",
+      "mtl": true,
+      "pos": [10, 6, 0]
+    }
+  ],
+
+  "menu": {}
+}

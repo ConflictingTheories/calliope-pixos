@@ -14,6 +14,7 @@
   "workspace.isHidden": true,
   "cmake.sourceDirectory": "/Users/kderbyma/Git/calliope-pixos/cpp",
   "files.associations": {
+    "*.pxs": "lua",
     "__bit_reference": "cpp",
     "__split_buffer": "cpp",
     "cmath": "cpp",
@@ -64,6 +65,7 @@
     "stack": "cpp",
     "unordered_map": "cpp",
     "variant": "cpp",
-    "algorithm": "cpp"
+    "algorithm": "cpp",
+    "string.h": "c"
   }
 }

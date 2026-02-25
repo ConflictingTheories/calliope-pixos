@@ -1,0 +1,287 @@
+{
+  "templates": [
+    {
+      "id": "hello-world",
+      "name": "Hello, World!",
+      "description": "A simple static scene with a sprite. Perfect for learning the basics.",
+      "difficulty": "beginner",
+      "icon": "👋",
+      "tags": ["beginner", "static", "sprite"],
+      "files": {
+        "manifest.json": {
+          "name": "Hello World",
+          "version": "1.0.0",
+          "author": "PixoSpritz Template",
+          "description": "A simple Hello World game",
+          "entry": "maps/main.json"
+        },
+        "maps/main.json": {
+          "name": "main",
+          "type": "2d",
+          "width": 16,
+          "height": 12,
+          "tileSize": 16,
+          "layers": [
+            {
+              "name": "background",
+              "type": "tile",
+              "data": []
+            },
+            {
+              "name": "entities",
+              "type": "entity",
+              "entities": [
+                {
+                  "id": "player",
+                  "sprite": "sprites/player.json",
+                  "x": 8,
+                  "y": 6,
+                  "script": "scripts/player.pxs"
+                }
+              ]
+            }
+          ]
+        },
+        "sprites/player.json": {
+          "name": "player",
+          "width": 16,
+          "height": 16,
+          "animations": {
+            "idle": {
+              "frames": [0],
+              "fps": 1
+            }
+          }
+        },
+        "scripts/player.pxs": "-- Player script\nfunction onLoad()\n  print('Hello, World!')\nend\n"
+      }
+    },
+    {
+      "id": "top-down-maze",
+      "name": "Top-Down Maze",
+      "description": "Navigate through a maze using arrow keys. Great for learning map navigation.",
+      "difficulty": "beginner",
+      "icon": "🗺️",
+      "tags": ["beginner", "maze", "navigation", "keyboard"],
+      "files": {
+        "manifest.json": {
+          "name": "Top-Down Maze",
+          "version": "1.0.0",
+          "author": "PixoSpritz Template",
+          "description": "A simple maze navigation game",
+          "entry": "maps/maze.json"
+        },
+        "maps/maze.json": {
+          "name": "maze",
+          "type": "2d",
+          "width": 20,
+          "height": 15,
+          "tileSize": 16,
+          "layers": [
+            {
+              "name": "floor",
+              "type": "tile",
+              "tileset": "tilesets/dungeon.json",
+              "data": []
+            },
+            {
+              "name": "walls",
+              "type": "tile",
+              "tileset": "tilesets/dungeon.json",
+              "collision": true,
+              "data": []
+            },
+            {
+              "name": "entities",
+              "type": "entity",
+              "entities": [
+                {
+                  "id": "player",
+                  "sprite": "sprites/player.json",
+                  "x": 2,
+                  "y": 2,
+                  "script": "scripts/player-movement.pxs"
+                },
+                {
+                  "id": "goal",
+                  "sprite": "sprites/goal.json",
+                  "x": 18,
+                  "y": 13,
+                  "script": "scripts/goal.pxs"
+                }
+              ]
+            }
+          ]
+        },
+        "scripts/player-movement.pxs": "-- Player movement script\nlocal speed = 2\n\nfunction onUpdate(dt)\n  local dx, dy = 0, 0\n  \n  if input.isDown('left') then dx = -speed end\n  if input.isDown('right') then dx = speed end\n  if input.isDown('up') then dy = -speed end\n  if input.isDown('down') then dy = speed end\n  \n  if dx ~= 0 or dy ~= 0 then\n    entity.move(dx * dt, dy * dt)\n  end\nend\n",
+        "scripts/goal.pxs": "-- Goal trigger\nfunction onCollide(other)\n  if other.id == 'player' then\n    game.showMessage('You Win!')\n    game.restart()\n  end\nend\n"
+      }
+    },
+    {
+      "id": "dialogue-sequence",
+      "name": "Dialog Sequence",
+      "description": "A story-driven game with branching dialogue. Learn the cutscene system.",
+      "difficulty": "intermediate",
+      "icon": "💬",
+      "tags": ["intermediate", "story", "dialogue", "cutscene"],
+      "files": {
+        "manifest.json": {
+          "name": "Dialog Sequence",
+          "version": "1.0.0",
+          "author": "PixoSpritz Template",
+          "description": "A story with branching dialogue",
+          "entry": "maps/town.json"
+        },
+        "maps/town.json": {
+          "name": "town",
+          "type": "2d",
+          "width": 16,
+          "height": 12,
+          "tileSize": 16,
+          "layers": [
+            {
+              "name": "background",
+              "type": "tile",
+              "data": []
+            },
+            {
+              "name": "entities",
+              "type": "entity",
+              "entities": [
+                {
+                  "id": "player",
+                  "sprite": "sprites/player.json",
+                  "x": 4,
+                  "y": 8
+                },
+                {
+                  "id": "npc",
+                  "sprite": "sprites/npc.json",
+                  "x": 12,
+                  "y": 6,
+                  "script": "scripts/npc-talk.pxs"
+                }
+              ]
+            }
+          ]
+        },
+        "cutscenes/intro.pxsc": "@scene intro\n@backdrop textures/town.png [fadeIn=500]\n@char HERO sprite=characters/player\n@char NPC sprite=characters/villager\n\nNPC: Welcome, traveler! What brings you here?\n\n@choice\n- I'm looking for adventure!\n  HERO: I seek glory and treasure!\n  NPC: Then you've come to the right place.\n- Just passing through.\n  HERO: Just a weary traveler.\n  NPC: Rest well, friend.\n@endchoice\n\n@do fadeOut\n@end\n",
+        "scripts/npc-talk.pxs": "-- NPC interaction\nfunction onInteract()\n  cutscene.play('cutscenes/intro.pxsc')\nend\n"
+      }
+    },
+    {
+      "id": "pixel-art-challenge",
+      "name": "Pixel Art Challenge",
+      "description": "Animation-focused template with multiple sprite animations.",
+      "difficulty": "intermediate",
+      "icon": "🎨",
+      "tags": ["intermediate", "animation", "sprite", "art"],
+      "files": {
+        "manifest.json": {
+          "name": "Pixel Art Challenge",
+          "version": "1.0.0",
+          "author": "PixoSpritz Template",
+          "description": "Learn sprite animation techniques",
+          "entry": "maps/gallery.json"
+        },
+        "sprites/character.json": {
+          "name": "character",
+          "width": 16,
+          "height": 24,
+          "animations": {
+            "idle": {
+              "frames": [0, 1, 2, 1],
+              "fps": 4,
+              "loop": true
+            },
+            "walk": {
+              "frames": [3, 4, 5, 6],
+              "fps": 8,
+              "loop": true
+            },
+            "jump": {
+              "frames": [7, 8, 9],
+              "fps": 10,
+              "loop": false
+            },
+            "attack": {
+              "frames": [10, 11, 12, 13],
+              "fps": 12,
+              "loop": false
+            }
+          }
+        },
+        "scripts/animation-demo.pxs": "-- Animation demo script\nlocal currentAnim = 'idle'\n\nfunction onUpdate(dt)\n  if input.isPressed('space') then\n    sprite.play('jump')\n  elseif input.isDown('z') then\n    sprite.play('attack')\n  elseif input.isDown('left') or input.isDown('right') then\n    sprite.play('walk')\n  else\n    sprite.play('idle')\n  end\nend\n"
+      }
+    },
+    {
+      "id": "space-shooter",
+      "name": "Space Shooter",
+      "description": "An action-packed shooter with enemies and power-ups.",
+      "difficulty": "advanced",
+      "icon": "🚀",
+      "tags": ["advanced", "action", "shooter", "arcade"],
+      "files": {
+        "manifest.json": {
+          "name": "Space Shooter",
+          "version": "1.0.0",
+          "author": "PixoSpritz Template",
+          "description": "Classic arcade space shooter",
+          "entry": "maps/space.json"
+        },
+        "maps/space.json": {
+          "name": "space",
+          "type": "2d",
+          "width": 15,
+          "height": 20,
+          "tileSize": 16,
+          "scrolling": "vertical",
+          "layers": [
+            {
+              "name": "background",
+              "type": "parallax",
+              "speed": 0.5,
+              "texture": "textures/stars.png"
+            },
+            {
+              "name": "entities",
+              "type": "entity",
+              "entities": [
+                {
+                  "id": "player",
+                  "sprite": "sprites/ship.json",
+                  "x": 7,
+                  "y": 16,
+                  "script": "scripts/player-ship.pxs"
+                }
+              ]
+            }
+          ]
+        },
+        "scripts/player-ship.pxs": "-- Player ship controls\nlocal speed = 150\nlocal fireRate = 0.2\nlocal fireTimer = 0\n\nfunction onUpdate(dt)\n  -- Movement\n  local dx = 0\n  if input.isDown('left') then dx = -speed * dt end\n  if input.isDown('right') then dx = speed * dt end\n  entity.move(dx, 0)\n  \n  -- Clamp to screen\n  local x = entity.getX()\n  if x < 1 then entity.setX(1) end\n  if x > 14 then entity.setX(14) end\n  \n  -- Shooting\n  fireTimer = fireTimer - dt\n  if input.isDown('space') and fireTimer <= 0 then\n    spawn('bullet', entity.getX(), entity.getY() - 1)\n    fireTimer = fireRate\n  end\nend\n",
+        "scripts/bullet.pxs": "-- Bullet behavior\nlocal speed = 300\n\nfunction onUpdate(dt)\n  entity.move(0, -speed * dt)\n  \n  -- Remove when off screen\n  if entity.getY() < 0 then\n    entity.destroy()\n  end\nend\n\nfunction onCollide(other)\n  if other.tag == 'enemy' then\n    other.damage(1)\n    entity.destroy()\n  end\nend\n",
+        "scripts/enemy-spawner.pxs": "-- Enemy wave spawner\nlocal spawnRate = 2\nlocal timer = 0\n\nfunction onUpdate(dt)\n  timer = timer + dt\n  if timer >= spawnRate then\n    local x = math.random(2, 13)\n    spawn('enemy', x, -1)\n    timer = 0\n  end\nend\n"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "beginner",
+      "name": "Beginner",
+      "description": "Simple projects to learn the basics",
+      "icon": "🌱"
+    },
+    {
+      "id": "intermediate",
+      "name": "Intermediate",
+      "description": "More complex projects with multiple systems",
+      "icon": "🌿"
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced",
+      "description": "Full-featured game templates",
+      "icon": "🌳"
+    }
+  ]
+}

@@ -1,0 +1,481 @@
+-- =============================================================================
+-- EXPLORE MODE - Full Implementation
+-- =============================================================================
+-- Handles free exploration, NPC interaction, zone transitions, dialogue,
+-- inventory management, and environmental interactions.
+-- =============================================================================
+
+local ExploreMode = {}
+
+-- State
+ExploreMode.state = {
+    isDialogueActive = false,
+    currentNPC = nil,
+    currentDialogue = nil,
+    dialogueIndex = 1,
+    pendingZoneTransition = nil,
+    interactionCooldown = 0,
+    lastInteractionTime = 0,
+}
+
+-- Configuration
+ExploreMode.config = {
+    interactionRange = 1.5,        -- Tiles distance for NPC interaction
+    interactionCooldown = 500,     -- Ms between interactions
+    moveSpeed = 0.08,              -- Player movement speed
+    cameraFollowSmooth = 0.15,     -- Camera smoothing factor
+}
+
+-- =============================================================================
+-- Mode Registration
+-- =============================================================================
+
+pixos.register_mode('explore', {
+    picker = false,  -- Explore mode uses proximity, not picking
+
+    -- =========================================================================
+    -- SETUP - Initialize explore mode
+    -- =========================================================================
+    setup = function(params)
+        pixos.log('explore: setup called', params)
+        
+        -- Reset state
+        ExploreMode.state.isDialogueActive = false
+        ExploreMode.state.currentNPC = nil
+        ExploreMode.state.pendingZoneTransition = nil
+        
+        -- Get player avatar
+        local world = pixos.get_world()
+        local avatar = world.spriteDict and world.spriteDict['avatar']
+        
+        if avatar then
+            -- Bind camera to avatar
+            pixos.bind_camera(avatar)
+            pixos.log('explore: camera bound to avatar')
+        end
+        
+        -- Play zone music if specified
+        local zone = pixos.get_current_zone()
+        if zone and zone.audioSrc then
+            pixos.play_music(zone.audioSrc, { fadeIn = 1000 })
+        end
+        
+        -- Show explore mode HUD
+        pixos.show_hud('explore')
+        
+        -- Return additional handlers
+        return {
+            onSpriteCollision = ExploreMode.onSpriteCollision,
+            onPortalEnter = ExploreMode.onPortalEnter,
+            onChestOpen = ExploreMode.onChestOpen,
+        }
+    end,
+
+    -- =========================================================================
+    -- UPDATE - Per-frame update logic
+    -- =========================================================================
+    update = function(time, params)
+        -- Handle dialogue progression
+        if ExploreMode.state.isDialogueActive then
+            ExploreMode.updateDialogue(time)
+            return -- Block other updates during dialogue
+        end
+        
+        -- Handle pending zone transitions
+        if ExploreMode.state.pendingZoneTransition then
+            ExploreMode.executeZoneTransition()
+            return
+        end
+        
+        -- Handle player movement
+        ExploreMode.handleMovement(time)
+        
+        -- Check for nearby interactables
+        ExploreMode.checkInteractions(time)
+        
+        -- Update interaction cooldown
+        if ExploreMode.state.interactionCooldown > 0 then
+            ExploreMode.state.interactionCooldown = 
+                ExploreMode.state.interactionCooldown - (time - ExploreMode.state.lastInteractionTime)
+        end
+        ExploreMode.state.lastInteractionTime = time
+    end,
+
+    -- =========================================================================
+    -- TEARDOWN - Cleanup when leaving mode
+    -- =========================================================================
+    teardown = function(params)
+        pixos.log('explore: teardown')
+        
+        -- Hide any active dialogue
+        if ExploreMode.state.isDialogueActive then
+            pixos.hide_dialogue()
+        end
+        
+        -- Clear state
+        ExploreMode.state.isDialogueActive = false
+        ExploreMode.state.currentNPC = nil
+        ExploreMode.state.pendingZoneTransition = nil
+    end,
+
+    -- =========================================================================
+    -- INPUT HANDLER - Process player input
+    -- =========================================================================
+    checkInput = function(time, params)
+        -- During dialogue, only allow advance/cancel
+        if ExploreMode.state.isDialogueActive then
+            if pixos.is_action_pressed('interact') or pixos.is_action_pressed('select') then
+                ExploreMode.advanceDialogue()
+                return true
+            end
+            if pixos.is_action_pressed('cancel') then
+                ExploreMode.cancelDialogue()
+                return true
+            end
+            return true -- Block all other input during dialogue
+        end
+        
+        -- Check for interaction key
+        if pixos.is_action_pressed('interact') then
+            ExploreMode.tryInteract()
+            return true
+        end
+        
+        -- Check for menu key
+        if pixos.is_action_pressed('menu') then
+            pixos.open_menu('pause')
+            return true
+        end
+        
+        -- Check for inventory key
+        if pixos.is_action_pressed('inventory') then
+            pixos.open_menu('inventory')
+            return true
+        end
+        
+        return false -- Allow default movement handling
+    end,
+
+    -- =========================================================================
+    -- SELECTION HANDLER - Handle tile/sprite selection
+    -- =========================================================================
+    onSelect = function(zone, target, cell, type, params)
+        if type == 'sprite' then
+            -- Check if it's an interactable NPC
+            if target.selectTrigger or target.dialogue then
+                ExploreMode.interactWithNPC(target)
+                return true
+            end
+            
+            -- Check if it's a portal
+            if target.zones and #target.zones > 0 then
+                ExploreMode.enterPortal(target)
+                return true
+            end
+            
+            -- Check if it's a chest
+            if target.inventory then
+                ExploreMode.openChest(target)
+                return true
+            end
+        end
+        
+        return false
+    end,
+})
+
+-- =============================================================================
+-- Movement Handling
+-- =============================================================================
+
+function ExploreMode.handleMovement(time)
+    local world = pixos.get_world()
+    local avatar = world.spriteDict and world.spriteDict['avatar']
+    if not avatar then return end
+    
+    local dx, dy = 0, 0
+    local speed = ExploreMode.config.moveSpeed
+    
+    -- Get movement input
+    if pixos.is_action_held('move_up') then
+        dy = -speed
+    elseif pixos.is_action_held('move_down') then
+        dy = speed
+    end
+    
+    if pixos.is_action_held('move_left') then
+        dx = -speed
+    elseif pixos.is_action_held('move_right') then
+        dx = speed
+    end
+    
+    -- Apply movement if any input
+    if dx ~= 0 or dy ~= 0 then
+        -- Normalize diagonal movement
+        if dx ~= 0 and dy ~= 0 then
+            local factor = 0.7071 -- 1/sqrt(2)
+            dx = dx * factor
+            dy = dy * factor
+        end
+        
+        -- Try to move avatar
+        local newX = avatar.pos.x + dx
+        local newY = avatar.pos.y + dy
+        
+        -- Check collision
+        local zone = pixos.get_current_zone()
+        if zone and zone:canWalk(newX, newY) then
+            avatar:moveTo(newX, newY)
+            
+            -- Update facing direction
+            if math.abs(dx) > math.abs(dy) then
+                avatar:setFacing(dx > 0 and 'Right' or 'Left')
+            else
+                avatar:setFacing(dy > 0 and 'Down' or 'Up')
+            end
+            
+            -- Play walk animation
+            avatar:setAnimation('walk')
+        end
+    else
+        -- Idle animation
+        avatar:setAnimation('idle')
+    end
+end
+
+-- =============================================================================
+-- Interaction System
+-- =============================================================================
+
+function ExploreMode.checkInteractions(time)
+    local world = pixos.get_world()
+    local avatar = world.spriteDict and world.spriteDict['avatar']
+    if not avatar then return end
+    
+    local range = ExploreMode.config.interactionRange
+    
+    -- Check for nearby NPCs
+    for _, sprite in ipairs(world.spriteList) do
+        if sprite.id ~= 'avatar' and sprite.selectTrigger then
+            local dist = ExploreMode.distance(avatar.pos, sprite.pos)
+            if dist <= range then
+                -- Show interaction prompt
+                pixos.show_interaction_prompt(sprite, 'Talk')
+                return
+            end
+        end
+    end
+    
+    -- Hide prompt if nothing nearby
+    pixos.hide_interaction_prompt()
+end
+
+function ExploreMode.tryInteract()
+    if ExploreMode.state.interactionCooldown > 0 then return end
+    
+    local world = pixos.get_world()
+    local avatar = world.spriteDict and world.spriteDict['avatar']
+    if not avatar then return end
+    
+    local range = ExploreMode.config.interactionRange
+    local nearestSprite = nil
+    local nearestDist = range + 1
+    
+    -- Find nearest interactable
+    for _, sprite in ipairs(world.spriteList) do
+        if sprite.id ~= 'avatar' then
+            local dist = ExploreMode.distance(avatar.pos, sprite.pos)
+            if dist <= range and dist < nearestDist then
+                if sprite.selectTrigger or sprite.dialogue or sprite.zones or sprite.inventory then
+                    nearestSprite = sprite
+                    nearestDist = dist
+                end
+            end
+        end
+    end
+    
+    if nearestSprite then
+        ExploreMode.state.interactionCooldown = ExploreMode.config.interactionCooldown
+        
+        if nearestSprite.selectTrigger then
+            pixos.run_trigger(nearestSprite.selectTrigger, { target = nearestSprite })
+        elseif nearestSprite.dialogue then
+            ExploreMode.interactWithNPC(nearestSprite)
+        elseif nearestSprite.zones then
+            ExploreMode.enterPortal(nearestSprite)
+        elseif nearestSprite.inventory then
+            ExploreMode.openChest(nearestSprite)
+        end
+    end
+end
+
+function ExploreMode.interactWithNPC(npc)
+    ExploreMode.state.currentNPC = npc
+    ExploreMode.state.isDialogueActive = true
+    ExploreMode.state.dialogueIndex = 1
+    
+    -- Get dialogue from NPC or trigger
+    local dialogue = npc.dialogue or {}
+    ExploreMode.state.currentDialogue = dialogue
+    
+    -- Face the player towards NPC
+    local world = pixos.get_world()
+    local avatar = world.spriteDict and world.spriteDict['avatar']
+    if avatar then
+        ExploreMode.faceTowards(avatar, npc)
+    end
+    
+    -- Face NPC towards player
+    ExploreMode.faceTowards(npc, avatar)
+    
+    -- Show first dialogue line
+    if dialogue[1] then
+        pixos.show_dialogue(dialogue[1], {
+            speaker = npc.name or npc.id,
+            portrait = npc.portraitSrc,
+        })
+    end
+end
+
+function ExploreMode.advanceDialogue()
+    local dialogue = ExploreMode.state.currentDialogue
+    if not dialogue then return end
+    
+    ExploreMode.state.dialogueIndex = ExploreMode.state.dialogueIndex + 1
+    
+    if ExploreMode.state.dialogueIndex <= #dialogue then
+        pixos.show_dialogue(dialogue[ExploreMode.state.dialogueIndex], {
+            speaker = ExploreMode.state.currentNPC.name or ExploreMode.state.currentNPC.id,
+            portrait = ExploreMode.state.currentNPC.portraitSrc,
+        })
+    else
+        ExploreMode.endDialogue()
+    end
+end
+
+function ExploreMode.cancelDialogue()
+    ExploreMode.endDialogue()
+end
+
+function ExploreMode.endDialogue()
+    ExploreMode.state.isDialogueActive = false
+    ExploreMode.state.currentNPC = nil
+    ExploreMode.state.currentDialogue = nil
+    ExploreMode.state.dialogueIndex = 1
+    pixos.hide_dialogue()
+end
+
+function ExploreMode.updateDialogue(time)
+    -- Update dialogue scroll/typewriter effect if needed
+end
+
+-- =============================================================================
+-- Portal/Zone Transitions
+-- =============================================================================
+
+function ExploreMode.enterPortal(portal)
+    if portal.state == 'closed' then
+        pixos.show_notification('The portal is closed.')
+        return
+    end
+    
+    if portal.zones and portal.zones[1] then
+        ExploreMode.state.pendingZoneTransition = {
+            zone = portal.zones[1],
+            portal = portal,
+        }
+        
+        -- Play portal effect
+        pixos.emit_particles(portal.pos, { preset = 'flame', count = 30, life = 1500 })
+        pixos.play_sound('portal_enter.mp3')
+        
+        -- Start transition effect
+        pixos.start_transition('fade', { duration = 500 })
+    end
+end
+
+function ExploreMode.executeZoneTransition()
+    local transition = ExploreMode.state.pendingZoneTransition
+    if not transition then return end
+    
+    pixos.load_zone(transition.zone)
+    ExploreMode.state.pendingZoneTransition = nil
+end
+
+-- =============================================================================
+-- Chest/Item Interactions
+-- =============================================================================
+
+function ExploreMode.openChest(chest)
+    if chest.state == 'empty' or chest.state == 'opened' then
+        pixos.show_notification('The chest is empty.')
+        return
+    end
+    
+    -- Play chest open animation
+    chest:setState('opened')
+    pixos.play_sound('chest_open.mp3')
+    
+    -- Add items to player inventory
+    if chest.inventory then
+        for _, item in ipairs(chest.inventory) do
+            pixos.add_inventory(item)
+            pixos.show_notification('Found: ' .. item)
+        end
+    end
+    
+    -- Emit particles
+    pixos.emit_particles(chest.pos, { preset = 'sparks', count = 15, life = 1000 })
+    
+    -- Run callback if defined
+    if chest.onOpen then
+        pixos.run_callback(chest.onOpen, { target = chest })
+    end
+end
+
+-- =============================================================================
+-- Utility Functions
+-- =============================================================================
+
+function ExploreMode.distance(pos1, pos2)
+    local dx = pos2.x - pos1.x
+    local dy = pos2.y - pos1.y
+    return math.sqrt(dx * dx + dy * dy)
+end
+
+function ExploreMode.faceTowards(sprite, target)
+    local dx = target.pos.x - sprite.pos.x
+    local dy = target.pos.y - sprite.pos.y
+    
+    if math.abs(dx) > math.abs(dy) then
+        sprite:setFacing(dx > 0 and 'Right' or 'Left')
+    else
+        sprite:setFacing(dy > 0 and 'Down' or 'Up')
+    end
+end
+
+-- =============================================================================
+-- Event Handlers
+-- =============================================================================
+
+function ExploreMode.onSpriteCollision(avatar, other)
+    -- Handle sprite collisions (e.g., items, triggers)
+    if other.collectible then
+        pixos.add_inventory(other.collectible)
+        pixos.show_notification('Collected: ' .. other.collectible)
+        other:destroy()
+    end
+end
+
+function ExploreMode.onPortalEnter(avatar, portal)
+    ExploreMode.enterPortal(portal)
+end
+
+function ExploreMode.onChestOpen(avatar, chest)
+    ExploreMode.openChest(chest)
+end
+
+-- =============================================================================
+-- Set as active mode
+-- =============================================================================
+pixos.set_mode('explore')

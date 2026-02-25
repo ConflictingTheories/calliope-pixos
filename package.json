@@ -1,36 +1,59 @@
 {
-  "name": "calliope-pixos",
-  "version": "0.9.0",
-  "description": "Pixos is a mini interactive spritz avatar plugin for calliope static site generator for generating pixospritz'.",
-  "main": "dist/bundle.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf build",
-    "compile": "npm run clean && cross-env NODE_ENV=production babel pixospritz/src --out-dir build --copy-files --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
-    "webpack": "npx webpack",
-    "start:server": "node server/v2/main.js",
-    "start:server:legacy": "node server/v1/main.js"
-  },
-  "files": [
-    "dist",
-    "README.md"
+  "name": "pixospritz-monorepo",
+  "version": "1.0.0",
+  "description": "PixoSpritz - A WebGL-based game engine and editor ecosystem",
+  "workspaces": [
+    "packages/*"
   ],
+  "private": true,
+  "scripts": {
+    "clean": "rimraf packages/*/dist packages/*/build",
+    "build": "yarn build:script && yarn build:core && yarn build:editor && yarn build:console",
+    "build:script": "yarn workspace pixoscript build",
+    "build:core": "yarn build:core-c && yarn build:core-js",
+    "build:core-js": "yarn workspace pixospritz-core build",
+    "build:editor": "yarn workspace pixospritz-editor build",
+    "build:console": "yarn workspace pixospritz-console build",
+    "build:website": "yarn workspace pixospritz-website build",
+    "build:arm": "echo \"Please see /packages/arm-linux/build.sh and Readme\"",
+    "build:core-c": "echo \"Please see /packages/core-c/build.sh and Readme\"",
+    "dev": "yarn dev:editor",
+    "dev:editor": "yarn workspace pixospritz-editor dev",
+    "dev:console": "yarn workspace pixospritz-console dev",
+    "start:server": "yarn workspace pixospritz-server start",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=2120",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --max-warnings=2120 && prettier --write '**/*.{js,jsx,ts,tsx,json,md}'",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,md}'",
+    "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,md}'",
+    "typecheck": "yarn workspaces run typecheck --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test"
+  },
   "keywords": [
-    "calliope",
+    "pixospritz",
     "pixos",
     "html5",
     "game",
     "react",
     "webgl",
-    "canvas"
+    "canvas",
+    "game-engine",
+    "editor"
   ],
-  "homepage": "https://calliope.site",
+  "homepage": "https://pixospritz.com",
   "repository": {
     "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "AGPL-3.0",
+  "license": "CC-BY-NC-SA-4.0",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.0",
@@ -38,32 +61,22 @@
     "@babel/preset-env": "^7.18.0",
     "@babel/preset-react": "^7.17.12",
     "@babel/register": "^7.17.7",
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^14.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/ui": "^1.2.0",
     "babel-plugin-macros": "^3.1.0",
-    "babel-register": "^6.26.0",
-    "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
-    "react-recollect": "^5.2.3",
-    "webpack": "^5.72.1",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.9.0"
+    "eslint": "^9.0.0",
+    "jsdom": "^24.0.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "vitest": "^1.2.0"
   },
-  "peerDependencies": {
-    "react": "^18.0.2",
-    "react-dom": "^18.0.2",
-    "react-recollect": "^5.2.3"
-  },
-  "dependencies": {
-    "babel-loader": "^8.2.5",
-    "css-loader": "^6.7.1",
-    "dexie": "^3.2.0",
-    "file-saver": "^2.0.5",
-    "gl-transition": "^1.13.0",
-    "jszip": "^3.7.1",
-    "pixoscript": "^1.0.1",
-    "prop-types": "^15.7.2",
-    "realtime-bpm-analyzer": "^2.1.6",
-    "style-loader": "^3.3.1",
-    "uuid": "^13.0.0",
-    "ws": "^8.18.3"
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": ">=1.22.0"
   }
 }

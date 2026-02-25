@@ -1,0 +1,141 @@
+/**
+ * Template: Platformer
+ * Starting point for platformer games with jumping, gravity, and platform collision
+ */
+
+-- Player entity with physics
+local player = {
+  x = 100,
+  y = 100,
+  width = 16,
+  height = 16,
+  jumpForce = 500,
+  moveSpeed = 150,
+  isGrounded = false,
+  canDoubleJump = true,
+}
+
+-- Platformer-specific physics
+local GRAVITY = 980
+local MAX_FALL_SPEED = 600
+
+function main()
+  print("Platformer Template Loaded")
+  
+  -- Setup player physics body
+  player:addPhysicsBody(player.width, player.height, {
+    mass = 1,
+    isDynamic = true,
+    useGravity = true,
+    friction = 0,
+    layer = 1,
+  })
+  
+  -- Collision callbacks
+  player.onCollisionEnter = function(other)
+    if other.name == "platform" or other.name == "ground" then
+      player.isGrounded = true
+      player.canDoubleJump = true
+    elseif other.name == "spike" then
+      onPlayerDeath()
+    elseif other.name == "goal" then
+      onLevelComplete()
+    end
+  end
+  
+  player.onCollisionExit = function(other)
+    if other.name == "platform" or other.name == "ground" then
+      player.isGrounded = false
+    end
+  end
+end
+
+function update(dt)
+  -- Handle input
+  local moveDir = 0
+  if pixos.input.isPressed("left") or pixos.input.isPressed("a") then
+    moveDir = -1
+  end
+  if pixos.input.isPressed("right") or pixos.input.isPressed("d") then
+    moveDir = 1
+  end
+  
+  -- Apply horizontal movement
+  if player.physicsBody then
+    local vel = player.physicsBody:getVelocity()
+    player.physicsBody:setVelocity(moveDir * player.moveSpeed, vel.y, 0)
+    
+    -- Apply gravity clamping
+    if vel.y < -MAX_FALL_SPEED then
+      player.physicsBody:setVelocity(vel.x, -MAX_FALL_SPEED, 0)
+    end
+  end
+  
+  -- Handle jumping
+  if (pixos.input.isPressed("space") or pixos.input.isPressed("up") or pixos.input.isPressed("w")) then
+    if player.isGrounded then
+      performJump()
+      player.isGrounded = false
+    elseif player.canDoubleJump then
+      performDoubleJump()
+      player.canDoubleJump = false
+    end
+  end
+end
+
+function performJump()
+  if player.physicsBody then
+    player.physicsBody:applyImpulse(0, player.jumpForce, 0)
+  end
+end
+
+function performDoubleJump()
+  if player.physicsBody then
+    -- Double jump is slightly weaker than normal jump
+    player.physicsBody:applyImpulse(0, player.jumpForce * 0.75, 0)
+  end
+end
+
+function onPlayerDeath()
+  print("Player died!")
+  -- TODO: Reset level or show game over screen
+  -- For now, just respawn at start
+  if player.physicsBody then
+    player.x = 100
+    player.y = 100
+    player.physicsBody:setVelocity(0, 0, 0)
+  end
+end
+
+function onLevelComplete()
+  print("Level complete!")
+  -- TODO: Load next level or show victory screen
+end
+
+function onKeyPress(key)
+  if key == "esc" then
+    pixos.quit()
+  elseif key == "r" then
+    -- Restart level
+    if player.physicsBody then
+      player.x = 100
+      player.y = 100
+      player.physicsBody:setVelocity(0, 0, 0)
+    end
+  end
+end
+
+function render()
+  -- Draw player
+  -- pixos.draw.sprite(player_sprite, player.x, player.y)
+  
+  -- Draw debug info
+  if player.physicsBody then
+    local speed = player.physicsBody:getSpeed()
+    -- pixos.draw.text("Speed: " .. math.floor(speed), 10, 10, "white")
+  end
+  
+  -- Show grounded state
+  local groundedText = player.isGrounded and "Grounded" or "Airborne"
+  -- pixos.draw.text(groundedText, 10, 25, "white")
+end

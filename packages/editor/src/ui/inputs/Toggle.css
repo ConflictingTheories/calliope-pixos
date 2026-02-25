@@ -1,0 +1,83 @@
+/**
+ * Toggle Styles
+ */
+.px-toggle {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.px-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.px-toggle-track {
+  position: relative;
+  width: 44px;
+  height: 22px;
+  background: var(--toggle-bg, #2a2a4a);
+  border-radius: 11px;
+  transition: background 0.2s ease;
+}
+
+.px-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.px-toggle-checked .px-toggle-track {
+  background: var(--btn-primary-bg, #5c6bc0);
+}
+
+.px-toggle-checked .px-toggle-thumb {
+  transform: translateX(22px);
+}
+
+.px-toggle-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 10px;
+  color: white;
+}
+
+.px-toggle-checked .px-toggle-content {
+  justify-content: flex-start;
+}
+
+.px-toggle:not(.px-toggle-checked) .px-toggle-content {
+  justify-content: flex-end;
+}
+
+/* Sizes */
+.px-toggle-sm .px-toggle-track { width: 36px; height: 18px; }
+.px-toggle-sm .px-toggle-thumb { width: 14px; height: 14px; }
+.px-toggle-sm.px-toggle-checked .px-toggle-thumb { transform: translateX(18px); }
+
+.px-toggle-lg .px-toggle-track { width: 52px; height: 26px; }
+.px-toggle-lg .px-toggle-thumb { width: 22px; height: 22px; }
+.px-toggle-lg.px-toggle-checked .px-toggle-thumb { transform: translateX(26px); }
+
+/* Disabled */
+.px-toggle-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Focus */
+.px-toggle-input:focus + .px-toggle-track {
+  box-shadow: 0 0 0 2px var(--input-focus-shadow, rgba(92, 107, 192, 0.2));
+}
