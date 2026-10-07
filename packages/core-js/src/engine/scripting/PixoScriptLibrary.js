@@ -1099,18 +1099,37 @@ export default class PixoScriptLibrary {
         }
       },
       show_message: msg => {
-        try {
-          // Displays a message dialog. The player's UI layer reads
-          // world._pendingMessage and renders the dialog.
-          // NOTE: Requires player UI implementation (console/desktop).
-          const world = engine.world || engine.spritz?.world;
-          if (world) {
-            world._pendingMessage = msg;
+        return new Promise(resolve => {
+          try {
+            const world = engine.world || engine.spritz?.world;
+            // Expose world globally for dialog UI polling
+            if (typeof window !== 'undefined' && world) {
+              window.__pixosWorld = world;
+            }
+            if (!world) {
+              console.log(`[Message] ${msg}`);
+              resolve();
+              return;
+            }
+            // Store message with resolver for UI layer
+            world._pendingMessage = {
+              text: msg,
+              resolve: () => {
+                world._pendingMessage = null;
+                resolve();
+              }
+            };
+            console.log(`[Message] ${msg}`);
+            // If no UI layer, resolve immediately
+            if (!world._dialogUIActive) {
+              world._pendingMessage = null;
+              resolve();
+            }
+          } catch (e) {
+            console.warn('show_message failed', e);
+            resolve();
           }
-          console.log(`[Message] ${msg}`);
-        } catch (e) {
-          console.warn('show_message failed', e);
-        }
+        });
       },
       switch_mode: modeName => {
         try {
@@ -1155,21 +1174,34 @@ export default class PixoScriptLibrary {
         }
       },
       show_choice: (prompt, options) => {
-        try {
-          // Displays a choice dialog and returns the selected index.
-          // The player's UI layer reads world._pendingChoice and renders the dialog.
-          // NOTE: Synchronous return (first option) until async script support
-          // is implemented. Requires player UI implementation (console/desktop).
-          const world = engine.world || engine.spritz?.world;
-          if (world) {
-            world._pendingChoice = { prompt, options };
+        return new Promise(resolve => {
+          try {
+            const world = engine.world || engine.spritz?.world;
+            if (!world) {
+              console.log(`[Choice] ${prompt}`, options);
+              resolve(0);
+              return;
+            }
+            // Store choice with resolver for UI layer
+            world._pendingChoice = {
+              prompt,
+              options,
+              resolve: (index) => {
+                world._pendingChoice = null;
+                resolve(index);
+              }
+            };
+            console.log(`[Choice] ${prompt}`, options);
+            // If no UI layer, resolve with first option
+            if (!world._dialogUIActive) {
+              world._pendingChoice = null;
+              resolve(0);
+            }
+          } catch (e) {
+            console.warn('show_choice failed', e);
+            resolve(0);
           }
-          console.log(`[Choice] ${prompt}`, options);
-          return 0;
-        } catch (e) {
-          console.warn('show_choice failed', e);
-          return 0;
-        }
+        });
       },
     });
   };

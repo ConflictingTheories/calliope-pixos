@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import PixosClient from 'pixospritz-core';
 import { validateManifest } from 'pixospritz-specs/validator';
 import ErrorBoundary from './components/ErrorBoundary';
+import DialogUI from './components/DialogUI';
+import './components/DialogUI.css';
 
 /**
  * PixoSpritz console shell — P4-09 hardened.
@@ -158,6 +160,8 @@ function App() {
           </div>
         </div>
       )}
+
+      <DialogUI />
 
       {phase === PHASE.ERROR && problem && (
         <div className="loading-screen">
