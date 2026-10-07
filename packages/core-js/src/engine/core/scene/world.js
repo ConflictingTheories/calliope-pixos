@@ -25,6 +25,9 @@ import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
 import NetworkAvatarManager from './NetworkAvatarManager.js';
+import PortalManager from './PortalManager.js';
+import AvatarManager from './AvatarManager.js';
+import BehaviorManager from './BehaviorManager.js';
 import { Vector } from '@Engine/utils/math/vector.js';
 import Pathfinder from './Pathfinder.js';
 /**
@@ -80,6 +83,12 @@ export default class World {
     this.isPaused = true;
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this);
+    /** @type {PortalManager} */
+    this.portalManager = new PortalManager(this);
+    /** @type {AvatarManager} */
+    this.avatarManager = new AvatarManager(this);
+    /** @type {BehaviorManager} */
+    this.behaviorManager = new BehaviorManager(this);
     /** @type {ActionQueue} */
     this.afterTickActions = new ActionQueue();
     /** @type {MenuConfig} */
@@ -213,6 +222,35 @@ export default class World {
       this.zoneDict[zoneId] = z;
       this.zoneList.push(z);
 
+      // Register portals, place avatar, attach behaviors
+      try {
+        const zoneJson = z.zoneJson || {};
+        // Portals
+        if (zoneJson.portals) {
+          this.portalManager.registerPortals(zoneId, zoneJson.portals);
+        }
+        // Avatar: place if not already placed (via portal travel or default)
+        if (this.avatarManager.avatar && !z.spriteDict['avatar']) {
+          // Avatar exists but not in this zone — place at default
+          // (Portal travel handles its own placement)
+          this.avatarManager.placeInMap(zoneId);
+        }
+        // Behaviors: attach to all sprites/objects
+        const allObjects = [...(z.spriteList || []), ...(z.objectList || [])];
+        const idIssues = this.behaviorManager.validateIds(allObjects);
+        if (idIssues.length > 0) {
+          console.warn(`World: ${idIssues.length} ID issues in ${zoneId}`, idIssues);
+        }
+        for (const obj of allObjects) {
+          const def = obj._definition || obj;
+          if (def.behaviors || def.scripts) {
+            this.behaviorManager.attachBehaviors(obj, def);
+          }
+        }
+      } catch (e) {
+        console.warn('World: manager wiring failed for', zoneId, e);
+      }
+
       // Sort for correct render order
       z.runWhenLoaded(this.sortZones);
 
@@ -257,6 +295,30 @@ export default class World {
       // add zone
       this.zoneDict[zoneId] = z;
       this.zoneList.push(z);
+
+      // Register portals, place avatar, attach behaviors
+      try {
+        const zoneJson = z.zoneJson || {};
+        if (zoneJson.portals) {
+          this.portalManager.registerPortals(zoneId, zoneJson.portals);
+        }
+        if (this.avatarManager.avatar && !z.spriteDict['avatar']) {
+          this.avatarManager.placeInMap(zoneId);
+        }
+        const allObjects = [...(z.spriteList || []), ...(z.objectList || [])];
+        const idIssues = this.behaviorManager.validateIds(allObjects);
+        if (idIssues.length > 0) {
+          console.warn(`World: ${idIssues.length} ID issues in ${zoneId}`, idIssues);
+        }
+        for (const obj of allObjects) {
+          const def = obj._definition || obj;
+          if (def.behaviors || def.scripts) {
+            this.behaviorManager.attachBehaviors(obj, def);
+          }
+        }
+      } catch (e) {
+        console.warn('World: manager wiring failed for', zoneId, e);
+      }
 
       // Sort for correct render order
       z.runWhenLoaded(this.sortZones);
