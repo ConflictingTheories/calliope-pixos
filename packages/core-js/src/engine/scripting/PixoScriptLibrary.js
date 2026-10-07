@@ -1028,6 +1028,174 @@ export default class PixoScriptLibrary {
           return 0;
         }
       },
+      // Battle UI helpers (for tactical demos)
+      highlight_units: (units, style) => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          const zone = world.getZoneById(world.currentZoneId);
+          if (!zone) return;
+          // Store highlighted unit IDs for renderer
+          zone._highlightedUnits = units;
+          zone._highlightStyle = style || 'targetable';
+        } catch (e) {
+          console.warn('highlight_units failed', e);
+        }
+      },
+      highlight_tiles: (tiles, style) => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          const zone = world.getZoneById(world.currentZoneId);
+          if (!zone) return;
+          // tiles is array of {x, y} or [x, y]
+          zone._highlightedTiles = tiles;
+          zone._highlightStyle = style || 'move';
+          // Set highlight color based on style
+          const colors = {
+            move: [0.3, 0.8, 0.3, 0.5],
+            targetable: [0.8, 0.3, 0.3, 0.5],
+            targeted: [1.0, 0.2, 0.2, 0.7],
+          };
+          zone._highlight = colors[style] || colors.move;
+        } catch (e) {
+          console.warn('highlight_tiles failed', e);
+        }
+      },
+      clear_highlight: () => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          const zone = world.getZoneById(world.currentZoneId);
+          if (!zone) return;
+          zone._highlightedUnits = null;
+          zone._highlightedTiles = null;
+          zone._highlight = null;
+        } catch (e) {
+          console.warn('clear_highlight failed', e);
+        }
+      },
+      show_damage: (targetId, amount) => {
+        // NOTE: Game-specific. Battle demos should implement their own
+        // damage display using highlight_units + custom UI.
+        // Kept here for backwards compat with existing demos.
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          const zone = world.getZoneById(world.currentZoneId);
+          if (!zone) return;
+          const target = zone.spriteList?.find(s => s.id === targetId);
+          if (target) {
+            target._damageFlash = 10;
+          }
+        } catch (e) {
+          console.warn('show_damage failed', e);
+        }
+      },
+      move_cursor: (x, y) => {
+        // NOTE: Game-specific. Tactical demos should manage their own cursor.
+        // Kept here for backwards compat.
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          world._battleCursor = { x, y };
+        } catch (e) {
+          console.warn('move_cursor failed', e);
+        }
+      },
+      // Demo-required APIs
+      load_map: async mapId => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world || !world.loadZone) {
+            console.warn('load_map: world.loadZone not available');
+            return;
+          }
+          await world.loadZone(mapId);
+        } catch (e) {
+          console.warn('load_map failed', e);
+        }
+      },
+      show_hud: hudId => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          world._activeHud = hudId;
+          // HUD rendering is handled by the player's UI layer
+        } catch (e) {
+          console.warn('show_hud failed', e);
+        }
+      },
+      show_message: msg => {
+        try {
+          // TODO: Requires dialog UI system
+          // For now, use console and store for UI layer
+          const world = engine.world || engine.spritz?.world;
+          if (world) {
+            world._pendingMessage = msg;
+          }
+          console.log(`[Message] ${msg}`);
+        } catch (e) {
+          console.warn('show_message failed', e);
+        }
+      },
+      switch_mode: modeName => {
+        try {
+          if (engine.world && engine.world.modeManager) {
+            engine.world.modeManager.set(modeName);
+          }
+        } catch (e) {
+          console.warn('switch_mode failed', e);
+        }
+      },
+      input_pressed: key => {
+        try {
+          if (engine.gamepad) {
+            return engine.gamepad.keyPressed(key);
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      input_down: key => {
+        try {
+          if (engine.gamepad) {
+            return engine.gamepad.keyDown(key);
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      bind_camera: target => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          // target can be a sprite object or sprite ID
+          const targetId = typeof target === 'string' ? target : target?.id;
+          if (targetId) {
+            world._cameraTarget = targetId;
+          }
+        } catch (e) {
+          console.warn('bind_camera failed', e);
+        }
+      },
+      show_choice: (prompt, options) => {
+        try {
+          // TODO: Requires choice dialog UI
+          // For now, store for UI layer and return first option
+          const world = engine.world || engine.spritz?.world;
+          if (world) {
+            world._pendingChoice = { prompt, options };
+          }
+          console.log(`[Choice] ${prompt}`, options);
+          return 0;
+        } catch (e) {
+          console.warn('show_choice failed', e);
+          return 0;
+        }
+      },
     });
   };
 }
