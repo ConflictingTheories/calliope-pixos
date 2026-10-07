@@ -8,3 +8,8 @@
 **/cpp/CMakeFiles/
 **/*.zip
 **/*.pxz
+# Databases are runtime artifacts, never source (P6-03)
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm

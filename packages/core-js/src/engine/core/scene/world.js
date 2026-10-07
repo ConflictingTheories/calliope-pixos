@@ -4,10 +4,10 @@
 ** ----------------------------------------------- **
 **  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
 **                                                 **
-**    Any unauthorized distribution or transfer    **
-**       of this work is strictly prohibited.      **
-**                                                 **
-**               All Rights Reserved.              **
+** PixoSpritz Dual License - see LICENSE.          **
+** Free for education, non-commercial use, and     **
+** individual non-profit artists (CC-BY-NC-SA-4.0) **
+** Commercial use requires a purchased license.    **
 ** ----------------------------------------------- **
 \*                                                 */
 
@@ -17,6 +17,7 @@
  */
 
 import Zone from './zone.js';
+import { SceneLifecycle } from './lifecycle.js';
 import { debug } from '@Engine/utils/debug-logger.js';
 import ModeManager from '../mode/manager.js';
 import ActionQueue from '../queue/index.js';
@@ -91,6 +92,8 @@ export default class World {
     };
     /** @type {string|null} */
     this.currentZoneId = null;
+    /** @type {import('./lifecycle.js').SceneLifecycle} */
+    this.lifecycle = new SceneLifecycle(); // P4-04: canonical load/start/pause/unload + handle collection
   }
 
   addRemoteAvatar(clientId, avatarData) {

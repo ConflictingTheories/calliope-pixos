@@ -286,3 +286,35 @@
 .error-box button:hover {
   background: #dc2626;
 }
+/* P4-09: typed error panel for invalid packages */
+.error-panel {
+  max-width: 560px;
+  margin: 24px auto;
+  padding: 20px 24px;
+  background: rgba(120, 20, 20, 0.85);
+  border: 1px solid #a33;
+  border-radius: 8px;
+  color: #ffe9e9;
+  text-align: left;
+}
+.error-code {
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #ffb3b3;
+  margin-bottom: 8px;
+}
+.error-message {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+.error-issues {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.error-issues code {
+  color: #ffd27f;
+}

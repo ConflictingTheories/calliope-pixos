@@ -12,21 +12,36 @@
  * addition to text and image files.
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 
 import ZipManager from './zip-manager/index.jsx';
-import ScriptEditor from './script-editor/index.jsx';
-import ImagePreview from './image-preview/index.jsx';
-import AudioPreview from './audio-preview/index.jsx';
-import ModelPreview from './model-preview/index.jsx';
-import UnifiedMapEditor from './map-editor/UnifiedMapEditor.jsx';
-import TileEditor from './tile-editor/index.jsx';
-import CutsceneTool from './cutscene-tool/index.jsx';
-import GeometryEditor from './geometry-editor/index.jsx';
-import GeometryEditor3D from './geometry-editor/GeometryEditor3D.jsx';
-import SpriteEditor from './sprite-editor/index.jsx';
-import AIGenerator from './ai-generator/index.jsx';
-import { Reader, Writer } from '@zip.js/zip.js';
+// (P3-12) Tool panels load lazily via the tool registry — the shell
+// bundle no longer parses all 12 panels at boot.
+import { getTool } from './shell/toolRegistry.js';
+// (P2-09) Single keyboard dispatcher + command registry.
+import { keymap } from './shell/commands/keymap.js';
+import { commands } from './shell/commands/commands.js';
+import CommandPalette from './shell/commands/CommandPalette.jsx';
+// (P2-07) Save status bus: domain save paths report here, never alert().
+import { useSaveStatus, reportSaveOk, reportSaveError } from './shell/saveStatus.js';
+// (P3-14) Blob URLs for binary previews — no base64 data URIs.
+import { createPreviewUrl, revokePreviewUrl } from './shared/blobUrls.js';
+import ImagePreviewTool from './image-preview/ImagePreviewTool.jsx';
+import { createDefaultRegistry } from './core/documents/registry.js';
+import SpriteEditorTool from './sprite-editor/SpriteEditorTool.jsx';
+import TileEditorTool from './tile-editor/TileEditorTool.jsx';
+import ScriptEditorTool from './script-editor/ScriptEditorTool.jsx';
+import { CommandBus } from './core/commands/commandBus.js';
+import { ProjectStore } from './core/project/projectStore.js';
+import { BridgedProjectRepository } from './core/project/repository.js';
+
+const AudioPreview = getTool('audio-preview').component;
+const ModelPreview = getTool('model-preview').component;
+const UnifiedMapEditor = getTool('map-editor').component;
+const CutsceneTool = getTool('cutscene-tool').component;
+const GeometryEditor = getTool('geometry-editor').component;
+const GeometryEditor3D = getTool('geometry-editor-3d').component;
+const AIGenerator = getTool('ai-generator').component;
 import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
 import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
 import './onboarding/FirstTimeWizard.css';
@@ -99,6 +114,61 @@ const App = () => {
     addLogListener(handleLog);
     return () => removeLogListener(handleLog);
   }, [consoleState]);
+
+  // (P2-10/P3-10) Shared core for migrated tools.  The repository is
+  // bridged onto the live zip-manager session so migrated tools read
+  // and write the same project the shell has open.
+  const toolCore = useMemo(() => {
+    const store = new ProjectStore();
+    const repository = new BridgedProjectRepository({
+      read: async (path, options = {}) => {
+        const entry = findEntryByPath(path);
+        if (!entry) throw new Error(`not found: ${path}`);
+        return getData(entry, options.as !== 'bytes');
+      },
+      write: async (path, data) => {
+        await writeFile(path, data);
+      },
+      list: async (dir = '') => {
+        const out = [];
+        const walk = (node, prefix) => {
+          for (const child of node?.children || []) {
+            const p = prefix ? `${prefix}/${child.name}` : child.name;
+            if (child.directory) walk(child, p);
+            else out.push(p);
+          }
+        };
+        walk(zip, '');
+        return dir ? out.filter(e => e.startsWith(dir + '/')) : out;
+      },
+      exists: async path => !!findEntryByPath(path),
+    });
+    // Bus ctx carries the repository via services (P1-04 guard seam).
+    const bus = new CommandBus(store, { repository });
+    return { registry: createDefaultRegistry(), commands, bus, store, repository };
+    // Bridged once per open project; the closures delegate to the live session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // (P2-09) Shell command infrastructure: palette visibility, the single
+  // global keydown dispatcher, and the core command registrations.
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const saveStatus = useSaveStatus();
+  useEffect(() => {
+    const offPalette = commands.register({
+      id: 'shell.command-palette',
+      title: 'Open command palette',
+      group: 'shell',
+      shortcut: 'ctrl+k',
+      run: () => setPaletteOpen(true),
+    });
+    const onKeyDown = e => keymap.handleKeyDown(e);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      offPalette();
+    };
+  }, []);
 
   const handleOptionsChange = useCallback(options => {
     if (!options) {
@@ -355,6 +425,26 @@ const App = () => {
     return fullPath;
   }, []);
 
+  // (P3-10) Reverse lookup for the repository bridge: path -> zip entry.
+  const findEntryByPath = useCallback(
+    target => {
+      let found = null;
+      const walk = node => {
+        for (const child of node?.children || []) {
+          if (getEntryFullPath(child) === target) {
+            found = child;
+            return;
+          }
+          if (child.directory) walk(child);
+          if (found) return;
+        }
+      };
+      walk(zip);
+      return found;
+    },
+    [zip, getEntryFullPath]
+  );
+
   /**
    * Build a list of image assets with URIs so the tileset editor can
    * render them.  Supports png, jpg/jpeg, gif, and bmp files.
@@ -496,41 +586,53 @@ const App = () => {
   }, [zip, assets, getData]);
 
   // Editor/viewer renderers
+  // (P3-10) Script editor migrated: registry load, command-bus save
+  // (undoable), shell commands.  No direct ZIP path.
   const renderScriptEditor = useCallback(
     async (entry, lang) => {
       const script = await getData(entry, true);
+      const fullPath = getEntryFullPath(entry);
       setContents([
-        <ScriptEditor
+        <ScriptEditorTool
           key={Date.now()}
-          lang={lang}
-          type="script-only"
-          content={script}
-          onSave={async newContent => {
-            try {
-              const fullPath = getEntryFullPath(entry);
-              await writeFile(fullPath, newContent);
-              debug('App', '[ScriptEditor] File saved:', fullPath);
-              alert('File saved successfully!');
-            } catch (err) {
-              console.error('[ScriptEditor] Save failed:', err);
-              alert('Failed to save: ' + err.message);
-            }
-          }}
+          documentPath={fullPath}
+          core={toolCore}
+          text={script}
+          initialProps={{ lang, type: 'script-only' }}
         />,
       ]);
     },
-    [getData, zip]
+    [getData, getEntryFullPath, toolCore]
   );
 
+  // (P3-14) Current binary preview URL; revoked on replacement/unmount so
+  // repeated preview changes cannot grow retained memory.
+  const previewUrlRef = useRef('');
+  useEffect(() => () => revokePreviewUrl(previewUrlRef.current), []);
+  const setBinaryPreview = useCallback(url => {
+    revokePreviewUrl(previewUrlRef.current);
+    previewUrlRef.current = url;
+  }, []);
+
+  // (P2-10) Image preview migrated onto the new core: document access
+  // via the registry, zoom via shell commands.  No direct ZIP path.
   const renderImagePreview = useCallback(
     async entry => {
       const imageBytes = await getData(entry, false);
       const extension = entry.name.split('.').pop().toLowerCase();
       const mime = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
-      const dataUri = toDataUri(imageBytes, mime);
-      setContents([<ImagePreview key={Date.now()} content={dataUri} />]);
+      const fullPath = getEntryFullPath(entry);
+      setContents([
+        <ImagePreviewTool
+          key={Date.now()}
+          documentPath={fullPath}
+          core={toolCore}
+          imageBytes={imageBytes}
+          mime={mime}
+        />,
+      ]);
     },
-    [getData, toDataUri]
+    [getData, getEntryFullPath, toolCore]
   );
 
   const renderAudioPreview = useCallback(
@@ -538,10 +640,10 @@ const App = () => {
       const audioBytes = await getData(entry, false);
       const extension = entry.name.split('.').pop().toLowerCase();
       const mime = `audio/${extension}`;
-      const dataUri = toDataUri(audioBytes, mime);
-      setContents([<AudioPreview key={Date.now()} content={dataUri} />]);
+      setBinaryPreview(createPreviewUrl(audioBytes, mime));
+      setContents([<AudioPreview key={Date.now()} content={previewUrlRef.current} />]);
     },
-    [getData, toDataUri]
+    [getData, setBinaryPreview]
   );
 
   /**
@@ -1142,13 +1244,13 @@ const App = () => {
               }
 
               debug('App', '[MapEditor] All map files saved successfully');
-              alert(
+              reportSaveOk(
+                fullPath,
                 'Map saved successfully! Note: You may need to close and reopen the map to see the changes reflected in the editor.'
               );
             } catch (err) {
               console.error('[MapEditor] Save failed:', err);
-              console.error('[MapEditor] Error stack:', err.stack);
-              alert('Failed to save map: ' + err.message);
+              reportSaveError(fullPath, err);
             }
           }}
         />,
@@ -1157,48 +1259,32 @@ const App = () => {
     [getData, zip, toDataUri]
   );
 
+  // (P3-10) Tile editor migrated: sibling-file discovery goes through
+  // the repository (not zip.root traversal); save via command bus.
   const renderTileEditor = useCallback(
     async entry => {
       const tileContent = await getData(entry, true);
+      const entryPath = getEntryFullPath(entry);
       debug('App', '[TileEditor] Loading tiles:', tileContent);
 
-      // Try to load geometry.json from the same directory
       let geometryContent = null;
       let textureList = [];
       try {
-        const entryPath = getEntryFullPath(entry);
         const parentPath = entryPath.substring(0, entryPath.lastIndexOf('/'));
-
-        // Helper to find sibling file
-        const findSiblingFile = (node, targetName, currentPath = '') => {
-          if (!node || !node.children) return null;
-          for (const child of node.children) {
-            const childPath = currentPath ? `${currentPath}/${child.name}` : child.name;
-            if (!child.directory && child.name.toLowerCase() === targetName.toLowerCase()) {
-              if (childPath.includes(parentPath) || parentPath.includes(currentPath)) {
-                return child;
-              }
-            }
-            if (child.directory) {
-              const found = findSiblingFile(child, targetName, childPath);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-
-        // Find geometry.json in same folder
-        const geoEntry = findSiblingFile(zip, 'geometry.json');
-        if (geoEntry) {
-          geometryContent = await getData(geoEntry, true);
+        const entries = await toolCore.repository.list('');
+        const inSameDir = name =>
+          entries.find(e => {
+            const dir = e.includes('/') ? e.substring(0, e.lastIndexOf('/')) : '';
+            return dir === parentPath && e.toLowerCase().endsWith('/' + name.toLowerCase());
+          });
+        const geoPath = inSameDir('geometry.json');
+        if (geoPath) {
+          geometryContent = await toolCore.repository.read(geoPath);
           debug('App', '[TileEditor] Loaded geometry context');
         }
-
-        // Find tileset.json to get texture names
-        const tilesetEntry = findSiblingFile(zip, 'tileset.json');
-        if (tilesetEntry) {
-          const tilesetContent = await getData(tilesetEntry, true);
-          const tileset = JSON.parse(tilesetContent);
+        const tilesetPath = inSameDir('tileset.json');
+        if (tilesetPath) {
+          const tileset = JSON.parse(await toolCore.repository.read(tilesetPath));
           if (tileset.textures) {
             textureList = Object.keys(tileset.textures);
             debug('App', '[TileEditor] Loaded texture list:', textureList);
@@ -1209,27 +1295,16 @@ const App = () => {
       }
 
       setContents([
-        <TileEditor
+        <TileEditorTool
           key={Date.now()}
-          content={tileContent}
-          geometryContent={geometryContent}
-          textureList={textureList}
-          onSave={async obj => {
-            try {
-              const fullPath = getEntryFullPath(entry);
-              const data = JSON.stringify(obj, null, 2);
-              await writeFile(fullPath, data);
-              debug('App', '[TileEditor] Saved:', fullPath);
-              alert('Tiles saved successfully!');
-            } catch (err) {
-              console.error('[TileEditor] Save failed:', err);
-              alert('Failed to save tiles: ' + err.message);
-            }
-          }}
+          documentPath={entryPath}
+          core={toolCore}
+          text={tileContent}
+          initialProps={{ geometryContent, textureList }}
         />,
       ]);
     },
-    [getData, zip]
+    [getData, getEntryFullPath, toolCore]
   );
 
   const renderGeometryEditor = useCallback(
@@ -1267,10 +1342,9 @@ const App = () => {
               const data = JSON.stringify(obj, null, 2);
               await writeFile(fullPath, data);
               debug('App', '[GeometryEditor] Saved:', fullPath);
-              alert('Geometry saved successfully!');
+              reportSaveOk(fullPath, 'Geometry saved successfully!');
             } catch (err) {
-              console.error('[GeometryEditor] Save failed:', err);
-              alert('Failed to save geometry: ' + err.message);
+              reportSaveError(fullPath, err);
             }
           }}
         />,
@@ -1279,32 +1353,22 @@ const App = () => {
     [getData, zip]
   );
 
+  // (P3-10) Sprite editor migrated: repository-backed asset resolution,
+  // command-bus save (undoable), shell commands.  No direct ZIP path.
   const renderSpriteEditor = useCallback(
     async entry => {
       const spriteContent = await getData(entry, true);
+      const fullPath = getEntryFullPath(entry);
       setContents([
-        <SpriteEditor
+        <SpriteEditorTool
           key={Date.now()}
-          content={spriteContent}
-          zip={zip}
-          getData={getData}
-          toDataUri={toDataUri}
-          onSave={async spriteData => {
-            try {
-              const fullPath = getEntryFullPath(entry);
-              const data = JSON.stringify(spriteData, null, 2);
-              await writeFile(fullPath, data);
-              debug('App', '[SpriteEditor] Saved:', fullPath);
-              alert('Sprite saved successfully!');
-            } catch (err) {
-              console.error('[SpriteEditor] Save failed:', err);
-              alert('Failed to save sprite: ' + err.message);
-            }
-          }}
+          documentPath={fullPath}
+          core={toolCore}
+          text={spriteContent}
         />,
       ]);
     },
-    [getData, zip, toDataUri]
+    [getData, getEntryFullPath, toolCore]
   );
 
   const renderCutsceneTool = useCallback(
@@ -1463,10 +1527,9 @@ const App = () => {
                 typeof data === 'string' ? data : JSON.stringify({ events: data }, null, 2);
               await writeFile(fullPath, saveData);
               debug('App', '[CutsceneTool] Saved:', fullPath);
-              alert('Cutscene saved successfully!');
+              reportSaveOk(fullPath, 'Cutscene saved successfully!');
             } catch (err) {
-              console.error('[CutsceneTool] Save failed:', err);
-              alert('Failed to save cutscene: ' + err.message);
+              reportSaveError(fullPath, err);
             }
           }}
           assets={assets}
@@ -1699,7 +1762,11 @@ const App = () => {
             style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}
           >
             {hasContent ? (
-              contents.map(component => component)
+              <Suspense
+                fallback={<div className="editor-tool-loading">Loading tool…</div>}
+              >
+                {contents.map(component => component)}
+              </Suspense>
             ) : (
               <div className="editor-empty-state">
                 <h3>Welcome to Pixospritz IDE</h3>
@@ -1819,6 +1886,18 @@ const App = () => {
         </button>
       </div>
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
+      {/* (P2-09) Command palette */}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      {/* (P2-07) Save status replaces alert() dialogs in save paths */}
+      {saveStatus.kind !== 'idle' && (
+        <div
+          className={`editor-save-status editor-save-status--${saveStatus.kind}`}
+          role="status"
+          aria-live="polite"
+        >
+          {saveStatus.message}
+        </div>
+      )}
     </div>
   );
 };

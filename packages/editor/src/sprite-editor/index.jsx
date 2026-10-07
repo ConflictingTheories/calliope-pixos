@@ -39,7 +39,7 @@ const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
  * @param {function(object):void} [props.onSave] - Callback invoked with sprite data on save
  * @returns {JSX.Element}
  */
-function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
+function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteImage }) {
   const [spriteData, setSpriteData] = useState(null);
   const [spriteImage, setSpriteImage] = useState(null);
   const [error, setError] = useState(null);
@@ -74,9 +74,15 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave }) {
 
       setSpriteData(data);
 
-      // Load the spritesheet image
-      if (data.src && zip && getData && toDataUri) {
-        loadSpriteImage(data.src);
+      // Load the spritesheet image (P3-10: repository-backed resolver first).
+      if (data.src) {
+        if (resolveSpriteImage) {
+          resolveSpriteImage(data.src)
+            .then(setSpriteImage)
+            .catch(e => setError(e.message));
+        } else if (zip && getData && toDataUri) {
+          loadSpriteImage(data.src);
+        }
       }
     } catch (e) {
       setError('Failed to parse sprite data: ' + e.message);

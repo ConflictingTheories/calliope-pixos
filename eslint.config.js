@@ -18,6 +18,9 @@ export default [
             '**/*.json',
             '**/*.md',
             'packages/specs/**',
+            // Quarantined: broken prototype with a known parse error, pending
+            // deletion (PixoPress retirement PR). Must not set the lint baseline.
+            'packages/server/src/pixopress/**',
             '**/*.ts',
             '**/*.tsx',
         ],

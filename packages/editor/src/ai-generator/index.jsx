@@ -17,9 +17,11 @@ import {
   analyzePrompt,
   createOrchestrator,
   createGamePackageOrchestrator,
+  assembleContext,
 } from './services/index.js';
 
 import TemplateSelector from './TemplateSelector.jsx';
+import SetupPanel from './SetupPanel.jsx';
 import './styles/ai-generator.css';
 
 // Modality options
@@ -94,8 +96,11 @@ function AssetCard({ asset, onSave, saving }) {
 
 /**
  * Main AI Generator Component
+ *
+ * Local-first: works with Ollama / llama.cpp / LM Studio out of the box —
+ * no API key, no account, no subscription. Cloud providers are opt-in.
  */
-function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
+function AIGenerator({ writeFile, onFileGenerated, refreshFolder, projectRepository, currentDocument }) {
   // State
   const [prompt, setPrompt] = useState('');
   const [modality, setModality] = useState('auto');
@@ -109,8 +114,15 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
   const [countdown, setCountdown] = useState(null);
 
   // UI state
-  const [activeTab, setActiveTab] = useState('templates'); // 'templates' or 'custom'
+  const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'custom' | 'setup'
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+  // Project-context controls (user decides what the model sees)
+  const [contextFlags, setContextFlags] = useState({
+    includeCurrentFile: true,
+    includeProject: false,
+    includeAssets: false,
+  });
 
   const resultsRef = useRef(null);
   const countdownRef = useRef(null);
@@ -194,7 +206,10 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     }
 
     if (!isConfigured) {
-      setError('Configure your API key in Options (⚙️) to use AI generation');
+      setError(
+        'No usable provider: start a local model server (Ollama / llama.cpp / LM Studio) ' +
+          'or add a cloud API key in the Setup tab.'
+      );
       return;
     }
 
@@ -203,6 +218,13 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
     setResults(null);
 
     try {
+      // Assemble the user-approved project context once per generation
+      const assembledContext = await assembleContext({
+        ...contextFlags,
+        currentDocument,
+        projectRepository,
+      });
+
       let generationResults;
 
       // Determine effective modality (auto-detect or user-selected)
@@ -225,6 +247,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
           writeFile,
           onProgress: p => setProgress(p),
           onStatusChange: s => setStatus(s),
+          assembledContext,
+          projectRepository,
         });
 
         generationResults = await gameOrchestrator.generateGamePackage(prompt);
@@ -234,6 +258,8 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
           writeFile,
           onProgress: p => setProgress(p),
           onStatusChange: s => setStatus(s),
+          assembledContext,
+          projectRepository,
         });
 
         generationResults = await orchestrator.generateFromPrompt(prompt);
@@ -251,7 +277,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       setStatus(null);
       setProgress(null);
     }
-  }, [prompt, modality, isConfigured, writeFile]);
+  }, [prompt, modality, isConfigured, writeFile, contextFlags, currentDocument, projectRepository]);
 
   // Handle retrying only failed assets (conserves tokens)
   const handleRetryFailed = useCallback(async () => {
@@ -360,7 +386,7 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
       {/* Header */}
       <header className="ai-generator-header">
         <h2>AI Asset Generator</h2>
-        <span className="ai-header-hint">Configure API key in Options</span>
+        <span className="ai-header-hint">Local-first — no key needed</span>
       </header>
 
       {/* Tab Navigation */}
@@ -376,15 +402,26 @@ function AIGenerator({ writeFile, onFileGenerated, refreshFolder }) {
         <Nav.Item eventKey="custom" icon={<span>✨</span>}>
           Custom Prompt
         </Nav.Item>
+        <Nav.Item eventKey="setup" icon={<span>⚙️</span>}>
+          Setup
+        </Nav.Item>
       </Nav>
 
       {/* Main Content */}
       <div className="ai-generator-content">
-        {/* API Key Warning */}
+        {/* Provider Warning — only for cloud providers missing a key */}
         {!isConfigured && (
           <Message type="warning" showIcon className="ai-warning">
-            <span>Configure your API key in the main Options dialog to use AI generation.</span>
+            <span>
+              No usable provider. Start a local model server (Ollama, llama.cpp, or LM
+              Studio) or add a cloud API key in the Setup tab.
+            </span>
           </Message>
+        )}
+
+        {/* Setup Tab */}
+        {activeTab === 'setup' && (
+          <SetupPanel contextFlags={contextFlags} onContextFlagsChange={setContextFlags} />
         )}
 
         {/* Template Selector Tab */}

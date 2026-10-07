@@ -8,6 +8,18 @@
   "required": ["title", "version", "initialZones"],
 
   "properties": {
+    "format": {
+      "type": "string",
+      "const": "pixozine",
+      "description": "Package kind identifier. Currently only 'pixozine' is defined.",
+      "default": "pixozine"
+    },
+    "formatVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Pixozine package format version (semver). Absent in pre-1.0 packages; filled by the migration runner.",
+      "default": "1.0.0"
+    },
     "title": {
       "type": "string",
       "description": "Game title"
@@ -96,6 +108,17 @@
       "type": "array",
       "items": { "type": "string" },
       "description": "Cutscene definition paths"
+    },
+    "scriptApiVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Host scripting API version the package targets (default 1.0.0).",
+      "default": "1.0.0"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Capability names the package's scripts require; the runtime grants only these."
     },
     "callbacks": {
       "type": "array",

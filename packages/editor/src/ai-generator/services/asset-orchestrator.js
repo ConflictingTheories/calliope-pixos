@@ -10,14 +10,10 @@
  */
 
 import { analyzePrompt, DIRECTIONS } from './prompt-analyzer.js';
-import { generatePortrait, generateSpritesheet, base64ToBlob } from './image-generator.js';
-import { generateSpeech, createAudioBlob } from './audio-generator.js';
-import {
-  generateSpriteConfig,
-  generateCutscene,
-  generateScript,
-  generateNPCStates,
-} from './text-generator.js';
+import { base64ToBlob } from './image-generator.js';
+import { runTool } from './ai-tools.js';
+import { createAudioBlob } from './audio-generator.js';
+import { generateSpriteConfig, generateNPCStates } from './text-generator.js';
 
 /**
  * Asset type to folder mapping for organizing generated files
@@ -68,6 +64,25 @@ export class AssetOrchestrator {
     this.onStatusChange = options.onStatusChange || (() => {});
     this.generatedAssets = [];
     this.errors = [];
+    // Tool context shared by every runTool dispatch: assembled project
+    // context (when the UI provides it) plus the repository for
+    // context tools like list_project_assets.
+    this.toolContext = {
+      assembledContext: options.assembledContext ?? null,
+      projectRepository: options.projectRepository ?? null,
+      assetInventory: options.assetInventory ?? [],
+    };
+  }
+
+  /**
+   * Dispatch a generation tool with uniform arg validation and
+   * result envelope. Throws on tool failure so callers keep their
+   * existing try/catch structure.
+   */
+  async callTool(name, args, onRetry = null) {
+    const res = await runTool(name, args, { ...this.toolContext, onRetry });
+    if (!res.ok) throw new Error(`[${name}] ${res.error}`);
+    return res.result;
   }
 
   /**
@@ -205,16 +220,17 @@ export class AssetOrchestrator {
         this.onProgress({ step: 2, total: 4, message: 'Generating portrait...' });
 
         try {
-          const portraitBase64 = await generatePortrait(description, {
-            style: config.style || 'pixel art',
-            onRetry: retryInfo => {
+          const { image: portraitBase64 } = await this.callTool(
+            'generate_portrait',
+            { description },
+            retryInfo => {
               this.onStatusChange({
                 phase: 'rate-limited',
                 message: `Portrait: ${retryInfo.message}`,
                 retryInfo,
               });
-            },
-          });
+            }
+          );
 
           const portraitPath = `${folderPath}/${spriteName}_portrait.png`;
           const portraitBlob = base64ToBlob(portraitBase64, 'image/png');
@@ -251,16 +267,22 @@ export class AssetOrchestrator {
       this.onProgress({ step: 3, total: 4, message: 'Generating spritesheet...' });
 
       try {
-        const spritesheetBase64 = await generateSpritesheet(description, {
-          ...config,
-          onRetry: retryInfo => {
+        const { image: spritesheetBase64 } = await this.callTool(
+          'generate_spritesheet_image',
+          {
+            description,
+            tileSize: config.tileSize,
+            directions: config.directions,
+            framesPerDirection: config.framesPerDirection,
+          },
+          retryInfo => {
             this.onStatusChange({
               phase: 'rate-limited',
               message: `Spritesheet: ${retryInfo.message}`,
               retryInfo,
             });
-          },
-        });
+          }
+        );
 
         const sheetPath = `${folderPath}/${spriteName}.png`;
         const sheetBlob = base64ToBlob(spritesheetBase64, 'image/png');
@@ -420,8 +442,9 @@ export class AssetOrchestrator {
       const folder = config.type === 'music' ? 'audio/music' : 'audio/sfx';
 
       if (config.type === 'voice') {
-        // Generate speech from the prompt/description
-        const audioBuffer = await generateSpeech(description, {
+        // Generate speech from the prompt/description via the tool layer
+        const { audio: audioBuffer } = await this.callTool('generate_audio', {
+          text: description,
           voice: config.voice || 'alloy',
           format: config.format || 'mp3',
         });
@@ -472,32 +495,39 @@ export class AssetOrchestrator {
       switch (config.type) {
         case 'cutscene':
           ext = 'pxc';
-          content = await generateCutscene(description, {
-            mood: metadata.style,
-            length: 'medium',
-          });
+          ({ cutscene: content } = await this.callTool('generate_cutscene', {
+            description,
+          }));
+          // apply mood/length via metadata for future tool args; preserved here
           break;
 
         case 'script':
           ext = 'pxs';
-          content = await generateScript(description, 'callback');
+          ({ script: content } = await this.callTool('generate_script', {
+            description,
+            triggerType: 'callback',
+          }));
           break;
 
         case 'config':
           ext = 'json';
-          const configObj = await generateSpriteConfig(description, {
-            tileSize: [24, 32],
-            sheetSize: [96, 128],
-            directions: 4,
-            framesPerDirection: 4,
-            preset: 'character',
-          });
-          content = JSON.stringify(configObj, null, 2);
+          {
+            const { config: configObj } = await this.callTool('generate_sprite_config', {
+              description,
+              preset: 'character',
+              tileSize: 32,
+              directions: 4,
+              framesPerDirection: 4,
+            });
+            content = JSON.stringify(configObj, null, 2);
+          }
           break;
 
         default:
           ext = 'pxc';
-          content = await generateCutscene(description);
+          ({ cutscene: content } = await this.callTool('generate_cutscene', {
+            description,
+          }));
       }
 
       const folder = FOLDER_MAP[config.type] || 'dialogues';

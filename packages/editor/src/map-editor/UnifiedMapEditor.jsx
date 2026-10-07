@@ -15,6 +15,9 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { MapToolbar } from './panels/MapToolbar.jsx';
+import { MapModeTabs } from './panels/MapModeTabs.jsx';
+import { MapCanvas } from './panels/MapCanvas.jsx';
 import { collect } from 'react-recollect';
 import { debug } from '../shared/debug-logger.js';
 
@@ -96,6 +99,21 @@ function UnifiedMapEditor({
 
   // WebGL state
   const glRef = useRef(null);
+
+  // (P3-07) Stable camera seed for the memoized canvas.
+  const cameraSeed = useMemo(
+    () => ({
+      distance: 25,
+      angleX: -0.6,
+      angleY: 0.5,
+      centerX: (cells[0]?.length || 16) / 2,
+      centerY: (cells.length || 16) / 2,
+      centerZ: 0,
+    }),
+    // Re-seed only when the map dimensions change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cells.length, cells[0]?.length]
+  );
   const shaderProgramRef = useRef(null);
   const textureRef = useRef(null);
   const [hoveredCell, setHoveredCell] = useState(null);
@@ -1372,453 +1390,27 @@ function UnifiedMapEditor({
           padding: '10px',
         }}
       >
-        {/* Tools Section */}
-        <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42',
-            }}
-          >
-            🎨 Tile Tools{' '}
-            {editorMode !== 'tiles' && (
-              <span style={{ fontSize: '10px', color: '#888', fontWeight: 'normal' }}>
-                (Tile mode only)
-              </span>
-            )}
-          </div>
-          <div style={{ padding: '10px', opacity: editorMode === 'tiles' ? 1 : 0.5 }}>
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}
-            >
-              <button
-                disabled={editorMode !== 'tiles'}
-                style={{
-                  background: currentTool === 'paint' ? '#1177bb' : '#0e639c',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px',
-                }}
-                onClick={() => editorMode === 'tiles' && setCurrentTool('paint')}
-                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={e =>
-                  editorMode === 'tiles' &&
-                  (e.target.style.background = currentTool === 'paint' ? '#1177bb' : '#0e639c')
-                }
-              >
-                🖌️ Paint Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
-                  Click to paint • Shift+Drag to paint multiple
-                </div>
-              </button>
-              <button
-                disabled={editorMode !== 'tiles'}
-                style={{
-                  background: currentTool === 'erase' ? '#1177bb' : '#0e639c',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px',
-                }}
-                onClick={() => editorMode === 'tiles' && setCurrentTool('erase')}
-                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={e =>
-                  editorMode === 'tiles' &&
-                  (e.target.style.background = currentTool === 'erase' ? '#1177bb' : '#0e639c')
-                }
-              >
-                🗑️ Erase Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
-                  Click to erase • Right-click also erases
-                </div>
-              </button>
-              <button
-                disabled={editorMode !== 'tiles'}
-                style={{
-                  background: currentTool === 'pick' ? '#1177bb' : '#0e639c',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: editorMode === 'tiles' ? 'pointer' : 'not-allowed',
-                  fontSize: '13px',
-                }}
-                onClick={() => editorMode === 'tiles' && setCurrentTool('pick')}
-                onMouseOver={e => editorMode === 'tiles' && (e.target.style.background = '#1177bb')}
-                onMouseOut={e =>
-                  editorMode === 'tiles' &&
-                  (e.target.style.background = currentTool === 'pick' ? '#1177bb' : '#0e639c')
-                }
-              >
-                🔍 Pick Tool
-                <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
-                  Click a tile to select it
-                </div>
-              </button>
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '5px',
-                  fontSize: '12px',
-                  color: '#cccccc',
-                }}
-              >
-                Selected Tile:
-              </label>
-              <select
-                value={selectedTile}
-                onChange={e => setSelectedTile(e.target.value)}
-                style={{
-                  background: '#3c3c3c',
-                  color: '#d4d4d4',
-                  border: '1px solid #3e3e42',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  width: '100%',
-                }}
-              >
-                {tileOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '5px',
-                  fontSize: '12px',
-                  color: '#cccccc',
-                }}
-              >
-                Height:
-              </label>
-              <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                <button
-                  onClick={() => {
-                    setCurrentHeight(prev => Math.round((prev - 0.5) * 2) / 2);
-                  }}
-                  style={{
-                    background: '#3e3e42',
-                    color: 'white',
-                    border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '3px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                  }}
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  value={currentHeight}
-                  onChange={e => setCurrentHeight(parseFloat(e.target.value) || 0)}
-                  step={0.5}
-                  style={{
-                    flex: 1,
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '13px',
-                    textAlign: 'center',
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    setCurrentHeight(prev => Math.round((prev + 0.5) * 2) / 2);
-                  }}
-                  style={{
-                    background: '#3e3e42',
-                    color: 'white',
-                    border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '3px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                  }}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <button
-                onClick={handleSave}
-                style={{
-                  background: '#0e639c',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                }}
-                onMouseOver={e => (e.target.style.background = '#1177bb')}
-                onMouseOut={e => (e.target.style.background = '#0e639c')}
-              >
-                💾 Save Changes
-              </button>
-              <button
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                style={{
-                  background: historyIndex <= 0 ? '#3e3e42' : '#0e639c',
-                  color: historyIndex <= 0 ? '#888' : 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer',
-                  fontSize: '13px',
-                }}
-                onMouseOver={e => {
-                  if (historyIndex > 0) e.target.style.background = '#1177bb';
-                }}
-                onMouseOut={e => {
-                  if (historyIndex > 0) e.target.style.background = '#0e639c';
-                }}
-              >
-                ↶ Undo
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                style={{
-                  background: historyIndex >= history.length - 1 ? '#3e3e42' : '#0e639c',
-                  color: historyIndex >= history.length - 1 ? '#888' : 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '3px',
-                  cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '13px',
-                }}
-                onMouseOver={e => {
-                  if (historyIndex < history.length - 1) e.target.style.background = '#1177bb';
-                }}
-                onMouseOut={e => {
-                  if (historyIndex < history.length - 1) e.target.style.background = '#0e639c';
-                }}
-              >
-                ↷ Redo
-              </button>
-            </div>
-
-            <div style={{ marginTop: '15px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '5px',
-                  fontSize: '12px',
-                  color: '#cccccc',
-                }}
-              >
-                View Projection:
-              </label>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <button
-                  style={{
-                    flex: 1,
-                    background: viewMode === '2D' ? '#1177bb' : '#3e3e42',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px',
-                    borderRadius: '3px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                  }}
-                  onClick={() => setViewMode('2D')}
-                >
-                  📐 2D
-                </button>
-                <button
-                  style={{
-                    flex: 1,
-                    background: viewMode === '3D' ? '#1177bb' : '#3e3e42',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px',
-                    borderRadius: '3px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                  }}
-                  onClick={() => setViewMode('3D')}
-                >
-                  🧊 3D
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mode Selector */}
-        <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42',
-            }}
-          >
-            🎯 Editor Mode
-          </div>
-          <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <button
-              style={{
-                background: editorMode === 'tiles' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('tiles')}
-            >
-              <div>🟦 Tile Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
-                Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells
-              </div>
-            </button>
-            <button
-              style={{
-                background: editorMode === 'sprites' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('sprites')}
-            >
-              <div>🎭 Sprite Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
-                Click to place • {sprites.length} sprites
-              </div>
-            </button>
-            <button
-              style={{
-                background: editorMode === 'objects' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('objects')}
-            >
-              <div>📦 Object Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
-                Click to place • {objects.length} objects
-              </div>
-            </button>
-            <button
-              style={{
-                background: editorMode === 'attributes' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('attributes')}
-            >
-              <div>📝 Attribute Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
-                Click a cell to edit walkable/events
-              </div>
-            </button>
-            <button
-              style={{
-                background: editorMode === 'animatedTiles' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('animatedTiles')}
-            >
-              <div>✨ Animated Tile Mode</div>
-              <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
-                Click to place • {animatedTiles.length} animated tiles
-              </div>
-            </button>
-            <button
-              style={{
-                background: editorMode === 'triggers' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('triggers')}
-            >
-              ⚡ Triggers & Scripts
-            </button>
-            <button
-              style={{
-                background: editorMode === 'lights' ? '#1177bb' : '#3e3e42',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                textAlign: 'left',
-              }}
-              onClick={() => setEditorMode('lights')}
-            >
-              💡 Lights ({lights.length})
-            </button>
-          </div>
-        </div>
-
+        {/* Tools Section (P3-07: extracted panel) */}
+        <MapToolbar
+          editorMode={editorMode}
+          currentTool={currentTool}
+          onSelectTool={setCurrentTool}
+          selectedTile={selectedTile}
+          onSelectTile={setSelectedTile}
+          tileOptions={tileOptions}
+          currentHeight={currentHeight}
+          onHeightChange={setCurrentHeight}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
+          historyIndex={historyIndex}
+          historyLength={history.length}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+        {/* Mode Selector (P3-07: extracted panel) */}
+        <MapModeTabs editorMode={editorMode} onSelectMode={setEditorMode} />
         {/* Sprites/Objects Editor */}
         {(editorMode === 'sprites' || editorMode === 'objects') && (
           <div
@@ -3034,44 +2626,18 @@ function UnifiedMapEditor({
           </span>
         </div>
 
-        {/* Canvas */}
-        <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
-          {error && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 10,
-                left: 10,
-                right: 10,
-                background: '#5a1d1d',
-                border: '1px solid #be1100',
-                borderRadius: '3px',
-                padding: '10px',
-                zIndex: 100,
-                fontSize: '13px',
-                color: '#f48771',
-              }}
-            >
-              {error}
-            </div>
-          )}
-          <WebGL3DCanvas
-            onRender={handleRender}
-            onInit={handleWebGLInit}
-            onCellClick={handleCellClick}
-            onCellHover={handleCellHover}
-            viewMode={viewMode}
-            showControls={false}
-            initialCamera={{
-              distance: 25,
-              angleX: -0.6,
-              angleY: 0.5,
-              centerX: (cells[0]?.length || 16) / 2,
-              centerY: (cells.length || 16) / 2,
-              centerZ: 0,
-            }}
-          />
-        </div>
+        {/* Canvas (P3-07: memoized; panel state changes do not rerender it) */}
+        <MapCanvas
+          onRender={handleRender}
+          onInit={handleWebGLInit}
+          onCellClick={handleCellClick}
+          onCellHover={handleCellHover}
+          viewMode={viewMode}
+          error={error}
+          cells={cells}
+          heights={heights}
+          cameraSeed={cameraSeed}
+        />
 
         {/* Status bar */}
         <div

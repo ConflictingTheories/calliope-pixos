@@ -8,8 +8,8 @@
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "lint": "eslint src --ext .js,.jsx",
-    "lint:fix": "eslint src --ext .js,.jsx --fix"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "files": [
     "build",
@@ -28,7 +28,7 @@
     "type": "git"
   },
   "author": "Kyle Derby MacInnis",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "pixospritz-core": "*",
     "pixospritz-math": "*",

@@ -176,6 +176,12 @@ export class GamePackageOrchestrator {
     this.onStatusChange = options.onStatusChange || (() => {});
     this.tracker = new AssetTracker();
     this.maxRetries = 3;
+    // Tool-layer context (assembled project context + repository), shared
+    // with any runTool dispatches this orchestrator performs.
+    this.toolContext = {
+      assembledContext: options.assembledContext ?? null,
+      projectRepository: options.projectRepository ?? null,
+    };
   }
 
   /**
@@ -713,6 +719,13 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       manifest.description = concept.synopsis;
 
       const validatedManifest = validateManifest(manifest);
+      // P6-10: invalid output cannot commit — a failed manifest validation
+      // aborts the package instead of emitting a broken pixozine.
+      if (!validatedManifest.valid) {
+        throw new Error(
+          `AI-generated manifest failed validation: ${validatedManifest.errors.join('; ')}`
+        );
+      }
       results.manifest = validatedManifest.manifest;
 
       results.assets.push({
@@ -962,6 +975,12 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
 
     // Validate config
     const validated = validateSpriteConfig(spriteConfig, layoutName);
+    // P6-10: invalid output cannot commit.
+    if (!validated.valid) {
+      throw new Error(
+        `AI-generated sprite config failed validation: ${validated.errors.join('; ')}`
+      );
+    }
 
     results.assets.push({
       type: 'config',

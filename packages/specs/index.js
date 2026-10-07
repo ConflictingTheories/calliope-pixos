@@ -47,71 +47,17 @@ export const constants = {
   shaderTypes,
 };
 
-// Validation helpers
-export function validateSave(data) {
-  return validateAgainstSchema(data, saveSchema);
-}
-
-export function validateSprite(data) {
-  return validateAgainstSchema(data, spriteSchema);
-}
-
-export function validateMap(data) {
-  return validateAgainstSchema(data, mapSchema);
-}
-
-export function validateManifest(data) {
-  return validateAgainstSchema(data, manifestSchema);
-}
-
-/**
- * Simple JSON Schema validator
- * For production, consider using ajv or similar
- */
-function validateAgainstSchema(data, schema) {
-  const errors = [];
-
-  // Check required fields
-  if (schema.required) {
-    for (const field of schema.required) {
-      if (!(field in data)) {
-        errors.push(`Missing required field: ${field}`);
-      }
-    }
-  }
-
-  // Check property types
-  if (schema.properties) {
-    for (const [key, prop] of Object.entries(schema.properties)) {
-      if (key in data) {
-        const value = data[key];
-        const expectedType = prop.type;
-
-        if (expectedType === 'array' && !Array.isArray(value)) {
-          errors.push(`Field ${key} should be an array`);
-        } else if (
-          expectedType === 'object' &&
-          (typeof value !== 'object' || Array.isArray(value))
-        ) {
-          errors.push(`Field ${key} should be an object`);
-        } else if (expectedType === 'string' && typeof value !== 'string') {
-          errors.push(`Field ${key} should be a string`);
-        } else if (expectedType === 'number' && typeof value !== 'number') {
-          errors.push(`Field ${key} should be a number`);
-        } else if (expectedType === 'integer' && !Number.isInteger(value)) {
-          errors.push(`Field ${key} should be an integer`);
-        } else if (expectedType === 'boolean' && typeof value !== 'boolean') {
-          errors.push(`Field ${key} should be a boolean`);
-        }
-      }
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
+// Validation helpers — P1-03: compiled schema validators with structured
+// issue codes ({ code, path, message, severity }). Re-exported here for
+// backwards compatibility; prefer importing from './src/validator.js'.
+export {
+  validateSave,
+  validateSprite,
+  validateMap,
+  validateManifest,
+  schemas,
+  ISSUE_CODES,
+} from './src/validator.js';
 
 export default {
   math,

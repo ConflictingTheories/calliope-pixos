@@ -20,9 +20,13 @@ export default defineConfig(() => {
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
-          // Separate Monaco into its own chunk for better caching
+          // (P3-12) Heavy capabilities split into on-demand chunks.
+          // Tool panels themselves code-split via React.lazy (see
+          // src/shell/toolRegistry.js); these entries keep the big
+          // third-party payloads out of the initial shell bundle.
           manualChunks: {
             'monaco-editor': ['monaco-editor'],
+            'html2canvas': ['html2canvas'],
           },
         },
       },

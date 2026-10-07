@@ -4,211 +4,144 @@
  * ---------------------------------------------------------------
  * Copyright (c) 2022-2025 Kyle Derby MacInnis
  *
- * A reusable undo/redo hook for all editors.
- * Provides a consistent history management pattern across the editor suite.
+ * (P2-05) React binding over CommandHistory (core/commands/history.js).
+ * Undo/redo now runs operation-specific inverses instead of full
+ * state snapshots.  The public API is unchanged for existing callers.
  *
  * Usage:
  *   const { current, push, undo, redo, canUndo, canRedo, clear, reset } = useHistory(initialState, options);
- *
- *   // Push new state
- *   push(newMapState);
- *
- *   // Undo/Redo
- *   if (canUndo) undo();
- *   if (canRedo) redo();
- *
- *   // Reset to initial state
- *   reset(newInitialState);
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { CommandHistory } from '../../core/commands/history.js';
 
 /**
  * @typedef {Object} HistoryOptions
- * @property {number} [maxHistory=100] - Maximum number of history states to keep
+ * @property {number} [byteCap] - Maximum history size in bytes
+ * @property {number} [coalesceWindowMs] - Time window for stroke coalescing
+ * @property {string} [coalesceKey] - Key enabling coalescing for push()
  * @property {function} [onChange] - Callback fired when history changes
- * @property {boolean} [enableMerging=false] - Whether to merge consecutive pushes within mergeWindow
- * @property {number} [mergeWindow=500] - Time window in ms for merging consecutive pushes
  */
 
-/**
- * Custom hook for managing undo/redo history
- *
- * @template T
- * @param {T} initialState - The initial state value
- * @param {HistoryOptions} [options={}] - Configuration options
- * @returns {{
- *   current: T,
- *   push: (state: T) => void,
- *   undo: () => void,
- *   redo: () => void,
- *   canUndo: boolean,
- *   canRedo: boolean,
- *   clear: () => void,
- *   reset: (state?: T) => void,
- *   historyLength: number,
- *   currentIndex: number
- * }}
- */
 export function useHistory(initialState, options = {}) {
-  const { maxHistory = 100, onChange = null, enableMerging = false, mergeWindow = 500 } = options;
+  const { byteCap, coalesceWindowMs, coalesceKey = null, onChange = null } = options;
 
-  const [history, setHistory] = useState([initialState]);
-  const [index, setIndex] = useState(0);
-  const [lastPushTime, setLastPushTime] = useState(0);
+  const historyRef = useRef(null);
+  if (!historyRef.current) {
+    historyRef.current = new CommandHistory({ byteCap, coalesceWindowMs });
+  }
+  const history = historyRef.current;
 
-  // Current state is the value at the current index
-  const current = useMemo(() => history[index], [history, index]);
+  const [current, setCurrent] = useState(initialState);
+  const currentRef = useRef(initialState);
+  const [, force] = useState(0);
 
-  // Can undo if there are previous states
-  const canUndo = useMemo(() => index > 0, [index]);
+  useEffect(() => history.onChange(() => force(n => n + 1)), [history]);
 
-  // Can redo if there are future states
-  const canRedo = useMemo(() => index < history.length - 1, [index, history.length]);
-
-  /**
-   * Push a new state to history
-   * Truncates any future states (redo stack) when pushing new state
-   */
   const push = useCallback(
-    newState => {
-      const now = Date.now();
-
-      setHistory(prev => {
-        // If merging is enabled and within the merge window, replace the current state
-        if (enableMerging && now - lastPushTime < mergeWindow && prev.length > 1) {
-          const newHistory = [...prev];
-          newHistory[index] = newState;
-          return newHistory;
-        }
-
-        // Normal push: truncate future and add new state
-        const newHistory = [...prev.slice(0, index + 1), newState];
-
-        // Keep history under maxHistory limit
-        if (newHistory.length > maxHistory) {
-          return newHistory.slice(newHistory.length - maxHistory);
-        }
-
-        return newHistory;
-      });
-
-      // Update index only if not merging
-      if (!enableMerging || now - lastPushTime >= mergeWindow) {
-        setIndex(i => Math.min(i + 1, maxHistory - 1));
-      }
-
-      setLastPushTime(now);
-
-      if (onChange) {
-        onChange({ type: 'push', state: newState });
-      }
+    (newState, pushOptions = {}) => {
+      const prevState = currentRef.current;
+      const key = pushOptions.coalesceKey ?? coalesceKey;
+      history.push(
+        {
+          label: pushOptions.label || 'state change',
+          snapshot: null,
+          bytes: pushOptions.bytes,
+          coalesceKey: key,
+          coalesce:
+            key != null
+              ? (prev, next) => ({
+                  label: next.label,
+                  coalesceKey: key,
+                  coalesce: prev.coalesce,
+                  // Undo restores the ORIGINAL state before the stroke.
+                  redo: next.redo,
+                  undo: prev.undo,
+                  bytes: (prev.bytes || 0) + (next.bytes || 0),
+                })
+              : undefined,
+          redo: () => {
+            currentRef.current = newState;
+            setCurrent(newState);
+          },
+          undo: () => {
+            currentRef.current = prevState;
+            setCurrent(prevState);
+          },
+        },
+        { apply: true }
+      );
+      if (onChange) onChange({ type: 'push', state: newState });
     },
-    [index, maxHistory, onChange, enableMerging, mergeWindow, lastPushTime]
+    [history, coalesceKey, onChange]
   );
 
-  /**
-   * Undo to the previous state
-   */
   const undo = useCallback(() => {
-    if (!canUndo) return;
+    if (!history.canUndo) return;
+    history.undo();
+    if (onChange) onChange({ type: 'undo', state: currentRef.current });
+  }, [history, onChange]);
 
-    setIndex(i => i - 1);
-
-    if (onChange) {
-      onChange({ type: 'undo', state: history[index - 1] });
-    }
-  }, [canUndo, history, index, onChange]);
-
-  /**
-   * Redo to the next state
-   */
   const redo = useCallback(() => {
-    if (!canRedo) return;
+    if (!history.canRedo) return;
+    history.redo();
+    if (onChange) onChange({ type: 'redo', state: currentRef.current });
+  }, [history, onChange]);
 
-    setIndex(i => i + 1);
-
-    if (onChange) {
-      onChange({ type: 'redo', state: history[index + 1] });
-    }
-  }, [canRedo, history, index, onChange]);
-
-  /**
-   * Clear all history except the current state
-   */
   const clear = useCallback(() => {
-    setHistory([current]);
-    setIndex(0);
+    history.clear();
+    if (onChange) onChange({ type: 'clear', state: currentRef.current });
+  }, [history, onChange]);
 
-    if (onChange) {
-      onChange({ type: 'clear', state: current });
-    }
-  }, [current, onChange]);
-
-  /**
-   * Reset history with a new initial state
-   * @param {T} [newState] - Optional new initial state (defaults to original initialState)
-   */
   const reset = useCallback(
     (newState = initialState) => {
-      setHistory([newState]);
-      setIndex(0);
-
-      if (onChange) {
-        onChange({ type: 'reset', state: newState });
-      }
+      history.clear();
+      currentRef.current = newState;
+      setCurrent(newState);
+      if (onChange) onChange({ type: 'reset', state: newState });
     },
-    [initialState, onChange]
+    [history, initialState, onChange]
   );
 
-  /**
-   * Go to a specific index in history
-   * @param {number} targetIndex - The index to navigate to
-   */
   const goTo = useCallback(
-    targetIndex => {
-      if (targetIndex < 0 || targetIndex >= history.length) return;
-
-      setIndex(targetIndex);
-
-      if (onChange) {
-        onChange({ type: 'goto', state: history[targetIndex] });
-      }
+    targetDepth => {
+      // Step-wise undo/redo to reach the requested depth.
+      const clamped = Math.max(0, Math.min(targetDepth, history.depth + history.redoStack.length));
+      while (history.depth > clamped && history.undo()) {}
+      while (history.depth < clamped && history.redo()) {}
     },
-    [history, onChange]
+    [history]
   );
 
-  return {
-    current,
-    push,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    clear,
-    reset,
-    goTo,
-    historyLength: history.length,
-    currentIndex: index,
-  };
+  return useMemo(
+    () => ({
+      current,
+      push,
+      undo,
+      redo,
+      canUndo: history.canUndo,
+      canRedo: history.canRedo,
+      clear,
+      reset,
+      goTo,
+      historyLength: history.depth,
+      currentIndex: history.depth - 1,
+      history,
+    }),
+    [current, push, undo, redo, clear, reset, goTo, history]
+  );
 }
 
 /**
  * Create a keyboard shortcut handler for undo/redo
- *
- * @param {{undo: function, redo: function, canUndo: boolean, canRedo: boolean}} historyMethods
- * @returns {function} Event handler for keydown events
  */
 export function createHistoryKeyHandler({ undo, redo, canUndo, canRedo }) {
   return event => {
-    // Ctrl+Z / Cmd+Z = Undo
     if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
       event.preventDefault();
       if (canUndo) undo();
       return true;
     }
-
-    // Ctrl+Y / Cmd+Shift+Z = Redo
     if (
       (event.ctrlKey || event.metaKey) &&
       (event.key === 'y' || (event.shiftKey && event.key === 'z'))
@@ -217,7 +150,6 @@ export function createHistoryKeyHandler({ undo, redo, canUndo, canRedo }) {
       if (canRedo) redo();
       return true;
     }
-
     return false;
   };
 }
