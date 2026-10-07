@@ -52,6 +52,12 @@ import { addLogListener, removeLogListener } from 'pixospritz-core/engine/utils/
 import { useToast } from './shared/components/Toast.jsx';
 import { Button } from './ui';
 import './shell/tabs.css';
+import {
+  PublishToSvrnDialog,
+  buildSvrnBundle,
+  uploadBundle,
+  localDownloadTarget,
+} from './svrn-publish/index.js';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -213,6 +219,9 @@ const App = () => {
   // global keydown dispatcher, and the core command registrations.
   const [paletteOpen, setPaletteOpen] = useState(false);
   const saveStatus = useSaveStatus();
+  // (Publishing vertical) "Publish to SVRN" dialog state.
+  const [svrnPublishOpen, setSvrnPublishOpen] = useState(false);
+  const [svrnPublishBusy, setSvrnPublishBusy] = useState(false);
   useEffect(() => {
     const offPalette = commands.register({
       id: 'shell.command-palette',
@@ -221,11 +230,18 @@ const App = () => {
       shortcut: 'ctrl+k',
       run: () => setPaletteOpen(true),
     });
+    const offPublish = commands.register({
+      id: 'svrn.publish',
+      title: 'Publish to SVRN…',
+      group: 'publish',
+      run: () => setSvrnPublishOpen(true),
+    });
     const onKeyDown = e => keymap.handleKeyDown(e);
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       offPalette();
+      offPublish();
     };
   }, []);
 
@@ -268,6 +284,31 @@ const App = () => {
   useEffect(() => {
     activeTabIdRef.current = activeTabId;
   }, [activeTabId]);
+
+  // (Publishing vertical) "Publish to SVRN": build the versioned .svrn
+  // bundle from the project repository and hand it to the upload target.
+  // Today the target is local-download (the hub does not exist yet);
+  // when it does, swap in the hub target — no flow changes needed.
+  const handlePublishToSvrn = useCallback(
+    async meta => {
+      setSvrnPublishBusy(true);
+      try {
+        const bundle = await buildSvrnBundle({ repository: toolCore.repository, meta });
+        await uploadBundle(bundle, localDownloadTarget);
+        toast.success(`Bundle built: ${bundle.filename} (${bundle.manifest.fileCount} files)`, {
+          title: 'Publish to SVRN',
+        });
+        setSvrnPublishOpen(false);
+      } catch (err) {
+        toast.error(err && err.message ? err.message : String(err), {
+          title: 'Publish to SVRN failed',
+        });
+      } finally {
+        setSvrnPublishBusy(false);
+      }
+    },
+    [toast]
+  );
 
   // (UX Phase 1) Dirty-dot indicators from the project store.
   useEffect(() => {
@@ -2070,6 +2111,13 @@ const App = () => {
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
       {/* (P2-09) Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      {/* (Publishing vertical) Publish to SVRN dialog */}
+      <PublishToSvrnDialog
+        open={svrnPublishOpen}
+        busy={svrnPublishBusy}
+        onClose={() => setSvrnPublishOpen(false)}
+        onPublish={handlePublishToSvrn}
+      />
       {/* (P2-07) Save status replaces alert() dialogs in save paths */}
       {saveStatus.kind !== 'idle' && (
         <div
