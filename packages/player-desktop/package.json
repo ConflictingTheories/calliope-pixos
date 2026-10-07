@@ -1,0 +1,1 @@
+{"description":"Desktop player for PixoSpritz games (Electron)","devDependencies":{"electron":"^28.0.0","electron-builder":"^24.0.0"},"main":"main.cjs","name":"pixospritz-player-desktop","scripts":{"dist":"electron-builder","dist:linux":"electron-builder --linux","dist:mac":"electron-builder --mac","dist:win":"electron-builder --win","start":"electron ."},"version":"1.0.1"}
