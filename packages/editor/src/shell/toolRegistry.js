@@ -32,6 +32,30 @@ function defineTool(def) {
   return { ...def, component };
 }
 
+/**
+ * P6-10 — AI generator isolation.
+ *
+ * The AI generator is an optional, network-dependent tool. It is isolated
+ * on three axes:
+ *
+ * 1. Build flag: `VITE_AI_GENERATOR=0` excludes the tool (and its chunk)
+ *    from the editor build entirely — e.g. for offline/air-gapped builds.
+ * 2. Capability gate: the entry carries `requiresProvider: true`; the shell
+ *    must treat it as unavailable until a provider is configured. The tool
+ *    UI itself renders a "configure API key" state with no key (it ships
+ *    without provider config by default).
+ * 3. No direct project writes: generation output flows through the shared
+ *    validator and the host-supplied `writeFile` — the orchestrator never
+ *    touches the project store itself.
+ */
+const AI_GENERATOR_ENABLED = (() => {
+  try {
+    return import.meta.env?.VITE_AI_GENERATOR !== '0';
+  } catch {
+    return true;
+  }
+})();
+
 export const TOOLS = [
   defineTool({
     id: 'script-editor',
@@ -109,14 +133,40 @@ export const TOOLS = [
     load: () => import('../ai-generator/index.jsx'),
     matches: () => false, // panel, opened explicitly
     chunk: 'tool-ai',
+    // P6-10: optional tool. Excluded from the build when
+    // VITE_AI_GENERATOR=0; requires a configured provider at runtime.
+    optional: true,
+    requiresProvider: true,
+    enabled: AI_GENERATOR_ENABLED,
   }),
-];
+].filter(t => t.enabled !== false);
 
 /** JSON files fall back to the script editor when no specialist matches. */
 export const FALLBACK_TOOL_ID = 'script-editor';
 
 export function getTool(id) {
   return TOOLS.find(t => t.id === id) || null;
+}
+
+/**
+ * P6-10 — capability gate for optional tools.
+ *
+ * Returns false for tools excluded at build time (`enabled: false`) or
+ * requiring a provider that isn't configured. `isProviderConfigured` is
+ * injected by the shell (which owns the ai-service import) to avoid a
+ * registry -> service dependency cycle.
+ */
+export function isToolAvailable(id, { isProviderConfigured = false } = {}) {
+  const tool = getTool(id);
+  if (!tool) return false;
+  if (tool.enabled === false) return false;
+  if (tool.requiresProvider && !isProviderConfigured) return false;
+  return true;
+}
+
+/** Build-time flag, exported for tests and the shell. */
+export function isAiGeneratorEnabled() {
+  return AI_GENERATOR_ENABLED;
 }
 
 /**
