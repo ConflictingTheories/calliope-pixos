@@ -50,6 +50,7 @@ const GeometryEditor3D = getTool('geometry-editor-3d').component;
 const AIGenerator = getTool('ai-generator').component;
 import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
 import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
+import ShortcutHelp from './components/ShortcutHelp.jsx';
 import './onboarding/FirstTimeWizard.css';
 import { debug, debugWarn, debugError } from './shared/debug-logger.js';
 import ConsolePanel, { useConsole } from './script-editor/ConsolePanel.jsx';
@@ -100,6 +101,15 @@ const App = () => {
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
+
+  // Shortcut help overlay (press ?)
+  useEffect(() => {
+    const off = keymap.register('help.shortcuts', '?', () => {
+      setShowShortcuts(true);
+      return true;
+    });
+    return off;
+  }, []);
   // Dirty paths from the project store -> dirty-dot indicators.
   const [dirtyPaths, setDirtyPaths] = useState([]);
   // Mirror for the closeTab callback (avoids stale state).
@@ -178,6 +188,7 @@ const App = () => {
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const supportFabRef = useRef(null);
 
   // Console State
@@ -1679,7 +1690,142 @@ const App = () => {
       const fileExtension = entry.name.match(/\\.\\w+$/)?.[0] || '.pxc';
 
       // Asset loader function that loads from ZIP with proper MIME types
-      const assetLoader = createAssetLoader(zip, getData, toDataUri);
+      const assetLoader = async path => {
+        try {
+          debug('App', '[assetLoader] Loading asset:', path);
+          // Clean the path
+          let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
+          debug('App', '[assetLoader] Clean path:', cleanPath);
+
+          // Helper to find asset by name in ZIP recursively
+          const findAsset = (node, targetName) => {
+            if (node.children) {
+              for (const child of node.children) {
+                if (
+                  !child.directory &&
+                  (child.name === targetName || child.name.includes(targetName))
+                ) {
+                  return child;
+                }
+                if (child.directory) {
+                  const found = findAsset(child, targetName);
+                  if (found) return found;
+                }
+              }
+            }
+            return null;
+          };
+
+          // First try direct match
+          let assetEntry = findAsset(zip, cleanPath);
+
+          // If not found, try common prefix and extension fixes for sprites and audio
+          if (!assetEntry) {
+            // For sprite assets like "characters/male"
+            if (
+              cleanPath.startsWith('characters/') ||
+              cleanPath.startsWith('npc/') ||
+              cleanPath.startsWith('sprites/')
+            ) {
+              // Try image formats FIRST (cutscene needs pixels, not JSON)
+              // Then fall back to JSON definition
+              const trialPaths = [
+                cleanPath.startsWith('sprites/')
+                  ? cleanPath + '.png'
+                  : 'sprites/' + cleanPath + '.png',
+                cleanPath.startsWith('sprites/')
+                  ? cleanPath + '.gif'
+                  : 'sprites/' + cleanPath + '.gif',
+                cleanPath.startsWith('sprites/') ? cleanPath : 'sprites/' + cleanPath,
+                cleanPath + '.png',
+                cleanPath + '.gif',
+                cleanPath.startsWith('sprites/')
+                  ? cleanPath + '.json'
+                  : 'sprites/' + cleanPath + '.json',
+                cleanPath + '.json',
+              ];
+              for (const trial of trialPaths) {
+                assetEntry = findAsset(zip, trial);
+                if (assetEntry) {
+                  debug('App', '[assetLoader] Found sprite at:', trial);
+                  break;
+                }
+              }
+            }
+
+            // For texture/backdrop files
+            if (!assetEntry && cleanPath.startsWith('textures/')) {
+              const trialTexturePaths = [
+                cleanPath,
+                cleanPath + '.png',
+                cleanPath + '.gif',
+                cleanPath + '.jpg',
+                cleanPath + '.jpeg',
+              ];
+              for (const trial of trialTexturePaths) {
+                assetEntry = findAsset(zip, trial);
+                if (assetEntry) break;
+              }
+            }
+
+            // For audio files, try prefixing with "audio/"
+            if (!assetEntry && cleanPath.match(/\.mp3$|\.wav$|\.ogg$/)) {
+              const trialAudioPath = 'audio/' + cleanPath.replace(/^audio\//, '');
+              assetEntry = findAsset(zip, trialAudioPath);
+            }
+
+            // For direct portrait references (like fire_portrait, water_portrait)
+            if (!assetEntry && cleanPath.match(/_portrait$/)) {
+              const trialPortraitPaths = [
+                'textures/' + cleanPath + '.gif',
+                'textures/' + cleanPath + '.png',
+                cleanPath + '.gif',
+                cleanPath + '.png',
+              ];
+              for (const trial of trialPortraitPaths) {
+                assetEntry = findAsset(zip, trial);
+                if (assetEntry) break;
+              }
+            }
+
+            // Last resort: try without any prefix if it has an extension
+            if (!assetEntry && cleanPath.match(/\.\w+$/)) {
+              assetEntry = findAsset(zip, cleanPath.split('/').pop());
+            }
+          }
+
+          if (!assetEntry) {
+            // Only warn if it's not an intermediate search path
+            // (e.g., don't warn for .json when looking for .gif)
+            if (!path.match(/\.(json|gif|png)$/)) {
+              console.warn(`Asset not found in ZIP: ${path}`);
+            }
+            return null;
+          }
+
+          // Get the data and convert to data URI
+          const data = await getData(assetEntry, false);
+          const ext = assetEntry.name.split('.').pop().toLowerCase();
+          const mimeMap = {
+            png: 'image/png',
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            gif: 'image/gif',
+            webp: 'image/webp',
+            svg: 'image/svg+xml',
+            mp3: 'audio/mpeg',
+            wav: 'audio/wav',
+            ogg: 'audio/ogg',
+            json: 'application/json',
+          };
+          const mimeType = mimeMap[ext] || 'application/octet-stream';
+          debug('App', '[assetLoader] Returning data URI with MIME type:', mimeType);
+          return toDataUri(data, mimeType);
+        } catch (err) {
+          console.error(`Failed to load asset ${path}:`, err);
+          return null;
+        }
+      };
 
       const cutsceneTabId = getEntryFullPath(entry);
       openTab(cutsceneTabId, entry.name, (
@@ -2184,6 +2330,7 @@ const App = () => {
         </button>
       </div>
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
+      {showShortcuts && <ShortcutHelp onClose={() => setShowShortcuts(false)} />}
       {/* (P2-09) Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
@@ -2216,6 +2363,7 @@ const App = () => {
         onClose={() => setSvrnPublishOpen(false)}
         onPublish={handlePublishToSvrn}
       />
+      {/* Project tools */}
       {projectSettingsOpen && (
         <ProjectSettings
           manifest={{}}
