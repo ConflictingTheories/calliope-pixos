@@ -469,6 +469,18 @@ const App = () => {
 
   const handleWizardClose = useCallback(() => {
     setShowWizard(false);
+    try {
+      localStorage.setItem('pixospritz_wizard_seen', '1');
+    } catch {}
+  }, []);
+
+  // Show the welcome wizard on first launch (unless the user has seen it).
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('pixospritz_wizard_seen')) {
+        setShowWizard(true);
+      }
+    } catch {}
   }, []);
 
   useEffect(() => {
