@@ -17,14 +17,24 @@
 
 import React, { useState } from 'react';
 import JSZip from 'jszip';
-import { Panel, Uploader, List, Message, Loader, Placeholder, Button } from '../ui';
+import { Panel, Uploader, Message, Loader, Button } from '../ui';
 import { useToast } from '../shared/components/Toast.jsx';
+// (UX Phase 2) Hierarchical asset tree replaces the flat file list
+// (finding A2.1) — folders from zip paths, search, type badges.
+import { AssetTree } from './components/AssetTree.jsx';
+// (UX Phase 2) Export dialog with options, progress, and deterministic
+// output (finding A7.2) — replaces the one-button export.
+import { ExportDialog } from './ExportDialog.jsx';
+// (UX Phase 2) In-app new-file dialog replaces window.prompt().
+import { NewFileDialog } from './NewFileDialog.jsx';
 
 function ZipManager({ openFile, onZipLoaded }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [zip, setZip] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [newFileOpen, setNewFileOpen] = useState(false);
   const toast = useToast();
 
   /**
@@ -101,21 +111,16 @@ function ZipManager({ openFile, onZipLoaded }) {
     }
   }
 
-  // Create a new empty file (script, map, etc.) in the zip
-  function createNewFile() {
+  // Create a new file (script, map, etc.) in the zip via the dialog.
+  // (UX Phase 2) window.prompt() replaced with an in-app dialog.
+  function createNewFile(name, defaultContent) {
     if (!zip) return;
-    const name = window.prompt('Enter new file name (e.g. myscript.pxs, map.json)');
-    if (!name) return;
-    let defaultContent = '';
-    if (name.endsWith('.json')) {
-      defaultContent = '{}';
-    } else if (name.endsWith('.pxs')) {
-      defaultContent = '-- New pixoscript\n';
-    }
     try {
       zip.file(name, defaultContent);
       const entry = zip.file(name);
       setEntries(prev => [...prev, { name, file: entry }]);
+      toast.success(`Created ${name}`);
+      if (openFile) openFile({ name, file: entry });
     } catch (err) {
       console.error('Failed to create file', err);
       toast.error(`Failed to create file: ${err.message || err}`, { title: 'Create failed' });
@@ -135,39 +140,18 @@ function ZipManager({ openFile, onZipLoaded }) {
       </Uploader>
       {loading && <Loader center content="Loading package…" />}
       {error && <Message type="error">{error}</Message>}
-      {entries.length > 0 ? (
-        <List hover bordered style={{ maxHeight: '60vh', overflow: 'auto' }}>
-          {entries.map((entry, idx) => (
-            <List.Item key={idx} onClick={() => openFile(entry)} style={{ cursor: 'pointer' }}>
-              {entry.name}
-            </List.Item>
-          ))}
-        </List>
-      ) : (
-        !loading && <Placeholder.Paragraph rows={4} active />
-      )}
+      {/* (UX Phase 2) Asset tree: hierarchical, searchable, typed (finding A2.1). */}
+      <AssetTree entries={entries} onOpen={openFile} />
       {zip && entries.length > 0 && (
         <div style={{ marginTop: '1rem' }}>
-          <Button
-            appearance="primary"
-            onClick={async () => {
-              try {
-                const blob = await zip.generateAsync({ type: 'blob' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'pixospritz-package.pxz';
-                link.click();
-                setTimeout(() => URL.revokeObjectURL(url), 10000);
-                toast.success('Package exported as pixospritz-package.pxz');
-              } catch (err) {
-                console.error('Failed to export zip', err);
-                toast.error(`Export failed: ${err.message || err}`, { title: 'Export failed' });
-              }
-            }}
-          >
-            Export ZIP
+          <Button appearance="primary" onClick={() => setExportOpen(true)}>
+            Export…
           </Button>
+          <ExportDialog
+            open={exportOpen}
+            onClose={() => setExportOpen(false)}
+            zip={zip}
+          />
         </div>
       )}
       {/* Project actions */}
@@ -183,9 +167,14 @@ function ZipManager({ openFile, onZipLoaded }) {
         >
           <Button appearance="default">Add Files</Button>
         </Uploader>
-        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={createNewFile}>
-          New File
+        <Button appearance="default" style={{ marginLeft: '0.5rem' }} onClick={() => setNewFileOpen(true)}>
+          New File…
         </Button>
+        <NewFileDialog
+          open={newFileOpen}
+          onClose={() => setNewFileOpen(false)}
+          onCreate={createNewFile}
+        />
       </div>
     </Panel>
   );
