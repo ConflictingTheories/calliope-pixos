@@ -185,20 +185,7 @@ export default class Avatar extends Sprite {
         case 'd':
           facing = Direction.Right;
           break;
-        case 'p':
-          return new ActionLoader(
-            this.engine,
-            'patrol',
-            [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 600, this.zone],
-            this
-          );
-        case 'r':
-          return new ActionLoader(
-            this.engine,
-            'patrol',
-            [this.pos.toArray(), new Vector(8, 13, this.pos.z).toArray(), 200, this.zone],
-            this
-          );
+        // Debug patrol keys removed - were hardcoded to Vector(8, 13)
       }
     }
 

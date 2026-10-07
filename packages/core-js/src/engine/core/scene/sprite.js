@@ -743,11 +743,5 @@ export default class Sprite extends Loadable {
     this.speech.writeText(greeting);
     this.speech.loadImage();
     return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
-    if (this.speech.clearHud) {
-      this.speech.clearHud();
-    }
-    this.speech.writeText(greeting);
-    this.speech.loadImage();
-    return new ActionLoader(this.engine, 'greeting', [greeting, { autoclose: true }], this);
   };
 }
