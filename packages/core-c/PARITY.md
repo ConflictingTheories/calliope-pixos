@@ -20,8 +20,7 @@
 | OBJ loading | ✅ | ✅ | Implemented (`resource/obj_loader.c`) |
 | OBJ materials (MTL) | ✅ | ✅ | Implemented (`resource/obj_loader.c`) |
 | GLTF loading | ✅ | ✅ | Implemented (`resource/gltf_loader.c`) |
-| GLTF rendering | ✅ | ✅ | Implemented (`rendering/gltf_renderer.c`) |
-| Custom shaders | ✅ | ✅ | Implemented (`rendering/shader.c`) |
+| GLTF rendering | ✅ | ✅ | Implemented (`rendering/gltf_renderer.c`) || Custom shaders | ✅ | ✅ | Implemented (`rendering/shader.c`) |
 | Post-processing | ❌ | ❌ | Not planned |
 
 ## Scene & World
@@ -32,8 +31,7 @@
 | World management | ✅ | ✅ | Implemented (`scene/world.c`) |
 | Portals | ✅ | ✅ | Implemented (`scene/portal.c`) — 2026-10-07 |
 | Behaviors | ✅ | ✅ | Implemented (`scene/behavior.c`) — 2026-10-07 |
-| Avatar | ✅ | ✅ | Implemented (`scene/avatar.c`) |
-| Portal system | ✅ | ❌ | TODO |
+| Avatar | ✅ | ✅ | Implemented (`scene/avatar.c`) || Portal system | ✅ | ❌ | TODO |
 | Avatar manager | ✅ | ❌ | TODO |
 | Behavior system | ✅ | ❌ | TODO |
 | Mode manager | ✅ | ❌ | TODO |
