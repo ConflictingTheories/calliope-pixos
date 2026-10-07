@@ -33,17 +33,27 @@ const formatDuration = seconds => {
   return `${mins}:${secs}`;
 };
 
-const deriveMetadataFromContent = dataUri => {
-  if (!dataUri) {
+const deriveMetadataFromContent = (content, byteLength = 0) => {
+  const empty = {
+    format: '—',
+    sizeBytes: 0,
+    sizeLabel: '—',
+    bitrateLabel: '—',
+    durationLabel: '—',
+  };
+  if (!content) return empty;
+
+  // (P3-14) Blob URLs carry no inline metadata; fall back to the known byte length.
+  if (typeof content === 'string' && content.startsWith('blob:')) {
     return {
-      format: '—',
-      sizeBytes: 0,
-      sizeLabel: '—',
-      bitrateLabel: '—',
-      durationLabel: '—',
+      ...empty,
+      format: 'audio',
+      sizeBytes: byteLength,
+      sizeLabel: byteLength ? `${(byteLength / 1024).toFixed(1)} KB` : '—',
     };
   }
 
+  const dataUri = content;
   const [header, payload] = dataUri.split(',');
   const mimeMatch = header?.match(/data:(.*?);/);
   const format = mimeMatch ? mimeMatch[1] : 'unknown';
