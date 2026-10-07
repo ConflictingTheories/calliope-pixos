@@ -176,6 +176,12 @@ export class GamePackageOrchestrator {
     this.onStatusChange = options.onStatusChange || (() => {});
     this.tracker = new AssetTracker();
     this.maxRetries = 3;
+    // Tool-layer context (assembled project context + repository), shared
+    // with any runTool dispatches this orchestrator performs.
+    this.toolContext = {
+      assembledContext: options.assembledContext ?? null,
+      projectRepository: options.projectRepository ?? null,
+    };
   }
 
   /**

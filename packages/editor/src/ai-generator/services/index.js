@@ -7,8 +7,19 @@
  * Central export point for all AI generator services.
  */
 
-// Core AI service
-export { AIService, aiService, AI_PROVIDERS } from './ai-service.js';
+// Core AI service (local-first: Ollama / llama.cpp / LM Studio default,
+// cloud providers opt-in)
+export { AIService, aiService, AI_PROVIDERS, PROVIDER_META } from './ai-service.js';
+
+// Hardware profiler + local model catalog
+export { profileHardware, tierForHardware, HARDWARE_TIERS, TIER_LABELS } from './hardware-profiler.js';
+export { MODEL_CATALOG, modelsForTier, recommendModels, getModelById } from './model-catalog.js';
+
+// MCP-style tool layer
+export { AI_TOOLS, getTool, listTools, runTool, validateToolArgs } from './ai-tools.js';
+
+// Context assembler (user-controlled project context)
+export { assembleContext, describeInclusion, CONTEXT_BUDGETS } from './context-assembler.js';
 
 // Prompt analysis
 export { analyzePrompt, ASSET_TYPES, DIRECTIONS, SPRITE_PRESETS } from './prompt-analyzer.js';
