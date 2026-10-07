@@ -26,7 +26,6 @@ import CameraManager from './camera.js';
 import LightManager from './light.js';
 import SkyboxManager from './skybox.js';
 import ParticleManager from './ParticleManager.js';
-import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
@@ -152,10 +151,6 @@ export default class RenderManager {
       // Particle system
       /** @type {ParticleManager} */
       this.particleManager = new ParticleManager(this);
-
-      // Frustum culling for performance optimization
-      /** @type {FrustumCuller} */
-      this.frustumCuller = new FrustumCuller(this);
 
       // Level of Detail manager for performance optimization
       /** @type {LODManager} */
