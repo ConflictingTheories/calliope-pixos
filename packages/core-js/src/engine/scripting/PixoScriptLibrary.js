@@ -306,10 +306,13 @@ export default class PixoScriptLibrary {
       },
       run_transition: (effect = 'fade', direction = 'out', duration = 500) => {
         return () => {
-          new Promise(resolve => {
+          return new Promise(resolve => {
             const rm = engine.renderManager;
-            if (!rm) resolve();
-            return rm.startTransition({ effect, direction, duration }).then(() => resolve());
+            if (!rm) {
+              resolve();
+              return;
+            }
+            rm.startTransition({ effect, direction, duration }).then(() => resolve());
           });
         };
       },

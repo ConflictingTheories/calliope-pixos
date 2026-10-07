@@ -30,6 +30,7 @@ import AvatarManager from './AvatarManager.js';
 import BehaviorManager from './BehaviorManager.js';
 import { Vector } from '@Engine/utils/math/vector.js';
 import Pathfinder from './Pathfinder.js';
+import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
 /**
  * @typedef {object} MenuConfig
  * @property {object} start - Start menu configuration.
@@ -429,15 +430,66 @@ export default class World {
     const ctx = {
       world: this,
       avatar,
-      showMessage: msg => console.log('[Behavior]', msg),
-      showDialog: opts => console.log('[Behavior Dialog]', opts),
+      showMessage: async msg => {
+        // Use the pixos.show_message API which is wired to DialogUI
+        const world = this;
+        if (world) {
+          world._pendingMessage = {
+            text: msg,
+            resolve: () => { world._pendingMessage = null; },
+          };
+          if (typeof window !== 'undefined') {
+            window.__pixosWorld = world;
+          }
+        }
+        console.log('[Behavior]', msg);
+      },
+      showDialog: async opts => {
+        const world = this;
+        const prompt = typeof opts === 'string' ? opts : opts.prompt || opts.text;
+        const options = opts.options || opts.choices || ['OK'];
+        if (world) {
+          world._pendingChoice = {
+            prompt,
+            options,
+            resolve: (idx) => { world._pendingChoice = null; },
+          };
+          if (typeof window !== 'undefined') {
+            window.__pixosWorld = world;
+          }
+        }
+        console.log('[Behavior Dialog]', opts);
+        return 0;
+      },
       giveItem: item => {
         if (avatar.inventory) avatar.inventory.push(item);
       },
       getPortal: id => this.portalManager.findPortal(zoneId, id),
       travelViaPortal: portal => this.avatarManager.travelViaPortal(portal),
       runScript: async (file, params) => {
-        console.log(`[Behavior] Would run script: ${file}`);
+        try {
+          const interpreter = new PixoScriptInterpreter(this.engine);
+          // Load script content - file is a path like "elder_talk.pxs"
+          // Scripts are registered via interpreter.registerScript() or loaded from zone
+          const zone = this.getZoneById(zoneId);
+          let scriptContent = null;
+          if (zone && zone.getScript) {
+            scriptContent = zone.getScript(file);
+          }
+          if (!scriptContent) {
+            console.warn(`[Behavior] Script not found: ${file}`);
+            return;
+          }
+          interpreter.setScope({
+            world: this,
+            avatar,
+            zone,
+            params: params || {},
+          });
+          await interpreter.run(scriptContent);
+        } catch (e) {
+          console.error(`[Behavior] Script failed: ${file}`, e);
+        }
       },
     };
 
