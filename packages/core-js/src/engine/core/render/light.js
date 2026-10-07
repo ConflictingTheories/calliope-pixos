@@ -60,7 +60,7 @@ export default class LightManager {
     enabled = true
   ) => {
     const { shaderProgram } = this.renderManager;
-    let index = this.lights.length;
+    let index = Object.keys(this.lights).length;
     if (index >= shaderProgram.maxLights) return;
     let light = new PointLight(
       this.renderManager.engine,

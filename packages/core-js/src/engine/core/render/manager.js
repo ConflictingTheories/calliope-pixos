@@ -165,9 +165,7 @@ export default class RenderManager {
       /** @type {TextureAtlas} */
       this.textureAtlas = new TextureAtlas(this);
 
-      // Camera effects (shake, follow, fade, etc.)
-      /** @type {CameraEffects} */
-      this.cameraEffects = null; // Initialized after camera
+      // Camera effects already initialized above (line 142)
 
       // Particle shader program
       /** @type {WebGLProgram|null} */
