@@ -1688,21 +1688,22 @@ const App = () => {
               cleanPath.startsWith('npc/') ||
               cleanPath.startsWith('sprites/')
             ) {
-              // Try prefixing with "sprites/" or various extensions
+              // Try image formats FIRST (cutscene needs pixels, not JSON)
+              // Then fall back to JSON definition
               const trialPaths = [
-                cleanPath.startsWith('sprites/') ? cleanPath : 'sprites/' + cleanPath,
-                cleanPath.startsWith('sprites/')
-                  ? cleanPath + '.json'
-                  : 'sprites/' + cleanPath + '.json',
-                cleanPath.startsWith('sprites/')
-                  ? cleanPath + '.gif'
-                  : 'sprites/' + cleanPath + '.gif',
                 cleanPath.startsWith('sprites/')
                   ? cleanPath + '.png'
                   : 'sprites/' + cleanPath + '.png',
-                cleanPath + '.json',
-                cleanPath + '.gif',
+                cleanPath.startsWith('sprites/')
+                  ? cleanPath + '.gif'
+                  : 'sprites/' + cleanPath + '.gif',
+                cleanPath.startsWith('sprites/') ? cleanPath : 'sprites/' + cleanPath,
                 cleanPath + '.png',
+                cleanPath + '.gif',
+                cleanPath.startsWith('sprites/')
+                  ? cleanPath + '.json'
+                  : 'sprites/' + cleanPath + '.json',
+                cleanPath + '.json',
               ];
               for (const trial of trialPaths) {
                 assetEntry = findAsset(zip, trial);
