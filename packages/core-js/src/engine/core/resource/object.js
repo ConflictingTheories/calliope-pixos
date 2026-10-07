@@ -339,6 +339,110 @@ export default class ModelObject extends Loadable {
   };
 
   /**
+   * draw GLTF model with PBR materials (custom WebGL, no Three.js)
+   */
+  drawGLTF = () => {
+    const { engine } = this;
+    const gl = engine.gl;
+    const rm = engine.renderManager;
+
+    if (!this.gltfMeshes || this.gltfMeshes.length === 0) {
+      console.warn('ModelObject.drawGLTF: No GLTF mesh data');
+      return;
+    }
+
+    // Initialize WebGL buffers on first draw
+    if (!this._gltfBuffers) {
+      this._gltfBuffers = [];
+      for (const meshData of this.gltfMeshes) {
+        const buffers = {};
+
+        // Positions
+        if (meshData.positions) {
+          buffers.position = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshData.positions), gl.STATIC_DRAW);
+          buffers.positionCount = meshData.positions.length / 3;
+        }
+
+        // Normals
+        if (meshData.normals) {
+          buffers.normal = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshData.normals), gl.STATIC_DRAW);
+        }
+
+        // UVs
+        if (meshData.uvs) {
+          buffers.uv = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uv);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshData.uvs), gl.STATIC_DRAW);
+        }
+
+        // Indices
+        if (meshData.indices) {
+          buffers.index = gl.createBuffer();
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
+          // Use Uint32 if needed, else Uint16
+          const maxIndex = Math.max(...meshData.indices);
+          const IndexType = maxIndex > 65535 ? Uint32Array : Uint16Array;
+          buffers.indexType = maxIndex > 65535 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new IndexType(meshData.indices), gl.STATIC_DRAW);
+          buffers.indexCount = meshData.indices.length;
+        }
+
+        buffers.materialIndex = meshData.materialIndex || 0;
+        this._gltfBuffers.push(buffers);
+      }
+    }
+
+    // Draw each mesh
+    for (const buffers of this._gltfBuffers) {
+      // Bind position
+      if (buffers.position) {
+        rm.bindBuffer(buffers.position, rm.shaderProgram.aVertexPosition);
+      }
+      // Bind normal
+      if (buffers.normal) {
+        rm.bindBuffer(buffers.normal, rm.shaderProgram.aVertexNormal);
+      }
+      // Bind UV
+      if (buffers.uv) {
+        rm.bindBuffer(buffers.uv, rm.shaderProgram.aTextureCoord);
+      }
+
+      // Apply PBR material
+      const mat = (this.gltfMaterials || [])[buffers.materialIndex];
+      if (mat) {
+        // Base color as diffuse
+        const bc = mat.baseColor || [1, 1, 1, 1];
+        gl.uniform3fv(rm.shaderProgram.uDiffuse, [bc[0], bc[1], bc[2]]);
+        // Metallic/roughness affect specular
+        const metallic = mat.metallic ?? 1.0;
+        const roughness = mat.roughness ?? 1.0;
+        gl.uniform3fv(rm.shaderProgram.uSpecular, [metallic * 0.5, metallic * 0.5, metallic * 0.5]);
+        gl.uniform1f(rm.shaderProgram.uSpecularExponent, (1 - roughness) * 100 + 2);
+        gl.uniform1f(rm.shaderProgram.useDiffuse, 0.0); // No texture yet, use color
+      }
+
+      // Set matrices
+      rm.shaderProgram.setMatrixUniforms({
+        isSelected: this.isSelected,
+        scale: this.scale,
+        sampler: 0.0,
+      });
+
+      // Draw
+      if (buffers.index) {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
+        gl.drawElements(gl.TRIANGLES, buffers.indexCount, buffers.indexType, 0);
+      } else if (buffers.position) {
+        gl.drawArrays(gl.TRIANGLES, 0, buffers.positionCount);
+      }
+    }
+  };
+
+  /**
    * draw obj model with materials and textures (needs work)
    */
   drawTexturedObj = () => {
@@ -565,12 +669,13 @@ export default class ModelObject extends Loadable {
     }
 
     // Draw Object
-    if (!mesh || !mesh.textures) {
+    if (this.isGLTF) {
+      this.drawGLTF();
+    } else if (!mesh || !mesh.textures) {
       console.warn(`ModelObject.draw: No valid mesh data`);
       engine.renderManager.mvPopMatrix();
       return;
-    }
-    if (!mesh.textures.length) {
+    } else if (!mesh.textures.length) {
       this.drawObj();
     } else {
       this.drawTexturedObj();
