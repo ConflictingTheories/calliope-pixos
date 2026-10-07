@@ -40,6 +40,12 @@ import { BridgedProjectRepository } from './core/project/repository.js';
 import ProjectSettings from './components/ProjectSettings.jsx';
 import ModeEditor from './components/ModeEditor.jsx';
 import UpdateTracker from './components/UpdateTracker.jsx';
+import ShaderEditor from './components/ShaderEditor.jsx';
+import PortalEditor from './components/PortalEditor.jsx';
+import BehaviorEditor from './components/BehaviorEditor.jsx';
+import LightEditor from './components/LightEditor.jsx';
+import SceneTest from './components/SceneTest.jsx';
+import MenuEditor from './components/MenuEditor.jsx';
 
 const AudioPreview = getTool('audio-preview').component;
 const ModelPreview = getTool('model-preview').component;
@@ -255,6 +261,12 @@ const App = () => {
   const [svrnPublishBusy, setSvrnPublishBusy] = useState(false);
   // Project tools state.
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+  const [shaderEditorOpen, setShaderEditorOpen] = useState(false);
+  const [portalEditorOpen, setPortalEditorOpen] = useState(false);
+  const [behaviorEditorOpen, setBehaviorEditorOpen] = useState(false);
+  const [lightEditorOpen, setLightEditorOpen] = useState(false);
+  const [sceneTestOpen, setSceneTestOpen] = useState(false);
+  const [menuEditorOpen, setMenuEditorOpen] = useState(false);
   const [modeEditorOpen, setModeEditorOpen] = useState(false);
   const [updateTrackerOpen, setUpdateTrackerOpen] = useState(false);
   useEffect(() => {
@@ -289,6 +301,43 @@ const App = () => {
       group: 'project',
       run: () => setUpdateTrackerOpen(true),
     });
+    const offShaderEditor = commands.register({
+      id: 'tools.shader-editor',
+      title: 'Shader Editor…',
+      group: 'tools',
+      run: () => setShaderEditorOpen(true),
+    });
+    const offPortalEditor = commands.register({
+      id: 'tools.portal-editor',
+      title: 'Portal Editor…',
+      group: 'tools',
+      run: () => setPortalEditorOpen(true),
+    });
+    const offBehaviorEditor = commands.register({
+      id: 'tools.behavior-editor',
+      title: 'Behavior Editor…',
+      group: 'tools',
+      run: () => setBehaviorEditorOpen(true),
+    });
+    const offLightEditor = commands.register({
+      id: 'tools.light-editor',
+      title: 'Light Editor…',
+      group: 'tools',
+      run: () => setLightEditorOpen(true),
+    });
+    const offSceneTest = commands.register({
+      id: 'tools.scene-test',
+      title: 'Test Scene…',
+      group: 'tools',
+      shortcut: 'ctrl+t',
+      run: () => setSceneTestOpen(true),
+    });
+    const offMenuEditor = commands.register({
+      id: 'tools.menu-editor',
+      title: 'Menu Editor…',
+      group: 'tools',
+      run: () => setMenuEditorOpen(true),
+    });
     // (UX Phase 2) Shortcut reference (finding A3.1).
     const offShortcuts = commands.register({
       id: 'shell.shortcuts',
@@ -304,6 +353,12 @@ const App = () => {
       offPalette();
       offPublish();
       offProjectSettings();
+      offShaderEditor();
+      offPortalEditor();
+      offBehaviorEditor();
+      offLightEditor();
+      offSceneTest();
+      offMenuEditor();
       offModeEditor();
       offUpdateTracker();
       offShortcuts();
@@ -2372,6 +2427,53 @@ const App = () => {
           entries={[]}
           onAdd={() => {}}
           onClose={() => setUpdateTrackerOpen(false)}
+        />
+      )}
+      {shaderEditorOpen && (
+        <ShaderEditor
+          shader={null}
+          onSave={() => setShaderEditorOpen(false)}
+          onClose={() => setShaderEditorOpen(false)}
+        />
+      )}
+      {portalEditorOpen && (
+        <PortalEditor
+          portals={[]}
+          availableMaps={[]}
+          portalsByMap={{}}
+          onAdd={() => {}}
+          onUpdate={() => {}}
+          onDelete={() => {}}
+          onClose={() => setPortalEditorOpen(false)}
+        />
+      )}
+      {behaviorEditorOpen && (
+        <BehaviorEditor
+          object={null}
+          onSave={() => setBehaviorEditorOpen(false)}
+          onClose={() => setBehaviorEditorOpen(false)}
+        />
+      )}
+      {lightEditorOpen && (
+        <LightEditor
+          lights={[]}
+          onAdd={() => {}}
+          onUpdate={() => {}}
+          onDelete={() => {}}
+          onClose={() => setLightEditorOpen(false)}
+        />
+      )}
+      {sceneTestOpen && (
+        <SceneTest
+          mapId={null}
+          onClose={() => setSceneTestOpen(false)}
+          onError={() => {}}
+        />
+      )}
+      {menuEditorOpen && (
+        <MenuEditor
+          menu={null}
+          onSave={() => setMenuEditorOpen(false)}
         />
       )}
       {/* (P2-07) Save status replaces alert() dialogs in save paths */}
