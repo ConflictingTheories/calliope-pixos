@@ -8,6 +8,7 @@
  */
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { IconButton } from '../ui';
 import './animation-preview.css';
 
 /**
@@ -202,30 +203,16 @@ function AnimationPreview({
 
       {/* Playback Controls */}
       <div className="animation-preview-controls">
-        <button onClick={goToFirst} title="First Frame" className="animation-btn">
-          ⏮
-        </button>
-        <button onClick={stepBackward} title="Previous Frame" className="animation-btn">
-          ⏪
-        </button>
+        <IconButton icon="⏮" onClick={goToFirst} title="First Frame" className="animation-btn" />
+        <IconButton icon="⏪" onClick={stepBackward} title="Previous Frame" className="animation-btn" />
         {isPlaying ? (
-          <button onClick={pause} title="Pause" className="animation-btn animation-btn-primary">
-            ⏸
-          </button>
+          <IconButton icon="⏸" appearance="primary" onClick={pause} title="Pause" className="animation-btn animation-btn-primary" />
         ) : (
-          <button onClick={play} title="Play" className="animation-btn animation-btn-primary">
-            ▶
-          </button>
+          <IconButton icon="▶" appearance="primary" onClick={play} title="Play" className="animation-btn animation-btn-primary" />
         )}
-        <button onClick={stop} title="Stop" className="animation-btn">
-          ⏹
-        </button>
-        <button onClick={stepForward} title="Next Frame" className="animation-btn">
-          ⏩
-        </button>
-        <button onClick={goToLast} title="Last Frame" className="animation-btn">
-          ⏭
-        </button>
+        <IconButton icon="⏹" onClick={stop} title="Stop" className="animation-btn" />
+        <IconButton icon="⏩" onClick={stepForward} title="Next Frame" className="animation-btn" />
+        <IconButton icon="⏭" onClick={goToLast} title="Last Frame" className="animation-btn" />
       </div>
 
       {/* Speed & Options */}
@@ -261,17 +248,19 @@ function AnimationPreview({
       {frames.length > 0 && (
         <div className="animation-preview-timeline">
           {frames.map((frame, idx) => (
-            <button
+            <IconButton
               key={idx}
+              icon={idx + 1}
+              appearance="ghost"
+              size="sm"
+              active={idx === currentFrame}
               className={`animation-timeline-frame ${idx === currentFrame ? 'active' : ''}`}
               onClick={() => {
                 setIsPlaying(false);
                 setCurrentFrame(idx);
               }}
               title={`Frame ${idx + 1}`}
-            >
-              {idx + 1}
-            </button>
+            />
           ))}
         </div>
       )}

@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { commands } from './commands.js';
+import { Input } from '../../ui';
 import './command-palette.css';
 
 export function CommandPalette({ open, onClose, registry = commands }) {
@@ -57,7 +58,7 @@ export function CommandPalette({ open, onClose, registry = commands }) {
   return (
     <div className="px-command-palette-overlay" onMouseDown={onClose} role="dialog" aria-label="Command palette">
       <div className="px-command-palette" onMouseDown={e => e.stopPropagation()}>
-        <input
+        <Input
           ref={inputRef}
           className="px-command-palette-input"
           placeholder="Type a command…"

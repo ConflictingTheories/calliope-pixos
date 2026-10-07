@@ -20,6 +20,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { IconButton, Input, InputNumber, SelectPicker } from '../../ui';
 import '../styles/property-panel.css';
 
 /**
@@ -176,9 +177,12 @@ function PropertyRow({ property, onChange, onReset }) {
       <label className="property-row__label">
         {label}
         {isDifferentFromDefault && (
-          <button className="property-row__reset" onClick={handleReset} title="Reset to default">
-            ↺
-          </button>
+          <IconButton
+            icon="↺"
+            className="property-row__reset"
+            onClick={handleReset}
+            title="Reset to default"
+          />
         )}
       </label>
       <div className="property-row__input">
@@ -201,8 +205,7 @@ function PropertyInput({ property, onChange, disabled }) {
   switch (type) {
     case 'text':
       return (
-        <input
-          type="text"
+        <Input
           className="property-input property-input--text"
           value={value || ''}
           onChange={e => onChange(e.target.value)}
@@ -212,14 +215,13 @@ function PropertyInput({ property, onChange, disabled }) {
 
     case 'number':
       return (
-        <input
-          type="number"
+        <InputNumber
           className="property-input property-input--number"
           value={value ?? ''}
           min={min}
           max={max}
           step={step || 1}
-          onChange={e => onChange(e.target.value)}
+          onChange={v => onChange(v)}
           disabled={disabled}
         />
       );
@@ -239,18 +241,14 @@ function PropertyInput({ property, onChange, disabled }) {
 
     case 'select':
       return (
-        <select
+        <SelectPicker
+          data={options || []}
           className="property-input property-input--select"
           value={value ?? ''}
-          onChange={e => onChange(e.target.value)}
+          onChange={v => onChange(v)}
+          cleanable={false}
           disabled={disabled}
-        >
-          {(options || []).map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        />
       );
 
     case 'color':
@@ -262,8 +260,7 @@ function PropertyInput({ property, onChange, disabled }) {
             onChange={e => onChange(e.target.value)}
             disabled={disabled}
           />
-          <input
-            type="text"
+          <Input
             className="property-input--color-text"
             value={value || ''}
             onChange={e => onChange(e.target.value)}
@@ -291,7 +288,8 @@ function PropertyInput({ property, onChange, disabled }) {
 
     case 'textarea':
       return (
-        <textarea
+        <Input
+          as="textarea"
           className="property-input property-input--textarea"
           value={value || ''}
           onChange={e => onChange(e.target.value)}
@@ -303,17 +301,15 @@ function PropertyInput({ property, onChange, disabled }) {
     case 'vector2':
       return (
         <div className="property-input property-input--vector">
-          <input
-            type="number"
+          <InputNumber
             value={value?.x ?? 0}
-            onChange={e => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
+            onChange={v => onChange({ ...value, x: v })}
             disabled={disabled}
             placeholder="X"
           />
-          <input
-            type="number"
+          <InputNumber
             value={value?.y ?? 0}
-            onChange={e => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
+            onChange={v => onChange({ ...value, y: v })}
             disabled={disabled}
             placeholder="Y"
           />
@@ -323,24 +319,21 @@ function PropertyInput({ property, onChange, disabled }) {
     case 'vector3':
       return (
         <div className="property-input property-input--vector">
-          <input
-            type="number"
+          <InputNumber
             value={value?.x ?? 0}
-            onChange={e => onChange({ ...value, x: parseFloat(e.target.value) || 0 })}
+            onChange={v => onChange({ ...value, x: v })}
             disabled={disabled}
             placeholder="X"
           />
-          <input
-            type="number"
+          <InputNumber
             value={value?.y ?? 0}
-            onChange={e => onChange({ ...value, y: parseFloat(e.target.value) || 0 })}
+            onChange={v => onChange({ ...value, y: v })}
             disabled={disabled}
             placeholder="Y"
           />
-          <input
-            type="number"
+          <InputNumber
             value={value?.z ?? 0}
-            onChange={e => onChange({ ...value, z: parseFloat(e.target.value) || 0 })}
+            onChange={v => onChange({ ...value, z: v })}
             disabled={disabled}
             placeholder="Z"
           />
@@ -349,8 +342,7 @@ function PropertyInput({ property, onChange, disabled }) {
 
     default:
       return (
-        <input
-          type="text"
+        <Input
           className="property-input property-input--text"
           value={String(value ?? '')}
           onChange={e => onChange(e.target.value)}

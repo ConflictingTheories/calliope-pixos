@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '../ui';
 import './FirstTimeWizard.css';
 
 const steps = [
@@ -59,11 +60,11 @@ export default function FirstTimeWizard({ onClose }) {
         ))}
       </div>
       <div className="onboarding-actions">
-        {step > 0 && <button onClick={() => setStep(step - 1)}>Back</button>}
+        {step > 0 && <Button appearance="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
         {step < steps.length - 1 ? (
-          <button onClick={() => setStep(step + 1)}>Next</button>
+          <Button appearance="primary" onClick={() => setStep(step + 1)}>Next</Button>
         ) : (
-          <button onClick={onClose}>Finish</button>
+          <Button appearance="primary" onClick={onClose}>Finish</Button>
         )}
       </div>
     </div>

@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Button, IconButton, Input } from '../../ui';
 import '../styles/color-picker.css';
 
 /**
@@ -177,19 +178,25 @@ function ColorPicker({
     <div className={`color-picker ${compact ? 'color-picker--compact' : ''} ${className}`}>
       {/* Tabs */}
       <div className="color-picker__tabs">
-        <button
+        <Button
+          appearance="ghost"
+          size="sm"
+          active={activeTab === 'picker'}
           className={`color-picker__tab ${activeTab === 'picker' ? 'color-picker__tab--active' : ''}`}
           onClick={() => setActiveTab('picker')}
         >
           Picker
-        </button>
+        </Button>
         {palette.length > 0 && (
-          <button
+          <Button
+            appearance="ghost"
+            size="sm"
+            active={activeTab === 'palette'}
             className={`color-picker__tab ${activeTab === 'palette' ? 'color-picker__tab--active' : ''}`}
             onClick={() => setActiveTab('palette')}
           >
             Palette
-          </button>
+          </Button>
         )}
       </div>
 
@@ -259,8 +266,7 @@ function ColorPicker({
       <div className="color-picker__footer">
         <div className="color-picker__preview" style={{ backgroundColor: currentHex }} />
         {showInput && (
-          <input
-            type="text"
+          <Input
             className="color-picker__input"
             value={hexInput}
             onChange={handleHexChange}
@@ -268,9 +274,12 @@ function ColorPicker({
           />
         )}
         {onPaletteAdd && (
-          <button className="color-picker__add" onClick={handleAddToPalette} title="Add to palette">
-            +
-          </button>
+          <IconButton
+            icon="+"
+            className="color-picker__add"
+            onClick={handleAddToPalette}
+            title="Add to palette"
+          />
         )}
       </div>
 
