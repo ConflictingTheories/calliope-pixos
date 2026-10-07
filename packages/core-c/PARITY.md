@@ -17,10 +17,10 @@
 | Texture atlas | ✅ | ✅ | Implemented (`resource/texture.c`) |
 | Shader system | ✅ | ✅ | Implemented (`rendering/shader.c`) |
 | Point lights | ✅ | ✅ | Implemented (`rendering/light_manager.c`) |
-| OBJ loading | ✅ | ❌ | TODO |
-| OBJ materials (MTL) | ✅ | ❌ | TODO |
-| GLTF loading | ✅ | ❌ | TODO |
-| GLTF rendering | ✅ | ❌ | TODO |
+| OBJ loading | ✅ | ✅ | Implemented (`resource/obj_loader.c`) |
+| OBJ materials (MTL) | ✅ | ✅ | Implemented (`resource/obj_loader.c`) |
+| GLTF loading | ✅ | ✅ | Implemented (`resource/gltf_loader.c`) |
+| GLTF rendering | ✅ | ✅ | Implemented (`rendering/gltf_renderer.c`) |
 | Custom shaders | ✅ | ✅ | Implemented (`rendering/shader.c`) |
 | Post-processing | ❌ | ❌ | Not planned |
 
@@ -32,7 +32,7 @@
 | World management | ✅ | ✅ | Implemented (`scene/world.c`) |
 | Portals | ✅ | ✅ | Implemented (`scene/portal.c`) — 2026-10-07 |
 | Behaviors | ✅ | ✅ | Implemented (`scene/behavior.c`) — 2026-10-07 |
-| Avatar | ✅ | ❌ | TODO |
+| Avatar | ✅ | ✅ | Implemented (`scene/avatar.c`) |
 | Portal system | ✅ | ❌ | TODO |
 | Avatar manager | ✅ | ❌ | TODO |
 | Behavior system | ✅ | ❌ | TODO |

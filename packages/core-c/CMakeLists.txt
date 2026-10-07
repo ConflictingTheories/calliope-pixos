@@ -167,16 +167,20 @@ set(CORE_SOURCES
     src/math/matrix4.c
     src/rendering/shader.c
     src/rendering/light_manager.c
+    src/rendering/gltf_renderer.c
     src/resource/texture.c
     src/resource/resource_manager.c
     src/resource/json_loader.c
     src/resource/archive_loader.c
+    src/resource/obj_loader.c
+    src/resource/gltf_loader.c
     src/scene/tileset.c
     src/scene/sprite.c
     src/scene/zone.c
     src/scene/world.c
     src/scene/portal.c
     src/scene/behavior.c
+    src/scene/avatar.c
     src/vendor/cJSON.c
     src/vendor/miniz.c
     src/vendor/miniz_tdef.c
