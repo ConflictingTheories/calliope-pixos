@@ -48,7 +48,7 @@ export class PackageValidationError extends Error {
  * User-facing naming uses "pixozine"; internal identifiers (manifest.json,
  * .pxz, initialZones) are unchanged (PIXOZINE_FORMAT.md).
  */
-export default class PixozinePlayer extends DynamicSpritz {
+export default class SpritzPlayer extends DynamicSpritz {
   /** The validated + migrated manifest for the loaded package (null until loaded). */
   validatedManifest = null;
 
