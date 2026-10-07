@@ -62,7 +62,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .audio-visualizer {

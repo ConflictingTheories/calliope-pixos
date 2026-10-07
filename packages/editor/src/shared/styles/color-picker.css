@@ -184,7 +184,7 @@
 }
 
 .color-picker__swatch--selected {
-  box-shadow: 0 0 0 2px var(--color-primary, #ff6b9d);
+  box-shadow: 0 0 0 2px var(--color-primary, var(--color-brand-accent));
 }
 
 .color-picker__swatch--small {
@@ -223,7 +223,7 @@
 
 .color-picker__input:focus {
   outline: none;
-  border-color: var(--color-primary, #ff6b9d);
+  border-color: var(--color-primary, var(--color-brand-accent));
 }
 
 .color-picker__add {

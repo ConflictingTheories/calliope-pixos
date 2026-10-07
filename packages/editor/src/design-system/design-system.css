@@ -36,9 +36,9 @@
   /* Chromatic accents — secondary use only (signal, delight) */
   --color-brand-secondary: #4ecdc4; /* teal */
   --color-brand-secondary-hover: #5fe4db;
-  --color-brand-secondary-muted: rgba(78, 205, 196, 0.12);
+  --color-brand-secondary-muted: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.12);
   --color-brand-accent: #ff6b9d; /* pink */
-  --color-brand-accent-muted: rgba(255, 107, 157, 0.12);
+  --color-brand-accent-muted: var(--color-brand-accent-muted, rgba(255, 107, 157,  0.12);
   --color-brand-warm: #fbbf24; /* amber */
   --color-brand-warm-muted: rgba(251, 191, 36, 0.12);
 
@@ -224,7 +224,7 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-focus: 0 0 0 2px var(--color-brand-primary-muted);
-  --shadow-glow: 0 0 20px rgba(78, 205, 196, 0.15);
+  --shadow-glow: 0 0 20px var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
 
   /* ============================================================
    * MOTION

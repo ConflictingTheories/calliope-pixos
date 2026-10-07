@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary, #ff6b9d);
+  color: var(--color-primary, var(--color-brand-accent));
 }
 
 .modal__title {
@@ -163,7 +163,7 @@
 }
 
 .modal__button--primary {
-  background: var(--color-primary, #ff6b9d);
+  background: var(--color-primary, var(--color-brand-accent));
   color: white;
 }
 

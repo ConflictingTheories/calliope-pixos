@@ -80,11 +80,11 @@ textarea::placeholder {
 
 .rs-picker-select-menu-item:hover,
 .rs-picker-select-menu-item-focus {
-  background: rgba(78, 205, 196, 0.1) !important;
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1) !important;
 }
 
 .rs-picker-select-menu-item-active {
-  background: rgba(78, 205, 196, 0.2) !important;
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2) !important;
   color: var(--color-secondary) !important;
 }
 
