@@ -1,23 +1,30 @@
 # PixoSpritz
 
-A WebGL-based game engine and editor ecosystem for creating pixel-art games.
+A WebGL-based game engine and editor ecosystem for creating pixel-art games. Part of the **SVRN creator network** — publish your games and keep 95% of every sale.
 
 ## 📦 Packages
 
 This monorepo contains the following packages:
 
-| Package                                    | Description                        |
-| ------------------------------------------ | ---------------------------------- |
-| [`pixospritz-core`](./packages/core)       | Core WebGL game engine             |
-| [`pixoscript`](./packages/script)          | Lua-inspired scripting language    |
-| [`pixospritz-math`](./packages/math)       | Math utilities (vectors, matrices) |
-| [`pixospritz-editor`](./packages/editor)   | Visual development tools           |
-| [`pixospritz-console`](./packages/console) | Web game player                    |
-| [`pixospritz-server`](./packages/server)   | WebSocket multiplayer server       |
-| [`pixospritz-website`](./packages/website) | Documentation website              |
-| [`pixospritz-assets`](./packages/assets)   | Shared game assets                 |
+| Package | Description |
+| ------- | ----------- |
+| [`@pixospritz/core-js`](./packages/core-js) | Core WebGL game engine |
+| [`pixoscript`](./packages/script) | Lua-inspired scripting language |
+| [`pixospritz-math`](./packages/math) | Math utilities (vectors, matrices) |
+| [`pixospritz-editor`](./packages/editor) | Visual development tools |
+| [`pixospritz-console`](./packages/console) | Web game player |
+| [`pixospritz-player-desktop`](./packages/player-desktop) | Desktop game player (Electron) |
+| [`@pixospritz/ui`](./packages/ui) | Shared UI components |
+| [`pixospritz-server`](./packages/server) | WebSocket multiplayer server |
+| [`pixospritz-website`](./packages/website) | Documentation website |
+| [`pixospritz-demos`](./packages/demos) | Sample games |
 
 ## 🚀 Quick Start
+
+```bash
+./setup.sh
+npm run dev
+```
 
 ### Prerequisites
 
