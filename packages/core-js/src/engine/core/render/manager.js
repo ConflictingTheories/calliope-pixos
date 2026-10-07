@@ -29,6 +29,7 @@ import ParticleManager from './ParticleManager.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import FrustumCuller from './FrustumCuller.js';
+import InstancedRenderer from './InstancedRenderer.js';
 import TextureAtlas from './TextureAtlas.js';
 import { RenderStats } from './stats.js';
 import EffectManager from './EffectManager.js';
@@ -160,6 +161,10 @@ export default class RenderManager {
       // Frustum culling for performance optimization
       /** @type {FrustumCuller} */
       this.frustumCuller = new FrustumCuller(this);
+
+      // Instanced rendering for sprite batching (reduces draw calls)
+      /** @type {InstancedRenderer} */
+      this.instancedRenderer = new InstancedRenderer(this);
 
       // Texture atlas for batched rendering
       /** @type {TextureAtlas} */

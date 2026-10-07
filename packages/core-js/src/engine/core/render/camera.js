@@ -58,7 +58,60 @@ export class Camera {
     this.cameraTarget = new Vector(8, 8, -1);
     /** @type {Vector} */
     this.cameraOffset = new Vector(0, 0, 0);
+
+    /**
+     * Camera mode: 'fixed' | 'free' | 'follow' | 'scripted'
+     * - fixed: Camera stays at set position, no user control
+     * - free: User can orbit/pan/zoom freely
+     * - follow: Camera follows a target entity
+     * - scripted: Camera position controlled by script/cutscene
+     * @type {string}
+     */
+    this.mode = 'free';
+    /** @type {object|null} Follow target for 'follow' mode */
+    this.followTarget = null;
+    /** @type {Function|null} Script function for 'scripted' mode */
+    this.scriptFn = null;
   }
+
+  /**
+   * Set the camera mode.
+   * @param {string} mode - 'fixed', 'free', 'follow', or 'scripted'
+   * @param {object} [options] - Mode-specific options
+   * @param {object} [options.target] - Target entity for 'follow' mode
+   * @param {Function} [options.script] - Script function for 'scripted' mode
+   */
+  setMode = (mode, options = {}) => {
+    const validModes = ['fixed', 'free', 'follow', 'scripted'];
+    if (!validModes.includes(mode)) {
+      throw new Error(`Invalid camera mode: ${mode}. Must be one of ${validModes.join(', ')}`);
+    }
+    this.mode = mode;
+    if (options.target) this.followTarget = options.target;
+    if (options.script) this.scriptFn = options.script;
+  };
+
+  /**
+   * Update camera based on current mode. Called each frame.
+   */
+  updateByMode = () => {
+    switch (this.mode) {
+      case 'fixed':
+        break;
+      case 'free':
+        break;
+      case 'follow':
+        if (this.followTarget && this.followTarget.position) {
+          this.setTarget(this.followTarget.position);
+        }
+        break;
+      case 'scripted':
+        if (this.scriptFn && typeof this.scriptFn === 'function') {
+          this.scriptFn(this);
+        }
+        break;
+    }
+  };
 
   /**
    * Sets the camera target and updates the view.

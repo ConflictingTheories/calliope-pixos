@@ -679,6 +679,11 @@ export default class World {
     const rm = this.engine.renderManager;
     const culler = rm && rm.frustumCuller;
 
+    // Update camera based on mode (fixed/free/follow/scripted)
+    if (rm && rm.camera && typeof rm.camera.updateByMode === 'function') {
+      rm.camera.updateByMode();
+    }
+
     // Update frustum from current camera matrices for culling
     if (culler && rm.uProjMat && rm.camera && rm.camera.uViewMat) {
       culler.update(rm.uProjMat, rm.camera.uViewMat);
