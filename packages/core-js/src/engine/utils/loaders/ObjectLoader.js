@@ -13,6 +13,7 @@
 
 import Resources from '../resources.js';
 import ModelObject from '@Engine/core/resource/object.js';
+import { loadGLTFFromZip } from './gltf.js';
 
 //helps load models
 export class ObjectLoader {
@@ -36,7 +37,28 @@ export class ObjectLoader {
     Object.assign(instance, model);
     instance.type = model.type;
     instance.id = model.id;
-    // New Instance
+
+    // Check for GLTF first (.glb or .gltf), fall back to OBJ
+    const gltfBase = `models/${instance.type}`;
+    let gltfData = null;
+    try {
+      gltfData = await loadGLTFFromZip(zip, gltfBase);
+    } catch (e) {
+      // No GLTF, try OBJ
+    }
+
+    if (gltfData) {
+      console.log(`ObjectLoader: Loading GLTF model ${model.id}`);
+      // Convert GLTF meshes to engine format
+      // For now, store raw mesh data; renderer will handle WebGL buffers
+      instance.gltfMeshes = gltfData.meshes;
+      instance.gltfMaterials = gltfData.materials;
+      instance.gltfNodes = gltfData.nodes;
+      instance.isGLTF = true;
+      return instance;
+    }
+
+    // New Instance (OBJ path)
     const objFilename = `models/${instance.type}.obj`;
     const mtlFilename = typeof model.mtl === 'string' ? `models/${model.mtl}` : null;
 
