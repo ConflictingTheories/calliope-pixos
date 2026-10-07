@@ -228,8 +228,8 @@
             "description": "Trophy rarity tier"
           },
           "criteria": {
-            "type": "string",
-            "description": "Human-readable unlock criteria (informational; the game unlocks via the trophy API)"
+            "type": "object",
+            "description": "Opaque criteria hint for tooling (not evaluated by the runtime)"
           }
         },
         "additionalProperties": false

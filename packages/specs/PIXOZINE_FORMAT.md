@@ -121,9 +121,7 @@ Violations yield path-addressed, stable issue codes (never bare strings).
   Packages declare required `capabilities`; the runtime grants only those.
 - Published scripts execute behind the **script execution boundary**: a
   message-passing API with time/error termination and no ambient host access.
-- The **trust policy** (who may publish what, sandbox vs trusted-only) is Kyle's
-  open decision (P4-06) and is not set by this spec. The boundary mechanism
-  exists regardless of the policy outcome.
+- The **trust policy** is **sandbox-by-default** (decided 2026-10-06, ADR-0004): published scripts run with default-deny capabilities; host access (network, storage) requires explicit grants. The boundary mechanism enforces the policy.
 
 ## 6. Inspection without execution
 
