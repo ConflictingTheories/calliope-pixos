@@ -175,6 +175,8 @@ set(CORE_SOURCES
     src/scene/sprite.c
     src/scene/zone.c
     src/scene/world.c
+    src/scene/portal.c
+    src/scene/behavior.c
     src/vendor/cJSON.c
     src/vendor/miniz.c
     src/vendor/miniz_tdef.c

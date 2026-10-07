@@ -4,30 +4,35 @@
 
 **Version:** 1.0.1 (must match JS)
 
+**Note (2026-10-07):** This checklist was corrected after actual code inspection. The C port has 67 .c files and is more complete than previously assumed.
+
 ---
 
 ## Rendering
 
 | Feature | JS | C | Status |
 |---------|----|---|--------|
-| Sprite rendering | ✅ | ❌ | TODO |
-| Tile map rendering | ✅ | ❌ | TODO |
-| Texture atlas | ✅ | ❌ | TODO |
+| Sprite rendering | ✅ | ✅ | Implemented (`scene/sprite.c`) |
+| Tile map rendering | ✅ | ✅ | Implemented (`scene/tileset.c`) |
+| Texture atlas | ✅ | ✅ | Implemented (`resource/texture.c`) |
+| Shader system | ✅ | ✅ | Implemented (`rendering/shader.c`) |
+| Point lights | ✅ | ✅ | Implemented (`rendering/light_manager.c`) |
 | OBJ loading | ✅ | ❌ | TODO |
 | OBJ materials (MTL) | ✅ | ❌ | TODO |
-| OBJ textures | ✅ | ❌ | TODO |
 | GLTF loading | ✅ | ❌ | TODO |
 | GLTF rendering | ✅ | ❌ | TODO |
-| GLTF PBR materials | ✅ | ❌ | TODO |
-| Point lights | ✅ | ❌ | TODO |
-| Custom shaders | ✅ | ❌ | TODO |
+| Custom shaders | ✅ | ✅ | Implemented (`rendering/shader.c`) |
 | Post-processing | ❌ | ❌ | Not planned |
 
 ## Scene & World
 
 | Feature | JS | C | Status |
 |---------|----|---|--------|
-| Zone loading | ✅ | ❌ | TODO |
+| Zone loading | ✅ | ✅ | Implemented (`scene/zone.c`) |
+| World management | ✅ | ✅ | Implemented (`scene/world.c`) |
+| Portals | ✅ | ✅ | Implemented (`scene/portal.c`) — 2026-10-07 |
+| Behaviors | ✅ | ✅ | Implemented (`scene/behavior.c`) — 2026-10-07 |
+| Avatar | ✅ | ❌ | TODO |
 | Portal system | ✅ | ❌ | TODO |
 | Avatar manager | ✅ | ❌ | TODO |
 | Behavior system | ✅ | ❌ | TODO |
