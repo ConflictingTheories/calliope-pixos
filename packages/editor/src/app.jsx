@@ -1900,6 +1900,51 @@ const App = () => {
         return;
       }
       if (name.endsWith('.json')) {
+        // Content-aware routing: read the JSON and sniff its structure to
+        // determine the asset type. Falls back to filename heuristics if
+        // the content can't be read or doesn't match a known shape.
+        const routeByContent = (obj) => {
+          if (!obj || typeof obj !== 'object') return null;
+          // Map: bounds + tileset + sprites array
+          if (Array.isArray(obj.bounds) && typeof obj.tileset === 'string') {
+            return 'map';
+          }
+          // Tileset: tileSize + sheetSize + textures map
+          if (typeof obj.tileSize === 'number' && obj.sheetSize && typeof obj.textures === 'object') {
+            return 'tileset';
+          }
+          // Sprite: frames object (direction -> coordinates)
+          if (obj.frames && typeof obj.frames === 'object') {
+            return 'sprite';
+          }
+          // Cutscene: nodes/timeline/tracks
+          if (obj.nodes || obj.timeline || obj.tracks) {
+            return 'cutscene';
+          }
+          // Geometry: named shapes with vertex arrays
+          const keys = Object.keys(obj);
+          if (keys.length > 0 && keys.every(k => {
+            const v = obj[k];
+            return v && typeof v === 'object' && Array.isArray(v.vertices);
+          })) {
+            return 'geometry';
+          }
+          return null;
+        };
+        try {
+          const text = entry.async ? await entry.async('string') : null;
+          if (text) {
+            const obj = JSON.parse(text);
+            const kind = routeByContent(obj);
+            if (kind === 'map') { renderMapEditor(entry); return; }
+            if (kind === 'tileset') { renderTileEditor(entry); return; }
+            if (kind === 'sprite') { renderSpriteEditor(entry); return; }
+            if (kind === 'cutscene') { renderCutsceneTool(entry); return; }
+            if (kind === 'geometry') { renderGeometryEditor(entry); return; }
+          }
+        } catch {
+          // Fall through to filename heuristics
+        }
         if (name.includes('map')) {
           renderMapEditor(entry);
           return;
