@@ -193,8 +193,8 @@ export default class GLEngine {
     this.spritz = spritz;
     this.fullscreen = false;
 
-    // Initial time
-    this.time = new Date().getTime();
+    // Initial time (monotonic clock, P1-09)
+    this.time = performance.now();
 
     // Init Input Manager
     this.inputManager.init();
@@ -259,14 +259,21 @@ export default class GLEngine {
     if (this.renderManager && this.renderManager.resetDebugCounters) {
       this.renderManager.resetDebugCounters();
     }
+    // Reset per-frame render stats (P4-05).
+    if (this.renderManager && this.renderManager.resetFrameStats) {
+      this.renderManager.resetFrameStats();
+    }
 
     // Clear canvases
     this.hud.clearHud();
     // Draw active mode label (if any)
     if (this.hud.drawModeLabel) this.hud.drawModeLabel();
+    // Single clear per frame (P1-09): the old second clearScreen() below
+    // cleared the still-bound 1x1 picker FBO, not the screen.
     this.renderManager.clearScreen();
 
-    const timestamp = new Date().getTime();
+    // performance.now() — monotonic and cheaper than new Date() (P1-09).
+    const timestamp = performance.now();
 
     // Calculate deltaTime
     this.timer.deltaTime = timestamp - this.time;
@@ -275,8 +282,11 @@ export default class GLEngine {
     // Update Input Manager
     this.inputManager.update();
 
-    // Object picking pass (for selection) - only if mode has picker enabled
-    if (this.modeManager.hasPicker()) {
+    // Object picking pass — only when the mode has a picker AND the player
+    // issued a select action this frame. getSelectedObject() only consumes
+    // the pixel on select, so an unconditional picking render was a wasted
+    // full scene draw every frame (P1-09).
+    if (this.modeManager.hasPicker() && this.inputManager.isActionPressed('select')) {
       // Enable picker shader - Optimized with 1x1 pixel framebuffer
       this.renderManager.activatePickerShaderProgram();
       this.spritz.render(this, timestamp); // Render scene for picking pass
@@ -301,8 +311,11 @@ export default class GLEngine {
     this.physicsManager.update(deltaTime);
 
     // Core render loop (actually render scene to screen)
+    // NOTE (P1-09): the redundant second clearScreen() was removed. The
+    // framebuffer is cleared once at the top of render(); the old second
+    // call ran while the 1x1 picker FBO was still bound, clearing the
+    // wrong target. beginScene()/activateShaderProgram() rebind as needed.
     const gl = this.renderManager.engine.gl;
-    this.renderManager.clearScreen();
 
     // Begin Post-Processing Pass
     this.renderManager.beginScene();
@@ -316,13 +329,11 @@ export default class GLEngine {
 
     this.modeManager.update(timestamp); // Update active mode
 
-    // Allow particle system to update physics with a stable timestamp
+    // Allow particle system to update physics with a stable timestamp.
+    // Feature check hoisted out of try/catch (P1-09): optional systems are
+    // configuration, not exceptional control flow.
     if (this.renderManager && this.renderManager.updateParticles) {
-      try {
-        this.renderManager.updateParticles(timestamp);
-      } catch (e) {
-        console.warn('updateParticles failed', e);
-      }
+      this.renderManager.updateParticles(timestamp);
     }
 
     this.spritz.render(this); // Render scene (might be overridden by mode)
@@ -335,40 +346,24 @@ export default class GLEngine {
 
     // Render particles after main scene but before HUD/gamepad
     if (this.renderManager && this.renderManager.renderParticles) {
-      try {
-        this.renderManager.renderParticles();
-      } catch (e) {
-        console.warn('renderParticles failed', e);
-      }
+      this.renderManager.renderParticles();
     }
     this.gamepad.render(); // Render gamepad (may be optimizable?)
 
     // Draw height debug overlay if enabled (shows tile/sprite/object z values on screen)
     if (this.debugHeightOverlay && this.hud.drawHeightDebugOverlay) {
-      try {
-        this.hud.drawHeightDebugOverlay();
-      } catch (e) {
-        console.warn('drawHeightDebugOverlay failed', e);
-      }
+      this.hud.drawHeightDebugOverlay();
     }
 
     // Render inventory UI if visible
     if (this.hud.renderInventory) {
-      try {
-        this.hud.renderInventory();
-      } catch (e) {
-        console.warn('renderInventory failed', e);
-      }
+      this.hud.renderInventory();
     }
 
     // Re-render all active HUD elements (dialogues, menus, buttons, etc.)
     // This ensures they remain visible even after HUD canvas is cleared at start of frame
     if (this.hud.renderActiveElements) {
-      try {
-        this.hud.renderActiveElements();
-      } catch (e) {
-        console.warn('renderActiveElements failed', e);
-      }
+      this.hud.renderActiveElements();
     }
 
     // Update debug overlay if enabled

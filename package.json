@@ -8,29 +8,33 @@
   "private": true,
   "scripts": {
     "clean": "rimraf packages/*/dist packages/*/build",
-    "build": "yarn build:script && yarn build:core && yarn build:editor && yarn build:console",
-    "build:script": "yarn workspace pixoscript build",
-    "build:core": "yarn build:core-c && yarn build:core-js",
-    "build:core-js": "yarn workspace pixospritz-core build",
-    "build:editor": "yarn workspace pixospritz-editor build",
-    "build:console": "yarn workspace pixospritz-console build",
-    "build:website": "yarn workspace pixospritz-website build",
+    "build": "node scripts/build.mjs",
+    "build:script": "npm run build -w pixoscript",
+    "build:core": "npm run build:core-c && npm run build:core-js",
+    "build:core-js": "npm run build -w pixospritz-core",
+    "build:editor": "npm run build -w pixospritz-editor",
+    "build:console": "npm run build -w pixospritz-console",
+    "build:website": "npm run build -w pixospritz-website",
     "build:arm": "echo \"Please see /packages/arm-linux/build.sh and Readme\"",
     "build:core-c": "echo \"Please see /packages/core-c/build.sh and Readme\"",
-    "dev": "yarn dev:editor",
-    "dev:editor": "yarn workspace pixospritz-editor dev",
-    "dev:console": "yarn workspace pixospritz-console dev",
-    "start:server": "yarn workspace pixospritz-server start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=2120",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --max-warnings=2120 && prettier --write '**/*.{js,jsx,ts,tsx,json,md}'",
+    "dev": "npm run dev:editor",
+    "dev:editor": "npm run dev -w pixospritz-editor",
+    "dev:console": "npm run dev -w pixospritz-console",
+    "start:server": "npm run start -w pixospritz-server",
+    "lint": "node scripts/lint-budget.mjs",
+    "lint:snapshot": "node scripts/lint-budget.mjs --snapshot",
+    "lint:fix": "eslint . --fix && prettier --write '**/*.{js,jsx,ts,tsx,json,md}'",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,md}'",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,md}'",
-    "typecheck": "yarn workspaces run typecheck --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify": "node scripts/verify.mjs",
+    "sbom": "node scripts/sbom.mjs",
+    "contracts": "node scripts/check-contracts.mjs"
   },
   "keywords": [
     "pixospritz",
@@ -55,20 +59,12 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.17.10",
-    "@babel/core": "^7.18.0",
-    "@babel/node": "^7.17.10",
-    "@babel/preset-env": "^7.18.0",
-    "@babel/preset-react": "^7.17.12",
-    "@babel/register": "^7.17.7",
     "@playwright/test": "^1.40.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",
     "@vitejs/plugin-react": "^4.2.0",
     "@vitest/coverage-v8": "^1.2.0",
     "@vitest/ui": "^1.2.0",
-    "babel-plugin-macros": "^3.1.0",
-    "cross-env": "^7.0.3",
     "eslint": "^9.0.0",
     "jsdom": "^24.0.0",
     "prettier": "^3.0.0",
@@ -76,7 +72,8 @@
     "vitest": "^1.2.0"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "yarn": ">=1.22.0"
-  }
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "packageManager": "npm@10.9.2"
 }

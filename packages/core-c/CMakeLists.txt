@@ -282,6 +282,16 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/assets)
 endif()
 
 # ============================================
+# Conformance tests (P6-07; scope provisional pending P6-06)
+# ============================================
+
+option(BUILD_CONFORMANCE_TESTS "Build native conformance tests (CTest)" OFF)
+if(BUILD_CONFORMANCE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# ============================================
 # Print Configuration Summary
 # ============================================
 

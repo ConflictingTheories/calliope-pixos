@@ -26,8 +26,20 @@
  */
 export default class CollisionMask {
   /**
-   * Predefined collision layers.
+   * Bit table documenting layer semantics (P4-02). Each layer occupies one
+   * bit; `ALL` is the union. `shouldCollide` is symmetric by construction:
+   * A collides with B iff (maskA & layerB) && (maskB & layerA).
    */
+  static BitTable = [
+    { name: 'DEFAULT', bit: 0x01 },
+    { name: 'PLAYER', bit: 0x02 },
+    { name: 'ENEMY', bit: 0x04 },
+    { name: 'ITEM', bit: 0x08 },
+    { name: 'WALL', bit: 0x10 },
+    { name: 'TRIGGER', bit: 0x20 },
+    { name: 'PROJECTILE', bit: 0x40 },
+    { name: 'NPC', bit: 0x80 },
+  ];
   static Layers = {
     DEFAULT: 0x01, // Bit 0
     PLAYER: 0x02, // Bit 1
