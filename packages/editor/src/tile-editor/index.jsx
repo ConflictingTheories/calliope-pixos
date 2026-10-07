@@ -16,6 +16,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
 import { InputNumber, Button, Message, SelectPicker, Input } from '../ui';
+import { keymap } from '../shell/commands/keymap.js';
 
 // Isometric tile preview with Z-up coordinate system (matching engine)
 // X: East/West, Y: North/South, Z: Up/Down
@@ -271,6 +272,8 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const [tiles, setTiles] = useState({});
   const [tileNames, setTileNames] = useState([]);
   const [selectedTileName, setSelectedTileName] = useState(null);
+  const [selectedTileNames, setSelectedTileNames] = useState([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(-1);
   const [geometryNames, setGeometryNames] = useState([]);
   const [geometryData, setGeometryData] = useState(null);
   const [error, setError] = useState(null);
@@ -291,6 +294,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
           setTileNames(names);
           if (names.length > 0 && !selectedTileName) {
             setSelectedTileName(names[0]);
+            setSelectedTileNames([names[0]]);
           }
         }
         setError(null);
@@ -401,9 +405,72 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         const remaining = Object.keys(newTiles);
         setSelectedTileName(remaining.length > 0 ? remaining[0] : null);
       }
+      setSelectedTileNames(prev => prev.filter(n => n !== name));
     },
     [tiles, selectedTileName]
   );
+
+  // Universal selection: click = single, ctrl/cmd+click = toggle, shift+click = range
+  const handleTileClick = useCallback(
+    (name, index, event) => {
+      const isToggle = event.ctrlKey || event.metaKey;
+      const isRange = event.shiftKey;
+      if (isRange && lastSelectedIndex >= 0) {
+        const start = Math.min(lastSelectedIndex, index);
+        const end = Math.max(lastSelectedIndex, index);
+        const range = tileNames.slice(start, end + 1);
+        setSelectedTileNames(range);
+        setSelectedTileName(range[0] || null);
+      } else if (isToggle) {
+        setSelectedTileNames(prev => {
+          const next = prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name];
+          setSelectedTileName(next[0] || null);
+          return next;
+        });
+        setLastSelectedIndex(index);
+      } else {
+        setSelectedTileNames([name]);
+        setSelectedTileName(name);
+        setLastSelectedIndex(index);
+      }
+    },
+    [tileNames, lastSelectedIndex]
+  );
+
+  // Delete all selected tiles
+  const deleteSelected = useCallback(() => {
+    if (selectedTileNames.length === 0) return;
+    const newTiles = { ...tiles };
+    selectedTileNames.forEach(n => delete newTiles[n]);
+    setTiles(newTiles);
+    const remaining = tileNames.filter(n => !selectedTileNames.includes(n));
+    setTileNames(remaining);
+    setSelectedTileName(remaining[0] || null);
+    setSelectedTileNames(remaining[0] ? [remaining[0]] : []);
+  }, [tiles, tileNames, selectedTileNames]);
+
+  // Register keyboard shortcuts with the central keymap
+  useEffect(() => {
+    const offDelete = keymap.register('tile.delete', 'Delete', () => {
+      deleteSelected();
+      return true;
+    }, {
+      when: e => {
+        const t = e.target;
+        return !(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable);
+      }
+    });
+    const offBackspace = keymap.register('tile.delete2', 'Backspace', () => {
+      deleteSelected();
+      return true;
+    }, {
+      when: e => {
+        const t = e.target;
+        return !(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable);
+      }
+    });
+    return () => { offDelete(); offBackspace(); };
+  }, [deleteSelected]);
 
   // Rename a tile
   const renameTile = useCallback(
@@ -537,19 +604,20 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             .map(name => {
               const tileArr = tiles[name];
               const compCount = parseTileComponents(tileArr || []).length;
+              const fullIndex = tileNames.indexOf(name);
+              const isSelected = selectedTileNames.includes(name);
 
               return (
                 <div
                   key={name}
-                  onClick={() => setSelectedTileName(name)}
+                  onClick={e => handleTileClick(name, fullIndex, e)}
                   style={{
                     padding: '10px',
                     marginBottom: '4px',
-                    background:
-                      selectedTileName === name
-                        ? 'rgba(125,211,252,0.2)'
-                        : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${selectedTileName === name ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
+                    background: isSelected
+                      ? 'rgba(125,211,252,0.2)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isSelected ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
                     borderRadius: '6px',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
@@ -695,6 +763,11 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>
                   {selectedTileName}
+                  {selectedTileNames.length > 1 && (
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginLeft: '8px' }}>
+                      +{selectedTileNames.length - 1} more
+                    </span>
+                  )}
                 </h4>
                 <div
                   style={{
