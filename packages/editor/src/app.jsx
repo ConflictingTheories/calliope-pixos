@@ -50,7 +50,6 @@ const GeometryEditor3D = getTool('geometry-editor-3d').component;
 const AIGenerator = getTool('ai-generator').component;
 import { loadTilesetWithExtends, mergeDeep, resolveExtends } from './shared/extends-utils.js';
 import FirstTimeWizard from './onboarding/FirstTimeWizard.jsx';
-import ShortcutHelp from './components/ShortcutHelp.jsx';
 import './onboarding/FirstTimeWizard.css';
 import { debug, debugWarn, debugError } from './shared/debug-logger.js';
 import ConsolePanel, { useConsole } from './script-editor/ConsolePanel.jsx';
@@ -102,14 +101,6 @@ const App = () => {
     tabsRef.current = tabs;
   }, [tabs]);
 
-  // Shortcut help overlay (press ?)
-  useEffect(() => {
-    const off = keymap.register('help.shortcuts', '?', () => {
-      setShowShortcuts(true);
-      return true;
-    });
-    return off;
-  }, []);
   // Dirty paths from the project store -> dirty-dot indicators.
   const [dirtyPaths, setDirtyPaths] = useState([]);
   // Mirror for the closeTab callback (avoids stale state).
@@ -188,7 +179,6 @@ const App = () => {
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const supportFabRef = useRef(null);
 
   // Console State
@@ -2330,7 +2320,6 @@ const App = () => {
         </button>
       </div>
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
-      {showShortcuts && <ShortcutHelp onClose={() => setShowShortcuts(false)} />}
       {/* (P2-09) Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
