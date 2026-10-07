@@ -75,6 +75,18 @@ function ImagePreview({ content }) {
   const zoomIn = () => setZoom(z => Math.min(5, z + 0.25));
   const zoomOut = () => setZoom(z => Math.max(0.1, z - 0.25));
   const zoomReset = () => setZoom(1);
+
+  // (P2-10) Shell command integration: the tool container registers
+  // zoom commands that drive the view through these events.
+  useEffect(() => {
+    const onZoom = e => {
+      if (e.detail === 'in') zoomIn();
+      else if (e.detail === 'out') zoomOut();
+      else if (e.detail === 'reset') zoomReset();
+    };
+    document.addEventListener('px:image-zoom', onZoom);
+    return () => document.removeEventListener('px:image-zoom', onZoom);
+  }, []);
   const zoomFit = () => {
     if (containerRef.current && imageInfo.width > 0) {
       const containerWidth = containerRef.current.clientWidth - 40;
