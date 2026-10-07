@@ -37,6 +37,9 @@ import ScriptEditorTool from './script-editor/ScriptEditorTool.jsx';
 import { CommandBus } from './core/commands/commandBus.js';
 import { ProjectStore } from './core/project/projectStore.js';
 import { BridgedProjectRepository } from './core/project/repository.js';
+import ProjectSettings from './components/ProjectSettings.jsx';
+import ModeEditor from './components/ModeEditor.jsx';
+import UpdateTracker from './components/UpdateTracker.jsx';
 
 const AudioPreview = getTool('audio-preview').component;
 const ModelPreview = getTool('model-preview').component;
@@ -249,6 +252,10 @@ const App = () => {
   // (Publishing vertical) "Publish to SVRN" dialog state.
   const [svrnPublishOpen, setSvrnPublishOpen] = useState(false);
   const [svrnPublishBusy, setSvrnPublishBusy] = useState(false);
+  // Project tools state.
+  const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+  const [modeEditorOpen, setModeEditorOpen] = useState(false);
+  const [updateTrackerOpen, setUpdateTrackerOpen] = useState(false);
   useEffect(() => {
     const offPalette = commands.register({
       id: 'shell.command-palette',
@@ -262,6 +269,24 @@ const App = () => {
       title: 'Publish to SVRN…',
       group: 'publish',
       run: () => setSvrnPublishOpen(true),
+    });
+    const offProjectSettings = commands.register({
+      id: 'project.settings',
+      title: 'Project Settings…',
+      group: 'project',
+      run: () => setProjectSettingsOpen(true),
+    });
+    const offModeEditor = commands.register({
+      id: 'project.mode-editor',
+      title: 'Mode Editor…',
+      group: 'project',
+      run: () => setModeEditorOpen(true),
+    });
+    const offUpdateTracker = commands.register({
+      id: 'project.update-tracker',
+      title: 'Update History…',
+      group: 'project',
+      run: () => setUpdateTrackerOpen(true),
     });
     // (UX Phase 2) Shortcut reference (finding A3.1).
     const offShortcuts = commands.register({
@@ -277,6 +302,9 @@ const App = () => {
       window.removeEventListener('keydown', onKeyDown);
       offPalette();
       offPublish();
+      offProjectSettings();
+      offModeEditor();
+      offUpdateTracker();
       offShortcuts();
     };
   }, []);
@@ -2323,6 +2351,28 @@ const App = () => {
         onClose={() => setSvrnPublishOpen(false)}
         onPublish={handlePublishToSvrn}
       />
+      {/* Project tools */}
+      {projectSettingsOpen && (
+        <ProjectSettings
+          manifest={{}}
+          onSave={() => setProjectSettingsOpen(false)}
+          onClose={() => setProjectSettingsOpen(false)}
+        />
+      )}
+      {modeEditorOpen && (
+        <ModeEditor
+          mode={null}
+          onSave={() => setModeEditorOpen(false)}
+          onClose={() => setModeEditorOpen(false)}
+        />
+      )}
+      {updateTrackerOpen && (
+        <UpdateTracker
+          entries={[]}
+          onAdd={() => {}}
+          onClose={() => setUpdateTrackerOpen(false)}
+        />
+      )}
       {/* (P2-07) Save status replaces alert() dialogs in save paths */}
       {saveStatus.kind !== 'idle' && (
         <div
