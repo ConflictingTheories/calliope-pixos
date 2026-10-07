@@ -25,6 +25,9 @@ import { Direction } from '@Engine/utils/enums.js';
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import Avatar from './avatar.js';
 import NetworkAvatarManager from './NetworkAvatarManager.js';
+import PortalManager from './PortalManager.js';
+import AvatarManager from './AvatarManager.js';
+import BehaviorManager from './BehaviorManager.js';
 import { Vector } from '@Engine/utils/math/vector.js';
 import Pathfinder from './Pathfinder.js';
 /**
@@ -80,6 +83,12 @@ export default class World {
     this.isPaused = true;
     /** @type {ModeManager} */
     this.modeManager = new ModeManager(this);
+    /** @type {PortalManager} */
+    this.portalManager = new PortalManager(this);
+    /** @type {AvatarManager} */
+    this.avatarManager = new AvatarManager(this);
+    /** @type {BehaviorManager} */
+    this.behaviorManager = new BehaviorManager(this);
     /** @type {ActionQueue} */
     this.afterTickActions = new ActionQueue();
     /** @type {MenuConfig} */
