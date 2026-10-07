@@ -20,6 +20,7 @@
 import { generateSpriteConfig, generateCutscene, generateScript, generateManifest } from './text-generator.js';
 import { generateSpritesheet, generateTileset, generatePortrait } from './image-generator.js';
 import { generateSpeech } from './audio-generator.js';
+import aiService from './ai-service.js';
 
 /**
  * Minimal JSON-schema validation for tool args: required fields
@@ -127,21 +128,28 @@ export const AI_TOOLS = [
       required: ['description'],
       properties: {
         description: { type: 'string' },
-        tileSize: { type: 'integer' },
-        directions: { type: 'integer' },
+        // tileSize accepts an integer (square) or [width, height]; directions
+        // accepts a count or an array of direction codes (length is used).
+        tileSize: {},
+        directions: {},
         framesPerDirection: { type: 'integer' },
+        style: { type: 'string' },
+        sheetSize: { type: 'array' },
       },
     },
     async (args, ctx) => {
-      const image = await generateSpritesheet(
-        args.description,
-        {
-          tileSize: args.tileSize ?? 32,
-          directions: args.directions ?? 4,
-          framesPerDirection: args.framesPerDirection ?? 4,
-          onRetry: ctx?.onRetry,
-        }
-      );
+      const t = args.tileSize ?? 32;
+      const tileSize = Array.isArray(t) ? t : [t, t];
+      const d = args.directions ?? 4;
+      const directions = Array.isArray(d) ? d.length : d;
+      const image = await generateSpritesheet(args.description, {
+        tileSize,
+        directions,
+        framesPerDirection: args.framesPerDirection ?? 4,
+        sheetSize: args.sheetSize,
+        style: args.style,
+        onRetry: ctx?.onRetry,
+      });
       return { image };
     }
   ),
@@ -161,7 +169,13 @@ export const AI_TOOLS = [
     },
     async (args, ctx) => {
       const config = { tileSize: args.tileSize ?? 32, columns: args.columns ?? 8, rows: args.rows ?? 8 };
-      const image = await generateTileset(args.description, { ...config, onRetry: ctx?.onRetry });
+      // generateTileset reads `cols`, not `columns` — map explicitly.
+      const image = await generateTileset(args.description, {
+        tileSize: config.tileSize,
+        cols: config.columns,
+        rows: config.rows,
+        onRetry: ctx?.onRetry,
+      });
       return { image, config };
     }
   ),
@@ -193,12 +207,14 @@ export const AI_TOOLS = [
       properties: {
         description: { type: 'string' },
         triggerType: { type: 'string' },
+        spriteName: { type: 'string' },
       },
     },
     async (args, ctx) => {
       const contextSummary = ctx?.assembledContext?.summary ?? '';
       const script = await generateScript(args.description, args.triggerType ?? 'callback', {
         context: contextSummary,
+        spriteName: args.spriteName,
       });
       return { script };
     }
@@ -212,12 +228,18 @@ export const AI_TOOLS = [
       required: ['description'],
       properties: {
         description: { type: 'string' },
+        characters: { type: 'array' },
+        mood: { type: 'string' },
+        length: { type: 'string', enum: ['short', 'medium', 'long'] },
       },
     },
     async (args, ctx) => {
       const contextSummary = ctx?.assembledContext?.summary ?? '';
       const cutscene = await generateCutscene(args.description, {
         context: contextSummary,
+        characters: args.characters,
+        mood: args.mood,
+        length: args.length,
       });
       return { cutscene };
     }
@@ -232,11 +254,123 @@ export const AI_TOOLS = [
       properties: {
         description: { type: 'string' },
         size: { type: 'string' },
+        style: { type: 'string' },
       },
     },
     async (args, ctx) => {
-      const image = await generatePortrait(args.description, { size: args.size, onRetry: ctx?.onRetry });
+      const image = await generatePortrait(args.description, {
+        size: args.size,
+        style: args.style,
+        onRetry: ctx?.onRetry,
+      });
       return { image };
+    }
+  ),
+
+  tool(
+    'analyze_game_concept',
+    'Analyze a high-level game description into structured concept data (title, genre, characters, locations, items, quests, cutscenes). Returns parsed conceptData for the caller to validate.',
+    {
+      type: 'object',
+      required: ['prompt'],
+      properties: {
+        prompt: { type: 'string' },
+        temperature: { type: 'number' },
+      },
+    },
+    async (args, ctx) => {
+      const systemPrompt = `You are an expert game designer. Analyze the game concept and extract structured information.
+
+Return ONLY valid JSON with this structure:
+{
+  "title": "Game Title",
+  "genre": "rpg|action|puzzle|adventure",
+  "setting": "fantasy|sci-fi|modern|medieval|post-apocalyptic",
+  "synopsis": "Brief 2-3 sentence game synopsis",
+  "mood": "adventurous|dark|whimsical|serious|comedic",
+  "characters": [
+    {
+      "name": "character_id",
+      "displayName": "Character Name",
+      "type": "player|npc|enemy",
+      "description": "Visual description for sprite generation - be specific about clothing, colors, features",
+      "role": "hero|merchant|guard|villain|etc",
+      "personality": "friendly|grumpy|mysterious|etc"
+    }
+  ],
+  "locations": [
+    {
+      "id": "location_id",
+      "name": "Location Name",
+      "type": "town|dungeon|forest|castle|etc",
+      "description": "Visual description for backdrop/tileset"
+    }
+  ],
+  "items": [
+    {
+      "id": "item_id",
+      "name": "Item Name",
+      "type": "weapon|armor|consumable|key",
+      "description": "Visual description"
+    }
+  ],
+  "quests": [
+    {
+      "id": "quest_id",
+      "title": "Quest Title",
+      "giver": "character_id",
+      "description": "Quest objective",
+      "reward": "What player gets"
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "cutscene_id",
+      "trigger": "intro|quest_start|quest_complete|boss_defeat",
+      "description": "What happens in this cutscene - be detailed",
+      "characters": ["char1", "char2"]
+    }
+  ]
+}
+
+CRITICAL REQUIREMENTS:
+- You MUST include at least 1 character with type "player"
+- You MUST include at least 1 character with type "npc"
+- You MUST include at least 1 location
+- You MUST include at least 1 cutscene with trigger "intro"
+- Character descriptions should be VISUAL - describe appearance for sprite generation
+- Make it a coherent, playable game`;
+
+      const analysisPrompt = `Analyze and design a game based on this concept:
+
+${args.prompt}
+
+Extract all characters, locations, items, quests, and plan cutscenes.
+Make it a coherent, playable game with clear progression.
+ENSURE you have at least: 1 player, 1 NPC, 1 location, 1 intro cutscene.
+RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
+
+      const response = await aiService.chatCompletion(analysisPrompt, systemPrompt, null, {
+        temperature: args.temperature ?? 0.7,
+      });
+
+      let conceptData;
+      if (typeof response === 'string') {
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('AI did not return JSON for game concept');
+        }
+        try {
+          conceptData = JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+          throw new Error('AI returned invalid JSON for game concept');
+        }
+      } else if (typeof response === 'object' && response !== null) {
+        conceptData = response;
+      } else {
+        throw new Error('AI returned empty or invalid response');
+      }
+      return { conceptData };
     }
   ),
 

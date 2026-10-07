@@ -105,3 +105,65 @@ describe('runTool', () => {
     expect(r.error).toMatch(/No project repository/);
   });
 });
+
+describe('game-package tool extensions', () => {
+  it('registers analyze_game_concept with a prompt schema', () => {
+    const t = getTool('analyze_game_concept');
+    expect(t).not.toBeNull();
+    expect(t.inputSchema.required).toContain('prompt');
+    expect(t.inputSchema.properties.prompt.type).toBe('string');
+  });
+
+  it('accepts the extended optional params without calling handlers', async () => {
+    // generate_script with spriteName — validation only; handler needs a model.
+    // Use an invalid *required* field to prove validation runs before the handler.
+    const r = await runTool('generate_script', { triggerType: 'npc' });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/invalid args/);
+    expect(r.error).toMatch(/description/);
+  });
+
+  it('validates extended schemas accept new optional fields', () => {
+    const script = getTool('generate_script');
+    expect(
+      validateToolArgs(script.inputSchema, {
+        description: 'x',
+        triggerType: 'npc',
+        spriteName: 'bob',
+      }).valid
+    ).toBe(true);
+
+    const cutscene = getTool('generate_cutscene');
+    expect(
+      validateToolArgs(cutscene.inputSchema, {
+        description: 'x',
+        characters: ['A'],
+        mood: 'dark',
+        length: 'short',
+      }).valid
+    ).toBe(true);
+    expect(
+      validateToolArgs(cutscene.inputSchema, { description: 'x', length: 'epic' }).valid
+    ).toBe(false);
+
+    const portrait = getTool('generate_portrait');
+    expect(
+      validateToolArgs(portrait.inputSchema, { description: 'x', style: 'pixel art' }).valid
+    ).toBe(true);
+
+    const sheet = getTool('generate_spritesheet_image');
+    expect(
+      validateToolArgs(sheet.inputSchema, {
+        description: 'x',
+        tileSize: [24, 32],
+        directions: 4,
+        style: 'pixel art',
+        sheetSize: [96, 128],
+      }).valid
+    ).toBe(true);
+
+    const concept = getTool('analyze_game_concept');
+    expect(validateToolArgs(concept.inputSchema, {}).valid).toBe(false);
+    expect(validateToolArgs(concept.inputSchema, { prompt: 'a game' }).valid).toBe(true);
+  });
+});

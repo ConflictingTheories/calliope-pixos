@@ -18,14 +18,9 @@
  * - A valid manifest.json
  */
 
-import aiService from './ai-service.js';
-import { generateCutscene, generateScript, generateManifest } from './text-generator.js';
-import {
-  generatePortrait,
-  generateSpritesheet,
-  generateTileset,
-  base64ToBlob,
-} from './image-generator.js';
+import { generateManifest } from './text-generator.js';
+import { base64ToBlob } from './image-generator.js';
+import { runTool } from './ai-tools.js';
 import { SPRITESHEET_LAYOUTS, calculateFrameCoordinates } from './dsl-specifications.js';
 import { validateSpriteConfig, validateManifest } from './asset-validation.js';
 import { debug, debugWarn, debugError } from '../../shared/debug-logger.js';
@@ -185,134 +180,52 @@ export class GamePackageOrchestrator {
   }
 
   /**
-   * Analyze a game concept prompt to extract structured information
+   * Dispatch a model interaction through the shared tool layer.
+   * Mirrors AssetOrchestrator.callTool: uniform {ok, result|error} envelope,
+   * throws on tool failure, wires rate-limit retries to status updates.
+   */
+  async callTool(name, args) {
+    const res = await runTool(name, args, {
+      ...this.toolContext,
+      onRetry: info =>
+        this.onStatusChange({ phase: 'rate-limited', message: info.message, retryInfo: info }),
+    });
+    if (!res.ok) throw new Error(`[${name}] ${res.error}`);
+    return res.result;
+  }
+
+  /**
+   * Analyze a game concept prompt to extract structured information.
+   * The model interaction goes through the `analyze_game_concept` tool;
+   * this method owns the domain step (GameConcept construction + validation).
    * @param {string} prompt - High-level game description
    * @returns {Promise<GameConcept>}
    */
   async analyzeGameConcept(prompt) {
     this.onStatusChange({ phase: 'analyzing', message: 'Analyzing game concept...' });
 
-    const systemPrompt = `You are an expert game designer. Analyze the game concept and extract structured information.
-
-Return ONLY valid JSON with this structure:
-{
-  "title": "Game Title",
-  "genre": "rpg|action|puzzle|adventure",
-  "setting": "fantasy|sci-fi|modern|medieval|post-apocalyptic",
-  "synopsis": "Brief 2-3 sentence game synopsis",
-  "mood": "adventurous|dark|whimsical|serious|comedic",
-  "characters": [
-    {
-      "name": "character_id",
-      "displayName": "Character Name",
-      "type": "player|npc|enemy",
-      "description": "Visual description for sprite generation - be specific about clothing, colors, features",
-      "role": "hero|merchant|guard|villain|etc",
-      "personality": "friendly|grumpy|mysterious|etc"
-    }
-  ],
-  "locations": [
-    {
-      "id": "location_id",
-      "name": "Location Name",
-      "type": "town|dungeon|forest|castle|etc",
-      "description": "Visual description for backdrop/tileset"
-    }
-  ],
-  "items": [
-    {
-      "id": "item_id",
-      "name": "Item Name",
-      "type": "weapon|armor|consumable|key",
-      "description": "Visual description"
-    }
-  ],
-  "quests": [
-    {
-      "id": "quest_id",
-      "title": "Quest Title",
-      "giver": "character_id",
-      "description": "Quest objective",
-      "reward": "What player gets"
-    }
-  ],
-  "cutscenes": [
-    {
-      "id": "cutscene_id",
-      "trigger": "intro|quest_start|quest_complete|boss_defeat",
-      "description": "What happens in this cutscene - be detailed",
-      "characters": ["char1", "char2"]
-    }
-  ]
-}
-
-CRITICAL REQUIREMENTS:
-- You MUST include at least 1 character with type "player"
-- You MUST include at least 1 character with type "npc"
-- You MUST include at least 1 location
-- You MUST include at least 1 cutscene with trigger "intro"
-- Character descriptions should be VISUAL - describe appearance for sprite generation
-- Make it a coherent, playable game`;
-
-    const analysisPrompt = `Analyze and design a game based on this concept:
-
-${prompt}
-
-Extract all characters, locations, items, quests, and plan cutscenes.
-Make it a coherent, playable game with clear progression.
-ENSURE you have at least: 1 player, 1 NPC, 1 location, 1 intro cutscene.
-RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
-
+    let conceptData;
     try {
-      const response = await aiService.chatCompletion(analysisPrompt, systemPrompt, null, {
-        temperature: 0.7,
-      });
-
-      // Parse the JSON response - it may be a string or already parsed
-      let conceptData;
-      if (typeof response === 'string') {
-        // Try to extract JSON from the response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            conceptData = JSON.parse(jsonMatch[0]);
-          } catch (parseError) {
-            console.error('[GameOrchestrator] Failed to parse JSON:', parseError);
-            console.error('[GameOrchestrator] Raw response:', response.substring(0, 500));
-            throw new Error('AI returned invalid JSON for game concept');
-          }
-        } else {
-          console.error(
-            '[GameOrchestrator] No JSON found in response:',
-            response.substring(0, 500)
-          );
-          throw new Error('AI did not return JSON for game concept');
-        }
-      } else if (typeof response === 'object' && response !== null) {
-        conceptData = response;
-      } else {
-        throw new Error('AI returned empty or invalid response');
-      }
-
-      debug(
-        'GameOrchestrator',
-        ' Parsed concept data:',
-        JSON.stringify(conceptData).substring(0, 200)
-      );
-
-      const gameConcept = new GameConcept(conceptData);
-
-      // Validate and fix up the concept
-      const validation = gameConcept.validate();
-      if (!validation.valid) {
-        console.warn('[GameOrchestrator] Concept had issues, auto-fixed:', validation.errors);
-      }
-
-      return gameConcept;
+      ({ conceptData } = await this.callTool('analyze_game_concept', { prompt }));
     } catch (error) {
-      console.error('[GameOrchestrator] analyzeGameConcept failed:', error);
       throw new Error(`Failed to analyze game concept: ${error.message}`);
     }
+
+    debug(
+      'GameOrchestrator',
+      ' Parsed concept data:',
+      JSON.stringify(conceptData).substring(0, 200)
+    );
+
+    const gameConcept = new GameConcept(conceptData);
+
+    // Validate and fix up the concept
+    const validation = gameConcept.validate();
+    if (!validation.valid) {
+      console.warn('[GameOrchestrator] Concept had issues, auto-fixed:', validation.errors);
+    }
+
+    return gameConcept;
   }
 
   /**
@@ -548,14 +461,14 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       debug('GameOrchestrator', ' STEP 6: Generating scripts...');
       this.onStatusChange({ phase: 'generating', message: 'Writing NPC scripts...' });
 
-      // Generate callback for each NPC
+      // Generate callback for each NPC — via the generate_script tool.
       for (const npc of npcs.slice(0, 3)) {
         try {
-          const scriptContent = await generateScript(
-            `${npc.displayName || npc.name}: ${npc.personality || 'friendly'} ${npc.role || 'villager'}`,
-            'npc',
-            { spriteName: this.sanitizeName(npc.name) }
-          );
+          const { script: scriptContent } = await this.callTool('generate_script', {
+            description: `${npc.displayName || npc.name}: ${npc.personality || 'friendly'} ${npc.role || 'villager'}`,
+            triggerType: 'npc',
+            spriteName: this.sanitizeName(npc.name),
+          });
 
           const scriptPath = `callbacks/npc_${this.sanitizeName(npc.name)}.pxs`;
 
@@ -882,21 +795,19 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
   }
 
   /**
-   * Generate cutscene with retry logic
+   * Generate cutscene with retry logic (via the generate_cutscene tool)
    */
   async generateCutsceneWithRetry(cutscene, concept) {
     let lastError = null;
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        const cutsceneContent = await generateCutscene(
-          `${cutscene.description} for "${concept.title}"`,
-          {
-            characters: (cutscene.characters || []).map(c => c.toUpperCase()),
-            mood: concept.mood,
-            length: cutscene.trigger === 'intro' ? 'medium' : 'short',
-          }
-        );
+        const { cutscene: cutsceneContent } = await this.callTool('generate_cutscene', {
+          description: `${cutscene.description} for "${concept.title}"`,
+          characters: (cutscene.characters || []).map(c => c.toUpperCase()),
+          mood: concept.mood,
+          length: cutscene.trigger === 'intro' ? 'medium' : 'short',
+        });
 
         // Validate cutscene content
         if (cutsceneContent && cutsceneContent.length > 50) {
@@ -990,19 +901,20 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       contentType: 'application/json',
     });
 
-    // Generate spritesheet (REQUIRED)
+    // Generate spritesheet (REQUIRED) — via the generate_spritesheet_image tool.
+    // Layout dims come from the deterministic SPRITESHEET_LAYOUTS entry;
+    // frame coordinates stay deterministic (built above), only pixels are AI.
     debug('GameOrchestrator', ` Generating spritesheet for ${name}...`);
     try {
-      const spritesheetBase64 = await generateSpritesheet(
-        character.description || `${character.displayName || character.name} character sprite`,
-        {
-          ...layout,
-          layoutName,
-          style: 'pixel art',
-          onRetry: info =>
-            this.onStatusChange({ phase: 'rate-limited', message: info.message, retryInfo: info }),
-        }
-      );
+      const { image: spritesheetBase64 } = await this.callTool('generate_spritesheet_image', {
+        description:
+          character.description || `${character.displayName || character.name} character sprite`,
+        tileSize: layout.tileSize,
+        directions: layout.directions.length,
+        framesPerDirection: layout.framesPerDirection,
+        sheetSize: layout.sheetSize,
+        style: 'pixel art',
+      });
 
       if (!spritesheetBase64) {
         throw new Error('Spritesheet generation returned empty result');
@@ -1029,22 +941,15 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
       });
     }
 
-    // Generate portrait (optional for monsters)
+    // Generate portrait (optional for monsters) — via the generate_portrait tool.
     if (options.includePortrait !== false) {
       debug('GameOrchestrator', ` Generating portrait for ${name}...`);
       try {
-        const portraitBase64 = await generatePortrait(
-          character.description || `${character.displayName || character.name} portrait`,
-          {
-            style: 'pixel art',
-            onRetry: info =>
-              this.onStatusChange({
-                phase: 'rate-limited',
-                message: info.message,
-                retryInfo: info,
-              }),
-          }
-        );
+        const { image: portraitBase64 } = await this.callTool('generate_portrait', {
+          description:
+            character.description || `${character.displayName || character.name} portrait`,
+          style: 'pixel art',
+        });
 
         if (portraitBase64) {
           results.assets.push({
@@ -1131,18 +1036,18 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
   }
 
   /**
-   * Generate tileset texture using AI
+   * Generate tileset texture using AI — via the generate_tileset tool.
    * @param {string} setting - Game setting for theme
    * @returns {Promise<string>} Base64 image data
    */
   async generateTilesetTexture(setting) {
     const description = `${setting || 'fantasy'} RPG game tileset`;
 
-    const tilesetBase64 = await generateTileset(description, {
-      width: 256,
-      height: 256,
+    const { image: tilesetBase64 } = await this.callTool('generate_tileset', {
+      description,
       tileSize: 16,
-      theme: setting || 'fantasy',
+      columns: 16,
+      rows: 16,
     });
 
     return tilesetBase64;
