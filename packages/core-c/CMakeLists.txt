@@ -171,10 +171,15 @@ set(CORE_SOURCES
     src/resource/resource_manager.c
     src/resource/json_loader.c
     src/resource/archive_loader.c
+    src/resource/obj_loader.c
+    src/resource/gltf_loader.c
     src/scene/tileset.c
     src/scene/sprite.c
     src/scene/zone.c
     src/scene/world.c
+    src/scene/portal.c
+    src/scene/behavior.c
+    src/scene/avatar.c
     src/vendor/cJSON.c
     src/vendor/miniz.c
     src/vendor/miniz_tdef.c
