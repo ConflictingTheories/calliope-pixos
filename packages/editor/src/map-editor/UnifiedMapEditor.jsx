@@ -887,8 +887,12 @@ function UnifiedMapEditor({
         // Only paint if we moved to a different cell
         if (!lastPaintedCell || lastPaintedCell.x !== x || lastPaintedCell.y !== y) {
           if (event.buttons === 1 && currentTool === 'paint') {
-            // Left button - paint
-            paintCell(x, y);
+            // Left button - paint with line interpolation for smooth strokes
+            if (lastPaintedCell) {
+              paintLine(lastPaintedCell.x, lastPaintedCell.y, x, y);
+            } else {
+              paintCell(x, y);
+            }
             setLastPaintedCell({ x, y });
           } else if (event.buttons === 2 || (event.buttons === 1 && currentTool === 'erase')) {
             // Right button or left button with erase tool - erase
@@ -1081,6 +1085,39 @@ function UnifiedMapEditor({
     const newAttributes = attributes.map((row, rowIdx) =>
       row.map((attr, colIdx) => (rowIdx === y && colIdx === x ? {} : attr))
     );
+    setCells(newCells);
+    setHeights(newHeights);
+    setAttributes(newAttributes);
+    pushHistory(newCells, newHeights, newAttributes);
+  }
+
+  // Bresenham line interpolation for smooth drag painting
+  function paintLine(x0, y0, x1, y1) {
+    const cellsToPaint = [];
+    let dx = Math.abs(x1 - x0);
+    let dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+    let x = x0, y = y0;
+    while (true) {
+      cellsToPaint.push([x, y]);
+      if (x === x1 && y === y1) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x += sx; }
+      if (e2 < dx) { err += dx; y += sy; }
+    }
+    // Batch paint all cells in the line
+    const newCells = cells.map(row => [...row]);
+    const newHeights = heights.map(row => [...row]);
+    const newAttributes = attributes.map(row => row.map(a => ({ ...a })));
+    cellsToPaint.forEach(([cx, cy]) => {
+      if (cy >= 0 && cy < newCells.length && cx >= 0 && cx < newCells[0].length) {
+        newCells[cy][cx] = selectedTile;
+        newHeights[cy][cx] = currentHeight;
+        newAttributes[cy][cx] = {};
+      }
+    });
     setCells(newCells);
     setHeights(newHeights);
     setAttributes(newAttributes);
