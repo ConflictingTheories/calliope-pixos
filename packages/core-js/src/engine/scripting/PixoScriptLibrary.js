@@ -1180,6 +1180,10 @@ export default class PixoScriptLibrary {
         return new Promise(resolve => {
           try {
             const world = engine.world || engine.spritz?.world;
+            // Expose world globally for dialog UI polling
+            if (typeof window !== 'undefined' && world) {
+              window.__pixosWorld = world;
+            }
             if (!world) {
               console.log(`[Choice] ${prompt}`, options);
               resolve(0);
