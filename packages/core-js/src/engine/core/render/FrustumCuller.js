@@ -236,6 +236,27 @@ export default class FrustumCuller {
   }
 
   /**
+   * Check if a zone is visible within the frustum.
+   * Uses the zone's bounds to test against frustum planes.
+   * @param {object} zone - Zone with bounds property [x, y, w, h]
+   * @returns {boolean} True if zone is visible or partially visible
+   */
+  isZoneVisible(zone) {
+    if (!this.enabled) return true;
+    if (!zone || !zone.bounds) return true;
+
+    const [x, y, w, h] = zone.bounds;
+    // Create AABB from zone bounds (z from 0 to max height)
+    const aabb = new AABB(
+      new Vector(x, y, 0),
+      new Vector(x + w, y + h, 100)
+    );
+
+    const result = this.frustum.testAABB(aabb);
+    return result !== 'outside';
+  }
+
+  /**
    * Quick visibility check for a single point
    * @param {Vector} point
    * @returns {boolean}
