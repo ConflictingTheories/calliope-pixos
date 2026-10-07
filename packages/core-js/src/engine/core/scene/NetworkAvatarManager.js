@@ -239,7 +239,11 @@ export default class NetworkAvatarManager {
   applyRemoteAction(clientId, action, params, spriteId) {
     const avatar = this.remoteAvatars.get(clientId);
     if (avatar) {
-      avatar.performAction(action, params); // implement this in your avatar class
+      if (typeof avatar.performAction === 'function') {
+        avatar.performAction(action, params);
+      } else {
+        console.warn(`[NetworkAvatar] performAction not implemented for ${clientId}, action: ${action}`);
+      }
     }
   }
 

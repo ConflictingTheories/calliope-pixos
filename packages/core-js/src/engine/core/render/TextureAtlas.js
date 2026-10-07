@@ -329,6 +329,7 @@ export default class TextureAtlas {
         // Start new batch
         if (currentBatch) {
           this.finalizeBatch(currentBatch, vertexOffset, indexOffset);
+          this.compiledBatches.set(currentKey, currentBatch);
         }
 
         currentKey = key;
