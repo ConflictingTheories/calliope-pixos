@@ -147,9 +147,16 @@ export class ObjectLoader {
     const matKeys = Object.keys(materials);
     if (matKeys.length > 0) {
       compositeMesh.materialsByIndex[0] = materials[matKeys[0]];
-      // Assign texture from first mesh if available
-      if (meshes[0] && meshes[0].texture) {
-        compositeMesh.materialsByIndex[0].glTexture = meshes[0].texture;
+      // Assign texture: check materialProps.glTexture (set by loadTextures) or mesh.texture
+      const mat = compositeMesh.materialsByIndex[0];
+      if (mat.glTexture) {
+        // Already set by loadTextures — nothing to do
+      } else if (meshes[0] && meshes[0].texture) {
+        mat.glTexture = meshes[0].texture;
+      }
+      // Ensure map_Kd is present for renderer check
+      if (mat.map_Kd && mat.glTexture) {
+        console.log(`ObjectLoader: Texture bound for material ${matKeys[0]}`);
       }
     } else {
       compositeMesh.materialsByIndex[0] = {

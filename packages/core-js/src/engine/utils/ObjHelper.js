@@ -577,6 +577,8 @@ export default class ObjHelper {
               if (meshFilename === filename) {
                 mesh.texture = texture;
                 mesh.hasTexture = true;
+                // Renderer checks mat.glTexture — link it here
+                mesh.materialProps.glTexture = texture;
               }
             }
           });
