@@ -40,11 +40,6 @@ import { BridgedProjectRepository } from './core/project/repository.js';
 import ProjectSettings from './components/ProjectSettings.jsx';
 import ModeEditor from './components/ModeEditor.jsx';
 import UpdateTracker from './components/UpdateTracker.jsx';
-import ShaderEditor from './components/ShaderEditor.jsx';
-import PortalEditor from './components/PortalEditor.jsx';
-import BehaviorEditor from './components/BehaviorEditor.jsx';
-import LightEditor from './components/LightEditor.jsx';
-import SceneTest from './components/SceneTest.jsx';
 
 const AudioPreview = getTool('audio-preview').component;
 const ModelPreview = getTool('model-preview').component;
@@ -261,11 +256,6 @@ const App = () => {
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const [modeEditorOpen, setModeEditorOpen] = useState(false);
   const [updateTrackerOpen, setUpdateTrackerOpen] = useState(false);
-  const [shaderEditorOpen, setShaderEditorOpen] = useState(false);
-  const [portalEditorOpen, setPortalEditorOpen] = useState(false);
-  const [behaviorEditorOpen, setBehaviorEditorOpen] = useState(false);
-  const [lightEditorOpen, setLightEditorOpen] = useState(false);
-  const [sceneTestOpen, setSceneTestOpen] = useState(false);
   useEffect(() => {
     const offPalette = commands.register({
       id: 'shell.command-palette',
@@ -298,37 +288,6 @@ const App = () => {
       group: 'project',
       run: () => setUpdateTrackerOpen(true),
     });
-    const offShaderEditor = commands.register({
-      id: 'tools.shader-editor',
-      title: 'Shader Editor…',
-      group: 'tools',
-      run: () => setShaderEditorOpen(true),
-    });
-    const offPortalEditor = commands.register({
-      id: 'tools.portal-editor',
-      title: 'Portal Editor…',
-      group: 'tools',
-      run: () => setPortalEditorOpen(true),
-    });
-    const offBehaviorEditor = commands.register({
-      id: 'tools.behavior-editor',
-      title: 'Behavior Editor…',
-      group: 'tools',
-      run: () => setBehaviorEditorOpen(true),
-    });
-    const offLightEditor = commands.register({
-      id: 'tools.light-editor',
-      title: 'Light Editor…',
-      group: 'tools',
-      run: () => setLightEditorOpen(true),
-    });
-    const offSceneTest = commands.register({
-      id: 'tools.scene-test',
-      title: 'Test Scene…',
-      group: 'tools',
-      shortcut: 'ctrl+t',
-      run: () => setSceneTestOpen(true),
-    });
     // (UX Phase 2) Shortcut reference (finding A3.1).
     const offShortcuts = commands.register({
       id: 'shell.shortcuts',
@@ -346,11 +305,6 @@ const App = () => {
       offProjectSettings();
       offModeEditor();
       offUpdateTracker();
-      offShaderEditor();
-      offPortalEditor();
-      offBehaviorEditor();
-      offLightEditor();
-      offSceneTest();
       offShortcuts();
     };
   }, []);
@@ -1725,142 +1679,7 @@ const App = () => {
       const fileExtension = entry.name.match(/\\.\\w+$/)?.[0] || '.pxc';
 
       // Asset loader function that loads from ZIP with proper MIME types
-      const assetLoader = async path => {
-        try {
-          debug('App', '[assetLoader] Loading asset:', path);
-          // Clean the path
-          let cleanPath = path.replace(/^data:/, '').replace(/^assets\//, '');
-          debug('App', '[assetLoader] Clean path:', cleanPath);
-
-          // Helper to find asset by name in ZIP recursively
-          const findAsset = (node, targetName) => {
-            if (node.children) {
-              for (const child of node.children) {
-                if (
-                  !child.directory &&
-                  (child.name === targetName || child.name.includes(targetName))
-                ) {
-                  return child;
-                }
-                if (child.directory) {
-                  const found = findAsset(child, targetName);
-                  if (found) return found;
-                }
-              }
-            }
-            return null;
-          };
-
-          // First try direct match
-          let assetEntry = findAsset(zip, cleanPath);
-
-          // If not found, try common prefix and extension fixes for sprites and audio
-          if (!assetEntry) {
-            // For sprite assets like "characters/male"
-            if (
-              cleanPath.startsWith('characters/') ||
-              cleanPath.startsWith('npc/') ||
-              cleanPath.startsWith('sprites/')
-            ) {
-              // Try image formats FIRST (cutscene needs pixels, not JSON)
-              // Then fall back to JSON definition
-              const trialPaths = [
-                cleanPath.startsWith('sprites/')
-                  ? cleanPath + '.png'
-                  : 'sprites/' + cleanPath + '.png',
-                cleanPath.startsWith('sprites/')
-                  ? cleanPath + '.gif'
-                  : 'sprites/' + cleanPath + '.gif',
-                cleanPath.startsWith('sprites/') ? cleanPath : 'sprites/' + cleanPath,
-                cleanPath + '.png',
-                cleanPath + '.gif',
-                cleanPath.startsWith('sprites/')
-                  ? cleanPath + '.json'
-                  : 'sprites/' + cleanPath + '.json',
-                cleanPath + '.json',
-              ];
-              for (const trial of trialPaths) {
-                assetEntry = findAsset(zip, trial);
-                if (assetEntry) {
-                  debug('App', '[assetLoader] Found sprite at:', trial);
-                  break;
-                }
-              }
-            }
-
-            // For texture/backdrop files
-            if (!assetEntry && cleanPath.startsWith('textures/')) {
-              const trialTexturePaths = [
-                cleanPath,
-                cleanPath + '.png',
-                cleanPath + '.gif',
-                cleanPath + '.jpg',
-                cleanPath + '.jpeg',
-              ];
-              for (const trial of trialTexturePaths) {
-                assetEntry = findAsset(zip, trial);
-                if (assetEntry) break;
-              }
-            }
-
-            // For audio files, try prefixing with "audio/"
-            if (!assetEntry && cleanPath.match(/\.mp3$|\.wav$|\.ogg$/)) {
-              const trialAudioPath = 'audio/' + cleanPath.replace(/^audio\//, '');
-              assetEntry = findAsset(zip, trialAudioPath);
-            }
-
-            // For direct portrait references (like fire_portrait, water_portrait)
-            if (!assetEntry && cleanPath.match(/_portrait$/)) {
-              const trialPortraitPaths = [
-                'textures/' + cleanPath + '.gif',
-                'textures/' + cleanPath + '.png',
-                cleanPath + '.gif',
-                cleanPath + '.png',
-              ];
-              for (const trial of trialPortraitPaths) {
-                assetEntry = findAsset(zip, trial);
-                if (assetEntry) break;
-              }
-            }
-
-            // Last resort: try without any prefix if it has an extension
-            if (!assetEntry && cleanPath.match(/\.\w+$/)) {
-              assetEntry = findAsset(zip, cleanPath.split('/').pop());
-            }
-          }
-
-          if (!assetEntry) {
-            // Only warn if it's not an intermediate search path
-            // (e.g., don't warn for .json when looking for .gif)
-            if (!path.match(/\.(json|gif|png)$/)) {
-              console.warn(`Asset not found in ZIP: ${path}`);
-            }
-            return null;
-          }
-
-          // Get the data and convert to data URI
-          const data = await getData(assetEntry, false);
-          const ext = assetEntry.name.split('.').pop().toLowerCase();
-          const mimeMap = {
-            png: 'image/png',
-            jpg: 'image/jpeg',
-            jpeg: 'image/jpeg',
-            gif: 'image/gif',
-            webp: 'image/webp',
-            svg: 'image/svg+xml',
-            mp3: 'audio/mpeg',
-            wav: 'audio/wav',
-            ogg: 'audio/ogg',
-            json: 'application/json',
-          };
-          const mimeType = mimeMap[ext] || 'application/octet-stream';
-          debug('App', '[assetLoader] Returning data URI with MIME type:', mimeType);
-          return toDataUri(data, mimeType);
-        } catch (err) {
-          console.error(`Failed to load asset ${path}:`, err);
-          return null;
-        }
-      };
+      const assetLoader = createAssetLoader(zip, getData, toDataUri);
 
       const cutsceneTabId = getEntryFullPath(entry);
       openTab(cutsceneTabId, entry.name, (
@@ -2416,45 +2235,6 @@ const App = () => {
           entries={[]}
           onAdd={() => {}}
           onClose={() => setUpdateTrackerOpen(false)}
-        />
-      )}
-      {shaderEditorOpen && (
-        <ShaderEditor
-          onSave={() => setShaderEditorOpen(false)}
-          onClose={() => setShaderEditorOpen(false)}
-        />
-      )}
-      {portalEditorOpen && (
-        <PortalEditor
-          portals={[]}
-          availableMaps={[]}
-          portalsByMap={{}}
-          onAdd={() => {}}
-          onUpdate={() => {}}
-          onDelete={() => {}}
-          onClose={() => setPortalEditorOpen(false)}
-        />
-      )}
-      {behaviorEditorOpen && (
-        <BehaviorEditor
-          object={{ id: 'selected' }}
-          onSave={() => setBehaviorEditorOpen(false)}
-          onClose={() => setBehaviorEditorOpen(false)}
-        />
-      )}
-      {lightEditorOpen && (
-        <LightEditor
-          lights={[]}
-          onAdd={() => {}}
-          onUpdate={() => {}}
-          onDelete={() => {}}
-          onClose={() => setLightEditorOpen(false)}
-        />
-      )}
-      {sceneTestOpen && (
-        <SceneTest
-          mapId="village-hub"
-          onClose={() => setSceneTestOpen(false)}
         />
       )}
       {/* (P2-07) Save status replaces alert() dialogs in save paths */}
