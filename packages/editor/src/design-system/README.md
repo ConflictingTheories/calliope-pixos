@@ -1,5 +1,13 @@
 # PixoSpritz Editor — Canonical Design Tokens (P2-08)
 
+## Brand direction (Kyle, 2026-10-06)
+
+**Primary is ACHROMATIC** — not teal, not pink. `--color-brand-primary`
+is a high-contrast neutral (`#ececf1`, near-white) with dark text
+(`--color-on-brand-primary`). Chromatic accents (teal secondary, pink
+accent, amber warm) are secondary and minimal. This reconciles the old
+pink-vs-teal-vs-indigo conflict: there is exactly one primary now.
+
 **Canonical token tree:** `src/design-system/`
 
 - `design-system.css` — CSS custom properties (`--color-*`, `--space-*`,
