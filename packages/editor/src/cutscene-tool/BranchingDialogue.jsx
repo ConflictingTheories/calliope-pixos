@@ -726,15 +726,16 @@ function BranchingDialogue({ nodes = [], onNodesChange, onExport, className = ''
         <Modal.Body>
           <div className="bd-add-nodes">
             {Object.entries(NODE_TYPES).map(([type, info]) => (
-              <button
+              <Button
                 key={type}
+                appearance="ghost"
                 className="bd-add-node-btn"
                 onClick={() => addNode(type)}
                 style={{ borderColor: info.color }}
               >
                 <span className="bd-add-node-btn__icon">{info.icon}</span>
                 <span className="bd-add-node-btn__label">{info.label}</span>
-              </button>
+              </Button>
             ))}
           </div>
         </Modal.Body>

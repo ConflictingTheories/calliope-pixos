@@ -195,8 +195,9 @@ function DSLCommandPalette({ open, onClose, onInsert }) {
                   </div>
                   <div className="dsl-category__commands">
                     {commands.map(cmd => (
-                      <button
+                      <Button
                         key={cmd.key}
+                        appearance="ghost"
                         className="dsl-command-btn"
                         onClick={() => handleSelectCommand(cmd)}
                       >
@@ -205,7 +206,7 @@ function DSLCommandPalette({ open, onClose, onInsert }) {
                           <div className="dsl-command-btn__name">{cmd.key}</div>
                           <div className="dsl-command-btn__desc">{cmd.description}</div>
                         </div>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
