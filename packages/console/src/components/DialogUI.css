@@ -73,3 +73,16 @@
 .dialog-dismiss:hover {
   background: #5a9c6d;
 }
+
+.dialog-option.selected {
+  background: #4a4a8e;
+  border-color: #8a8aba;
+  box-shadow: 0 0 8px rgba(138, 138, 186, 0.5);
+}
+
+.dialog-hint {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
