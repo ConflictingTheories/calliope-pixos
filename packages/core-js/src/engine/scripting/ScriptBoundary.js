@@ -12,8 +12,10 @@
  * - No ambient host access: the worker receives only the script source and
  *   declared capabilities; the host never evaluates script source itself.
  *
- * The trust POLICY (which scripts may run, which capabilities publishers may
- * request) is Kyle's open decision (P4-06) and is intentionally not set here.
+ * The trust policy is sandbox-by-default (P4-06, decided 2026-10-06):
+ * default-deny capabilities, with Tier-2 host capabilities requiring an
+ * explicit host grant (see script-policy.js). Policy lives in the policy
+ * module; this facade remains pure mechanism.
  *
  * Usage:
  *   const boundary = new ScriptBoundary({

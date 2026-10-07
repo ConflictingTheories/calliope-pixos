@@ -4,8 +4,10 @@
  * Declares the scripting API version and the capability registry. A pixozine
  * manifest declares `scriptApiVersion` + `capabilities`; the runtime grants a
  * script ONLY its declared capabilities — everything else is denied by
- * default (default-deny). The trust POLICY (which capabilities a publisher
- * may request) is Kyle's open decision (P4-06); this module is the mechanism.
+ * default (default-deny). The trust policy is sandbox-by-default (P4-06,
+ * decided 2026-10-06; see script-policy.js and docs/adr/0004-script-trust-policy.md):
+ * Tier-2 host capabilities additionally require an explicit host grant.
+ * This module is the mechanism.
  *
  * Capability kinds:
  * - `lib:*` — pixoscript standard libraries bound into the script env.
