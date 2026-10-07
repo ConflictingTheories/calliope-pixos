@@ -86,16 +86,15 @@ export default class Spritz {
    * Todo - Load spritz remotely
    * @param {string} src
    */
+  /**
+   * KNOWN LIMITATION: This method is not implemented.
+   * Required for: Loading spritz packages from remote URLs.
+   * Implementation needs: fetch manifest JSON, parse zones, initialize zone objects,
+   * show loading UI, handle errors.
+   * Status: STUB - throws if called.
+   */
   loadSpritzManifest = async src => {
-    // Put up loading Screen
-    //
-    // Fetch Manifest Remotely from Src
-    //
-    // Parse & Read in Zones
-    //
-    // Load Zones and Then once ready Remove Loading
-    //
-    // Start
+    throw new Error('loadSpritzManifest is not implemented. Spritz packages must be loaded via the engine bootstrap.');
   };
 
   /**
@@ -103,14 +102,15 @@ export default class Spritz {
    * @param {string} src
    * @param {string} zoneId
    */
+  /**
+   * KNOWN LIMITATION: This method is not implemented.
+   * Required for: Loading player avatars from remote sources.
+   * Implementation needs: fetch avatar JSON, validate schema, create avatar object,
+   * add to specified zone, handle loading UI.
+   * Status: STUB - throws if called.
+   */
   loadAvatar = async (src, zoneId) => {
-    // Put up loading Screen
-    //
-    // Fetch Avatar Remotely from Src
-    //
-    // Parse & Read in & initialized
-    //
-    // Add to Zone
+    throw new Error('loadAvatar is not implemented. Avatars must be created via the avatar system.');
   };
 
   /**
