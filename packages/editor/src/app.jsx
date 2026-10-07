@@ -22,6 +22,9 @@ import { getTool } from './shell/toolRegistry.js';
 import { keymap } from './shell/commands/keymap.js';
 import { commands } from './shell/commands/commands.js';
 import CommandPalette from './shell/commands/CommandPalette.jsx';
+// (UX Phase 2) Shortcut reference dialog (finding A3.1) — generated
+// from the command registry so it never goes stale.
+import ShortcutHelp from './shell/commands/ShortcutHelp.jsx';
 // (P2-07) Save status bus: domain save paths report here, never alert().
 import { useSaveStatus, reportSaveOk, reportSaveError } from './shell/saveStatus.js';
 // (P3-14) Blob URLs for binary previews — no base64 data URIs.
@@ -50,7 +53,10 @@ import ConsolePanel, { useConsole } from './script-editor/ConsolePanel.jsx';
 import { addLogListener, removeLogListener } from 'pixospritz-core/engine/utils/debug-logger.js';
 // (UX Phase 1) Multi-document tabs + toast feedback.
 import { useToast } from './shared/components/Toast.jsx';
-import { Button } from './ui';
+import { Button, Modal } from './ui';
+// (UX Phase 2) Per-tool crash containment — a tool crash shows a
+// crash card instead of white-screening the app (finding A1.2).
+import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
 import './shell/tabs.css';
 import {
   PublishToSvrnDialog,
@@ -93,6 +99,11 @@ const App = () => {
   }, [tabs]);
   // Dirty paths from the project store -> dirty-dot indicators.
   const [dirtyPaths, setDirtyPaths] = useState([]);
+  // Mirror for the closeTab callback (avoids stale state).
+  const dirtyPathsRef = useRef([]);
+  useEffect(() => {
+    dirtyPathsRef.current = dirtyPaths;
+  }, [dirtyPaths]);
   // Per-tab blob URLs for binary previews (revoked on tab close).
   const previewUrlsRef = useRef(new Map());
   useEffect(() => {
@@ -111,7 +122,10 @@ const App = () => {
     setActiveTabId(id);
   }, []);
 
-  const closeTab = useCallback(id => {
+  const [pendingCloseTab, setPendingCloseTab] = useState(null);
+
+  const doCloseTab = useCallback(id => {
+    setPendingCloseTab(null);
     const url = previewUrlsRef.current.get(id);
     if (url) {
       revokePreviewUrl(url);
@@ -128,6 +142,17 @@ const App = () => {
       return next[Math.min(idx, next.length - 1)].id;
     });
   }, []);
+
+  const closeTab = useCallback(id => {
+    // (UX Phase 2) Forgiveness: dirty tabs route through an in-app
+    // confirmation — never window.confirm(), never silent loss.
+    const isDirty = dirtyPathsRef.current.includes(id);
+    if (isDirty) {
+      setPendingCloseTab(id);
+      return;
+    }
+    doCloseTab(id);
+  }, [doCloseTab]);
 
   const cycleTab = useCallback(direction => {
     const list = tabsRef.current;
@@ -218,6 +243,8 @@ const App = () => {
   // (P2-09) Shell command infrastructure: palette visibility, the single
   // global keydown dispatcher, and the core command registrations.
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // (UX Phase 2) Shortcut help dialog state.
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const saveStatus = useSaveStatus();
   // (Publishing vertical) "Publish to SVRN" dialog state.
   const [svrnPublishOpen, setSvrnPublishOpen] = useState(false);
@@ -236,14 +263,84 @@ const App = () => {
       group: 'publish',
       run: () => setSvrnPublishOpen(true),
     });
+    // (UX Phase 2) Shortcut reference (finding A3.1).
+    const offShortcuts = commands.register({
+      id: 'shell.shortcuts',
+      title: 'Keyboard shortcuts',
+      group: 'shell',
+      shortcut: 'shift+?',
+      run: () => setShortcutsOpen(true),
+    });
     const onKeyDown = e => keymap.handleKeyDown(e);
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       offPalette();
       offPublish();
+      offShortcuts();
     };
   }, []);
+
+  // (UX Phase 2, backlog 2.7 / finding A3.2) Shell-level undo/redo wired
+  // to the CommandBus. Tools route edits through the bus; the shell
+  // surfaces undo/redo buttons + shortcuts so users can always tell
+  // what is undoable.
+  const bus = toolCore.bus;
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      setCanUndo(bus.canUndo);
+      setCanRedo(bus.canRedo);
+    };
+    sync();
+    const offExec = bus.on('executed', sync);
+    const offUndone = bus.on('undone', sync);
+    const offRedone = bus.on('redone', sync);
+    return () => {
+      offExec();
+      offUndone();
+      offRedone();
+    };
+  }, [bus]);
+  useEffect(() => {
+    const offUndo = commands.register({
+      id: 'shell.undo',
+      title: 'Undo',
+      group: 'shell',
+      shortcut: 'ctrl+z',
+      when: () => bus.canUndo,
+      run: () => {
+        if (!bus.undo()) toast.info('Nothing to undo');
+      },
+    });
+    const offRedo = commands.register({
+      id: 'shell.redo',
+      title: 'Redo',
+      group: 'shell',
+      shortcut: 'ctrl+shift+z',
+      when: () => bus.canRedo,
+      run: () => {
+        if (!bus.redo()) toast.info('Nothing to redo');
+      },
+    });
+    const offRedoAlt = commands.register({
+      id: 'shell.redo-alt',
+      title: 'Redo (alternate)',
+      group: 'shell',
+      shortcut: 'ctrl+y',
+      when: () => bus.canRedo,
+      run: () => {
+        if (!bus.redo()) toast.info('Nothing to redo');
+      },
+    });
+    return () => {
+      offUndo();
+      offRedo();
+      offRedoAlt();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bus]);
 
   // (UX Phase 1) Tab keyboard shortcuts: ctrl+tab / ctrl+shift+tab cycle,
   // ctrl+w closes the active tab.
@@ -1895,6 +1992,28 @@ const App = () => {
                 <strong>{activeTabLabel}</strong>
               </div>
               <div className="editor-main-actions">
+                {/* (UX Phase 2) Shell undo/redo — wired to the CommandBus (finding A3.2). */}
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  disabled={!canUndo}
+                  onClick={() => commands.execute('shell.undo')}
+                  title="Undo (Ctrl+Z)"
+                  aria-label="Undo"
+                >
+                  ↩ Undo
+                </Button>
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  disabled={!canRedo}
+                  onClick={() => commands.execute('shell.redo')}
+                  title="Redo (Ctrl+Shift+Z)"
+                  aria-label="Redo"
+                  style={{ marginLeft: '4px' }}
+                >
+                  ↪ Redo
+                </Button>
                 <Button
                   appearance="subtle"
                   size="sm"
@@ -1986,7 +2105,12 @@ const App = () => {
                     className="editor-tabpanel"
                     hidden={tab.id !== activeTabId}
                   >
-                    {tab.element}
+                    <ErrorBoundary
+                      toolName={tab.label}
+                      onReset={() => closeTab(tab.id)}
+                    >
+                      {tab.element}
+                    </ErrorBoundary>
                   </div>
                 ))}
               </Suspense>
@@ -2111,6 +2235,29 @@ const App = () => {
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
       {/* (P2-09) Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      {/* (UX Phase 2) Dirty-tab close confirmation (forgiveness). */}
+      <Modal open={!!pendingCloseTab} onClose={() => setPendingCloseTab(null)} size="sm">
+        <Modal.Header onClose={() => setPendingCloseTab(null)}>
+          <Modal.Title>Unsaved changes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+            “{tabs.find(t => t.id === pendingCloseTab)?.label || pendingCloseTab}” has
+            unsaved changes. Closing now will lose them.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Button appearance="ghost" onClick={() => setPendingCloseTab(null)}>
+              Keep editing
+            </Button>
+            <Button appearance="primary" color="red" onClick={() => doCloseTab(pendingCloseTab)}>
+              Close without saving
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
       {/* (Publishing vertical) Publish to SVRN dialog */}
       <PublishToSvrnDialog
         open={svrnPublishOpen}
