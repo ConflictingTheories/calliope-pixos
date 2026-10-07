@@ -9,8 +9,8 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import {
 import { Button } from '../ui';
+import {
   initWebGL2,
   resizeCanvas,
   createMat4,
