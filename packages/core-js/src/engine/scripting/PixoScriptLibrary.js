@@ -1028,6 +1028,68 @@ export default class PixoScriptLibrary {
           return 0;
         }
       },
+      // Battle UI helpers (for tactical demos)
+      highlight_units: (units, style) => {
+        console.log(`[Battle] Highlight ${units?.length || 0} units (${style})`);
+      },
+      highlight_tiles: (tiles, style) => {
+        console.log(`[Battle] Highlight ${tiles?.length || 0} tiles (${style})`);
+      },
+      clear_highlight: () => {
+        console.log('[Battle] Clear highlights');
+      },
+      show_damage: (targetId, amount) => {
+        console.log(`[Battle] ${targetId} takes ${amount} damage`);
+      },
+      move_cursor: (x, y) => {
+        console.log(`[Battle] Cursor to (${x}, ${y})`);
+      },
+      // Demo-required APIs
+      load_map: mapId => {
+        console.log(`[Demo] Load map: ${mapId}`);
+      },
+      show_hud: hudId => {
+        console.log(`[Demo] Show HUD: ${hudId}`);
+      },
+      show_message: msg => {
+        console.log(`[Demo] Message: ${msg}`);
+      },
+      switch_mode: modeName => {
+        try {
+          if (engine.world && engine.world.modeManager) {
+            engine.world.modeManager.set(modeName);
+          }
+        } catch (e) {
+          console.warn('switch_mode failed', e);
+        }
+      },
+      input_pressed: key => {
+        try {
+          if (engine.gamepad) {
+            return engine.gamepad.keyPressed(key);
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      input_down: key => {
+        try {
+          if (engine.gamepad) {
+            return engine.gamepad.keyDown(key);
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      bind_camera: target => {
+        console.log('[Demo] Bind camera to target');
+      },
+      show_choice: (prompt, options) => {
+        console.log(`[Demo] Choice: ${prompt}`, options);
+        return 0; // Default to first option
+      },
     });
   };
 }
