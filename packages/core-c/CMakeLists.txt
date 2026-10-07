@@ -198,6 +198,7 @@ endif()
 if(ENABLE_LUA)
     list(APPEND CORE_SOURCES
         src/scripting/lua_manager.c
+        src/scripting/lua_sandbox.c
         # Lua 5.4 core sources
         src/vendor/lua-5.4/lapi.c
         src/vendor/lua-5.4/lauxlib.c
