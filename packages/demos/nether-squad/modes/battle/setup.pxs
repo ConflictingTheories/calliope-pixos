@@ -1,0 +1,51 @@
+-- Nether Squad: Battle mode setup
+-- Initializes turn-based tactical combat
+
+local Battle = {}
+Battle.units = {}
+Battle.turnIndex = 1
+Battle.phase = 'select'  -- select, move, action
+Battle.selectedUnit = nil
+Battle.moveRange = {}
+
+-- Unit definitions
+local unitDefs = {
+    hero = { hp = 30, maxHp = 30, atk = 8, move = 4, range = 1, team = 'player' },
+    knight = { hp = 40, maxHp = 40, atk = 6, move = 3, range = 1, team = 'player' },
+    goblin1 = { hp = 20, maxHp = 20, atk = 5, move = 3, range = 1, team = 'enemy' },
+    goblin2 = { hp = 20, maxHp = 20, atk = 5, move = 3, range = 1, team = 'enemy' },
+}
+
+local world = pixos.get_world()
+for id, def in pairs(unitDefs) do
+    local sprite = world.spriteDict and world.spriteDict[id]
+    if sprite then
+        Battle.units[id] = {
+            id = id,
+            sprite = sprite,
+            hp = def.hp,
+            maxHp = def.maxHp,
+            atk = def.atk,
+            move = def.move,
+            range = def.range,
+            team = def.team,
+            x = math.floor(sprite.pos[1]),
+            y = math.floor(sprite.pos[2]),
+            acted = false,
+        }
+    end
+end
+
+-- Turn order: players first, then enemies
+Battle.turnOrder = {'hero', 'knight', 'goblin1', 'goblin2'}
+
+pixos.show_hud('battle')
+pixos.log('nether-squad: battle start! Defeat all enemies.')
+pixos.show_message('Battle Start! Defeat the goblins!')
+
+-- Store in global for update script
+_G.battle = Battle
+
+return {
+    getBattle = function() return Battle end,
+}
