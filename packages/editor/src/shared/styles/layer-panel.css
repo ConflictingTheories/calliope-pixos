@@ -86,15 +86,15 @@
 }
 
 .layer-item--selected {
-  background: var(--color-bg-selected, rgba(255, 107, 157, 0.12));
+  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.12));
 }
 
 .layer-item--selected:hover {
-  background: var(--color-bg-selected, rgba(255, 107, 157, 0.15));
+  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15));
 }
 
 .layer-item--drag-over {
-  border-top: 2px solid var(--color-primary, #ff6b9d);
+  border-top: 2px solid var(--color-primary, var(--color-brand-accent));
 }
 
 .layer-item--dragging {
@@ -168,7 +168,7 @@
 .layer-item__name-input {
   width: 100%;
   background: var(--color-bg-tertiary, rgba(28, 28, 52, 0.85));
-  border: 1px solid var(--color-primary, #ff6b9d);
+  border: 1px solid var(--color-primary, var(--color-brand-accent));
   border-radius: var(--radius-sm, 2px);
   color: var(--color-text, #e4e4e7);
   font-size: var(--font-size-sm, 13px);

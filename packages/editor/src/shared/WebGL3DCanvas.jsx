@@ -9,6 +9,7 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Button } from '../ui';
 import {
   initWebGL2,
   resizeCanvas,
@@ -324,7 +325,9 @@ export default function WebGL3DCanvas({
         >
           <div>Drag to rotate | Shift+Drag to pan | Scroll to zoom</div>
           <div style={{ marginTop: '4px' }}>
-            <button
+            <Button
+              size="sm"
+              appearance="default"
               onClick={resetCamera}
               style={{
                 background: '#0e639c',
@@ -338,8 +341,11 @@ export default function WebGL3DCanvas({
               }}
             >
               📷 Reset Camera
-            </button>
-            <button
+            </Button>
+            <Button
+              size="sm"
+              appearance="default"
+              active={showGrid}
               onClick={toggleGrid}
               style={{
                 background: showGrid ? '#0e639c' : '#3e3e42',
@@ -352,7 +358,7 @@ export default function WebGL3DCanvas({
               }}
             >
               ⊞ Grid
-            </button>
+            </Button>
           </div>
         </div>
       )}

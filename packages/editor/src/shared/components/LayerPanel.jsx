@@ -21,6 +21,7 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
+import { IconButton, Input } from '../../ui';
 import '../styles/layer-panel.css';
 
 /**
@@ -182,9 +183,12 @@ function LayerPanel({
         <span className="layer-panel__title">{title}</span>
         <div className="layer-panel__actions">
           {onAdd && (
-            <button className="layer-panel__action" onClick={onAdd} title="Add Layer">
-              <PlusIcon />
-            </button>
+            <IconButton
+              icon={<PlusIcon />}
+              className="layer-panel__action"
+              onClick={onAdd}
+              title="Add Layer"
+            />
           )}
         </div>
       </div>
@@ -216,16 +220,15 @@ function LayerPanel({
 
               {/* Visibility Toggle */}
               {onVisibilityToggle && (
-                <button
+                <IconButton
+                  icon={layer.visible !== false ? <EyeIcon /> : <EyeOffIcon />}
                   className={`layer-item__visibility ${layer.visible !== false ? 'layer-item__visibility--visible' : ''}`}
                   onClick={e => {
                     e.stopPropagation();
                     onVisibilityToggle(layer.id, layer.visible === false);
                   }}
                   title={layer.visible !== false ? 'Hide Layer' : 'Show Layer'}
-                >
-                  {layer.visible !== false ? <EyeIcon /> : <EyeOffIcon />}
-                </button>
+                />
               )}
 
               {/* Color Indicator */}
@@ -236,8 +239,7 @@ function LayerPanel({
               {/* Layer Name */}
               <div className="layer-item__name">
                 {editingId === layer.id ? (
-                  <input
-                    type="text"
+                  <Input
                     className="layer-item__name-input"
                     value={editingName}
                     onChange={e => setEditingName(e.target.value)}
@@ -253,30 +255,29 @@ function LayerPanel({
 
               {/* Lock Toggle */}
               {onLockToggle && (
-                <button
+                <IconButton
+                  icon={layer.locked ? <LockIcon /> : <UnlockIcon />}
                   className={`layer-item__lock ${layer.locked ? 'layer-item__lock--locked' : ''}`}
                   onClick={e => {
                     e.stopPropagation();
                     onLockToggle(layer.id, !layer.locked);
                   }}
                   title={layer.locked ? 'Unlock Layer' : 'Lock Layer'}
-                >
-                  {layer.locked ? <LockIcon /> : <UnlockIcon />}
-                </button>
+                />
               )}
 
               {/* Delete Button */}
               {onDelete && (
-                <button
+                <IconButton
+                  icon={<TrashIcon />}
+                  color="red"
                   className="layer-item__delete"
                   onClick={e => {
                     e.stopPropagation();
                     onDelete(layer.id);
                   }}
                   title="Delete Layer"
-                >
-                  <TrashIcon />
-                </button>
+                />
               )}
             </div>
           ))

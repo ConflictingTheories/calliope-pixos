@@ -1,0 +1,45 @@
+/* NewFileDialog — in-app file creation (UX Phase 2). */
+
+.new-file-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+.new-file-dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.new-file-dialog__label {
+  font-size: var(--text-sm, 12px);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.new-file-dialog__error {
+  margin: 0;
+  font-size: var(--text-sm, 12px);
+  color: var(--color-error);
+}
+
+.new-file-dialog__hint {
+  margin: 0;
+  font-size: var(--text-sm, 12px);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
+.new-file-dialog__hint code {
+  font-family: var(--font-mono);
+  background: var(--color-bg-active);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.new-file-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2, 8px);
+}

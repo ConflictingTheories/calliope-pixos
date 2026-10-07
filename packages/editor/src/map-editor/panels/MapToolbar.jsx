@@ -11,6 +11,7 @@
  */
 
 import React from 'react';
+import { Button, SelectPicker, InputNumber } from '../../ui';
 
 /**
  * @param {Object} props
@@ -87,7 +88,10 @@ export function MapToolbar({
     <div
       style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px' }}
     >
-      <button
+      <Button
+        block
+        appearance="default"
+        active={currentTool === 'paint'}
         disabled={editorMode !== 'tiles'}
         style={{
           background: currentTool === 'paint' ? '#1177bb' : '#0e639c',
@@ -109,8 +113,11 @@ export function MapToolbar({
         <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
           Click to paint • Shift+Drag to paint multiple
         </div>
-      </button>
-      <button
+      </Button>
+      <Button
+        block
+        appearance="default"
+        active={currentTool === 'erase'}
         disabled={editorMode !== 'tiles'}
         style={{
           background: currentTool === 'erase' ? '#1177bb' : '#0e639c',
@@ -132,8 +139,11 @@ export function MapToolbar({
         <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
           Click to erase • Right-click also erases
         </div>
-      </button>
-      <button
+      </Button>
+      <Button
+        block
+        appearance="default"
+        active={currentTool === 'pick'}
         disabled={editorMode !== 'tiles'}
         style={{
           background: currentTool === 'pick' ? '#1177bb' : '#0e639c',
@@ -155,7 +165,7 @@ export function MapToolbar({
         <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
           Click a tile to select it
         </div>
-      </button>
+      </Button>
     </div>
 
     <div style={{ marginBottom: '12px' }}>
@@ -169,25 +179,21 @@ export function MapToolbar({
       >
         Selected Tile:
       </label>
-      <select
+      <SelectPicker
+        data={tileOptions}
         value={selectedTile}
-        onChange={e => setSelectedTile(e.target.value)}
+        onChange={v => setSelectedTile(v)}
+        cleanable={false}
+        block
         style={{
           background: '#3c3c3c',
           color: '#d4d4d4',
           border: '1px solid #3e3e42',
-          padding: '6px 8px',
           borderRadius: '3px',
           fontSize: '13px',
           width: '100%',
         }}
-      >
-        {tileOptions.map(opt => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      />
     </div>
 
     <div style={{ marginBottom: '12px' }}>
@@ -202,7 +208,9 @@ export function MapToolbar({
         Height:
       </label>
       <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-        <button
+        <Button
+          appearance="default"
+          size="sm"
           onClick={() => {
             setCurrentHeight(prev => Math.round((prev - 0.5) * 2) / 2);
           }}
@@ -217,24 +225,24 @@ export function MapToolbar({
           }}
         >
           −
-        </button>
-        <input
-          type="number"
+        </Button>
+        <InputNumber
           value={currentHeight}
-          onChange={e => setCurrentHeight(parseFloat(e.target.value) || 0)}
+          onChange={v => setCurrentHeight(v)}
           step={0.5}
           style={{
             flex: 1,
             background: '#3c3c3c',
             color: '#d4d4d4',
             border: '1px solid #3e3e42',
-            padding: '6px 8px',
             borderRadius: '3px',
             fontSize: '13px',
             textAlign: 'center',
           }}
         />
-        <button
+        <Button
+          appearance="default"
+          size="sm"
           onClick={() => {
             setCurrentHeight(prev => Math.round((prev + 0.5) * 2) / 2);
           }}
@@ -249,12 +257,14 @@ export function MapToolbar({
           }}
         >
           +
-        </button>
+        </Button>
       </div>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-      <button
+      <Button
+        block
+        appearance="primary"
         onClick={handleSave}
         style={{
           background: '#0e639c',
@@ -269,8 +279,10 @@ export function MapToolbar({
         onMouseOut={e => (e.target.style.background = '#0e639c')}
       >
         💾 Save Changes
-      </button>
-      <button
+      </Button>
+      <Button
+        block
+        appearance="default"
         onClick={undo}
         disabled={historyIndex <= 0}
         style={{
@@ -290,8 +302,10 @@ export function MapToolbar({
         }}
       >
         ↶ Undo
-      </button>
-      <button
+      </Button>
+      <Button
+        block
+        appearance="default"
         onClick={redo}
         disabled={historyIndex >= history.length - 1}
         style={{
@@ -311,7 +325,7 @@ export function MapToolbar({
         }}
       >
         ↷ Redo
-      </button>
+      </Button>
     </div>
 
     <div style={{ marginTop: '15px' }}>
@@ -326,7 +340,9 @@ export function MapToolbar({
         View Projection:
       </label>
       <div style={{ display: 'flex', gap: '5px' }}>
-        <button
+        <Button
+          appearance="default"
+          active={viewMode === '2D'}
           style={{
             flex: 1,
             background: viewMode === '2D' ? '#1177bb' : '#3e3e42',
@@ -340,8 +356,10 @@ export function MapToolbar({
           onClick={() => setViewMode('2D')}
         >
           📐 2D
-        </button>
-        <button
+        </Button>
+        <Button
+          appearance="default"
+          active={viewMode === '3D'}
           style={{
             flex: 1,
             background: viewMode === '3D' ? '#1177bb' : '#3e3e42',
@@ -355,7 +373,7 @@ export function MapToolbar({
           onClick={() => setViewMode('3D')}
         >
           🧊 3D
-        </button>
+        </Button>
       </div>
     </div>
   </div>

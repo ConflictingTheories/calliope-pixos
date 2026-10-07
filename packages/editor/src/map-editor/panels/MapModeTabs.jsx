@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { Button } from '../../ui';
 
 /**
  * @param {Object} props
@@ -39,7 +40,7 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
     🎯 Editor Mode
   </div>
   <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-    <button
+    <Button block appearance="default" active={editorMode === 'tiles'}
       style={{
         background: editorMode === 'tiles' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -48,16 +49,15 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('tiles')}
     >
       <div>🟦 Tile Mode</div>
       <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
         Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells
       </div>
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'sprites'}
       style={{
         background: editorMode === 'sprites' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -66,16 +66,15 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('sprites')}
     >
       <div>🎭 Sprite Mode</div>
       <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
         Click to place • {sprites.length} sprites
       </div>
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'objects'}
       style={{
         background: editorMode === 'objects' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -84,16 +83,15 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('objects')}
     >
       <div>📦 Object Mode</div>
       <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
         Click to place • {objects.length} objects
       </div>
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'attributes'}
       style={{
         background: editorMode === 'attributes' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -102,16 +100,15 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('attributes')}
     >
       <div>📝 Attribute Mode</div>
       <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
         Click a cell to edit walkable/events
       </div>
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'animatedTiles'}
       style={{
         background: editorMode === 'animatedTiles' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -120,16 +117,15 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('animatedTiles')}
     >
       <div>✨ Animated Tile Mode</div>
       <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
         Click to place • {animatedTiles.length} animated tiles
       </div>
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'triggers'}
       style={{
         background: editorMode === 'triggers' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -138,13 +134,12 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('triggers')}
     >
       ⚡ Triggers & Scripts
-    </button>
-    <button
+    </Button>
+    <Button block appearance="default" active={editorMode === 'lights'}
       style={{
         background: editorMode === 'lights' ? '#1177bb' : '#3e3e42',
         color: 'white',
@@ -153,12 +148,11 @@ export function MapModeTabs({ editorMode, onSelectMode }) {
         borderRadius: '3px',
         cursor: 'pointer',
         fontSize: '12px',
-        textAlign: 'left',
-      }}
+        textAlign: 'left',}}
       onClick={() => setEditorMode('lights')}
     >
       💡 Lights ({lights.length})
-    </button>
+    </Button>
   </div>
 </div>
 

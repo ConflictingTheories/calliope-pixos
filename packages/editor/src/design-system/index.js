@@ -12,62 +12,68 @@
 // COLOR PALETTE
 // ============================================================
 export const colors = {
-  // Primary
-  primary: '#ff6b9d',
-  primaryLight: '#ff8eb5',
-  primaryDark: '#e04f7f',
-  primarySubtle: 'rgba(255, 107, 157, 0.15)',
+  // Primary — ACHROMATIC (Kyle, 2026-10-06). High-contrast neutral;
+  // primary surfaces render near-white with dark text.
+  primary: '#ececf1',
+  primaryLight: '#ffffff',
+  primaryDark: '#d2d2dc',
+  primarySubtle: 'rgba(236, 236, 241, 0.12)',
+  onPrimary: '#0a0a12',
 
-  // Secondary
-  secondary: '#7c4dff',
-  secondaryLight: '#9d7aff',
-  secondaryDark: '#5a2dd6',
-  secondarySubtle: 'rgba(124, 77, 255, 0.15)',
+  // Secondary — teal chromatic accent (minimal, secondary use)
+  secondary: '#4ecdc4',
+  secondaryLight: '#5fe4db',
+  secondaryDark: '#38b2a7',
+  secondarySubtle: 'rgba(78, 205, 196, 0.12)',
 
-  // Accent
-  accent: '#00e5ff',
-  accentLight: '#6effff',
-  accentDark: '#00b2cc',
-  accentSubtle: 'rgba(0, 229, 255, 0.15)',
+  // Accent — pink chromatic accent (minimal, secondary use)
+  accent: '#ff6b9d',
+  accentLight: '#ff8eb5',
+  accentDark: '#e04f7f',
+  accentSubtle: 'rgba(255, 107, 157, 0.12)',
+
+  // Warm — amber highlight accent
+  warm: '#fbbf24',
+  warmSubtle: 'rgba(251, 191, 36, 0.12)',
 
   // Semantic
-  success: '#4ecdc4',
-  successLight: '#7ee8e1',
-  successDark: '#38b2a7',
-  successSubtle: 'rgba(78, 205, 196, 0.15)',
+  success: '#22c55e',
+  successLight: '#4ade80',
+  successDark: '#16a34a',
+  successSubtle: 'rgba(34, 197, 94, 0.12)',
 
-  warning: '#ffd93d',
-  warningLight: '#ffe066',
-  warningDark: '#e6c235',
-  warningSubtle: 'rgba(255, 217, 61, 0.15)',
+  warning: '#f59e0b',
+  warningLight: '#fbbf24',
+  warningDark: '#d97706',
+  warningSubtle: 'rgba(245, 158, 11, 0.12)',
 
-  error: '#f48771',
-  errorLight: '#f7a594',
-  errorDark: '#e06b52',
-  errorSubtle: 'rgba(244, 135, 113, 0.15)',
+  error: '#ef4444',
+  errorLight: '#f87171',
+  errorDark: '#dc2626',
+  errorSubtle: 'rgba(239, 68, 68, 0.12)',
 
-  info: '#7dd3fc',
-  infoLight: '#a5e1fd',
-  infoDark: '#5bc0eb',
-  infoSubtle: 'rgba(125, 211, 252, 0.15)',
+  info: '#3b82f6',
+  infoLight: '#60a5fa',
+  infoDark: '#2563eb',
+  infoSubtle: 'rgba(59, 130, 246, 0.12)',
 
   // Backgrounds
-  bg: '#0a0a14',
-  bgSecondary: 'rgba(19, 19, 38, 0.92)',
-  bgTertiary: 'rgba(28, 28, 52, 0.85)',
-  bgElevated: 'rgba(38, 38, 72, 0.9)',
+  bg: '#0a0a12',
+  bgSecondary: '#0f0f1a',
+  bgTertiary: '#151520',
+  bgElevated: '#151520',
   bgOverlay: 'rgba(0, 0, 0, 0.6)',
-  bgHover: 'rgba(255, 255, 255, 0.02)',
-  bgActive: 'rgba(255, 255, 255, 0.06)',
-  bgSelected: 'rgba(255, 107, 157, 0.12)',
+  bgHover: '#1a1a28',
+  bgActive: '#202030',
+  bgSelected: 'rgba(236, 236, 241, 0.12)',
 
   // Text
-  text: '#e4e4e7',
-  textSecondary: '#a1a1aa',
-  textMuted: 'rgba(228, 228, 231, 0.5)',
-  textDisabled: 'rgba(228, 228, 231, 0.3)',
-  textInverse: '#0a0a14',
-  textLink: '#7dd3fc',
+  text: '#f0f0f5',
+  textSecondary: '#a0a0b0',
+  textMuted: '#606070',
+  textDisabled: 'rgba(240, 240, 245, 0.3)',
+  textInverse: '#0a0a12',
+  textLink: '#4ecdc4',
 
   // Borders
   border: 'rgba(255, 255, 255, 0.08)',

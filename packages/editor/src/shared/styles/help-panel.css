@@ -73,7 +73,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--color-primary, #ff6b9d);
+  background: var(--color-primary, var(--color-brand-accent));
   color: white;
   border-radius: 50%;
   font-weight: bold;

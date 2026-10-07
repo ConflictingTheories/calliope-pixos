@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Button, IconButton, Input, SelectPicker } from '../ui';
 import './console-panel.css';
 
 /**
@@ -183,39 +184,43 @@ export default function ConsolePanel({
         </div>
 
         <div className="console-toolbar-center">
-          <select
+          <SelectPicker
+            data={[
+              { value: 'all', label: 'All Messages' },
+              { value: 'errors', label: 'Errors Only' },
+              { value: 'warnings', label: 'Warnings Only' },
+              { value: 'debug', label: 'Debug Only' },
+            ]}
             value={filter}
-            onChange={e => setFilter(e.target.value)}
+            onChange={v => setFilter(v)}
+            cleanable={false}
             className="console-filter"
-          >
-            <option value="all">All Messages</option>
-            <option value="errors">Errors Only</option>
-            <option value="warnings">Warnings Only</option>
-            <option value="debug">Debug Only</option>
-          </select>
+          />
         </div>
 
         <div className="console-toolbar-right">
-          <button
+          <IconButton
+            icon={autoScroll ? '⬇' : '⏸'}
             className="console-btn"
+            active={autoScroll}
             onClick={() => setAutoScroll(!autoScroll)}
             title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
-          >
-            {autoScroll ? '⬇' : '⏸'}
-          </button>
+          />
           {isRunning && onStop && (
-            <button
+            <IconButton
+              icon="■"
               className="console-btn console-btn-stop"
               onClick={onStop}
               title="Stop execution"
-            >
-              ■
-            </button>
+            />
           )}
           {onClear && (
-            <button className="console-btn" onClick={onClear} title="Clear console (Ctrl+L)">
-              🗑
-            </button>
+            <IconButton
+              icon="🗑"
+              className="console-btn"
+              onClick={onClear}
+              title="Clear console (Ctrl+L)"
+            />
           )}
         </div>
       </div>
@@ -246,9 +251,8 @@ export default function ConsolePanel({
       {/* Input */}
       <div className="console-input-container">
         <span className="console-prompt">{'>'}</span>
-        <input
+        <Input
           ref={inputRef}
-          type="text"
           className="console-input"
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
@@ -256,14 +260,16 @@ export default function ConsolePanel({
           placeholder="Enter command or Lua expression..."
           disabled={isRunning}
         />
-        <button
+        <Button
+          appearance="primary"
+          size="sm"
           className="console-run-btn"
           onClick={executeCommand}
           disabled={isRunning || !inputValue.trim()}
           title="Execute (Enter)"
         >
           ▶
-        </button>
+        </Button>
       </div>
     </div>
   );

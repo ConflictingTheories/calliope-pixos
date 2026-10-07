@@ -22,6 +22,10 @@ import { monaco } from '../monaco-setup.js';
 import { registerPixoScriptLanguage } from '../shared/pixoscript-language.js';
 import { registerSpritzCutLanguage } from '../shared/spritzcut-language.js';
 import { registerPXSLLanguage } from '../shared/pxsl-language.js';
+// (UX Phase 2) Live pixoscript diagnostics (finding A5.1) — errors
+// surface in the editor, not only at play time.
+import { lintPixoScript, toMonacoMarkers } from './pixoscript-lint.js';
+import { Badge } from '../ui';
 
 // Configure Monaco to use local bundle instead of CDN
 loader.config({ monaco });
@@ -48,6 +52,10 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   const [type] = useState(initialType || 'script-only');
   const [hasChanges, setHasChanges] = useState(false);
   const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+  // (UX Phase 2) Live diagnostics: { errors, warnings } for the pill.
+  const [diagCounts, setDiagCounts] = useState({ errors: 0, warnings: 0 });
+  const lintTimer = useRef(null);
 
   // Map file extensions to appropriate languages
   const getLanguage = useCallback(langOrExt => {
@@ -59,6 +67,45 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
     if (ext === 'glsl' || ext === 'vert' || ext === 'frag') return 'glsl';
     if (ext === 'lua') return 'pixoscript'; // Use enhanced PixoScript for .lua files
     return langOrExt;
+  }, []);
+
+  // (UX Phase 2) Live pixoscript diagnostics (finding A5.1).
+  /** Run the linter and push markers into Monaco. */
+  const runLint = useCallback(
+    (value, editor, monacoInstance) => {
+      if (!editor || !monacoInstance) return;
+      const language = getLanguage(lang);
+      if (language !== 'pixoscript' && language !== 'lua') {
+        monacoInstance.editor.setModelMarkers(editor.getModel(), 'pixolint', []);
+        setDiagCounts({ errors: 0, warnings: 0 });
+        return;
+      }
+      const diags = lintPixoScript(value || '');
+      monacoInstance.editor.setModelMarkers(
+        editor.getModel(),
+        'pixolint',
+        toMonacoMarkers(diags, monacoInstance)
+      );
+      setDiagCounts({
+        errors: diags.filter(d => d.severity === 'error').length,
+        warnings: diags.filter(d => d.severity === 'warning').length,
+      });
+    },
+    [lang, getLanguage]
+  );
+
+  const scheduleLint = useCallback(
+    value => {
+      if (lintTimer.current) clearTimeout(lintTimer.current);
+      lintTimer.current = setTimeout(() => {
+        runLint(value, editorRef.current, monacoRef.current);
+      }, 400);
+    },
+    [runLint]
+  );
+
+  useEffect(() => () => {
+    if (lintTimer.current) clearTimeout(lintTimer.current);
   }, []);
 
   // Update content when props change
@@ -79,10 +126,14 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   /**
    * Handle content changes in the editor
    */
-  const handleEditorChange = useCallback(value => {
-    setContent(value || '');
-    setHasChanges(true);
-  }, []);
+  const handleEditorChange = useCallback(
+    value => {
+      setContent(value || '');
+      setHasChanges(true);
+      scheduleLint(value || '');
+    },
+    [scheduleLint]
+  );
 
   /**
    * Handle editor mount - store reference for future use
@@ -90,6 +141,7 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
   const handleEditorMount = useCallback(
     (editor, monacoInstance) => {
       editorRef.current = editor;
+      monacoRef.current = monacoInstance;
 
       // Apply custom theme based on language
       if (lang === 'pixoscript') {
@@ -97,8 +149,10 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
       } else if (lang === 'spritzcut') {
         monacoInstance.editor.setTheme('spritzcut-dark');
       }
+      // Initial lint pass.
+      runLint(editor.getValue(), editor, monacoInstance);
     },
-    [lang]
+    [lang, runLint]
   );
 
   /**
@@ -199,6 +253,24 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
               Unsaved changes (Ctrl+S to save)
             </span>
           )}
+          {/* (UX Phase 2) Live validation pill (finding A5.1/A5.2) — the
+              manual "click to validate" ritual is replaced by continuous
+              linting; the pill reflects the current marker counts. */}
+          <span style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+            {diagCounts.errors > 0 && (
+              <Badge color="red">
+                {diagCounts.errors} error{diagCounts.errors === 1 ? '' : 's'}
+              </Badge>
+            )}
+            {diagCounts.warnings > 0 && (
+              <Badge color="yellow">
+                {diagCounts.warnings} warning{diagCounts.warnings === 1 ? '' : 's'}
+              </Badge>
+            )}
+            {diagCounts.errors === 0 && diagCounts.warnings === 0 && (
+              <Badge color="green">✓ clean</Badge>
+            )}
+          </span>
         </div>
       </div>
     </div>

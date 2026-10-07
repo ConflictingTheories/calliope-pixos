@@ -24,7 +24,9 @@ export function chordOf(event) {
   if (event.shiftKey) parts.push('shift');
   let key = event.key;
   if (key === ' ') key = 'space';
-  if (key.length === 1) key = key.toLowerCase();
+  // Always lowercase: parseShortcut() lowercases declared shortcuts, so
+  // multi-char keys like Tab/Escape must match case-insensitively too.
+  key = key.toLowerCase();
   parts.push(key);
   return parts.join('+');
 }

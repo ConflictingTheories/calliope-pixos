@@ -107,10 +107,11 @@ describe('migrations (P1-04)', () => {
     const legacy = fixture('legacy-pre-v1/manifest.json');
     const { manifest, applied, from, to } = migrateManifest(legacy);
     expect(from).toBe('0.0.0');
-    expect(to).toBe('1.0.0');
-    expect(applied).toEqual(['0.0.0 -> 1.0.0']);
+    expect(to).toBe('1.1.0');
+    expect(applied).toEqual(['0.0.0 -> 1.0.0', '1.0.0 -> 1.1.0']);
     expect(manifest.format).toBe('pixozine');
-    expect(manifest.formatVersion).toBe('1.0.0');
+    expect(manifest.formatVersion).toBe('1.1.0');
+    expect(manifest.playables).toEqual([]);
     expect(manifest.initialZones).toEqual(['zone-1']);
     expect(manifest.settings.resolution).toEqual([480, 640]);
     // migrated doc validates
@@ -141,6 +142,7 @@ describe('migrations (P1-04)', () => {
     const list = listMigrations();
     expect(list.length).toBeGreaterThan(0);
     expect(list[0]).toMatchObject({ from: '0.0.0', to: '1.0.0' });
-    expect(LATEST_FORMAT_VERSION).toBe('1.0.0');
+    expect(list[1]).toMatchObject({ from: '1.0.0', to: '1.1.0' });
+    expect(LATEST_FORMAT_VERSION).toBe('1.1.0');
   });
 });

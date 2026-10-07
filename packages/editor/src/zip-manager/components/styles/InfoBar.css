@@ -32,7 +32,7 @@
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.02em;
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .info-bar__version {

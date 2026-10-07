@@ -3,7 +3,7 @@
   --page-color: var(--color-bg, #050510);
   --bg-color: rgba(13, 13, 24, 0.9);
   --basic-bg-color: rgba(8, 8, 16, 0.85);
-  --dark-accent-color: var(--color-primary, #ff6b9d);
+  --dark-accent-color: var(--color-primary, var(--color-brand-accent));
   --darker-accent-color: var(--color-primary-dark, #b34972);
   --text-color: var(--color-text, #f5f7ff);
   --basic-text-color: var(--color-text, #f5f7ff);
@@ -11,7 +11,7 @@
   --button-color: #050510;
   --disabled-button-color: rgba(255, 255, 255, 0.5);
   --bg-disabled-button-color: rgba(255, 255, 255, 0.05);
-  --outline-color: var(--color-secondary, #4ecdc4);
+  --outline-color: var(--color-secondary, var(--color-brand-secondary));
   --panel-border-color: rgba(255, 255, 255, 0.08);
   --panel-surface: rgba(10, 10, 24, 0.75);
   --panel-shadow: 0 18px 35px rgba(3, 4, 10, 0.45);
@@ -79,7 +79,7 @@ ol li {
 button {
   border: 1px solid rgba(255, 255, 255, 0.1);
   user-select: none;
-  background: rgba(78, 205, 196, 0.9);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.9);
   color: #0a0a14;
   font-family: inherit;
   font-size: 11px;
@@ -140,8 +140,8 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--color-secondary, #4ecdc4);
-  box-shadow: 0 0 0 1px rgba(78, 205, 196, 0.4);
+  border-color: var(--color-secondary, var(--color-brand-secondary));
+  box-shadow: 0 0 0 1px var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.4);
 }
 
 dialog {
@@ -168,7 +168,7 @@ a:visited {
 }
 
 ::selection {
-  background-color: var(--color-secondary, #4ecdc4);
+  background-color: var(--color-secondary, var(--color-brand-secondary));
   color: var(--page-color);
 }
 

@@ -39,7 +39,7 @@
   --panel-gradient: linear-gradient(135deg, rgba(15, 15, 30, 0.95), rgba(20, 25, 45, 0.9));
   --panel-backdrop: blur(12px);
 
-  --success: #4ecdc4;
+  --success: var(--color-brand-secondary);
   --warning: #ffd93d;
   --error: #f48771;
   --info: #7dd3fc;
@@ -608,7 +608,7 @@
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-secondary);
-  background: rgba(78, 205, 196, 0.1);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1);
   color: var(--color-secondary);
   font-size: 11px;
   font-weight: 600;
@@ -617,7 +617,7 @@
 }
 
 .editor-ai-button:hover:not([disabled]) {
-  background: rgba(78, 205, 196, 0.2);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2);
   border-color: var(--color-secondary);
   transform: translateY(-1px);
 }
@@ -726,7 +726,7 @@
 
 .editor-sidebar-resizer:hover,
 .editor-sidebar-resizer.is-dragging {
-  background: rgba(78, 205, 196, 0.35);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.35);
 }
 
 @media (max-width: 1200px) {

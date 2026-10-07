@@ -32,7 +32,7 @@ dialog select {
 dialog input:focus,
 dialog select:focus {
   outline: none;
-  border-color: var(--color-secondary, #4ecdc4);
+  border-color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 dialog form,
@@ -54,7 +54,7 @@ dialog form {
 dialog form .dialog-title {
   font-weight: 600;
   font-size: 14px;
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
   border-block-end: 1px solid rgba(255, 255, 255, 0.08);
   padding-block-end: 12px;
   margin-bottom: 4px;

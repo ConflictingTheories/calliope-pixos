@@ -73,15 +73,15 @@
 }
 
 .entries .entry-highlighted {
-  background: rgba(78, 205, 196, 0.15);
-  color: var(--color-secondary, #4ecdc4);
-  border: 1px solid rgba(78, 205, 196, 0.25);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
+  color: var(--color-secondary, var(--color-brand-secondary));
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.25);
 }
 
 .entries .entry-highlighted .entry-name,
 .entries .entry-highlighted .entry-size,
 .entries .entry-highlighted .list-item-button {
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .entries .entry-highlighted ::selection {

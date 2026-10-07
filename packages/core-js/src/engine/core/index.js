@@ -23,6 +23,7 @@ import ModeManager from './mode/manager.js'; // Import ModeManager
 import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
 import SaveManager from './persistence/SaveManager.js';
+import TrophyManager from './trophies/TrophyManager.js';
 import {
   attachFlagDebugInfo,
   attachWebglDebugInfo,
@@ -114,6 +115,9 @@ export default class GLEngine {
     /** @type {SaveManager} */
     this.saveManager = new SaveManager(this);
 
+    /** @type {TrophyManager} */
+    this.trophyManager = new TrophyManager(this);
+
     // Debug flags
     /** @type {boolean} */
     this.debug = false; // General debug mode (enables console logs)
@@ -192,6 +196,11 @@ export default class GLEngine {
 
     this.spritz = spritz;
     this.fullscreen = false;
+
+    // Register trophy definitions from the game manifest (no-op if none).
+    if (spritz.manifest) {
+      this.trophyManager.loadFromManifest(spritz.manifest);
+    }
 
     // Initial time (monotonic clock, P1-09)
     this.time = performance.now();

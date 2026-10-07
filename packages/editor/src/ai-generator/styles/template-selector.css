@@ -34,7 +34,7 @@
 }
 
 .template-search input:focus {
-  border-color: var(--brand-primary, #4ecdc4) !important;
+  border-color: var(--brand-primary, var(--color-brand-secondary)) !important;
 }
 
 .template-filters {
@@ -61,13 +61,13 @@
 }
 
 .template-card:hover {
-  border-color: var(--brand-primary, #4ecdc4);
+  border-color: var(--brand-primary, var(--color-brand-secondary));
   transform: translateY(-2px);
 }
 
 .template-card-selected {
-  border-color: var(--brand-primary, #4ecdc4);
-  background: rgba(78, 205, 196, 0.08);
+  border-color: var(--brand-primary, var(--color-brand-secondary));
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.08);
 }
 
 .template-card-header {

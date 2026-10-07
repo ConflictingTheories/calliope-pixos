@@ -38,10 +38,7 @@ suite (`packages/core-c/tests`, CTest) pins math, package manifest/load,
 script (Lua binding), and save behavior against the JS implementation's
 golden fixtures. Anything outside this subset is best-effort.
 
-**CI** (`.github/workflows/ci-native.yml`): desktop matrix + ARM
-cross-compile smoke + conformance, on PRs touching `packages/core-c/**`.
-(Note: the workflow files cannot be pushed by automation — the GitHub App
-lacks the `workflows` permission. They are maintained in-tree.)
+**CI**: scrapped 2026-10-06 per Kyle's decision — no CI/CD until something is live. The conformance suite is run manually (`ctest` in the build dir); the `ci-native.yml` workflow file is not in the repo. Revisit when the native targets ship.
 
 ## Consequences
 

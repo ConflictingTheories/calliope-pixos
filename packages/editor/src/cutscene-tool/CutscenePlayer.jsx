@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { debug } from '../shared/debug-logger.js';
+import { Button } from '../ui';
 
 // Dynamically import html2canvas for DOM-to-canvas capture
 let html2canvasModule = null;
@@ -1445,9 +1446,9 @@ const CutscenePlayer = forwardRef(
             gap: 8,
           }}
         >
-          <button
-            type="button"
-            className="btn"
+          <Button
+            appearance="ghost"
+            size="sm"
             onClick={() => internalPlay()}
             disabled={playing}
             style={{
@@ -1460,10 +1461,10 @@ const CutscenePlayer = forwardRef(
             }}
           >
             Play
-          </button>
-          <button
-            type="button"
-            className="btn"
+          </Button>
+          <Button
+            appearance="ghost"
+            size="sm"
             onClick={() => internalStop()}
             disabled={!playing}
             style={{
@@ -1476,10 +1477,10 @@ const CutscenePlayer = forwardRef(
             }}
           >
             Stop
-          </button>
-          <button
-            type="button"
-            className="btn"
+          </Button>
+          <Button
+            appearance="ghost"
+            size="sm"
             onClick={() => internalSkip()}
             style={{
               background: 'transparent',
@@ -1491,7 +1492,7 @@ const CutscenePlayer = forwardRef(
             }}
           >
             Skip
-          </button>
+          </Button>
         </div>
       </div>
     );

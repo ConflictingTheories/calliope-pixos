@@ -26,6 +26,7 @@ import {
   Input,
   Checkbox,
   ButtonGroup,
+  SelectPicker,
 } from '../ui';
 
 import WebGL3DCanvas from '../shared/WebGL3DCanvas.jsx';
@@ -354,21 +355,19 @@ function GeometryEditor3D({ content, onSave }) {
           <Panel bordered header={<strong>Geometry Editor</strong>}>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>Select Geometry:</label>
-              <select
+              <SelectPicker
+                data={[
+                  { value: '', label: '-- Select --' },
+                  ...geometryKeys.map(key => ({ value: key, label: key })),
+                ]}
                 value={selectedGeometry || ''}
-                onChange={e => {
-                  setSelectedGeometry(e.target.value);
+                onChange={v => {
+                  setSelectedGeometry(v);
                   setSelectedTriangle(-1);
                 }}
-                style={{ width: '100%', padding: '0.5rem' }}
-              >
-                <option value="">-- Select --</option>
-                {geometryKeys.map(key => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+                cleanable={false}
+                block
+              />
             </div>
 
             <ButtonGroup style={{ marginBottom: '1rem' }}>

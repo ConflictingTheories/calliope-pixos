@@ -130,9 +130,110 @@
       "items": { "type": "string" },
       "description": "Trigger script paths"
     },
+    "playables": {
+      "type": "array",
+      "description": "Playable embeds: PixoSpritz game bundles playable inside this pixozine (added in format v1.1.0). Each entry is a playable block: metadata, pinned player version, bundle reference, and fallback content.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "playerVersion", "bundle"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique playable ID within this package"
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "poster": {
+            "type": "string",
+            "description": "Archive-relative poster image path shown before the player loads"
+          },
+          "playerVersion": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+            "description": "Pinned PixoSpritz player version (semver) this bundle is built for"
+          },
+          "bundle": {
+            "type": "object",
+            "required": ["uri", "manifestHash"],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Archive-relative bundle path, or absolute https: URL for remote bundles"
+              },
+              "manifestHash": {
+                "type": "string",
+                "pattern": "^([0-9a-f]{8}|[0-9a-f]{64})$",
+                "description": "Integrity hash of the bundle manifest: FNV-1a (8 lowercase hex chars) or SHA-256 (64 lowercase hex chars)"
+              }
+            },
+            "additionalProperties": false
+          },
+          "dimensions": {
+            "type": "object",
+            "properties": {
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 },
+              "aspect": {
+                "type": "string",
+                "pattern": "^\\d+:\\d+$",
+                "description": "Aspect ratio hint, e.g. \"16:9\"; used when width/height are absent"
+              }
+            },
+            "additionalProperties": false
+          },
+          "fallback": {
+            "type": "object",
+            "description": "Content shown when the player cannot load (unsupported platform, blocked scripts)",
+            "properties": {
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "image": {
+                "type": "string",
+                "description": "Archive-relative fallback image path"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "thumbnail": {
       "type": "string",
       "description": "Path to game thumbnail image"
+    },
+    "trophies": {
+      "type": "array",
+      "description": "Achievement/trophy definitions for this game. Unlocked trophies sync to the player's SVRN identity when a sync provider is configured.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique trophy ID within this game"
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "icon": {
+            "type": "string",
+            "description": "Archive-relative icon image path"
+          },
+          "rarity": {
+            "type": "string",
+            "enum": ["common", "rare", "epic", "legendary"],
+            "description": "Trophy rarity tier"
+          },
+          "criteria": {
+            "type": "object",
+            "description": "Opaque criteria hint for tooling (not evaluated by the runtime)"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "icon": {
       "type": "string",

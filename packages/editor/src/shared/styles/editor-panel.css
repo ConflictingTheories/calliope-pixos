@@ -59,7 +59,7 @@
 }
 
 .editor-panel__header:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--color-primary, #ff6b9d);
+  box-shadow: inset 0 0 0 2px var(--color-primary, var(--color-brand-accent));
 }
 
 .editor-panel__header-left {
@@ -117,7 +117,7 @@
 
 .editor-panel__resize-handle:hover,
 .editor-panel__resize-handle:active {
-  background: var(--color-primary, #ff6b9d);
+  background: var(--color-primary, var(--color-brand-accent));
 }
 
 .editor-panel__resize-handle--left,

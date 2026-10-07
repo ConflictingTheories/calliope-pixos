@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { IconButton } from '../ui';
 import './timeline.css';
 
 /**
@@ -219,16 +220,13 @@ export default function Timeline({
       {/* Toolbar */}
       <div className="timeline-toolbar">
         <div className="timeline-controls">
-          <button className="timeline-btn" onClick={onStop} title="Stop (Reset to start)">
-            ⏹
-          </button>
-          <button
+          <IconButton icon="⏹" className="timeline-btn" onClick={onStop} title="Stop (Reset to start)" />
+          <IconButton
+            icon={isPlaying ? '⏸' : '▶'}
             className={`timeline-btn timeline-btn-primary ${isPlaying ? 'active' : ''}`}
             onClick={isPlaying ? onPause : onPlay}
             title={isPlaying ? 'Pause' : 'Play'}
-          >
-            {isPlaying ? '⏸' : '▶'}
-          </button>
+          />
         </div>
 
         <div className="timeline-time-display">
@@ -238,13 +236,9 @@ export default function Timeline({
         </div>
 
         <div className="timeline-zoom-controls">
-          <button className="timeline-btn" onClick={() => handleZoom(-0.1)} title="Zoom Out">
-            −
-          </button>
+          <IconButton icon="−" className="timeline-btn" onClick={() => handleZoom(-0.1)} title="Zoom Out" />
           <span className="timeline-zoom-label">{Math.round(zoom * 100)}%</span>
-          <button className="timeline-btn" onClick={() => handleZoom(0.1)} title="Zoom In">
-            +
-          </button>
+          <IconButton icon="+" className="timeline-btn" onClick={() => handleZoom(0.1)} title="Zoom In" />
         </div>
       </div>
 

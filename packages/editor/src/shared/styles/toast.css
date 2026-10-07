@@ -62,7 +62,7 @@
 }
 
 .toast--success {
-  border-left: 3px solid var(--color-success, #4ecdc4);
+  border-left: 3px solid var(--color-success, var(--color-brand-secondary));
 }
 
 .toast--warning {
@@ -89,7 +89,7 @@
 }
 
 .toast--success .toast__icon {
-  color: var(--color-success, #4ecdc4);
+  color: var(--color-success, var(--color-brand-secondary));
 }
 
 .toast--warning .toast__icon {

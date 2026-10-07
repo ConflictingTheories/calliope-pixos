@@ -60,7 +60,7 @@
 }
 
 .breadcrumb .breadcrumb-item:hover {
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .breadcrumb .breadcrumb-item:focus-visible {
@@ -69,13 +69,13 @@
 
 .breadcrumb li:last-of-type .breadcrumb-item {
   font-weight: 600;
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .breadcrumb .breadcrumb-item-active {
-  text-decoration-color: var(--color-secondary, #4ecdc4);
+  text-decoration-color: var(--color-secondary, var(--color-brand-secondary));
 }
 
 .breadcrumb .breadcrumb-item-active:hover {
-  color: var(--color-secondary, #4ecdc4);
+  color: var(--color-secondary, var(--color-brand-secondary));
 }

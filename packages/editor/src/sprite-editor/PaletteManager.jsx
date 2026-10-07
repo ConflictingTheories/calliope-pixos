@@ -347,8 +347,7 @@ function PaletteManager({
             title={`${color}\nDouble-click to edit\nRight-click to remove`}
           >
             {editingColorIndex === index && (
-              <input
-                type="text"
+              <Input
                 className="palette-manager__swatch-input"
                 value={editingColorValue}
                 onChange={e => setEditingColorValue(e.target.value)}

@@ -22,6 +22,9 @@ import { getTool } from './shell/toolRegistry.js';
 import { keymap } from './shell/commands/keymap.js';
 import { commands } from './shell/commands/commands.js';
 import CommandPalette from './shell/commands/CommandPalette.jsx';
+// (UX Phase 2) Shortcut reference dialog (finding A3.1) — generated
+// from the command registry so it never goes stale.
+import ShortcutHelp from './shell/commands/ShortcutHelp.jsx';
 // (P2-07) Save status bus: domain save paths report here, never alert().
 import { useSaveStatus, reportSaveOk, reportSaveError } from './shell/saveStatus.js';
 // (P3-14) Blob URLs for binary previews — no base64 data URIs.
@@ -48,6 +51,19 @@ import './onboarding/FirstTimeWizard.css';
 import { debug, debugWarn, debugError } from './shared/debug-logger.js';
 import ConsolePanel, { useConsole } from './script-editor/ConsolePanel.jsx';
 import { addLogListener, removeLogListener } from 'pixospritz-core/engine/utils/debug-logger.js';
+// (UX Phase 1) Multi-document tabs + toast feedback.
+import { useToast } from './shared/components/Toast.jsx';
+import { Button, Modal } from './ui';
+// (UX Phase 2) Per-tool crash containment — a tool crash shows a
+// crash card instead of white-screening the app (finding A1.2).
+import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
+import './shell/tabs.css';
+import {
+  PublishToSvrnDialog,
+  buildSvrnBundle,
+  uploadBundle,
+  localDownloadTarget,
+} from './svrn-publish/index.js';
 
 const SUPPORT_LINKS = [
   { href: 'https://github.com/sponsors/ConflictingTheories', icon: '❤️', label: 'GitHub Sponsors' },
@@ -70,10 +86,85 @@ const COMMUNITY_ACTIONS = [
  * @returns {React.ReactElement}
  */
 const App = () => {
-  const [contents, setContents] = useState([]);
-  // Keep track of the loaded package filesystem and the selected entry
+  const toast = useToast();
+  // (UX Phase 1) Multi-document tabs. Each tab keeps its tool element
+  // mounted (inactive tabs are hidden, not unmounted), so switching
+  // documents no longer destroys tool state. Tab ids are stable
+  // document paths — reopening a file focuses its tab.
+  const [tabs, setTabs] = useState([]);
+  const [activeTabId, setActiveTabId] = useState(null);
+  const tabsRef = useRef([]);
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
+  // Dirty paths from the project store -> dirty-dot indicators.
+  const [dirtyPaths, setDirtyPaths] = useState([]);
+  // Mirror for the closeTab callback (avoids stale state).
+  const dirtyPathsRef = useRef([]);
+  useEffect(() => {
+    dirtyPathsRef.current = dirtyPaths;
+  }, [dirtyPaths]);
+  // Per-tab blob URLs for binary previews (revoked on tab close).
+  const previewUrlsRef = useRef(new Map());
+  useEffect(() => {
+    const urls = previewUrlsRef.current;
+    return () => {
+      for (const url of urls.values()) revokePreviewUrl(url);
+      urls.clear();
+    };
+  }, []);
+
+  const openTab = useCallback((id, label, element, kind = 'document') => {
+    setTabs(prev => {
+      if (prev.some(t => t.id === id)) return prev;
+      return [...prev, { id, label, kind, element }];
+    });
+    setActiveTabId(id);
+  }, []);
+
+  const [pendingCloseTab, setPendingCloseTab] = useState(null);
+
+  const doCloseTab = useCallback(id => {
+    setPendingCloseTab(null);
+    const url = previewUrlsRef.current.get(id);
+    if (url) {
+      revokePreviewUrl(url);
+      previewUrlsRef.current.delete(id);
+    }
+    const prev = tabsRef.current;
+    const idx = prev.findIndex(t => t.id === id);
+    if (idx === -1) return;
+    const next = prev.filter(t => t.id !== id);
+    setTabs(next);
+    setActiveTabId(current => {
+      if (current !== id) return current;
+      if (next.length === 0) return null;
+      return next[Math.min(idx, next.length - 1)].id;
+    });
+  }, []);
+
+  const closeTab = useCallback(id => {
+    // (UX Phase 2) Forgiveness: dirty tabs route through an in-app
+    // confirmation — never window.confirm(), never silent loss.
+    const isDirty = dirtyPathsRef.current.includes(id);
+    if (isDirty) {
+      setPendingCloseTab(id);
+      return;
+    }
+    doCloseTab(id);
+  }, [doCloseTab]);
+
+  const cycleTab = useCallback(direction => {
+    const list = tabsRef.current;
+    if (list.length < 2) return;
+    setActiveTabId(current => {
+      const idx = list.findIndex(t => t.id === current);
+      const from = idx === -1 ? 0 : idx;
+      return list[(from + direction + list.length) % list.length].id;
+    });
+  }, []);
+  // Keep track of the loaded package filesystem
   const [zip, setZip] = useState(null);
-  const [selectedEntry, setSelectedEntry] = useState(null);
   // Keep a list of image assets (name and data URI) for use in the tileset editor
   const [assets, setAssets] = useState([]);
 
@@ -83,7 +174,6 @@ const App = () => {
   const [supportPanelPinned, setSupportPanelPinned] = useState(false);
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
-  const [showAIPanel, setShowAIPanel] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const supportFabRef = useRef(null);
 
@@ -153,7 +243,12 @@ const App = () => {
   // (P2-09) Shell command infrastructure: palette visibility, the single
   // global keydown dispatcher, and the core command registrations.
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // (UX Phase 2) Shortcut help dialog state.
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const saveStatus = useSaveStatus();
+  // (Publishing vertical) "Publish to SVRN" dialog state.
+  const [svrnPublishOpen, setSvrnPublishOpen] = useState(false);
+  const [svrnPublishBusy, setSvrnPublishBusy] = useState(false);
   useEffect(() => {
     const offPalette = commands.register({
       id: 'shell.command-palette',
@@ -162,13 +257,183 @@ const App = () => {
       shortcut: 'ctrl+k',
       run: () => setPaletteOpen(true),
     });
+    const offPublish = commands.register({
+      id: 'svrn.publish',
+      title: 'Publish to SVRN…',
+      group: 'publish',
+      run: () => setSvrnPublishOpen(true),
+    });
+    // (UX Phase 2) Shortcut reference (finding A3.1).
+    const offShortcuts = commands.register({
+      id: 'shell.shortcuts',
+      title: 'Keyboard shortcuts',
+      group: 'shell',
+      shortcut: 'shift+?',
+      run: () => setShortcutsOpen(true),
+    });
     const onKeyDown = e => keymap.handleKeyDown(e);
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       offPalette();
+      offPublish();
+      offShortcuts();
     };
   }, []);
+
+  // (UX Phase 2, backlog 2.7 / finding A3.2) Shell-level undo/redo wired
+  // to the CommandBus. Tools route edits through the bus; the shell
+  // surfaces undo/redo buttons + shortcuts so users can always tell
+  // what is undoable.
+  const bus = toolCore.bus;
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      setCanUndo(bus.canUndo);
+      setCanRedo(bus.canRedo);
+    };
+    sync();
+    const offExec = bus.on('executed', sync);
+    const offUndone = bus.on('undone', sync);
+    const offRedone = bus.on('redone', sync);
+    return () => {
+      offExec();
+      offUndone();
+      offRedone();
+    };
+  }, [bus]);
+  useEffect(() => {
+    const offUndo = commands.register({
+      id: 'shell.undo',
+      title: 'Undo',
+      group: 'shell',
+      shortcut: 'ctrl+z',
+      when: () => bus.canUndo,
+      run: () => {
+        if (!bus.undo()) toast.info('Nothing to undo');
+      },
+    });
+    const offRedo = commands.register({
+      id: 'shell.redo',
+      title: 'Redo',
+      group: 'shell',
+      shortcut: 'ctrl+shift+z',
+      when: () => bus.canRedo,
+      run: () => {
+        if (!bus.redo()) toast.info('Nothing to redo');
+      },
+    });
+    const offRedoAlt = commands.register({
+      id: 'shell.redo-alt',
+      title: 'Redo (alternate)',
+      group: 'shell',
+      shortcut: 'ctrl+y',
+      when: () => bus.canRedo,
+      run: () => {
+        if (!bus.redo()) toast.info('Nothing to redo');
+      },
+    });
+    return () => {
+      offUndo();
+      offRedo();
+      offRedoAlt();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bus]);
+
+  // (UX Phase 1) Tab keyboard shortcuts: ctrl+tab / ctrl+shift+tab cycle,
+  // ctrl+w closes the active tab.
+  useEffect(() => {
+    const offNext = commands.register({
+      id: 'shell.next-tab',
+      title: 'Next open document',
+      group: 'shell',
+      shortcut: 'ctrl+tab',
+      run: () => cycleTab(1),
+    });
+    const offPrev = commands.register({
+      id: 'shell.prev-tab',
+      title: 'Previous open document',
+      group: 'shell',
+      shortcut: 'ctrl+shift+tab',
+      run: () => cycleTab(-1),
+    });
+    const offClose = commands.register({
+      id: 'shell.close-tab',
+      title: 'Close active document',
+      group: 'shell',
+      shortcut: 'ctrl+w',
+      run: () => {
+        if (activeTabIdRef.current) closeTab(activeTabIdRef.current);
+      },
+    });
+    return () => {
+      offNext();
+      offPrev();
+      offClose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cycleTab, closeTab]);
+
+  // Mirror of activeTabId for the shortcut callback.
+  const activeTabIdRef = useRef(null);
+  useEffect(() => {
+    activeTabIdRef.current = activeTabId;
+  }, [activeTabId]);
+
+  // (Publishing vertical) "Publish to SVRN": build the versioned .svrn
+  // bundle from the project repository and hand it to the upload target.
+  // Today the target is local-download (the hub does not exist yet);
+  // when it does, swap in the hub target — no flow changes needed.
+  const handlePublishToSvrn = useCallback(
+    async meta => {
+      setSvrnPublishBusy(true);
+      try {
+        const bundle = await buildSvrnBundle({ repository: toolCore.repository, meta });
+        await uploadBundle(bundle, localDownloadTarget);
+        toast.success(`Bundle built: ${bundle.filename} (${bundle.manifest.fileCount} files)`, {
+          title: 'Publish to SVRN',
+        });
+        setSvrnPublishOpen(false);
+      } catch (err) {
+        toast.error(err && err.message ? err.message : String(err), {
+          title: 'Publish to SVRN failed',
+        });
+      } finally {
+        setSvrnPublishBusy(false);
+      }
+    },
+    [toast]
+  );
+
+  // (UX Phase 1) Dirty-dot indicators from the project store.
+  useEffect(() => {
+    const store = toolCore.store;
+    if (!store || typeof store.on !== 'function') return undefined;
+    const sync = () => {
+      try {
+        setDirtyPaths(store.dirtyDocuments());
+      } catch {
+        /* store unavailable */
+      }
+    };
+    sync();
+    const off = store.on('dirty-change', sync);
+    return () => off();
+  }, [toolCore]);
+
+  // (UX Phase 1) Surface save failures as toasts, not just the status pill.
+  const lastSaveToastAt = useRef(0);
+  useEffect(() => {
+    if (saveStatus.kind === 'error' && saveStatus.at !== lastSaveToastAt.current) {
+      lastSaveToastAt.current = saveStatus.at;
+      toast.error(saveStatus.message || 'Save failed', { title: 'Save failed' });
+    } else if (saveStatus.kind === 'saved' && saveStatus.at !== lastSaveToastAt.current) {
+      lastSaveToastAt.current = saveStatus.at;
+      // Saved feedback stays subtle: the status pill shows it; toast only errors.
+    }
+  }, [saveStatus, toast]);
 
   const handleOptionsChange = useCallback(options => {
     if (!options) {
@@ -204,6 +469,18 @@ const App = () => {
 
   const handleWizardClose = useCallback(() => {
     setShowWizard(false);
+    try {
+      localStorage.setItem('pixospritz_wizard_seen', '1');
+    } catch {}
+  }, []);
+
+  // Show the welcome wizard on first launch (unless the user has seen it).
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('pixospritz_wizard_seen')) {
+        setShowWizard(true);
+      }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -592,27 +869,19 @@ const App = () => {
     async (entry, lang) => {
       const script = await getData(entry, true);
       const fullPath = getEntryFullPath(entry);
-      setContents([
+      openTab(fullPath, entry.name, (
         <ScriptEditorTool
-          key={Date.now()}
+          key={fullPath}
           documentPath={fullPath}
           core={toolCore}
           text={script}
           initialProps={{ lang, type: 'script-only' }}
-        />,
-      ]);
+        />
+      ));
     },
     [getData, getEntryFullPath, toolCore]
   );
 
-  // (P3-14) Current binary preview URL; revoked on replacement/unmount so
-  // repeated preview changes cannot grow retained memory.
-  const previewUrlRef = useRef('');
-  useEffect(() => () => revokePreviewUrl(previewUrlRef.current), []);
-  const setBinaryPreview = useCallback(url => {
-    revokePreviewUrl(previewUrlRef.current);
-    previewUrlRef.current = url;
-  }, []);
 
   // (P2-10) Image preview migrated onto the new core: document access
   // via the registry, zoom via shell commands.  No direct ZIP path.
@@ -622,15 +891,15 @@ const App = () => {
       const extension = entry.name.split('.').pop().toLowerCase();
       const mime = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
       const fullPath = getEntryFullPath(entry);
-      setContents([
+      openTab(fullPath, entry.name, (
         <ImagePreviewTool
-          key={Date.now()}
+          key={fullPath}
           documentPath={fullPath}
           core={toolCore}
           imageBytes={imageBytes}
           mime={mime}
-        />,
-      ]);
+        />
+      ), 'preview');
     },
     [getData, getEntryFullPath, toolCore]
   );
@@ -640,10 +909,12 @@ const App = () => {
       const audioBytes = await getData(entry, false);
       const extension = entry.name.split('.').pop().toLowerCase();
       const mime = `audio/${extension}`;
-      setBinaryPreview(createPreviewUrl(audioBytes, mime));
-      setContents([<AudioPreview key={Date.now()} content={previewUrlRef.current} />]);
+      const tabId = getEntryFullPath(entry);
+      const url = createPreviewUrl(audioBytes, mime);
+      previewUrlsRef.current.set(tabId, url);
+      openTab(tabId, entry.name, <AudioPreview key={tabId} content={url} />, 'preview');
     },
-    [getData, setBinaryPreview]
+    [getData, getEntryFullPath, openTab]
   );
 
   /**
@@ -747,15 +1018,15 @@ const App = () => {
           }
         }
 
-        setContents([
+        openTab(getEntryFullPath(entry), entry.name, (
           <ModelPreview
-            key={Date.now()}
+            key={getEntryFullPath(entry)}
             content={objText}
             mtlContent={mtlContent}
             textures={textures}
             textureBasePath={modelDir}
-          />,
-        ]);
+          />
+        ), 'preview');
       } else {
         // For GLTF/GLB, pass as data URI
         const modelBytes = await getData(entry, false);
@@ -766,7 +1037,8 @@ const App = () => {
         };
         const mime = mimeLookup[extension] || 'application/octet-stream';
         const dataUri = toDataUri(modelBytes, mime);
-        setContents([<ModelPreview key={Date.now()} content={dataUri} />]);
+        const modelTabId = getEntryFullPath(entry);
+        openTab(modelTabId, entry.name, <ModelPreview key={modelTabId} content={dataUri} />, 'preview');
       }
     },
     [getData, toDataUri, zip]
@@ -1187,9 +1459,10 @@ const App = () => {
         cellsSize: combinedContent.cells?.length,
       });
 
-      setContents([
+      const mapTabId = getEntryFullPath(entry);
+      openTab(mapTabId, entry.name, (
         <UnifiedMapEditor
-          key={Date.now()}
+          key={mapTabId}
           content={combinedContent}
           tileset={tileset}
           geometry={geometry}
@@ -1253,10 +1526,10 @@ const App = () => {
               reportSaveError(fullPath, err);
             }
           }}
-        />,
-      ]);
+        />
+      ));
     },
-    [getData, zip, toDataUri]
+    [getData, zip, toDataUri, getEntryFullPath, openTab]
   );
 
   // (P3-10) Tile editor migrated: sibling-file discovery goes through
@@ -1294,17 +1567,17 @@ const App = () => {
         console.warn('[TileEditor] Could not load sibling files:', err);
       }
 
-      setContents([
+      openTab(entryPath, entry.name, (
         <TileEditorTool
-          key={Date.now()}
+          key={entryPath}
           documentPath={entryPath}
           core={toolCore}
           text={tileContent}
           initialProps={{ geometryContent, textureList }}
-        />,
-      ]);
+        />
+      ));
     },
-    [getData, getEntryFullPath, toolCore]
+    [getData, getEntryFullPath, toolCore, openTab]
   );
 
   const renderGeometryEditor = useCallback(
@@ -1331,10 +1604,11 @@ const App = () => {
       }
 
       const EditorComponent = useEnhanced ? GeometryEditor3D : GeometryEditor;
+      const geoTabId = getEntryFullPath(entry);
 
-      setContents([
+      openTab(geoTabId, entry.name, (
         <EditorComponent
-          key={Date.now()}
+          key={geoTabId}
           content={geoContent}
           onSave={async obj => {
             try {
@@ -1347,10 +1621,10 @@ const App = () => {
               reportSaveError(fullPath, err);
             }
           }}
-        />,
-      ]);
+        />
+      ));
     },
-    [getData, zip]
+    [getData, zip, getEntryFullPath, openTab]
   );
 
   // (P3-10) Sprite editor migrated: repository-backed asset resolution,
@@ -1359,16 +1633,16 @@ const App = () => {
     async entry => {
       const spriteContent = await getData(entry, true);
       const fullPath = getEntryFullPath(entry);
-      setContents([
+      openTab(fullPath, entry.name, (
         <SpriteEditorTool
-          key={Date.now()}
+          key={fullPath}
           documentPath={fullPath}
           core={toolCore}
           text={spriteContent}
-        />,
-      ]);
+        />
+      ));
     },
-    [getData, getEntryFullPath, toolCore]
+    [getData, getEntryFullPath, toolCore, openTab]
   );
 
   const renderCutsceneTool = useCallback(
@@ -1513,9 +1787,10 @@ const App = () => {
         }
       };
 
-      setContents([
+      const cutsceneTabId = getEntryFullPath(entry);
+      openTab(cutsceneTabId, entry.name, (
         <CutsceneTool
-          key={Date.now()}
+          key={cutsceneTabId}
           content={cutsceneContent}
           fileExtension={fileExtension}
           assetLoader={assetLoader}
@@ -1533,17 +1808,17 @@ const App = () => {
             }
           }}
           assets={assets}
-        />,
-      ]);
+        />
+      ));
     },
-    [getData, zip, assets, toDataUri]
+    [getData, zip, assets, toDataUri, getEntryFullPath, openTab]
   );
 
   /**
    * Render the AI Generator panel for creating game assets with AI.
    */
   const renderAIGenerator = useCallback(() => {
-    setContents([
+    openTab('ai-generator', 'AI Generator', (
       <AIGenerator
         key="ai-generator"
         writeFile={writeFile}
@@ -1552,15 +1827,24 @@ const App = () => {
           // Rebuild asset list when new file is generated
           buildAssetList(zip);
         }}
-      />,
-    ]);
-    setShowAIPanel(true);
-  }, [writeFile, zip, buildAssetList]);
+      />
+    ), 'tool');
+  }, [writeFile, zip, buildAssetList, openTab]);
 
   // Open file and route to correct editor/viewer
   const openFile = useCallback(
     async entry => {
       if (!entry) return;
+
+      // (UX Phase 1) If this document already has a tab, focus it instead of
+      // reloading — this is what preserves tool state across switches.
+      if (!entry.directory) {
+        const existingId = getEntryFullPath(entry);
+        if (tabsRef.current.some(t => t.id === existingId)) {
+          setActiveTabId(existingId);
+          return;
+        }
+      }
 
       // If it's a directory, check if it's a map directory and auto-load map.json
       if (entry.directory) {
@@ -1587,12 +1871,8 @@ const App = () => {
               renderMapEditor(mapJsonEntry);
               return;
             } else {
-              console.warn('[App] No map.json found in directory:', entry.name);
-              setContents([
-                <div key="nomap" style={{ padding: '2rem', color: '#d4d4d4' }}>
-                  No map.json found in this directory
-                </div>,
-              ]);
+              debug('App', '[App] No map.json found in directory:', entry.name);
+              toast.warning('No map.json found in this directory', { title: 'Nothing to open' });
               return;
             }
           } catch (err) {
@@ -1600,12 +1880,8 @@ const App = () => {
           }
         }
 
-        // Not a map directory or failed to load - show message
-        setContents([
-          <div key="dir" style={{ padding: '2rem', color: '#d4d4d4' }}>
-            Directory selected. Double-click to enter or select a file.
-          </div>,
-        ]);
+        // Not a map directory or failed to load - transient feedback only
+        toast.info('Directory selected. Choose a file to open it.');
         return;
       }
 
@@ -1659,8 +1935,8 @@ const App = () => {
         renderModelPreview(entry);
         return;
       }
-      // Unknown file types fallback
-      setContents([<div key="unknown">No registered viewer for {name}</div>]);
+      // Unknown file types fallback - transient feedback, no tab
+      toast.warning(`No registered viewer for ${name}`, { title: 'Cannot open' });
     },
     [
       renderScriptEditor,
@@ -1671,14 +1947,17 @@ const App = () => {
       renderImagePreview,
       renderAudioPreview,
       renderModelPreview,
+      getEntryFullPath,
+      toast,
       zip,
     ]
   );
 
-  const hasContent = contents.length > 0;
+  const hasContent = tabs.length > 0;
+  const activeTab = tabs.find(t => t.id === activeTabId) || null;
   const errorCount = validationReport?.errors?.length ?? 0;
   const warningCount = validationReport?.warnings?.length ?? 0;
-  const selectedEntryLabel = selectedEntry?.name || 'Choose an asset from the sidebar';
+  const activeTabLabel = activeTab?.label || 'Choose an asset from the sidebar';
   const shellClassName = [
     hasContent ? 'editor-shell has-active-content' : 'editor-shell',
     hideTitleBar ? 'editor-shell--compact' : '',
@@ -1722,12 +2001,35 @@ const App = () => {
             <header className="editor-main-header">
               <div className="editor-main-title">
                 <span>Active file</span>
-                <strong>{selectedEntryLabel}</strong>
+                <strong>{activeTabLabel}</strong>
               </div>
               <div className="editor-main-actions">
-                <button
-                  type="button"
-                  className={`editor-ai-button ${showAIPanel ? 'is-active' : ''}`}
+                {/* (UX Phase 2) Shell undo/redo — wired to the CommandBus (finding A3.2). */}
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  disabled={!canUndo}
+                  onClick={() => commands.execute('shell.undo')}
+                  title="Undo (Ctrl+Z)"
+                  aria-label="Undo"
+                >
+                  ↩ Undo
+                </Button>
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  disabled={!canRedo}
+                  onClick={() => commands.execute('shell.redo')}
+                  title="Redo (Ctrl+Shift+Z)"
+                  aria-label="Redo"
+                  style={{ marginLeft: '4px' }}
+                >
+                  ↪ Redo
+                </Button>
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  active={activeTabId === 'ai-generator'}
                   onClick={renderAIGenerator}
                   title={
                     zip
@@ -1735,19 +2037,18 @@ const App = () => {
                       : 'Open AI Asset Generator (load a package to save files)'
                   }
                 >
-                  <span className="editor-ai-icon">✨</span>
-                  <span>AI Generate</span>
-                </button>
-                <button
-                  type="button"
-                  className={`editor-ai-button ${showConsole ? 'is-active' : ''}`}
+                  AI Generate
+                </Button>
+                <Button
+                  appearance="subtle"
+                  size="sm"
+                  active={showConsole}
                   onClick={() => setShowConsole(!showConsole)}
                   title="Toggle Console Panel"
                   style={{ marginLeft: '8px' }}
                 >
-                  <span className="editor-ai-icon">📝</span>
-                  <span>Console</span>
-                </button>
+                  Console
+                </Button>
                 {validationReport && (
                   <div className="editor-pill">
                     <span>{errorCount} errors</span>
@@ -1757,15 +2058,73 @@ const App = () => {
               </div>
             </header>
           )}
+          {hasContent && (
+            <div className="editor-tabbar" role="tablist" aria-label="Open documents">
+              {tabs.map(tab => {
+                const isActive = tab.id === activeTabId;
+                const isDirty = dirtyPaths.includes(tab.id);
+                return (
+                  <div
+                    key={tab.id}
+                    role="tab"
+                    aria-selected={isActive}
+                    tabIndex={0}
+                    title={tab.id}
+                    className={`editor-tab${isActive ? ' is-active' : ''}${isDirty ? ' is-dirty' : ''}`}
+                    onClick={() => setActiveTabId(tab.id)}
+                    onAuxClick={e => {
+                      if (e.button === 1) closeTab(tab.id);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setActiveTabId(tab.id);
+                      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                        e.preventDefault();
+                        closeTab(tab.id);
+                      }
+                    }}
+                  >
+                    <span className="editor-tab__label">{tab.label}</span>
+                    {isDirty && (
+                      <span className="editor-tab__dirty" title="Unsaved changes" aria-label="Unsaved changes" />
+                    )}
+                    <button
+                      type="button"
+                      className="editor-tab__close"
+                      aria-label={`Close ${tab.label}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        closeTab(tab.id);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div
             className="editor-main-content"
             style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}
           >
             {hasContent ? (
-              <Suspense
-                fallback={<div className="editor-tool-loading">Loading tool…</div>}
-              >
-                {contents.map(component => component)}
+              <Suspense fallback={<div className="editor-tool-loading">Loading tool…</div>}>
+                {tabs.map(tab => (
+                  <div
+                    key={tab.id}
+                    className="editor-tabpanel"
+                    hidden={tab.id !== activeTabId}
+                  >
+                    <ErrorBoundary
+                      toolName={tab.label}
+                      onReset={() => closeTab(tab.id)}
+                    >
+                      {tab.element}
+                    </ErrorBoundary>
+                  </div>
+                ))}
               </Suspense>
             ) : (
               <div className="editor-empty-state">
@@ -1888,6 +2247,36 @@ const App = () => {
       {showWizard && <FirstTimeWizard onClose={handleWizardClose} />}
       {/* (P2-09) Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      {/* (UX Phase 2) Dirty-tab close confirmation (forgiveness). */}
+      <Modal open={!!pendingCloseTab} onClose={() => setPendingCloseTab(null)} size="sm">
+        <Modal.Header onClose={() => setPendingCloseTab(null)}>
+          <Modal.Title>Unsaved changes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+            “{tabs.find(t => t.id === pendingCloseTab)?.label || pendingCloseTab}” has
+            unsaved changes. Closing now will lose them.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Button appearance="ghost" onClick={() => setPendingCloseTab(null)}>
+              Keep editing
+            </Button>
+            <Button appearance="primary" color="red" onClick={() => doCloseTab(pendingCloseTab)}>
+              Close without saving
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+      {/* (Publishing vertical) Publish to SVRN dialog */}
+      <PublishToSvrnDialog
+        open={svrnPublishOpen}
+        busy={svrnPublishBusy}
+        onClose={() => setSvrnPublishOpen(false)}
+        onPublish={handlePublishToSvrn}
+      />
       {/* (P2-07) Save status replaces alert() dialogs in save paths */}
       {saveStatus.kind !== 'idle' && (
         <div

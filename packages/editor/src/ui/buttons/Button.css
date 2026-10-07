@@ -33,17 +33,17 @@
 }
 
 .px-btn-primary {
-  background: var(--btn-primary-bg, #5c6bc0);
-  color: white;
+  background: var(--btn-primary-bg, #ececf1);
+  color: var(--btn-primary-text, #0a0a12);
 }
 
 .px-btn-primary:hover {
-  background: var(--btn-primary-hover, #7986cb);
+  background: var(--btn-primary-hover, #ffffff);
 }
 
 .px-btn-link {
   background: transparent;
-  color: var(--btn-link-color, #5c6bc0);
+  color: var(--btn-link-color, var(--color-brand-primary));
   padding: 0;
 }
 
