@@ -99,6 +99,7 @@ export class Camera {
       case 'fixed':
         break;
       case 'free':
+        this.handleFreeInput();
         break;
       case 'follow':
         if (this.followTarget && this.followTarget.position) {
@@ -110,6 +111,47 @@ export class Camera {
           this.scriptFn(this);
         }
         break;
+    }
+  };
+
+  /**
+   * Handle free-mode camera input (WASD/arrows move, QE yaw, RF pitch, drag orbit).
+   * Only active when mode is 'free'. Games can override or disable by setting mode.
+   */
+  handleFreeInput = () => {
+    const kb = this.renderingManager?.engine?.keyboard;
+    if (!kb || !kb.activeCodes) return;
+
+    const codes = kb.activeCodes.map(c => (c || '').toString().toLowerCase());
+    const has = (...keys) => keys.some(k => codes.includes(k));
+    let moved = false;
+
+    // WASD/arrows: pan
+    if (has('w', 'arrowup')) { this.translateCam('UP'); moved = true; }
+    if (has('s', 'arrowdown')) { this.translateCam('DOWN'); moved = true; }
+    if (has('a', 'arrowleft')) { this.translateCam('LEFT'); moved = true; }
+    if (has('d', 'arrowright')) { this.translateCam('RIGHT'); moved = true; }
+
+    // QE: yaw
+    if (has('q')) { this.yaw -= 0.03; moved = true; }
+    if (has('e')) { this.yaw += 0.03; moved = true; }
+
+    // RF: pitch
+    if (has('r')) {
+      this.pitch = Math.max(-Math.PI / 2 + 0.01, this.pitch - 0.03);
+      moved = true;
+    }
+    if (has('f')) {
+      this.pitch = Math.min(Math.PI / 2 - 0.01, this.pitch + 0.03);
+      moved = true;
+    }
+
+    // +/-: zoom
+    if (has('=', '+')) { this.cameraDistance = Math.max(1, this.cameraDistance - 0.5); moved = true; }
+    if (has('-', '_')) { this.cameraDistance = Math.min(100, this.cameraDistance + 0.5); moved = true; }
+
+    if (moved && typeof this.updateViewFromAngles === 'function') {
+      this.updateViewFromAngles();
     }
   };
 
