@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "format": "pxsave",
+  "gameId": "tiny-pixozine",
+  "gameVersion": "1.0.0",
+  "timestamp": "2026-10-06T17:00:00Z",
+  "playTime": 3600,
+  "slotId": "slot-1",
+  "slotName": "First adventure",
+  "player": {
+    "zone": "zone-1",
+    "position": [
+      100,
+      200,
+      0
+    ],
+    "name": "Hero"
+  },
+  "flags": {
+    "met_guide": true
+  }
+}

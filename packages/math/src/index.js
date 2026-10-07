@@ -49,3 +49,6 @@ export {
   mul,
   invert,
 } from './matrix4.js';
+
+// Canonical vector contract (P4-01)
+export { VECTOR_CONTRACT } from './contract.js';

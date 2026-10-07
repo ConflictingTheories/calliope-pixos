@@ -1,0 +1,51 @@
+{
+  "description": "Package load conformance: manifest -> validation outcome. JS is authoritative; the native runner consumes the same fixtures.",
+  "cases": [
+    {
+      "id": "valid-minimal",
+      "manifest": "../fixtures/valid-minimal/manifest.json",
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "valid-full",
+      "manifest": "../fixtures/valid-full/manifest.json",
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "invalid-missing-required",
+      "manifest": "../fixtures/invalid-missing-required/manifest.json",
+      "expect": {
+        "valid": false,
+        "codes": [
+          "missing-required"
+        ]
+      }
+    },
+    {
+      "id": "invalid-bad-values",
+      "manifest": "../fixtures/invalid-bad-values/manifest.json",
+      "expect": {
+        "valid": false,
+        "codes": [
+          "array-length",
+          "out-of-range",
+          "pattern-mismatch",
+          "wrong-type"
+        ]
+      }
+    },
+    {
+      "id": "legacy-pre-v1-migrates",
+      "manifest": "../fixtures/legacy-pre-v1/manifest.json",
+      "migrate": true,
+      "expect": {
+        "valid": true,
+        "formatVersion": "1.0.0"
+      }
+    }
+  ]
+}

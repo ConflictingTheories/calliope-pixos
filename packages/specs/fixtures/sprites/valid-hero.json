@@ -1,0 +1,21 @@
+{
+  "type": "character",
+  "src": "sprites/hero.png",
+  "sheetSize": [
+    256,
+    256
+  ],
+  "tileSize": [
+    16,
+    16
+  ],
+  "animations": {
+    "idle": {
+      "frames": [
+        0,
+        1
+      ],
+      "fps": 8
+    }
+  }
+}

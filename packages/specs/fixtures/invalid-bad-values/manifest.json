@@ -1,0 +1,22 @@
+{
+  "format": "pixozine",
+  "formatVersion": "1.0.0",
+  "title": "Tiny Pixozine",
+  "version": "one-point-oh",
+  "initialZones": "zone-1",
+  "maps": [
+    "zone-1"
+  ],
+  "sprites": [
+    "hero"
+  ],
+  "scripts": [
+    "scripts/main.pxs"
+  ],
+  "settings": {
+    "resolution": [
+      480
+    ],
+    "musicVolume": 2.5
+  }
+}
