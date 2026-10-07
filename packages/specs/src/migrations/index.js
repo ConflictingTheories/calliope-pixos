@@ -11,10 +11,12 @@
  */
 
 import * as v0ToV1 from './v0-to-v1.js';
+import * as v1ToV1_1 from './v1-to-v1-1.js';
 
 /** Ordered migration chain. New migrations append here. */
 export const MIGRATIONS = [
   { from: v0ToV1.from, to: v0ToV1.to, description: v0ToV1.description, migrate: v0ToV1.migrate },
+  { from: v1ToV1_1.from, to: v1ToV1_1.to, description: v1ToV1_1.description, migrate: v1ToV1_1.migrate },
 ];
 
 /** Highest format version this runner knows how to produce. */

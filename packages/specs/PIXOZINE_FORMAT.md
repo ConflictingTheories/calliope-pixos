@@ -1,13 +1,17 @@
-# Pixozine Package Format — Specification v1.0.0
+# Pixozine Package Format — Specification v1.1.0
 
 A **pixozine** is the distributable content unit of the PixoSpritz ecosystem: an
 interactive, playable package (game, interactive zine, playable story) authored in
 SVRN publishing tooling and played by the PixoSpritz runtime.
 
-This document is the normative v1 spec. It replaces the aspirational "spritz"
+This document is the normative spec. It replaces the aspirational "spritz"
 format notes (`packages/core-js/src/spritz/readme.md`). Internal identifiers from
 earlier drafts (`manifest.json`, `.pxz`, `initialZones`, …) are kept stable; only
 user-facing naming moves to pixozine terminology.
+
+**Version history:** v1.0.0 — initial versioned spec. v1.1.0 — adds the
+`playables` array (playable embed blocks, §8); additive-only, old packages
+migrate with no changes (§2.2).
 
 ## 1. Package layout
 
@@ -49,6 +53,7 @@ Validated by `packages/specs/formats/manifest.schema.json`.
 | `requirements` | no | `webgl` (1|2), `audio`, `localStorage`, `indexedDB` flags. |
 | `scriptApiVersion` | no | Host scripting API version the package targets (see §5). |
 | `capabilities` | no | Capability names the package's scripts require (see §5). |
+| `playables` | no (default `[]`) | Playable embed blocks: PixoSpritz game bundles playable inside this pixozine (added in v1.1.0, see §8). |
 | `data` | no | Namespaced custom data (`additionalProperties: true`). |
 
 ### 2.1 Versioning
@@ -131,3 +136,37 @@ never evaluate script sources.
 The asset graph (`packages/specs/src/asset-graph.js`, P1-07) is deterministic:
 nodes sorted by ID, FNV-1a content hashes. Two builds of the same source tree
 produce the same graph.
+
+## 8. Playable embeds (added in format v1.1.0)
+
+A **playable embed block** lets a pixozine contain playable PixoSpritz content —
+a game, a playable tutorial step, an interactive diagram — built by the
+PixoSpritz editor and published to SVRN. This is what makes PixoSpritz SVRN's
+interactive layer in the tooling: the editor's "Publish to SVRN" export target
+produces the bundle; the zine references it here.
+
+Each entry of the `playables` array is a block with:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `id` | yes | Unique playable ID within this package. |
+| `title` | yes | User-facing title. |
+| `description` | no | Short description shown alongside the embed. |
+| `poster` | no | Archive-relative image path shown before the player loads. |
+| `playerVersion` | yes | **Pinned** PixoSpritz player version (semver, e.g. `"1.0.0"`) the bundle was built for. The runtime loads exactly this player version for the embed — no "it worked on my machine". |
+| `bundle.uri` | yes | Game bundle location: an archive-relative path (checked against the archive like other media) or an absolute `https:` URL for remote bundles. |
+| `bundle.manifestHash` | yes | Integrity hash of the bundle manifest: FNV-1a (8 lowercase hex chars, matching the asset graph) or SHA-256 (64 lowercase hex chars). The runtime verifies before executing. |
+| `dimensions.width` / `dimensions.height` | no | Embed viewport in CSS pixels. |
+| `dimensions.aspect` | no | Aspect-ratio hint (`"16:9"`) used when width/height are absent. |
+| `fallback.title` / `fallback.body` / `fallback.image` | no | Content shown when the player cannot load (unsupported platform, blocked scripts, failed integrity check). A playable without a fallback renders a generic "content unavailable" notice. |
+
+Rules:
+
+- Playable IDs share the package's ID-uniqueness namespace (semantic check).
+- `playerVersion` must be full semver (`major.minor.patch`); the runtime
+  resolves the exact pinned player, never "latest".
+- Remote (`https:`) bundle URIs skip archive path checks but the hash is
+  still verified after download.
+- Scripts inside an embedded bundle execute under the same script execution
+  boundary and trust policy as the host package (§5) — embeds never widen
+  the host's granted capabilities.

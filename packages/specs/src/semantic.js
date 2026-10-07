@@ -46,6 +46,11 @@ function isUnsafePath(p) {
   );
 }
 
+/** Absolute URIs (e.g. https: bundle URLs) are not archive paths. */
+function isAbsoluteUri(p) {
+  return typeof p === 'string' && /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(p);
+}
+
 export function validateSemantics(manifest, opts = {}) {
   const issues = [];
   const push = (code, path, severity, message) => issues.push({ code, path, severity, message });
@@ -69,6 +74,23 @@ export function validateSemantics(manifest, opts = {}) {
       }
     });
   }
+
+  // 1b. Playable embed IDs must be unique (v1.1.0+).
+  const playables = Array.isArray(manifest.playables) ? manifest.playables : [];
+  playables.forEach((p, i) => {
+    const id = p && typeof p === 'object' ? p.id : undefined;
+    if (typeof id !== 'string' || id.length === 0) return; // structural check is the validator's job
+    if (seen.has(id)) {
+      push(
+        SEMANTIC_CODES.DUPLICATE_ID,
+        `playables[${i}].id`,
+        'error',
+        `Duplicate playable ID "${id}" (first declared in ${seen.get(id)})`
+      );
+    } else {
+      seen.set(id, `playables[${i}]`);
+    }
+  });
 
   // 2. initialZones must reference declared maps.
   const declaredMaps = new Set(manifest.maps || []);
@@ -104,6 +126,20 @@ export function validateSemantics(manifest, opts = {}) {
   for (const field of SINGLE_PATH_FIELDS) {
     if (manifest[field] !== undefined) checkPath(manifest[field], field);
   }
+  // 3b. Playable embed paths (v1.1.0+). bundle.uri may be an absolute
+  // remote URL — only archive-relative values are path-checked.
+  playables.forEach((p, i) => {
+    if (!p || typeof p !== 'object') return;
+    if (p.poster !== undefined) checkPath(p.poster, `playables[${i}].poster`);
+    if (p.bundle && typeof p.bundle === 'object' && p.bundle.uri !== undefined) {
+      if (!isAbsoluteUri(p.bundle.uri)) {
+        checkPath(p.bundle.uri, `playables[${i}].bundle.uri`);
+      }
+    }
+    if (p.fallback && typeof p.fallback === 'object' && p.fallback.image !== undefined) {
+      checkPath(p.fallback.image, `playables[${i}].fallback.image`);
+    }
+  });
 
   // 4. Declared files must exist in the archive (when a listing is provided).
   if (archive) {
@@ -114,6 +150,17 @@ export function validateSemantics(manifest, opts = {}) {
     }
     for (const field of SINGLE_PATH_FIELDS) {
       if (manifest[field] !== undefined) allPaths.push([manifest[field], field]);
+    }
+    for (let i = 0; i < playables.length; i++) {
+      const p = playables[i];
+      if (!p || typeof p !== 'object') continue;
+      if (p.poster !== undefined) allPaths.push([p.poster, `playables[${i}].poster`]);
+      const uri = p.bundle && typeof p.bundle === 'object' ? p.bundle.uri : undefined;
+      if (uri !== undefined && !isAbsoluteUri(uri)) {
+        allPaths.push([uri, `playables[${i}].bundle.uri`]);
+      }
+      const fimg = p.fallback && typeof p.fallback === 'object' ? p.fallback.image : undefined;
+      if (fimg !== undefined) allPaths.push([fimg, `playables[${i}].fallback.image`]);
     }
     for (const [p, path] of allPaths) {
       if (!isUnsafePath(p) && !archive.has(p)) {
