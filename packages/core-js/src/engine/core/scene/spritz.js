@@ -83,46 +83,102 @@ export default class Spritz {
   };
 
   /**
-   * Todo - Load spritz remotely
-   * @param {string} src
+   * Load a spritz manifest from a remote URL.
+   * Fetches the manifest JSON, then loads each zone listed.
+   * @param {string} src - URL to the manifest JSON
+   * @returns {Promise<object>} The loaded manifest
    */
   loadSpritzManifest = async src => {
-    // Put up loading Screen
-    //
-    // Fetch Manifest Remotely from Src
-    //
-    // Parse & Read in Zones
-    //
-    // Load Zones and Then once ready Remove Loading
-    //
-    // Start
+    const world = Spritz._instance.world;
+    if (!world) {
+      throw new Error('loadSpritzManifest: world not initialized. Call init() first.');
+    }
+
+    const response = await fetch(src);
+    if (!response.ok) {
+      throw new Error(`loadSpritzManifest: failed to fetch ${src} (${response.status})`);
+    }
+
+    const manifest = await response.json();
+
+    // Load each zone in the manifest
+    const zones = manifest.zones || [];
+    for (const zoneEntry of zones) {
+      const zoneId = typeof zoneEntry === 'string' ? zoneEntry : zoneEntry.id;
+      if (zoneId) {
+        await world.loadZone(zoneId, true);
+      }
+    }
+
+    // Set starting zone if specified
+    if (manifest.startZone) {
+      await world.loadZone(manifest.startZone, true);
+    }
+
+    return manifest;
   };
 
   /**
-   * Todo - Load avatar into spritz
-   * @param {string} src
-   * @param {string} zoneId
+   * Load an avatar from a remote URL and add it to a zone.
+   * @param {string} src - URL to the avatar JSON
+   * @param {string} zoneId - ID of the zone to add the avatar to
+   * @returns {Promise<object>} The created avatar
    */
   loadAvatar = async (src, zoneId) => {
-    // Put up loading Screen
-    //
-    // Fetch Avatar Remotely from Src
-    //
-    // Parse & Read in & initialized
-    //
-    // Add to Zone
+    const world = Spritz._instance.world;
+    if (!world) {
+      throw new Error('loadAvatar: world not initialized. Call init() first.');
+    }
+
+    const response = await fetch(src);
+    if (!response.ok) {
+      throw new Error(`loadAvatar: failed to fetch ${src} (${response.status})`);
+    }
+
+    const avatarData = await response.json();
+
+    // Ensure the target zone is loaded
+    if (zoneId && !world.zoneDict[zoneId]) {
+      await world.loadZone(zoneId, true);
+    }
+
+    const avatar = world.createAvatar(avatarData);
+    if (!avatar) {
+      throw new Error('loadAvatar: failed to create avatar from data');
+    }
+
+    return avatar;
   };
 
   /**
-   * Todo - Load avatar into spritz
+   * Export the current player avatar to a zip file.
+   * @returns {Promise<void>}
    */
   exportAvatar = async () => {
-    let zip = new JSZip();
-    let avatar = {}; // todo;
-    // store in zip
-    zip.folder('pixos').file('avatar.json', JSON.stringify(avatar));
-    // save
-    let blob = await zip.generateAsync({ type: 'blob' });
+    const world = Spritz._instance.world;
+    if (!world) {
+      throw new Error('exportAvatar: world not initialized. Call init() first.');
+    }
+
+    const avatar = world.avatarManager && world.avatarManager.getAvatar
+      ? world.avatarManager.getAvatar()
+      : world.playerAvatar || null;
+
+    if (!avatar) {
+      throw new Error('exportAvatar: no avatar to export');
+    }
+
+    const avatarData = typeof avatar.serialize === 'function'
+      ? avatar.serialize()
+      : {
+          id: avatar.id,
+          position: avatar.position,
+          sprite: avatar.spriteId || avatar.sprite,
+        };
+
+    const zip = new JSZip();
+    zip.folder('pixos').file('avatar.json', JSON.stringify(avatarData, null, 2));
+    const blob = await zip.generateAsync({ type: 'blob' });
     saveAs(blob, 'avatar.zip');
   };
 

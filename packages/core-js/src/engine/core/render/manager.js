@@ -28,6 +28,7 @@ import SkyboxManager from './skybox.js';
 import ParticleManager from './ParticleManager.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
+import FrustumCuller from './FrustumCuller.js';
 import TextureAtlas from './TextureAtlas.js';
 import { RenderStats } from './stats.js';
 import EffectManager from './EffectManager.js';
@@ -155,6 +156,10 @@ export default class RenderManager {
       // Level of Detail manager for performance optimization
       /** @type {LODManager} */
       this.lodManager = new LODManager(this);
+
+      // Frustum culling for performance optimization
+      /** @type {FrustumCuller} */
+      this.frustumCuller = new FrustumCuller(this);
 
       // Texture atlas for batched rendering
       /** @type {TextureAtlas} */
