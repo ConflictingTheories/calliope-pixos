@@ -21,7 +21,7 @@
  * - Materials: PBR metallic-roughness (baseColorFactor, metallicFactor, roughnessFactor)
  * - Node hierarchy with TRS transforms
  *
- * Does not support (yet): skins, animations, extensions.
+ * Does not support (yet): extensions, morph targets.
  */
 
 const COMPONENT_TYPES = {
@@ -191,8 +191,73 @@ export function parseGLTF(gltf, buffers) {
         meshData.indices = Array.from(getAccessorData(gltf, buffers, prim.indices));
       }
 
+      // Skinning: joint indices and weights
+      if (attributes.JOINTS_0 !== undefined) {
+        meshData.joints = Array.from(getAccessorData(gltf, buffers, attributes.JOINTS_0));
+      }
+      if (attributes.WEIGHTS_0 !== undefined) {
+        meshData.weights = Array.from(getAccessorData(gltf, buffers, attributes.WEIGHTS_0));
+      }
+      if (prim.skin !== undefined) {
+        meshData.skinIndex = prim.skin;
+      }
+
       meshes.push(meshData);
     }
+  }
+
+  // Skins: skeletal data for skinned meshes
+  const skins = [];
+  for (const skin of gltf.skins || []) {
+    const skinData = {
+      name: skin.name || `skin_${skins.length}`,
+      joints: skin.joints || [],  // node indices
+      inverseBindMatrices: null,
+      skeleton: skin.skeleton,
+    };
+    if (skin.inverseBindMatrices !== undefined) {
+      const ibm = Array.from(getAccessorData(gltf, buffers, skin.inverseBindMatrices));
+      // Convert flat array to array of 4x4 matrices
+      skinData.inverseBindMatrices = [];
+      for (let i = 0; i < ibm.length; i += 16) {
+        skinData.inverseBindMatrices.push(ibm.slice(i, i + 16));
+      }
+    }
+    skins.push(skinData);
+  }
+
+  // Animations: keyframed node transforms
+  const animations = [];
+  for (const anim of gltf.animations || []) {
+    const animData = {
+      name: anim.name || `anim_${animations.length}`,
+      channels: [],
+      samplers: [],
+      duration: 0,
+    };
+    // Samplers: input times, output values, interpolation
+    for (const sampler of anim.samplers || []) {
+      const input = Array.from(getAccessorData(gltf, buffers, sampler.input));
+      const output = Array.from(getAccessorData(gltf, buffers, sampler.output));
+      animData.samplers.push({
+        input,   // keyframe times
+        output,  // keyframe values (flat)
+        interpolation: sampler.interpolation || 'LINEAR',
+      });
+      // Track duration
+      if (input.length > 0) {
+        animData.duration = Math.max(animData.duration, input[input.length - 1]);
+      }
+    }
+    // Channels: which node, which property, which sampler
+    for (const channel of anim.channels || []) {
+      animData.channels.push({
+        sampler: channel.sampler,
+        targetNode: channel.target.node,
+        targetPath: channel.target.path, // 'translation', 'rotation', 'scale'
+      });
+    }
+    animations.push(animData);
   }
 
   // Node transforms (flatten hierarchy for now)
@@ -207,6 +272,7 @@ export function parseGLTF(gltf, buffers) {
       rotation: node.rotation || [0, 0, 0, 1], // quaternion
       scale: node.scale || [1, 1, 1],
       mesh: node.mesh,
+      skin: node.skin,
       children: node.children || [],
     });
     for (const child of node.children || []) {
@@ -219,7 +285,7 @@ export function parseGLTF(gltf, buffers) {
     processNode(nodeIndex, null);
   }
 
-  return { meshes, materials, nodes };
+  return { meshes, materials, nodes, skins, animations };
 }
 
 export default { parseGLB, parseGLTF, loadGLTFFromZip };

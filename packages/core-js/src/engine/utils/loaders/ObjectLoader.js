@@ -54,6 +54,8 @@ export class ObjectLoader {
       instance.gltfMeshes = gltfData.meshes;
       instance.gltfMaterials = gltfData.materials;
       instance.gltfNodes = gltfData.nodes;
+      instance.gltfSkins = gltfData.skins;
+      instance.gltfAnimations = gltfData.animations;
       instance.isGLTF = true;
       return instance;
     }
