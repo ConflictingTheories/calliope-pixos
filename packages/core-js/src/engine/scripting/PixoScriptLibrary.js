@@ -1076,28 +1076,28 @@ export default class PixoScriptLibrary {
         }
       },
       show_damage: (targetId, amount) => {
+        // NOTE: Game-specific. Battle demos should implement their own
+        // damage display using highlight_units + custom UI.
+        // Kept here for backwards compat with existing demos.
         try {
-          // TODO: Floating damage numbers require a text sprite system
-          // For now, log and trigger a visual flash on the target
           const world = engine.world || engine.spritz?.world;
           if (!world) return;
           const zone = world.getZoneById(world.currentZoneId);
           if (!zone) return;
           const target = zone.spriteList?.find(s => s.id === targetId);
           if (target) {
-            // Flash the target red
-            target._damageFlash = 10; // frames
+            target._damageFlash = 10;
           }
-          console.log(`[Battle] ${targetId} takes ${amount} damage`);
         } catch (e) {
           console.warn('show_damage failed', e);
         }
       },
       move_cursor: (x, y) => {
+        // NOTE: Game-specific. Tactical demos should manage their own cursor.
+        // Kept here for backwards compat.
         try {
           const world = engine.world || engine.spritz?.world;
           if (!world) return;
-          // Store cursor position for battle mode
           world._battleCursor = { x, y };
         } catch (e) {
           console.warn('move_cursor failed', e);

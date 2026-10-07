@@ -1,0 +1,49 @@
+-- Nether Squad: Battle UI helpers
+-- Game-specific battle UI. Uses engine primitives (highlight_tiles, etc.)
+-- This is how games should build their own UI, not engine built-ins.
+
+local BattleUI = {}
+
+-- Show floating damage number
+-- Uses engine's highlight system + stores damage for renderer
+function BattleUI.show_damage(targetId, amount)
+    local world = pixos.get_world()
+    if not world then return end
+
+    -- Flash the target using engine highlight
+    pixos.highlight_units({targetId}, 'damaged')
+
+    -- Store damage number for custom renderer
+    -- (In a real game, this would spawn a text sprite)
+    world._damageNumbers = world._damageNumbers or {}
+    table.insert(world._damageNumbers, {
+        targetId = targetId,
+        amount = amount,
+        ttl = 60, -- frames
+    })
+end
+
+-- Battle cursor management
+BattleUI.cursor = { x = 0, y = 0 }
+
+function BattleUI.move_cursor(x, y)
+    BattleUI.cursor.x = x
+    BattleUI.cursor.y = y
+    -- Highlight the cursor tile
+    pixos.highlight_tiles({{x = x, y = y}}, 'cursor')
+end
+
+function BattleUI.get_cursor()
+    return BattleUI.cursor.x, BattleUI.cursor.y
+end
+
+-- Clear all battle UI
+function BattleUI.clear()
+    pixos.clear_highlight()
+    local world = pixos.get_world()
+    if world then
+        world._damageNumbers = {}
+    end
+end
+
+return BattleUI
