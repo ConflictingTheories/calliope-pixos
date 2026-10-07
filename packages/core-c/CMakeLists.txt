@@ -167,6 +167,7 @@ set(CORE_SOURCES
     src/math/matrix4.c
     src/rendering/shader.c
     src/rendering/light_manager.c
+    src/rendering/gltf_renderer.c
     src/resource/texture.c
     src/resource/resource_manager.c
     src/resource/json_loader.c

@@ -20,7 +20,7 @@
 | OBJ loading | ✅ | ✅ | Implemented (`resource/obj_loader.c`) — 2026-10-07 |
 | OBJ materials (MTL) | ✅ | ✅ | Implemented (`resource/obj_loader.c`) — 2026-10-07 |
 | GLTF loading | ✅ | ✅ | Implemented (`resource/gltf_loader.c`) — 2026-10-07 |
-| GLTF rendering | ✅ | ❌ | TODO (buffers to GPU) |
+| GLTF rendering | ✅ | ✅ | Implemented (`rendering/gltf_renderer.c`) — 2026-10-07 |
 | Custom shaders | ✅ | ✅ | Implemented (`rendering/shader.c`) |
 | Post-processing | ❌ | ❌ | Not planned |
 
@@ -33,16 +33,16 @@
 | Portals | ✅ | ✅ | Implemented (`scene/portal.c`) — 2026-10-07 |
 | Behaviors | ✅ | ✅ | Implemented (`scene/behavior.c`) — 2026-10-07 |
 | Avatar | ✅ | ✅ | Implemented (`scene/avatar.c`) — 2026-10-07 |
-| Portal system | ✅ | ❌ | TODO |
-| Avatar manager | ✅ | ❌ | TODO |
-| Behavior system | ✅ | ❌ | TODO |
+| Portal system | ✅ | ✅ | Implemented (`scene/portal.c`) |
+| Avatar manager | ✅ | ✅ | Implemented (`scene/avatar.c`) |
+| Behavior system | ✅ | ✅ | Implemented (`scene/behavior.c`) |
 | Mode manager | ✅ | ❌ | TODO |
 
 ## Scripting
 
 | Feature | JS | C | Status |
 |---------|----|---|--------|
-| PixoScript | ✅ | ❌ | DECISION NEEDED: Port PixoScript to C, or use Lua? |
+| PixoScript/Lua | ✅ | ✅ | Lua 5.4 vendored, ENABLE_LUA=ON (PixoScript is Lua-inspired) |
 | Sandbox | ✅ | ❌ | TODO (depends on scripting decision) |
 | Mode scripts (setup/update) | ✅ | ❌ | TODO |
 | Object script hooks | ✅ | ❌ | TODO |
