@@ -25,12 +25,12 @@
 }
 
 .px-select-picker-toggle:hover {
-  border-color: var(--input-focus-border, #5c6bc0);
+  border-color: var(--input-focus-border, var(--color-brand-primary));
 }
 
 .px-select-picker-open .px-select-picker-toggle {
-  border-color: var(--input-focus-border, #5c6bc0);
-  box-shadow: 0 0 0 2px var(--input-focus-shadow, rgba(92, 107, 192, 0.2));
+  border-color: var(--input-focus-border, var(--color-brand-primary));
+  box-shadow: 0 0 0 2px var(--input-focus-shadow, var(--color-brand-primary-muted, rgba(236, 236, 241,  0.2));
 }
 
 .px-select-picker-value {
@@ -101,7 +101,7 @@
 }
 
 .px-select-picker-search-input:focus {
-  border-color: var(--input-focus-border, #5c6bc0);
+  border-color: var(--input-focus-border, var(--color-brand-primary));
 }
 
 .px-select-picker-options {
@@ -122,7 +122,7 @@
 }
 
 .px-select-picker-option-selected {
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-select-picker-option-selected:hover {

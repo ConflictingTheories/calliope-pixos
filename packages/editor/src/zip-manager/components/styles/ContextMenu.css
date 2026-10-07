@@ -62,11 +62,11 @@
 }
 
 .context-menu__item:hover:not(:disabled) {
-  background: rgba(78, 205, 196, 0.1);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1);
 }
 
 .context-menu__item:active:not(:disabled) {
-  background: rgba(78, 205, 196, 0.15);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
 }
 
 .context-menu__item:disabled {

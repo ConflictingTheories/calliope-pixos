@@ -100,7 +100,7 @@
 }
 
 .editor-save-status--saved {
-  border-color: var(--color-success, #4ecdc4);
+  border-color: var(--color-success, var(--color-brand-secondary));
 }
 
 .editor-save-status--error {

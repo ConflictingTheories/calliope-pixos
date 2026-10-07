@@ -43,7 +43,7 @@
 
 .px-nav-item-active {
   color: var(--text-primary, #e0e0e0);
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-nav-item-active:hover {
@@ -75,8 +75,8 @@
 
 .px-nav-subtle .px-nav-item-active {
   background: transparent;
-  border-bottom-color: var(--btn-primary-bg, #5c6bc0);
-  color: var(--btn-primary-bg, #5c6bc0);
+  border-bottom-color: var(--btn-primary-bg, var(--color-brand-primary));
+  color: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 /* Tabs appearance */

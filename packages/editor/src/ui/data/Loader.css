@@ -34,7 +34,7 @@
 .px-loader-spin {
   display: inline-block;
   border: 3px solid var(--border-color, #2a2a4a);
-  border-top-color: var(--btn-primary-bg, #5c6bc0);
+  border-top-color: var(--btn-primary-bg, var(--color-brand-primary));
   border-radius: 50%;
   animation: px-spin 0.8s linear infinite;
 }

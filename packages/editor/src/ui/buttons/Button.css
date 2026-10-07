@@ -43,7 +43,7 @@
 
 .px-btn-link {
   background: transparent;
-  color: var(--btn-link-color, #5c6bc0);
+  color: var(--btn-link-color, var(--color-brand-primary));
   padding: 0;
 }
 

@@ -31,7 +31,7 @@
 }
 
 .px-steps-item-finish .px-steps-item-tail {
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-steps-item-icon {
@@ -53,14 +53,14 @@
 }
 
 .px-steps-item-process .px-steps-item-icon {
-  background: var(--btn-primary-bg, #5c6bc0);
-  border-color: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
+  border-color: var(--btn-primary-bg, var(--color-brand-primary));
   color: white;
 }
 
 .px-steps-item-finish .px-steps-item-icon {
-  background: var(--btn-primary-bg, #5c6bc0);
-  border-color: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
+  border-color: var(--btn-primary-bg, var(--color-brand-primary));
   color: white;
 }
 

@@ -39,7 +39,7 @@
 }
 
 .px-radio-input:checked + .px-radio-control {
-  border-color: var(--btn-primary-bg, #5c6bc0);
+  border-color: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-radio-input:checked + .px-radio-control::after {
@@ -50,11 +50,11 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-radio-input:focus + .px-radio-control {
-  box-shadow: 0 0 0 2px var(--input-focus-shadow, rgba(92, 107, 192, 0.2));
+  box-shadow: 0 0 0 2px var(--input-focus-shadow, var(--color-brand-primary-muted, rgba(236, 236, 241,  0.2));
 }
 
 .px-radio-label {

@@ -119,7 +119,7 @@
 }
 
 .property-row__reset:hover {
-  color: var(--color-primary, #ff6b9d);
+  color: var(--color-primary, var(--color-brand-accent));
 }
 
 .property-row__input {
@@ -140,7 +140,7 @@
 
 .property-input:focus {
   outline: none;
-  border-color: var(--color-primary, #ff6b9d);
+  border-color: var(--color-primary, var(--color-brand-accent));
 }
 
 .property-input:disabled {
@@ -184,8 +184,8 @@
 }
 
 .property-input--boolean input:checked + .property-checkbox {
-  background: var(--color-primary, #ff6b9d);
-  border-color: var(--color-primary, #ff6b9d);
+  background: var(--color-primary, var(--color-brand-accent));
+  border-color: var(--color-primary, var(--color-brand-accent));
 }
 
 .property-input--boolean input:checked + .property-checkbox::after {
@@ -196,7 +196,7 @@
 }
 
 .property-input--boolean input:focus-visible + .property-checkbox {
-  box-shadow: 0 0 0 2px var(--color-primary-subtle, rgba(255, 107, 157, 0.15));
+  box-shadow: 0 0 0 2px var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15));
 }
 
 /* Select input */
@@ -241,7 +241,7 @@
 
 .property-input--color-text:focus {
   outline: none;
-  border-color: var(--color-primary, #ff6b9d);
+  border-color: var(--color-primary, var(--color-brand-accent));
 }
 
 /* Slider input */
@@ -266,7 +266,7 @@
   appearance: none;
   width: 12px;
   height: 12px;
-  background: var(--color-primary, #ff6b9d);
+  background: var(--color-primary, var(--color-brand-accent));
   border-radius: 50%;
   cursor: pointer;
 }
@@ -310,5 +310,5 @@
 
 .property-input--vector input:focus {
   outline: none;
-  border-color: var(--color-primary, #ff6b9d);
+  border-color: var(--color-primary, var(--color-brand-accent));
 }

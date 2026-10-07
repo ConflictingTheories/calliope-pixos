@@ -31,7 +31,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
   border-radius: 3px;
 }
 

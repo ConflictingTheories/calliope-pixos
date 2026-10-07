@@ -16,13 +16,13 @@
 
 .px-progress-bar {
   height: 100%;
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
 .px-progress-active .px-progress-bar {
-  background: var(--btn-primary-bg, #5c6bc0);
+  background: var(--btn-primary-bg, var(--color-brand-primary));
 }
 
 .px-progress-success .px-progress-bar {
@@ -86,7 +86,7 @@
 }
 
 .px-progress-circle-bar {
-  stroke: var(--btn-primary-bg, #5c6bc0);
+  stroke: var(--btn-primary-bg, var(--color-brand-primary));
   stroke-linecap: round;
   transition: stroke-dashoffset 0.3s ease;
 }
