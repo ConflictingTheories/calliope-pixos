@@ -676,7 +676,30 @@ export default class World {
    * Draws each zone.
    */
   draw = () => {
-    for (let z in this.zoneDict) this.zoneDict[z].draw(this.engine);
+    const rm = this.engine.renderManager;
+    const culler = rm && rm.frustumCuller;
+
+    // Update camera based on mode (fixed/free/follow/scripted)
+    if (rm && rm.camera && typeof rm.camera.updateByMode === 'function') {
+      rm.camera.updateByMode();
+    }
+
+    // Update frustum from current camera matrices for culling
+    if (culler && rm.uProjMat && rm.camera && rm.camera.uViewMat) {
+      culler.update(rm.uProjMat, rm.camera.uViewMat);
+    }
+
+    for (let z in this.zoneDict) {
+      const zone = this.zoneDict[z];
+      if (!zone.loaded) continue;
+
+      // Frustum cull zones outside the camera view for performance
+      if (culler && typeof culler.isZoneVisible === 'function') {
+        if (!culler.isZoneVisible(zone)) continue;
+      }
+
+      zone.draw(this.engine);
+    }
   };
 
   /**
