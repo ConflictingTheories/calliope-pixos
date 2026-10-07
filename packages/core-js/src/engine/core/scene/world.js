@@ -17,6 +17,7 @@
  */
 
 import Zone from './zone.js';
+import { SceneLifecycle } from './lifecycle.js';
 import { debug } from '@Engine/utils/debug-logger.js';
 import ModeManager from '../mode/manager.js';
 import ActionQueue from '../queue/index.js';
@@ -91,6 +92,8 @@ export default class World {
     };
     /** @type {string|null} */
     this.currentZoneId = null;
+    /** @type {import('./lifecycle.js').SceneLifecycle} */
+    this.lifecycle = new SceneLifecycle(); // P4-04: canonical load/start/pause/unload + handle collection
   }
 
   addRemoteAvatar(clientId, avatarData) {

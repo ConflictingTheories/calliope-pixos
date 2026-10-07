@@ -30,6 +30,7 @@ import FrustumCuller from './FrustumCuller.js';
 import CameraEffects from './CameraEffects.js';
 import LODManager from './LODManager.js';
 import TextureAtlas from './TextureAtlas.js';
+import { RenderStats } from './stats.js';
 import EffectManager from './EffectManager.js';
 import TransitionManager from './TransitionManager.js';
 import ShaderManager from './ShaderManager.js';
@@ -127,6 +128,9 @@ export default class RenderManager {
         objectsDrawn: 0,
       };
 
+      /** @type {RenderStats} Render resource instrumentation (P4-05). */
+      this.stats = new RenderStats();
+
       // Camera
       /** @type {CameraManager} */
       this.cameraManager = new CameraManager(this);
@@ -186,6 +190,18 @@ export default class RenderManager {
   init = () => {
     /** @type {import('../index.js').SpritzGame} */
     const { spritz, gl } = this.engine;
+
+    // Context loss/recovery instrumentation (P4-05). GPU resources must be
+    // re-created after a restore; the counters make silent losses visible.
+    if (gl.canvas && typeof gl.canvas.addEventListener === 'function') {
+      gl.canvas.addEventListener('webglcontextlost', e => {
+        e.preventDefault();
+        this.stats.trackContextLost();
+      });
+      gl.canvas.addEventListener('webglcontextrestored', () => {
+        this.stats.trackContextRestored();
+      });
+    }
 
     // Configure GL
     gl.clearColor(0, 1.0, 0, 1.0);
@@ -260,6 +276,7 @@ export default class RenderManager {
 
     // Create color texture for picker (1x1 pixel RGBA)
     this.pickerTexture = gl.createTexture();
+    this.stats.trackTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.pickerTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -344,6 +361,7 @@ export default class RenderManager {
     // Generate shader program
     /** @type {WebGLProgram} */
     let shaderProgram = gl.createProgram();
+    this.stats.trackProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.bindAttribLocation(shaderProgram, 0, 'aVertexPosition');
@@ -514,6 +532,7 @@ export default class RenderManager {
     // Generate particle shader program
     /** @type {WebGLProgram} */
     let particleShaderProgram = gl.createProgram();
+    this.stats.trackProgram();
     gl.attachShader(particleShaderProgram, vertexShader);
     gl.attachShader(particleShaderProgram, fragmentShader);
     gl.bindAttribLocation(particleShaderProgram, 0, 'aVertexPosition');
@@ -704,7 +723,7 @@ export default class RenderManager {
   activateShaderEffectProgram = id => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
-    gl.useProgram(this.effectPrograms[id]);
+    gl.useProgram(this.getEffectProgram(id));
   };
 
   /**
@@ -731,6 +750,7 @@ export default class RenderManager {
     // Generate shader program
     /** @type {WebGLProgram} */
     let effectProgram = gl.createProgram();
+    this.stats.trackProgram();
     gl.attachShader(effectProgram, vertexShader);
     gl.attachShader(effectProgram, fragmentShader);
     gl.bindAttribLocation(effectProgram, 0, 'aVertexPosition');
@@ -831,6 +851,7 @@ export default class RenderManager {
   clearScreen = () => {
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
+    this.stats.trackClear();
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   };
 
@@ -945,10 +966,13 @@ export default class RenderManager {
     let { gl } = this.engine;
     /** @type {WebGLBuffer} */
     let buf = gl.createBuffer();
+    this.stats.trackBuffer();
     buf.itemSize = itemSize;
-    buf.numItems = contents.length / itemSize;
+    // Fast path: callers passing a Float32Array skip the per-call copy.
+    const data = contents instanceof Float32Array ? contents : new Float32Array(contents);
+    buf.numItems = data.length / itemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(contents), type);
+    gl.bufferData(gl.ARRAY_BUFFER, data, type);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return buf;
   };
@@ -963,7 +987,11 @@ export default class RenderManager {
     /** @type {WebGL2RenderingContext} */
     let { gl } = this.engine;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
+    gl.bufferSubData(
+      gl.ARRAY_BUFFER,
+      0,
+      contents instanceof Float32Array ? contents : new Float32Array(contents)
+    );
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   };
 
@@ -1077,5 +1105,37 @@ export default class RenderManager {
       this.debug.spritesDrawn = 0;
       this.debug.objectsDrawn = 0;
     }
+  };
+
+  /**
+   * Snapshot of render resource counters (P4-05). Safe to call every frame
+   * for the dev HUD; the returned object is a copy.
+   * @returns {object} stats snapshot including per-frame debug counters
+   */
+  getStats = () => ({
+    ...this.stats.snapshot(),
+    tilesDrawn: this.debug?.tilesDrawn ?? 0,
+    spritesDrawn: this.debug?.spritesDrawn ?? 0,
+    objectsDrawn: this.debug?.objectsDrawn ?? 0,
+  });
+
+  /**
+   * Resets per-frame counters. Call once per frame alongside resetDebugCounters.
+   * @returns {void}
+   */
+  resetFrameStats = () => {
+    this.stats.resetFrame();
+  };
+
+  /**
+   * Effect-program cache lookup with hit/miss instrumentation (P4-05).
+   * @param {string} id - program id
+   * @returns {WebGLProgram|undefined}
+   */
+  getEffectProgram = id => {
+    const program = this.effectPrograms[id];
+    if (program) this.stats.trackCacheHit();
+    else this.stats.trackCacheMiss();
+    return program;
   };
 }

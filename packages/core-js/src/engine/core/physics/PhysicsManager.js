@@ -153,10 +153,12 @@ export default class PhysicsManager {
     for (const other of candidates) {
       if (!other.getAABB) continue;
 
-      const layerA = body.collisionLayer || CollisionMask.Layers.DEFAULT;
-      const maskA = body.collisionMask || CollisionMask.Layers.ALL;
-      const layerB = other.collisionLayer || CollisionMask.Layers.DEFAULT;
-      const maskB = other.collisionMask || CollisionMask.Layers.ALL;
+      // Nullish defaults: an explicit 0 layer/mask is meaningful (collides
+      // with nothing), so ?? — not || — is the correct fallback (P4-02).
+      const layerA = body.collisionLayer ?? CollisionMask.Layers.DEFAULT;
+      const maskA = body.collisionMask ?? CollisionMask.Layers.ALL;
+      const layerB = other.collisionLayer ?? CollisionMask.Layers.DEFAULT;
+      const maskB = other.collisionMask ?? CollisionMask.Layers.ALL;
 
       // Check collision mask
       if (!CollisionMask.shouldCollide(layerA, maskA, layerB, maskB)) {
