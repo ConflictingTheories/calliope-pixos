@@ -96,7 +96,7 @@ return function(time, params)
             if pixos.input_pressed('up') then cursor.y = math.max(1, cursor.y - 1) end
             if pixos.input_pressed('down') then cursor.y = math.min(6, cursor.y + 1) end
             battle.cursor = cursor
-            pixos.move_cursor(cursor.x, cursor.y)
+            pixos.highlight_tiles({{x=cursor.x, y=cursor.y}}, "cursor")
 
             if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
                 -- Check if cursor is in move range
@@ -139,7 +139,7 @@ return function(time, params)
 
                 if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
                     target.hp = target.hp - unit.atk
-                    pixos.show_damage(target.id, unit.atk)
+                    pixos.highlight_units({target.id}, "damaged")
                     if target.hp <= 0 then target.sprite.pos[3] = -999 end
                     battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
                     battle.phase = 'select'
@@ -167,7 +167,7 @@ return function(time, params)
         if best then
             if bd <= unit.range then
                 best.hp = best.hp - unit.atk
-                pixos.show_damage(best.id, unit.atk)
+                pixos.highlight_units({best.id}, "damaged")
                 if best.hp <= 0 then best.sprite.pos[3] = -999 end
             else
                 local dx, dy = best.x - unit.x, best.y - unit.y

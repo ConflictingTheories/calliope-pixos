@@ -1075,34 +1075,6 @@ export default class PixoScriptLibrary {
           console.warn('clear_highlight failed', e);
         }
       },
-      show_damage: (targetId, amount) => {
-        // NOTE: Game-specific. Battle demos should implement their own
-        // damage display using highlight_units + custom UI.
-        // Kept here for backwards compat with existing demos.
-        try {
-          const world = engine.world || engine.spritz?.world;
-          if (!world) return;
-          const zone = world.getZoneById(world.currentZoneId);
-          if (!zone) return;
-          const target = zone.spriteList?.find(s => s.id === targetId);
-          if (target) {
-            target._damageFlash = 10;
-          }
-        } catch (e) {
-          console.warn('show_damage failed', e);
-        }
-      },
-      move_cursor: (x, y) => {
-        // NOTE: Game-specific. Tactical demos should manage their own cursor.
-        // Kept here for backwards compat.
-        try {
-          const world = engine.world || engine.spritz?.world;
-          if (!world) return;
-          world._battleCursor = { x, y };
-        } catch (e) {
-          console.warn('move_cursor failed', e);
-        }
-      },
       // Demo-required APIs
       load_map: async mapId => {
         try {
