@@ -168,3 +168,98 @@ Rules:
 - Scripts inside an embedded bundle execute under the same script execution
   boundary and trust policy as the host package (§5) — embeds never widen
   the host's granted capabilities.
+
+---
+
+## §9 Portals (v1.1.0)
+
+Portals link doorways between maps. Each portal specifies where it leads and where you arrive.
+
+```json
+{
+  "portals": [
+    {
+      "id": "village-north-door",
+      "x": 5,
+      "y": 0,
+      "targetMap": "dungeon-entrance",
+      "targetPortal": "dungeon-south-door"
+    }
+  ]
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | yes | Unique within the map. |
+| `x`, `y` | yes | Tile position. |
+| `targetMap` | yes | Map ID to travel to. |
+| `targetPortal` | no | Portal ID to arrive at. If omitted, uses map's `defaultSpawn`. |
+
+Rules:
+- Portal IDs share the map's ID-uniqueness namespace.
+- If `targetPortal` is specified but not found, logs warning and uses `defaultSpawn`.
+- Avatar is placed 1 tile away from target portal, facing it (prevents instant re-trigger).
+
+## §10 Behaviors (v1.1.0)
+
+Behaviors attach declarative or scripted logic to scene objects.
+
+```json
+{
+  "id": "elder",
+  "type": "characters/female",
+  "pos": [5, 5, 0],
+  "behaviors": {
+    "wander": { "radius": 3, "speed": 1 },
+    "dialog": { "greeting": "Hello!", "options": ["Hi", "Bye"] }
+  },
+  "scripts": {
+    "onInteract": "elder_talk.pxs",
+    "onEnter": "trap.pxs"
+  }
+}
+```
+
+### Built-in behaviors
+
+| Behavior | Params | Description |
+|----------|--------|-------------|
+| `wander` | `radius`, `speed` | NPC moves randomly within radius. |
+| `dialog` | `greeting`, `options` | Talk interaction with choices. |
+| `chest` | `items[]`, `locked` | Openable container. |
+| `trigger` | `once`, `radius` | Fires on player enter. |
+| `door` | `portalId` | Open/close, links to portal. |
+
+### Script hooks
+
+| Hook | When |
+|------|------|
+| `onInteract` | Player presses interact key near object. |
+| `onEnter` | Player enters object's tile/area. |
+| `onExit` | Player leaves object's tile/area. |
+| `onUpdate` | Every frame. |
+
+Declarative behaviors run before scripts. Both can coexist.
+
+## §11 GLTF Models (v1.1.0)
+
+Maps can reference GLTF 2.0 models (`.gltf` or `.glb`) in `models/`.
+
+```json
+{
+  "id": "statue",
+  "type": "models/ancient-statue",
+  "pos": [10, 10, 0]
+}
+```
+
+The loader checks for `models/{type}.glb`, then `models/{type}.gltf`, then falls back to `.obj`.
+
+Supported:
+- Meshes: POSITION, NORMAL, TEXCOORD_0, indices
+- Materials: PBR metallic-roughness (baseColor, metallic, roughness)
+- Skins: joints, weights, inverse bind matrices
+- Animations: translation, rotation, scale keyframes
+
+Not supported: morph targets, extensions.

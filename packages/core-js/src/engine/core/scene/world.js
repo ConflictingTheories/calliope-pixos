@@ -225,12 +225,17 @@ export default class World {
       // Register portals, place avatar, attach behaviors
       try {
         const zoneJson = z.zoneJson || {};
+        // Portals
         if (zoneJson.portals) {
           this.portalManager.registerPortals(zoneId, zoneJson.portals);
         }
+        // Avatar: place if not already placed (via portal travel or default)
         if (this.avatarManager.avatar && !z.spriteDict['avatar']) {
+          // Avatar exists but not in this zone — place at default
+          // (Portal travel handles its own placement)
           this.avatarManager.placeInMap(zoneId);
         }
+        // Behaviors: attach to all sprites/objects
         const allObjects = [...(z.spriteList || []), ...(z.objectList || [])];
         const idIssues = this.behaviorManager.validateIds(allObjects);
         if (idIssues.length > 0) {
@@ -395,6 +400,120 @@ export default class World {
   tick = time => {
     for (let z in this.zoneDict) this.zoneDict[z]?.tick(time, this.isPaused);
     this.afterTickActions.run(time);
+    // Process behavior hooks (interaction, triggers, updates)
+    this.processBehaviorHooks(time);
+  };
+
+  /**
+   * Process behavior hooks for all objects in active zones.
+   * - onUpdate: every frame for objects with behaviors
+   * - onInteract: when player presses interact near object (handled via input)
+   * - onEnter/onExit: when avatar moves (tracked via position)
+   */
+  processBehaviorHooks = time => {
+    const avatar = this.avatarManager?.avatar;
+    if (!avatar) return;
+
+    const zoneId = avatar.currentMap;
+    const zone = this.zoneDict[zoneId];
+    if (!zone) return;
+
+    const ax = Math.round(avatar.pos[0]);
+    const ay = Math.round(avatar.pos[1]);
+
+    // Track avatar position for enter/exit detection
+    const prevPos = this._lastAvatarPos || { x: ax, y: ay };
+    const moved = prevPos.x !== ax || prevPos.y !== ay;
+    this._lastAvatarPos = { x: ax, y: ay };
+
+    const ctx = {
+      world: this,
+      avatar,
+      showMessage: msg => console.log('[Behavior]', msg),
+      showDialog: opts => console.log('[Behavior Dialog]', opts),
+      giveItem: item => {
+        if (avatar.inventory) avatar.inventory.push(item);
+      },
+      getPortal: id => this.portalManager.findPortal(zoneId, id),
+      travelViaPortal: portal => this.avatarManager.travelViaPortal(portal),
+      runScript: async (file, params) => {
+        console.log(`[Behavior] Would run script: ${file}`);
+      },
+    };
+
+    for (const obj of zone.spriteList || []) {
+      if (!obj.behaviors || Object.keys(obj.behaviors).length === 0) continue;
+      if (!obj.scripts || Object.keys(obj.scripts).length === 0) {
+        // Still process declarative behaviors
+      }
+
+      const ox = Math.round(obj.pos?.[0] || obj.pos?.x || 0);
+      const oy = Math.round(obj.pos?.[1] || obj.pos?.y || 0);
+
+      // onUpdate: every frame
+      this.behaviorManager.triggerHook(obj, 'onUpdate', ctx).catch(e => {
+        console.warn(`Behavior onUpdate failed for ${obj.id}:`, e);
+      });
+
+      // onEnter/onExit: if avatar moved
+      if (moved) {
+        const dist = Math.abs(ax - ox) + Math.abs(ay - oy);
+        const wasNear = Math.abs(prevPos.x - ox) + Math.abs(prevPos.y - oy) <= 1;
+        const isNear = dist <= 1;
+
+        if (isNear && !wasNear) {
+          this.behaviorManager.triggerHook(obj, 'onEnter', ctx).catch(e => {
+            console.warn(`Behavior onEnter failed for ${obj.id}:`, e);
+          });
+        } else if (!isNear && wasNear) {
+          this.behaviorManager.triggerHook(obj, 'onExit', ctx).catch(e => {
+            console.warn(`Behavior onExit failed for ${obj.id}:`, e);
+          });
+        }
+      }
+    }
+
+    // Check for portal triggers
+    const portal = this.portalManager.getPortalAt(zoneId, ax, ay);
+    if (portal && moved) {
+      // Avoid re-triggering the portal we just arrived from
+      const lastPortal = this._lastPortal;
+      if (!lastPortal || lastPortal.id !== portal.id) {
+        this._lastPortal = portal;
+        this.avatarManager.travelViaPortal(portal).catch(e => {
+          console.warn('Portal travel failed:', e);
+        });
+      }
+    } else if (!portal) {
+      this._lastPortal = null;
+    }
+
+    // Check for interact key (E) — trigger onInteract on nearby objects
+    try {
+      const gamepad = this.engine?.gamepad;
+      if (gamepad && gamepad.keyPressed('interact')) {
+        // Find nearest interactable object within 2 tiles
+        let nearest = null;
+        let nearestDist = 999;
+        for (const obj of zone.spriteList || []) {
+          if (!obj.behaviors && !obj.scripts) continue;
+          const ox = Math.round(obj.pos?.[0] || obj.pos?.x || 0);
+          const oy = Math.round(obj.pos?.[1] || obj.pos?.y || 0);
+          const dist = Math.abs(ax - ox) + Math.abs(ay - oy);
+          if (dist <= 2 && dist < nearestDist) {
+            nearest = obj;
+            nearestDist = dist;
+          }
+        }
+        if (nearest) {
+          this.behaviorManager.triggerHook(nearest, 'onInteract', ctx).catch(e => {
+            console.warn(`Behavior onInteract failed for ${nearest.id}:`, e);
+          });
+        }
+      }
+    } catch (e) {
+      // Input not available, skip
+    }
   };
 
   /**
