@@ -180,6 +180,7 @@ set(CORE_SOURCES
     src/scene/world.c
     src/scene/portal.c
     src/scene/behavior.c
+    src/scene/mode_manager.c
     src/scene/avatar.c
     src/vendor/cJSON.c
     src/vendor/miniz.c
