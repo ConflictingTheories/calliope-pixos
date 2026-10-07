@@ -19,7 +19,7 @@ const BLANK_MENU = {
 
 const BLANK_ITEM = { id: '', label: '', action: '' };
 
-export default function MenuEditor({ menu: initialMenu, onSave }) {
+export default function MenuEditor({ menu: initialMenu, onSave, onClose }) {
   const [menu, setMenu] = useState(initialMenu || BLANK_MENU);
   const [selectedItem, setSelectedItem] = useState(0);
 
@@ -54,6 +54,9 @@ export default function MenuEditor({ menu: initialMenu, onSave }) {
   };
 
   return (
+    <div className="ps-modal-overlay" onClick={onClose}>
+      <div className="ps-modal" onClick={e => e.stopPropagation()}>
+        <button className="ps-modal-close" onClick={onClose} aria-label="Close">×</button>
     <div className="menu-editor">
       <div className="menu-editor-header">
         <h2>Menu Editor</h2>
@@ -177,6 +180,8 @@ export default function MenuEditor({ menu: initialMenu, onSave }) {
             ))}
           </div>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   );

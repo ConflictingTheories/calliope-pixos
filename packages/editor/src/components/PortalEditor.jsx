@@ -37,6 +37,7 @@ export default function PortalEditor({
   const [newId, setNewId] = useState('');
   const [newX, setNewX] = useState(0);
   const [newY, setNewY] = useState(0);
+  const [newZ, setNewZ] = useState(0);
   const [newTargetMap, setNewTargetMap] = useState('');
   const [newTargetPortal, setNewTargetPortal] = useState('');
 
@@ -46,6 +47,7 @@ export default function PortalEditor({
       id: newId.trim(),
       x: parseInt(newX),
       y: parseInt(newY),
+      z: parseInt(newZ),
       targetMap: newTargetMap || null,
       targetPortal: newTargetPortal || null,
     });
@@ -87,7 +89,7 @@ export default function PortalEditor({
                   onClick={() => setSelectedId(portal.id)}
                 >
                   <span className="ps-portal-name">{portal.id}</span>
-                  <span className="ps-portal-pos">({portal.x}, {portal.y})</span>
+                  <span className="ps-portal-pos">({portal.x}, {portal.y}, {portal.z || 0})</span>
                   <span className={`ps-portal-link ${v.ok ? 'ok' : 'broken'}`}>
                     {v.msg}
                   </span>
@@ -111,6 +113,7 @@ export default function PortalEditor({
             <div className="ps-pos-inputs">
               <label>X <input type="number" value={newX} onChange={e => setNewX(e.target.value)} /></label>
               <label>Y <input type="number" value={newY} onChange={e => setNewY(e.target.value)} /></label>
+              <label>Z <input type="number" value={newZ} onChange={e => setNewZ(e.target.value)} /></label>
             </div>
             <div className="ps-field">
               <label className="ps-field-label">Target Map</label>

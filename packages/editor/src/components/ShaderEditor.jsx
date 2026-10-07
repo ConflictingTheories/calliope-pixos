@@ -22,13 +22,16 @@ import { useState, useEffect, useRef } from 'react';
  * - Save as preset
  */
 
-const DEFAULT_VS = `attribute vec2 aPosition;
+const DEFAULT_VS = `attribute vec3 aPosition;
 attribute vec2 aTexCoord;
 varying vec2 vTexCoord;
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
+uniform mat4 uProjMat;
 
 void main() {
   vTexCoord = aTexCoord;
-  gl_Position = vec4(aPosition, 0.0, 1.0);
+  gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPosition, 1.0);
 }`;
 
 const DEFAULT_FS = `precision mediump float;
