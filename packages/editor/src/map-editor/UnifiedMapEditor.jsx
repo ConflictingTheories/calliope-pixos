@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Button, Input, InputNumber, SelectPicker } from '../ui';
 import { MapToolbar } from './panels/MapToolbar.jsx';
 import { MapModeTabs } from './panels/MapModeTabs.jsx';
 import { MapCanvas } from './panels/MapCanvas.jsx';
@@ -1457,8 +1458,7 @@ function UnifiedMapEditor({
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
                   ID:
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={spriteIdInput}
                   onChange={e => setSpriteIdInput(e.target.value)}
                   placeholder="e.g., avatar, chest1"
@@ -1480,30 +1480,21 @@ function UnifiedMapEditor({
                 </label>
                 {availableSprites.length > 0 ||
                 (editorMode === 'objects' && availableObjects.length > 0) ? (
-                  <select
+                  <SelectPicker
+                    data={[
+                      { value: '', label: '-- Select Type --' },
+                      ...(editorMode === 'sprites' ? availableSprites : availableObjects).map(
+                        type => ({ value: type, label: type })
+                      ),
+                    ]}
                     value={spriteTypeInput}
-                    onChange={e => setSpriteTypeInput(e.target.value)}
-                    style={{
-                      width: '100%',
-                      background: '#3c3c3c',
-                      color: '#d4d4d4',
-                      border: '1px solid #3e3e42',
-                      padding: '6px 8px',
-                      borderRadius: '3px',
-                      fontSize: '12px',
-                    }}
-                  >
-                    <option value="">-- Select Type --</option>
-                    {(editorMode === 'sprites' ? availableSprites : availableObjects).map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={v => setSpriteTypeInput(v)}
+                    cleanable={false}
+                    block
+                  />
                 ) : (
                   <>
-                    <input
-                      type="text"
+                    <Input
                       value={spriteTypeInput}
                       onChange={e => setSpriteTypeInput(e.target.value)}
                       placeholder="e.g., characters/male, furniture/chest"
@@ -1529,24 +1520,18 @@ function UnifiedMapEditor({
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
                   Facing:
                 </label>
-                <select
+                <SelectPicker
+                  data={[
+                    { value: 'Down', label: 'Down' },
+                    { value: 'Up', label: 'Up' },
+                    { value: 'Left', label: 'Left' },
+                    { value: 'Right', label: 'Right' },
+                  ]}
                   value={spriteFacing}
-                  onChange={e => setSpriteFacing(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '12px',
-                  }}
-                >
-                  <option value="Down">Down</option>
-                  <option value="Up">Up</option>
-                  <option value="Left">Left</option>
-                  <option value="Right">Right</option>
-                </select>
+                  onChange={v => setSpriteFacing(v)}
+                  cleanable={false}
+                  block
+                />
               </div>
 
               <div
@@ -1571,7 +1556,10 @@ function UnifiedMapEditor({
                       <div style={{ color: '#888' }}>Type: {item.type}</div>
                       <div style={{ color: '#888' }}>Pos: [{item.pos.join(', ')}]</div>
                       <div style={{ color: '#888' }}>Facing: {item.facing}</div>
-                      <button
+                      <Button
+                        size="sm"
+                        appearance="default"
+                        color="red"
                         onClick={() =>
                           editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)
                         }
@@ -1587,7 +1575,7 @@ function UnifiedMapEditor({
                         }}
                       >
                         🗑️ Remove
-                      </button>
+                      </Button>
                     </div>
                   ))}
                   {(editorMode === 'sprites' ? sprites : objects).length === 0 && (
@@ -1646,30 +1634,19 @@ function UnifiedMapEditor({
                   Sprite Type:
                 </label>
                 {availableSprites.length > 0 ? (
-                  <select
+                  <SelectPicker
+                    data={[
+                      { value: '', label: '-- Select Sprite Type --' },
+                      ...availableSprites.map(type => ({ value: type, label: type })),
+                    ]}
                     value={spriteTypeInput}
-                    onChange={e => setSpriteTypeInput(e.target.value)}
-                    style={{
-                      width: '100%',
-                      background: '#3c3c3c',
-                      color: '#d4d4d4',
-                      border: '1px solid #3e3e42',
-                      padding: '6px 8px',
-                      borderRadius: '3px',
-                      fontSize: '12px',
-                    }}
-                  >
-                    <option value="">-- Select Sprite Type --</option>
-                    {availableSprites.map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={v => setSpriteTypeInput(v)}
+                    cleanable={false}
+                    block
+                  />
                 ) : (
                   <>
-                    <input
-                      type="text"
+                    <Input
                       value={spriteTypeInput}
                       onChange={e => setSpriteTypeInput(e.target.value)}
                       placeholder="e.g., effects/spurt, effects/fire"
@@ -1711,7 +1688,10 @@ function UnifiedMapEditor({
                       <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Tile #{idx + 1}</div>
                       <div style={{ color: '#888' }}>Type: {tile.type}</div>
                       <div style={{ color: '#888' }}>Pos: [{tile.pos.join(', ')}]</div>
-                      <button
+                      <Button
+                        size="sm"
+                        appearance="default"
+                        color="red"
                         onClick={() => removeAnimatedTile(idx)}
                         style={{
                           marginTop: '5px',
@@ -1725,7 +1705,7 @@ function UnifiedMapEditor({
                         }}
                       >
                         🗑️ Remove
-                      </button>
+                      </Button>
                     </div>
                   ))}
                   {animatedTiles.length === 0 && (
@@ -1804,8 +1784,7 @@ function UnifiedMapEditor({
                     <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
                       Event / Script:
                     </label>
-                    <input
-                      type="text"
+                    <Input
                       value={attributes[selectedCell.y]?.[selectedCell.x]?.event || ''}
                       onChange={e => {
                         const val = e.target.value;
@@ -1836,7 +1815,10 @@ function UnifiedMapEditor({
                     </div>
                   </div>
 
-                  <button
+                  <Button
+                    block
+                    size="sm"
+                    appearance="default"
                     onClick={() => setSelectedCell(null)}
                     style={{
                       width: '100%',
@@ -1850,7 +1832,7 @@ function UnifiedMapEditor({
                     }}
                   >
                     Done
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -1883,8 +1865,7 @@ function UnifiedMapEditor({
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
                   Select Trigger (tile click):
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={triggers.selectTrigger}
                   onChange={e => setTriggers({ ...triggers, selectTrigger: e.target.value })}
                   placeholder="e.g., tile/select_test"
@@ -1915,7 +1896,9 @@ function UnifiedMapEditor({
                   }}
                 >
                   <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Scripts (on load):</div>
-                  <button
+                  <Button
+                    size="sm"
+                    appearance="primary"
                     onClick={() => {
                       const newScript = { id: `script-${Date.now()}`, trigger: '' };
                       setTriggers({ ...triggers, scripts: [...triggers.scripts, newScript] });
@@ -1931,7 +1914,7 @@ function UnifiedMapEditor({
                     }}
                   >
                     + Add
-                  </button>
+                  </Button>
                 </div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {triggers.scripts.map((script, idx) => (
@@ -1946,8 +1929,7 @@ function UnifiedMapEditor({
                     >
                       <div style={{ marginBottom: '5px' }}>
                         <label style={{ fontSize: '10px', color: '#888' }}>ID:</label>
-                        <input
-                          type="text"
+                        <Input
                           value={script.id}
                           onChange={e => {
                             const newScripts = [...triggers.scripts];
@@ -1968,8 +1950,7 @@ function UnifiedMapEditor({
                       </div>
                       <div style={{ marginBottom: '5px' }}>
                         <label style={{ fontSize: '10px', color: '#888' }}>Trigger:</label>
-                        <input
-                          type="text"
+                        <Input
                           value={script.trigger}
                           onChange={e => {
                             const newScripts = [...triggers.scripts];
@@ -1989,7 +1970,10 @@ function UnifiedMapEditor({
                           }}
                         />
                       </div>
-                      <button
+                      <Button
+                        size="sm"
+                        appearance="default"
+                        color="red"
                         onClick={() => {
                           const newScripts = triggers.scripts.filter((_, i) => i !== idx);
                           setTriggers({ ...triggers, scripts: newScripts });
@@ -2005,7 +1989,7 @@ function UnifiedMapEditor({
                         }}
                       >
                         🗑️ Remove
-                      </button>
+                      </Button>
                     </div>
                   ))}
                   {triggers.scripts.length === 0 && (
@@ -2041,7 +2025,10 @@ function UnifiedMapEditor({
             }}
           >
             <span>🎨 Tiles ({Object.keys(tiles || {}).length})</span>
-            <button
+            <Button
+              size="sm"
+              appearance="default"
+              active={showTileEditor}
               onClick={() => setShowTileEditor(!showTileEditor)}
               style={{
                 background: showTileEditor ? '#0e639c' : '#505050',
@@ -2055,7 +2042,7 @@ function UnifiedMapEditor({
               title="Toggle inline tile editor"
             >
               {showTileEditor ? '✕ Close' : '✏️ Edit'}
-            </button>
+            </Button>
           </div>
           <div style={{ padding: '10px' }}>
             {/* Inline Tile Editor Panel */}
@@ -2080,7 +2067,9 @@ function UnifiedMapEditor({
                   }}
                 >
                   <span>Editing: {editingTileName}</span>
-                  <button
+                  <Button
+                    size="sm"
+                    appearance="ghost"
                     onClick={() => setEditingTileName(null)}
                     style={{
                       background: 'transparent',
@@ -2091,7 +2080,7 @@ function UnifiedMapEditor({
                     }}
                   >
                     ✕
-                  </button>
+                  </Button>
                 </div>
                 <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px' }}>
                   Layers: {Math.floor(tiles[editingTileName].length / 3)}
@@ -2252,7 +2241,9 @@ function UnifiedMapEditor({
                   <span style={{ fontWeight: 'bold', color: '#a78bfa' }}>
                     🔍 {editingGeometryName}
                   </span>
-                  <button
+                  <Button
+                    size="sm"
+                    appearance="ghost"
                     onClick={() => setEditingGeometryName(null)}
                     style={{
                       background: '#333',
@@ -2264,7 +2255,7 @@ function UnifiedMapEditor({
                     }}
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
                 <div style={{ fontSize: '11px', color: '#aaa' }}>
                   Vertices: {geometry[editingGeometryName]?.vertices?.length || 0} | Surfaces:{' '}
@@ -2457,21 +2448,8 @@ function UnifiedMapEditor({
               >
                 Map Width:
               </label>
-              <input
-                type="number"
-                value={newMapWidth}
-                onChange={e => setNewMapWidth(parseInt(e.target.value) || 1)}
-                min="1"
-                style={{
-                  background: '#3c3c3c',
-                  color: '#d4d4d4',
-                  border: '1px solid #3e3e42',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  width: '100%',
-                }}
-              />
+              <InputNumber min={1}
+                />
             </div>
             <div style={{ marginBottom: '10px' }}>
               <label
@@ -2484,24 +2462,13 @@ function UnifiedMapEditor({
               >
                 Map Height:
               </label>
-              <input
-                type="number"
-                value={newMapHeight}
-                onChange={e => setNewMapHeight(parseInt(e.target.value) || 1)}
-                min="1"
-                style={{
-                  background: '#3c3c3c',
-                  color: '#d4d4d4',
-                  border: '1px solid #3e3e42',
-                  padding: '6px 8px',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  width: '100%',
-                }}
-              />
+              <InputNumber min={1}
+                />
             </div>
             <div style={{ display: 'flex', gap: '5px' }}>
-              <button
+              <Button
+                size="sm"
+                appearance="primary"
                 onClick={() => resizeMap(newMapWidth, newMapHeight)}
                 style={{
                   flex: 1,
@@ -2517,8 +2484,11 @@ function UnifiedMapEditor({
                 onMouseOut={e => (e.target.style.background = '#0e639c')}
               >
                 Resize
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                appearance="default"
+                color="red"
                 onClick={() => {
                   if (confirm('Clear entire map?')) {
                     clearMap();
@@ -2538,7 +2508,7 @@ function UnifiedMapEditor({
                 onMouseOut={e => (e.target.style.background = '#3e3e42')}
               >
                 Clear
-              </button>
+              </Button>
             </div>
           </div>
         </div>
