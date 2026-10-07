@@ -16,6 +16,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
 import { InputNumber, Button, Message, SelectPicker, Input } from '../ui';
+import { keymap } from '../shell/commands/keymap.js';
 
 // Isometric tile preview with Z-up coordinate system (matching engine)
 // X: East/West, Y: North/South, Z: Up/Down
@@ -271,6 +272,8 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const [tiles, setTiles] = useState({});
   const [tileNames, setTileNames] = useState([]);
   const [selectedTileName, setSelectedTileName] = useState(null);
+  const [selectedTileNames, setSelectedTileNames] = useState([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(-1);
   const [geometryNames, setGeometryNames] = useState([]);
   const [geometryData, setGeometryData] = useState(null);
   const [error, setError] = useState(null);
@@ -278,6 +281,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const [renamingTile, setRenamingTile] = useState(null);
   const [renameValue, setRenameValue] = useState('');
   const [searchFilter, setSearchFilter] = useState('');
+  const [showJson, setShowJson] = useState(false);
+  const [jsonText, setJsonText] = useState('');
+  const [jsonError, setJsonError] = useState(null);
 
   // Parse incoming tile content
   useEffect(() => {
@@ -291,6 +297,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
           setTileNames(names);
           if (names.length > 0 && !selectedTileName) {
             setSelectedTileName(names[0]);
+            setSelectedTileNames([names[0]]);
           }
         }
         setError(null);
@@ -401,9 +408,72 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         const remaining = Object.keys(newTiles);
         setSelectedTileName(remaining.length > 0 ? remaining[0] : null);
       }
+      setSelectedTileNames(prev => prev.filter(n => n !== name));
     },
     [tiles, selectedTileName]
   );
+
+  // Universal selection: click = single, ctrl/cmd+click = toggle, shift+click = range
+  const handleTileClick = useCallback(
+    (name, index, event) => {
+      const isToggle = event.ctrlKey || event.metaKey;
+      const isRange = event.shiftKey;
+      if (isRange && lastSelectedIndex >= 0) {
+        const start = Math.min(lastSelectedIndex, index);
+        const end = Math.max(lastSelectedIndex, index);
+        const range = tileNames.slice(start, end + 1);
+        setSelectedTileNames(range);
+        setSelectedTileName(range[0] || null);
+      } else if (isToggle) {
+        setSelectedTileNames(prev => {
+          const next = prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name];
+          setSelectedTileName(next[0] || null);
+          return next;
+        });
+        setLastSelectedIndex(index);
+      } else {
+        setSelectedTileNames([name]);
+        setSelectedTileName(name);
+        setLastSelectedIndex(index);
+      }
+    },
+    [tileNames, lastSelectedIndex]
+  );
+
+  // Delete all selected tiles
+  const deleteSelected = useCallback(() => {
+    if (selectedTileNames.length === 0) return;
+    const newTiles = { ...tiles };
+    selectedTileNames.forEach(n => delete newTiles[n]);
+    setTiles(newTiles);
+    const remaining = tileNames.filter(n => !selectedTileNames.includes(n));
+    setTileNames(remaining);
+    setSelectedTileName(remaining[0] || null);
+    setSelectedTileNames(remaining[0] ? [remaining[0]] : []);
+  }, [tiles, tileNames, selectedTileNames]);
+
+  // Register keyboard shortcuts with the central keymap
+  useEffect(() => {
+    const offDelete = keymap.register('tile.delete', 'Delete', () => {
+      deleteSelected();
+      return true;
+    }, {
+      when: e => {
+        const t = e.target;
+        return !(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable);
+      }
+    });
+    const offBackspace = keymap.register('tile.delete2', 'Backspace', () => {
+      deleteSelected();
+      return true;
+    }, {
+      when: e => {
+        const t = e.target;
+        return !(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable);
+      }
+    });
+    return () => { offDelete(); offBackspace(); };
+  }, [deleteSelected]);
 
   // Rename a tile
   const renameTile = useCallback(
@@ -537,19 +607,20 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             .map(name => {
               const tileArr = tiles[name];
               const compCount = parseTileComponents(tileArr || []).length;
+              const fullIndex = tileNames.indexOf(name);
+              const isSelected = selectedTileNames.includes(name);
 
               return (
                 <div
                   key={name}
-                  onClick={() => setSelectedTileName(name)}
+                  onClick={e => handleTileClick(name, fullIndex, e)}
                   style={{
                     padding: '10px',
                     marginBottom: '4px',
-                    background:
-                      selectedTileName === name
-                        ? 'rgba(125,211,252,0.2)'
-                        : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${selectedTileName === name ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
+                    background: isSelected
+                      ? 'rgba(125,211,252,0.2)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isSelected ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
                     borderRadius: '6px',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
@@ -695,6 +766,32 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>
                   {selectedTileName}
+                  {selectedTileNames.length > 1 && (
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginLeft: '8px' }}>
+                      +{selectedTileNames.length - 1} more
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (!showJson) {
+                        setJsonText(JSON.stringify({ [selectedTileName]: tiles[selectedTileName] }, null, 2));
+                        setJsonError(null);
+                      }
+                      setShowJson(!showJson);
+                    }}
+                    style={{
+                      marginLeft: '12px',
+                      fontSize: '11px',
+                      padding: '4px 8px',
+                      background: showJson ? 'rgba(125,211,252,0.2)' : 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '4px',
+                      color: '#fff',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {showJson ? 'Visual' : 'JSON'}
+                  </button>
                 </h4>
                 <div
                   style={{
@@ -724,6 +821,73 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
             {/* Layers section */}
             <div style={{ flex: 1, overflow: 'auto', padding: '16px', minHeight: 0 }}>
+              {showJson ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
+                  <textarea
+                    value={jsonText}
+                    onChange={e => {
+                      setJsonText(e.target.value);
+                      try {
+                        JSON.parse(e.target.value);
+                        setJsonError(null);
+                      } catch (err) {
+                        setJsonError('Invalid JSON: ' + err.message);
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      minHeight: '300px',
+                      background: 'rgba(0,0,0,0.3)',
+                      color: '#e0e0e0',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      padding: '12px',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      resize: 'vertical',
+                    }}
+                    spellCheck={false}
+                  />
+                  {jsonError && (
+                    <div style={{ color: '#f87171', fontSize: '12px' }}>{jsonError}</div>
+                  )}
+                  <button
+                    onClick={() => {
+                      try {
+                        const obj = JSON.parse(jsonText);
+                        const names = Object.keys(obj);
+                        if (names.length === 0) throw new Error('Empty object');
+                        const newName = names[0];
+                        const newTiles = { ...tiles, [newName]: obj[newName] };
+                        // If renamed, remove old
+                        if (newName !== selectedTileName) {
+                          delete newTiles[selectedTileName];
+                          setTileNames(prev => prev.map(n => n === selectedTileName ? newName : n));
+                          setSelectedTileName(newName);
+                          setSelectedTileNames([newName]);
+                        }
+                        setTiles(newTiles);
+                        setJsonError(null);
+                        setShowJson(false);
+                      } catch (err) {
+                        setJsonError('Cannot apply: ' + err.message);
+                      }
+                    }}
+                    disabled={!!jsonError}
+                    style={{
+                      padding: '8px 16px',
+                      background: jsonError ? 'rgba(255,255,255,0.05)' : 'rgba(125,211,252,0.2)',
+                      border: '1px solid rgba(125,211,252,0.3)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      cursor: jsonError ? 'not-allowed' : 'pointer',
+                      opacity: jsonError ? 0.5 : 1,
+                    }}
+                  >
+                    Apply JSON
+                  </button>
+                </div>
+              ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {components.map((comp, compIdx) => (
                   <div
@@ -908,6 +1072,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                   </div>
                 )}
               </div>
+              )}
             </div>
           </>
         ) : (
