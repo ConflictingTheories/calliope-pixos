@@ -306,10 +306,13 @@ export default class PixoScriptLibrary {
       },
       run_transition: (effect = 'fade', direction = 'out', duration = 500) => {
         return () => {
-          new Promise(resolve => {
+          return new Promise(resolve => {
             const rm = engine.renderManager;
-            if (!rm) resolve();
-            return rm.startTransition({ effect, direction, duration }).then(() => resolve());
+            if (!rm) {
+              resolve();
+              return;
+            }
+            rm.startTransition({ effect, direction, duration }).then(() => resolve());
           });
         };
       },
@@ -1177,6 +1180,10 @@ export default class PixoScriptLibrary {
         return new Promise(resolve => {
           try {
             const world = engine.world || engine.spritz?.world;
+            // Expose world globally for dialog UI polling
+            if (typeof window !== 'undefined' && world) {
+              window.__pixosWorld = world;
+            }
             if (!world) {
               console.log(`[Choice] ${prompt}`, options);
               resolve(0);
