@@ -1075,34 +1075,6 @@ export default class PixoScriptLibrary {
           console.warn('clear_highlight failed', e);
         }
       },
-      show_damage: (targetId, amount) => {
-        // NOTE: Game-specific. Battle demos should implement their own
-        // damage display using highlight_units + custom UI.
-        // Kept here for backwards compat with existing demos.
-        try {
-          const world = engine.world || engine.spritz?.world;
-          if (!world) return;
-          const zone = world.getZoneById(world.currentZoneId);
-          if (!zone) return;
-          const target = zone.spriteList?.find(s => s.id === targetId);
-          if (target) {
-            target._damageFlash = 10;
-          }
-        } catch (e) {
-          console.warn('show_damage failed', e);
-        }
-      },
-      move_cursor: (x, y) => {
-        // NOTE: Game-specific. Tactical demos should manage their own cursor.
-        // Kept here for backwards compat.
-        try {
-          const world = engine.world || engine.spritz?.world;
-          if (!world) return;
-          world._battleCursor = { x, y };
-        } catch (e) {
-          console.warn('move_cursor failed', e);
-        }
-      },
       // Demo-required APIs
       load_map: async mapId => {
         try {
@@ -1128,8 +1100,9 @@ export default class PixoScriptLibrary {
       },
       show_message: msg => {
         try {
-          // TODO: Requires dialog UI system
-          // For now, use console and store for UI layer
+          // Displays a message dialog. The player's UI layer reads
+          // world._pendingMessage and renders the dialog.
+          // NOTE: Requires player UI implementation (console/desktop).
           const world = engine.world || engine.spritz?.world;
           if (world) {
             world._pendingMessage = msg;
@@ -1183,8 +1156,10 @@ export default class PixoScriptLibrary {
       },
       show_choice: (prompt, options) => {
         try {
-          // TODO: Requires choice dialog UI
-          // For now, store for UI layer and return first option
+          // Displays a choice dialog and returns the selected index.
+          // The player's UI layer reads world._pendingChoice and renders the dialog.
+          // NOTE: Synchronous return (first option) until async script support
+          // is implemented. Requires player UI implementation (console/desktop).
           const world = engine.world || engine.spritz?.world;
           if (world) {
             world._pendingChoice = { prompt, options };
