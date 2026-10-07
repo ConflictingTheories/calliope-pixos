@@ -18,12 +18,14 @@
 import React, { useState } from 'react';
 import JSZip from 'jszip';
 import { Panel, Uploader, List, Message, Loader, Placeholder, Button } from '../ui';
+import { useToast } from '../shared/components/Toast.jsx';
 
 function ZipManager({ openFile, onZipLoaded }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [zip, setZip] = useState(null);
+  const toast = useToast();
 
   /**
    * Handle file selection from the user.  Reads the first file
@@ -57,6 +59,7 @@ function ZipManager({ openFile, onZipLoaded }) {
       console.error('Failed to open zip:', err);
       setEntries([]);
       setError('Failed to read zip file');
+      toast.error('Failed to read zip file', { title: 'Open failed' });
     } finally {
       setLoading(false);
     }
@@ -94,6 +97,7 @@ function ZipManager({ openFile, onZipLoaded }) {
     } catch (err) {
       console.error('Failed to import files:', err);
       setError('Failed to import files');
+      toast.error('Failed to import files. See console for details.', { title: 'Import failed' });
     }
   }
 
@@ -114,6 +118,7 @@ function ZipManager({ openFile, onZipLoaded }) {
       setEntries(prev => [...prev, { name, file: entry }]);
     } catch (err) {
       console.error('Failed to create file', err);
+      toast.error(`Failed to create file: ${err.message || err}`, { title: 'Create failed' });
     }
   }
 
@@ -154,8 +159,10 @@ function ZipManager({ openFile, onZipLoaded }) {
                 link.download = 'pixospritz-package.pxz';
                 link.click();
                 setTimeout(() => URL.revokeObjectURL(url), 10000);
+                toast.success('Package exported as pixospritz-package.pxz');
               } catch (err) {
                 console.error('Failed to export zip', err);
+                toast.error(`Export failed: ${err.message || err}`, { title: 'Export failed' });
               }
             }}
           >

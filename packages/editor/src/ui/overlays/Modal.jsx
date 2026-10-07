@@ -1,7 +1,7 @@
 /**
  * Modal Component
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './Modal.css';
 
@@ -43,6 +43,48 @@ export function Modal({
     };
   }, [open]);
 
+  // Focus trap: Tab cycles inside the dialog; focus returns to the
+  // trigger on close (style guide §4 Dialog).
+  const dialogRef = useRef(null);
+  const prevActiveRef = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    prevActiveRef.current = document.activeElement;
+    const dialog = dialogRef.current;
+    const focusables = () =>
+      dialog
+        ? [
+            ...dialog.querySelectorAll(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            ),
+          ].filter(el => !el.disabled && el.offsetParent !== null)
+        : [];
+    const initial = focusables()[0];
+    if (initial) initial.focus();
+    else dialog?.focus?.();
+    const handleTab = e => {
+      if (e.key !== 'Tab') return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleTab, true);
+    return () => {
+      document.removeEventListener('keydown', handleTab, true);
+      if (prevActiveRef.current && typeof prevActiveRef.current.focus === 'function') {
+        prevActiveRef.current.focus();
+      }
+    };
+  }, [open ]);
+
   if (!open) return null;
 
   const handleBackdropClick = e => {
@@ -63,7 +105,14 @@ export function Modal({
 
   const modal = (
     <div className="px-modal-backdrop" onClick={handleBackdropClick}>
-      <div className={classes} role="dialog" aria-modal="true" {...props}>
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className={classes}
+        role="dialog"
+        aria-modal="true"
+        {...props}
+      >
         {children}
       </div>
     </div>
