@@ -66,7 +66,7 @@ export default class SkyboxManager {
         textureSrc,
         this.engine.spritz.zip
       );
-      this.texture.runWhenLoaded(this.createTextureSkyboxProgram);
+      this.texture.runWhenLoaded(() => this.createTextureSkyboxProgram());
     } else {
       // default - cosmic (via static imports)
       const [vsCosmic, fsCosmic] = fetchSkyboxShaderFiles(shaderName);
@@ -333,6 +333,6 @@ export default class SkyboxManager {
         }
         `;
 
-    return this.initShaderProgram({ vs: vertexShaderSource, fs: fragmentShaderSource });
+    return this.initSkyboxShaderProgram(vertexShaderSource, fragmentShaderSource);
   }
 }
