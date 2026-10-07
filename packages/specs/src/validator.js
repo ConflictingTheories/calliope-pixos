@@ -13,10 +13,11 @@
  * No console side effects: validation is pure. Pass `{ verbose: false }`
  * (default); callers format issues themselves.
  *
- * Compatibility policy hook (P1-02, held): pass `{ compatPolicy }` with
- * `{ checkFormatVersion(data) => issue[] }`. Until Kyle decides the policy,
- * the validator enforces structural validity only; unknown top-level fields
- * are allowed but reported as `unknown-field` info issues.
+ * Compatibility policy (P1-02, decided 2026-10-06): the validator defaults to
+ * the migrate-on-load policy in `./compat.js` (`DEFAULT_COMPAT_POLICY`).
+ * Pass an explicit `{ compatPolicy }` to override, or `compatPolicy: null`
+ * to disable version checking. Unknown top-level fields are allowed but
+ * reported as `unknown-field` info issues.
  *
  * Supported schema subset (covers every construct used in formats/*.schema.json):
  * type, const, enum, required, properties (recursive), items, pattern,
@@ -27,6 +28,7 @@ import manifestSchema from '../formats/manifest.schema.json' with { type: 'json'
 import mapSchema from '../formats/map.schema.json' with { type: 'json' };
 import saveSchema from '../formats/save.schema.json' with { type: 'json' };
 import spriteSchema from '../formats/sprite.schema.json' with { type: 'json' };
+import { DEFAULT_COMPAT_POLICY } from './compat.js';
 
 /** Stable, machine-readable issue codes. */
 export const ISSUE_CODES = {
@@ -223,7 +225,7 @@ function validateNode(value, schema, path, issues, opts) {
             code: ISSUE_CODES.UNKNOWN_FIELD,
             path: path ? `${path}.${key}` : key,
             severity: 'info',
-            message: `Unknown field (allowed, pending P1-02 compatibility policy): ${path ? `${path}.${key}` : key}`,
+            message: `Unknown field (allowed per additive-only minor-version rule): ${path ? `${path}.${key}` : key}`,
           });
         }
       }
@@ -234,7 +236,9 @@ function validateNode(value, schema, path, issues, opts) {
 function compile(schema, name) {
   /**
    * @param {*} data - document to validate
-   * @param {object} [opts] - { compatPolicy?: { checkFormatVersion?: (data) => issue[] }, reportUnknownFields?: boolean }
+   * @param {object} [opts] - { compatPolicy?: { checkFormatVersion?: (data) => issue[] } | null, reportUnknownFields?: boolean }
+   *   compatPolicy defaults to the migrate-on-load policy (./compat.js);
+   *   pass `compatPolicy: null` to disable version checking.
    * @returns {{ valid: boolean, issues: Array }}
    */
   return function validate(data, opts = {}) {
@@ -249,9 +253,10 @@ function compile(schema, name) {
       return { valid: false, issues };
     }
     validateNode(data, schema, '', issues, opts);
-    // P1-02 hook: compatibility policy plugs in here when decided.
-    if (opts.compatPolicy && typeof opts.compatPolicy.checkFormatVersion === 'function') {
-      for (const issue of opts.compatPolicy.checkFormatVersion(data) || []) {
+    // P1-02 (decided 2026-10-06): migrate-on-load is the default policy.
+    const policy = 'compatPolicy' in opts ? opts.compatPolicy : DEFAULT_COMPAT_POLICY;
+    if (policy && typeof policy.checkFormatVersion === 'function') {
+      for (const issue of policy.checkFormatVersion(data) || []) {
         issues.push(issue);
       }
     }

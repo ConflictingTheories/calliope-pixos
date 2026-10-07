@@ -10,6 +10,7 @@
     "./semantic": "./src/semantic.js",
     "./asset-graph": "./src/asset-graph.js",
     "./migrations": "./src/migrations/index.js",
+    "./compat": "./src/compat.js",
     "./math/*": "./math/*.json",
     "./formats/*": "./formats/*.json",
     "./constants/*": "./constants/*.json",
@@ -26,8 +27,23 @@
     "generate": "node generate-c-headers.cjs",
     "generate:core-c": "node generate-c-headers.cjs --output-dir ../core-c/src/generated"
   },
-  "files": ["index.js", "src/", "bin/", "fixtures/", "math/", "formats/", "constants/", "shaders/", "generate-c-headers.cjs", "PIXOZINE_FORMAT.md"],
-  "keywords": ["pixospritz", "game-engine", "specifications"],
+  "files": [
+    "index.js",
+    "src/",
+    "bin/",
+    "fixtures/",
+    "math/",
+    "formats/",
+    "constants/",
+    "shaders/",
+    "generate-c-headers.cjs",
+    "PIXOZINE_FORMAT.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "game-engine",
+    "specifications"
+  ],
   "author": "ConflictingTheories",
-  "license": "MIT"
+  "license": "SEE LICENSE IN LICENSE"
 }

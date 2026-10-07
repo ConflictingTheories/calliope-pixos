@@ -58,15 +58,36 @@ Validated by `packages/specs/formats/manifest.schema.json`.
   highest major they implement, with a typed error (never partial state).
 - Minor/patch bumps are additive-only: older runtimes ignore unknown fields.
 
-### 2.2 Compatibility policy — HOOK (P1-02, held)
+### 2.2 Compatibility policy — decided 2026-10-06 (P1-02)
 
-> The format/version compatibility policy (canonical initial version, support
-> window, unknown-field behavior, package identifier registry) is **Kyle's open
-> decision (P1-02)** and is intentionally not locked in here. When decided, it
-> plugs into `packages/specs/src/compat.js` (to be created) and the validator's
-> `compatPolicy` option. Until then the validator enforces structural validity
-> only, and unknown top-level fields are **allowed but reported** as
-> `unknown-field` info issues.
+The pixozine format is **backwards compatible and evolvable**:
+
+- **Migrate-on-load is the default.** Packages older than the current format
+  version are migrated at load time by the migration runner
+  (`packages/specs/src/migrations/index.js`), then validated. There are no
+  packages in the wild yet, so there is no migration risk in practice.
+- **Major versions and legacy support are deferred.** v1 is the only major.
+  When a v2 format is introduced, the support window for v1 packages will be
+  decided then.
+- **Newer majors are rejected.** Runtimes must refuse packages whose
+  `formatVersion` major exceeds the highest implemented major, with a typed
+  error — never partial state (see §2.1).
+- **Minor/patch bumps are additive-only.** Unknown fields are allowed but
+  reported as `unknown-field` info issues by the validator.
+
+The policy is implemented in `packages/specs/src/compat.js`
+(`DEFAULT_COMPAT_POLICY`, wired as the validator's default `compatPolicy`
+option). Override per-call with an explicit `{ compatPolicy }`, or disable
+with `compatPolicy: null`.
+
+#### P1-02 note: format inventory deferred
+
+P1-02 originally called for an inventory of package formats in the wild
+before locking the policy. With zero pixozine packages in existence, a deep
+inventory would be speculative: there is nothing to be compatible *with*
+yet. The inventory is deferred until real-world packages exist; the
+migrate-on-load default above is designed to absorb whatever the inventory
+finds.
 
 ## 3. Related schemas
 
