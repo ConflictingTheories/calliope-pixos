@@ -745,17 +745,30 @@ export default class PixoScriptLibrary {
         }
       },
       set_volume: volume => {
-        // TODO: Implement global volume control in AudioSystem/Loader
-        debug('PixoScript', 'set_volume not fully implemented', volume);
+        try {
+          const v = Math.max(0, Math.min(1, Number(volume) || 0));
+          if (engine.audioSystem && typeof engine.audioSystem.setMasterVolume === 'function') {
+            engine.audioSystem.setMasterVolume(v);
+          } else {
+            debug('PixoScript', 'set_volume: AudioSystem not available', v);
+          }
+        } catch (e) {
+          console.warn('pixos.set_volume failed', e);
+        }
       },
 
       // Effect functions
       set_effect: (name, active, params) => {
         try {
-          if (engine.renderManager) {
-            // TODO: specific implementation when effects pipeline is audited
-            debug('PixoScript', `set_effect ${name} ${active}`, params);
-            // Example: engine.renderManager.setEffect(name, active, params);
+          const em = engine.renderManager && engine.renderManager.effectManager;
+          if (em && typeof em.enableEffect === 'function') {
+            if (active) {
+              em.enableEffect(name);
+            } else if (typeof em.disableEffect === 'function') {
+              em.disableEffect(name);
+            }
+          } else {
+            debug('PixoScript', 'set_effect: EffectManager not available', name, active);
           }
         } catch (e) {
           console.warn('pixos.set_effect failed', e);
