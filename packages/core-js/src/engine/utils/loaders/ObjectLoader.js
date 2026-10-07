@@ -13,6 +13,7 @@
 
 import Resources from '../resources.js';
 import ModelObject from '@Engine/core/resource/object.js';
+import { loadGLTFFromZip } from './gltf.js';
 
 //helps load models
 export class ObjectLoader {
@@ -36,7 +37,28 @@ export class ObjectLoader {
     Object.assign(instance, model);
     instance.type = model.type;
     instance.id = model.id;
-    // New Instance
+
+    // Check for GLTF first (.glb or .gltf), fall back to OBJ
+    const gltfBase = `models/${instance.type}`;
+    let gltfData = null;
+    try {
+      gltfData = await loadGLTFFromZip(zip, gltfBase);
+    } catch (e) {
+      // No GLTF, try OBJ
+    }
+
+    if (gltfData) {
+      console.log(`ObjectLoader: Loading GLTF model ${model.id}`);
+      // Convert GLTF meshes to engine format
+      // For now, store raw mesh data; renderer will handle WebGL buffers
+      instance.gltfMeshes = gltfData.meshes;
+      instance.gltfMaterials = gltfData.materials;
+      instance.gltfNodes = gltfData.nodes;
+      instance.isGLTF = true;
+      return instance;
+    }
+
+    // New Instance (OBJ path)
     const objFilename = `models/${instance.type}.obj`;
     const mtlFilename = typeof model.mtl === 'string' ? `models/${model.mtl}` : null;
 
@@ -125,9 +147,16 @@ export class ObjectLoader {
     const matKeys = Object.keys(materials);
     if (matKeys.length > 0) {
       compositeMesh.materialsByIndex[0] = materials[matKeys[0]];
-      // Assign texture from first mesh if available
-      if (meshes[0] && meshes[0].texture) {
-        compositeMesh.materialsByIndex[0].glTexture = meshes[0].texture;
+      // Assign texture: check materialProps.glTexture (set by loadTextures) or mesh.texture
+      const mat = compositeMesh.materialsByIndex[0];
+      if (mat.glTexture) {
+        // Already set by loadTextures — nothing to do
+      } else if (meshes[0] && meshes[0].texture) {
+        mat.glTexture = meshes[0].texture;
+      }
+      // Ensure map_Kd is present for renderer check
+      if (mat.map_Kd && mat.glTexture) {
+        console.log(`ObjectLoader: Texture bound for material ${matKeys[0]}`);
       }
     } else {
       compositeMesh.materialsByIndex[0] = {
