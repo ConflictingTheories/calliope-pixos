@@ -445,7 +445,7 @@ export default class GLEngine {
                 this.spritz.world.spriteDict[sprite.id].isSelected = true;
                 // Allow mode to handle selection first
                 if (!this.modeManager.handleSelect(sprite.zone, sprite, null, 'sprite')) {
-                  // TODO: Add a new trigger method onSelect()
+                  // onSelect trigger: called when sprite/object is selected
                   if (typeof this.spritz.world.spriteDict[sprite.id].onSelect === 'function') {
                     this.spritz.world.spriteDict[sprite.id].onSelect(sprite.zone, sprite);
                   }
@@ -465,7 +465,7 @@ export default class GLEngine {
                 this.spritz.world.objectDict[obj.id].isSelected = true;
                 // Allow mode to handle selection first
                 if (!this.modeManager.handleSelect(obj.zone, obj, null, 'object')) {
-                  // TODO: Add a new trigger method onSelect()
+                  // onSelect trigger: called when sprite/object is selected
                   if (typeof this.spritz.world.objectDict[obj.id].onSelect === 'function') {
                     this.spritz.world.objectDict[obj.id].onSelect(obj.zone, obj);
                   }
