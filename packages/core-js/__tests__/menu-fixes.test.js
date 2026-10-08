@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Test Cases for Menu System Fixes
  *
@@ -9,17 +10,18 @@
 // ==================================================
 // Test 1: Menu Cleanup on Completion
 // ==================================================
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 describe('Menu Event - HUD Element Registration', () => {
   test('should unregister menu from HUD when completed', () => {
     // Simulate menu initialization
     const mockHUD = {
-      registerElement: jest.fn(),
-      unregisterElement: jest.fn(),
+      registerElement: vi.fn(),
+      unregisterElement: vi.fn(),
     };
 
     const mockGamepad = {
-      attachListener: jest.fn(),
-      removeListener: jest.fn(),
+      attachListener: vi.fn(),
+      removeListener: vi.fn(),
     };
 
     const mockEngine = {
@@ -181,9 +183,9 @@ describe('Menu - Multi-Button Input Handling', () => {
 
     // Three buttons in a simple menu
     const menuDict = {
-      btn1: { x: 200, y: 100, w: 200, h: 50, trigger: jest.fn() },
-      btn2: { x: 200, y: 180, w: 200, h: 50, trigger: jest.fn() },
-      btn3: { x: 200, y: 260, w: 200, h: 50, trigger: jest.fn() },
+      btn1: { x: 200, y: 100, w: 200, h: 50, trigger: vi.fn() },
+      btn2: { x: 200, y: 180, w: 200, h: 50, trigger: vi.fn() },
+      btn3: { x: 200, y: 260, w: 200, h: 50, trigger: vi.fn() },
     };
 
     const activeMenus = ['btn1', 'btn2', 'btn3'];

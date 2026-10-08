@@ -1,6 +1,7 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { describe, it, test, expect, vi } from 'vitest';
 import Pixos from '../src/index.jsx';
 
 // Mock the WebGLView component since it uses WebGL
