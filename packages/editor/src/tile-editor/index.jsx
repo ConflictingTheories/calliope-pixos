@@ -37,7 +37,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     ctx.fillRect(0, 0, width, height);
 
     // Draw subtle grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.strokeStyle = 'var(--color-bg-secondary)';
     ctx.lineWidth = 1;
     const gridSize = width / 8;
     for (let i = 1; i < 8; i++) {
@@ -79,7 +79,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     };
 
     // Draw ground plane reference
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.strokeStyle = 'var(--color-border-default)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     const corners = [
@@ -172,7 +172,7 @@ function TilePreview({ components, geometryData, size = 180 }) {
     const [ox, oy] = project(0, 0, 0);
 
     // X axis (red) - East
-    ctx.strokeStyle = '#ef4444';
+    ctx.strokeStyle = 'var(--color-error)';
     ctx.beginPath();
     ctx.moveTo(ox, oy);
     const [ax, ay] = project(0.3, 0, 0);
@@ -219,8 +219,8 @@ function TilePreview({ components, geometryData, size = 180 }) {
       height={size}
       style={{
         borderRadius: '8px',
-        background: '#0d1117',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'var(--color-bg-primary)',
+        border: '1px solid var(--color-border-default)',
       }}
     />
   );
@@ -551,7 +551,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         height: '100%',
         display: 'flex',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, rgba(7,20,38,0.98), rgba(4,12,20,0.98))',
+        background: 'var(--color-bg-primary)',
       }}
     >
       {/* Left panel - Tile list */}
@@ -559,21 +559,21 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         style={{
           width: '240px',
           minWidth: '240px',
-          borderRight: '1px solid rgba(255,255,255,0.1)',
+          borderRight: '1px solid var(--color-border-default)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          background: 'rgba(0,0,0,0.2)',
+          background: 'var(--color-bg-secondary)',
         }}
       >
         {/* Header */}
         <div
           style={{
             padding: '12px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid var(--color-border-subtle)',
           }}
         >
-          <h4 style={{ margin: '0 0 10px 0', color: '#7dd3fc', fontSize: '14px', fontWeight: 600 }}>
+          <h4 style={{ margin: '0 0 10px 0', color: 'var(--color-text-primary)', fontSize: '14px', fontWeight: 600 }}>
             🧩 Tiles ({Object.keys(tiles).length})
           </h4>
           {/* Search */}
@@ -618,7 +618,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                     padding: '10px',
                     marginBottom: '4px',
                     background: isSelected
-                      ? 'rgba(125,211,252,0.2)'
+                      ? 'var(--color-border-default)'
                       : 'rgba(255,255,255,0.03)',
                     border: `1px solid ${isSelected ? 'rgba(125,211,252,0.5)' : 'transparent'}`,
                     borderRadius: '6px',
@@ -656,7 +656,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                         }}
                         style={{ flex: 1 }}
                       >
-                        <div style={{ color: '#e6eef8', fontSize: '12px', fontWeight: 500 }}>
+                        <div style={{ color: 'var(--color-text-primary)', fontSize: '12px', fontWeight: 500 }}>
                           {name}
                         </div>
                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>
@@ -665,42 +665,27 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      <button
+                      <Button
+                        size="xs"
                         onClick={e => {
                           e.stopPropagation();
                           duplicateTile(name);
                         }}
-                        style={{
-                          background: 'rgba(125,211,252,0.1)',
-                          border: '1px solid rgba(125,211,252,0.2)',
-                          color: '#7dd3fc',
-                          padding: '2px 6px',
-                          borderRadius: '3px',
-                          cursor: 'pointer',
-                          fontSize: '9px',
-                        }}
                         title="Duplicate"
                       >
                         ⧉
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="xs"
+                        appearance="danger"
                         onClick={e => {
                           e.stopPropagation();
                           deleteTile(name);
                         }}
-                        style={{
-                          background: 'rgba(239,68,68,0.1)',
-                          border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444',
-                          padding: '2px 6px',
-                          borderRadius: '3px',
-                          cursor: 'pointer',
-                          fontSize: '9px',
-                        }}
                         title="Delete"
                       >
                         ✕
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -722,7 +707,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         </div>
 
         {/* Save button */}
-        <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '12px', borderTop: '1px solid var(--color-border-subtle)' }}>
           <Button appearance="primary" block onClick={handleSave}>
             💾 Save Tiles
           </Button>
@@ -751,7 +736,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             <div
               style={{
                 padding: '16px',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                borderBottom: '1px solid var(--color-border-subtle)',
                 display: 'flex',
                 gap: '20px',
                 alignItems: 'flex-start',
@@ -764,14 +749,15 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
               {/* Info */}
               <div style={{ flex: 1 }}>
-                <h4 style={{ margin: '0 0 8px 0', color: '#7dd3fc', fontSize: '18px' }}>
+                <h4 style={{ margin: '0 0 8px 0', color: 'var(--color-text-primary)', fontSize: '18px' }}>
                   {selectedTileName}
                   {selectedTileNames.length > 1 && (
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginLeft: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginLeft: '8px' }}>
                       +{selectedTileNames.length - 1} more
                     </span>
                   )}
-                  <button
+                  <Button
+                    size="xs"
                     onClick={() => {
                       if (!showJson) {
                         setJsonText(JSON.stringify({ [selectedTileName]: tiles[selectedTileName] }, null, 2));
@@ -779,23 +765,14 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       }
                       setShowJson(!showJson);
                     }}
-                    style={{
-                      marginLeft: '12px',
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      background: showJson ? 'rgba(125,211,252,0.2)' : 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '4px',
-                      color: '#fff',
-                      cursor: 'pointer',
-                    }}
+                    style={{ marginLeft: '12px' }}
                   >
                     {showJson ? 'Visual' : 'JSON'}
-                  </button>
+                  </Button>
                 </h4>
                 <div
                   style={{
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'var(--color-text-secondary)',
                     fontSize: '11px',
                     marginBottom: '12px',
                     fontFamily: 'monospace',
@@ -807,12 +784,12 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                   appearance="ghost"
                   size="sm"
                   onClick={addComponent}
-                  style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}
+                  style={{ color: 'var(--color-text-secondary)', borderColor: 'var(--color-border-default)' }}
                 >
                   + Add Layer
                 </Button>
                 {!geometryContent && (
-                  <div style={{ color: '#fbbf24', fontSize: '10px', marginTop: '10px' }}>
+                  <div style={{ color: 'var(--color-warning)', fontSize: '10px', marginTop: '10px' }}>
                     ⚠ Load geometry.json from same folder for better preview & dropdowns
                   </div>
                 )}
@@ -838,8 +815,8 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       flex: 1,
                       minHeight: '300px',
                       background: 'rgba(0,0,0,0.3)',
-                      color: '#e0e0e0',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'var(--color-text-primary)',
+                      border: '1px solid var(--color-border-default)',
                       borderRadius: '6px',
                       padding: '12px',
                       fontFamily: 'monospace',
@@ -849,24 +826,35 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                     spellCheck={false}
                   />
                   {jsonError && (
-                    <div style={{ color: '#f87171', fontSize: '12px' }}>{jsonError}</div>
+                    <div style={{ color: 'var(--color-error)', fontSize: '12px' }}>{jsonError}</div>
                   )}
-                  <button
+                  <Button
+                    appearance="primary"
                     onClick={() => {
                       try {
                         const obj = JSON.parse(jsonText);
+                        if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+                          throw new Error('JSON must be an object of named tiles');
+                        }
                         const names = Object.keys(obj);
                         if (names.length === 0) throw new Error('Empty object');
-                        const newName = names[0];
-                        const newTiles = { ...tiles, [newName]: obj[newName] };
-                        // If renamed, remove old
-                        if (newName !== selectedTileName) {
-                          delete newTiles[selectedTileName];
-                          setTileNames(prev => prev.map(n => n === selectedTileName ? newName : n));
-                          setSelectedTileName(newName);
-                          setSelectedTileNames([newName]);
-                        }
+                        // Apply ALL pasted tiles, not just the first one. Pasted
+                        // keys overwrite existing ones so re-applying the same
+                        // JSON is idempotent.
+                        const newTiles = { ...tiles, ...obj };
                         setTiles(newTiles);
+                        // Keep the name list in sync without duplicate entries
+                        setTileNames(prev => {
+                          const seen = new Set(prev);
+                          return [...prev, ...names.filter(n => !seen.has(n))];
+                        });
+                        // Never leave selection pointing at a nonexistent tile:
+                        // keep the current selection if it still exists,
+                        // otherwise select the first pasted tile.
+                        if (!selectedTileName || !(selectedTileName in newTiles)) {
+                          setSelectedTileName(names[0]);
+                          setSelectedTileNames([names[0]]);
+                        }
                         setJsonError(null);
                         setShowJson(false);
                       } catch (err) {
@@ -874,18 +862,9 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       }
                     }}
                     disabled={!!jsonError}
-                    style={{
-                      padding: '8px 16px',
-                      background: jsonError ? 'rgba(255,255,255,0.05)' : 'rgba(125,211,252,0.2)',
-                      border: '1px solid rgba(125,211,252,0.3)',
-                      borderRadius: '6px',
-                      color: '#fff',
-                      cursor: jsonError ? 'not-allowed' : 'pointer',
-                      opacity: jsonError ? 0.5 : 1,
-                    }}
                   >
                     Apply JSON
-                  </button>
+                  </Button>
                 </div>
               ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -893,8 +872,8 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                   <div
                     key={compIdx}
                     style={{
-                      background: 'rgba(167,139,250,0.05)',
-                      border: '1px solid rgba(167,139,250,0.15)',
+                      background: 'var(--color-bg-secondary)',
+                      border: '1px solid var(--color-border-subtle)',
                       borderRadius: '8px',
                       padding: '14px',
                     }}
@@ -909,27 +888,20 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                     >
                       <span
                         style={{
-                          color: '#a78bfa',
+                          color: 'var(--color-text-secondary)',
                           fontSize: '12px',
                           fontWeight: 600,
                         }}
                       >
                         Layer {compIdx + 1}
                       </span>
-                      <button
+                      <Button
+                        size="xs"
+                        appearance="danger"
                         onClick={() => removeComponent(compIdx)}
-                        style={{
-                          background: 'rgba(239,68,68,0.1)',
-                          border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444',
-                          padding: '3px 10px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '10px',
-                        }}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </div>
 
                     <div
@@ -1062,7 +1034,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                       padding: '50px 20px',
                       color: 'rgba(255,255,255,0.4)',
                       fontSize: '12px',
-                      background: 'rgba(0,0,0,0.2)',
+                      background: 'var(--color-bg-secondary)',
                       borderRadius: '8px',
                     }}
                   >
