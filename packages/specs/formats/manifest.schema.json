@@ -4,9 +4,11 @@
   "title": "PixoSpritz Game Manifest",
   "description": "Schema for .pxz game package manifest files",
   "type": "object",
-
-  "required": ["title", "version", "initialZones"],
-
+  "required": [
+    "title",
+    "version",
+    "initialZones"
+  ],
   "properties": {
     "format": {
       "type": "string",
@@ -51,62 +53,86 @@
     "supportedConsoleVersions": {
       "type": "string",
       "description": "Semver range of supported console versions",
-      "examples": [">=1.0.0 <2.0.0"]
+      "examples": [
+        ">=1.0.0 <2.0.0"
+      ]
     },
     "initialZones": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "minItems": 1,
       "description": "Starting zone(s) for new game"
     },
     "modes": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Available game modes"
     },
     "maps": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Map/zone IDs included in package"
     },
     "tilesets": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Tileset IDs included in package"
     },
     "sprites": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Sprite IDs included in package"
     },
     "models": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "3D model IDs included in package"
     },
     "textures": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Texture paths included in package"
     },
     "audio": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Audio file paths included in package"
     },
     "shaders": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Custom shader IDs"
     },
     "scripts": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Script file paths"
     },
     "cutscenes": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Cutscene definition paths"
     },
     "scriptApiVersion": {
@@ -117,17 +143,23 @@
     },
     "capabilities": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Capability names the package's scripts require; the runtime grants only these."
     },
     "callbacks": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Callback script paths"
     },
     "triggers": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Trigger script paths"
     },
     "playables": {
@@ -135,15 +167,25 @@
       "description": "Playable embeds: PixoSpritz game bundles playable inside this pixozine (added in format v1.1.0). Each entry is a playable block: metadata, pinned player version, bundle reference, and fallback content.",
       "items": {
         "type": "object",
-        "required": ["id", "title", "playerVersion", "bundle"],
+        "required": [
+          "id",
+          "title",
+          "playerVersion",
+          "bundle"
+        ],
         "properties": {
           "id": {
             "type": "string",
             "minLength": 1,
             "description": "Unique playable ID within this package"
           },
-          "title": { "type": "string", "minLength": 1 },
-          "description": { "type": "string" },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
           "poster": {
             "type": "string",
             "description": "Archive-relative poster image path shown before the player loads"
@@ -155,7 +197,10 @@
           },
           "bundle": {
             "type": "object",
-            "required": ["uri", "manifestHash"],
+            "required": [
+              "uri",
+              "manifestHash"
+            ],
             "properties": {
               "uri": {
                 "type": "string",
@@ -173,8 +218,14 @@
           "dimensions": {
             "type": "object",
             "properties": {
-              "width": { "type": "integer", "minimum": 1 },
-              "height": { "type": "integer", "minimum": 1 },
+              "width": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1
+              },
               "aspect": {
                 "type": "string",
                 "pattern": "^\\d+:\\d+$",
@@ -187,8 +238,12 @@
             "type": "object",
             "description": "Content shown when the player cannot load (unsupported platform, blocked scripts)",
             "properties": {
-              "title": { "type": "string" },
-              "body": { "type": "string" },
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
               "image": {
                 "type": "string",
                 "description": "Archive-relative fallback image path"
@@ -209,22 +264,35 @@
       "description": "Achievement/trophy definitions for this game. Unlocked trophies sync to the player's SVRN identity when a sync provider is configured.",
       "items": {
         "type": "object",
-        "required": ["id", "title"],
+        "required": [
+          "id",
+          "title"
+        ],
         "properties": {
           "id": {
             "type": "string",
             "minLength": 1,
             "description": "Unique trophy ID within this game"
           },
-          "title": { "type": "string", "minLength": 1 },
-          "description": { "type": "string" },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
           "icon": {
             "type": "string",
             "description": "Archive-relative icon image path"
           },
           "rarity": {
             "type": "string",
-            "enum": ["common", "rare", "epic", "legendary"],
+            "enum": [
+              "common",
+              "rare",
+              "epic",
+              "legendary"
+            ],
             "description": "Trophy rarity tier"
           },
           "criteria": {
@@ -249,14 +317,28 @@
       "properties": {
         "resolution": {
           "type": "array",
-          "items": { "type": "integer" },
+          "items": {
+            "type": "integer"
+          },
           "minItems": 2,
           "maxItems": 2
         },
-        "fullscreen": { "type": "boolean" },
-        "musicVolume": { "type": "number", "minimum": 0, "maximum": 1 },
-        "sfxVolume": { "type": "number", "minimum": 0, "maximum": 1 },
-        "language": { "type": "string" }
+        "fullscreen": {
+          "type": "boolean"
+        },
+        "musicVolume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sfxVolume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "language": {
+          "type": "string"
+        }
       }
     },
     "saveConfig": {
@@ -286,45 +368,131 @@
     },
     "compatibleSaves": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Game IDs whose saves can be imported"
     },
     "portableItems": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Item IDs that can be transferred between compatible games"
     },
     "multiplayer": {
       "type": "object",
       "properties": {
-        "enabled": { "type": "boolean", "default": false },
-        "maxPlayers": { "type": "integer", "minimum": 2 },
-        "serverUrl": { "type": "string", "format": "uri" }
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxPlayers": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "serverUrl": {
+          "type": "string",
+          "format": "uri"
+        }
       }
     },
     "controls": {
       "type": "object",
       "description": "Default control mappings",
       "properties": {
-        "keyboard": { "type": "object" },
-        "gamepad": { "type": "object" },
-        "touch": { "type": "object" }
+        "keyboard": {
+          "type": "object"
+        },
+        "gamepad": {
+          "type": "object"
+        },
+        "touch": {
+          "type": "object"
+        }
       }
     },
     "requirements": {
       "type": "object",
       "description": "System requirements",
       "properties": {
-        "webgl": { "type": "integer", "enum": [1, 2] },
-        "audio": { "type": "boolean" },
-        "localStorage": { "type": "boolean" },
-        "indexedDB": { "type": "boolean" }
+        "webgl": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "audio": {
+          "type": "boolean"
+        },
+        "localStorage": {
+          "type": "boolean"
+        },
+        "indexedDB": {
+          "type": "boolean"
+        }
       }
     },
     "data": {
       "type": "object",
       "description": "Custom manifest data",
       "additionalProperties": true
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Access control for this package: visibility, merging, forking, and live sessions.",
+      "properties": {
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public",
+            "unlisted",
+            "private"
+          ],
+          "default": "public",
+          "description": "Who can discover and load this package."
+        },
+        "merge": {
+          "type": "string",
+          "enum": [
+            "public",
+            "allowlist",
+            "private"
+          ],
+          "default": "public",
+          "description": "Who can merge this world's content into another spritz."
+        },
+        "fork": {
+          "type": "string",
+          "enum": [
+            "public",
+            "allowlist",
+            "private"
+          ],
+          "default": "public",
+          "description": "Who can fork/branch this package into a derivative."
+        },
+        "liveSession": {
+          "type": "string",
+          "enum": [
+            "public",
+            "invite",
+            "private"
+          ],
+          "default": "public",
+          "description": "Who can join live sessions hosted in this package's zones."
+        },
+        "allowlist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "SVRN identity IDs granted allowlist access."
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
