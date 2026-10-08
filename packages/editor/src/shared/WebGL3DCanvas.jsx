@@ -139,9 +139,9 @@ export default function WebGL3DCanvas({
       );
     }
 
-    // Call render callback
+    // Call render callback (cameraPos appended for lighting-aware renderers)
     if (onRender) {
-      onRender(gl, projectionMatrix, viewMatrix, camera, showGrid);
+      onRender(gl, projectionMatrix, viewMatrix, camera, showGrid, [camX, camY, camZ]);
     }
 
     animationFrameRef.current = requestAnimationFrame(render);
