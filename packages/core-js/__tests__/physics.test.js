@@ -252,7 +252,8 @@ describe('PhysicsManager', () => {
   });
 
   describe('events', () => {
-    it('should fire collision enter events', done => {
+    it('should fire collision enter events', async () => {
+      let collisionOther = null;
       const entity1 = {
         position: new Vector(0, 0, 0),
         velocity: new Vector(0, 0, 0),
@@ -261,8 +262,7 @@ describe('PhysicsManager', () => {
         collisionMask: 0xffff,
         isTrigger: false,
         onCollisionEnter: other => {
-          expect(other).toBe(entity2);
-          done();
+          collisionOther = other;
         },
       };
 
@@ -278,6 +278,7 @@ describe('PhysicsManager', () => {
       manager.addBody(entity1);
       manager.addBody(entity2);
       manager.update(0.016);
+      expect(collisionOther).toBe(entity2);
     });
 
     it('should fire collision exit events', done => {
