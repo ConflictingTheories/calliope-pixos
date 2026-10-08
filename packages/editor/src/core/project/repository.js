@@ -38,7 +38,7 @@ export function stableStringify(value) {
     return `[${value.map(stableStringify).join(',')}]`;
   }
   const keys = Object.keys(value).sort();
-  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}}`;
+  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 }
 
 /**
@@ -111,7 +111,7 @@ function assertPath(path) {
 }
 
 async function toBytes(data) {
-  if (data instanceof Uint8Array) return data;
+  if (ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   if (typeof data === 'string') return new TextEncoder().encode(data);
   if (data instanceof Blob) return new Uint8Array(await data.arrayBuffer());
   if (data instanceof ArrayBuffer) return new Uint8Array(data);
@@ -162,13 +162,23 @@ export class InMemoryProjectRepository extends ProjectRepository {
     assertPath(path);
     const bytes = this.files.get(path);
     if (!bytes) throw new Error(`ProjectRepository: not found: ${path}`);
-    if (options.as === 'bytes') return bytes.slice();
+    if (options.as === 'bytes') return new Uint8Array(bytes); // current-realm copy
     return new TextDecoder().decode(bytes);
   }
 
   async write(path, data) {
     assertPath(path);
-    this.files.set(path, await toBytes(data));
+    let bytes = await toBytes(data);
+    if (path.endsWith('.json')) {
+      // Normalize JSON documents on write so exports are stable (contract).
+      try {
+        const text = normalizeText(new TextDecoder().decode(bytes));
+        bytes = new TextEncoder().encode(`${stableStringify(JSON.parse(text))}\n`);
+      } catch {
+        // Not valid JSON — store as-is.
+      }
+    }
+    this.files.set(path, bytes);
   }
 
   async delete(path) {
@@ -365,7 +375,12 @@ export class BridgedProjectRepository extends ProjectRepository {
 
   async read(path, options = {}) {
     assertPath(path);
-    return this.delegates.read(path, options);
+    const result = await this.delegates.read(path, options);
+    // Normalize to current-realm Uint8Array (delegates may use another realm's).
+    if (options.as === 'bytes' && ArrayBuffer.isView(result)) {
+      return new Uint8Array(result.buffer, result.byteOffset, result.byteLength);
+    }
+    return result;
   }
 
   async write(path, data) {
