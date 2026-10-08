@@ -27,9 +27,12 @@ import {
   Checkbox,
   ButtonGroup,
   SelectPicker,
+  Modal,
 } from '../ui';
 
 import WebGL3DCanvas from '../shared/WebGL3DCanvas.jsx';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
+import { CommandHistory } from '../core/commands/history.js';
 import {
   createProgram,
   defaultVertexShader,
@@ -46,6 +49,69 @@ function GeometryEditor3D({ content, onSave }) {
   const [selectedTriangle, setSelectedTriangle] = useState(-1);
   const [showWireframe, setShowWireframe] = useState(true);
   const [error, setError] = useState(null);
+  // "New geometry" dialog state (was a native browser dialog before).
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [newGeometryName, setNewGeometryName] = useState('');
+  const [nameError, setNameError] = useState(null);
+
+  const { confirm, ConfirmDialog } = useConfirm();
+
+  // Undo/redo for geometry operations (add/delete geometry, add/remove
+  // triangle, vertex/UV/type edits), built on the shared CommandHistory:
+  // byte-capped, and rapid successive field edits coalesce into one entry.
+  const historyRef = useRef(null);
+  if (!historyRef.current) historyRef.current = new CommandHistory();
+  const [, forceHistory] = useState(0);
+  useEffect(() => historyRef.current.onChange(() => forceHistory(n => n + 1)), []);
+
+  // Refs mirror state so undo entries capture exact before/after snapshots
+  // without stale closures.
+  const dataRef = useRef(geometryData);
+  dataRef.current = geometryData;
+  const selRef = useRef(selectedGeometry);
+  selRef.current = selectedGeometry;
+
+  // Apply new geometry data (and selection) as one undoable operation.
+  function commit(newData, newSelected, label, coalesceKey) {
+    const prevData = dataRef.current;
+    const prevSelected = selRef.current;
+    historyRef.current.push(
+      {
+        label,
+        bytes: JSON.stringify(newData).length,
+        coalesceKey,
+        coalesce: coalesceKey
+          ? (prev, next) => ({
+              label: next.label,
+              bytes: next.bytes,
+              coalesceKey,
+              coalesce: next.coalesce,
+              redo: next.redo, // latest state wins
+              undo: prev.undo, // undo restores the earliest state
+            })
+          : undefined,
+        redo: () => {
+          setGeometryData(newData);
+          setSelectedGeometry(newSelected);
+        },
+        undo: () => {
+          setGeometryData(prevData);
+          setSelectedGeometry(prevSelected);
+        },
+      },
+      { apply: false }
+    );
+    setGeometryData(newData);
+    setSelectedGeometry(newSelected);
+  }
+
+  function handleUndo() {
+    historyRef.current.undo();
+  }
+
+  function handleRedo() {
+    historyRef.current.redo();
+  }
 
   // WebGL state
   const glRef = useRef(null);
@@ -60,8 +126,10 @@ function GeometryEditor3D({ content, onSave }) {
 
       // Handle different formats
       if (obj.geometry && typeof obj.geometry === 'object') {
+        historyRef.current.clear();
         setGeometryData(obj.geometry);
       } else if (typeof obj === 'object' && !Array.isArray(obj)) {
+        historyRef.current.clear();
         setGeometryData(obj);
       } else {
         setError('Invalid geometry format');
@@ -174,7 +242,21 @@ function GeometryEditor3D({ content, onSave }) {
 
       const texBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 1, 1]), gl.STATIC_DRAW);
+      // Use the geometry's UV surfaces when present so UV edits show in the preview
+      const uv = (geom.surfaces && geom.surfaces[idx]) || [
+        [0, 0],
+        [1, 0],
+        [1, 1],
+      ];
+      const texCoords = [
+        uv[0]?.[0] ?? 0,
+        uv[0]?.[1] ?? 0,
+        uv[1]?.[0] ?? 1,
+        uv[1]?.[1] ?? 0,
+        uv[2]?.[0] ?? 1,
+        uv[2]?.[1] ?? 1,
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
       const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
       gl.enableVertexAttribArray(aTexCoord);
       gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
@@ -200,10 +282,32 @@ function GeometryEditor3D({ content, onSave }) {
     });
   }
 
-  // Add new geometry
-  function addGeometry() {
-    const name = prompt('Enter geometry name (e.g., FLAT_ALL, WALL_T):');
-    if (!name || geometryData[name]) return;
+  // Open the "New geometry" dialog (was a native browser dialog before).
+  function openNewGeometryDialog() {
+    setNewGeometryName('');
+    setNameError(null);
+    setShowNewDialog(true);
+  }
+
+  function closeNewGeometryDialog() {
+    setShowNewDialog(false);
+    setNewGeometryName('');
+    setNameError(null);
+  }
+
+  // Create the new geometry from the dialog's name input. Empty /
+  // whitespace-only names and duplicate names show inline validation in
+  // the dialog instead of creating anything.
+  function createGeometryFromName() {
+    const name = newGeometryName.trim();
+    if (!name) {
+      setNameError('Enter a name for the new geometry.');
+      return;
+    }
+    if (geometryData[name]) {
+      setNameError(`Geometry "${name}" already exists.`);
+      return;
+    }
 
     const newGeometry = {
       vertices: [
@@ -235,6 +339,20 @@ function GeometryEditor3D({ content, onSave }) {
 
     setGeometryData({ ...geometryData, [name]: newGeometry });
     setSelectedGeometry(name);
+    closeNewGeometryDialog();
+  }
+
+  // Delete the selected geometry (with confirmation; undoable). The 3D
+  // editor previously had no way to delete a geometry at all.
+  async function deleteGeometry() {
+    const key = selRef.current;
+    if (!key) return;
+    if (!(await confirm(`Delete geometry "${key}"?`))) return;
+    const data = dataRef.current;
+    const { [key]: _, ...rest } = data;
+    const keys = Object.keys(rest);
+    commit(rest, keys.length > 0 ? keys[0] : null, `Delete geometry ${key}`);
+    setSelectedTriangle(-1);
   }
 
   // Add triangle to current geometry
@@ -259,10 +377,14 @@ function GeometryEditor3D({ content, onSave }) {
       ],
     ];
 
-    setGeometryData({
-      ...geometryData,
-      [selectedGeometry]: { ...geom, vertices: newVertices, surfaces: newSurfaces },
-    });
+    commit(
+      {
+        ...geometryData,
+        [selectedGeometry]: { ...geom, vertices: newVertices, surfaces: newSurfaces },
+      },
+      selectedGeometry,
+      `Add triangle to ${selectedGeometry}`
+    );
   }
 
   // Remove triangle
@@ -273,10 +395,14 @@ function GeometryEditor3D({ content, onSave }) {
     const newVertices = geom.vertices.filter((_, i) => i !== idx);
     const newSurfaces = (geom.surfaces || []).filter((_, i) => i !== idx);
 
-    setGeometryData({
-      ...geometryData,
-      [selectedGeometry]: { ...geom, vertices: newVertices, surfaces: newSurfaces },
-    });
+    commit(
+      {
+        ...geometryData,
+        [selectedGeometry]: { ...geom, vertices: newVertices, surfaces: newSurfaces },
+      },
+      selectedGeometry,
+      `Remove triangle ${idx} from ${selectedGeometry}`
+    );
 
     if (selectedTriangle === idx) {
       setSelectedTriangle(-1);
@@ -298,10 +424,54 @@ function GeometryEditor3D({ content, onSave }) {
       });
     });
 
-    setGeometryData({
-      ...geometryData,
-      [selectedGeometry]: { ...geom, vertices: newVertices },
-    });
+    // Rapid successive vertex edits coalesce into a single undo entry.
+    commit(
+      { ...geometryData, [selectedGeometry]: { ...geom, vertices: newVertices } },
+      selectedGeometry,
+      `Edit vertices in ${selectedGeometry}`,
+      `geom3d:${selectedGeometry}:vertices`
+    );
+  }
+
+  // Update a UV coordinate of a triangle's surface entry.
+  // Rapid successive edits coalesce into a single undo entry.
+  function updateUV(triIdx, uvIdx, coord, value) {
+    const key = selRef.current;
+    if (!key) return;
+
+    const data = dataRef.current;
+    const geom = data[key];
+    const newSurfaces = JSON.parse(JSON.stringify(geom.surfaces || []));
+    if (!newSurfaces[triIdx])
+      newSurfaces[triIdx] = [
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ];
+    if (!newSurfaces[triIdx][uvIdx]) newSurfaces[triIdx][uvIdx] = [0, 0];
+    newSurfaces[triIdx][uvIdx][coord] = value;
+
+    commit(
+      { ...data, [key]: { ...geom, surfaces: newSurfaces } },
+      key,
+      `Edit UVs in ${key}`,
+      `geom3d:${key}:surfaces`
+    );
+  }
+
+  // Update the collision type bitmask of the selected geometry.
+  // Rapid successive edits coalesce into a single undo entry.
+  function updateType(value) {
+    const key = selRef.current;
+    if (!key) return;
+
+    const data = dataRef.current;
+    commit(
+      { ...data, [key]: { ...data[key], type: value } },
+      key,
+      `Edit type of ${key}`,
+      `geom3d:${key}:type`
+    );
   }
 
   // Save
@@ -371,17 +541,40 @@ function GeometryEditor3D({ content, onSave }) {
             </div>
 
             <ButtonGroup style={{ marginBottom: '1rem' }}>
-              <Button onClick={addGeometry} appearance="primary">
+              <Button onClick={openNewGeometryDialog} appearance="primary">
                 + New Geometry
               </Button>
               <Button onClick={addTriangle} disabled={!selectedGeometry}>
                 + Add Triangle
               </Button>
+              <Button onClick={deleteGeometry} disabled={!selectedGeometry} appearance="danger">
+                Delete
+              </Button>
             </ButtonGroup>
 
             {selectedGeometry && geometryData[selectedGeometry] && (
-              <div style={{ maxHeight: '40vh', overflow: 'auto' }}>
-                <h4>Triangles ({geometryData[selectedGeometry].vertices.length})</h4>
+              <>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '12px' }}>
+                    Type (collision bitmask):
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <InputNumber
+                      size="xs"
+                      value={geometryData[selectedGeometry].type ?? 0}
+                      min={0}
+                      max={15}
+                      step={1}
+                      onChange={updateType}
+                      style={{ width: '70px' }}
+                    />
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>
+                      (0=none, 1=floor, 2=wall, 4=ceiling, 8=ramp)
+                    </span>
+                  </div>
+                </div>
+                <div style={{ maxHeight: '40vh', overflow: 'auto' }}>
+                  <h4>Triangles ({geometryData[selectedGeometry].vertices.length})</h4>
                 {geometryData[selectedGeometry].vertices.map((tri, triIdx) => (
                   <div
                     key={triIdx}
@@ -431,19 +624,106 @@ function GeometryEditor3D({ content, onSave }) {
                         />
                       </div>
                     ))}
+                    {/* UV surfaces for this triangle */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        marginTop: '0.5rem',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <span
+                        style={{ width: '60px', fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}
+                      >
+                        UVs:
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {(
+                          (geometryData[selectedGeometry].surfaces || [])[triIdx] || [
+                            [0, 0],
+                            [0, 0],
+                            [0, 0],
+                          ]
+                        ).map((uv, uvIdx) => (
+                          <div
+                            key={uvIdx}
+                            style={{ display: 'flex', gap: '2px', alignItems: 'center' }}
+                          >
+                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>
+                              V{uvIdx}:
+                            </span>
+                            <InputNumber
+                              size="xs"
+                              value={uv[0]}
+                              step={0.1}
+                              onChange={val => updateUV(triIdx, uvIdx, 0, val)}
+                              style={{ width: '55px' }}
+                            />
+                            <InputNumber
+                              size="xs"
+                              value={uv[1]}
+                              step={0.1}
+                              onChange={val => updateUV(triIdx, uvIdx, 1, val)}
+                              style={{ width: '55px' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
+              </>
             )}
           </Panel>
         </Col>
       </Row>
 
       <Row style={{ marginTop: '1rem' }}>
-        <Button appearance="primary" onClick={handleSave}>
+        <Button onClick={handleUndo} disabled={!historyRef.current.canUndo}>
+          ↩ Undo
+        </Button>
+        <Button
+          onClick={handleRedo}
+          disabled={!historyRef.current.canRedo}
+          style={{ marginLeft: '0.5rem' }}
+        >
+          ↪ Redo
+        </Button>
+        <Button appearance="primary" onClick={handleSave} style={{ marginLeft: '0.5rem' }}>
           💾 Save Changes
         </Button>
       </Row>
+      <ConfirmDialog />
+      <Modal open={showNewDialog} onClose={closeNewGeometryDialog}>
+        <Modal.Header onClose={closeNewGeometryDialog}>New geometry</Modal.Header>
+        <Modal.Body>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '12px' }}>
+            Geometry name (e.g., FLAT_ALL, WALL_T)
+          </label>
+          <Input
+            value={newGeometryName}
+            onChange={setNewGeometryName}
+            autoFocus
+            placeholder="e.g., FLAT_ALL, WALL_T"
+            onKeyDown={e => {
+              if (e.key === 'Enter') createGeometryFromName();
+            }}
+          />
+          {nameError && (
+            <p style={{ color: '#e05252', fontSize: '12px', marginTop: '0.5rem' }}>
+              {nameError}
+            </p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeNewGeometryDialog}>Cancel</Button>
+          <Button appearance="primary" onClick={createGeometryFromName}>
+            Create
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
