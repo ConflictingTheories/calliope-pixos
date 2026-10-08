@@ -24,6 +24,9 @@ import InputManager from './input/manager.js'; // Import InputManager
 import NetworkManager from './net/manager.js';
 import SaveManager from './persistence/SaveManager.js';
 import TrophyManager from './trophies/TrophyManager.js';
+import IdentityContext from './identity/context.js';
+import PermissionEvaluator from './permissions/evaluator.js';
+import WorldMerger from './scene/worldMerger.js';
 import {
   attachFlagDebugInfo,
   attachWebglDebugInfo,
@@ -118,6 +121,13 @@ export default class GLEngine {
     /** @type {TrophyManager} */
     this.trophyManager = new TrophyManager(this);
 
+    /** @type {IdentityContext} - creator/consumer duality */
+    this.identityContext = new IdentityContext(null);
+    /** @type {PermissionEvaluator} - package access control */
+    this.permissionEvaluator = this.identityContext.permissions;
+    /** @type {WorldMerger|null} - lazy, built once spritz.world exists */
+    this._worldMerger = null;
+
     // Debug flags
     /** @type {boolean} */
     this.debug = false; // General debug mode (enables console logs)
@@ -152,6 +162,17 @@ export default class GLEngine {
     this.render = this.render.bind(this);
     this.init = this.init.bind(this);
     this.close = this.close.bind(this);
+  }
+
+  /**
+   * Lazy WorldMerger — built on first access once spritz.world exists.
+   * @returns {WorldMerger|null}
+   */
+  get worldMerger() {
+    if (!this._worldMerger && this.spritz && this.spritz.world) {
+      this._worldMerger = new WorldMerger(this.spritz.world, this.permissionEvaluator);
+    }
+    return this._worldMerger;
   }
 
   /**
