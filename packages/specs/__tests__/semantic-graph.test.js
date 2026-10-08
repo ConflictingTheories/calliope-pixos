@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { validateSemantics, SEMANTIC_CODES } from '../src/semantic.js';

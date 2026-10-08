@@ -3,11 +3,20 @@
  * Configures the test environment before tests run.
  */
 
+
 import { expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
+// True in jsdom/happy-dom, false in node-environment test files (e.g. packages/specs).
+// Browser mocks are skipped entirely when there is no real DOM.
+const HAS_DOM = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+let localStorageMock;
+let mockWebGLContext;
+
+if (HAS_DOM) {
 // Mock localStorage
-const localStorageMock = (() => {
+localStorageMock = (() => {
   let store = {};
   return {
     getItem: vi.fn(key => store[key] || null),
@@ -75,7 +84,7 @@ window.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16));
 window.cancelAnimationFrame = vi.fn(id => clearTimeout(id));
 
 // Mock WebGL context
-const mockWebGLContext = {
+mockWebGLContext = {
   canvas: document.createElement('canvas'),
   createShader: vi.fn(() => ({})),
   shaderSource: vi.fn(),
@@ -245,10 +254,12 @@ global.fetch = vi.fn(() =>
 URL.createObjectURL = vi.fn(() => 'blob:mock-url');
 URL.revokeObjectURL = vi.fn();
 
+} // end HAS_DOM
+
 // Clean up after each test
 afterEach(() => {
   vi.clearAllMocks();
-  localStorageMock.clear();
+  if (localStorageMock) localStorageMock.clear();
 });
 
 // Console warnings/errors in tests

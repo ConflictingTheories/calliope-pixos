@@ -2,20 +2,28 @@
   "id": "zone-1",
   "name": "First Zone",
   "tileset": "tileset-1",
-  "bounds": {
-    "x": 0,
-    "y": 0,
-    "w": 32,
-    "h": 32
-  },
-  "tileSize": 16,
+  "bounds": [
+    0,
+    0,
+    32,
+    32
+  ],
+  "tileSize": [
+    16,
+    16
+  ],
   "layers": [
     {
       "id": "ground",
-      "tiles": []
+      "tiles": [],
+      "type": "tile"
     }
   ],
   "scripts": [
-    "scripts/main.pxs"
+    {
+      "id": "scripts/main.pxs",
+      "trigger": "onLoad",
+      "script": "scripts/main.pxs"
+    }
   ]
 }
