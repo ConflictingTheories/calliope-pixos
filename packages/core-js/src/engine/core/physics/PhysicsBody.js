@@ -227,9 +227,9 @@ export default class PhysicsBody {
       friction: this.friction,
       restitution: this.restitution,
       useGravity: this.useGravity,
-      offset: this.offset.clone(),
+      offset: new Vector(this.offset.x, this.offset.y, this.offset.z),
     });
-    clone.velocity = this.velocity.clone();
+    clone.velocity = new Vector(this.velocity.x, this.velocity.y, this.velocity.z);
     return clone;
   }
 }
