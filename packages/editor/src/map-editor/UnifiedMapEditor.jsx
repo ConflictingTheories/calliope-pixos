@@ -17,6 +17,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button, Input, InputNumber, SelectPicker } from '../ui';
 import { useConfirm } from '../shared/hooks/useConfirm.jsx';
+import { useToast } from '../shared/components/Toast.jsx';
 import { MapToolbar } from './panels/MapToolbar.jsx';
 import { MapModeTabs } from './panels/MapModeTabs.jsx';
 import { MapCanvas } from './panels/MapCanvas.jsx';
@@ -52,6 +53,7 @@ function UnifiedMapEditor({
   entryName,
 }) {
   const { confirm, ConfirmDialog } = useConfirm();
+  const toast = useToast();
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
@@ -66,6 +68,7 @@ function UnifiedMapEditor({
   const [objects, setObjects] = useState([]);
   const [triggers, setTriggers] = useState({ selectTrigger: '', scripts: [] });
   const [lights, setLights] = useState([]);
+  const [lightsEnabled, setLightsEnabled] = useState(true); // Preview lighting toggle (default ON)
   const [animatedTiles, setAnimatedTiles] = useState([]);
 
   // UI state
@@ -89,6 +92,7 @@ function UnifiedMapEditor({
   const [spriteIdInput, setSpriteIdInput] = useState('');
   const [spriteFacing, setSpriteFacing] = useState('Down');
   const [selectedObject, setSelectedObject] = useState(null);
+  const [selectedLight, setSelectedLight] = useState(null);
 
   // Dialog state
   const [showTileEditor, setShowTileEditor] = useState(false);
@@ -225,19 +229,20 @@ function UnifiedMapEditor({
       }
 
       // Load triggers if present
+      const loadedTriggers = {
+        selectTrigger: parsedMap?.selectTrigger || '',
+        scripts: parsedMap?.scripts || [],
+      };
       if (parsedMap) {
-        setTriggers({
-          selectTrigger: parsedMap.selectTrigger || '',
-          scripts: parsedMap.scripts || [],
-        });
+        setTriggers(loadedTriggers);
       }
 
-      // Load lights if present
-      if (parsedMap?.lights && Array.isArray(parsedMap.lights)) {
-        setLights(parsedMap.lights);
-      } else {
-        setLights([]);
-      }
+      // Load lights if present (normalized so the lights panel always has the
+      // fields it edits; extras the engine understands are preserved)
+      const loadedLights = (
+        parsedMap?.lights && Array.isArray(parsedMap.lights) ? parsedMap.lights : []
+      ).map((light, idx) => normalizeLight(light, idx));
+      setLights(loadedLights);
 
       // Load animated tiles if present
       if (parsedMap?.animatedTiles && Array.isArray(parsedMap.animatedTiles)) {
@@ -280,9 +285,16 @@ function UnifiedMapEditor({
         setAttributes([]);
       }
 
-      // Initialize history
+      // Initialize history (snapshot placements explicitly: the state vars in
+      // this closure may still hold the previous map's values on first load)
       if (parsedCells) {
-        pushHistory(parsedCells, currentHeights, currentAttributes);
+        pushHistory(parsedCells, currentHeights, currentAttributes, {
+          sprites: parsedMap?.sprites ?? [],
+          objects: parsedMap?.objects ?? [],
+          animatedTiles: parsedMap?.animatedTiles ?? [],
+          lights: loadedLights,
+          triggers: loadedTriggers,
+        });
       }
       setError(null);
     } catch (err) {
@@ -398,9 +410,12 @@ function UnifiedMapEditor({
     [textureAtlas]
   );
 
+  // Max map lights forwarded to the preview shader (matches uLights[16] in webgl-utils)
+  const PREVIEW_MAX_LIGHTS = 16;
+
   // Render callback for WebGL3DCanvas
   const handleRender = useCallback(
-    (gl, projectionMatrix, viewMatrix, camera, showGridFlag) => {
+    (gl, projectionMatrix, viewMatrix, camera, showGridFlag, cameraPos) => {
       if (!shaderProgramRef.current || !cells.length) return;
 
       const program = shaderProgramRef.current;
@@ -409,14 +424,48 @@ function UnifiedMapEditor({
       // Get uniform locations
       const uModelViewMatrix = gl.getUniformLocation(program, 'uModelViewMatrix');
       const uProjectionMatrix = gl.getUniformLocation(program, 'uProjectionMatrix');
+      const uModelMatrix = gl.getUniformLocation(program, 'uModelMatrix');
       const uUseTexture = gl.getUniformLocation(program, 'uUseTexture');
       const uColor = gl.getUniformLocation(program, 'uColor');
       const uShowGrid = gl.getUniformLocation(program, 'uShowGrid');
       const uTexture = gl.getUniformLocation(program, 'uTexture');
       const uIsHovered = gl.getUniformLocation(program, 'uIsHovered');
+      const uUseLights = gl.getUniformLocation(program, 'uUseLights');
+      const uCameraPos = gl.getUniformLocation(program, 'uCameraPos');
+      // Per-light struct uniforms (engine convention: uLights[i].enabled/.position/.color/.density)
+      const uLightStructs = [];
+      for (let i = 0; i < PREVIEW_MAX_LIGHTS; i++) {
+        uLightStructs.push({
+          enabled: gl.getUniformLocation(program, `uLights[${i}].enabled`),
+          position: gl.getUniformLocation(program, `uLights[${i}].position`),
+          color: gl.getUniformLocation(program, `uLights[${i}].color`),
+          density: gl.getUniformLocation(program, `uLights[${i}].density`),
+        });
+      }
 
       gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
       gl.uniform1i(uShowGrid, showGridFlag);
+      gl.uniform1i(uUseLights, lightsEnabled ? 1 : 0);
+      if (cameraPos) {
+        gl.uniform3f(uCameraPos, cameraPos[0], cameraPos[1], cameraPos[2]);
+      }
+
+      // Forward map lights to the shader (colors normalized 0..1; respect per-light enabled)
+      for (let i = 0; i < PREVIEW_MAX_LIGHTS; i++) {
+        const light = lights[i];
+        const loc = uLightStructs[i];
+        if (light) {
+          const pos = Array.isArray(light.pos) ? light.pos : [0, 0, 0];
+          const color = Array.isArray(light.color) ? light.color : [255, 255, 255];
+          gl.uniform1f(loc.enabled, light.enabled !== false ? 1 : 0);
+          gl.uniform3f(loc.position, pos[0] ?? 0, pos[1] ?? 0, pos[2] ?? 0);
+          gl.uniform3f(loc.color, (color[0] ?? 255) / 255, (color[1] ?? 255) / 255, (color[2] ?? 255) / 255);
+          gl.uniform1f(loc.density, typeof light.density === 'number' ? light.density : 1);
+        } else {
+          // No light in this slot: must stay disabled (uniforms persist across frames)
+          gl.uniform1f(loc.enabled, 0);
+        }
+      }
 
       // Debug: Log texture and uniform state once
       if (!window._renderDebugLogged) {
@@ -463,6 +512,7 @@ function UnifiedMapEditor({
             cellHeight,
             viewMatrix,
             uModelViewMatrix,
+            uModelMatrix,
             uUseTexture,
             uColor,
             uTexture
@@ -480,6 +530,7 @@ function UnifiedMapEditor({
           sprite.pos[2],
           viewMatrix,
           uModelViewMatrix,
+          uModelMatrix,
           uUseTexture,
           uColor,
           [0.2, 0.8, 0.2] // Green for sprites
@@ -496,6 +547,7 @@ function UnifiedMapEditor({
           obj.pos[2],
           viewMatrix,
           uModelViewMatrix,
+          uModelMatrix,
           uUseTexture,
           uColor,
           [0.2, 0.2, 0.8] // Blue for objects
@@ -512,9 +564,28 @@ function UnifiedMapEditor({
           tile.pos[2],
           viewMatrix,
           uModelViewMatrix,
+          uModelMatrix,
           uUseTexture,
           uColor,
           [0.8, 0.8, 0.2] // Yellow for animated tiles
+        );
+      });
+
+      // Render lights as visual markers (warm when on, gray when disabled)
+      lights.forEach(light => {
+        const pos = Array.isArray(light.pos) ? light.pos : [0, 0, 0];
+        renderMarker(
+          gl,
+          program,
+          pos[0] ?? 0,
+          pos[1] ?? 0,
+          pos[2] ?? 0,
+          viewMatrix,
+          uModelViewMatrix,
+          uModelMatrix,
+          uUseTexture,
+          uColor,
+          light.enabled !== false ? [1.0, 0.9, 0.5] : [0.35, 0.35, 0.35]
         );
       });
     },
@@ -529,6 +600,8 @@ function UnifiedMapEditor({
       sprites,
       objects,
       animatedTiles,
+      lights,
+      lightsEnabled,
     ]
   );
 
@@ -542,6 +615,7 @@ function UnifiedMapEditor({
     cellHeight,
     viewMatrix,
     uModelViewMatrix,
+    uModelMatrix,
     uUseTexture,
     uColor,
     uTexture
@@ -559,6 +633,7 @@ function UnifiedMapEditor({
     const modelViewMatrix = createMat4();
     multiply(modelViewMatrix, viewMatrix, modelMatrix);
     gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
+    gl.uniformMatrix4fv(uModelMatrix, false, modelMatrix);
 
     // Parse tile definition: [geometryName, textureName, heightOffset, ...]
     for (let i = 0; i < tileData.length; i += 3) {
@@ -690,7 +765,7 @@ function UnifiedMapEditor({
     gl.deleteBuffer(normalBuffer);
   }
 
-  // Render a marker (cube) for sprites, objects, or animated tiles
+  // Render a marker (cube) for sprites, objects, animated tiles, or lights
   function renderMarker(
     gl,
     program,
@@ -699,6 +774,7 @@ function UnifiedMapEditor({
     z,
     viewMatrix,
     uModelViewMatrix,
+    uModelMatrix,
     uUseTexture,
     uColor,
     color
@@ -715,6 +791,7 @@ function UnifiedMapEditor({
     const modelViewMatrix = createMat4();
     multiply(modelViewMatrix, viewMatrix, modelMatrix);
     gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
+    gl.uniformMatrix4fv(uModelMatrix, false, modelMatrix);
 
     // Create a simple cube
     const vertices = [
@@ -966,6 +1043,25 @@ function UnifiedMapEditor({
         return; // Don't process any other actions in animated tile mode
       }
 
+      // Attributes mode - select the clicked cell so its attributes can be
+      // edited in the Cell Attributes panel
+      if (editorMode === 'attributes') {
+        if (event.type === 'click' && event.button === 0) {
+          debug('MapEditor3D', ' Selecting cell for attributes:', x, y);
+          setSelectedCell({ x, y });
+        }
+        return; // Don't process any other actions in attributes mode
+      }
+
+      // Lights mode - place a new light at the clicked cell
+      if (editorMode === 'lights') {
+        if (event.type === 'click' && event.button === 0) {
+          debug('MapEditor3D', ' Placing light at:', x, y);
+          addLight(x, y);
+        }
+        return; // Don't process any other actions in lights mode
+      }
+
       // Tile mode - handle paint/erase/pick tools
       if (editorMode === 'tiles') {
         if (currentTool === 'paint') {
@@ -1207,11 +1303,19 @@ function UnifiedMapEditor({
   }
 
   // History management
-  function pushHistory(newCells, newHeights, newAttributes) {
+  // Optional `extras` snapshots placement state (sprites, objects, animated
+  // tiles, triggers, lights). When omitted, the current state is used, so
+  // tile-only call sites keep working unchanged.
+  function pushHistory(newCells, newHeights, newAttributes, extras = {}) {
     const snapshot = {
       cells: JSON.parse(JSON.stringify(newCells)),
       heights: JSON.parse(JSON.stringify(newHeights)),
       attributes: JSON.parse(JSON.stringify(newAttributes)),
+      sprites: JSON.parse(JSON.stringify(extras.sprites ?? sprites)),
+      objects: JSON.parse(JSON.stringify(extras.objects ?? objects)),
+      animatedTiles: JSON.parse(JSON.stringify(extras.animatedTiles ?? animatedTiles)),
+      triggers: JSON.parse(JSON.stringify(extras.triggers ?? triggers)),
+      lights: JSON.parse(JSON.stringify(extras.lights ?? lights)),
     };
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(snapshot);
@@ -1219,22 +1323,29 @@ function UnifiedMapEditor({
     setHistoryIndex(newHistory.length - 1);
   }
 
+  // Snapshots taken before placements were tracked may lack those fields;
+  // keep the current placement state for anything a snapshot does not carry.
+  function restoreSnapshot(state) {
+    setCells(state.cells);
+    setHeights(state.heights);
+    setAttributes(state.attributes);
+    if (state.sprites) setSprites(state.sprites);
+    if (state.objects) setObjects(state.objects);
+    if (state.animatedTiles) setAnimatedTiles(state.animatedTiles);
+    if (state.triggers) setTriggers(state.triggers);
+    if (state.lights) setLights(state.lights);
+  }
+
   function undo() {
     if (historyIndex > 0) {
-      const prevState = history[historyIndex - 1];
-      setCells(prevState.cells);
-      setHeights(prevState.heights);
-      setAttributes(prevState.attributes);
+      restoreSnapshot(history[historyIndex - 1]);
       setHistoryIndex(historyIndex - 1);
     }
   }
 
   function redo() {
     if (historyIndex < history.length - 1) {
-      const nextState = history[historyIndex + 1];
-      setCells(nextState.cells);
-      setHeights(nextState.heights);
-      setAttributes(nextState.attributes);
+      restoreSnapshot(history[historyIndex + 1]);
       setHistoryIndex(historyIndex + 1);
     }
   }
@@ -1269,7 +1380,7 @@ function UnifiedMapEditor({
   // Add sprite to map
   function addSprite(x, y) {
     if (!spriteTypeInput || !spriteIdInput) {
-      alert('Please enter both Sprite ID and Type');
+      toast.warning('Please enter both Sprite ID and Type', { title: 'Missing fields' });
       return;
     }
 
@@ -1280,14 +1391,18 @@ function UnifiedMapEditor({
       facing: spriteFacing,
     };
 
-    setSprites([...sprites, newSprite]);
-    alert(`Sprite "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
+    const newSprites = [...sprites, newSprite];
+    setSprites(newSprites);
+    pushHistory(cells, heights, attributes, { sprites: newSprites });
+    toast.success(`Sprite "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
   }
 
   // Remove sprite
   function removeSprite(index) {
     const newSprites = sprites.filter((_, i) => i !== index);
     setSprites(newSprites);
+    setSelectedSprite(null);
+    pushHistory(cells, heights, attributes, { sprites: newSprites });
   }
 
   // Update sprite
@@ -1295,12 +1410,13 @@ function UnifiedMapEditor({
     const newSprites = [...sprites];
     newSprites[index] = { ...newSprites[index], ...updates };
     setSprites(newSprites);
+    pushHistory(cells, heights, attributes, { sprites: newSprites });
   }
 
   // Add object to map
   function addObject(x, y) {
     if (!spriteTypeInput || !spriteIdInput) {
-      alert('Please enter both Object ID and Type');
+      toast.warning('Please enter both Object ID and Type', { title: 'Missing fields' });
       return;
     }
 
@@ -1311,14 +1427,18 @@ function UnifiedMapEditor({
       facing: spriteFacing,
     };
 
-    setObjects([...objects, newObject]);
-    alert(`Object "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
+    const newObjects = [...objects, newObject];
+    setObjects(newObjects);
+    pushHistory(cells, heights, attributes, { objects: newObjects });
+    toast.success(`Object "${spriteIdInput}" added at [${x}, ${y}, ${currentHeight}]`);
   }
 
   // Remove object
   function removeObject(index) {
     const newObjects = objects.filter((_, i) => i !== index);
     setObjects(newObjects);
+    setSelectedObject(null);
+    pushHistory(cells, heights, attributes, { objects: newObjects });
   }
 
   // Update object
@@ -1326,12 +1446,15 @@ function UnifiedMapEditor({
     const newObjects = [...objects];
     newObjects[index] = { ...newObjects[index], ...updates };
     setObjects(newObjects);
+    pushHistory(cells, heights, attributes, { objects: newObjects });
   }
 
   // Add animated tile
   function addAnimatedTile(x, y) {
     if (!spriteTypeInput) {
-      alert('Please enter the Sprite Type for the animated tile');
+      toast.warning('Please enter the Sprite Type for the animated tile', {
+        title: 'Missing fields',
+      });
       return;
     }
 
@@ -1340,14 +1463,162 @@ function UnifiedMapEditor({
       pos: [x, y, currentHeight],
     };
 
-    setAnimatedTiles([...animatedTiles, newAnimatedTile]);
-    alert(`Animated tile added at [${x}, ${y}, ${currentHeight}]`);
+    const newTiles = [...animatedTiles, newAnimatedTile];
+    setAnimatedTiles(newTiles);
+    pushHistory(cells, heights, attributes, { animatedTiles: newTiles });
+    toast.success(`Animated tile added at [${x}, ${y}, ${currentHeight}]`);
   }
 
   // Remove animated tile
   function removeAnimatedTile(index) {
     const newTiles = animatedTiles.filter((_, i) => i !== index);
     setAnimatedTiles(newTiles);
+    pushHistory(cells, heights, attributes, { animatedTiles: newTiles });
+  }
+
+  // Normalize a light loaded from map JSON so the lights panel always has the
+  // fields it edits. Matches the engine light model (see zone.js): id, pos,
+  // color [r,g,b], density (intensity), enabled. Unknown extra fields are
+  // preserved.
+  function normalizeLight(light, idx) {
+    const source = light && typeof light === 'object' ? light : {};
+    const pos = Array.isArray(source.pos) ? source.pos : [];
+    const color = Array.isArray(source.color) ? source.color : [];
+    return {
+      enabled: true,
+      ...source,
+      id: source.id || `light-${idx + 1}`,
+      pos: [pos[0] ?? 0, pos[1] ?? 0, pos[2] ?? 0],
+      color: [color[0] ?? 255, color[1] ?? 255, color[2] ?? 255],
+      density: typeof source.density === 'number' ? source.density : 1,
+    };
+  }
+
+  // [r,g,b] (0-255) <-> #rrggbb for the native color picker
+  function rgbToHex(rgb) {
+    const clamp = v => Math.max(0, Math.min(255, Math.round(v ?? 0)));
+    const [r = 255, g = 255, b = 255] = Array.isArray(rgb) ? rgb : [];
+    return (
+      '#' +
+      [clamp(r), clamp(g), clamp(b)].map(v => v.toString(16).padStart(2, '0')).join('')
+    );
+  }
+
+  function hexToRgb(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  // Add light to map at the given cell
+  function addLight(x, y) {
+    const newLight = normalizeLight(
+      {
+        id: `light-${lights.length + 1}`,
+        pos: [x, y, currentHeight],
+        color: [255, 255, 255],
+        density: 1,
+        enabled: true,
+      },
+      lights.length
+    );
+    const newLights = [...lights, newLight];
+    setLights(newLights);
+    setSelectedLight(newLights.length - 1);
+    pushHistory(cells, heights, attributes, { lights: newLights });
+    toast.success(`Light "${newLight.id}" added at [${x}, ${y}, ${currentHeight}]`);
+  }
+
+  // Remove light
+  function removeLight(index) {
+    const newLights = lights.filter((_, i) => i !== index);
+    setLights(newLights);
+    setSelectedLight(null);
+    pushHistory(cells, heights, attributes, { lights: newLights });
+  }
+
+  // Update light
+  function updateLight(index, updates) {
+    const newLights = [...lights];
+    newLights[index] = { ...newLights[index], ...updates };
+    setLights(newLights);
+    pushHistory(cells, heights, attributes, { lights: newLights });
+  }
+
+  // Inline edit form for a placed sprite or object. `updateFn` is updateSprite
+  // or updateObject; edits go through it so undo history stays in sync.
+  function renderPlacementEditor(item, idx, updateFn) {
+    const pos = Array.isArray(item.pos) ? item.pos : [0, 0, 0];
+    const setPosAxis = (axis, value) => {
+      const nextPos = [...pos];
+      nextPos[axis] = value;
+      updateFn(idx, { pos: nextPos });
+    };
+    const fieldStyle = {
+      width: '100%',
+      background: '#3c3c3c',
+      color: '#d4d4d4',
+      border: '1px solid #3e3e42',
+      padding: '4px 6px',
+      borderRadius: '2px',
+      fontSize: '11px',
+      marginTop: '2px',
+    };
+    return (
+      <div
+        style={{
+          marginTop: '8px',
+          paddingTop: '8px',
+          borderTop: '1px solid #3e3e42',
+        }}
+      >
+        <div className="map-editor__field">
+          <label className="map-editor__label">ID:</label>
+          <Input
+            value={item.id || ''}
+            onChange={e => updateFn(idx, { id: e.target.value })}
+            style={fieldStyle}
+          />
+        </div>
+        <div className="map-editor__field">
+          <label className="map-editor__label">Type:</label>
+          <Input
+            value={item.type || ''}
+            onChange={e => updateFn(idx, { type: e.target.value })}
+            style={fieldStyle}
+          />
+        </div>
+        <div className="map-editor__field">
+          <label className="map-editor__label">Facing:</label>
+          <SelectPicker
+            data={[
+              { value: 'Down', label: 'Down' },
+              { value: 'Up', label: 'Up' },
+              { value: 'Left', label: 'Left' },
+              { value: 'Right', label: 'Right' },
+            ]}
+            value={item.facing || 'Down'}
+            onChange={v => updateFn(idx, { facing: v })}
+            cleanable={false}
+            block
+          />
+        </div>
+        <div className="map-editor__field">
+          <label className="map-editor__label">Position (X / Y / Z):</label>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[0, 1, 2].map(axis => (
+              <InputNumber
+                key={axis}
+                value={pos[axis] ?? 0}
+                onChange={v => setPosAxis(axis, v)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Get available tiles
@@ -1547,26 +1818,57 @@ function UnifiedMapEditor({
                       <div className="map-editor__list-item-meta">Type: {item.type}</div>
                       <div className="map-editor__list-item-meta">Pos: [{item.pos.join(', ')}]</div>
                       <div className="map-editor__list-item-meta">Facing: {item.facing}</div>
-                      <Button
-                        size="sm"
-                        appearance="default"
-                        color="red"
-                        onClick={() =>
-                          editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)
-                        }
-                        style={{
-                          marginTop: '5px',
-                          background: '#5a1d1d',
-                          color: '#f48771',
-                          border: 'none',
-                          padding: '4px 8px',
-                          borderRadius: '2px',
-                          cursor: 'pointer',
-                          fontSize: '10px',
-                        }}
-                      >
-                        🗑️ Remove
-                      </Button>
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '5px' }}>
+                        <Button
+                          size="sm"
+                          appearance="default"
+                          onClick={() => {
+                            if (editorMode === 'sprites') {
+                              setSelectedSprite(selectedSprite === idx ? null : idx);
+                            } else {
+                              setSelectedObject(selectedObject === idx ? null : idx);
+                            }
+                          }}
+                          style={{
+                            background: '#0e639c',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                          }}
+                        >
+                          {(editorMode === 'sprites' ? selectedSprite : selectedObject) === idx
+                            ? '✕ Close'
+                            : '✏️ Edit'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          appearance="default"
+                          color="red"
+                          onClick={() =>
+                            editorMode === 'sprites' ? removeSprite(idx) : removeObject(idx)
+                          }
+                          style={{
+                            background: '#5a1d1d',
+                            color: '#f48771',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                          }}
+                        >
+                          🗑️ Remove
+                        </Button>
+                      </div>
+                      {(editorMode === 'sprites' ? selectedSprite : selectedObject) === idx &&
+                        renderPlacementEditor(
+                          item,
+                          idx,
+                          editorMode === 'sprites' ? updateSprite : updateObject
+                        )}
                     </div>
                   ))}
                   {(editorMode === 'sprites' ? sprites : objects).length === 0 && (
@@ -1841,7 +2143,9 @@ function UnifiedMapEditor({
                     appearance="primary"
                     onClick={() => {
                       const newScript = { id: `script-${Date.now()}`, trigger: '' };
-                      setTriggers({ ...triggers, scripts: [...triggers.scripts, newScript] });
+                      const next = { ...triggers, scripts: [...triggers.scripts, newScript] };
+                      setTriggers(next);
+                      pushHistory(cells, heights, attributes, { triggers: next });
                     }}
                     style={{
                       background: '#0e639c',
@@ -1916,7 +2220,9 @@ function UnifiedMapEditor({
                         color="red"
                         onClick={() => {
                           const newScripts = triggers.scripts.filter((_, i) => i !== idx);
-                          setTriggers({ ...triggers, scripts: newScripts });
+                          const next = { ...triggers, scripts: newScripts };
+                          setTriggers(next);
+                          pushHistory(cells, heights, attributes, { triggers: next });
                         }}
                         style={{
                           background: '#5a1d1d',
@@ -1935,6 +2241,220 @@ function UnifiedMapEditor({
                   {triggers.scripts.length === 0 && (
                     <div className="map-editor__list-item-meta">
                       No scripts configured
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lights Editor */}
+        {editorMode === 'lights' && (
+          <div className="map-editor__panel">
+            <div className="map-editor__panel-header">
+              💡 Lights Editor
+            </div>
+            <div className="map-editor__panel-body">
+              <div className="map-editor__info-banner">
+                <strong>
+                  ➤ Click on map to place a light
+                </strong>
+                <br />
+                <span className="map-editor__info-banner-hint">
+                  • Edit position, color and intensity below
+                </span>
+              </div>
+              <Button
+                size="sm"
+                appearance="primary"
+                block
+                onClick={() => {
+                  const cx = cells[0]?.length ? Math.floor(cells[0].length / 2) : 0;
+                  const cy = cells.length ? Math.floor(cells.length / 2) : 0;
+                  addLight(cx, cy);
+                }}
+                style={{
+                  background: '#0e639c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                ➕ Add Light at Map Center
+              </Button>
+
+              <div
+                className="map-editor__divider"
+              >
+                <div className="map-editor__section-title">
+                  Lights ({lights.length}):
+                </div>
+                <div className="map-editor__scroll-list">
+                  {lights.map((light, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1e1e1e',
+                        padding: '8px',
+                        marginBottom: '5px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <div className="map-editor__list-item-title">{light.id}</div>
+                      <div className="map-editor__list-item-meta">
+                        Pos: [{light.pos.join(', ')}] • Intensity: {light.density ?? 1}
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          margin: '4px 0',
+                        }}
+                      >
+                        <span
+                          title="Light color"
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '3px',
+                            background: rgbToHex(light.color),
+                            border: '1px solid #3e3e42',
+                            display: 'inline-block',
+                          }}
+                        />
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={light.enabled !== false}
+                            onChange={e => updateLight(idx, { enabled: e.target.checked })}
+                          />
+                          <span style={{ fontSize: '11px' }}>Enabled</span>
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '5px' }}>
+                        <Button
+                          size="sm"
+                          appearance="default"
+                          onClick={() => setSelectedLight(selectedLight === idx ? null : idx)}
+                          style={{
+                            background: '#0e639c',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                          }}
+                        >
+                          {selectedLight === idx ? '✕ Close' : '✏️ Edit'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          appearance="default"
+                          color="red"
+                          onClick={() => removeLight(idx)}
+                          style={{
+                            background: '#5a1d1d',
+                            color: '#f48771',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                          }}
+                        >
+                          🗑️ Remove
+                        </Button>
+                      </div>
+                      {selectedLight === idx && (
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            paddingTop: '8px',
+                            borderTop: '1px solid #3e3e42',
+                          }}
+                        >
+                          <div className="map-editor__field">
+                            <label className="map-editor__label">ID:</label>
+                            <Input
+                              value={light.id}
+                              onChange={e => updateLight(idx, { id: e.target.value })}
+                              style={{
+                                width: '100%',
+                                background: '#3c3c3c',
+                                color: '#d4d4d4',
+                                border: '1px solid #3e3e42',
+                                padding: '4px 6px',
+                                borderRadius: '2px',
+                                fontSize: '11px',
+                                marginTop: '2px',
+                              }}
+                            />
+                          </div>
+                          <div className="map-editor__field">
+                            <label className="map-editor__label">Position (X / Y / Z):</label>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              {[0, 1, 2].map(axis => (
+                                <InputNumber
+                                  key={axis}
+                                  value={light.pos[axis] ?? 0}
+                                  onChange={v => {
+                                    const nextPos = [...light.pos];
+                                    nextPos[axis] = v;
+                                    updateLight(idx, { pos: nextPos });
+                                  }}
+                                  style={{ width: '100%' }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="map-editor__field">
+                            <label className="map-editor__label">Color:</label>
+                            <input
+                              type="color"
+                              value={rgbToHex(light.color)}
+                              onChange={e => updateLight(idx, { color: hexToRgb(e.target.value) })}
+                              style={{
+                                width: '100%',
+                                height: '32px',
+                                background: '#3c3c3c',
+                                border: '1px solid #3e3e42',
+                                borderRadius: '2px',
+                                cursor: 'pointer',
+                                marginTop: '2px',
+                              }}
+                            />
+                          </div>
+                          <div className="map-editor__field">
+                            <label className="map-editor__label">Intensity:</label>
+                            <InputNumber
+                              min={0}
+                              step={0.1}
+                              value={light.density ?? 1}
+                              onChange={v => updateLight(idx, { density: v })}
+                              style={{ width: '100%' }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {lights.length === 0 && (
+                    <div className="map-editor__list-item-meta">
+                      No lights placed yet
                     </div>
                   )}
                 </div>
@@ -2354,8 +2874,11 @@ function UnifiedMapEditor({
               >
                 Map Width:
               </label>
-              <InputNumber min={1}
-                />
+              <InputNumber
+                min={1}
+                value={newMapWidth}
+                onChange={v => setNewMapWidth(v)}
+              />
             </div>
             <div className="map-editor__field">
               <label
@@ -2368,8 +2891,11 @@ function UnifiedMapEditor({
               >
                 Map Height:
               </label>
-              <InputNumber min={1}
-                />
+              <InputNumber
+                min={1}
+                value={newMapHeight}
+                onChange={v => setNewMapHeight(v)}
+              />
             </div>
             <div className="map-editor__row">
               <Button
@@ -2481,6 +3007,17 @@ function UnifiedMapEditor({
           <span>
             Drag to rotate • Middle mouse to pan • Scroll to zoom
           </span>
+          <label
+            className="map-editor__toolbar-toggle"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '12px' }}
+          >
+            <input
+              type="checkbox"
+              checked={lightsEnabled}
+              onChange={e => setLightsEnabled(e.target.checked)}
+            />
+            💡 Lights
+          </label>
         </div>
 
         {/* Canvas (P3-07: memoized; panel state changes do not rerender it) */}
