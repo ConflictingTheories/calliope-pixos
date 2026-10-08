@@ -28,6 +28,12 @@ export function migrate(manifest) {
     out.initialZones = [out.initialZones];
   }
 
+  // Legacy: ensure maps declares all initial zones.
+  // Pre-1.0 manifests have no maps field; derive from initialZones.
+  if (out.maps === undefined && Array.isArray(out.initialZones)) {
+    out.maps = [...out.initialZones];
+  }
+
   // Legacy: settings.resolution as "WxH" string -> [w, h].
   if (out.settings && typeof out.settings.resolution === 'string') {
     const m = /^(\d+)\s*[xX]\s*(\d+)$/.exec(out.settings.resolution.trim());
