@@ -328,16 +328,19 @@ in vec3 aNormal;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uModelMatrix;
 
 out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vPosition;
+out vec3 vWorldPos;
 
 void main() {
   gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
   vTexCoord = aTexCoord;
   vNormal = aNormal;
   vPosition = aPosition;
+  vWorldPos = (uModelMatrix * vec4(aPosition, 1.0)).xyz;
 }
 `;
 
@@ -347,12 +350,25 @@ precision highp float;
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vPosition;
+in vec3 vWorldPos;
+
+// Per-light struct mirrors the engine light uniform convention
+// (uLights[i].enabled/.position/.color/.density, see core-js engine/shaders/fs.js)
+struct PreviewLight {
+  float enabled;
+  vec3 position;
+  vec3 color;
+  float density;
+};
 
 uniform sampler2D uTexture;
 uniform bool uUseTexture;
 uniform vec3 uColor;
 uniform bool uShowGrid;
 uniform bool uIsHovered;
+uniform bool uUseLights;
+uniform vec3 uCameraPos;
+uniform PreviewLight uLights[16];
 
 out vec4 fragColor;
 
@@ -377,7 +393,23 @@ void main() {
   
   float lighting = ambient + diff1 * 0.6 + diff2 * 0.3;
   color.rgb *= min(lighting, 1.2);
-  
+
+  // Map-editor point lights (positions in tile/world space, colors 0..1)
+  if (uUseLights) {
+    vec3 viewDir = normalize(uCameraPos - vWorldPos);
+    for (int i = 0; i < 16; i++) {
+      if (uLights[i].enabled < 0.5) continue;
+      vec3 toLight = uLights[i].position - vWorldPos;
+      float dist = length(toLight);
+      vec3 ldir = toLight / max(dist, 0.0001);
+      float atten = 1.0 / (1.0 + 0.15 * dist + 0.02 * dist * dist);
+      float diff = max(dot(norm, ldir), 0.0);
+      vec3 halfVec = normalize(ldir + viewDir);
+      float spec = pow(max(dot(norm, halfVec), 0.0), 32.0);
+      color.rgb += uLights[i].color * (diff + 0.5 * spec) * atten * uLights[i].density;
+    }
+  }
+
   // Hover highlight
   if (uIsHovered) {
     color.rgb = mix(color.rgb, vec3(1.0, 1.0, 0.5), 0.3);
