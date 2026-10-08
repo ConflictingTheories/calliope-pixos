@@ -17,6 +17,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collect } from 'react-recollect';
 import { InputNumber, Button, Message, SelectPicker, Input } from '../ui';
 import { keymap } from '../shell/commands/keymap.js';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
+import { CommandHistory } from '../core/commands/history.js';
+import { TILE_BINDING_PRIORITY, isTileEditorFocused } from './undo-precedence.js';
 
 // Isometric tile preview with Z-up coordinate system (matching engine)
 // X: East/West, Y: North/South, Z: Up/Down
@@ -267,6 +270,30 @@ function componentsToArray(components) {
   return arr;
 }
 
+/**
+ * Remap a multi-selection across a tile rename. Pure helper so the
+ * selection never keeps the stale (deleted) old name after renaming.
+ */
+export function remapSelectionAfterRename(names, oldName, newName) {
+  return names.map(n => (n === oldName ? newName : n));
+}
+
+/**
+ * Coalesce rapid successive edits of the same tile field into a single
+ * undo step: undo restores the value from before the first keystroke,
+ * redo applies the latest value.
+ */
+export function coalesceTileEdit(prev, next) {
+  return {
+    label: next.label,
+    coalesceKey: next.coalesceKey,
+    coalesce: prev.coalesce,
+    undo: prev.undo,
+    redo: next.redo,
+    bytes: (prev.bytes || 0) + (next.bytes || 0),
+  };
+}
+
 function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   // tiles: Object with named keys
   const [tiles, setTiles] = useState({});
@@ -285,6 +312,45 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const [jsonText, setJsonText] = useState('');
   const [jsonError, setJsonError] = useState(null);
 
+  const { confirm, ConfirmDialog } = useConfirm();
+
+  // Root DOM node, used by the undo/redo precedence guard so the tile
+  // editor only claims Ctrl+Z while focus is inside its own subtree.
+  const rootRef = useRef(null);
+
+  // Undo/redo for tile operations. Each entry carries its own
+  // operation-specific inverse (the P2-05 command pattern from
+  // core/commands/history.js); the stack is byte-capped by CommandHistory.
+  const historyRef = useRef(null);
+  if (!historyRef.current) historyRef.current = new CommandHistory();
+  const [, bumpHistory] = useState(0);
+  useEffect(() => historyRef.current.onChange(() => bumpHistory(t => t + 1)), []);
+
+  const pushHistory = useCallback((label, undoFn, redoFn, extra = {}) => {
+    historyRef.current.push({ label, undo: undoFn, redo: redoFn, ...extra }, { apply: false });
+  }, []);
+  const undo = useCallback(() => {
+    // Return the boolean: an empty tile history yields false so the
+    // keymap falls through to shell-level undo instead of swallowing it.
+    return historyRef.current.undo();
+  }, []);
+  const redo = useCallback(() => {
+    return historyRef.current.redo();
+  }, []);
+  const canUndo = historyRef.current.canUndo;
+  const canRedo = historyRef.current.canRedo;
+
+  // Selection snapshot helpers. Selection lives outside `tiles`, so every
+  // history entry captures and restores it explicitly.
+  const captureSelection = useCallback(
+    () => ({ name: selectedTileName, names: [...selectedTileNames] }),
+    [selectedTileName, selectedTileNames]
+  );
+  const applySelection = useCallback(sel => {
+    setSelectedTileName(sel.name);
+    setSelectedTileNames(sel.names);
+  }, []);
+
   // Parse incoming tile content
   useEffect(() => {
     if (content) {
@@ -299,6 +365,8 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
             setSelectedTileName(names[0]);
             setSelectedTileNames([names[0]]);
           }
+          // A newly loaded document starts with a fresh undo history.
+          historyRef.current.clear();
         }
         setError(null);
       } catch (err) {
@@ -327,28 +395,45 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
   const selectedTileArray = selectedTileName ? tiles[selectedTileName] : null;
   const components = selectedTileArray ? parseTileComponents(selectedTileArray) : [];
 
-  // Update a component
+  // Update a component (layer edit). Undoable; rapid edits of the same
+  // field coalesce into one undo step via coalesceTileEdit.
   const updateComponent = useCallback(
     (compIdx, field, value) => {
       if (!selectedTileName) return;
+      const before = tiles[selectedTileName];
+      if (!before) return;
 
-      const newComponents = [...components];
+      const newComponents = parseTileComponents(before);
       newComponents[compIdx] = { ...newComponents[compIdx], [field]: value };
+      const after = componentsToArray(newComponents);
+      const apply = arr =>
+        setTiles(prev => ({
+          ...prev,
+          [selectedTileName]: arr,
+        }));
 
-      setTiles(prev => ({
-        ...prev,
-        [selectedTileName]: componentsToArray(newComponents),
-      }));
+      apply(after);
+      pushHistory(
+        `Edit ${selectedTileName} layer ${compIdx + 1} ${field}`,
+        () => apply(before),
+        () => apply(after),
+        {
+          coalesceKey: `tile:${selectedTileName}:layer:${compIdx}:${field}`,
+          coalesce: coalesceTileEdit,
+        }
+      );
     },
-    [selectedTileName, components]
+    [selectedTileName, tiles, pushHistory]
   );
 
-  // Add a component
+  // Add a component (undoable)
   const addComponent = useCallback(() => {
     if (!selectedTileName) return;
+    const before = tiles[selectedTileName];
+    if (!before) return;
 
     const newComponents = [
-      ...components,
+      ...parseTileComponents(before),
       {
         geometry: geometryNames[0] || 'FLAT_ALL',
         texture: 'FLOOR',
@@ -356,29 +441,42 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         flags: null,
       },
     ];
+    const after = componentsToArray(newComponents);
+    const apply = arr =>
+      setTiles(prev => ({
+        ...prev,
+        [selectedTileName]: arr,
+      }));
 
-    setTiles(prev => ({
-      ...prev,
-      [selectedTileName]: componentsToArray(newComponents),
-    }));
-  }, [selectedTileName, components, geometryNames]);
+    apply(after);
+    pushHistory(`Add layer to ${selectedTileName}`, () => apply(before), () => apply(after));
+  }, [selectedTileName, tiles, geometryNames, pushHistory]);
 
-  // Remove a component
+  // Remove a component (undoable)
   const removeComponent = useCallback(
     compIdx => {
       if (!selectedTileName) return;
+      const before = tiles[selectedTileName];
+      if (!before) return;
 
-      const newComponents = components.filter((_, i) => i !== compIdx);
+      const after = componentsToArray(parseTileComponents(before).filter((_, i) => i !== compIdx));
+      const apply = arr =>
+        setTiles(prev => ({
+          ...prev,
+          [selectedTileName]: arr,
+        }));
 
-      setTiles(prev => ({
-        ...prev,
-        [selectedTileName]: componentsToArray(newComponents),
-      }));
+      apply(after);
+      pushHistory(
+        `Remove layer ${compIdx + 1} from ${selectedTileName}`,
+        () => apply(before),
+        () => apply(after)
+      );
     },
-    [selectedTileName, components]
+    [selectedTileName, tiles, pushHistory]
   );
 
-  // Add a new tile
+  // Add a new tile (undoable)
   const addTile = useCallback(() => {
     const name = newTileName.trim().toUpperCase().replace(/\s+/g, '_');
     if (!name) return;
@@ -387,30 +485,69 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
       return;
     }
 
-    setTiles(prev => ({
-      ...prev,
-      [name]: ['FLAT_ALL', 'FLOOR', 0],
-    }));
-    setTileNames(prev => [...prev, name]);
-    setSelectedTileName(name);
+    const tileArr = ['FLAT_ALL', 'FLOOR', 0];
+    const selBefore = captureSelection();
+    const selAfter = { name, names: [name] };
+    const applyAdd = () => {
+      setTiles(prev => ({ ...prev, [name]: tileArr }));
+      setTileNames(prev => (prev.includes(name) ? prev : [...prev, name]));
+      applySelection(selAfter);
+    };
+    const applyRemove = () => {
+      setTiles(prev => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+      setTileNames(prev => prev.filter(n => n !== name));
+      applySelection(selBefore);
+    };
+
+    applyAdd();
     setNewTileName('');
     setError(null);
-  }, [newTileName, tiles]);
+    pushHistory(`Add tile "${name}"`, applyRemove, applyAdd);
+  }, [newTileName, tiles, captureSelection, applySelection, pushHistory]);
 
-  // Delete a tile
+  // Delete a tile (confirmed, undoable)
   const deleteTile = useCallback(
-    name => {
-      const newTiles = { ...tiles };
-      delete newTiles[name];
-      setTiles(newTiles);
-      setTileNames(prev => prev.filter(n => n !== name));
-      if (selectedTileName === name) {
-        const remaining = Object.keys(newTiles);
-        setSelectedTileName(remaining.length > 0 ? remaining[0] : null);
-      }
-      setSelectedTileNames(prev => prev.filter(n => n !== name));
+    async name => {
+      if (!tiles[name]) return;
+      const ok = await confirm(`Delete tile "${name}"?`);
+      if (!ok) return;
+
+      const deleted = tiles[name];
+      const index = tileNames.indexOf(name);
+      const selBefore = captureSelection();
+      const remainingNames = tileNames.filter(n => n !== name);
+      const selAfter =
+        selBefore.name === name
+          ? { name: remainingNames[0] ?? null, names: remainingNames[0] ? [remainingNames[0]] : [] }
+          : selBefore;
+
+      const applyDelete = () => {
+        setTiles(prev => {
+          const next = { ...prev };
+          delete next[name];
+          return next;
+        });
+        setTileNames(prev => prev.filter(n => n !== name));
+        applySelection(selAfter);
+      };
+      const applyRestore = () => {
+        setTiles(prev => ({ ...prev, [name]: deleted }));
+        setTileNames(prev => {
+          const next = prev.filter(n => n !== name);
+          next.splice(Math.min(index, next.length), 0, name);
+          return next;
+        });
+        applySelection(selBefore);
+      };
+
+      applyDelete();
+      pushHistory(`Delete tile "${name}"`, applyRestore, applyDelete);
     },
-    [tiles, selectedTileName]
+    [tiles, tileNames, captureSelection, applySelection, confirm, pushHistory]
   );
 
   // Universal selection: click = single, ctrl/cmd+click = toggle, shift+click = range
@@ -440,17 +577,55 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
     [tileNames, lastSelectedIndex]
   );
 
-  // Delete all selected tiles
-  const deleteSelected = useCallback(() => {
+  // Delete all selected tiles (confirmed, undoable)
+  const deleteSelected = useCallback(async () => {
     if (selectedTileNames.length === 0) return;
-    const newTiles = { ...tiles };
-    selectedTileNames.forEach(n => delete newTiles[n]);
-    setTiles(newTiles);
-    const remaining = tileNames.filter(n => !selectedTileNames.includes(n));
-    setTileNames(remaining);
-    setSelectedTileName(remaining[0] || null);
-    setSelectedTileNames(remaining[0] ? [remaining[0]] : []);
-  }, [tiles, tileNames, selectedTileNames]);
+    const names = [...selectedTileNames];
+    const ok = await confirm(
+      names.length === 1 ? `Delete tile "${names[0]}"?` : `Delete ${names.length} selected tiles?`
+    );
+    if (!ok) return;
+
+    const deleted = {};
+    const indices = {};
+    names.forEach(n => {
+      deleted[n] = tiles[n];
+      indices[n] = tileNames.indexOf(n);
+    });
+    const selBefore = captureSelection();
+    const remaining = tileNames.filter(n => !names.includes(n));
+    const selAfter = { name: remaining[0] ?? null, names: remaining[0] ? [remaining[0]] : [] };
+
+    const applyDelete = () => {
+      setTiles(prev => {
+        const next = { ...prev };
+        names.forEach(n => delete next[n]);
+        return next;
+      });
+      setTileNames(prev => prev.filter(n => !names.includes(n)));
+      applySelection(selAfter);
+    };
+    const applyRestore = () => {
+      setTiles(prev => ({ ...prev, ...deleted }));
+      setTileNames(prev => {
+        const next = prev.filter(n => !names.includes(n));
+        // Re-insert at the original positions (ascending) so order is preserved.
+        names
+          .slice()
+          .sort((a, b) => indices[a] - indices[b])
+          .forEach(n => next.splice(Math.min(indices[n], next.length), 0, n));
+        return next;
+      });
+      applySelection(selBefore);
+    };
+
+    applyDelete();
+    pushHistory(
+      `Delete ${names.length} tile${names.length === 1 ? '' : 's'}`,
+      applyRestore,
+      applyDelete
+    );
+  }, [tiles, tileNames, selectedTileNames, captureSelection, applySelection, confirm, pushHistory]);
 
   // Register keyboard shortcuts with the central keymap
   useEffect(() => {
@@ -475,7 +650,22 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
     return () => { offDelete(); offBackspace(); };
   }, [deleteSelected]);
 
-  // Rename a tile
+  // Undo/redo shortcuts. These carry a higher keymap priority than the
+  // shell's shell.undo/shell.redo, so the tile editor's local undo wins
+  // while keyboard focus is inside this tile editor's DOM subtree. Focus
+  // inside text inputs is excluded (native field undo preserved; the
+  // keymap's own input guard also backstops this).
+  useEffect(() => {
+    const focused = e => isTileEditorFocused(rootRef.current, e.target);
+    const opts = { when: focused, priority: TILE_BINDING_PRIORITY };
+    const offUndo = keymap.register('tile.undo', 'ctrl+z', () => undo(), opts);
+    const offRedo = keymap.register('tile.redo', 'ctrl+shift+z', () => redo(), opts);
+    const offRedoAlt = keymap.register('tile.redo-alt', 'ctrl+y', () => redo(), opts);
+    return () => { offUndo(); offRedo(); offRedoAlt(); };
+  }, [undo, redo]);
+
+  // Rename a tile (undoable). The multi-selection is remapped to the new
+  // name so it never keeps the stale old name (ghost selection).
   const renameTile = useCallback(
     oldName => {
       const newName = renameValue.trim().toUpperCase().replace(/\s+/g, '_');
@@ -488,23 +678,42 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         return;
       }
 
-      const newTiles = { ...tiles };
-      newTiles[newName] = newTiles[oldName];
-      delete newTiles[oldName];
+      const selBefore = captureSelection();
+      const selAfter = {
+        name: selBefore.name === oldName ? newName : selBefore.name,
+        names: remapSelectionAfterRename(selBefore.names, oldName, newName),
+      };
+      const applyRename = (from, to) => {
+        setTiles(prev => {
+          const next = { ...prev };
+          next[to] = next[from];
+          delete next[from];
+          return next;
+        });
+        setTileNames(prev => prev.map(n => (n === from ? to : n)));
+      };
 
-      setTiles(newTiles);
-      setTileNames(prev => prev.map(n => (n === oldName ? newName : n)));
-      if (selectedTileName === oldName) {
-        setSelectedTileName(newName);
-      }
+      applyRename(oldName, newName);
+      applySelection(selAfter);
       setRenamingTile(null);
       setRenameValue('');
       setError(null);
+      pushHistory(
+        `Rename "${oldName}" to "${newName}"`,
+        () => {
+          applyRename(newName, oldName);
+          applySelection(selBefore);
+        },
+        () => {
+          applyRename(oldName, newName);
+          applySelection(selAfter);
+        }
+      );
     },
-    [tiles, renameValue, selectedTileName]
+    [tiles, renameValue, captureSelection, applySelection, pushHistory]
   );
 
-  // Duplicate a tile
+  // Duplicate a tile (undoable)
   const duplicateTile = useCallback(
     name => {
       let newName = `${name}_COPY`;
@@ -513,14 +722,27 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         newName = `${name}_COPY_${counter++}`;
       }
 
-      setTiles(prev => ({
-        ...prev,
-        [newName]: [...prev[name]],
-      }));
-      setTileNames(prev => [...prev, newName]);
-      setSelectedTileName(newName);
+      const copy = [...tiles[name]];
+      const selBefore = captureSelection();
+      const applyAdd = () => {
+        setTiles(prev => ({ ...prev, [newName]: copy }));
+        setTileNames(prev => (prev.includes(newName) ? prev : [...prev, newName]));
+        setSelectedTileName(newName);
+      };
+      const applyRemove = () => {
+        setTiles(prev => {
+          const next = { ...prev };
+          delete next[newName];
+          return next;
+        });
+        setTileNames(prev => prev.filter(n => n !== newName));
+        applySelection(selBefore);
+      };
+
+      applyAdd();
+      pushHistory(`Duplicate tile "${name}"`, applyRemove, applyAdd);
     },
-    [tiles]
+    [tiles, captureSelection, applySelection, pushHistory]
   );
 
   // Save handler
@@ -545,6 +767,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
 
   return (
     <div
+      ref={rootRef}
       style={{
         position: 'relative',
         width: '100%',
@@ -554,6 +777,7 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
         background: 'var(--color-bg-primary)',
       }}
     >
+      <ConfirmDialog />
       {/* Left panel - Tile list */}
       <div
         style={{
@@ -706,8 +930,28 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
           )}
         </div>
 
-        {/* Save button */}
+        {/* Undo/redo + save */}
         <div style={{ padding: '12px', borderTop: '1px solid var(--color-border-subtle)' }}>
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+            <Button
+              size="xs"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+              style={{ flex: 1 }}
+            >
+              ↩ Undo
+            </Button>
+            <Button
+              size="xs"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Shift+Z)"
+              style={{ flex: 1 }}
+            >
+              ↪ Redo
+            </Button>
+          </div>
           <Button appearance="primary" block onClick={handleSave}>
             💾 Save Tiles
           </Button>
@@ -841,22 +1085,38 @@ function TileEditor({ content, onSave, geometryContent, textureList = [] }) {
                         // Apply ALL pasted tiles, not just the first one. Pasted
                         // keys overwrite existing ones so re-applying the same
                         // JSON is idempotent.
+                        const beforeTiles = tiles;
+                        const beforeNames = tileNames;
+                        const selBefore = captureSelection();
                         const newTiles = { ...tiles, ...obj };
-                        setTiles(newTiles);
                         // Keep the name list in sync without duplicate entries
-                        setTileNames(prev => {
-                          const seen = new Set(prev);
-                          return [...prev, ...names.filter(n => !seen.has(n))];
-                        });
+                        const seenNames = new Set(tileNames);
+                        const afterNames = [...tileNames, ...names.filter(n => !seenNames.has(n))];
+                        setTiles(newTiles);
+                        setTileNames(afterNames);
                         // Never leave selection pointing at a nonexistent tile:
                         // keep the current selection if it still exists,
                         // otherwise select the first pasted tile.
+                        let selAfter = selBefore;
                         if (!selectedTileName || !(selectedTileName in newTiles)) {
-                          setSelectedTileName(names[0]);
-                          setSelectedTileNames([names[0]]);
+                          selAfter = { name: names[0], names: [names[0]] };
+                          applySelection(selAfter);
                         }
                         setJsonError(null);
                         setShowJson(false);
+                        pushHistory(
+                          'Apply JSON paste',
+                          () => {
+                            setTiles(beforeTiles);
+                            setTileNames(beforeNames);
+                            applySelection(selBefore);
+                          },
+                          () => {
+                            setTiles(newTiles);
+                            setTileNames(afterNames);
+                            applySelection(selAfter);
+                          }
+                        );
                       } catch (err) {
                         setJsonError('Cannot apply: ' + err.message);
                       }
