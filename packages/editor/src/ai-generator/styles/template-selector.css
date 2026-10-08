@@ -67,7 +67,7 @@
 
 .template-card-selected {
   border-color: var(--brand-primary, var(--color-brand-secondary));
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.08);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.08)))
 }
 
 .template-card-header {

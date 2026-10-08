@@ -12,12 +12,11 @@
  * addition to text and image files.
  */
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 
-import ZipManager from './zip-manager/index.jsx';
 // (P3-12) Tool panels load lazily via the tool registry — the shell
 // bundle no longer parses all 12 panels at boot.
-import { getTool } from './shell/toolRegistry.js';
+import { getTool, resolveToolForFile } from './shell/toolRegistry.js';
 // (P2-09) Single keyboard dispatcher + command registry.
 import { keymap } from './shell/commands/keymap.js';
 import { commands } from './shell/commands/commands.js';
@@ -63,6 +62,14 @@ import { addLogListener, removeLogListener } from 'pixospritz-core/engine/utils/
 // (UX Phase 1) Multi-document tabs + toast feedback.
 import { useToast } from './shared/components/Toast.jsx';
 import { Button, Modal } from './ui';
+import { IconRail } from './shell/IconRail.jsx';
+import { AssetsPanel } from './shell/AssetsPanel.jsx';
+import { useZipLoader } from './shell/useZipLoader.js';
+import { useConfirm } from './shared/hooks/useConfirm.jsx';
+import { ResizablePanel } from './shell/ResizablePanel.jsx';
+import './shell/IconRail.css';
+import './shell/AssetsPanel.css';
+import './shell/ResizablePanel.css';
 // (UX Phase 2) Per-tool crash containment — a tool crash shows a
 // crash card instead of white-screening the app (finding A1.2).
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
@@ -96,6 +103,15 @@ const COMMUNITY_ACTIONS = [
  */
 const App = () => {
   const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
+  const { loadZipFile, loading: zipLoading, error: zipError } = useZipLoader();
+  const zipFileInputRef = useRef(null);
+
+  // The index.html sets <html app-loading> to hide the UI until boot.
+  // The legacy ZipManager used to clear it; now the shell owns it.
+  useEffect(() => {
+    document.documentElement.removeAttribute('app-loading');
+  }, []);
   // (UX Phase 1) Multi-document tabs. Each tab keeps its tool element
   // mounted (inactive tabs are hidden, not unmounted), so switching
   // documents no longer destroys tool state. Tab ids are stable
@@ -178,9 +194,86 @@ const App = () => {
   // Keep a list of image assets (name and data URI) for use in the tileset editor
   const [assets, setAssets] = useState([]);
 
+  // Godot-style layout: active tool in rail, assets panel visibility.
+  const [activeTool, setActiveTool] = useState('map-editor');
+  const [assetsOpen, setAssetsOpen] = useState(true);
+
+  // When rail tool is clicked: switch to the most recent tab using that tool,
+  // or just highlight the rail button if no such tab is open.
+  const handleRailToolSelect = useCallback((toolId) => {
+    setActiveTool(toolId);
+    // Find the most recent tab whose file resolves to this tool
+    const matchingTabs = tabs.filter(tab => {
+      try {
+        const tool = resolveToolForFile(tab.id);
+        return tool && tool.id === toolId;
+      } catch {
+        return false;
+      }
+    });
+    if (matchingTabs.length > 0) {
+      // Switch to the most recently opened matching tab (last in array)
+      setActiveTabId(matchingTabs[matchingTabs.length - 1].id);
+    }
+    // If no matching tab, the rail button just highlights —
+    // user can open a file from the sidebar or create new
+  }, [tabs]);
+
+  // Build asset groups for the AssetsPanel from the loaded zip.
+  // Groups: Maps, Sprites, Tiles, Scripts, Audio, Models, Other.
+  const assetGroups = useMemo(() => {
+    if (!zip || !zip.root) return [];
+    const groups = {
+      'Maps': [],
+      'Sprites': [],
+      'Tiles': [],
+      'Scripts': [],
+      'Audio': [],
+      'Models': [],
+      'Other': [],
+    };
+    const walk = (node, path = '') => {
+      if (!node.children) return;
+      node.children.forEach(child => {
+        const fullPath = path ? `${path}/${child.name}` : child.name;
+        if (fullPath.includes('__MACOSX') || child.name.startsWith('._')) return;
+        if (child.directory) {
+          walk(child, fullPath);
+        } else {
+          const name = child.name.toLowerCase();
+          let group = 'Other';
+          let icon = '📄';
+          if (name.endsWith('.json') && (fullPath.includes('map') || fullPath.includes('maps'))) {
+            group = 'Maps'; icon = '🗺️';
+          } else if (name.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+            group = 'Sprites'; icon = '🎨';
+          } else if (name.endsWith('.json') && fullPath.includes('tile')) {
+            group = 'Tiles'; icon = '🧱';
+          } else if (name.match(/\.(pxs|lua|js)$/)) {
+            group = 'Scripts'; icon = '📝';
+          } else if (name.match(/\.(mp3|wav|ogg|m4a)$/)) {
+            group = 'Audio'; icon = '🔊';
+          } else if (name.match(/\.(glb|gltf|obj)$/)) {
+            group = 'Models'; icon = '📦';
+          }
+          groups[group].push({
+            id: fullPath,
+            name: child.name,
+            icon,
+            sync: dirtyPaths.includes(fullPath) ? 'warn' : 'ok',
+          });
+        }
+      });
+    };
+    walk(zip.root);
+    return Object.entries(groups)
+      .filter(([_, items]) => items.length > 0)
+      .map(([title, items]) => ({ title, items }));
+  }, [zip, dirtyPaths]);
+
   // Validation report state.  When set, contains an object with `errors` and `warnings`
   const [validationReport, setValidationReport] = useState(null);
-  const [supportPreference, setSupportPreference] = useState(true);
+  const [supportPreference, setSupportPreference] = useState(false);
   const [supportPanelPinned, setSupportPanelPinned] = useState(false);
   const [supportMenuOpen, setSupportMenuOpen] = useState(false);
   const [hideTitleBar, setHideTitleBar] = useState(false);
@@ -190,7 +283,7 @@ const App = () => {
   // Console State
   const consoleState = useConsole();
   const [showConsole, setShowConsole] = useState(false);
-  const [consoleHeight, setConsoleHeight] = useState(250);
+  const [consoleHeight, setConsoleHeight] = useState(120);
 
   // Hook up core logger to console
   useEffect(() => {
@@ -219,7 +312,6 @@ const App = () => {
   // bridged onto the live zip-manager session so migrated tools read
   // and write the same project the shell has open.
   const toolCore = useMemo(() => {
-    const store = new ProjectStore();
     const repository = new BridgedProjectRepository({
       read: async (path, options = {}) => {
         const entry = findEntryByPath(path);
@@ -243,6 +335,7 @@ const App = () => {
       },
       exists: async path => !!findEntryByPath(path),
     });
+    const store = new ProjectStore(repository);
     // Bus ctx carries the repository via services (P1-04 guard seam).
     const bus = new CommandBus(store, { repository });
     return { registry: createDefaultRegistry(), commands, bus, store, repository };
@@ -346,6 +439,19 @@ const App = () => {
       shortcut: 'shift+?',
       run: () => setShortcutsOpen(true),
     });
+    // Universal save (Ctrl+S). Dispatches to the active tool via custom event.
+    // Tools listen for 'px:shell-save' and save if they are the active tab.
+    const offSave = commands.register({
+      id: 'shell.save',
+      title: 'Save',
+      group: 'shell',
+      shortcut: 'ctrl+s',
+      run: () => {
+        document.dispatchEvent(new CustomEvent('px:shell-save', {
+          detail: { tabId: activeTabIdRef.current }
+        }));
+      },
+    });
     const onKeyDown = e => keymap.handleKeyDown(e);
     window.addEventListener('keydown', onKeyDown);
     return () => {
@@ -362,6 +468,7 @@ const App = () => {
       offModeEditor();
       offUpdateTracker();
       offShortcuts();
+      offSave();
     };
   }, []);
 
@@ -1670,9 +1777,24 @@ const App = () => {
 
       // Try to parse to determine if it has the new format (with vertices/surfaces)
       let useEnhanced = false;
+      // Content handed to the editor; may be unwrapped from the legacy
+      // { geometry: {...} } wrapper below so the 2D editor loads and saves flat.
+      let editorContent = geoContent;
       try {
         const parsed = JSON.parse(geoContent);
-        const geomObj = parsed.geometry || parsed;
+        // Detect the legacy wrapped shape { geometry: {...} } (saved by the
+        // 3D editor before its save-contract fix). The single-key guard keeps
+        // this from misfiring on a file that has a "geometry" key alongside
+        // other entries.
+        let unwrapped = null;
+        if (
+          parsed && typeof parsed === 'object' && !Array.isArray(parsed) &&
+          parsed.geometry && typeof parsed.geometry === 'object' && !Array.isArray(parsed.geometry) &&
+          Object.keys(parsed).length === 1
+        ) {
+          unwrapped = parsed.geometry;
+        }
+        const geomObj = unwrapped || parsed.geometry || parsed;
 
         // Check if any geometry has vertices (new format)
         if (typeof geomObj === 'object') {
@@ -1682,6 +1804,14 @@ const App = () => {
               break;
             }
           }
+        }
+
+        // Unwrap only for the 2D editor: the 3D editor already understands
+        // the wrapped shape. The 2D editor saves the flat map it was given,
+        // so passing the inner object flattens legacy files on save instead
+        // of nesting {geometry:{geometry:...}}.
+        if (unwrapped && !useEnhanced) {
+          editorContent = JSON.stringify(unwrapped, null, 2);
         }
       } catch (err) {
         console.warn('Failed to parse geometry', err);
@@ -1693,7 +1823,7 @@ const App = () => {
       openTab(geoTabId, entry.name, (
         <EditorComponent
           key={geoTabId}
-          content={geoContent}
+          content={editorContent}
           onSave={async obj => {
             try {
               const fullPath = getEntryFullPath(entry);
@@ -1971,7 +2101,6 @@ const App = () => {
       }
 
       const name = entry.name.toLowerCase();
-      setSelectedEntry(entry);
       if (name.endsWith('.pxs')) {
         renderScriptEditor(entry, 'lua');
         return;
@@ -2083,6 +2212,126 @@ const App = () => {
     ]
   );
 
+
+  // --- AssetsPanel wiring (replaces legacy ZipManager sidebar) ---
+
+  // Load a .zip/.spritz package file into the editor.
+  const handleLoadPackageFile = useCallback(
+    async file => {
+      if (!file) return;
+      try {
+        const fs = await loadZipFile(file);
+        setZip(fs);
+        toast(`Loaded package: ${file.name}`);
+      } catch (err) {
+        toast(`Failed to load package: ${err.message}`);
+      }
+    },
+    [loadZipFile, toast]
+  );
+
+  // Hidden file input change -> load the chosen package.
+  const handlePackageFileInputChange = useCallback(
+    e => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (file) handleLoadPackageFile(file);
+    },
+    [handleLoadPackageFile]
+  );
+
+  // Drag-drop onto the AssetsPanel: .zip/.spritz loads a package,
+  // other files are added to the package root.
+  const handleAssetsDropFiles = useCallback(
+    async files => {
+      const fileList = Array.from(files);
+      if (fileList.length === 0) return;
+      const [first, ...rest] = fileList;
+      const isPackage = /\.(zip|spritz)$/i.test(first.name);
+      if (isPackage && fileList.length === 1) {
+        await handleLoadPackageFile(first);
+        return;
+      }
+      if (!zip) {
+        toast('Load a package first, then drop files to add them.');
+        return;
+      }
+      try {
+        for (const f of fileList) {
+          await zip.root.addFile(f);
+        }
+        // Force assetGroups + openFile tree to refresh with a new FS reference.
+        setZip(Object.assign(Object.create(Object.getPrototypeOf(zip)), zip));
+        toast(`Added ${fileList.length} file(s)`);
+      } catch (err) {
+        toast(`Failed to add files: ${err.message}`);
+      }
+    },
+    [zip, handleLoadPackageFile, toast]
+  );
+
+  // Open an asset from the panel in a tab.
+  const handleAssetSelect = useCallback(
+    id => {
+      const entry = findEntryByPath(id);
+      if (entry) openFile(entry);
+    },
+    [findEntryByPath, openFile]
+  );
+
+  // Create a new empty file at the package root.
+  const handleAssetAdd = useCallback(async () => {
+    if (!zip) {
+      toast('Load a package first, then add files.');
+      return;
+    }
+    const name = window.prompt('New file name (e.g. notes.txt):');
+    if (!name || !name.trim()) return;
+    const clean = name.trim().replace(/^\/+/, '');
+    try {
+      if (findEntryByPath(clean)) {
+        toast(`A file named "${clean}" already exists.`);
+        return;
+      }
+      zip.root.addText(clean, '');
+      setZip(Object.assign(Object.create(Object.getPrototypeOf(zip)), zip));
+      toast(`Created ${clean}`);
+    } catch (err) {
+      toast(`Failed to create file: ${err.message}`);
+    }
+  }, [zip, findEntryByPath, toast]);
+
+  // Delete the currently selected asset (active tab) with confirmation.
+  const handleAssetDelete = useCallback(async () => {
+    const targetId = activeTabId;
+    if (!targetId) {
+      toast('Select an asset first.');
+      return;
+    }
+    const entry = findEntryByPath(targetId);
+    if (!entry) {
+      toast('Selected asset not found.');
+      return;
+    }
+    const ok = await confirm(`Delete "${entry.name}"? This cannot be undone.`);
+    if (!ok) return;
+    try {
+      zip.remove(entry);
+      setZip(Object.assign(Object.create(Object.getPrototypeOf(zip)), zip));
+      // Close the tab if it was open
+      setTabs(prev => prev.filter(t => t.id !== targetId));
+      if (activeTabId === targetId) {
+        setActiveTabId(prev => {
+          const remaining = tabsRef.current.filter(t => t.id !== targetId);
+          return remaining.length ? remaining[remaining.length - 1].id : null;
+        });
+      }
+      toast(`Deleted ${entry.name}`);
+    } catch (err) {
+      toast(`Failed to delete: ${err.message}`);
+    }
+  }, [activeTabId, findEntryByPath, confirm, zip, toast]);
+
   const hasContent = tabs.length > 0;
   const activeTab = tabs.find(t => t.id === activeTabId) || null;
   const errorCount = validationReport?.errors?.length ?? 0;
@@ -2106,23 +2355,45 @@ const App = () => {
 
   return (
     <div className={shellClassName}>
-      {!hideTitleBar && (
-        <section className="editor-hero">
-          <h1>Pixospritz Creator Studio</h1>
-          <p>
-            Manage packages, preview assets, and edit scripts inside an interface inspired by
-            pixospritz.com.
-          </p>
-        </section>
-      )}
+      <ConfirmDialog />
       <div className="editor-stage">
-        <ResizableSidebar
-          openFile={openFile}
-          onZipLoaded={setZip}
-          onValidatePackage={validatePackage}
-          validationReport={validationReport}
-          onOptionsChange={handleOptionsChange}
+        {/* Godot-style icon rail — tool switching */}
+        <IconRail
+          activeTool={activeTool}
+          onSelectTool={handleRailToolSelect}
+          assetsOpen={assetsOpen}
+          onToggleAssets={() => setAssetsOpen(v => !v)}
         />
+        {/* Assets panel — grouped file browser replacing the legacy ZipManager */}
+        {assetsOpen && (
+          <>
+            <input
+              ref={zipFileInputRef}
+              type="file"
+              accept=".zip,.spritz"
+              style={{ display: 'none' }}
+              onChange={handlePackageFileInputChange}
+            />
+            <ResizablePanel
+              id="assets"
+              initialWidth={220}
+              minWidth={160}
+              maxWidth={400}
+              handleSide="right"
+            >
+              <AssetsPanel
+                groups={assetGroups}
+                selectedId={activeTabId}
+                onSelect={handleAssetSelect}
+                onAdd={handleAssetAdd}
+                onImport={() => zipFileInputRef.current?.click()}
+                onDelete={handleAssetDelete}
+                onClose={() => setAssetsOpen(false)}
+                onDropFiles={handleAssetsDropFiles}
+              />
+            </ResizablePanel>
+          </>
+        )}
         <section
           className="editor-main"
           style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}
@@ -2169,6 +2440,22 @@ const App = () => {
                 >
                   AI Generate
                 </Button>
+                {/* Export status indicator */}
+                <span
+                  className={`export-status${dirtyPaths.length > 0 ? ' is-dirty' : ' is-clean'}`}
+                  title={dirtyPaths.length > 0 ? `${dirtyPaths.length} file(s) modified since last export` : 'All files in sync with export'}
+                  style={{
+                    fontSize: '11px',
+                    padding: '3px 8px',
+                    borderRadius: '3px',
+                    marginLeft: '8px',
+                    background: dirtyPaths.length > 0 ? '#3a2a1a' : '#1a3a2a',
+                    color: dirtyPaths.length > 0 ? '#fbbf24' : '#4ade80',
+                    border: `1px solid ${dirtyPaths.length > 0 ? '#5a3a2a' : '#2a5a3a'}`,
+                  }}
+                >
+                  {dirtyPaths.length > 0 ? `⚠ ${dirtyPaths.length} modified` : '✓ Export ready'}
+                </span>
                 <Button
                   appearance="subtle"
                   size="sm"
@@ -2286,7 +2573,7 @@ const App = () => {
           )}
         </section>
       </div>
-      {supportPanelVisible && (
+      {false && ( // Support panel removed — was wasting 150px of vertical space
         <section className="editor-support-panel">
           <div className="support-copy">
             <p className="eyebrow">Support Pixospritz</p>
@@ -2489,94 +2776,5 @@ const App = () => {
     </div>
   );
 };
-
-// Resizable and Collapsible Sidebar Component
-function ResizableSidebar({
-  openFile,
-  onZipLoaded,
-  onValidatePackage,
-  validationReport,
-  onOptionsChange,
-}) {
-  const [width, setWidth] = useState(420);
-  const [collapsed, setCollapsed] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const minWidth = 200;
-  const maxWidth = 600;
-  const collapsedWidth = 40;
-
-  const sidebarClasses = [
-    'editor-sidebar-panel',
-    'editor-scrollbar',
-    collapsed ? 'is-collapsed' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const handleMouseDown = e => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = e => {
-      const newWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth);
-      setWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging]);
-
-  return (
-    <aside
-      className={sidebarClasses}
-      style={{
-        width: collapsed ? collapsedWidth : width,
-        minWidth: collapsed ? collapsedWidth : minWidth,
-        maxWidth: collapsed ? collapsedWidth : maxWidth,
-        transition: collapsed ? 'width 0.3s ease' : 'none',
-        height: '100%',
-        minHeight: 0,
-      }}
-    >
-      <button
-        className="editor-sidebar-toggle"
-        onClick={() => setCollapsed(prev => !prev)}
-        title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-      >
-        {collapsed ? '›' : '‹'}
-      </button>
-
-      <div className={collapsed ? 'editor-sidebar-body is-hidden' : 'editor-sidebar-body'}>
-        <ZipManager
-          openFile={openFile}
-          onZipLoaded={onZipLoaded}
-          onValidatePackage={onValidatePackage}
-          validationReport={validationReport}
-          onOptionsChange={onOptionsChange}
-        />
-      </div>
-
-      {!collapsed && (
-        <div
-          className={`editor-sidebar-resizer ${isDragging ? 'is-dragging' : ''}`}
-          onMouseDown={handleMouseDown}
-        />
-      )}
-    </aside>
-  );
-}
 
 export default App;
