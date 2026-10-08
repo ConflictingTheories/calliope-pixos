@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { WebSocketServer } from 'ws';
 import ClientManager from './clientManager.js';
 import ZoneHandler from './zoneHandler.js';
+import SessionHandler from './sessionHandler.js';
 import { RateLimiter, MessageValidator, ConnectionTracker } from '../utils/security.js';
 import { Authenticator } from '../auth/index.js';
 
@@ -17,6 +18,7 @@ export default class API {
     this.wss = new WebSocketServer({ port });
     this.clientManager = new ClientManager();
     this.zoneHandler = new ZoneHandler(this.clientManager);
+    this.sessionHandler = new SessionHandler(this.clientManager, this.zoneHandler);
     this.actionQueue = [];
 
     // Security: Rate limiting (60 messages per second per client)
@@ -82,6 +84,7 @@ export default class API {
         }
         this.rateLimiter.remove(clientId);
         this.zoneHandler.handleDisconnect(clientId);
+        this.sessionHandler.handleDisconnect(clientId);
         console.log(`[API] Client ${clientId} disconnected`);
       });
 
@@ -181,6 +184,32 @@ export default class API {
           break;
         case 'zone-state-request':
           this.zoneHandler.handleZoneStateRequest(clientId, data.payload);
+          break;
+
+        // Live Sessions
+        case 'create-session':
+          this.sessionHandler.handleCreateSession(clientId, data.payload);
+          break;
+        case 'join-session':
+          this.sessionHandler.handleJoinSession(clientId, data.payload);
+          break;
+        case 'leave-session':
+          this.sessionHandler.handleLeaveSession(clientId, data.payload);
+          break;
+        case 'end-session':
+          this.sessionHandler.handleEndSession(clientId, data.payload);
+          break;
+        case 'session-commentary':
+          this.sessionHandler.handleSessionCommentary(clientId, data.payload);
+          break;
+        case 'session-cue':
+          this.sessionHandler.handleSessionCue(clientId, data.payload);
+          break;
+        case 'session-role':
+          this.sessionHandler.handleSessionRole(clientId, data.payload);
+          break;
+        case 'list-sessions':
+          this.sessionHandler.handleListSessions(clientId, data.payload);
           break;
 
         // Player Avatar Actions
