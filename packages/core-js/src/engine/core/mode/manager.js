@@ -50,7 +50,7 @@ export default class ModeManager {
    * @param {ModeHandlers} handlers - An object containing setup, teardown, update, and input handlers for the mode.
    */
   register(name, handlers) {
-    if (process.env.NODE_ENV === 'development') {
+    if ((typeof process !== 'undefined' && process.env && process.env.NODE_ENV) === 'development') {
       console.log(
         'ModeManager.register ->',
         name,
@@ -108,7 +108,7 @@ export default class ModeManager {
 
     const handlers = this.registered[name] || {};
     this.currentMode = { name, handlers, params };
-    if (process.env.NODE_ENV === 'development') {
+    if ((typeof process !== 'undefined' && process.env && process.env.NODE_ENV) === 'development') {
       console.log('ModeManager: set mode ->', name, params, handlers);
     }
 
@@ -136,7 +136,40 @@ export default class ModeManager {
    * @returns {Promise<void>} A promise that resolves after the mode's update function has run.
    */
   async update(time) {
-    if (!this.currentMode) return;
+    const kb = this.engine?.inputManager?.keyboard;
+    // RACE-SAFE input snapshot: atomically take the just-pressed keys
+    // synchronously (before any await), so each update() call sees exactly
+    // the keys pressed since the previous update() started — even though
+    // the caller does not await update(), allowing overlaps.
+    // Without this, a slow frame could leave stale keys visible for
+    // multiple frames, making input_pressed act like input_down.
+    let snapKeys = [];
+    let snapCodes = [];
+    if (kb) {
+      snapKeys = kb.justPressedKeys.splice(0);
+      snapCodes = kb.justPressedCodes.splice(0);
+      // Restore snapshot for this frame's update to read via wasKeyPressed().
+      // New presses during the update append after these.
+      kb.justPressedKeys.push(...snapKeys);
+      kb.justPressedCodes.push(...snapCodes);
+    }
+    const clearSnapshot = () => {
+      try {
+        // Remove only the snapshot keys, keeping keys pressed during the
+        // update for the next frame.
+        if (kb) {
+          kb.justPressedKeys.splice(0, snapKeys.length);
+          kb.justPressedCodes.splice(0, snapCodes.length);
+        }
+      } catch (e) {
+        /* input clear is best-effort */
+      }
+    };
+    if (!this.currentMode) {
+      // No mode to consume input; still clear so pressed-this-frame can't go stale.
+      clearSnapshot();
+      return;
+    }
     const h = this.currentMode.handlers;
     if (h && h.update) {
       try {
@@ -145,6 +178,8 @@ export default class ModeManager {
         console.warn(`Mode update failed for mode "${this.currentMode.name}":`, e);
       }
     }
+    // The mode's update has consumed this frame's input snapshot.
+    clearSnapshot();
   }
 
   /**
@@ -155,7 +190,7 @@ export default class ModeManager {
   handleInput(time) {
     if (!this.currentMode) return false;
     const handlers = this.currentMode.handlers;
-    if (process.env.NODE_ENV === 'development') {
+    if ((typeof process !== 'undefined' && process.env && process.env.NODE_ENV) === 'development') {
       console.log('ModeManager.handleInput: current handlers ->', handlers);
     }
     try {
@@ -178,7 +213,7 @@ export default class ModeManager {
   handleSelect(zone, row, cell, type) {
     if (!this.currentMode) return false;
     const handlers = this.currentMode.handlers;
-    if (process.env.NODE_ENV === 'development') {
+    if ((typeof process !== 'undefined' && process.env && process.env.NODE_ENV) === 'development') {
       console.log('ModeManager.handleSelect: current handlers ->', handlers);
     }
     try {
