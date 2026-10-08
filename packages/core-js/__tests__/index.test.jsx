@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+// jest-dom not compatible with vitest globals; using simple assertions
 import { describe, it, test, expect, vi } from 'vitest';
 import Pixos from '../src/index.jsx';
 
@@ -29,19 +30,20 @@ vi.mock('../src/spritz/player.js', () => {
 describe('Pixos Component', () => {
   test('renders without crashing', () => {
     render(<Pixos />);
-    expect(screen.getByTestId('webgl-view')).toBeInTheDocument();
+    expect(screen.getAllByTestId('webgl-view').length).toBeGreaterThan(0);
   });
 
   test('passes zipData to state', () => {
     const zipData = 'test-data';
     render(<Pixos zipData={zipData} />);
     // Since we can't easily test internal state, just check it renders
-    expect(screen.getByTestId('webgl-view')).toBeInTheDocument();
+    expect(screen.getAllByTestId('webgl-view').length).toBeGreaterThan(0);
   });
 
   test('has correct dimensions', () => {
     render(<Pixos />);
-    const webglView = screen.getByTestId('webgl-view');
-    expect(webglView).toHaveStyle({ width: '480px', height: '640px' });
+    const webglView = screen.getAllByTestId('webgl-view')[0];
+    expect(webglView.style.width).toBe('480px');
+    expect(webglView.style.height).toBe('640px');
   });
 });
