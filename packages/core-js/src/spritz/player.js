@@ -315,23 +315,26 @@ export default class SpritzPlayer extends DynamicSpritz {
     const width = options.width || 480;
     const height = options.height || 640;
 
-    // Verify hash if provided
-    if (options.manifestHash) {
-      const hash = await crypto.subtle.digest('SHA-256', bundleData);
-      const hex = Array.from(new Uint8Array(hash))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-      const expected = options.manifestHash.replace(/^sha256:/, '');
-      if (hex !== expected) {
-        throw new Error(`mountBundle: hash mismatch (expected ${expected}, got ${hex})`);
-      }
-    }
-
     // Load and validate the bundle
     const zip = await JSZip.loadAsync(bundleData);
     const manifestEntry = zip.file('manifest.json') || zip.file('spritz.json');
     if (!manifestEntry) {
       throw new Error('mountBundle: bundle has no manifest.json');
+    }
+
+    // Verify hash if provided. Contract (format §8): the hash covers the
+    // raw manifest.json bytes, matching what the SVRN reader verifies
+    // before mounting. Both sides hash the same bytes.
+    if (options.manifestHash) {
+      const manifestBytes = await manifestEntry.async('uint8array');
+      const hash = await crypto.subtle.digest('SHA-256', manifestBytes);
+      const hex = Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      const expected = options.manifestHash.replace(/^sha256:/, '').toLowerCase();
+      if (hex !== expected) {
+        throw new Error(`mountBundle: hash mismatch (expected ${expected}, got ${hex})`);
+      }
     }
 
     const rawManifest = JSON.parse(await manifestEntry.async('string'));
