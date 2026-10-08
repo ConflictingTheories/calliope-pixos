@@ -71,7 +71,7 @@ describe('Menu Input - Coordinate Conversion', () => {
     };
 
     // Mock getBoundingClientRect
-    canvas.getBoundingClientRect = jest.fn(() => mockRect);
+    canvas.getBoundingClientRect = vi.fn(() => mockRect);
 
     // Simulate coordinate conversion
     const clientX = 200; // Browser viewport X
@@ -193,9 +193,9 @@ describe('Menu - Multi-Button Input Handling', () => {
     // Simulate clicks on each button
     // Browser coordinates (scaled 1:1 since canvas fills viewport)
     const clicksOnButtons = [
-      { clientX: 250, clientY: 125 }, // Click on button 1
-      { clientX: 250, clientY: 205 }, // Click on button 2
-      { clientX: 250, clientY: 285 }, // Click on button 3
+      { clientX: 251, clientY: 175 }, // Click on button 1 (y=125 inside 100-150)
+      { clientX: 251, clientY: 255 }, // Click on button 2 (y=205 inside 180-230)
+      { clientX: 251, clientY: 335 }, // Click on button 3 (y=285 inside 260-310)
     ];
 
     clicksOnButtons.forEach((click, index) => {
