@@ -1,0 +1,87 @@
+-- Boss Arena Zone Load Script
+-- Final confrontation with the Dark Lord
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: boss_arena_load', zone = zone }));
+
+-- Verify all trials are complete (safety check)
+local fire_complete = pixos.has_flag('fire_trial_complete');
+local water_complete = pixos.has_flag('water_trial_complete');
+local earth_complete = pixos.has_flag('earth_trial_complete');
+local air_complete = pixos.has_flag('air_trial_complete');
+
+if not (fire_complete and water_complete and earth_complete and air_complete) then
+    pixos.log('Warning: Player entered boss arena without all shards!');
+    -- Could teleport back, but for demo purposes allow entry
+end;
+
+-- Check if boss already defeated
+if pixos.has_flag('boss_defeated') then
+    pixos.log('Dark Lord already defeated - victory mode');
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/dawns-peak.mp3');
+    
+    -- Open victory portal
+    local victory_portal = pixos.get_sprite('victory-portal');
+    if victory_portal then
+        pixos.set_state(victory_portal, 'open');
+    end;
+else
+    pixos.log('FINAL BATTLE MODE ACTIVATED');
+    -- Set to fight mode for the boss battle
+    pixos.set_mode('fight');
+    
+    -- Play intense boss battle music
+    pixos.play_bgm('audio/deep-unknown-beat.mp3');
+    
+    -- Dramatic entrance effects
+    pixos.emit_particles({8, 3, 1}, { preset = 'darkness', count = 50, life = 4000 });
+    
+    -- Play the final boss cutscene
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/final-boss.pxc')
+    });
+    
+    -- After cutscene (boss defeated), mark completion
+    pixos.set_flag('boss_defeated', true);
+    pixos.log('DARK LORD DEFEATED! Game complete!');
+    
+    -- Victory celebration effects
+    pixos.emit_particles({8, 8, 2}, { preset = 'magic', count = 100, life = 5000 });
+    pixos.emit_particles({3, 5, 1}, { preset = 'flame', count = 30, life = 3000 });
+    pixos.emit_particles({13, 5, 1}, { preset = 'water', count = 30, life = 3000 });
+    pixos.emit_particles({3, 11, 1}, { preset = 'earth', count = 30, life = 3000 });
+    pixos.emit_particles({13, 11, 1}, { preset = 'air', count = 30, life = 3000 });
+    
+    -- Open victory portal
+    local victory_portal = pixos.get_sprite('victory-portal');
+    if victory_portal then
+        pixos.set_state(victory_portal, 'open');
+    end;
+    
+    -- Open the boss chest
+    local boss_chest = pixos.get_sprite('boss-chest');
+    if boss_chest then
+        pixos.set_state(boss_chest, 'open');
+    end;
+    
+    -- Play victory cutscene
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/victory.pxc')
+    });
+    
+    -- Switch to explore mode for post-game
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/dawns-peak.mp3');
+end;
+
+-- Set dramatic dark shader effect
+pixos.set_skybox_shader('cosmic');
+
+-- Ambient effects for all four elemental corners
+pixos.emit_particles({3, 5, 0.5}, { preset = 'flame', count = 15, life = 3000 });
+pixos.emit_particles({13, 5, 0.5}, { preset = 'water', count = 15, life = 3000 });
+pixos.emit_particles({3, 11, 0.5}, { preset = 'earth', count = 15, life = 3000 });
+pixos.emit_particles({13, 11, 0.5}, { preset = 'air', count = 15, life = 3000 });
+
+return nil;

@@ -1,0 +1,142 @@
+# Air Trial - Elemental Battle Cutscene
+# Features light, airy music, themes of freedom and agility, and the Air Elemental encounter
+
+@backdrop textures/temple.gif [fadeIn=800]
+@char HERO sprite=characters/male
+@char AIR_ELEMENTAL sprite=monsters/air_elemental
+
+@do playBgm [name=audio/icy-passage.mp3]
+
+wait 800
+
+# The Air Elemental descends
+
+*AIR_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The winds carry tales of your journey...
+Three shards already. Impressive.
+"""
+
+wait 600
+
+HERO: [expression=smile,position=left]
+"""
+The final elemental trial!
+I'm so close to completing my quest!
+"""
+
+wait 500
+
+AIR_ELEMENTAL: [expression=neutral,position=right]
+"""
+Fire, Water, Earth... all grounded.
+But I am the SKY! Untouchable!
+Can you catch the wind itself?
+"""
+
+@do playSfx [name=audio/dial-in.mp3]
+
+wait 600
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+The wind moves so fast...
+How can I possibly keep up?
+"""
+
+wait 800
+
+@transition wipe [duration=500]
+
+wait 500
+
+@backdrop textures/room.gif [fadeIn=600]
+@do playBgm [name=audio/lonely-mountain.mp3]
+
+# The trial of agility
+
+AIR_ELEMENTAL: [expression=neutral,position=right]
+"""
+The wind doesn't fight.
+It flows. It dances. It evades.
+To catch me, you must BECOME the wind!
+"""
+
+wait 600
+
+HERO: [expression=tired,position=left]
+"""
+I can't... hit anything...
+Every strike... meets empty air...
+"""
+
+wait 600
+
+*AIR_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+Still thinking like an earthbound creature!
+Free your mind! Embrace the moment!
+"""
+
+wait 600
+
+HERO: [expression=smile,position=left]
+"""
+Free my mind... embrace the moment...
+I understand now!
+Don't chase where you ARE...
+Anticipate where you'll BE!
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+@action HERO moveTo [x=60,duration=400]
+
+wait 800
+
+@transition fadeOutBackdrop [duration=500]
+
+wait 500
+
+@backdrop textures/temple.gif [fadeIn=600]
+@do playBgm [name=audio/calm-escape.mp3]
+
+# Victory
+
+AIR_ELEMENTAL: [expression=neutral,position=right]
+"""
+You... caught me!
+In all my millennia... only you...
+"""
+
+wait 500
+
+HERO: [expression=smile,position=left]
+"""
+I learned to read the wind patterns!
+To see where the current flows next!
+"""
+
+*AIR_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The Air Shard is yours, hero.
+You have mastered all four elements!
+Fire's passion, Water's flow,
+Earth's endurance, Air's freedom!
+"""
+
+wait 800
+
+HERO: [expression=smile,position=left]
+"""
+Four shards... the seal is within reach!
+Time to face the Dark Lord!
+"""
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+@transition wipe [duration=700]
+
+waitInput
+
+@end

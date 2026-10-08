@@ -1,0 +1,39 @@
+-- Victory Celebration Event
+-- Triggered after defeating the Dark Lord
+
+pixos.log('Event: VICTORY CELEBRATION!');
+
+-- Massive particle celebration
+for i = 1, 5 do
+    local x = 4 + (i * 2);
+    pixos.emit_particles({x, 8, 2}, { preset = 'magic', count = 30, life = 4000 });
+end;
+
+-- Fire celebration from corners
+pixos.emit_particles({3, 5, 1}, { preset = 'flame', count = 50, life = 5000 });
+pixos.emit_particles({13, 5, 1}, { preset = 'water', count = 50, life = 5000 });
+pixos.emit_particles({3, 11, 1}, { preset = 'earth', count = 50, life = 5000 });
+pixos.emit_particles({13, 11, 1}, { preset = 'air', count = 50, life = 5000 });
+
+-- Change to victory music
+pixos.play_bgm('audio/dawns-peak.mp3');
+
+-- Switch back to explore mode
+pixos.set_mode('explore');
+
+-- Set bright, peaceful skybox
+pixos.set_skybox_shader('sunset');
+
+-- Open victory portal
+local victory_portal = pixos.get_sprite('victory-portal');
+if victory_portal then
+    pixos.set_state(victory_portal, 'open');
+    pixos.emit_particles({8, 1, 1}, { preset = 'magic', count = 40, life = 3000 });
+end;
+
+-- Set boss defeated flag
+pixos.set_flag('boss_defeated', true);
+
+pixos.log('THE KINGDOM IS SAVED!');
+
+return nil;

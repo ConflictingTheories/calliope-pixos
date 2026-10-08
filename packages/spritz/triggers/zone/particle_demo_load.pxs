@@ -1,0 +1,143 @@
+-- Particle Demo Zone Load Script
+-- Demonstrates particles, dynamic state, and conditional logic
+
+pixos.log('=== Particle Demo Zone Loading ===');
+
+-- Get zone reference
+local zone = pixos.get_zone();
+local player = pixos.get_avatar();
+
+-- Initialize dynamic state if not exists
+local state = pixos.get_state() or {};
+state.crystalsActivated = state.crystalsActivated or 0;
+state.doorUnlocked = state.doorUnlocked or false;
+state.questComplete = state.questComplete or false;
+state.weatherType = state.weatherType or 'clear';
+state.particleIntensity = state.particleIntensity or 1.0;
+state.visitCount = (state.visitCount or 0) + 1;
+pixos.set_state(state);
+
+pixos.log(pixos.as_obj({ msg = 'Zone state initialized', state = state }));
+
+-- Set initial skybox based on time or visits
+local skyboxes = { 'cosmic', 'sunset', 'morning', 'neon', 'sky' };
+local skyboxIndex = (state.visitCount % #skyboxes) + 1;
+pixos.set_skybox_shader(skyboxes[skyboxIndex]);
+pixos.log(pixos.as_obj({ msg = 'Skybox set', shader = skyboxes[skyboxIndex] }));
+
+-- Welcome particles at player position
+local player_pos = pixos.from(player, 'pos');
+if player_pos then
+    -- Burst of magic particles around player on arrival
+    pixos.emit_particles(player_pos, {
+        count = 30,
+        life = 2000,
+        speed = 0.03,
+        spread = 1.5,
+        size = 0.15,
+        color = { 0.4, 0.8, 1.0 },
+        gravity = { 0, 0.0005, 0 },
+        drag = 0.99
+    });
+end;
+
+-- Create ambient particle effects at key locations
+local function create_ambient_particles()
+    -- Fountain center particles (water spray)
+    pixos.emit_particles({ 8, 8, 0.5 }, {
+        preset = 'water',
+        count = 15
+    });
+    
+    -- Torch flame particles
+    pixos.emit_particles({ 2, 8, 1.0 }, {
+        preset = 'flame',
+        count = 8
+    });
+    pixos.emit_particles({ 14, 8, 1.0 }, {
+        preset = 'flame',
+        count = 8
+    });
+    
+    -- Crystal glow particles based on activation state
+    local crystals = {
+        { pos = { 4, 4, 0.3 }, color = { 0.2, 0.6, 1.0 } },
+        { pos = { 12, 4, 0.3 }, color = { 1.0, 0.3, 0.3 } },
+        { pos = { 4, 12, 0.3 }, color = { 0.3, 1.0, 0.3 } },
+        { pos = { 12, 12, 0.3 }, color = { 1.0, 1.0, 0.2 } }
+    };
+    
+    for i, crystal in ipairs(crystals) do
+        if i <= state.crystalsActivated then
+            -- Activated crystal: bright pulsing particles
+            pixos.emit_particles(crystal.pos, {
+                count = 12,
+                life = 1500,
+                speed = 0.02,
+                spread = 0.8,
+                size = 0.12,
+                color = crystal.color,
+                gravity = { 0, 0.001, 0 },
+                drag = 0.98
+            });
+        else
+            -- Dormant crystal: dim slow particles
+            pixos.emit_particles(crystal.pos, {
+                count = 3,
+                life = 2500,
+                speed = 0.005,
+                spread = 0.3,
+                size = 0.08,
+                color = { crystal.color[1] * 0.3, crystal.color[2] * 0.3, crystal.color[3] * 0.3 },
+                gravity = { 0, 0.0003, 0 },
+                drag = 0.995
+            });
+        end;
+    end;
+end;
+
+-- Run ambient particles
+create_ambient_particles();
+
+-- Display welcome dialogue based on state
+local dialogue_steps = {};
+
+if state.visitCount == 1 then
+    -- First visit
+    table.insert(dialogue_steps, {
+        type = 'dialogue',
+        speaker = 'System',
+        text = 'Welcome to the Particle Demo Zone! Explore and activate the four crystals to unlock the secret door.'
+    });
+    table.insert(dialogue_steps, {
+        type = 'dialogue',
+        speaker = 'System',
+        text = 'Walk near the fountain to see water particles. Touch torches for fire effects. Click on crystals to activate them!'
+    });
+elseif state.doorUnlocked then
+    table.insert(dialogue_steps, {
+        type = 'dialogue',
+        speaker = 'System',
+        text = 'All crystals activated! The secret door is open. Great work!'
+    });
+elseif state.crystalsActivated > 0 then
+    table.insert(dialogue_steps, {
+        type = 'dialogue',
+        speaker = 'System',
+        text = 'Progress: ' .. state.crystalsActivated .. '/4 crystals activated. Keep going!'
+    });
+end;
+
+if #dialogue_steps > 0 then
+    pixos.run_cutscene(dialogue_steps);
+end;
+
+-- Set up recurring particle timer for ambient effects
+pixos.set_interval(function()
+    local current_state = pixos.get_state();
+    if current_state then
+        create_ambient_particles();
+    end;
+end, 3000); -- Every 3 seconds
+
+pixos.log('=== Particle Demo Zone Loaded ===');

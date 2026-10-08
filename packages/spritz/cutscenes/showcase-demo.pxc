@@ -1,0 +1,45 @@
+# Showcase Demo Cutscene
+# Demonstrates full capabilities of the editor with backdrops, cutins, portraits, and sound effects
+
+@backdrop data:castle_hall [fadeIn=500]
+@char ALDEN sprite=characters/male
+@char KNIGHT sprite=npc/air-knight
+
+ALDEN: [expression=happy,position=left] Welcome to this demo!
+*ALDEN: [cutin=size=large,expression=happy]
+"""
+Let's show you the full capabilities of this editor.
+"""
+
+@do playSfx [name=audio/brass-loop.mp3]
+
+KNIGHT: [expression=neutral,position=right] I will stand by you.
+
+ALDEN: [expression=smile,position=left]
+"""
+Notice the backdrop, portraits, and cutins are fully integrated,
+and sound effects play when triggered.
+"""
+
+@do playSfx [name=audio/calm-escape.mp3]
+
+*KNIGHT: [cutin=size=large,expression=neutral]
+"""
+This cutin sprite appears large and expressive.
+"""
+
+wait 1500
+
+ALDEN: [expression=sad,position=left] Sometimes, emotions run deep...
+
+@backdrop data:castle_courtyard [fadeIn=1000]
+
+ALDEN: [expression=worried,position=left] Look at the courtyard backdrop now.
+
+@do playSfx [name=audio/ocean-waves.mp3]
+
+KNIGHT: [expression=neutral,position=right] Sounds of waves soothe the soul.
+
+waitInput
+
+@end

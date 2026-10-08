@@ -1,0 +1,76 @@
+-- Torch Fire Effect
+-- Flickering flame particles for torches
+
+local torch = pixos.get_caller();
+local torch_pos = pixos.from(torch, 'pos');
+local particle_type = pixos.from(torch, 'particleType') or 'flame';
+
+if not torch_pos then return; end;
+
+-- Adjust position to be at top of torch
+local flame_pos = { torch_pos[1], torch_pos[2], torch_pos[3] + 0.3 };
+
+if particle_type == 'flame' then
+    -- Main flame
+    pixos.emit_particles(flame_pos, {
+        count = 15,
+        life = 800,
+        speed = 0.025,
+        spread = 0.4,
+        size = 0.1,
+        color = { 1.0, 0.5, 0.1 },
+        gravity = { 0, 0, 0.002 },  -- Rises
+        drag = 0.98
+    });
+    
+    -- Hot core
+    pixos.emit_particles(flame_pos, {
+        count = 5,
+        life = 500,
+        speed = 0.02,
+        spread = 0.2,
+        size = 0.08,
+        color = { 1.0, 0.9, 0.4 },
+        gravity = { 0, 0, 0.003 },
+        drag = 0.97
+    });
+    
+    -- Occasional sparks
+    if math.random() > 0.7 then
+        pixos.emit_particles(flame_pos, {
+            count = 3,
+            life = 1200,
+            speed = 0.05,
+            spread = 1.0,
+            size = 0.04,
+            color = { 1.0, 0.7, 0.2 },
+            gravity = { 0, 0, 0.001 },
+            drag = 0.995
+        });
+    end;
+    
+elseif particle_type == 'magic' then
+    -- Magical blue flame
+    pixos.emit_particles(flame_pos, {
+        count = 12,
+        life = 1000,
+        speed = 0.02,
+        spread = 0.5,
+        size = 0.12,
+        color = { 0.3, 0.5, 1.0 },
+        gravity = { 0, 0, 0.0015 },
+        drag = 0.985
+    });
+    
+    -- Sparkle overlay
+    pixos.emit_particles(flame_pos, {
+        count = 4,
+        life = 600,
+        speed = 0.03,
+        spread = 0.8,
+        size = 0.06,
+        color = { 0.8, 0.9, 1.0 },
+        gravity = { 0, 0, 0.001 },
+        drag = 0.99
+    });
+end;

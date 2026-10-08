@@ -1,0 +1,19 @@
+.list-item-button {
+  font-family: monospace;
+  cursor: pointer;
+  user-select: none;
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.list-item-button:hover {
+  filter: brightness(var(--brightness-hover));
+}
+
+.list-item-name {
+  overflow-x: hidden;
+  overflow-inline: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

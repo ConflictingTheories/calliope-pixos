@@ -1,0 +1,63 @@
+{
+  "name": "pixospritz-core",
+  "version": "1.0.1",
+  "description": "PixoSpritz Core Engine - WebGL-based game engine",
+  "type": "module",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.js",
+  "exports": {
+    ".": "./dist/bundle.js",
+    "./engine/*": "./src/engine/*",
+    "./components/*": "./src/components/*",
+    "./spritz/*": "./src/spritz/*"
+  },
+  "scripts": {
+    "clean": "rimraf dist build",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "game-engine",
+    "webgl",
+    "canvas",
+    "react"
+  ],
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "SEE LICENSE IN LICENSE",
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "dependencies": {
+    "dexie": "^3.2.0",
+    "jszip": "^3.10.1",
+    "pixoscript": "*",
+    "pixospritz-math": "*",
+    "pixospritz-specs": "*",
+    "prop-types": "^15.7.2",
+    "realtime-bpm-analyzer": "^2.1.6"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "cross-env": "^7.0.3",
+    "identity-obj-proxy": "^3.0.0",
+    "rimraf": "^5.0.0"
+  }
+}

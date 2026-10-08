@@ -1,0 +1,62 @@
+-- Air Chamber Zone Load Script
+-- Handles the Air Elemental trial
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: air_chamber_load', zone = zone }));
+
+-- Check if trial already complete
+if pixos.has_flag('air_trial_complete') then
+    pixos.log('Air trial already complete - exploration mode');
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/lonely-mountain.mp3');
+else
+    pixos.log('Air trial active - tactics mode');
+    -- Set to tactics mode for the trial
+    pixos.set_mode('tactics');
+    
+    -- Play icy/wind ambient music
+    pixos.play_bgm('audio/icy-passage.mp3');
+    
+    -- Play the air trial cutscene intro
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/air-trial.pxc')
+    });
+    
+    -- After cutscene, mark trial complete
+    pixos.set_flag('air_trial_complete', true);
+    pixos.log('Air trial complete - shard obtained!');
+    
+    -- Add air shard to player inventory
+    local avatar = pixos.get_sprite('avatar');
+    if avatar then
+        local inventory = pixos.from(avatar, 'inventory') or {};
+        table.insert(inventory, 'air_shard');
+        pixos.to(avatar, { inventory = inventory });
+        pixos.log('Air shard added to inventory');
+    end;
+    
+    -- Check if ALL trials are now complete
+    local all_complete = pixos.has_flag('fire_trial_complete') and 
+                         pixos.has_flag('water_trial_complete') and 
+                         pixos.has_flag('earth_trial_complete') and 
+                         pixos.has_flag('air_trial_complete');
+    
+    if all_complete then
+        pixos.log('ALL FOUR TRIALS COMPLETE! The Dark Lord awaits...');
+        -- Massive celebration effect
+        pixos.emit_particles({6, 6, 2}, { preset = 'magic', count = 100, life = 5000 });
+    else
+        -- Visual celebration effect for this trial
+        pixos.emit_particles({6, 3, 1}, { preset = 'air', count = 50, life = 3000 });
+    end;
+end;
+
+-- Constant wind/cloud effects
+pixos.emit_particles({2, 3, 1}, { preset = 'air', count = 12, life = 3000 });
+pixos.emit_particles({10, 3, 1}, { preset = 'air', count = 12, life = 3000 });
+pixos.emit_particles({6, 6, 1.5}, { preset = 'air', count = 15, life = 3500 });
+
+-- Set sky/air shader effect for the chamber
+pixos.set_skybox_shader('clouds');
+
+return nil;

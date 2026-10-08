@@ -1,0 +1,51 @@
+-- Village Hub Zone Load Script
+-- This script runs when the village-hub zone is loaded
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: village_hub_load', zone = zone }));
+
+-- Check if this is the first time loading (intro not played)
+if not pixos.has_flag('intro_played') then
+    pixos.log('First visit to village - playing intro cutscene');
+    
+    -- Set explore mode for the village
+    pixos.set_mode('explore');
+    
+    -- Play the game introduction cutscene
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/game-intro.pxc')
+    });
+    
+    -- Mark intro as played
+    pixos.set_flag('intro_played', true);
+    pixos.log('Intro cutscene complete - flag set');
+else
+    pixos.log('Welcome back to the village!');
+    
+    -- Check trial completion status
+    local trials_complete = 0;
+    if pixos.has_flag('fire_trial_complete') then trials_complete = trials_complete + 1 end;
+    if pixos.has_flag('water_trial_complete') then trials_complete = trials_complete + 1 end;
+    if pixos.has_flag('earth_trial_complete') then trials_complete = trials_complete + 1 end;
+    if pixos.has_flag('air_trial_complete') then trials_complete = trials_complete + 1 end;
+    
+    pixos.log(pixos.as_obj({ msg = 'Trials completed', count = trials_complete }));
+    
+    -- If all four trials complete, open the boss door
+    if trials_complete >= 4 and not pixos.has_flag('boss_door_opened') then
+        pixos.log('All trials complete - opening boss door!');
+        local door = pixos.get_sprite('village-door');
+        if door then
+            pixos.set_state(door, 'open');
+        end;
+        pixos.set_flag('boss_door_opened', true);
+    end;
+end;
+
+-- Set appropriate background music
+pixos.play_bgm('audio/fields.mp3');
+
+-- Emit ambient particles around the fireplace
+pixos.emit_particles({10, 5, 0.5}, { preset = 'flame', count = 15, life = 3000 });
+
+return nil;

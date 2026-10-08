@@ -1,0 +1,29 @@
+{
+  "description": "Save-game conformance: save doc -> validation outcome.",
+  "cases": [
+    {
+      "id": "valid-save",
+      "document": "../fixtures/saves/valid-save.json",
+      "kind": "save",
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "save-missing-player",
+      "inline": {
+        "version": "1.0.0",
+        "format": "pixozine",
+        "gameId": "g",
+        "timestamp": 1
+      },
+      "kind": "save",
+      "expect": {
+        "valid": false,
+        "codes": [
+          "missing-required"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+output
+coverage
+.next
+packages/*/dist
+packages/*/build
+*.lock
+*.log
+.DS_Store
+.env
+.env.local
+.idea
+.vscode
+*.min.js
+*.min.css

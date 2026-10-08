@@ -1,0 +1,97 @@
+/*                                                 *\
+** ----------------------------------------------- **
+**          Calliope - Pixos Game Engine   	       **
+** ----------------------------------------------- **
+**  Copyright (c) 2020-2025 - Kyle Derby MacInnis  **
+**                                                 **
+** PixoSpritz Dual License - see LICENSE.          **
+** Free for education, non-commercial use, and     **
+** individual non-profit artists (CC-BY-NC-SA-4.0) **
+** Commercial use requires a purchased license.    **
+** ----------------------------------------------- **
+\*                                                 */
+
+/**
+ * CollisionMask - Bit-mask system for collision layers.
+ * Allows filtering collisions by layer (e.g., players don't collide with items).
+ *
+ * Usage:
+ *   const PLAYER_LAYER = 0x01;  // Bit 0
+ *   const ENEMY_LAYER = 0x02;   // Bit 1
+ *   const ITEM_LAYER = 0x04;    // Bit 2
+ *   const WALL_LAYER = 0x08;    // Bit 3
+ *
+ *   body.collisionLayer = PLAYER_LAYER;
+ *   body.collisionMask = ENEMY_LAYER | WALL_LAYER; // Collide with enemies and walls
+ */
+export default class CollisionMask {
+  /**
+   * Bit table documenting layer semantics (P4-02). Each layer occupies one
+   * bit; `ALL` is the union. `shouldCollide` is symmetric by construction:
+   * A collides with B iff (maskA & layerB) && (maskB & layerA).
+   */
+  static BitTable = [
+    { name: 'DEFAULT', bit: 0x01 },
+    { name: 'PLAYER', bit: 0x02 },
+    { name: 'ENEMY', bit: 0x04 },
+    { name: 'ITEM', bit: 0x08 },
+    { name: 'WALL', bit: 0x10 },
+    { name: 'TRIGGER', bit: 0x20 },
+    { name: 'PROJECTILE', bit: 0x40 },
+    { name: 'NPC', bit: 0x80 },
+  ];
+  static Layers = {
+    DEFAULT: 0x01, // Bit 0
+    PLAYER: 0x02, // Bit 1
+    ENEMY: 0x04, // Bit 2
+    ITEM: 0x08, // Bit 3
+    WALL: 0x10, // Bit 4
+    TRIGGER: 0x20, // Bit 5
+    PROJECTILE: 0x40, // Bit 6
+    NPC: 0x80, // Bit 7
+    ALL: 0xff, // All layers
+  };
+
+  /**
+   * Checks if two collision masks should collide.
+   * @param {number} layerA - Layer of body A.
+   * @param {number} maskA - Collision mask of body A.
+   * @param {number} layerB - Layer of body B.
+   * @param {number} maskB - Collision mask of body B.
+   * @returns {boolean} True if bodies should collide.
+   */
+  static shouldCollide(layerA, maskA, layerB, maskB) {
+    // A collides with B if A's mask includes B's layer AND B's mask includes A's layer
+    return (maskA & layerB) !== 0 && (maskB & layerA) !== 0;
+  }
+
+  /**
+   * Creates a collision mask from layer names.
+   * @param {Array<string>} layerNames - Array of layer names (e.g., ['PLAYER', 'ENEMY']).
+   * @returns {number} Combined layer bitmask.
+   */
+  static createMask(layerNames) {
+    let mask = 0;
+    for (const name of layerNames) {
+      if (this.Layers[name]) {
+        mask |= this.Layers[name];
+      }
+    }
+    return mask;
+  }
+
+  /**
+   * Gets layer names from a mask.
+   * @param {number} mask - Collision mask.
+   * @returns {Array<string>} Array of layer names.
+   */
+  static getLayerNames(mask) {
+    const names = [];
+    for (const [name, value] of Object.entries(this.Layers)) {
+      if (name !== 'ALL' && (mask & value) !== 0) {
+        names.push(name);
+      }
+    }
+    return names;
+  }
+}

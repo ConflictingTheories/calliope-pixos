@@ -1,0 +1,102 @@
+-- Chest Open with Particles
+-- Dramatic particle effect when opening a treasure chest
+
+local chest = pixos.get_caller();
+local player = pixos.get_subject();
+local state = pixos.get_state() or {};
+
+local chest_pos = pixos.from(chest, 'pos');
+local chest_state = pixos.from(chest, 'state');
+local inventory = pixos.from(chest, 'inventory') or {};
+
+pixos.log(pixos.as_obj({ msg = 'Chest interaction', state = chest_state, items = #inventory }));
+
+-- Check if already opened
+if chest_state == 'open' then
+    pixos.show_dialogue({
+        speaker = 'Chest',
+        text = 'The chest is empty. You have already claimed its treasures.'
+    });
+    return;
+end;
+
+-- Play sound
+pixos.play_sfx('audio/chest_open.mp3');
+
+-- Opening animation particles - golden burst
+pixos.emit_particles(chest_pos, {
+    count = 40,
+    life = 1500,
+    speed = 0.05,
+    spread = 1.5,
+    size = 0.18,
+    color = { 1.0, 0.85, 0.3 },
+    gravity = { 0, 0, 0.002 },
+    drag = 0.97
+});
+
+-- Treasure sparkles rising
+for i = 1, 8 do
+    pixos.delay(i * 100, function()
+        local sparkle_pos = {
+            chest_pos[1] + (math.random() - 0.5) * 0.8,
+            chest_pos[2] + (math.random() - 0.5) * 0.8,
+            chest_pos[3] + 0.3
+        };
+        pixos.emit_particles(sparkle_pos, {
+            count = 8,
+            life = 1200,
+            speed = 0.03,
+            spread = 0.5,
+            size = 0.1,
+            color = { 1.0, 1.0, 0.5 },
+            gravity = { 0, 0, 0.003 },
+            drag = 0.98
+        });
+    end);
+end;
+
+-- Mark as opened
+pixos.set(chest, 'state', 'open');
+
+-- Transfer items to player
+local item_messages = {};
+for i, item in ipairs(inventory) do
+    pixos.add_to_inventory(player, item);
+    table.insert(item_messages, item);
+    
+    -- Item-specific particle colors
+    local item_color = { 0.9, 0.9, 0.9 };
+    if string.find(item, 'wand') then
+        item_color = { 0.7, 0.4, 1.0 };
+    elseif string.find(item, 'potion') then
+        item_color = { 0.3, 0.8, 0.4 };
+    elseif string.find(item, 'key') then
+        item_color = { 1.0, 0.9, 0.2 };
+    end;
+    
+    -- Delayed item acquisition particles
+    pixos.delay(500 + i * 300, function()
+        pixos.emit_particles(chest_pos, {
+            count = 15,
+            life = 1000,
+            speed = 0.04,
+            spread = 1.0,
+            size = 0.12,
+            color = item_color,
+            gravity = { 0, 0, 0.002 },
+            drag = 0.96
+        });
+    end);
+end;
+
+-- Show what was found
+local item_text = table.concat(item_messages, ', ');
+pixos.delay(800, function()
+    pixos.show_dialogue({
+        speaker = 'Treasure',
+        text = 'You found: ' .. item_text .. '!'
+    });
+end);
+
+pixos.log(pixos.as_obj({ msg = 'Chest opened', items = item_messages }));

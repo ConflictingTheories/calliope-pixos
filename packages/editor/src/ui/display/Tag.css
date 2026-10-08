@@ -1,0 +1,43 @@
+/**
+ * Tag Styles
+ */
+.px-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  background: var(--tag-bg, #2a2a4a);
+  color: var(--text-primary, #e0e0e0);
+}
+
+/* Sizes */
+.px-tag-sm { padding: 1px 6px; font-size: 11px; }
+.px-tag-lg { padding: 4px 10px; font-size: 14px; }
+
+/* Colors */
+.px-tag-red { background: rgba(229, 57, 53, 0.2); color: #ef5350; }
+.px-tag-orange { background: rgba(251, 140, 0, 0.2); color: #ffa726; }
+.px-tag-yellow { background: rgba(253, 216, 53, 0.2); color: #ffeb3b; }
+.px-tag-green { background: rgba(67, 160, 71, 0.2); color: #66bb6a; }
+.px-tag-cyan { background: rgba(0, 172, 193, 0.2); color: #26c6da; }
+.px-tag-blue { background: rgba(30, 136, 229, 0.2); color: #42a5f5; }
+.px-tag-violet { background: rgba(142, 36, 170, 0.2); color: #ab47bc; }
+
+.px-tag-close {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.px-tag-close:hover {
+  opacity: 1;
+}

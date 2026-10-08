@@ -1,0 +1,5 @@
+{
+  "name": "explore",
+  "update": "update.pxs",
+  "setup": "setup.pxs"
+}

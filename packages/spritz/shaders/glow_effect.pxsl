@@ -1,0 +1,59 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *                    Glow Effect Shader - PXSL Example
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * This shader creates a pulsing glow effect around sprites.
+ * Great for highlighting interactive objects, power-ups, or magical items.
+ * 
+ * Usage in PixoScript:
+ *   set_shader("glow_effect")
+ *   set_uniform("glowColor", 1.0, 0.8, 0.2)  -- Golden glow
+ *   set_uniform("glowIntensity", 0.5)
+ */
+
+@shader "glow_effect"
+
+@vertex
+input position: vec3
+input uv: vec2
+uniform modelMatrix: mat4
+uniform viewMatrix: mat4
+uniform projectionMatrix: mat4
+output vUV: vec2
+
+main {
+  vUV = uv
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0)
+}
+
+@fragment
+input vUV: vec2
+uniform texture: sampler2D
+uniform time: float
+uniform glowColor: vec3
+uniform glowIntensity: float
+output fragColor: vec4
+
+main {
+  // Sample the base texture
+  let tex = sample(texture, vUV)
+  
+  // Skip transparent pixels
+  if (tex.a < 0.1) {
+    discard
+  }
+  
+  // Create pulsing glow intensity
+  let pulse = pulse(time, 2.0) * 0.3 + 0.7
+  let glowAmount = glowIntensity * pulse
+  
+  // Apply glow based on texture luminance
+  let luminance = dot(tex.rgb, vec3(0.299, 0.587, 0.114))
+  let glowFactor = luminance * glowAmount
+  
+  // Mix original color with glow
+  let finalColor = tex.rgb + glowColor * glowFactor
+  
+  fragColor = vec4(finalColor, tex.a)
+}

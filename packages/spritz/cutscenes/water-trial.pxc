@@ -1,0 +1,131 @@
+# Water Trial - Elemental Battle Cutscene
+# Features ocean ambience, flowing dialogue, and the Water Elemental encounter
+
+@backdrop textures/room.png [fadeIn=800]
+@char HERO sprite=characters/male
+@char WATER_ELEMENTAL sprite=monsters/water_elemental
+
+@do playBgm [name=audio/ocean-waves.mp3]
+
+wait 800
+
+# The Water Elemental emerges
+
+*WATER_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The depths whisper of your arrival...
+Few have survived my crushing embrace.
+"""
+
+wait 600
+
+HERO: [expression=neutral,position=left]
+"""
+I've defeated the Fire Guardian.
+The Water trial won't stop me!
+"""
+
+wait 500
+
+WATER_ELEMENTAL: [expression=neutral,position=right]
+"""
+Fire and water are opposites, mortal.
+What worked there will fail here.
+Adaptability is my domain!
+"""
+
+@do playSfx [name=audio/icy-passage.mp3]
+
+wait 600
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+Then I'll adapt too!
+A true hero learns from every battle!
+"""
+
+wait 800
+
+@transition wipe [duration=500]
+
+wait 500
+
+@backdrop textures/sewer.gif [fadeIn=600]
+@do playBgm [name=audio/distorted-communication.mp3]
+
+# The trial deepens
+
+WATER_ELEMENTAL: [expression=neutral,position=right]
+"""
+The currents shift constantly.
+Can you keep up, land-dweller?
+"""
+
+wait 500
+
+HERO: [expression=tired,position=left]
+"""
+The pressure... it's like being crushed...
+I can barely breathe...
+"""
+
+wait 600
+
+*WATER_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+This is the weight of the ocean!
+Accept its embrace... or drown!
+"""
+
+wait 600
+
+HERO: [expression=smile,position=left]
+"""
+Wait... water flows around obstacles...
+Instead of fighting the current...
+I should move WITH it!
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+wait 800
+
+@transition fadeOutBackdrop [duration=500]
+
+wait 500
+
+@backdrop textures/room.png [fadeIn=600]
+@do playBgm [name=audio/calm-escape.mp3]
+
+# Victory
+
+WATER_ELEMENTAL: [expression=neutral,position=right]
+"""
+You... understood my lesson.
+Not resistance, but harmony.
+"""
+
+wait 500
+
+HERO: [expression=smile,position=left]
+"""
+Fighting against the tide exhausts you.
+But flowing with it... that's strength!
+"""
+
+*WATER_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+The Water Shard is yours.
+May its wisdom guide you through troubled times.
+Two trials remain, young hero...
+"""
+
+wait 800
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+@transition wipe [duration=700]
+
+waitInput
+
+@end

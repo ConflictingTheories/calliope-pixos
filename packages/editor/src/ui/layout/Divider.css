@@ -1,0 +1,35 @@
+/**
+ * Divider Styles
+ */
+.px-divider {
+  height: 1px;
+  background: var(--border-color, #2a2a4a);
+  margin: 12px 0;
+}
+
+.px-divider-vertical {
+  width: 1px;
+  height: auto;
+  margin: 0 12px;
+}
+
+.px-divider-with-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  background: transparent;
+}
+
+.px-divider-with-text::before,
+.px-divider-with-text::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color, #2a2a4a);
+}
+
+.px-divider-text {
+  color: var(--text-secondary, #888);
+  font-size: 12px;
+}

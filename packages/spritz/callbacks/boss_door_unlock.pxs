@@ -1,0 +1,75 @@
+-- Boss Door Unlock Callback
+-- Called when all four elemental shards are collected
+
+local door = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ msg = 'Boss Door Unlock Check', door = door, player = player }));
+
+-- Check if all trials are complete
+local fire_complete = pixos.has_flag('fire_trial_complete');
+local water_complete = pixos.has_flag('water_trial_complete');
+local earth_complete = pixos.has_flag('earth_trial_complete');
+local air_complete = pixos.has_flag('air_trial_complete');
+
+if fire_complete and water_complete and earth_complete and air_complete then
+    pixos.log('All trials complete - UNLOCKING BOSS DOOR!');
+    
+    -- Play dramatic unlock sound
+    pixos.play_sfx('audio/organ.mp3');
+    
+    -- Dramatic particle effect
+    local door_pos = pixos.from(door, 'pos');
+    if door_pos then
+        pixos.emit_particles(door_pos, { preset = 'magic', count = 60, life = 3000 });
+    end;
+    
+    -- Set door to open state
+    pixos.set_state(door, 'open');
+    
+    -- Notify player
+    pixos.run_scene({
+        {
+            sprite = nil,
+            action = 'dialogue',
+            args = {
+                {
+                    "THE SEAL IS BROKEN!",
+                    "The four elemental shards resonate together!",
+                    "The path to the Dark Lord... is OPEN!"
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+    
+    pixos.callback_finish(1);
+else
+    -- Door remains locked
+    local missing = {};
+    if not fire_complete then table.insert(missing, "Fire") end;
+    if not water_complete then table.insert(missing, "Water") end;
+    if not earth_complete then table.insert(missing, "Earth") end;
+    if not air_complete then table.insert(missing, "Air") end;
+    
+    local missing_str = table.concat(missing, ", ");
+    
+    pixos.run_scene({
+        {
+            sprite = nil,
+            action = 'dialogue',
+            args = {
+                {
+                    "The door remains sealed...",
+                    "Missing shards: " .. missing_str,
+                    "Complete all four elemental trials!"
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+    
+    pixos.callback_finish(0);
+end;

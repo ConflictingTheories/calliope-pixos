@@ -1,0 +1,25 @@
+-- Final Battle Start Event
+-- Triggered when the boss battle begins
+
+pixos.log('Event: FINAL BATTLE Started!');
+
+-- Dramatic particle effects from all corners
+pixos.emit_particles({8, 3, 2}, { preset = 'darkness', count = 60, life = 3000 });
+pixos.emit_particles({3, 5, 1}, { preset = 'flame', count = 20, life = 2000 });
+pixos.emit_particles({13, 5, 1}, { preset = 'water', count = 20, life = 2000 });
+pixos.emit_particles({3, 11, 1}, { preset = 'earth', count = 20, life = 2000 });
+pixos.emit_particles({13, 11, 1}, { preset = 'air', count = 20, life = 2000 });
+
+-- Set to fight mode for action combat
+pixos.set_mode('fight');
+
+-- Play intense boss battle music
+pixos.play_bgm('audio/deep-unknown-beat.mp3');
+
+-- Set dramatic skybox shader
+pixos.set_skybox_shader('cosmic');
+
+-- Log combat start
+pixos.log('DARK LORD BATTLE INITIATED!');
+
+return nil;

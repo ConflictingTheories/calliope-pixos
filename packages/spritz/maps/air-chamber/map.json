@@ -1,0 +1,176 @@
+{
+  "name": "Air Chamber",
+  "description": "The soaring trial of the Air Elemental",
+  "bounds": [0, 0, 12, 12],
+  "tileset": "common",
+  "audioSrc": "icy-passage.mp3",
+  "mode": "tactics",
+
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [6, 10, 0],
+      "facing": "Up",
+      "bindCamera": true
+    },
+    {
+      "id": "air-elemental",
+      "type": "monsters/air_elemental",
+      "pos": [6, 3, 0],
+      "facing": "Down",
+      "selectTrigger": "sprite/air_elemental_battle"
+    },
+    {
+      "id": "return-portal",
+      "type": "furniture/portal",
+      "pos": [6, 11, 0],
+      "facing": "Up",
+      "zones": ["dungeon-entrance"],
+      "state": "open"
+    },
+    {
+      "id": "air-chest",
+      "type": "objects/chests/wood",
+      "pos": [10, 2, 0],
+      "facing": "South",
+      "inventory": ["air_shard", "wind_bow"]
+    },
+    {
+      "id": "wind-spurt-1",
+      "type": "effects/spurt",
+      "pos": [2, 3, 0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "wind-spurt-2",
+      "type": "effects/spurt",
+      "pos": [10, 3, 0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "wind-spurt-3",
+      "type": "effects/spurt",
+      "pos": [3, 6, 0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "wind-spurt-4",
+      "type": "effects/spurt",
+      "pos": [9, 6, 0.5],
+      "facing": "Up"
+    }
+  ],
+
+  "lights": [
+    {
+      "id": "sky-light-1",
+      "pos": [3, 4, 2],
+      "color": [0.7, 0.85, 1.0],
+      "direction": [0.0, 0.3, 1.0],
+      "attenuation": [0.06, 0.06, 0.03],
+      "density": 0.35,
+      "enabled": true
+    },
+    {
+      "id": "sky-light-2",
+      "pos": [9, 4, 2],
+      "color": [0.8, 0.9, 1.0],
+      "direction": [0.0, 0.3, 1.0],
+      "attenuation": [0.06, 0.06, 0.03],
+      "density": 0.35,
+      "enabled": true
+    },
+    {
+      "id": "boss-light",
+      "pos": [6, 3, 2],
+      "color": [0.9, 0.95, 1.0],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.04, 0.04, 0.02],
+      "density": 0.5,
+      "scatteringCoefficients": [0.6, 0.7, 0.9],
+      "enabled": true
+    },
+    {
+      "id": "cloud-light",
+      "pos": [6, 6, 4],
+      "color": [1.0, 1.0, 1.0],
+      "direction": [0.5, 0.5, 1.0],
+      "attenuation": [0.02, 0.02, 0.01],
+      "enabled": true
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "air-trial-intro",
+      "actions": [
+        {
+          "sprite": "air-elemental",
+          "action": "dialogue",
+          "args": [
+            [
+              "The winds whisper of your arrival...",
+              "I am the storm, swift and untouchable!",
+              "Only the truly agile may claim my blessing!"
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        },
+        { "trigger": "event/start_air_battle" }
+      ]
+    },
+    {
+      "id": "air-trial-victory",
+      "actions": [
+        {
+          "sprite": "air-elemental",
+          "action": "dialogue",
+          "args": [
+            [
+              "You move... like the wind itself...",
+              "The Air Shard is yours to command.",
+              "All four elements bow before you now."
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "id": "air-chamber-load",
+      "trigger": "zone/air_chamber_load"
+    }
+  ],
+
+  "objects": [
+    {
+      "id": "cloud-platform-1",
+      "type": "cube",
+      "mtl": false,
+      "pos": [3, 5, 1],
+      "useScale": [0.8, 0.8, 0.2]
+    },
+    {
+      "id": "cloud-platform-2",
+      "type": "cube",
+      "mtl": false,
+      "pos": [9, 5, 1],
+      "useScale": [0.8, 0.8, 0.2]
+    },
+    {
+      "id": "flying-die",
+      "type": "die",
+      "mtl": true,
+      "pos": [6, 6, 2],
+      "rotation": [45, 45, 0]
+    }
+  ],
+
+  "menu": {}
+}

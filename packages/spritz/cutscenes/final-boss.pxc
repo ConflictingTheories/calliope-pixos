@@ -1,0 +1,215 @@
+# Final Boss - The Dark Lord Confrontation
+# Epic finale featuring all elements, intense drama, and the ultimate battle
+
+@backdrop textures/sewer-lava.gif [fadeIn=1000]
+@char HERO sprite=characters/male
+@char DARK_LORD sprite=npc/air-knight
+@char ELDER sprite=characters/female
+
+@do playBgm [name=audio/deep-unknown-beat.mp3]
+
+wait 1000
+
+# The Dark Lord Awakens
+
+*DARK_LORD: [cutin=size=large,expression=neutral]
+"""
+At last... a worthy challenger approaches!
+I have watched your journey, mortal.
+"""
+
+wait 700
+
+HERO: [expression=worried,position=left]
+"""
+The Dark Lord... in person...
+The legends didn't do you justice.
+"""
+
+@do playSfx [name=audio/organ.mp3]
+
+wait 600
+
+DARK_LORD: [expression=neutral,position=right]
+"""
+A thousand years I've waited!
+The seal weakens... my power returns!
+You think four little shards can stop ME?
+"""
+
+wait 700
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+These aren't just shards!
+They're the lessons of Fire, Water,
+Earth, and Air! Combined they make...
+"""
+
+wait 600
+
+@transition wipe [duration=500]
+
+wait 500
+
+@backdrop textures/temple.gif [fadeIn=700]
+@do playBgm [name=audio/brass-loop.mp3]
+
+# The Battle Begins
+
+DARK_LORD: [expression=neutral,position=right]
+"""
+ENOUGH TALK! Show me this 'power'!
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+wait 500
+
+HERO: [expression=neutral,position=left]
+"""
+Fire taught me PASSION!
+"""
+
+@action HERO moveTo [x=20,duration=300]
+
+wait 400
+
+HERO: [expression=neutral,position=left]
+"""
+Water taught me ADAPTATION!
+"""
+
+wait 400
+
+HERO: [expression=neutral,position=left]
+"""
+Earth taught me ENDURANCE!
+"""
+
+wait 400
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+And Air taught me FREEDOM!
+Together they form the ultimate power...
+THE SPIRIT OF A TRUE HERO!
+"""
+
+@do playSfx [name=audio/brass-loop.mp3]
+
+wait 800
+
+@transition fadeOutBackdrop [duration=400]
+
+wait 500
+
+@backdrop textures/sewer-lava.gif [fadeIn=500]
+@do playBgm [name=audio/distorted-communication.mp3]
+
+# The Tide Turns
+
+DARK_LORD: [expression=neutral,position=right]
+"""
+Impossible! My darkness... fading?!
+How can a mere mortal...?!
+"""
+
+wait 600
+
+HERO: [expression=smile,position=left]
+"""
+Because I fight for everyone!
+For the village! For the kingdom!
+For everyone who believed in me!
+"""
+
+wait 600
+
+*DARK_LORD: [cutin=size=large,expression=neutral]
+"""
+No... NOOOOO!
+The seal... it's reforming!
+A THOUSAND MORE YEARS?!
+"""
+
+@do playSfx [name=audio/organ.mp3]
+
+wait 800
+
+@transition wipe [duration=600]
+
+wait 600
+
+@backdrop textures/room.gif [fadeIn=800]
+@do playBgm [name=audio/dawns-peak.mp3]
+
+# Victory
+
+DARK_LORD: [expression=neutral,position=right]
+"""
+You... have won... this time...
+But darkness... never dies...
+In a thousand years... I will return...
+"""
+
+wait 700
+
+HERO: [expression=neutral,position=left]
+"""
+And in a thousand years, there will be
+another hero to stop you. That's the
+cycle of light and darkness.
+"""
+
+*DARK_LORD: [cutin=size=large,expression=neutral]
+"""
+Perhaps... you are... worthy after all...
+Until we meet again... HERO...
+"""
+
+@transition fadeOutBackdrop [duration=1000]
+
+wait 1000
+
+@backdrop textures/castle.gif [fadeIn=900]
+@do playBgm [name=audio/calm-escape.mp3]
+
+# The Aftermath
+
+ELDER: [expression=smile,position=left]
+"""
+You did it! The Dark Lord is sealed!
+The kingdom is saved!
+"""
+
+wait 600
+
+HERO: [expression=smile,position=right]
+"""
+I couldn't have done it alone.
+The elementals, the Knight, you...
+Everyone helped me reach this moment.
+"""
+
+*ELDER: [cutin=size=large,expression=smile]
+"""
+You are truly a hero of legend now!
+Songs will be sung of your deeds
+for a thousand years!
+"""
+
+wait 800
+
+HERO: [expression=smile,position=right]
+"""
+A thousand years, huh?
+That's when he comes back...
+I hope the next hero is ready.
+"""
+
+@transition wipe [duration=600]
+
+waitInput
+
+@end

@@ -1,0 +1,221 @@
+# The Elemental Gathering
+# A tavern scene where elemental spirits meet to discuss ancient prophecies
+# Showcases: Multiple characters, direct portrait references, atmospheric audio
+
+@backdrop textures/room.png [fadeIn=600]
+@char HERO sprite=characters/male
+@char FIRE sprite=fire_portrait
+@char WATER sprite=water_portrait
+@char EARTH sprite=earth_portrait
+@char AIR sprite=air_portrait
+
+@do playSfx [name=audio/menu.mp3]
+
+wait 800
+
+# Scene: The Mystic Tavern
+
+HERO: [expression=neutral,position=left]
+"""
+The old tavern is unusually quiet tonight...
+Perfect for this secretive meeting.
+"""
+
+wait 1000
+
+@do playSfx [name=audio/distorted-communication.mp3]
+
+*HERO: [cutin=size=large,expression=shocked]
+"""
+They're here!
+The elemental spirits, just as the prophecy foretold!
+"""
+
+wait 1200
+
+@transition wipe [duration=400]
+
+# The spirits appear
+
+@do playSfx [name=audio/organ.mp3]
+
+FIRE: [expression=annoyed,position=right]
+"""
+Mortal... you dare summon us to this place?
+Speak quickly, before my patience burns away!
+"""
+
+HERO: [expression=worried,position=left]
+"""
+Great Spirit of Flame, I mean no disrespect.
+The kingdom is in peril. We need your ancient wisdom.
+"""
+
+wait 800
+
+WATER: [expression=neutral,position=right]
+"""
+Calm yourself, Flame. Let the mortal speak.
+We all felt the disturbance in the cosmic flow.
+"""
+
+@do playSfx [name=audio/ocean-waves.mp3]
+
+*WATER: [cutin=size=large,expression=neutral]
+"""
+The waters have whispered of a great darkness...
+One that threatens both mortal and spirit realms alike.
+"""
+
+wait 1000
+
+EARTH: [expression=worried,position=left]
+"""
+The ground trembles with unease.
+Ancient seals are weakening. Something stirs below.
+"""
+
+HERO: [expression=shocked,position=right]
+"""
+Then it's true! The legends speak of a being sealed
+beneath the world... the Dark One!
+"""
+
+wait 600
+
+@do playSfx [name=audio/deep-unknown-beat.mp3]
+
+AIR: [expression=neutral,position=left]
+"""
+The winds carry troubling news from all corners.
+The veil between worlds grows thin.
+"""
+
+*AIR: [cutin=size=large,expression=neutral]
+"""
+If the seals break completely, chaos will consume everything.
+Mortal, spirit, light, and shadow... all will fall into the void.
+"""
+
+wait 1200
+
+HERO: [expression=worried,position=right] What can be done? How do we stop it?
+
+wait 500
+
+FIRE: [expression=annoyed,position=left]
+"""
+The old ritual... the one our ancestors used to bind the darkness.
+But it requires the four elements working as one.
+"""
+
+WATER: [expression=neutral,position=right]
+"""
+And a mortal champion brave enough to channel our combined power.
+The strain could destroy you, human.
+"""
+
+@do playSfx [name=audio/icy-passage.mp3]
+
+HERO: [expression=smile,position=left]
+"""
+If it means saving everyone I care about,
+I'll gladly take that risk.
+"""
+
+wait 800
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+Tell me what I must do.
+"""
+
+wait 1000
+
+EARTH: [expression=neutral,position=right]
+"""
+You have a strong spirit, mortal.
+Very well. We shall teach you the ancient rites.
+"""
+
+@do playSfx [name=audio/calm-escape.mp3]
+
+AIR: [expression=neutral,position=left]
+"""
+First, you must journey to the four temples.
+Each of us will grant you a fragment of our essence.
+"""
+
+FIRE: [expression=neutral,position=right]
+"""
+The Temple of Eternal Flame lies south, in the volcanic wastes.
+Seek me there, and I shall test your resolve.
+"""
+
+WATER: [expression=neutral,position=left]
+"""
+The Shrine of Flowing Depths awaits in the eastern sea.
+Prove your adaptability, and you shall have my blessing.
+"""
+
+EARTH: [expression=neutral,position=right]
+"""
+The Cavern of Unmoved Stone rests deep in the western mountains.
+Show me your endurance, and you'll earn my trust.
+"""
+
+AIR: [expression=neutral,position=left]
+"""
+And the Tower of Endless Skies stands tall in the northern peaks.
+Demonstrate your wisdom, and I shall aid you.
+"""
+
+wait 1200
+
+@do playSfx [name=audio/dawns-peak.mp3]
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+Four temples... four trials...
+The fate of the world rests on this quest.
+"""
+
+wait 800
+
+HERO: [expression=smile,position=right]
+"""
+I won't let you down. I won't let anyone down.
+I'll complete the trials and save our world!
+"""
+
+wait 1000
+
+@backdrop textures/darkness.gif [fadeIn=1000]
+
+wait 600
+
+FIRE: [expression=neutral,position=left] Then go, champion. Time grows short.
+
+WATER: [expression=neutral,position=right] May the currents guide your path.
+
+EARTH: [expression=neutral,position=left] May the mountains grant you strength.
+
+AIR: [expression=neutral,position=right] May the winds carry you swiftly.
+
+wait 1500
+
+@do playSfx [name=audio/lonely-mountain.mp3]
+
+*HERO: [cutin=size=large,expression=neutral]
+"""
+And so begins the greatest adventure of my life...
+The Elemental Trials await.
+"""
+
+wait 2000
+
+@transition wipe [duration=1000]
+
+waitInput
+
+@end

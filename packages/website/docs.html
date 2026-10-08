@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - PixoSpritz</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        nav {
+            margin-bottom: 2rem;
+        }
+
+        #doc-content h1,
+        #doc-content h2,
+        #doc-content h3 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        #doc-content a {
+            color: #00aaff;
+        }
+
+        #doc-content code {
+            background-color: #2a2a2a;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+
+        #doc-content pre {
+            background-color: #2a2a2a;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <nav><a href="index.html">← Back to Home</a></nav>
+    <main>
+        <div id="doc-content">
+            <h1>Loading Documentation...</h1>
+        </div>
+    </main>
+
+    <!-- Using a CDN for showdown, but you could also install it via npm -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const contentEl = document.getElementById('doc-content');
+            const params = new URLSearchParams(window.location.search);
+            const topic = params.get('topic') || 'getting-started'; // Default to getting-started
+
+            // Map topics to their corresponding local Markdown files
+            const docFiles = {
+                'getting-started': 'docs/QUICKSTART.md',
+                'api': 'docs/00-pixospritz-api.md',
+                'tutorials': 'docs/TUTORIALS.md',
+                'faq': 'docs/FAQ.md',
+                'editor-guide': 'docs/EDITOR_GUIDE.md'
+            };
+
+            const filePath = docFiles[topic];
+
+            if (filePath) {
+                fetch(filePath)
+                    .then(response => response.ok ? response.text() : Promise.reject('File not found.'))
+                    .then(markdown => {
+                        const converter = new showdown.Converter();
+                        contentEl.innerHTML = converter.makeHtml(markdown);
+                    })
+                    .catch(error => {
+                        contentEl.innerHTML = `<h1>Error</h1><p>Could not load documentation for "${topic}".</p><p>${error}</p>`;
+                    });
+            } else {
+                contentEl.innerHTML = `<h1>Topic Not Found</h1><p>The documentation topic "${topic}" does not exist.</p>`;
+            }
+        });
+    </script>
+</body>
+
+</html>

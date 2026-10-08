@@ -1,0 +1,63 @@
+/*
+ * ---------------------------------------------------------------
+ *              PixoSpritz – Editor – IconRail styles
+ * ---------------------------------------------------------------
+ * Godot-style icon rail: 72px wide, icon + tiny label.
+ */
+
+.icon-rail {
+  width: 72px;
+  background: var(--color-bg-secondary, #1e1e22);
+  border-right: 1px solid var(--color-border, #333338);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8px 4px;
+  gap: 2px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.icon-rail__button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--color-text-secondary, #888890);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 2px 6px;
+  gap: 3px;
+  font: inherit;
+}
+
+.icon-rail__button:hover {
+  background: var(--color-bg-tertiary, #2d2d33);
+  color: var(--color-text-primary, #ececf1);
+}
+
+.icon-rail__button.is-active {
+  background: var(--color-bg-tertiary, #2d2d33);
+  border-color: var(--color-border-strong, #4a4a52);
+  color: var(--color-text-primary, #ececf1);
+}
+
+.icon-rail__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.icon-rail__label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.icon-rail__separator {
+  height: 1px;
+  background: var(--color-border, #333338);
+  margin: 6px 8px;
+  flex-shrink: 0;
+}

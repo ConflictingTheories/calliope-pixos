@@ -1,0 +1,148 @@
+-- Weather Cycle Orb
+-- Click to cycle through different weather/particle effects
+
+local orb = pixos.get_caller();
+local state = pixos.get_state() or {};
+
+local orb_pos = pixos.from(orb, 'pos');
+local weather_index = pixos.from(orb, 'weatherIndex') or 0;
+
+-- Weather types with particle configurations
+local weather_types = {
+    {
+        name = 'clear',
+        skybox = 'sky',
+        description = 'Clear skies',
+        particles = nil
+    },
+    {
+        name = 'rain',
+        skybox = 'morning',
+        description = 'Light rain falls',
+        particles = {
+            count = 40,
+            life = 1500,
+            speed = 0.08,
+            spread = 8.0,
+            size = 0.03,
+            color = { 0.6, 0.7, 0.9 },
+            gravity = { 0, 0, -0.01 },
+            drag = 0.999
+        }
+    },
+    {
+        name = 'snow',
+        skybox = 'cosmic',
+        description = 'Gentle snow drifts down',
+        particles = {
+            count = 30,
+            life = 4000,
+            speed = 0.02,
+            spread = 10.0,
+            size = 0.06,
+            color = { 1.0, 1.0, 1.0 },
+            gravity = { 0.0003, 0.0003, -0.001 },
+            drag = 0.998
+        }
+    },
+    {
+        name = 'magic',
+        skybox = 'neon',
+        description = 'Magical energy fills the air',
+        particles = {
+            count = 25,
+            life = 2500,
+            speed = 0.015,
+            spread = 6.0,
+            size = 0.1,
+            color = { 0.8, 0.4, 1.0 },
+            gravity = { 0, 0, 0.0005 },
+            drag = 0.99
+        }
+    },
+    {
+        name = 'fire',
+        skybox = 'sunset',
+        description = 'Embers drift through the heated air',
+        particles = {
+            count = 20,
+            life = 2000,
+            speed = 0.025,
+            spread = 5.0,
+            size = 0.07,
+            color = { 1.0, 0.5, 0.2 },
+            gravity = { 0, 0, 0.002 },
+            drag = 0.995
+        }
+    }
+};
+
+-- Cycle to next weather
+weather_index = (weather_index % #weather_types) + 1;
+local weather = weather_types[weather_index];
+
+-- Update orb state
+pixos.set(orb, 'weatherIndex', weather_index);
+
+-- Update global state
+state.weatherType = weather.name;
+pixos.set_state(state);
+
+-- Visual feedback on orb
+pixos.emit_particles(orb_pos, {
+    count = 30,
+    life = 1000,
+    speed = 0.04,
+    spread = 1.5,
+    size = 0.15,
+    color = weather.particles and weather.particles.color or { 0.8, 0.8, 0.8 },
+    gravity = { 0, 0, 0.002 },
+    drag = 0.97
+});
+
+-- Change skybox
+pixos.set_skybox_shader(weather.skybox);
+pixos.play_sfx('audio/chime.mp3');
+
+-- Show dialogue
+pixos.show_dialogue({
+    speaker = 'Weather Orb',
+    text = 'Weather changed to: ' .. weather.name .. '. ' .. weather.description
+});
+
+-- Set up recurring weather particles if applicable
+if weather.particles then
+    local player = pixos.get_avatar();
+    local player_pos = pixos.from(player, 'pos') or { 8, 8, 0 };
+    
+    -- Emit weather particles around player
+    for i = 1, 5 do
+        local offset_x = (math.random() - 0.5) * 10;
+        local offset_y = (math.random() - 0.5) * 10;
+        local emit_pos = {
+            player_pos[1] + offset_x,
+            player_pos[2] + offset_y,
+            player_pos[3] + 3 + math.random() * 2
+        };
+        pixos.emit_particles(emit_pos, weather.particles);
+    end;
+    
+    -- Set interval for continuous effect
+    pixos.set_interval(function()
+        local p = pixos.get_avatar();
+        local ppos = pixos.from(p, 'pos') or { 8, 8, 0 };
+        local current_state = pixos.get_state();
+        
+        -- Only emit if weather matches
+        if current_state and current_state.weatherType == weather.name then
+            for j = 1, 3 do
+                local ox = (math.random() - 0.5) * 12;
+                local oy = (math.random() - 0.5) * 12;
+                local epos = { ppos[1] + ox, ppos[2] + oy, ppos[3] + 4 };
+                pixos.emit_particles(epos, weather.particles);
+            end;
+        end;
+    end, 500);
+end;
+
+pixos.log(pixos.as_obj({ msg = 'Weather changed', weather = weather.name, index = weather_index }));

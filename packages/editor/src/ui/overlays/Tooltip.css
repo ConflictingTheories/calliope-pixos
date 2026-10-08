@@ -1,0 +1,52 @@
+/**
+ * Tooltip Styles
+ */
+.px-tooltip {
+  position: relative;
+  background: var(--panel-bg, #1a1a2e);
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: px-tooltip-fade-in 0.15s ease;
+}
+
+@keyframes px-tooltip-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.px-tooltip-content {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary, #e0e0e0);
+  white-space: nowrap;
+}
+
+.px-tooltip-arrow {
+  display: none; /* Arrows can be added later if needed */
+}
+
+.px-whisper {
+  pointer-events: auto;
+}
+
+/* Placement modifiers for arrow positioning */
+.px-whisper-top .px-tooltip-arrow,
+.px-whisper-topStart .px-tooltip-arrow,
+.px-whisper-topEnd .px-tooltip-arrow {
+  bottom: -6px;
+}
+
+.px-whisper-bottom .px-tooltip-arrow,
+.px-whisper-bottomStart .px-tooltip-arrow,
+.px-whisper-bottomEnd .px-tooltip-arrow {
+  top: -6px;
+}
+
+.px-whisper-left .px-tooltip-arrow {
+  right: -6px;
+}
+
+.px-whisper-right .px-tooltip-arrow {
+  left: -6px;
+}

@@ -1,0 +1,26 @@
+-- Start Boss Fight Menu Trigger
+-- Initiates the final boss battle
+
+pixos.log('Menu trigger: Start Boss Fight selected');
+
+-- Close the menu
+pixos.close_menu();
+
+-- Play dramatic sound effect
+pixos.play_sfx('audio/organ.mp3');
+
+-- Emit dramatic particles
+pixos.emit_particles({8, 8, 1}, { preset = 'darkness', count = 50, life = 2000 });
+
+-- Short delay for dramatic effect
+pixos.wait(500);
+
+-- Switch to fight mode
+pixos.set_mode('fight');
+
+-- Play boss battle music
+pixos.play_bgm('audio/deep-unknown-beat.mp3');
+
+pixos.log('BOSS BATTLE INITIATED!');
+
+return nil;

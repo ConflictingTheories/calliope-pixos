@@ -1,0 +1,15 @@
+-- Cutscene Demo Zone Introduction
+print('==== ZONE TRIGGER STARTING ====');
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'CUTSCENE DEMO ZONE LOAD', zone = zone }));
+
+-- Set explore mode
+pixos.log('cutscene_demo_intro: setting mode -> explore');
+pixos.set_mode('explore');
+
+-- Test simple message
+pixos.log('==== CUTSCENE DEMO ZONE LOADED ====');
+
+return nil;
+

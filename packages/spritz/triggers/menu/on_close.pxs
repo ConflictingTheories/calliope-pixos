@@ -1,0 +1,64 @@
+-- Menu Close Handler - Triggers Cutscene Demo
+-- This script runs when the main menu is closed
+-- It can play an introduction cutscene or load the demo zone
+
+local menu = pixos.get_caller();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Menu Closed - Starting Game', 
+    menu = menu 
+}));
+
+-- Check if we should play intro cutscene
+if not pixos.has_flag('game_intro_played') then
+    pixos.log('First time - playing intro cutscene');
+    
+    -- Play a brief intro cutscene
+    local intro = [[
+@backdrop textures/castle.gif [fadeIn=1000]
+
+@char NARRATOR sprite=characters/male
+
+@do playBgm [name=audio/opening.mp3]
+
+NARRATOR: [expression=neutral,position=center]
+"""
+A new adventure begins...
+"""
+
+wait 1000
+
+NARRATOR: [expression=smile]
+"""
+Welcome to PixOS - where stories come to life
+through interactive cutscenes and dynamic gameplay.
+"""
+
+wait 500
+
+@do stopBgm
+
+waitInput
+
+@transition fadeOut [duration=800]
+
+@end
+]];
+    
+    pixos.sync({
+        pixos.play_pxc_script(intro)
+    });
+    
+    pixos.set_flag('game_intro_played', true);
+end
+
+-- Load the cutscene demo zone
+pixos.log('Loading cutscene demo zone...');
+pixos.remove_all_zones();
+pixos.sync({
+    pixos.run_cutscene({
+        { type = 'load_zone', zone = 'cutscene-demo', effect = 'fade' }
+    })
+});
+
+return nil;

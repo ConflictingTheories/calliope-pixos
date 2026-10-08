@@ -1,0 +1,49 @@
+{
+  "name": "pixospritz-specs",
+  "version": "1.0.1",
+  "description": "Shared specifications, schemas, and constants for PixoSpritz engines",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./validator": "./src/validator.js",
+    "./semantic": "./src/semantic.js",
+    "./asset-graph": "./src/asset-graph.js",
+    "./migrations": "./src/migrations/index.js",
+    "./compat": "./src/compat.js",
+    "./math/*": "./math/*.json",
+    "./formats/*": "./formats/*.json",
+    "./constants/*": "./constants/*.json",
+    "./shaders/*": "./shaders/*"
+  },
+  "bin": {
+    "generate-c-headers": "./generate-c-headers.cjs",
+    "pixozine": "./bin/pixozine.cjs"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  },
+  "scripts": {
+    "generate": "node generate-c-headers.cjs",
+    "generate:core-c": "node generate-c-headers.cjs --output-dir ../core-c/src/generated"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "bin/",
+    "fixtures/",
+    "math/",
+    "formats/",
+    "constants/",
+    "shaders/",
+    "generate-c-headers.cjs",
+    "PIXOZINE_FORMAT.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "game-engine",
+    "specifications"
+  ],
+  "author": "ConflictingTheories",
+  "license": "SEE LICENSE IN LICENSE"
+}

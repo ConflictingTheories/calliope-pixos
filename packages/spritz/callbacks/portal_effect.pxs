@@ -1,0 +1,52 @@
+-- Portal Effect Callback
+-- Enhanced portal transition with visual effects
+
+local portal = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ msg = 'Portal Activation', portal = portal, player = player }));
+
+-- Get portal destination
+local zones = pixos.from(portal, 'zones');
+local portal_pos = pixos.from(portal, 'pos');
+
+-- Visual effect at portal
+if portal_pos then
+    pixos.emit_particles(portal_pos, { preset = 'magic', count = 40, life = 1500 });
+end;
+
+-- Play portal sound
+pixos.play_sfx('audio/organ.mp3');
+
+-- Set cosmic shader during transition
+pixos.set_skybox_shader('cosmic');
+
+-- Build transition steps
+local steps = {};
+
+-- Fade out with blur effect
+table.insert(steps, { type = 'transition', effect = 'blur', direction = 'out', duration = 600 });
+
+-- Load destination zone(s)
+if type(zones) == 'string' then
+    pixos.log(pixos.as_obj({ msg = 'Loading single zone', zone = zones }));
+    table.insert(steps, { type = 'load_zone', zone = zones, effect = nil });
+elseif type(zones) == 'table' then
+    pixos.log(pixos.as_obj({ msg = 'Loading multiple zones', zones = zones }));
+    for i = 1, #zones do
+        table.insert(steps, { type = 'load_zone', zone = zones[i], effect = nil });
+    end;
+end;
+
+-- Fade back in
+table.insert(steps, { type = 'transition', effect = 'blur', direction = 'in', duration = 600 });
+
+-- Execute the transition
+pixos.sync({ pixos.run_cutscene(steps) });
+
+-- Reset shader to normal
+pixos.set_skybox_shader('sunset');
+
+pixos.log('Portal transition complete');
+
+pixos.callback_finish(1);

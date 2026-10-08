@@ -1,0 +1,131 @@
+# Fire Trial - Elemental Battle Cutscene
+# Features intense battle music, dramatic effects, and the Fire Elemental boss encounter
+
+@backdrop textures/sewer-lava.gif [fadeIn=800]
+@char HERO sprite=characters/male
+@char FIRE_ELEMENTAL sprite=monsters/fire_elemental
+
+@do playBgm [name=audio/brass-loop.mp3]
+
+wait 800
+
+# The Fire Elemental awakens
+
+*FIRE_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+WHO DARES ENTER MY DOMAIN?!
+The flames of destruction hunger for souls!
+"""
+
+wait 600
+
+HERO: [expression=worried,position=left]
+"""
+I am the chosen hero!
+I've come to claim the Fire Shard!
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+wait 500
+
+FIRE_ELEMENTAL: [expression=neutral,position=right]
+"""
+Fool! Countless warriors have tried.
+Their ashes feed my eternal flames!
+"""
+
+@action HERO moveTo [x=30,duration=400]
+
+wait 400
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+I'm not like the others!
+My determination burns brighter than any fire!
+"""
+
+wait 800
+
+@transition wipe [duration=400]
+
+wait 500
+
+@backdrop textures/cave.gif [fadeIn=600]
+@do playBgm [name=audio/deep-unknown-beat.mp3]
+
+# Battle sequence
+
+FIRE_ELEMENTAL: [expression=neutral,position=right]
+"""
+Then BURN, mortal!
+Feel the wrath of a thousand suns!
+"""
+
+@do playSfx [name=audio/organ.mp3]
+
+wait 600
+
+HERO: [expression=tired,position=left]
+"""
+The heat... it's overwhelming...
+But I cannot... give up now!
+"""
+
+wait 800
+
+*HERO: [cutin=size=large,expression=worried]
+"""
+Think, think...
+Fire needs air to burn.
+If I can cut off its source...!
+"""
+
+wait 600
+
+@transition fadeOutBackdrop [duration=500]
+
+wait 600
+
+@backdrop textures/sewer-lava.gif [fadeIn=500]
+@do playBgm [name=audio/calm-escape.mp3]
+
+# Victory
+
+FIRE_ELEMENTAL: [expression=neutral,position=right]
+"""
+Impossible... my flames... extinguished...
+You have... bested me...
+"""
+
+wait 600
+
+HERO: [expression=smile,position=left]
+"""
+I did it! The first trial is complete!
+"""
+
+*FIRE_ELEMENTAL: [cutin=size=large,expression=neutral]
+"""
+Take the Fire Shard, warrior.
+You have proven your inner flame burns true.
+Three more trials await you...
+"""
+
+wait 800
+
+HERO: [expression=smile,position=left]
+"""
+Thank you for the battle, Fire Guardian.
+I'll carry this lesson forward.
+"""
+
+wait 600
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+@transition wipe [duration=700]
+
+waitInput
+
+@end

@@ -1,0 +1,1 @@
+{"description":"Disgaea-like mini: hub area + tactical battle stage. Talk to the recruiter in the hub, enter the arena, defeat the goblins in turn-based combat.","initialZones":["hub"],"maps":["hub","arena"],"modes":["hub","battle"],"title":"Nether Squad","version":"1.0.0"}
