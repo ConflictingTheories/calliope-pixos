@@ -19,19 +19,19 @@ function fixture(path) {
 }
 
 describe('SpritzPlayer.prepareManifest', () => {
-  it('prepares a valid manifest (migration no-op)', () => {
+  it('prepares a valid manifest (1.1.0, no migration needed)', () => {
     const prepared = SpritzPlayer.prepareManifest(fixture('valid-minimal/manifest.json'));
     expect(prepared.manifest.format).toBe('pixozine');
-    expect(prepared.manifest.formatVersion).toBe('1.0.0');
+    expect(prepared.manifest.formatVersion).toBe('1.1.0');
     expect(prepared.migration).toBe('no-op');
     expect(prepared.warnings).toEqual([]);
   });
 
   it('migrates legacy manifests before validating', () => {
     const prepared = SpritzPlayer.prepareManifest(fixture('legacy-pre-v1/manifest.json'));
-    expect(prepared.manifest.formatVersion).toBe('1.0.0');
+    expect(prepared.manifest.formatVersion).toBe('1.1.0');
     expect(prepared.manifest.initialZones).toEqual(['zone-1']);
-    expect(prepared.migration).toContain('0.0.0 -> 1.0.0');
+    expect(prepared.migration).toContain('1.1.0');
   });
 
   it('throws PackageValidationError (typed) for invalid manifests', () => {
