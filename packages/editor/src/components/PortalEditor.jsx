@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { useState } from 'react';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
 
 /**
  * PortalEditor: visually link doorways between maps.
@@ -31,6 +32,7 @@ export default function PortalEditor({
   onDelete,
   onClose,
 }) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [selectedId, setSelectedId] = useState(null);
   const selected = portals.find(p => p.id === selectedId);
 
@@ -68,7 +70,9 @@ export default function PortalEditor({
   const editTargetPortals = selected?.targetMap ? (portalsByMap[selected.targetMap] || []) : [];
 
   return (
-    <div className="ps-modal-overlay">
+    <>
+      <ConfirmDialog />
+      <div className="ps-modal-overlay">
       <div className="ps-modal ps-modal-wide">
         <div className="ps-modal-header">
           <h2>Portals</h2>
@@ -188,8 +192,8 @@ export default function PortalEditor({
               )}
               <button
                 className="ps-btn ps-btn-danger"
-                onClick={() => {
-                  if (confirm(`Delete portal "${selected.id}"?`)) {
+                onClick={async () => {
+                  if (await confirm(`Delete portal "${selected.id}"? This cannot be undone.`)) {
                     onDelete(selected.id);
                     setSelectedId(null);
                   }
@@ -208,5 +212,6 @@ export default function PortalEditor({
         </div>
       </div>
     </div>
+    </>
   );
 }
