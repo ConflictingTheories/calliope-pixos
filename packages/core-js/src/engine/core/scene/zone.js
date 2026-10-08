@@ -31,6 +31,7 @@ import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import { debug } from '@Engine/utils/debug-logger.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
+import { scanScriptForForbidden } from '@Engine/scripting/script-api.js';
 
 /**
  * @typedef {object} ZoneData
@@ -303,6 +304,11 @@ export default class Zone extends Loadable {
     const jsFile = await zip.file(`triggers/${trigger}.js`);
     if (jsFile) {
       const triggerScript = await jsFile.async('string');
+      // Sandbox: scan for forbidden patterns before executing
+      const scan = scanScriptForForbidden(triggerScript);
+      if (!scan.ok) {
+        throw new Error(`Blocked trigger script '${trigger}': forbidden patterns: ${scan.hits.join(', ')}`);
+      }
       // new Function isolates scope; it receives (zone, engine) and must return a function
       const factory = new Function(
         'zone',
@@ -478,6 +484,11 @@ export default class Zone extends Loadable {
       // Cells generator (string -> function)
       if (typeof this.cells === 'string') {
         try {
+          // Sandbox: scan for forbidden patterns
+          const cellScan = scanScriptForForbidden(this.cells);
+          if (!cellScan.ok) {
+            throw new Error(`Blocked cells generator: forbidden patterns: ${cellScan.hits.join(', ')}`);
+          }
           // Strict scope function (no global eval)
           const fn = new Function('bounds', 'zone', `return (${this.cells})(bounds, zone);`);
           this.cells = fn.call(this, this.bounds, this);
@@ -534,6 +545,11 @@ export default class Zone extends Loadable {
       // Sprite generators
       if (typeof this.sprites === 'string') {
         try {
+          // Sandbox: scan for forbidden patterns
+          const spriteScan = scanScriptForForbidden(this.sprites);
+          if (!spriteScan.ok) {
+            throw new Error(`Blocked sprites generator: forbidden patterns: ${spriteScan.hits.join(', ')}`);
+          }
           const fn = new Function('bounds', 'zone', `return (${this.sprites})(bounds, zone);`);
           this.sprites = fn.call(this, this.bounds, this);
         } catch (e) {
