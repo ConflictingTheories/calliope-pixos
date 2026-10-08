@@ -1218,8 +1218,128 @@ const App = () => {
             textureBasePath={modelDir}
           />
         ), 'preview');
+      } else if (extension === 'gltf') {
+        // A .gltf may reference external buffers/textures by relative path.
+        // A data-URI src has no base URL for those to resolve against, so
+        // resolve each reference against the .gltf's location in the package
+        // and embed it as a data URI, making the preview self-contained.
+        // Missing files don't block the preview: they are collected and
+        // shown as warnings alongside whatever did resolve.
+        const modelBytes = await getData(entry, false);
+        const modelTabId = getEntryFullPath(entry);
+
+        let gltfJson = null;
+        let parseError = null;
+        try {
+          gltfJson = JSON.parse(new TextDecoder().decode(modelBytes));
+        } catch (e) {
+          parseError = e && e.message ? e.message : 'unknown parse error';
+        }
+        if (!gltfJson) {
+          openTab(
+            modelTabId,
+            entry.name,
+            <ModelPreview
+              key={modelTabId}
+              fileName={entry.name}
+              error={`Could not preview ${entry.name}: the file is not valid JSON (${parseError}).`}
+            />,
+            'preview'
+          );
+          return;
+        }
+
+        const isExternalRef = uri =>
+          typeof uri === 'string' &&
+          uri.length > 0 &&
+          !uri.startsWith('data:') &&
+          !/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(uri);
+        // Normalize a ref path against the .gltf's directory: collapse
+        // `a/../b` -> `b`, drop `./` segments, and clamp `..` at the package
+        // root so a ref can never resolve above it.
+        const normalizePath = p => {
+          const out = [];
+          for (const part of p.split('/')) {
+            if (part === '' || part === '.') continue;
+            if (part === '..') {
+              if (out.length > 0) out.pop();
+              // else: clamp at root — drop the segment
+            } else {
+              out.push(part);
+            }
+          }
+          return out.join('/');
+        };
+        const findEntryForRef = ref => {
+          let decoded = ref;
+          try {
+            decoded = decodeURIComponent(ref);
+          } catch {
+            // keep the raw ref on malformed escapes
+          }
+          const resolved = normalizePath(modelDir + decoded);
+          return allEntries.find(e => (e.fullName || e.name) === resolved) || null;
+        };
+        const guessImageMime = ref => {
+          const ext = ref
+            .split('?')[0]
+            .split('.')
+            .pop()
+            .toLowerCase();
+          const lookup = {
+            png: 'image/png',
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            webp: 'image/webp',
+            gif: 'image/gif',
+            bmp: 'image/bmp',
+          };
+          return lookup[ext] || 'image/png';
+        };
+
+        const refs = [];
+        (gltfJson.buffers || []).forEach(b => {
+          if (isExternalRef(b.uri))
+            refs.push({ holder: b, uri: b.uri, mime: 'application/octet-stream' });
+        });
+        (gltfJson.images || []).forEach(img => {
+          if (isExternalRef(img.uri))
+            refs.push({ holder: img, uri: img.uri, mime: img.mimeType || guessImageMime(img.uri) });
+        });
+
+        // Resolve each external ref independently: embed what can be embedded
+        // and collect the missing ones. A missing .bin or texture degrades the
+        // preview (untextured/missing geometry) but must not block the whole
+        // model — the missing files are passed through to the preview so it
+        // can warn about them.
+        const missing = [];
+        for (const ref of refs) {
+          const refEntry = findEntryForRef(ref.uri);
+          const refBytes = refEntry ? await getData(refEntry, false) : null;
+          if (!refEntry || !refBytes) {
+            missing.push(ref.uri);
+            continue;
+          }
+          ref.holder.uri = toDataUri(refBytes, ref.mime);
+        }
+
+        const gltfDataUri = toDataUri(
+          new TextEncoder().encode(JSON.stringify(gltfJson)),
+          'model/gltf+json'
+        );
+        openTab(
+          modelTabId,
+          entry.name,
+          <ModelPreview
+            key={modelTabId}
+            fileName={entry.name}
+            content={gltfDataUri}
+            missingRefs={missing}
+          />,
+          'preview'
+        );
       } else {
-        // For GLTF/GLB, pass as data URI
+        // For GLB and other model files, pass as data URI
         const modelBytes = await getData(entry, false);
         const mimeLookup = {
           mtl: 'text/plain',
@@ -1229,7 +1349,12 @@ const App = () => {
         const mime = mimeLookup[extension] || 'application/octet-stream';
         const dataUri = toDataUri(modelBytes, mime);
         const modelTabId = getEntryFullPath(entry);
-        openTab(modelTabId, entry.name, <ModelPreview key={modelTabId} content={dataUri} />, 'preview');
+        openTab(
+          modelTabId,
+          entry.name,
+          <ModelPreview key={modelTabId} fileName={entry.name} content={dataUri} />,
+          'preview'
+        );
       }
     },
     [getData, toDataUri, zip]
@@ -2564,10 +2689,7 @@ const App = () => {
             >
               <ConsolePanel
                 messages={consoleState.messages}
-                onCommand={consoleState.command}
                 onClear={consoleState.clear}
-                isRunning={consoleState.isRunning}
-                onStop={consoleState.stopExecution}
               />
             </div>
           )}
