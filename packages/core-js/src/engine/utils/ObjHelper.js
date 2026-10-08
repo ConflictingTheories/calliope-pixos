@@ -135,8 +135,8 @@ export default class ObjHelper {
           break;
 
         case 'vt':
-          // Texture coordinate (flip Y for OpenGL convention)
-          uvs.push(parseFloat(parts[1]), 1.0 - parseFloat(parts[2]));
+          // Texture coordinate (stored as-is; UNPACK_FLIP_Y_WEBGL flips Y at upload time)
+          uvs.push(parseFloat(parts[1]), parseFloat(parts[2]));
           break;
 
         case 'vn':
@@ -324,6 +324,8 @@ export default class ObjHelper {
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        // Reset flip state — it is global and would otherwise leak into all later texture uploads
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
         // Power of 2 textures get mipmaps
         if ((img.width & (img.width - 1)) === 0 && (img.height & (img.height - 1)) === 0) {
