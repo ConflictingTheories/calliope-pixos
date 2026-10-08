@@ -114,6 +114,8 @@ export default class SaveManager {
    * @returns {Promise<boolean>}
    */
   async saveGame(slotId, name = null, options = {}) {
+    // Branching options: namespace scopes the save (e.g. "universe:midgard"),
+    // parentId links to the save this branched from, branch names the timeline.
     const world = this.engine.world;
     const avatar = world.avatar;
     const manifest = this.engine.manifest || {};
@@ -132,6 +134,10 @@ export default class SaveManager {
       timestamp: new Date().toISOString(),
       slotId: slotId.toString(),
       slotName: name || `Slot ${slotId}`,
+      namespace: options.namespace || 'default',
+      branch: options.branch || 'main',
+      parentId: options.parentId ?? null,
+      label: options.label || null,
       player: {
         zone: world.currentZoneId || 'unknown',
         position: [avatar.x || 0, avatar.y || 0, avatar.z || 0],
@@ -181,6 +187,10 @@ export default class SaveManager {
       slot.zone = saveData.player.zone;
       slot.gameId = saveData.gameId;
       slot.version = saveData.version;
+      slot.namespace = saveData.namespace;
+      slot.branch = saveData.branch;
+      slot.parentId = saveData.parentId;
+      slot.label = saveData.label;
       if (saveData.screenshot) {
         slot.thumbnail = saveData.screenshot;
       }
@@ -253,10 +263,12 @@ export default class SaveManager {
         return false;
       }
 
-      // 4. Verify checksum if present
+      // 4. Verify checksum if present (hash data WITHOUT the stored checksum)
       if (saveData.checksum) {
-        const currentChecksum = await this.generateChecksum(saveData);
-        if (currentChecksum !== saveData.checksum) {
+        const storedChecksum = saveData.checksum;
+        const { checksum: _dropped, ...dataWithoutChecksum } = saveData;
+        const currentChecksum = await this.generateChecksum(dataWithoutChecksum);
+        if (currentChecksum !== storedChecksum) {
           console.warn('Save data checksum mismatch - data may be corrupted');
           // Continue anyway, but warn user
         }
@@ -357,6 +369,133 @@ export default class SaveManager {
       console.error('Failed to check save:', e);
       return false;
     }
+  }
+
+  /**
+   * Generates a unique save ID.
+   * @returns {string}
+   */
+  generateSaveId() {
+    return `save_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  /**
+   * Forks an existing save into a new branch — a "what if" timeline.
+   * The forked save starts as a copy of the parent's state.
+   * @param {string|number} saveId - ID of the save to fork.
+   * @param {string} branchName - Name for the new branch.
+   * @param {string} name - Display name for the forked save.
+   * @returns {Promise<string|null>} - New save ID, or null on failure.
+   */
+  async forkSave(saveId, branchName, name = null) {
+    try {
+      const db = this.engine.database || this.engine.db;
+      if (!db || !db.db) {
+        console.error('Database not initialized');
+        return null;
+      }
+      const entries = await db.db.saves.where('slotId').equals(saveId).sortBy('timestamp');
+      if (!entries || entries.length === 0) {
+        console.warn(`No save found for id ${saveId}`);
+        return null;
+      }
+      const parentData = entries[entries.length - 1].data;
+      const newId = this.generateSaveId();
+      const forkedData = {
+        ...JSON.parse(JSON.stringify(parentData)),
+        slotId: newId.toString(),
+        slotName: name || `${parentData.slotName} (${branchName})`,
+        timestamp: new Date().toISOString(),
+        parentId: saveId.toString(),
+        branch: branchName,
+        // namespace inherited from parent
+      };
+      // Parent checksum is stale after mutation — recompute
+      delete forkedData.checksum;
+      const forkChecksum = await this.generateChecksum(forkedData);
+      if (forkChecksum) forkedData.checksum = forkChecksum;
+      await db.db.saves.add({
+        slotId: newId,
+        gameId: forkedData.gameId,
+        timestamp: Date.now(),
+        data: forkedData,
+      });
+      const slot = new SaveSlot(newId, {
+        name: forkedData.slotName,
+        namespace: forkedData.namespace,
+        branch: branchName,
+        parentId: saveId.toString(),
+        gameId: forkedData.gameId,
+        zone: forkedData.player?.zone,
+        version: forkedData.version,
+      });
+      this.slots.push(slot);
+      this.saveMetadata();
+      return newId;
+    } catch (e) {
+      console.error('Failed to fork save:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Lists all saves in a namespace, optionally filtered by branch.
+   * @param {string} namespace - Namespace to list (default 'default').
+   * @param {string|null} branch - Branch filter, or null for all branches.
+   * @returns {SaveSlot[]}
+   */
+  listSaves(namespace = 'default', branch = null) {
+    return this.slots.filter(s => {
+      if (s.namespace !== namespace) return false;
+      if (branch !== null && s.branch !== branch) return false;
+      return true;
+    });
+  }
+
+  /**
+   * Lists all branch names in a namespace.
+   * @param {string} namespace - Namespace to inspect.
+   * @returns {string[]}
+   */
+  getBranches(namespace = 'default') {
+    const branches = new Set();
+    for (const s of this.slots) {
+      if (s.namespace === namespace) branches.add(s.branch);
+    }
+    return [...branches];
+  }
+
+  /**
+   * Returns the save tree for a namespace: roots with nested children.
+   * @param {string} namespace - Namespace to inspect.
+   * @returns {Object[]} - Tree nodes { slot, children }.
+   */
+  getTree(namespace = 'default') {
+    const saves = this.listSaves(namespace);
+    const byId = new Map(saves.map(s => [String(s.id), { slot: s, children: [] }]));
+    const roots = [];
+    for (const node of byId.values()) {
+      const nodeId = String(node.slot.id);
+      const parentId = node.slot.parentId != null ? String(node.slot.parentId) : null;
+      // Guard: self-parent or missing parent -> treat as root (no cycles)
+      if (parentId && parentId !== nodeId && byId.has(parentId)) {
+        byId.get(parentId).children.push(node);
+      } else {
+        roots.push(node);
+      }
+    }
+    // Sort children by timestamp (cycle-safe via visited set)
+    const sortTree = (nodes, visited = new Set()) => {
+      nodes.sort((a, b) => a.slot.timestamp - b.slot.timestamp);
+      for (const n of nodes) {
+        const nid = String(n.slot.id);
+        if (visited.has(nid)) continue; // cycle guard
+        visited.add(nid);
+        sortTree(n.children, visited);
+      }
+    };
+    sortTree(roots);
+    return roots;
   }
 
   /**
