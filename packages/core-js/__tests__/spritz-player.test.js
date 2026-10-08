@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * SpritzPlayer tests — P1-09.
  *
