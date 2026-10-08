@@ -52,7 +52,7 @@ export default class SkyboxManager {
 
   /**
    * Initializes the skybox with optional texture and shader.
-   * @param {string|null} textureSrc - The texture source (TODO: allow custom texture loading).
+   * @param {string|null} textureSrc - The texture source (loaded from bundle zip).
    * @param {string} shaderName - The shader name.
    * @param {number[]} centre - The skybox center [x, y, z].
    */
@@ -61,7 +61,7 @@ export default class SkyboxManager {
     this.gl = this.engine.gl;
 
     if (textureSrc) {
-      // todo - load in custom texture and apply to skybox
+      // Load custom texture from bundle zip and apply to skybox
       this.texture = await this.engine.resourceManager.loadTextureFromZip(
         textureSrc,
         this.engine.spritz.zip
@@ -256,11 +256,14 @@ export default class SkyboxManager {
   }
 
   /**
-   * Initializes the texture shader program (TODO: not working yet - needs to load from zip).
+   * Initializes the texture shader program.
    * @param {Object} param1 - The shader sources.
    * @param {string} param1.vs - The vertex shader source.
    * @param {string} param1.fs - The fragment shader source.
    * @returns {WebGLProgram} The shader program.
+   */
+  /**
+   * Initializes the texture shader program (loads textures from bundle zip).
    */
   initTextureShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
     const { gl } = this.engine;

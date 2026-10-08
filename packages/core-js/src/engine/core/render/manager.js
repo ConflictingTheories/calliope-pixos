@@ -238,12 +238,14 @@ export default class RenderManager {
       init: pickerInit,
     });
 
-    // Initialize Effects (TODO: Needs work, doesn't apply filter correctly)
+    // Initialize Effects via ShaderManager
     if (spritz.effects) {
+      spritz.effectPrograms = spritz.effectPrograms || {};
       for (let i in spritz.effects) {
-        // spritz.effectPrograms[i] = this.initShaderEffects(gl, spritz.effects[i]);
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`Effect "${i}" is present but not fully implemented in RenderManager.`);
+        try {
+          spritz.effectPrograms[i] = this.initShaderEffects(spritz.effects[i]);
+        } catch (e) {
+          console.error(`Failed to initialize effect "${i}":`, e);
         }
       }
     }
@@ -348,11 +350,11 @@ export default class RenderManager {
    * @throws {Error} If the shader program fails to link.
    */
   initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
-    // Delegate to ShaderManager but keep full implementation for backward compatibility
-    // TODO: Fully migrate to ShaderManager
-    if (this.shaderManager && this.shaderManager.mainShaderProgram) {
-      return this.shaderManager.mainShaderProgram;
+    // Fully migrated to ShaderManager
+    if (this.shaderManager) {
+      return this.shaderManager.initShaderProgram({ vs: vsSource, fs: fsSource });
     }
+    throw new Error('ShaderManager not initialized');
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;

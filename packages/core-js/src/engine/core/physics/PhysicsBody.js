@@ -144,7 +144,7 @@ export default class PhysicsBody {
    * @returns {number} Speed
    */
   getSpeed() {
-    return this.velocity.magnitude();
+    return this.velocity.length();
   }
 
   /**

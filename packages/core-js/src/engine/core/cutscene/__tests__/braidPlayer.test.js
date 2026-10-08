@@ -1,5 +1,7 @@
 /* PixoSpritz — BraidCutscenePlayer tests (pure logic, no DOM). */
 
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BraidCutscenePlayer, trackFromEvents, fork } from '../braidPlayer.js';
 import { Fiber, Tension } from '../../../../vendor/braid.js';
 

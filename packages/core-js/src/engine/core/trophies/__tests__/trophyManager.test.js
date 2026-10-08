@@ -1,5 +1,7 @@
 /* PixoSpritz — TrophyManager tests (pure logic, no DOM). */
 
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import TrophyManager, { TROPHY_RARITIES } from '../TrophyManager.js';
 import {
   TrophySyncProvider,

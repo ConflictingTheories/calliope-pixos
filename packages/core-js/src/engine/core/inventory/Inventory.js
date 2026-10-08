@@ -214,19 +214,34 @@ export default class Inventory {
    * @param {Object} context - Context object (e.g., engine, sprite).
    * @returns {boolean} True if item was used successfully.
    */
-  useItem(slotIndex, context = {}) {
+  async useItem(slotIndex, context = {}) {
     const item = this.getItemAt(slotIndex);
     if (!item || !item.usable) {
       return false;
     }
 
-    // Execute onUse script if available
+    // Execute onUse script if available (via sandboxed ScriptBoundary)
     if (item.onUse && context.engine) {
       try {
-        // Load and execute script
-        // This would integrate with the scripting system
-        console.log(`Using item ${item.id}, executing script: ${item.onUse}`);
-        // TODO: Execute script via engine.scripting system
+        const { ScriptBoundary } = await import('../../scripting/ScriptBoundary.js');
+        const boundary = new ScriptBoundary({
+          createWorker: () => new Worker(
+            new URL('../../scripting/script-worker.js', import.meta.url),
+            { type: 'module' }
+          ),
+          timeoutMs: 2000,
+          hostHandlers: {},
+        });
+        const result = await boundary.execute({
+          script: item.onUse,
+          capabilities: [], // default-deny: item scripts get no host capabilities
+        });
+        await boundary.dispose();
+        if (!result.ok) {
+          console.error(`Item script failed: ${item.onUse}`, result.message);
+          return false;
+        }
+        console.log(`Using item ${item.id}, executed script successfully`);
       } catch (e) {
         console.error(`Failed to execute item script: ${item.onUse}`, e);
         return false;

@@ -180,7 +180,20 @@ export default {
   },
   // Handle Keyboard & Mouse & Touch
   checkInput: function (time) {
-    // TODO -- Reimplement mouse / touch handler support
+    // Mouse / touch: tap to submit the prompt (virtual keyboard handled by OS)
+    // Touch state is tracked via hookListener() touchstart/touchend handlers.
+    if (this.isTouched) {
+      // Single tap submits current text (mobile equivalent of Enter)
+      if (this.text.length > 0) {
+        this.sprite.setGreeting(this.text);
+        if (this.sprite.speech.clearHud) this.sprite.speech.clearHud();
+        this.speechbox = this.sprite.speech.scrollText(this.text);
+        this.sprite.speech.loadImage();
+        this.completed = true;
+      }
+      this.isTouched = false; // consume the touch
+      return;
+    }
 
     // TOOD -- Is there a cleaner way to do this? I feel like this should be less hacky
     // Keyboard
