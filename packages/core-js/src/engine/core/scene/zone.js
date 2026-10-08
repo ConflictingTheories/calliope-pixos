@@ -31,7 +31,6 @@ import { loadMap, dynamicCells } from '@Engine/dynamic/map.js';
 import Loadable from '@Engine/core/queue/loadable.js';
 import { debug } from '@Engine/utils/debug-logger.js';
 import PixoScriptInterpreter from '@Engine/scripting/PixoScriptInterpreter.js';
-import { scanScriptForForbidden } from '@Engine/scripting/script-api.js';
 
 /**
  * @typedef {object} ZoneData
@@ -300,23 +299,15 @@ export default class Zone extends Loadable {
       if (this.engine?.debug) console.warn('PixoScript trigger load failed', e);
     }
 
-    // JS fallback (sandboxed) — no global eval
+    // SANDBOX-BY-DEFAULT: No JS fallback. Only sandboxed interpreters (Lua, PixoScript)
+    // are allowed. Host-realm JS execution via new Function is blocked.
+    // If a .js trigger is present, it is rejected.
     const jsFile = await zip.file(`triggers/${trigger}.js`);
     if (jsFile) {
-      const triggerScript = await jsFile.async('string');
-      // Sandbox: scan for forbidden patterns before executing
-      const scan = scanScriptForForbidden(triggerScript);
-      if (!scan.ok) {
-        throw new Error(`Blocked trigger script '${trigger}': forbidden patterns: ${scan.hits.join(', ')}`);
-      }
-      // new Function isolates scope; it receives (zone, engine) and must return a function
-      const factory = new Function(
-        'zone',
-        'engine',
-        `${triggerScript}; return (typeof module !== 'undefined' && module.exports) ? module.exports : (typeof exports !== 'undefined' ? exports : (typeof trigger === 'function' ? trigger : null));`
+      throw new Error(
+        `Blocked trigger '${trigger}': .js triggers are not allowed (sandbox-by-default). ` +
+        `Use .lua or .pxs (sandboxed interpreters) instead.`
       );
-      const fn = factory(this, this.engine);
-      if (typeof fn === 'function') return fn.bind(this, this);
     }
 
     return () => {};
@@ -481,17 +472,14 @@ export default class Zone extends Loadable {
       const map = await loadMap.call(this, zoneJson, cells, zip, heightsJson);
       Object.assign(this, map);
 
-      // Cells generator (string -> function)
+      // Cells generator: SANDBOX-BY-DEFAULT - string generators are not allowed.
+      // Cells must be data (arrays), not code strings.
       if (typeof this.cells === 'string') {
         try {
-          // Sandbox: scan for forbidden patterns
-          const cellScan = scanScriptForForbidden(this.cells);
-          if (!cellScan.ok) {
-            throw new Error(`Blocked cells generator: forbidden patterns: ${cellScan.hits.join(', ')}`);
-          }
-          // Strict scope function (no global eval)
-          const fn = new Function('bounds', 'zone', `return (${this.cells})(bounds, zone);`);
-          this.cells = fn.call(this, this.bounds, this);
+          throw new Error(
+            'Blocked cells generator: string code generators are not allowed (sandbox-by-default). ' +
+            'Cells must be provided as data arrays, not code strings.'
+          );
         } catch (e) {
           console.error('error loading cell function', e);
         }
@@ -542,15 +530,14 @@ export default class Zone extends Loadable {
       this.tileset = tileset;
       this.size = [this.bounds[2] - this.bounds[0], this.bounds[3] - this.bounds[1]];
 
-      // Sprite generators
+      // Sprite generators: SANDBOX-BY-DEFAULT - string generators are not allowed.
+      // Sprites must be data, not code strings.
       if (typeof this.sprites === 'string') {
         try {
-          // Sandbox: scan for forbidden patterns
-          const spriteScan = scanScriptForForbidden(this.sprites);
-          if (!spriteScan.ok) {
-            throw new Error(`Blocked sprites generator: forbidden patterns: ${spriteScan.hits.join(', ')}`);
-          }
-          const fn = new Function('bounds', 'zone', `return (${this.sprites})(bounds, zone);`);
+          throw new Error(
+            'Blocked sprites generator: string code generators are not allowed (sandbox-by-default). ' +
+            'Sprites must be provided as data, not code strings.'
+          );
           this.sprites = fn.call(this, this.bounds, this);
         } catch (e) {
           console.error('sprite fn', e);
