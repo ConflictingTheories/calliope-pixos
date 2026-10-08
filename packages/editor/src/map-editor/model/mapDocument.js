@@ -94,7 +94,9 @@ export function normalizeMapDocument(doc) {
   const height = doc.cells.length;
   const width = height > 0 ? Math.max(...doc.cells.map(r => (Array.isArray(r) ? r.length : 0))) : 0;
   doc.cells = doc.cells.map(row => {
-    const r = Array.isArray(row) ? row.slice() : [];
+    // Preserve non-array rows so validateMapDocument can flag malformed-row
+    if (!Array.isArray(row)) return row;
+    const r = row.slice();
     while (r.length < width) r.push(0);
     return r.slice(0, width);
   });

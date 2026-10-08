@@ -69,7 +69,7 @@ describe('mapCommands', () => {
     expect(cells.get(2, 0)).toBe(1); // right side untouched
     bus.undo();
     expect(cells.get(0, 2)).toBe(1);
-    expect(fillCommand(0, 0, 0, 9, cells.get, { width: 3, height: 3 })).toBe(null); // same value... (after undo it's 1 again)
+    expect(fillCommand(0, 0, 0, 1, cells.get, { width: 3, height: 3 })).toBe(null); // same value no-op (after undo it's 1 again)
   });
 
   it('adapts a legacy tool stroke into one command', () => {

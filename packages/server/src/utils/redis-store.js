@@ -55,7 +55,9 @@ export class RedisStore {
 
     try {
       // Dynamic import to make redis an optional dependency
-      const { createClient } = await import('redis');
+      // Indirect import prevents bundlers from statically resolving the optional dep
+      const redisModule = 'redis';
+      const { createClient } = await import(/* @vite-ignore */ redisModule);
 
       this.client = createClient({ url: this.url });
 

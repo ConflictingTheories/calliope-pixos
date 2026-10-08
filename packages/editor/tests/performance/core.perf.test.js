@@ -19,7 +19,7 @@ import { expectWithinBudget } from './budgets.js';
 describe('core performance', () => {
   it('executes 10k commands with undo/redo within budget', () => {
     expectWithinBudget('commands.10k', () => {
-      const bus = new CommandBus();
+      const bus = new CommandBus({ /* minimal ProjectStore mock */ });
       let counter = 0;
       for (let i = 0; i < 10000; i++) {
         bus.execute({
