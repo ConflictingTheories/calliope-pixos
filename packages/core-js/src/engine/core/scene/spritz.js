@@ -11,7 +11,7 @@
 ** ----------------------------------------------- **
 \*                                                 */
 
-import { saveAs } from 'file-saver';
+// Native download helper (replaces file-saver dependency)
 import * as JSZip from 'jszip';
 
 // Shaders
@@ -179,7 +179,15 @@ export default class Spritz {
     const zip = new JSZip();
     zip.folder('pixos').file('avatar.json', JSON.stringify(avatarData, null, 2));
     const blob = await zip.generateAsync({ type: 'blob' });
-    saveAs(blob, 'avatar.zip');
+    // Native download (no file-saver dependency)
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'avatar.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   /**
