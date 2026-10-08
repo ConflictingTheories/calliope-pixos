@@ -263,10 +263,12 @@ export default class SaveManager {
         return false;
       }
 
-      // 4. Verify checksum if present
+      // 4. Verify checksum if present (hash data WITHOUT the stored checksum)
       if (saveData.checksum) {
-        const currentChecksum = await this.generateChecksum(saveData);
-        if (currentChecksum !== saveData.checksum) {
+        const storedChecksum = saveData.checksum;
+        const { checksum: _dropped, ...dataWithoutChecksum } = saveData;
+        const currentChecksum = await this.generateChecksum(dataWithoutChecksum);
+        if (currentChecksum !== storedChecksum) {
           console.warn('Save data checksum mismatch - data may be corrupted');
           // Continue anyway, but warn user
         }
@@ -408,6 +410,10 @@ export default class SaveManager {
         branch: branchName,
         // namespace inherited from parent
       };
+      // Parent checksum is stale after mutation — recompute
+      delete forkedData.checksum;
+      const forkChecksum = await this.generateChecksum(forkedData);
+      if (forkChecksum) forkedData.checksum = forkChecksum;
       await db.db.saves.add({
         slotId: newId,
         gameId: forkedData.gameId,
@@ -469,17 +475,24 @@ export default class SaveManager {
     const byId = new Map(saves.map(s => [String(s.id), { slot: s, children: [] }]));
     const roots = [];
     for (const node of byId.values()) {
+      const nodeId = String(node.slot.id);
       const parentId = node.slot.parentId != null ? String(node.slot.parentId) : null;
-      if (parentId && byId.has(parentId)) {
+      // Guard: self-parent or missing parent -> treat as root (no cycles)
+      if (parentId && parentId !== nodeId && byId.has(parentId)) {
         byId.get(parentId).children.push(node);
       } else {
         roots.push(node);
       }
     }
-    // Sort children by timestamp
-    const sortTree = nodes => {
+    // Sort children by timestamp (cycle-safe via visited set)
+    const sortTree = (nodes, visited = new Set()) => {
       nodes.sort((a, b) => a.slot.timestamp - b.slot.timestamp);
-      nodes.forEach(n => sortTree(n.children));
+      for (const n of nodes) {
+        const nid = String(n.slot.id);
+        if (visited.has(nid)) continue; // cycle guard
+        visited.add(nid);
+        sortTree(n.children, visited);
+      }
     };
     sortTree(roots);
     return roots;
