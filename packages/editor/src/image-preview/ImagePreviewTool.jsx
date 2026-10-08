@@ -44,30 +44,35 @@ export function ImagePreviewTool({ documentPath, core, imageBytes, mime }) {
   useEffect(() => () => revokePreviewUrl(urlRef.current), []);
 
   // Shell integration: zoom commands registered once per mount.
+  // Guarded: a second ImagePreviewTool instance must not re-register
+  // (CommandRegistry.register throws on duplicate ids).
   useEffect(() => {
-    const offs = [
-      commands.register({
+    const offs = [];
+    for (const def of [
+      {
         id: 'image-preview.zoom-in',
         title: 'Zoom image in',
         group: 'image-preview',
         shortcut: '=',
         run: () => document.dispatchEvent(new CustomEvent('px:image-zoom', { detail: 'in' })),
-      }),
-      commands.register({
+      },
+      {
         id: 'image-preview.zoom-out',
         title: 'Zoom image out',
         group: 'image-preview',
         shortcut: '-',
         run: () => document.dispatchEvent(new CustomEvent('px:image-zoom', { detail: 'out' })),
-      }),
-      commands.register({
+      },
+      {
         id: 'image-preview.zoom-reset',
         title: 'Reset image zoom',
         group: 'image-preview',
         shortcut: 'ctrl+0',
         run: () => document.dispatchEvent(new CustomEvent('px:image-zoom', { detail: 'reset' })),
-      }),
-    ];
+      },
+    ]) {
+      if (!commands.get(def.id)) offs.push(commands.register(def));
+    }
     return () => offs.forEach(off => off());
   }, [commands]);
 
