@@ -298,16 +298,22 @@ export default class SpritzPlayer extends DynamicSpritz {
   /**
    * Mount a spritz bundle into a DOM element for embedded playback.
    * Used by SVRN reader's PlayableEmbed to run games inside zines.
+   * Creates a full engine instance (no React required) and starts the game loop.
    *
    * @param {HTMLElement} el - DOM element to mount into
    * @param {ArrayBuffer|Uint8Array} bundleData - Raw .spritz bundle bytes
    * @param {object} [options] - Mount options
    * @param {string} [options.manifestHash] - Expected SHA-256 hash for verification
-   * @returns {Promise<{ player: SpritzPlayer, dispose: Function }>}
+   * @param {number} [options.width=480] - Viewport width
+   * @param {number} [options.height=640] - Viewport height
+   * @returns {Promise<{ player: SpritzPlayer, engine: GLEngine, manifest: object, dispose: Function }>}
    */
   static async mountBundle(el, bundleData, options = {}) {
     if (!el) throw new Error('mountBundle: element is required');
     if (!bundleData) throw new Error('mountBundle: bundle data is required');
+
+    const width = options.width || 480;
+    const height = options.height || 640;
 
     // Verify hash if provided
     if (options.manifestHash) {
@@ -331,27 +337,103 @@ export default class SpritzPlayer extends DynamicSpritz {
     const rawManifest = JSON.parse(await manifestEntry.async('string'));
     const prepared = SpritzPlayer.prepareManifest(rawManifest);
 
-    // Create player instance
-    const player = new SpritzPlayer();
-
-    // Create canvas and mount
+    // Create canvases (main, hud, mipmap, gamepad)
     const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
     canvas.style.width = '100%';
     canvas.style.height = '100%';
-    el.appendChild(canvas);
+    canvas.style.display = 'block';
 
-    // Initialize engine with the bundle
-    // Note: Full engine bootstrap requires the engine instance.
-    // This provides the bundle API; the host app wires the engine.
+    const hudCanvas = document.createElement('canvas');
+    hudCanvas.width = width;
+    hudCanvas.height = height;
+    hudCanvas.style.position = 'absolute';
+    hudCanvas.style.top = '0';
+    hudCanvas.style.left = '0';
+    hudCanvas.style.width = '100%';
+    hudCanvas.style.height = '100%';
+    hudCanvas.style.pointerEvents = 'none';
+
+    const mipmapCanvas = document.createElement('canvas');
+    const gamepadCanvas = document.createElement('canvas');
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+
+    // Container for relative positioning
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.appendChild(canvas);
+    container.appendChild(hudCanvas);
+    el.appendChild(container);
+
+    // Dynamically import engine to avoid circular deps
+    const { default: GLEngine } = await import('@Engine/core/index.js');
+
+    // Create engine
+    const engine = new GLEngine(canvas, hudCanvas, mipmapCanvas, gamepadCanvas, fileInput, width, height);
+    engine.manifestUrl = null; // Bundle is provided directly, not via URL
+
+    // Create player (SpritzProvider)
+    const player = new SpritzPlayer();
+    player.manifest = prepared.manifest;
+    player.bundleZip = zip; // Provide zip for asset loading
+
+    // Error handler
+    engine.triggerError = err => {
+      console.error('SpritzPlayer mountBundle error:', err);
+    };
+
+    // Initialize engine with player
+    await engine.init(player);
+
+    // Set up input listeners on hud canvas
+    const onKey = e => {
+      try {
+        if (player.onKeyEvent) player.onKeyEvent(e);
+      } catch (err) {}
+    };
+    const onTouch = e => {
+      try {
+        if (player.onTouchEvent) player.onTouchEvent(e);
+      } catch (err) {}
+    };
+
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKey);
+    hudCanvas.addEventListener('touchstart', onTouch, { passive: false });
+    hudCanvas.addEventListener('touchmove', onTouch, { passive: false });
+    hudCanvas.addEventListener('touchend', onTouch, { passive: false });
+    hudCanvas.addEventListener('mousedown', onTouch);
+    hudCanvas.addEventListener('mouseup', onTouch);
+    hudCanvas.addEventListener('mousemove', onTouch);
+
+    // Start the game loop
+    engine.render();
+
     const dispose = () => {
-      if (canvas.parentNode === el) {
-        el.removeChild(canvas);
+      // Stop the render loop
+      if (engine.requestId) {
+        cancelAnimationFrame(engine.requestId);
+        engine.requestId = null;
       }
-      if (player.dispose) player.dispose();
+      // Remove listeners
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKey);
+      // Remove DOM
+      if (container.parentNode === el) {
+        el.removeChild(container);
+      }
+      // Close engine
+      if (engine.close) engine.close();
     };
 
     return {
       player,
+      engine,
       manifest: prepared.manifest,
       warnings: prepared.warnings,
       canvas,
