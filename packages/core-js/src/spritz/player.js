@@ -136,7 +136,7 @@ export default class SpritzPlayer extends DynamicSpritz {
       .filter(n => !zip.files[n].dir)
       .sort();
     try {
-      const prepared = PixozinePlayer.prepareManifest(raw);
+      const prepared = SpritzPlayer.prepareManifest(raw);
       const sem = validateSemantics(prepared.manifest, { archiveFiles: files });
       const graph = buildAssetGraph(prepared.manifest, files);
       return {
@@ -170,7 +170,7 @@ export default class SpritzPlayer extends DynamicSpritz {
       ]);
     }
     const raw = await response.json();
-    const prepared = PixozinePlayer.prepareManifest(raw);
+    const prepared = SpritzPlayer.prepareManifest(raw);
     this.validatedManifest = prepared.manifest;
     debug('PixozinePlayer', `Manifest valid (${prepared.migration})`, prepared.manifest.title);
 
@@ -219,7 +219,7 @@ export default class SpritzPlayer extends DynamicSpritz {
         { code: 'missing-manifest', path: '', severity: 'error', message: 'Archive has no manifest.json' },
       ]);
     }
-    const prepared = PixozinePlayer.prepareManifest(JSON.parse(await entry.async('string')));
+    const prepared = SpritzPlayer.prepareManifest(JSON.parse(await entry.async('string')));
     this.validatedManifest = prepared.manifest;
     const manifest = prepared.manifest;
     debug('PixozinePlayer', `Zip manifest valid (${prepared.migration})`, manifest.title);
@@ -294,4 +294,68 @@ export default class SpritzPlayer extends DynamicSpritz {
       },
     });
   };
+
+  /**
+   * Mount a spritz bundle into a DOM element for embedded playback.
+   * Used by SVRN reader's PlayableEmbed to run games inside zines.
+   *
+   * @param {HTMLElement} el - DOM element to mount into
+   * @param {ArrayBuffer|Uint8Array} bundleData - Raw .spritz bundle bytes
+   * @param {object} [options] - Mount options
+   * @param {string} [options.manifestHash] - Expected SHA-256 hash for verification
+   * @returns {Promise<{ player: SpritzPlayer, dispose: Function }>}
+   */
+  static async mountBundle(el, bundleData, options = {}) {
+    if (!el) throw new Error('mountBundle: element is required');
+    if (!bundleData) throw new Error('mountBundle: bundle data is required');
+
+    // Verify hash if provided
+    if (options.manifestHash) {
+      const hash = await crypto.subtle.digest('SHA-256', bundleData);
+      const hex = Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      const expected = options.manifestHash.replace(/^sha256:/, '');
+      if (hex !== expected) {
+        throw new Error(`mountBundle: hash mismatch (expected ${expected}, got ${hex})`);
+      }
+    }
+
+    // Load and validate the bundle
+    const zip = await JSZip.loadAsync(bundleData);
+    const manifestEntry = zip.file('manifest.json') || zip.file('spritz.json');
+    if (!manifestEntry) {
+      throw new Error('mountBundle: bundle has no manifest.json');
+    }
+
+    const rawManifest = JSON.parse(await manifestEntry.async('string'));
+    const prepared = SpritzPlayer.prepareManifest(rawManifest);
+
+    // Create player instance
+    const player = new SpritzPlayer();
+
+    // Create canvas and mount
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    el.appendChild(canvas);
+
+    // Initialize engine with the bundle
+    // Note: Full engine bootstrap requires the engine instance.
+    // This provides the bundle API; the host app wires the engine.
+    const dispose = () => {
+      if (canvas.parentNode === el) {
+        el.removeChild(canvas);
+      }
+      if (player.dispose) player.dispose();
+    };
+
+    return {
+      player,
+      manifest: prepared.manifest,
+      warnings: prepared.warnings,
+      canvas,
+      dispose,
+    };
+  }
 }
