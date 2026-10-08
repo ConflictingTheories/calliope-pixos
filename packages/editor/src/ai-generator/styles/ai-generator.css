@@ -88,7 +88,7 @@
   justify-content: space-between;
   padding: 10px 14px;
   background: var(--brand-primary-muted, var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1));
-  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2);
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.2));
   border-radius: 6px;
   font-size: 13px;
 }
@@ -160,7 +160,7 @@
 .ai-prompt-section textarea:focus {
   border-color: var(--brand-primary, var(--color-brand-secondary));
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
+  box-shadow: 0 0 0 2px var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.15));
 }
 
 .ai-prompt-section textarea::placeholder {
@@ -215,7 +215,7 @@
 }
 
 .ai-tag {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.15));
   color: var(--brand-primary, var(--color-brand-secondary));
   padding: 3px 10px;
   border-radius: 12px;
@@ -299,7 +299,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--brand-primary, var(--color-brand-secondary));
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.12);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.12));
   padding: 3px 8px;
   border-radius: 4px;
 }
@@ -641,8 +641,8 @@
 .ai-game-hint {
   margin-top: 12px;
   padding: 12px 14px;
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1);
-  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.1));
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.2));
   border-radius: 6px;
   font-size: 13px;
   color: var(--text-secondary, #a0a0b0);
@@ -728,8 +728,8 @@
 }
 
 .ai-validation-complete {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.08);
-  border: 2px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.3);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.08));
+  border: 2px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.3));
 }
 
 .ai-validation-incomplete {
