@@ -48,9 +48,9 @@ export default class PhysicsManager {
   ) {
     if (!this.bodies.includes(body)) {
       this.bodies.push(body);
-      // Set collision properties
-      body.collisionLayer = layer;
-      body.collisionMask = mask;
+      // Set collision properties (respect existing values if already set)
+      if (body.collisionLayer === undefined) body.collisionLayer = layer;
+      if (body.collisionMask === undefined) body.collisionMask = mask;
       body.isTrigger = body.isTrigger || false;
       // Add to spatial hash
       this.spatialHash.insert(body);
