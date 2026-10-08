@@ -73,9 +73,9 @@
 }
 
 .entries .entry-highlighted {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.15)))
   color: var(--color-secondary, var(--color-brand-secondary));
-  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.25);
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.25)))
 }
 
 .entries .entry-highlighted .entry-name,

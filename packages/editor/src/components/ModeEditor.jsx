@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { useState, useEffect } from 'react';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
 
 /**
  * Mode Editor: form-based editor for game modes.
@@ -19,6 +20,7 @@ import { useState, useEffect } from 'react';
  */
 
 export default function ModeEditor({ mode, onSave, onClose, onDelete }) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [name, setName] = useState('');
   const [setupScript, setSetupScript] = useState('');
   const [updateScript, setUpdateScript] = useState('');
@@ -58,7 +60,9 @@ export default function ModeEditor({ mode, onSave, onClose, onDelete }) {
   };
 
   return (
-    <div className="ps-modal-overlay">
+    <>
+      <ConfirmDialog />
+      <div className="ps-modal-overlay">
       <div className="ps-modal ps-modal-wide">
         <div className="ps-modal-header">
           <h2>{mode ? 'Edit Mode' : 'New Mode'}</h2>
@@ -121,8 +125,8 @@ export default function ModeEditor({ mode, onSave, onClose, onDelete }) {
             {mode && onDelete && (
               <button
                 className="ps-btn ps-btn-danger"
-                onClick={() => {
-                  if (confirm(`Delete mode "${name}"?`)) onDelete(mode);
+                onClick={async () => {
+                  if (await confirm(`Delete mode "${name}"? This cannot be undone.`)) onDelete(mode);
                 }}
               >
                 Delete
@@ -140,5 +144,6 @@ export default function ModeEditor({ mode, onSave, onClose, onDelete }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

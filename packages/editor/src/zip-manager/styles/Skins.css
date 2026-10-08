@@ -112,7 +112,7 @@
 }
 
 .skin-dos .entries li.entry-highlighted {
-  background: linear-gradient(135deg, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.18), var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.12));
+  background: linear-gradient(135deg, var(--color-brand-accent-muted, rgba(255, 107, 157, 0.18)), var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.12)));
   border-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -146,7 +146,7 @@
 .skin-dos .entries.dragging-items {
   border-style: dashed;
   border-color: var(--color-secondary);
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.08);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.08)))
 }
 
 .skin-dos .downloads {

@@ -66,7 +66,8 @@ describe('mapDocument', () => {
     const doc = parseMapDocument(JSON.stringify({ cells: [[1, undefined], 'nope'] }));
     const issues = validateMapDocument(doc);
     expect(issues.some(i => i.code === 'malformed-row')).toBe(true);
-    const badCell = parseMapDocument(JSON.stringify({ cells: [[() => {}]] }));
+    // Note: functions can't survive JSON.stringify (become null), so pass the object directly
+    const badCell = parseMapDocument({ cells: [[() => {}]] });
     expect(validateMapDocument(badCell).some(i => i.code === 'malformed-cell')).toBe(true);
   });
 

@@ -32,7 +32,7 @@ async function getHtml2Canvas() {
 // Generate placeholder images as data URLs matching demo style
 function generatePlaceholder(name, color = '#112430') {
   const displayName = name.toUpperCase();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="50%" font-size="72" fill="#7dd3fc" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, sans-serif" font-weight="bold">${displayName}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="100%" height="100%" fill="${color}"/><text x="50%" y="50%" font-size="72" fill="var(--color-text-primary)" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, sans-serif" font-weight="bold">${displayName}</text></svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
@@ -577,7 +577,7 @@ const CutscenePlayer = forwardRef(
             // Draw fallback frame with current state indicator
             recordCtx.fillStyle = '#112430';
             recordCtx.fillRect(0, 0, width, height);
-            recordCtx.fillStyle = '#7dd3fc';
+            recordCtx.fillStyle = 'var(--color-text-primary)';
             recordCtx.font = '24px system-ui';
             recordCtx.textAlign = 'center';
             recordCtx.fillText('Frame ' + frameCountRef.value, width / 2, height / 2);
@@ -1279,7 +1279,7 @@ const CutscenePlayer = forwardRef(
           position: 'relative',
           width: '100%',
           height: '100%',
-          background: '#071426',
+          background: 'var(--color-bg-primary)',
           borderRadius: 12,
           overflow: 'hidden',
           boxShadow: '0 16px 50px rgba(0,0,0,0.6)',
@@ -1314,7 +1314,7 @@ const CutscenePlayer = forwardRef(
             style={{
               width: '60%',
               height: 200,
-              background: 'linear-gradient(180deg, #092032, #071427)',
+              background: 'var(--color-bg-secondary)',
               opacity: 0.65,
               borderRadius: 6,
               marginBottom: 70,
@@ -1331,7 +1331,7 @@ const CutscenePlayer = forwardRef(
             height: 160,
             borderRadius: 8,
             overflow: 'hidden',
-            background: 'linear-gradient(180deg, #081827, #05101a)',
+            background: 'var(--color-bg-primary)',
             boxShadow: '0 8px 24px rgba(0,0,0,.6)',
             transition: 'transform 0.25s, opacity 0.25s, z-index 0.1s',
             opacity: portraitVisible ? 1 : 0,
@@ -1421,10 +1421,10 @@ const CutscenePlayer = forwardRef(
             background: 'linear-gradient(180deg, rgba(2,6,11,0.95), rgba(3,7,13,0.95))',
             borderRadius: 12,
             boxShadow: '0 12px 30px rgba(0,0,0,0.5)',
-            color: '#7dd3fc',
+            color: 'var(--color-text-primary)',
           }}
         >
-          <div style={{ fontWeight: 700, color: '#7dd3fc', marginBottom: 6 }}>{speaker}</div>
+          <div style={{ fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 6 }}>{speaker}</div>
           <div
             style={{
               whiteSpace: 'pre-wrap',
@@ -1451,14 +1451,6 @@ const CutscenePlayer = forwardRef(
             size="sm"
             onClick={() => internalPlay()}
             disabled={playing}
-            style={{
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.06)',
-              color: '#7dd3fc',
-              padding: '8px 10px',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
           >
             Play
           </Button>
@@ -1467,14 +1459,6 @@ const CutscenePlayer = forwardRef(
             size="sm"
             onClick={() => internalStop()}
             disabled={!playing}
-            style={{
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.06)',
-              color: '#7dd3fc',
-              padding: '8px 10px',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
           >
             Stop
           </Button>
@@ -1482,14 +1466,6 @@ const CutscenePlayer = forwardRef(
             appearance="ghost"
             size="sm"
             onClick={() => internalSkip()}
-            style={{
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.06)',
-              color: '#7dd3fc',
-              padding: '8px 10px',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
           >
             Skip
           </Button>

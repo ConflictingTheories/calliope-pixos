@@ -43,7 +43,7 @@
 }
 
 .onboarding-step-dot.completed {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.5);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.5)))
 }
 
 .onboarding-step-content {
@@ -105,8 +105,8 @@
 }
 
 .onboarding-step-content .highlight {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1);
-  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.15);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.1)))
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.15)))
   border-radius: 8px;
   padding: 12px 16px;
   font-weight: 500;
@@ -133,7 +133,7 @@
 /* Quick Tips */
 .quick-tip {
   background: var(--bg-elevated, #151520);
-  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2);
+  border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.2)))
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 13px;

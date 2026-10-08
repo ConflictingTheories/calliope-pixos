@@ -307,7 +307,7 @@ function GeometryEditor3D({ content, onSave }) {
   // Save
   function handleSave() {
     if (onSave) {
-      onSave({ geometry: geometryData });
+      onSave(geometryData);
     }
   }
 

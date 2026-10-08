@@ -48,20 +48,25 @@ function detectRamGB(env = {}) {
     // Explicit override (tests, advanced users)
     if (typeof env.ramGB === 'number') return env.ramGB;
 
+    // Injected navigator takes precedence over auto-detected nodeOs (tests)
+    const nav = env.navigator ?? (typeof navigator !== 'undefined' ? navigator : null);
+    if (env.navigator && typeof env.navigator.deviceMemory === 'number') {
+      return env.navigator.deviceMemory;
+    }
+
     // Node / Electron (desktop)
     if (env.nodeOs && typeof env.nodeOs.totalmem === 'function') {
       return env.nodeOs.totalmem() / 1024 ** 3;
     }
+
+    if (nav && typeof nav.deviceMemory === 'number') {
+      return nav.deviceMemory;
+    }
+
     if (typeof process !== 'undefined' && process.versions?.node) {
       // Dynamic import keeps browser bundles from statically depending on node:os
       // (callers may also inject env.nodeOs instead).
       return null; // resolved by caller via env injection; see profileHardware
-    }
-
-    // Browser: Chrome-only deviceMemory (GB, rounded down by the browser)
-    const nav = env.navigator ?? (typeof navigator !== 'undefined' ? navigator : null);
-    if (nav && typeof nav.deviceMemory === 'number') {
-      return nav.deviceMemory;
     }
 
     // Browser fallback: JS heap limit is a rough proxy for device class
@@ -85,6 +90,10 @@ function detectRamGB(env = {}) {
 function detectCpuCores(env = {}) {
   try {
     if (typeof env.cpuCores === 'number') return env.cpuCores;
+    // Injected navigator takes precedence over auto-detected nodeOs (tests)
+    if (env.navigator && typeof env.navigator.hardwareConcurrency === 'number') {
+      return env.navigator.hardwareConcurrency;
+    }
     if (env.nodeOs && typeof env.nodeOs.cpus === 'function') {
       return env.nodeOs.cpus().length;
     }

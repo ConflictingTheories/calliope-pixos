@@ -7,8 +7,8 @@
   justify-content: flex-start;
   padding: var(--spacing-xs);
   gap: var(--spacing-xs);
-  background: radial-gradient(circle at 15% 20%, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.12), transparent 45%),
-    radial-gradient(circle at 80% 0%, var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.18), transparent 40%),
+  background: radial-gradient(circle at 15% 20%, var(--color-brand-accent-muted, rgba(255, 107, 157, 0.12)), transparent 45%),
+    radial-gradient(circle at 80% 0%, var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.18)), transparent 40%),
     #03040a;
   overflow: hidden;
 }

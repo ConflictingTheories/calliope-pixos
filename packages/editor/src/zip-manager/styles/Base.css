@@ -79,7 +79,7 @@ ol li {
 button {
   border: 1px solid rgba(255, 255, 255, 0.1);
   user-select: none;
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.9);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.9)))
   color: #0a0a14;
   font-family: inherit;
   font-size: 11px;
@@ -141,7 +141,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--color-secondary, var(--color-brand-secondary));
-  box-shadow: 0 0 0 1px var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.4);
+  box-shadow: 0 0 0 1px var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.4)))
 }
 
 dialog {

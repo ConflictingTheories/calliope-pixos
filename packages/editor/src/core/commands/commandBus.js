@@ -166,7 +166,7 @@ export class CommandBus {
       label: name,
       do: c => done.map(e => e.command.do(c)),
       undo: (c, results) => {
-        for (let i = done.length - 1; i >= 0; i--) done[i].command.undo(c, results[i]);
+        for (let i = done.length - 1; i >= 0; i--) done[i].command.undo(c, results ? results[i] : done[i].doResult);
       },
     };
     this.undoStack.push({ command: combo, doResult: null });

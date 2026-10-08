@@ -14,11 +14,15 @@
  * - Undo/Redo functionality
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button, Input, InputNumber, SelectPicker } from '../ui';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
 import { MapToolbar } from './panels/MapToolbar.jsx';
 import { MapModeTabs } from './panels/MapModeTabs.jsx';
 import { MapCanvas } from './panels/MapCanvas.jsx';
+import { ResizablePanel } from '../shell/ResizablePanel.jsx';
+import '../shell/ResizablePanel.css';
+import './UnifiedMapEditor.css';
 import { collect } from 'react-recollect';
 import { debug } from '../shared/debug-logger.js';
 
@@ -47,6 +51,7 @@ function UnifiedMapEditor({
   zip,
   entryName,
 }) {
+  const { confirm, ConfirmDialog } = useConfirm();
   // Map state
   const [map, setMap] = useState(null);
   const [cells, setCells] = useState([]);
@@ -1355,17 +1360,8 @@ function UnifiedMapEditor({
   // Show loading/error states
   if (!cells.length) {
     return (
-      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div
-          style={{
-            background: '#1a3a52',
-            border: '1px solid #4fc1ff',
-            borderRadius: '3px',
-            padding: '10px',
-            fontSize: '13px',
-            color: '#4fc1ff',
-          }}
-        >
+      <div className="map-editor__empty">
+        <div className="map-editor__empty-card">
           ℹ️ No map data loaded. Please load a map from the package.
         </div>
       </div>
@@ -1374,18 +1370,8 @@ function UnifiedMapEditor({
 
   if (!tiles || Object.keys(tiles).length === 0) {
     return (
-      <div style={{ padding: '1rem', background: '#1e1e1e', color: '#d4d4d4', minHeight: '100vh' }}>
-        <div
-          style={{
-            background: '#4d3319',
-            border: '1px solid #ce9178',
-            borderRadius: '3px',
-            padding: '10px',
-            fontSize: '13px',
-            color: '#ce9178',
-            marginBottom: '1rem',
-          }}
-        >
+      <div className="map-editor__empty">
+        <div className="map-editor__empty-card">
           ⚠️ Map loaded but tileset data is missing. Please ensure the tileset file exists and is
           properly referenced in the map.
         </div>
@@ -1409,25 +1395,17 @@ function UnifiedMapEditor({
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100vh',
-        background: '#1e1e1e',
-        color: '#d4d4d4',
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      {/* Sidebar */}
-      <div
-        style={{
-          width: '320px',
-          background: '#252526',
-          borderRight: '1px solid #3e3e42',
-          overflowY: 'auto',
-          padding: '10px',
-        }}
+    <div className="map-editor">
+      <ConfirmDialog />
+      {/* Sidebar (resizable) */}
+      <ResizablePanel
+        id="map-editor-sidebar"
+        initialWidth={320}
+        minWidth={240}
+        maxWidth={560}
+        handleSide="right"
       >
+      <div className="map-editor__sidebar">
         {/* Tools Section (P3-07: extracted panel) */}
         <MapToolbar
           editorMode={editorMode}
@@ -1446,73 +1424,49 @@ function UnifiedMapEditor({
           historyLength={history.length}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          onSave={handleSave}
         />
         {/* Mode Selector (P3-07: extracted panel) */}
-        <MapModeTabs editorMode={editorMode} onSelectMode={setEditorMode} />
+        <MapModeTabs
+          editorMode={editorMode}
+          onSelectMode={setEditorMode}
+          cells={cells}
+          sprites={sprites}
+          objects={objects}
+          animatedTiles={animatedTiles}
+          lights={lights}
+        />
         {/* Sprites/Objects Editor */}
         {(editorMode === 'sprites' || editorMode === 'objects') && (
-          <div
-            style={{
-              background: '#2d2d30',
-              border: '1px solid #3e3e42',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                background: '#37373d',
-                padding: '10px',
-                fontWeight: 'bold',
-                borderBottom: '1px solid #3e3e42',
-              }}
-            >
+          <div className="map-editor__panel">
+            <div className="map-editor__panel-header">
               {editorMode === 'sprites' ? '🎭 Sprite Placement' : '📦 Object Placement'}
             </div>
-            <div style={{ padding: '10px' }}>
-              <div
-                style={{
-                  marginBottom: '10px',
-                  fontSize: '11px',
-                  color: '#4ec9b0',
-                  background: '#1e3a32',
-                  padding: '8px',
-                  borderRadius: '3px',
-                  border: '1px solid #2d5a4a',
-                }}
-              >
+            <div className="map-editor__panel-body">
+              <div className="map-editor__info-banner">
                 <strong>
                   ➤ Click on map to place {editorMode === 'sprites' ? 'sprite' : 'object'}
                 </strong>
                 <br />
-                <span style={{ fontSize: '10px', color: '#8ec9b0' }}>
+                <span className="map-editor__info-banner-hint">
                   • Select type and facing below, then click on any tile
                 </span>
               </div>
 
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+              <div className="map-editor__field">
+                <label className="map-editor__label">
                   ID:
                 </label>
                 <Input
                   value={spriteIdInput}
                   onChange={e => setSpriteIdInput(e.target.value)}
                   placeholder="e.g., avatar, chest1"
-                  style={{
-                    width: '100%',
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '12px',
-                  }}
+
                 />
               </div>
 
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+              <div className="map-editor__field">
+                <label className="map-editor__label">
                   Type:
                 </label>
                 {availableSprites.length > 0 ||
@@ -1545,7 +1499,7 @@ function UnifiedMapEditor({
                         fontSize: '12px',
                       }}
                     />
-                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                    <div className="map-editor__hint">
                       No {editorMode === 'sprites' ? 'sprites' : 'objects'} found in package. Enter
                       manually.
                     </div>
@@ -1553,8 +1507,8 @@ function UnifiedMapEditor({
                 )}
               </div>
 
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+              <div className="map-editor__field">
+                <label className="map-editor__label">
                   Facing:
                 </label>
                 <SelectPicker
@@ -1572,12 +1526,12 @@ function UnifiedMapEditor({
               </div>
 
               <div
-                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+                className="map-editor__divider"
               >
-                <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
+                <div className="map-editor__section-title">
                   Placed {editorMode === 'sprites' ? 'Sprites' : 'Objects'}:
                 </div>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div className="map-editor__scroll-list">
                   {(editorMode === 'sprites' ? sprites : objects).map((item, idx) => (
                     <div
                       key={idx}
@@ -1589,10 +1543,10 @@ function UnifiedMapEditor({
                         fontSize: '11px',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>{item.id}</div>
-                      <div style={{ color: '#888' }}>Type: {item.type}</div>
-                      <div style={{ color: '#888' }}>Pos: [{item.pos.join(', ')}]</div>
-                      <div style={{ color: '#888' }}>Facing: {item.facing}</div>
+                      <div className="map-editor__list-item-title">{item.id}</div>
+                      <div className="map-editor__list-item-meta">Type: {item.type}</div>
+                      <div className="map-editor__list-item-meta">Pos: [{item.pos.join(', ')}]</div>
+                      <div className="map-editor__list-item-meta">Facing: {item.facing}</div>
                       <Button
                         size="sm"
                         appearance="default"
@@ -1616,7 +1570,7 @@ function UnifiedMapEditor({
                     </div>
                   ))}
                   {(editorMode === 'sprites' ? sprites : objects).length === 0 && (
-                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                    <div className="map-editor__list-item-meta">
                       No {editorMode === 'sprites' ? 'sprites' : 'objects'} placed yet
                     </div>
                   )}
@@ -1629,45 +1583,24 @@ function UnifiedMapEditor({
         {/* Animated Tiles Editor */}
         {editorMode === 'animatedTiles' && (
           <div
-            style={{
-              background: '#2d2d30',
-              border: '1px solid #3e3e42',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}
+            className="map-editor__panel"
           >
             <div
-              style={{
-                background: '#37373d',
-                padding: '10px',
-                fontWeight: 'bold',
-                borderBottom: '1px solid #3e3e42',
-              }}
+              className="map-editor__panel-header"
             >
               ✨ Animated Tile Placement
             </div>
-            <div style={{ padding: '10px' }}>
-              <div
-                style={{
-                  marginBottom: '10px',
-                  fontSize: '11px',
-                  color: '#ce9178',
-                  background: '#3a2a1e',
-                  padding: '8px',
-                  borderRadius: '3px',
-                  border: '1px solid #5a4a3e',
-                }}
-              >
+            <div className="map-editor__panel-body">
+              <div className="map-editor__warning-banner">
                 <strong>➤ Click on map to place animated tile</strong>
                 <br />
-                <span style={{ fontSize: '10px', color: '#daa178' }}>
+                <span className="map-editor__info-banner-hint">
                   • Select sprite type below, then click on any tile
                 </span>
               </div>
 
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+              <div className="map-editor__field">
+                <label className="map-editor__label">
                   Sprite Type:
                 </label>
                 {availableSprites.length > 0 ? (
@@ -1697,7 +1630,7 @@ function UnifiedMapEditor({
                         fontSize: '12px',
                       }}
                     />
-                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                    <div className="map-editor__hint">
                       No sprites found in package. Enter manually.
                     </div>
                   </>
@@ -1705,12 +1638,12 @@ function UnifiedMapEditor({
               </div>
 
               <div
-                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+                className="map-editor__divider"
               >
-                <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
+                <div className="map-editor__section-title">
                   Placed Animated Tiles:
                 </div>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div className="map-editor__scroll-list">
                   {animatedTiles.map((tile, idx) => (
                     <div
                       key={idx}
@@ -1722,9 +1655,9 @@ function UnifiedMapEditor({
                         fontSize: '11px',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Tile #{idx + 1}</div>
-                      <div style={{ color: '#888' }}>Type: {tile.type}</div>
-                      <div style={{ color: '#888' }}>Pos: [{tile.pos.join(', ')}]</div>
+                      <div className="map-editor__list-item-title">Tile #{idx + 1}</div>
+                      <div className="map-editor__list-item-meta">Type: {tile.type}</div>
+                      <div className="map-editor__list-item-meta">Pos: [{tile.pos.join(', ')}]</div>
                       <Button
                         size="sm"
                         appearance="default"
@@ -1746,7 +1679,7 @@ function UnifiedMapEditor({
                     </div>
                   ))}
                   {animatedTiles.length === 0 && (
-                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                    <div className="map-editor__list-item-meta">
                       No animated tiles placed yet
                     </div>
                   )}
@@ -1759,25 +1692,14 @@ function UnifiedMapEditor({
         {/* Attribute Editor */}
         {editorMode === 'attributes' && (
           <div
-            style={{
-              background: '#2d2d30',
-              border: '1px solid #3e3e42',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}
+            className="map-editor__panel"
           >
             <div
-              style={{
-                background: '#37373d',
-                padding: '10px',
-                fontWeight: 'bold',
-                borderBottom: '1px solid #3e3e42',
-              }}
+              className="map-editor__panel-header"
             >
               📝 Cell Attributes
             </div>
-            <div style={{ padding: '10px' }}>
+            <div className="map-editor__panel-body">
               {!selectedCell ? (
                 <div style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>
                   Click a cell on the map to edit its attributes.
@@ -1788,7 +1710,7 @@ function UnifiedMapEditor({
                     <strong>Selected:</strong> x:{selectedCell.x}, y:{selectedCell.y}
                   </div>
 
-                  <div style={{ marginBottom: '10px' }}>
+                  <div className="map-editor__field">
                     <label
                       style={{
                         display: 'flex',
@@ -1818,7 +1740,7 @@ function UnifiedMapEditor({
                   </div>
 
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                    <label className="map-editor__label">
                       Event / Script:
                     </label>
                     <Input
@@ -1847,7 +1769,7 @@ function UnifiedMapEditor({
                         fontSize: '12px',
                       }}
                     />
-                    <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                    <div className="map-editor__hint">
                       Triggered when player enters or interacts
                     </div>
                   </div>
@@ -1879,50 +1801,31 @@ function UnifiedMapEditor({
         {/* Triggers Editor */}
         {editorMode === 'triggers' && (
           <div
-            style={{
-              background: '#2d2d30',
-              border: '1px solid #3e3e42',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}
+            className="map-editor__panel"
           >
             <div
-              style={{
-                background: '#37373d',
-                padding: '10px',
-                fontWeight: 'bold',
-                borderBottom: '1px solid #3e3e42',
-              }}
+              className="map-editor__panel-header"
             >
               ⚡ Triggers & Scripts
             </div>
-            <div style={{ padding: '10px' }}>
+            <div className="map-editor__panel-body">
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>
+                <label className="map-editor__label">
                   Select Trigger (tile click):
                 </label>
                 <Input
                   value={triggers.selectTrigger}
                   onChange={e => setTriggers({ ...triggers, selectTrigger: e.target.value })}
                   placeholder="e.g., tile/select_test"
-                  style={{
-                    width: '100%',
-                    background: '#3c3c3c',
-                    color: '#d4d4d4',
-                    border: '1px solid #3e3e42',
-                    padding: '6px 8px',
-                    borderRadius: '3px',
-                    fontSize: '12px',
-                  }}
+
                 />
-                <div style={{ fontSize: '10px', color: '#888', marginTop: '3px' }}>
+                <div className="map-editor__hint">
                   Lua script path (relative to triggers/)
                 </div>
               </div>
 
               <div
-                style={{ marginTop: '15px', borderTop: '1px solid #3e3e42', paddingTop: '10px' }}
+                className="map-editor__divider"
               >
                 <div
                   style={{
@@ -1953,7 +1856,7 @@ function UnifiedMapEditor({
                     + Add
                   </Button>
                 </div>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div className="map-editor__scroll-list">
                   {triggers.scripts.map((script, idx) => (
                     <div
                       key={idx}
@@ -2030,7 +1933,7 @@ function UnifiedMapEditor({
                     </div>
                   ))}
                   {triggers.scripts.length === 0 && (
-                    <div style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                    <div className="map-editor__list-item-meta">
                       No scripts configured
                     </div>
                   )}
@@ -2042,13 +1945,7 @@ function UnifiedMapEditor({
 
         {/* Tiles Section */}
         <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
+          className="map-editor__panel"
         >
           <div
             style={{
@@ -2081,7 +1978,7 @@ function UnifiedMapEditor({
               {showTileEditor ? '✕ Close' : '✏️ Edit'}
             </Button>
           </div>
-          <div style={{ padding: '10px' }}>
+          <div className="map-editor__panel-body">
             {/* Inline Tile Editor Panel */}
             {showTileEditor && editingTileName && tiles[editingTileName] && (
               <div
@@ -2232,13 +2129,7 @@ function UnifiedMapEditor({
 
         {/* Geometry Section */}
         <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
+          className="map-editor__panel"
         >
           <div
             style={{
@@ -2253,7 +2144,7 @@ function UnifiedMapEditor({
           >
             <span>📐 Geometry ({Object.keys(geometry || {}).length})</span>
           </div>
-          <div style={{ padding: '10px' }}>
+          <div className="map-editor__panel-body">
             {/* Inline Geometry Inspector */}
             {editingGeometryName && geometry[editingGeometryName] && (
               <div
@@ -2358,25 +2249,14 @@ function UnifiedMapEditor({
         {/* Texture Preview Section */}
         {textureAtlas && (
           <div
-            style={{
-              background: '#2d2d30',
-              border: '1px solid #3e3e42',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              overflow: 'hidden',
-            }}
+            className="map-editor__panel"
           >
             <div
-              style={{
-                background: '#37373d',
-                padding: '10px',
-                fontWeight: 'bold',
-                borderBottom: '1px solid #3e3e42',
-              }}
+              className="map-editor__panel-header"
             >
               🖼️ Texture Atlas
             </div>
-            <div style={{ padding: '10px' }}>
+            <div className="map-editor__panel-body">
               <div
                 style={{
                   width: '100%',
@@ -2409,26 +2289,15 @@ function UnifiedMapEditor({
 
         {/* Map Settings Section */}
         <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
+          className="map-editor__panel"
         >
           <div
-            style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42',
-            }}
+            className="map-editor__panel-header"
           >
             ⚙️ Map Settings
           </div>
-          <div style={{ padding: '10px' }}>
-            <div style={{ marginBottom: '10px' }}>
+          <div className="map-editor__panel-body">
+            <div className="map-editor__field">
               <label
                 style={{
                   display: 'block',
@@ -2451,7 +2320,7 @@ function UnifiedMapEditor({
                 {map?.tileset || 'unknown'}
               </div>
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div className="map-editor__field">
               <label
                 style={{
                   display: 'block',
@@ -2474,7 +2343,7 @@ function UnifiedMapEditor({
                 {cells[0]?.length || 0} × {cells.length} cells
               </div>
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div className="map-editor__field">
               <label
                 style={{
                   display: 'block',
@@ -2488,7 +2357,7 @@ function UnifiedMapEditor({
               <InputNumber min={1}
                 />
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div className="map-editor__field">
               <label
                 style={{
                   display: 'block',
@@ -2502,7 +2371,7 @@ function UnifiedMapEditor({
               <InputNumber min={1}
                 />
             </div>
-            <div style={{ display: 'flex', gap: '5px' }}>
+            <div className="map-editor__row">
               <Button
                 size="sm"
                 appearance="primary"
@@ -2526,8 +2395,8 @@ function UnifiedMapEditor({
                 size="sm"
                 appearance="default"
                 color="red"
-                onClick={() => {
-                  if (confirm('Clear entire map?')) {
+                onClick={async () => {
+                  if (await confirm('Clear entire map? This cannot be undone.')) {
                     clearMap();
                   }
                 }}
@@ -2552,21 +2421,10 @@ function UnifiedMapEditor({
 
         {/* Help Section */}
         <div
-          style={{
-            background: '#2d2d30',
-            border: '1px solid #3e3e42',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            overflow: 'hidden',
-          }}
+          className="map-editor__panel"
         >
           <div
-            style={{
-              background: '#37373d',
-              padding: '10px',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #3e3e42',
-            }}
+            className="map-editor__panel-header"
           >
             ❓ Help
           </div>
@@ -2614,21 +2472,13 @@ function UnifiedMapEditor({
           </div>
         </div>
       </div>
+      </ResizablePanel>
 
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Toolbar */}
-        <div
-          style={{
-            background: '#2d2d30',
-            borderBottom: '1px solid #3e3e42',
-            padding: '10px',
-            display: 'flex',
-            gap: '10px',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ fontSize: '13px', color: '#cccccc' }}>
+        <div className="map-editor__toolbar-strip">
+          <span>
             Drag to rotate • Middle mouse to pan • Scroll to zoom
           </span>
         </div>

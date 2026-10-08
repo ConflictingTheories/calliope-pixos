@@ -608,7 +608,7 @@
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-secondary);
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.1));
   color: var(--color-secondary);
   font-size: 11px;
   font-weight: 600;
@@ -617,7 +617,7 @@
 }
 
 .editor-ai-button:hover:not([disabled]) {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.2);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.2));
   border-color: var(--color-secondary);
   transform: translateY(-1px);
 }
@@ -726,7 +726,7 @@
 
 .editor-sidebar-resizer:hover,
 .editor-sidebar-resizer.is-dragging {
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.35);
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.35));
 }
 
 @media (max-width: 1200px) {

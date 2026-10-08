@@ -63,7 +63,7 @@ export function stableStringify(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
   const keys = Object.keys(value).sort();
-  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}}`;
+  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 }
 
 /**
@@ -160,7 +160,7 @@ export async function buildSvrnBundle({ repository, meta, zipImpl = defaultZipIm
   const files = [];
   for (const path of paths) {
     const bytes = await repository.read(path, { as: 'bytes' });
-    const data = bytes instanceof Uint8Array ? bytes : new TextEncoder().encode(String(bytes));
+    const data = ArrayBuffer.isView(bytes) ? bytes : new TextEncoder().encode(String(bytes));
     files.push({ path, hash: fnv1aHex(data), size: data.length });
     zip.file(`payload/${path}`, data);
   }

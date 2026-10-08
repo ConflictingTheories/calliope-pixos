@@ -219,10 +219,10 @@ function serializeEvents(events) {
 
 // Event type icons and colors for visual distinction
 const EVENT_VISUALS = {
-  dialogue: { icon: '💬', color: '#7dd3fc', label: 'Dialogue' },
-  cutin: { icon: '🎭', color: '#f472b6', label: 'Cutin' },
-  wait: { icon: '⏱️', color: '#fbbf24', label: 'Wait' },
-  action: { icon: '⚡', color: '#a78bfa', label: 'Action' },
+  dialogue: { icon: '💬', color: 'var(--color-text-primary)', label: 'Dialogue' },
+  cutin: { icon: '🎭', color: 'var(--color-text-secondary)', label: 'Cutin' },
+  wait: { icon: '⏱️', color: 'var(--color-warning)', label: 'Wait' },
+  action: { icon: '⚡', color: 'var(--color-text-secondary)', label: 'Action' },
 };
 
 // Expression emoji mapping
@@ -376,7 +376,7 @@ function StoryboardEditor({
           background: isSelected
             ? `linear-gradient(135deg, ${visual.color}22, ${visual.color}11)`
             : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${isSelected ? visual.color + '66' : isDropTarget ? '#fbbf24' : 'rgba(255,255,255,0.06)'}`,
+          border: `1px solid ${isSelected ? visual.color + '66' : isDropTarget ? 'var(--color-warning)' : 'var(--color-border-subtle)'}`,
           borderRadius: '6px',
           cursor: 'pointer',
           opacity: isDragging ? 0.5 : 1,
@@ -558,7 +558,7 @@ function StoryboardEditor({
                 borderRadius: '4px',
                 padding: '4px 8px',
                 cursor: 'pointer',
-                color: ev.type === type ? vis.color : 'rgba(255,255,255,0.5)',
+                color: ev.type === type ? vis.color : 'var(--color-text-secondary)',
                 fontSize: '11px',
                 fontWeight: 600,
                 display: 'flex',
@@ -651,7 +651,7 @@ function StoryboardEditor({
                 background: 'rgba(0,0,0,0.3)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '4px',
-                color: '#e6eef8',
+                color: 'var(--color-text-primary)',
                 fontSize: '13px',
                 lineHeight: '1.5',
                 resize: 'vertical',
@@ -685,7 +685,7 @@ function StoryboardEditor({
                     ? '1px solid rgba(251,191,36,0.4)'
                     : '1px solid transparent',
                   borderRadius: '6px',
-                  color: !ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+                  color: !ev.command?.includes('waitInput') ? 'var(--color-warning)' : 'var(--color-text-secondary)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 600,
@@ -707,7 +707,7 @@ function StoryboardEditor({
                     ? '1px solid rgba(251,191,36,0.4)'
                     : '1px solid transparent',
                   borderRadius: '6px',
-                  color: ev.command?.includes('waitInput') ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+                  color: ev.command?.includes('waitInput') ? 'var(--color-warning)' : 'var(--color-text-secondary)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 600,
@@ -733,7 +733,7 @@ function StoryboardEditor({
                 />
                 <span
                   style={{
-                    color: '#fbbf24',
+                    color: 'var(--color-warning)',
                     fontWeight: 600,
                     fontSize: '14px',
                     minWidth: '40px',
@@ -790,7 +790,7 @@ function StoryboardEditor({
                 background: 'rgba(0,0,0,0.3)',
                 border: '1px solid rgba(167,139,250,0.3)',
                 borderRadius: '4px',
-                color: '#e6eef8',
+                color: 'var(--color-text-primary)',
                 fontSize: '12px',
                 fontFamily: 'monospace',
                 boxSizing: 'border-box',
@@ -1206,8 +1206,8 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
             minWidth: 0,
             display: 'flex',
             flexDirection: 'column',
-            background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--color-bg-primary)',
+            border: '1px solid var(--color-border-subtle)',
             borderRadius: '10px',
             overflow: 'hidden',
           }}
@@ -1216,14 +1216,14 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           <div
             style={{
               padding: '8px 12px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--color-border-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexShrink: 0,
             }}
           >
-            <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
+            <h4 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '13px', fontWeight: 600 }}>
               Preview Stage
             </h4>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1276,7 +1276,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                   background: isExporting ? 'rgba(251,191,36,0.2)' : 'rgba(34,197,94,0.15)',
                   border: `1px solid ${isExporting ? 'rgba(251,191,36,0.4)' : 'rgba(34,197,94,0.4)'}`,
                   borderRadius: '4px',
-                  color: isExporting ? '#fbbf24' : '#22c55e',
+                  color: isExporting ? 'var(--color-warning)' : 'var(--color-success)',
                   fontSize: '11px',
                   fontWeight: 600,
                   cursor: isExporting ? 'wait' : 'pointer',
@@ -1308,7 +1308,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
               alignItems: 'center',
               justifyContent: 'center',
               padding: '8px',
-              background: '#000',
+              background: 'var(--color-bg-primary)',
               position: 'relative',
             }}
           >
@@ -1357,7 +1357,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 >
                   <span
                     style={{
-                      color: '#fbbf24',
+                      color: 'var(--color-warning)',
                       fontSize: '12px',
                       fontWeight: 600,
                       display: 'flex',
@@ -1370,7 +1370,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                       ? 'Export Complete!'
                       : 'Exporting Video...'}
                   </span>
-                  <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: 'var(--color-warning)', fontSize: '12px', fontWeight: 700 }}>
                     {exportProgress.progress || 0}%
                   </span>
                 </div>
@@ -1391,10 +1391,10 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                       height: '100%',
                       background:
                         exportProgress.status === 'complete'
-                          ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                          ? 'var(--color-success)'
                           : exportProgress.status === 'error'
-                            ? '#ef4444'
-                            : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                            ? 'var(--color-error)'
+                            : 'var(--color-warning)',
                       borderRadius: '3px',
                       transition: 'width 0.2s ease',
                     }}
@@ -1466,8 +1466,8 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           style={{
             flex: 1,
             minWidth: 0,
-            background: 'linear-gradient(135deg, rgba(7,20,38,0.9), rgba(4,12,20,0.9))',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--color-bg-primary)',
+            border: '1px solid var(--color-border-subtle)',
             borderRadius: '10px',
             display: 'flex',
             flexDirection: 'column',
@@ -1482,14 +1482,14 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           <div
             style={{
               padding: '8px 12px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--color-border-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexShrink: 0,
             }}
           >
-            <h4 style={{ margin: 0, color: '#7dd3fc', fontSize: '13px', fontWeight: 600 }}>
+            <h4 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '13px', fontWeight: 600 }}>
               SpritzCut DSL Editor
             </h4>
             <Nav
@@ -1520,7 +1520,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
           >
             <summary
               style={{
-                color: '#7dd3fc',
+                color: 'var(--color-text-primary)',
                 fontSize: '10px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -1556,7 +1556,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                   style={{
                     background: 'rgba(125,211,252,0.1)',
                     border: '1px solid rgba(125,211,252,0.2)',
-                    color: '#7dd3fc',
+                    color: 'var(--color-text-primary)',
                     padding: '3px 4px',
                     borderRadius: '3px',
                     cursor: 'pointer',
@@ -1598,7 +1598,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                       console.warn('Parse error:', err);
                     }
                   }}
-                  loading={<div style={{ padding: '1rem', color: '#888' }}>Loading editor...</div>}
+                  loading={<div style={{ padding: '1rem', color: 'var(--color-text-secondary)' }}>Loading editor...</div>}
                   options={{
                     minimap: { enabled: false },
                     fontSize: 12,
@@ -1632,7 +1632,7 @@ function CutsceneTool({ content, onSave, assets = [], fileExtension = '.pxc', as
                 display: 'flex',
                 gap: '6px',
                 paddingTop: '8px',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
+                borderTop: '1px solid var(--color-border-subtle)',
                 flexShrink: 0,
               }}
             >

@@ -12,6 +12,7 @@
 \*                                                 */
 
 import { useState } from 'react';
+import { useConfirm } from '../shared/hooks/useConfirm.jsx';
 
 /**
  * LightEditor: place and configure point lights in the scene.
@@ -26,6 +27,7 @@ import { useState } from 'react';
  */
 
 export default function LightEditor({ lights = [], onAdd, onUpdate, onDelete, onClose }) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [selectedId, setSelectedId] = useState(null);
   const selected = lights.find(l => l.id === selectedId);
 
@@ -74,7 +76,9 @@ export default function LightEditor({ lights = [], onAdd, onUpdate, onDelete, on
   };
 
   return (
-    <div className="ps-modal-overlay">
+    <>
+      <ConfirmDialog />
+      <div className="ps-modal-overlay">
       <div className="ps-modal">
         <div className="ps-modal-header">
           <h2>Lights</h2>
@@ -177,8 +181,8 @@ export default function LightEditor({ lights = [], onAdd, onUpdate, onDelete, on
 
               <button
                 className="ps-btn ps-btn-danger"
-                onClick={() => {
-                  if (confirm(`Delete light "${selected.id}"?`)) {
+                onClick={async () => {
+                  if (await confirm(`Delete light "${selected.id}"? This cannot be undone.`)) {
                     onDelete(selected.id);
                     setSelectedId(null);
                   }
@@ -197,5 +201,6 @@ export default function LightEditor({ lights = [], onAdd, onUpdate, onDelete, on
         </div>
       </div>
     </div>
+    </>
   );
 }

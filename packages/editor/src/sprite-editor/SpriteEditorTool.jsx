@@ -26,12 +26,8 @@ export const SpriteEditorTool = createMigratedTool({
   kind: 'json',
   View: SpriteEditor,
   commands: [
-    {
-      id: 'sprite-editor.export',
-      title: 'Export sprite…',
-      group: 'sprite-editor',
-      run: () => document.dispatchEvent(new CustomEvent('px:sprite-export')),
-    },
+    // Note: Export command removed — it dispatched a dead px:sprite-export event
+    // with no handler. Re-add when the sprite editor implements export.
   ],
   mapProps: ({ resolveAsset }) => ({
     // Replaces the legacy findImageEntry(zip.root, src) + getData + toDataUri

@@ -44,10 +44,15 @@ registerPXSLLanguage(monaco);
  * @param {string} props.lang - Programming language identifier for syntax highlighting
  * @param {string} props.type - Layout type; 'script-only' uses full width, otherwise split panes
  * @param {function(string):void} [props.onSave] - Optional callback to save edited content
+ * @param {string} [props.tabId] - Tab identity; the editor only answers 'px:shell-save'
+ *   when event.detail.tabId matches it (supplied by ScriptEditorTool)
  * @returns {JSX.Element}
  */
-function ScriptEditor({ content: initialContent, lang: initialLang, type: initialType, onSave }) {
-  const [content, setContent] = useState(initialContent || 'please start your edits :)');
+function ScriptEditor({ content: initialContent, lang: initialLang, type: initialType, onSave, tabId }) {
+  // Empty string = clean empty document. The placeholder text is display-only
+  // (rendered as an overlay below), never editor state, so saving an untouched
+  // empty file writes '' instead of the placeholder string.
+  const [content, setContent] = useState(initialContent || '');
   const [lang, setLang] = useState(initialLang || 'lua');
   const [type] = useState(initialType || 'script-only');
   const [hasChanges, setHasChanges] = useState(false);
@@ -171,17 +176,21 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
     }
   }, [content, onSave]);
 
-  // Keyboard shortcut for save (Ctrl+S / Cmd+S)
+  // Save via shell command (Ctrl+S). Listens for 'px:shell-save' dispatched by
+  // the shell's command system, instead of a rogue window-level listener.
+  // Only saves when the event targets this tab (detail.tabId matches the
+  // tabId prop) and there are actual unsaved changes — an empty document
+  // that was never touched has hasChanges === false, so it is never written.
   useEffect(() => {
-    const handleKeyDown = e => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveChanges();
-      }
+    const handleShellSave = event => {
+      const targetTabId = event && event.detail ? event.detail.tabId : undefined;
+      if (targetTabId !== undefined && targetTabId !== tabId) return;
+      if (!hasChanges) return;
+      saveChanges();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveChanges]);
+    document.addEventListener('px:shell-save', handleShellSave);
+    return () => document.removeEventListener('px:shell-save', handleShellSave);
+  }, [saveChanges, hasChanges, tabId]);
 
   return (
     <div
@@ -207,7 +216,27 @@ function ScriptEditor({ content: initialContent, lang: initialLang, type: initia
           border: '1px solid rgba(255,255,255,0.1)',
         }}
       >
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+          {/* Display-only placeholder: Monaco has no placeholder prop, so the
+              hint is an overlay shown only when the document is empty. It is
+              never part of editor state, so it can never be saved. */}
+          {content === '' && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '8px',
+                left: '62px',
+                color: '#6e7681',
+                fontSize: '14px',
+                fontFamily: 'monospace',
+                pointerEvents: 'none',
+                userSelect: 'none',
+                zIndex: 1,
+              }}
+            >
+              please start your edits :)
+            </div>
+          )}
           <Editor
             theme={
               lang === 'pixoscript'

@@ -351,8 +351,8 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
       <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column' }}>
         {/* Spritesheet View - Top */}
         <div style={{ marginBottom: '1rem' }}>
-          <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+          <div style={{ border: '1px solid var(--color-border)', padding: '0.5rem', background: 'var(--color-bg-primary)' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
               Spritesheet View
             </div>
             <canvas
@@ -360,8 +360,8 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
               width={spriteImage ? undefined : 600}
               height={spriteImage ? undefined : 400}
               style={{
-                border: '1px solid #333',
-                background: '#222',
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-bg-secondary)',
                 cursor: dragging ? 'grab' : 'crosshair',
                 userSelect: 'none',
                 touchAction: 'none',
@@ -377,7 +377,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
               onClick={handleCanvasClick}
             />
             <div
-              style={{ marginTop: '0.5rem', fontSize: '0.8em', color: '#ccc', textAlign: 'center' }}
+              style={{ marginTop: '0.5rem', fontSize: '0.8em', color: 'var(--color-text-secondary)', textAlign: 'center' }}
             >
               Zoom: {camera.zoom.toFixed(1)}x | Click grid cells to set frame positions
             </div>
@@ -388,8 +388,8 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
           {/* Preview */}
           <div style={{ flex: '1' }}>
-            <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+            <div style={{ border: '1px solid var(--color-border)', padding: '0.5rem', background: 'var(--color-bg-primary)' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
                 Preview
               </div>
               <canvas
@@ -397,8 +397,8 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 width={128}
                 height={128}
                 style={{
-                  border: '1px solid #333',
-                  background: '#222',
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-bg-secondary)',
                   width: '100%',
                   height: 'auto',
                   display: 'block',
@@ -425,7 +425,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 </Checkbox>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Speed: {animationSpeed}ms
                 </div>
                 <Slider
@@ -442,12 +442,12 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
 
           {/* Direction & Frame Selection */}
           <div style={{ flex: '1' }}>
-            <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+            <div style={{ border: '1px solid var(--color-border)', padding: '0.5rem', background: 'var(--color-bg-primary)' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
                 Direction & Frame
               </div>
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Direction:
                 </div>
                 <SelectPicker
@@ -459,7 +459,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Frame:
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
@@ -495,14 +495,14 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
 
         {/* Frame Coordinates */}
         <div style={{ marginBottom: '1rem' }}>
-          <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+          <div style={{ border: '1px solid var(--color-border)', padding: '0.5rem', background: 'var(--color-bg-primary)' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
               Frame Coordinates
             </div>
             {spriteData.frames?.[selectedDirection]?.[selectedFrame] ? (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <div style={{ flex: '1' }}>
-                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                     X:
                   </div>
                   <InputNumber
@@ -514,7 +514,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                   />
                 </div>
                 <div style={{ flex: '1' }}>
-                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                  <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                     Y:
                   </div>
                   <InputNumber
@@ -527,7 +527,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 </div>
               </div>
             ) : (
-              <div style={{ color: '#666', fontStyle: 'italic' }}>
+              <div style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
                 Select a frame to edit coordinates
               </div>
             )}
@@ -536,8 +536,8 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
 
         {/* Sprite Properties */}
         <div style={{ marginBottom: '1rem' }}>
-          <div style={{ border: '1px solid #333', padding: '0.5rem', background: '#1a1a1a' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#fff' }}>
+          <div style={{ border: '1px solid var(--color-border)', padding: '0.5rem', background: 'var(--color-bg-primary)' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
               Sprite Properties
             </div>
             <div
@@ -548,7 +548,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
               }}
             >
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Type:
                 </div>
                 <Input
@@ -558,7 +558,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Source:
                 </div>
                 <Input
@@ -568,7 +568,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Sheet W:
                 </div>
                 <InputNumber
@@ -580,7 +580,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Sheet H:
                 </div>
                 <InputNumber
@@ -592,7 +592,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Tile W:
                 </div>
                 <InputNumber
@@ -604,7 +604,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Tile H:
                 </div>
                 <InputNumber
@@ -616,7 +616,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   State:
                 </div>
                 <Input
@@ -626,7 +626,7 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
                 />
               </div>
               <div>
-                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: '#ccc' }}>
+                <div style={{ fontSize: '0.8em', marginBottom: '0.25rem', color: 'var(--color-text-secondary)' }}>
                   Gender:
                 </div>
                 <Input
@@ -650,10 +650,10 @@ function SpriteEditor({ content, zip, getData, toDataUri, onSave, resolveSpriteI
           <div style={{ marginBottom: '1rem' }}>
             <div
               style={{
-                border: '1px solid #d9534f',
+                border: '1px solid var(--color-error)',
                 padding: '0.5rem',
-                background: '#2a1a1a',
-                color: '#d9534f',
+                background: 'var(--color-error-quiet)',
+                color: 'var(--color-error)',
               }}
             >
               {error}

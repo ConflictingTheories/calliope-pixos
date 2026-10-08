@@ -1,0 +1,26 @@
+/*
+ * ---------------------------------------------------------------
+ *            PixoSpritz – Editor – MapCanvas styles
+ * ---------------------------------------------------------------
+ * Forge design-system tokens.
+ */
+
+.map-canvas {
+  flex: 1;
+  position: relative;
+  background: var(--color-bg-base);
+}
+
+.map-canvas__error {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(190, 17, 0, 0.15);
+  border: 1px solid var(--color-error, #be1100);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  z-index: 100;
+  font-size: 13px;
+  color: var(--color-text-primary);
+}

@@ -15,6 +15,7 @@
 
 import React from 'react';
 import WebGL3DCanvas from '../../shared/WebGL3DCanvas.jsx';
+import './MapCanvas.css';
 
 function propsEqual(prev, next) {
   return (
@@ -43,23 +44,9 @@ export const MapCanvas = React.memo(
     cameraSeed,
   }) {
     return (
-      <div style={{ flex: 1, position: 'relative', background: '#1e1e1e' }}>
+      <div className="map-canvas">
         {error && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 10,
-              left: 10,
-              right: 10,
-              background: '#5a1d1d',
-              border: '1px solid #be1100',
-              borderRadius: '3px',
-              padding: '10px',
-              zIndex: 100,
-              fontSize: '13px',
-              color: '#f48771',
-            }}
-          >
+          <div className="map-canvas__error">
             {error}
           </div>
         )}

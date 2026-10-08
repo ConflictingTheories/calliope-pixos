@@ -58,8 +58,8 @@ describe('TimelineClock', () => {
   });
 
   it('replay after end restarts deterministically', () => {
-    const c = new TimelineClock(NODES, { tickHz: 10 });
     const run = () => {
+      const c = new TimelineClock(NODES, { tickHz: 10 });
       const events = record(c);
       c.play();
       for (let i = 0; i < 70; i++) c.advance(0.1);
