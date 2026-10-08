@@ -45,7 +45,15 @@ function parseDSLToEvents(text) {
 
   while (i < lines.length) {
     let raw = lines[i].trim();
-    if (!raw || raw.startsWith('#')) {
+    if (!raw) {
+      i++;
+      continue;
+    }
+
+    // Comment line: keep as a comment event so it survives a
+    // parse -> serialize round-trip instead of being discarded.
+    if (raw.startsWith('#')) {
+      events.push({ type: 'comment', content: raw });
       i++;
       continue;
     }
@@ -73,31 +81,48 @@ function parseDSLToEvents(text) {
         }
       }
 
-      // Check for multiline content
+      // Check for multiline content: a """ delimiter OPENS a multiline
+      // dialogue block, and only a LATER """ line closes it. The opening
+      // line itself must never be mistaken for the terminator.
       let content = tail;
-      if (tail.startsWith('"""') || (lines[i + 1] && lines[i + 1].trim().startsWith('"""'))) {
-        if (!tail.startsWith('"""')) i++;
-        content = '';
-        let collecting = true;
-        while (i < lines.length && collecting) {
+      let consumedMultiline = false;
+      const opensHere = tail.startsWith('"""');
+      const opensNext =
+        !opensHere && lines[i + 1] != null && lines[i + 1].trim().startsWith('"""');
+      if (opensHere || opensNext) {
+        // Move i onto the opening delimiter line, then step past it so the
+        // opening line is never evaluated as a potential closing line.
+        if (opensNext) i++;
+        const opener = (opensHere ? tail : lines[i].trim()).slice(3);
+        const chunks = [];
+        let closed = false;
+        // Inline single-line form: """content""" closes on the opening line.
+        const inlineClose = opener.indexOf('"""');
+        if (inlineClose !== -1) {
+          chunks.push(opener.slice(0, inlineClose));
+          closed = true;
+        } else if (opener) {
+          // Text after the opening delimiter on the same line is content.
+          chunks.push(opener);
+        }
+        i++; // advance past the opening delimiter line
+        while (!closed && i < lines.length) {
           const line = lines[i];
-          if (line.includes('"""')) {
-            const parts = line.split('"""');
-            if (parts.length > 1) {
-              content += parts[1];
-              collecting = false;
-            } else if (parts[0]) {
-              content += parts[0];
-              collecting = false;
-            }
+          const closeIdx = line.indexOf('"""');
+          if (closeIdx !== -1) {
+            // Closing delimiter: keep any text before it, then stop.
+            const before = line.slice(0, closeIdx);
+            if (before.trim()) chunks.push(before);
+            closed = true;
             i++;
             break;
-          } else {
-            content += line + '\n';
-            i++;
           }
+          chunks.push(line);
+          i++;
         }
-        content = content.trim();
+        // Unclosed block at end of input: the rest is dialogue (no crash).
+        content = chunks.join('\n').trim();
+        consumedMultiline = true;
       }
 
       events.push({
@@ -107,7 +132,8 @@ function parseDSLToEvents(text) {
         portrait: meta.sprite || '',
         meta,
       });
-      i++;
+      // The multiline branch already left i on the next unprocessed line.
+      if (!consumedMultiline) i++;
       continue;
     }
 
@@ -197,12 +223,16 @@ function serializeEvents(events) {
         const dur = ev.duration || 1;
         script += `wait ${Math.round(dur * 1000)}\n`;
       }
+    } else if (ev.type === 'comment') {
+      // Comments are written back verbatim so they survive round-trips.
+      script += `${ev.content || ''}\n`;
     } else if (ev.type === 'action') {
       const cmd = ev.command || '';
-      if (cmd.startsWith('@')) {
+      if (cmd) {
+        // Preserve the command verbatim. Rewriting non-@ lines as
+        // "@action <line>" corrupts their meaning on round-trip, and the
+        // player already handles raw lines on its own.
         script += `${cmd}\n`;
-      } else if (cmd) {
-        script += `@action ${cmd}\n`;
       }
     } else {
       // Fallback raw or unknown events
@@ -223,6 +253,7 @@ const EVENT_VISUALS = {
   cutin: { icon: '🎭', color: 'var(--color-text-secondary)', label: 'Cutin' },
   wait: { icon: '⏱️', color: 'var(--color-warning)', label: 'Wait' },
   action: { icon: '⚡', color: 'var(--color-text-secondary)', label: 'Action' },
+  comment: { icon: '📝', color: 'var(--color-text-secondary)', label: 'Comment' },
 };
 
 // Expression emoji mapping
@@ -262,23 +293,30 @@ function StoryboardEditor({
     return Array.from(speakers);
   }, [events]);
 
-  // Update event and sync
+  // Update event and sync. Uses a functional setEvents so that two calls
+  // fired in the same tick (e.g. the Timed Wait button and the wait slider,
+  // which each call updateEvent twice) build on the latest state instead of
+  // both recomputing from the same stale snapshot and discarding changes.
   const updateEvent = useCallback(
     (index, field, value) => {
-      const next = events.map((ev, i) => {
-        if (i === index) {
-          if (field === 'meta') {
-            return { ...ev, meta: { ...ev.meta, ...value } };
+      setEvents(prevEvents => {
+        const next = prevEvents.map((ev, i) => {
+          if (i === index) {
+            if (field === 'meta') {
+              return { ...ev, meta: { ...ev.meta, ...value } };
+            }
+            return { ...ev, [field]: value };
           }
-          return { ...ev, [field]: value };
-        }
-        return ev;
+          return ev;
+        });
+        // Derive the synced text and the undo snapshot from the same
+        // `next` array so neither can diverge from the committed state.
+        setTextContent(serializeEvents(next));
+        pushHistorySnapshot(next);
+        return next;
       });
-      setEvents(next);
-      setTextContent(serializeEvents(next));
-      pushHistorySnapshot(next);
     },
-    [events, setEvents, setTextContent, serializeEvents, pushHistorySnapshot]
+    [setEvents, setTextContent, serializeEvents, pushHistorySnapshot]
   );
 
   // Add a new event of a specific type
@@ -471,6 +509,21 @@ function StoryboardEditor({
               }}
             >
               {ev.command || <span style={{ opacity: 0.4 }}>@command...</span>}
+            </div>
+          )}
+          {ev.type === 'comment' && (
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'rgba(255,255,255,0.6)',
+                fontStyle: 'italic',
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {ev.content || <span style={{ opacity: 0.4 }}># comment...</span>}
             </div>
           )}
         </div>
@@ -793,6 +846,33 @@ function StoryboardEditor({
                 color: 'var(--color-text-primary)',
                 fontSize: '12px',
                 fontFamily: 'monospace',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Comment editor */}
+        {ev.type === 'comment' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <input
+              type="text"
+              value={ev.content || ''}
+              onChange={e => {
+                const v = e.target.value;
+                updateEvent(selectedIndex, 'content', v.startsWith('#') ? v : `# ${v}`);
+              }}
+              placeholder="# Comment or scene header"
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '4px',
+                color: 'var(--color-text-primary)',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                fontStyle: 'italic',
                 boxSizing: 'border-box',
               }}
             />

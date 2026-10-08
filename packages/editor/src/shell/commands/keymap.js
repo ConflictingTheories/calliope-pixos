@@ -59,12 +59,19 @@ export class KeymapRegistry {
    * @param {string} id        stable binding id, e.g. 'map.brush'
    * @param {string} shortcut  e.g. 'ctrl+s', 'b', 'Escape'
    * @param {Function} run     handler(event) -> boolean|void
-   * @param {{when?: (event: KeyboardEvent) => boolean}} [options]
+   * @param {{when?: (event: KeyboardEvent) => boolean,
+   *          priority?: number}} [options]
+   *   when: skip this binding unless it returns true for the event.
+   *   priority: when several bindings share a chord, higher priority
+   *     runs first (default 0 = global/shell level). A focused tool
+   *     uses a positive priority so its local bindings win over shell
+   *     commands while its panel has focus. Ties keep registration
+   *     order, so existing bindings are unaffected.
    */
   register(id, shortcut, run, options = {}) {
     const chord = parseShortcut(shortcut);
     if (!this.bindings.has(chord)) this.bindings.set(chord, []);
-    this.bindings.get(chord).push({ id, run, when: options.when });
+    this.bindings.get(chord).push({ id, run, when: options.when, priority: options.priority || 0 });
     return () => this.unregister(id, chord);
   }
 
@@ -90,7 +97,11 @@ export class KeymapRegistry {
     const chord = chordOf(event);
     const list = this.bindings.get(chord);
     if (!list) return false;
-    for (const b of list) {
+    // Higher-priority bindings run first (e.g. a focused tool over a
+    // global shell command). Array.prototype.sort is stable, so ties
+    // keep registration order and existing behavior is unchanged.
+    const ordered = [...list].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    for (const b of ordered) {
       if (b.when && !b.when(event)) continue;
       const consumed = b.run(event);
       if (consumed !== false) {
