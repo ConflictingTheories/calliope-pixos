@@ -99,16 +99,23 @@ export class TimelineClock {
   seek(time) {
     const clamped = Math.max(0, Math.min(time, this.totalDuration));
     const prevSlot = this.slotIndex;
+    const wasEnded = this.state === ClockState.ENDED;
     this.time = clamped;
     this.slotIndex = this.schedule.findIndex(s => clamped >= s.start && clamped < s.end);
     if (this.slotIndex === -1 && clamped >= this.totalDuration && this.schedule.length > 0) {
       this.slotIndex = this.schedule.length - 1;
     }
-    if (prevSlot !== this.slotIndex && prevSlot !== -1) {
-      this.emit('exit', { node: this.schedule[prevSlot]?.node, index: prevSlot });
-    }
-    if (this.slotIndex !== -1 && prevSlot !== this.slotIndex) {
-      this.emit('enter', { node: this.schedule[this.slotIndex].node, index: this.slotIndex, time: this.time });
+    // Restart from ENDED is silent — reset to -1 so the next advance
+    // emits a clean 'enter' for the first slot (no spurious 'exit')
+    if (wasEnded && clamped === 0) {
+      this.slotIndex = -1;
+    } else {
+      if (prevSlot !== this.slotIndex && prevSlot !== -1) {
+        this.emit('exit', { node: this.schedule[prevSlot]?.node, index: prevSlot });
+      }
+      if (this.slotIndex !== -1 && prevSlot !== this.slotIndex) {
+        this.emit('enter', { node: this.schedule[this.slotIndex].node, index: this.slotIndex, time: this.time });
+      }
     }
     if (clamped >= this.totalDuration) {
       this.state = ClockState.ENDED;
