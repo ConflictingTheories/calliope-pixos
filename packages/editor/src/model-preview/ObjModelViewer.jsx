@@ -145,9 +145,9 @@ function perspective(fovyRad, aspect, near, far) {
   const out = new Float32Array(16);
   out[0] = f / aspect;
   out[5] = f;
-  out[10] = (near + far) / d;
+  out[10] = -(near + far) / d;
   out[11] = -1;
-  out[14] = (2 * near * far) / d;
+  out[14] = -(2 * near * far) / d;
   out[15] = 0;
   return out;
 }
@@ -165,7 +165,7 @@ function lookAt(eye, center, up) {
   }
 
   const s = [0, 0, 0];
-  vec3.cross(up, f, s);
+  vec3.cross(f, up, s);
   const smag = vec3.length(s);
   if (smag === 0) {
     s[0] = 1;
@@ -176,7 +176,7 @@ function lookAt(eye, center, up) {
   }
 
   const u = [0, 0, 0];
-  vec3.cross(f, s, u);
+  vec3.cross(s, f, u);
 
   const out = new Float32Array(16);
   out[0] = s[0];
@@ -217,7 +217,7 @@ function parseOBJ(text) {
     if (parts[0] === 'v') {
       positions.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
     } else if (parts[0] === 'vt') {
-      uvs.push(parseFloat(parts[1]), 1.0 - parseFloat(parts[2]));
+      uvs.push(parseFloat(parts[1]), parseFloat(parts[2]));
     } else if (parts[0] === 'vn') {
       normals.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
     } else if (parts[0] === 'f') {

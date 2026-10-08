@@ -15,20 +15,13 @@ import { createMigratedTool } from '../shell/migrateTool.jsx';
 export const ScriptEditorTool = createMigratedTool({
   kind: 'script',
   View: ScriptEditor,
+  // Tab identity: app.jsx opens each tool in a tab keyed by documentPath and
+  // dispatches 'px:shell-save' with detail.tabId = the active tab id, so the
+  // editor answers Ctrl+S only when it is the active tab.
+  mapProps: ({ documentPath }) => ({ tabId: documentPath }),
   commands: [
-    {
-      id: 'script-editor.run',
-      title: 'Run script',
-      group: 'script-editor',
-      shortcut: 'ctrl+enter',
-      run: () => document.dispatchEvent(new CustomEvent('px:script-run')),
-    },
-    {
-      id: 'script-editor.format',
-      title: 'Format script',
-      group: 'script-editor',
-      run: () => document.dispatchEvent(new CustomEvent('px:script-format')),
-    },
+    // Note: Run and Format commands removed — they dispatched dead px:* events
+    // with no handlers. Re-add when the script editor implements these actions.
   ],
 });
 
