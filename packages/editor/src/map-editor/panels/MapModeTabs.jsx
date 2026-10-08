@@ -10,145 +10,75 @@
 
 import React from 'react';
 import { Button } from '../../ui';
+import './MapModeTabs.css';
 
 /**
  * @param {Object} props
  * @param {string} props.editorMode
  * @param {Function} props.onSelectMode
  */
-export function MapModeTabs({ editorMode, onSelectMode }) {
+export function MapModeTabs({ editorMode, onSelectMode, cells = [], sprites = [], objects = [], animatedTiles = [], lights = [] }) {
   const setEditorMode = onSelectMode;
 
   return (
-<div
-  style={{
-    background: '#2d2d30',
-    border: '1px solid #3e3e42',
-    borderRadius: '4px',
-    marginBottom: '20px',
-    overflow: 'hidden',
-  }}
->
-  <div
-    style={{
-      background: '#37373d',
-      padding: '10px',
-      fontWeight: 'bold',
-      borderBottom: '1px solid #3e3e42',
-    }}
-  >
+<div className="map-mode-tabs">
+  <div className="map-mode-tabs__header">
     🎯 Editor Mode
   </div>
-  <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+  <div className="map-mode-tabs__list">
     <Button block appearance="default" active={editorMode === 'tiles'}
-      style={{
-        background: editorMode === 'tiles' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('tiles')}
     >
       <div>🟦 Tile Mode</div>
-      <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+      <div className="map-mode-tabs__btn-hint">
         Click to paint/erase • {cells.length} x {cells[0]?.length || 0} cells
       </div>
     </Button>
     <Button block appearance="default" active={editorMode === 'sprites'}
-      style={{
-        background: editorMode === 'sprites' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('sprites')}
     >
       <div>🎭 Sprite Mode</div>
-      <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+      <div className="map-mode-tabs__btn-hint">
         Click to place • {sprites.length} sprites
       </div>
     </Button>
     <Button block appearance="default" active={editorMode === 'objects'}
-      style={{
-        background: editorMode === 'objects' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('objects')}
     >
       <div>📦 Object Mode</div>
-      <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+      <div className="map-mode-tabs__btn-hint">
         Click to place • {objects.length} objects
       </div>
     </Button>
     <Button block appearance="default" active={editorMode === 'attributes'}
-      style={{
-        background: editorMode === 'attributes' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('attributes')}
     >
       <div>📝 Attribute Mode</div>
-      <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+      <div className="map-mode-tabs__btn-hint">
         Click a cell to edit walkable/events
       </div>
     </Button>
     <Button block appearance="default" active={editorMode === 'animatedTiles'}
-      style={{
-        background: editorMode === 'animatedTiles' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('animatedTiles')}
     >
       <div>✨ Animated Tile Mode</div>
-      <div style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+      <div className="map-mode-tabs__btn-hint">
         Click to place • {animatedTiles.length} animated tiles
       </div>
     </Button>
     <Button block appearance="default" active={editorMode === 'triggers'}
-      style={{
-        background: editorMode === 'triggers' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('triggers')}
     >
       ⚡ Triggers & Scripts
     </Button>
     <Button block appearance="default" active={editorMode === 'lights'}
-      style={{
-        background: editorMode === 'lights' ? '#1177bb' : '#3e3e42',
-        color: 'white',
-        border: 'none',
-        padding: '8px 12px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textAlign: 'left',}}
+      className="map-mode-tabs__btn"
       onClick={() => setEditorMode('lights')}
     >
       💡 Lights ({lights.length})
