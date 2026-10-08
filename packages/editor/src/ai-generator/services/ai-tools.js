@@ -412,7 +412,7 @@ RESPOND WITH ONLY VALID JSON, NO MARKDOWN, NO EXPLANATION.`;
     },
     async (args, ctx) => {
       const repo = ctx?.projectRepository;
-      if (!repo || typeof repo.list !== 'function') return { assets: [], note: 'no repository available' };
+      if (!repo || typeof repo.list !== 'function') throw new Error('No project repository in context');
       const assets = await repo.list(args.kind);
       return { assets };
     }

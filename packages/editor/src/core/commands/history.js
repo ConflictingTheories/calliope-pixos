@@ -87,6 +87,7 @@ export class CommandHistory {
       now - top.at < this.coalesceWindowMs &&
       typeof entry.coalesce === 'function'
     ) {
+      if (apply) entry.redo();
       const merged = entry.coalesce(top.entry, entry);
       const bytes = estimateBytes(merged);
       this.usedBytes += bytes - top.bytes;

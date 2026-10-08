@@ -350,11 +350,9 @@ export default class RenderManager {
    * @throws {Error} If the shader program fails to link.
    */
   initShaderProgram = ({ vs: vsSource, fs: fsSource }) => {
-    // Fully migrated to ShaderManager
-    if (this.shaderManager) {
-      return this.shaderManager.initShaderProgram({ vs: vsSource, fs: fsSource });
-    }
-    throw new Error('ShaderManager not initialized');
+    // NOTE: ShaderManager migration deferred — ShaderManager has no
+    // initShaderProgram method yet. Keep the working implementation here
+    // until the manager actually provides it.
     /** @type {WebGL2RenderingContext} */
     const { gl } = this.engine;
     const self = this;

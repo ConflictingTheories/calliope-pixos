@@ -60,10 +60,10 @@ export class DocumentRegistry {
   resolveKind({ kind, path } = {}) {
     if (kind && this.adapters.has(kind)) return kind;
     if (path) {
-      const dot = path.lastIndexOf('.');
-      if (dot >= 0) {
-        const hit = this.byExtension.get(path.slice(dot).toLowerCase());
-        if (hit) return hit;
+      const lower = path.toLowerCase();
+      // Try compound extensions first (.pixomap.json before .json)
+      for (const ext of [...this.byExtension.keys()].sort((a, b) => b.length - a.length)) {
+        if (lower.endsWith(ext)) return this.byExtension.get(ext);
       }
     }
     return 'unknown';

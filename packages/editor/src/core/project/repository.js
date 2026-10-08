@@ -38,7 +38,7 @@ export function stableStringify(value) {
     return `[${value.map(stableStringify).join(',')}]`;
   }
   const keys = Object.keys(value).sort();
-  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}}`;
+  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 }
 
 /**
@@ -168,7 +168,17 @@ export class InMemoryProjectRepository extends ProjectRepository {
 
   async write(path, data) {
     assertPath(path);
-    this.files.set(path, await toBytes(data));
+    let bytes = await toBytes(data);
+    if (path.endsWith('.json')) {
+      // Normalize JSON documents on write so exports are stable (contract).
+      try {
+        const text = normalizeText(new TextDecoder().decode(bytes));
+        bytes = new TextEncoder().encode(`${stableStringify(JSON.parse(text))}\n`);
+      } catch {
+        // Not valid JSON — store as-is.
+      }
+    }
+    this.files.set(path, bytes);
   }
 
   async delete(path) {
