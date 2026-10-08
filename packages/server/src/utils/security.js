@@ -150,6 +150,43 @@ export class MessageValidator {
           data: { type: 'object' },
         },
       },
+      'create-session': {
+        required: ['zoneId'],
+        properties: {
+          zoneId: { type: 'string', maxLength: 256 },
+          title: { type: 'string', maxLength: 256 },
+          description: { type: 'string', maxLength: 2000 },
+        },
+      },
+      'join-session': {
+        required: ['sessionId'],
+        properties: {
+          sessionId: { type: 'string', maxLength: 256 },
+          role: { type: 'string', maxLength: 32 },
+        },
+      },
+      'leave-session': { required: [], properties: {} },
+      'end-session': { required: [], properties: {} },
+      'list-sessions': { required: [], properties: {} },
+      'session-commentary': {
+        required: ['text'],
+        properties: {
+          text: { type: 'string', maxLength: 2000 },
+        },
+      },
+      'session-cue': {
+        required: ['cue'],
+        properties: {
+          cue: { type: 'object' },
+        },
+      },
+      'session-role': {
+        required: ['targetClientId', 'role'],
+        properties: {
+          targetClientId: { type: 'string', maxLength: 256 },
+          role: { type: 'string', maxLength: 32 },
+        },
+      },
     };
   }
 

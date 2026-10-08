@@ -182,6 +182,36 @@ export default class NetworkManager {
         case 'action':
           this.handleAction(data.payload);
           break;
+        case 'session-created':
+          this.handleSessionCreated(data.payload);
+          break;
+        case 'session-joined':
+          this.handleSessionJoined(data.payload);
+          break;
+        case 'session-left':
+          this.handleSessionLeft(data.payload);
+          break;
+        case 'session-ended':
+          this.handleSessionEnded(data.payload);
+          break;
+        case 'session-list':
+          this.handleSessionList(data.payload);
+          break;
+        case 'session-participant-joined':
+          this.handleSessionParticipantJoined(data.payload);
+          break;
+        case 'session-participant-left':
+          this.handleSessionParticipantLeft(data.payload);
+          break;
+        case 'session-commentary':
+          this.handleSessionCommentary(data.payload);
+          break;
+        case 'session-cue':
+          this.handleSessionCue(data.payload);
+          break;
+        case 'session-role-changed':
+          this.handleSessionRoleChanged(data.payload);
+          break;
         default:
           console.log(`Unknown message type: ${data.type}`);
       }
@@ -246,6 +276,122 @@ export default class NetworkManager {
       scale: avatarData.scale ? { x: avatarData.scale.x, y: avatarData.scale.y } : undefined,
     };
     this.send('join-zone', { zoneId, avatar: cleanAvatarData });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Live Sessions — creator-hosted multiplayer experiences
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Current live session state, or null.
+   * @type {object|null}
+   */
+  get session() {
+    return this._session || null;
+  }
+
+  /**
+   * Registers a callback for live session events.
+   * Events: session-created, session-joined, session-left, session-ended,
+   * session-list, session-participant-joined, session-participant-left,
+   * session-commentary, session-cue, session-role-changed
+   * @param {string} event - Event name.
+   * @param {Function} cb - Callback(payload).
+   */
+  onSessionEvent(event, cb) {
+    this._sessionListeners = this._sessionListeners || {};
+    (this._sessionListeners[event] = this._sessionListeners[event] || []).push(cb);
+  }
+
+  emitSessionEvent(event, payload) {
+    const listeners = (this._sessionListeners || {})[event] || [];
+    for (const cb of listeners) {
+      try { cb(payload); } catch (e) { console.warn('Session listener error:', e); }
+    }
+  }
+
+  /** Host creates a live session. */
+  createSession({ zoneId, title, description }) {
+    this.send('create-session', { zoneId, title, description });
+  }
+
+  /** Join a session as player or spectator. */
+  joinSession(sessionId, role = 'player') {
+    this.send('join-session', { sessionId, role });
+  }
+
+  /** Leave the current session. */
+  leaveSession() {
+    this.send('leave-session', {});
+  }
+
+  /** Host ends the session. */
+  endSession() {
+    this.send('end-session', {});
+  }
+
+  /** Host broadcasts commentary text. */
+  sendSessionCommentary(text) {
+    this.send('session-commentary', { text });
+  }
+
+  /** Host triggers a world cue (live art). */
+  sendSessionCue(cue) {
+    this.send('session-cue', { cue });
+  }
+
+  /** Host changes a participant's role. */
+  setSessionRole(targetClientId, role) {
+    this.send('session-role', { targetClientId, role });
+  }
+
+  /** List live sessions for discovery. */
+  listSessions() {
+    this.send('list-sessions', {});
+  }
+
+  handleSessionCreated(payload) {
+    this._session = { ...payload, participants: [] };
+    this.emitSessionEvent('session-created', payload);
+  }
+
+  handleSessionJoined(payload) {
+    this._session = { ...payload, participants: [] };
+    this.emitSessionEvent('session-joined', payload);
+  }
+
+  handleSessionLeft(payload) {
+    this._session = null;
+    this.emitSessionEvent('session-left', payload);
+  }
+
+  handleSessionEnded(payload) {
+    this._session = null;
+    this.emitSessionEvent('session-ended', payload);
+  }
+
+  handleSessionList(payload) {
+    this.emitSessionEvent('session-list', payload);
+  }
+
+  handleSessionParticipantJoined(payload) {
+    this.emitSessionEvent('session-participant-joined', payload);
+  }
+
+  handleSessionParticipantLeft(payload) {
+    this.emitSessionEvent('session-participant-left', payload);
+  }
+
+  handleSessionCommentary(payload) {
+    this.emitSessionEvent('session-commentary', payload);
+  }
+
+  handleSessionCue(payload) {
+    this.emitSessionEvent('session-cue', payload);
+  }
+
+  handleSessionRoleChanged(payload) {
+    this.emitSessionEvent('session-role-changed', payload);
   }
 
   /**
