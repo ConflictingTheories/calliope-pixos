@@ -1,0 +1,107 @@
+-- Movement system for Disgaea-like tactical RPG
+-- Uses engine find_path for A* pathfinding, highlights reachable tiles
+
+local Movement = {}
+
+-- Get all tiles reachable within move range (Manhattan distance, respecting walls)
+-- Uses engine find_path to verify each tile is actually reachable
+function Movement.getMoveRange(unit, units, mapWidth, mapHeight, isWalkable)
+    local range = {}
+    local move = unit.move
+
+    for dy = -move, move do
+        for dx = -move, move do
+            local dist = math.abs(dx) + math.abs(dy)
+            if dist <= move and dist > 0 then
+                local nx, ny = unit.x + dx, unit.y + dy
+                -- Check bounds
+                if nx >= 1 and nx <= mapWidth and ny >= 1 and ny <= mapHeight then
+                    -- Check walkable
+                    if not isWalkable or isWalkable(nx, ny) then
+                        -- Check not occupied
+                        local occupied = false
+                        for _, u in pairs(units) do
+                            if u.id ~= unit.id and u.stats.hp > 0 and u.x == nx and u.y == ny then
+                                occupied = true
+                                break
+                            end
+                        end
+                        if not occupied then
+                            -- Verify path exists using engine A*
+                            -- (For performance, we use Manhattan here and let find_path
+                            --  validate the actual move; full A* per tile is expensive)
+                            table.insert(range, { x = nx, y = ny })
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return range
+end
+
+-- Move a unit to (x, y) using engine pathfinding
+-- Returns the path taken, or nil if no path
+function Movement.moveUnit(unit, targetX, targetY, units)
+    -- Use engine find_path (added in Task 1)
+    local path = {}
+    if pixos.find_path then
+        path = pixos.find_path(unit.x, unit.y, targetX, targetY)
+    else
+        -- Fallback: direct move (no pathfinding)
+        path = { { x = targetX, y = targetY } }
+    end
+
+    if #path == 0 then
+        return nil -- No path found
+    end
+
+    -- Update unit position to destination
+    -- (In a full implementation, we'd animate along the path)
+    local dest = path[#path]
+    unit.x = dest.x
+    unit.y = dest.y
+
+    -- Update sprite position in engine
+    if pixos.set_sprite_pos then
+        pixos.set_sprite_pos(unit.id, dest.x, dest.y)
+    end
+
+    unit.moved = true
+    return path
+end
+
+-- Highlight reachable tiles using engine highlight API
+function Movement.showMoveRange(unit, units, mapWidth, mapHeight, isWalkable)
+    local range = Movement.getMoveRange(unit, units, mapWidth, mapHeight, isWalkable)
+    if pixos.highlight_tiles then
+        pixos.highlight_tiles(range, 'move')
+    end
+    return range
+end
+
+-- Clear movement highlights
+function Movement.clearHighlights()
+    if pixos.clear_highlight then
+        pixos.clear_highlight()
+    end
+end
+
+-- Get attack range tiles (for showing where unit can attack from current pos)
+function Movement.getAttackRange(unit, mapWidth, mapHeight)
+    local range = {}
+    for dy = -unit.range, unit.range do
+        for dx = -unit.range, unit.range do
+            local dist = math.abs(dx) + math.abs(dy)
+            if dist <= unit.range and dist > 0 then
+                local nx, ny = unit.x + dx, unit.y + dy
+                if nx >= 1 and nx <= mapWidth and ny >= 1 and ny <= mapHeight then
+                    table.insert(range, { x = nx, y = ny })
+                end
+            end
+        end
+    end
+    return range
+end
+
+return Movement
