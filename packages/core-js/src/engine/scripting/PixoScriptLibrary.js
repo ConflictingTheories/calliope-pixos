@@ -14,6 +14,37 @@
 import { EventLoader } from '@Engine/utils/loaders/index.js';
 import PxcPlayer from '@Engine/core/cutscene/PxcPlayer.js';
 import { debug } from '@Engine/utils/debug-logger.js';
+import Pathfinder from '@Engine/core/scene/Pathfinder.js';
+import CallbackManager from '@Engine/scripting/CallbackManager.js';
+
+/**
+ * Maps friendly key names used by game scripts to KeyboardEvent.key values.
+ * Scripts say 'left'; the browser reports 'ArrowLeft'.
+ */
+const KEY_NAME_ALIASES = {
+  left: 'ArrowLeft',
+  right: 'ArrowRight',
+  up: 'ArrowUp',
+  down: 'ArrowDown',
+  enter: 'Enter',
+  return: 'Enter',
+  tab: 'Tab',
+  escape: 'Escape',
+  esc: 'Escape',
+  space: ' ',
+  backspace: 'Backspace',
+  delete: 'Delete',
+  shift: 'Shift',
+  ctrl: 'Control',
+  control: 'Control',
+  alt: 'Alt',
+};
+
+function normalizeKeyName(key) {
+  if (!key || typeof key !== 'string') return key;
+  const lower = key.toLowerCase();
+  return KEY_NAME_ALIASES[lower] || key;
+}
 
 export default class PixoScriptLibrary {
   /**
@@ -333,6 +364,39 @@ export default class PixoScriptLibrary {
               });
             });
           });
+      },
+      get_sprite_pos: spriteId => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return null;
+          const sprite = world.spriteDict?.[spriteId];
+          if (!sprite || !sprite.pos) return null;
+          const p = sprite.pos;
+          // pos can be array [x,y,z] or object {x,y,z}
+          const arr = Array.isArray(p) ? p : [p.x, p.y, p.z];
+          return new this.pixoscript.Table(arr);
+        } catch (e) {
+          console.warn('get_sprite_pos failed', e);
+          return null;
+        }
+      },
+      set_sprite_pos: (spriteId, x, y, z) => {
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) return;
+          const sprite = world.spriteDict?.[spriteId];
+          if (!sprite || !sprite.pos) return;
+          const p = sprite.pos;
+          if (Array.isArray(p)) {
+            p[0] = x; p[1] = y;
+            if (z !== undefined) p[2] = z;
+          } else {
+            p.x = x; p.y = y;
+            if (z !== undefined) p.z = z;
+          }
+        } catch (e) {
+          console.warn('set_sprite_pos failed', e);
+        }
       },
       move_sprite: (spriteId, location, running) => {
         return () =>
@@ -1091,15 +1155,103 @@ export default class PixoScriptLibrary {
           console.warn('clear_highlight failed', e);
         }
       },
-      // Demo-required APIs
-      load_map: async mapId => {
+      // Pathfinding: expose engine A* to scripts
+      // Returns array of {x, y} grid coordinates, or empty array if no path
+      find_path: (startX, startY, endX, endY) => {
         try {
           const world = engine.world || engine.spritz?.world;
-          if (!world || !world.loadZone) {
-            console.warn('load_map: world.loadZone not available');
+          const empty = () => new this.pixoscript.Table([]);
+          if (!world) return empty();
+          const zone = world.getZoneById(world.currentZoneId);
+          if (!zone) return empty();
+          // Create pathfinder for this zone (lightweight, no caching needed)
+          const pathfinder = new Pathfinder(zone);
+          // Pathfinder uses world coords; convert grid to world
+          // For grid-based games, assume 1:1 mapping (tile size = 1 unit)
+          const path = pathfinder.findPath(startX, startY, endX, endY, {
+            allowDiagonal: false, // Tactical RPGs typically use 4-directional
+            smoothPath: false, // Keep grid-aligned for turn-based
+          });
+          if (!path) return empty();
+          // Convert back to grid coords as {x, y} tables.
+          // Must be pixoscript Tables: Lua #/ipairs cannot read native JS arrays.
+          // Pathfinder returns cell-center world coords (+0.5); floor() inverts
+          // worldToGrid's floor(), while round() would shift cells by one.
+          return new this.pixoscript.Table(
+            path.map(p => new this.pixoscript.Table({ x: Math.floor(p[0]), y: Math.floor(p[1]) }))
+          );
+        } catch (e) {
+          console.warn('find_path failed', e);
+          return new this.pixoscript.Table([]);
+        }
+      },
+      // Event system: expose CallbackManager to scripts
+      // on_event(eventName, callback) - callback receives event data table
+      // emit_event(eventName, data) - data is a Lua table (optional)
+      on_event: (eventName, callback) => {
+        try {
+          // Lazy-instantiate the CallbackManager on the engine
+          if (!engine._callbackManager) {
+            engine._callbackManager = new CallbackManager(engine);
+          }
+          // Wrap the Lua callback so it can be called from JS
+          // The pixoscript function needs to be invoked via the env
+          const wrappedCallback = event => {
+            try {
+              // Call the Lua function with the event data
+              // event.data is a JS object; convert to Lua-friendly table
+              if (callback && typeof callback === 'function') {
+                callback(event.data || {});
+              } else if (callback && callback.call) {
+                callback.call(event.data || {});
+              }
+            } catch (e) {
+              console.warn('on_event callback failed', e);
+            }
+          };
+          return engine._callbackManager.on(eventName, wrappedCallback);
+        } catch (e) {
+          console.warn('on_event failed', e);
+          return null;
+        }
+      },
+      emit_event: (eventName, data) => {
+        try {
+          if (!engine._callbackManager) {
+            engine._callbackManager = new CallbackManager(engine);
+          }
+          // Convert Lua table to JS object if needed
+          const jsData = data && data.toObject ? data.toObject() : data || {};
+          engine._callbackManager.emit(eventName, jsData);
+        } catch (e) {
+          console.warn('emit_event failed', e);
+        }
+      },
+      // Demo-required APIs
+      load_map: mapId => {
+        // Fire-and-forget: start the async load, don't block the script.
+        // PixoScript (Lua) can't await Promises, so we initiate the load
+        // and return immediately. The zone's mode auto-activates on load.
+        try {
+          const world = engine.world || engine.spritz?.world;
+          if (!world) {
+            console.warn('load_map: no world');
             return;
           }
-          await world.loadZone(mapId);
+          const zip = world.spritz?.zip || 
+                      engine.spritz?.zip ||
+                      world.spritz?.bundleZip;
+          if (zip && world.loadZoneFromZip) {
+            // Pass null transitionParams: transitions await the render loop,
+            // which deadlocks when load_map is called from a script update
+            // handler (which runs inside that same loop).
+            world.loadZoneFromZip(mapId, zip, false, null)
+              .catch(e => console.warn('load_map failed', e));
+          } else if (world.loadZone) {
+            world.loadZone(mapId).catch(e => console.warn('load_map failed', e));
+          } else {
+            console.warn('load_map: no zone loader available');
+          }
         } catch (e) {
           console.warn('load_map failed', e);
         }
@@ -1149,8 +1301,9 @@ export default class PixoScriptLibrary {
       },
       switch_mode: modeName => {
         try {
-          if (engine.world && engine.world.modeManager) {
-            engine.world.modeManager.set(modeName);
+          const mm = engine.modeManager || engine.world?.modeManager;
+          if (mm) {
+            mm.set(modeName);
           }
         } catch (e) {
           console.warn('switch_mode failed', e);
@@ -1158,6 +1311,13 @@ export default class PixoScriptLibrary {
       },
       input_pressed: key => {
         try {
+          // Pressed-this-frame semantics: true only on the frame the key
+          // went down, not while held. Check keyboard first, then gamepad.
+          const kb = engine.inputManager?.keyboard;
+          if (kb) {
+            if (kb.wasKeyPressed(key)) return true;
+            if (kb.wasCodePressed(normalizeKeyName(key))) return true;
+          }
           if (engine.gamepad) {
             return engine.gamepad.keyPressed(key);
           }
@@ -1168,6 +1328,8 @@ export default class PixoScriptLibrary {
       },
       input_down: key => {
         try {
+          // Check keyboard first, then gamepad
+          if (engine.inputManager?.keyboard?.isKeyPressed(key)) return true;
           if (engine.gamepad) {
             return engine.gamepad.keyDown(key);
           }
