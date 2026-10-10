@@ -1,0 +1,137 @@
+-- Geo panel system for Disgaea-like tactical RPG
+-- Colored panels on tiles with effects, destructible geo symbols
+
+local Geo = {}
+
+-- Panel color definitions
+-- Each color has an effect applied to units standing on it
+Geo.COLORS = {
+    red = {
+        name = 'Power',
+        description = '+50% ATK',
+        atkMod = 0.5,
+        color = { 0.9, 0.2, 0.2, 0.4 },
+    },
+    blue = {
+        name = 'Guard',
+        description = '+50% DEF',
+        defMod = 0.5,
+        color = { 0.2, 0.4, 0.9, 0.4 },
+    },
+    green = {
+        name = 'Heal',
+        description = 'Heal 10% HP per turn',
+        healPct = 0.10,
+        color = { 0.2, 0.9, 0.3, 0.4 },
+    },
+}
+
+-- Create a new geo panel layout
+function Geo.create()
+    return {
+        panels = {}, -- map of "x,y" -> { color, symbolHp }
+        symbols = {}, -- geo symbols that can be destroyed
+    }
+end
+
+-- Place a geo panel at (x, y) with a color
+-- symbolHp: HP of the geo symbol (if 0, panel is indestructible)
+function Geo.placePanel(geo, x, y, colorName, symbolHp)
+    local colorDef = Geo.COLORS[colorName]
+    if not colorDef then
+        error('Unknown geo color: ' .. tostring(colorName))
+    end
+    local key = x .. ',' .. y
+    geo.panels[key] = {
+        color = colorName,
+        symbolHp = symbolHp or 0,
+        maxSymbolHp = symbolHp or 0,
+    }
+end
+
+-- Get panel at (x, y), or nil
+function Geo.getPanel(geo, x, y)
+    return geo.panels[x .. ',' .. y]
+end
+
+-- Get ATK modifier for position (0 if no panel, or panel destroyed)
+function Geo.getAtkModifier(geo, x, y)
+    local panel = Geo.getPanel(geo, x, y)
+    if not panel or panel.symbolHp < 0 then return nil end
+    local colorDef = Geo.COLORS[panel.color]
+    return colorDef.atkMod
+end
+
+-- Get DEF modifier for position
+function Geo.getDefModifier(geo, x, y)
+    local panel = Geo.getPanel(geo, x, y)
+    if not panel or panel.symbolHp < 0 then return nil end
+    local colorDef = Geo.COLORS[panel.color]
+    return colorDef.defMod
+end
+
+-- Apply start-of-turn geo effects (healing)
+-- Returns list of {unitId, amountHealed}
+function Geo.applyTurnEffects(geo, units)
+    local healed = {}
+    for id, unit in pairs(units) do
+        if unit.stats.hp > 0 then
+            local panel = Geo.getPanel(geo, unit.x, unit.y)
+            if panel and panel.symbolHp >= 0 then
+                local colorDef = Geo.COLORS[panel.color]
+                if colorDef.healPct then
+                    local amount = math.floor(unit.maxHp * colorDef.healPct)
+                    local oldHp = unit.stats.hp
+                    unit.stats.hp = math.min(unit.stats.hp + amount, unit.maxHp)
+                    local actual = unit.stats.hp - oldHp
+                    if actual > 0 then
+                        table.insert(healed, { unitId = id, amount = actual })
+                    end
+                end
+            end
+        end
+    end
+    return healed
+end
+
+-- Damage a geo symbol (when attacked)
+-- Returns true if symbol was destroyed
+function Geo.damageSymbol(geo, x, y, damage)
+    local panel = Geo.getPanel(geo, x, y)
+    if not panel or panel.symbolHp <= 0 then return false end
+    panel.symbolHp = panel.symbolHp - damage
+    if panel.symbolHp <= 0 then
+        -- Symbol destroyed! Clear all panels of this color (geo chain)
+        local destroyedColor = panel.color
+        for key, p in pairs(geo.panels) do
+            if p.color == destroyedColor then
+                p.symbolHp = -1 -- Mark as destroyed
+            end
+        end
+        -- Emit event
+        if pixos.emit_event then
+            pixos.emit_event('geo:destroyed', { color = destroyedColor, x = x, y = y })
+        end
+        return true
+    end
+    return false
+end
+
+-- Get all panel positions for highlighting
+-- Returns array of {x, y, color}
+function Geo.getAllPanels(geo)
+    local result = {}
+    for key, panel in pairs(geo.panels) do
+        if panel.symbolHp >= 0 then
+            local x, y = key:match('([^,]+),([^,]+)')
+            table.insert(result, {
+                x = tonumber(x),
+                y = tonumber(y),
+                color = panel.color,
+            })
+        end
+    end
+    return result
+end
+
+return Geo
