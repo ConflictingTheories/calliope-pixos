@@ -472,10 +472,41 @@ export default class Sprite extends Loadable {
           colorMultiplier: this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1],
         });
       } else {
-        rm.shaderProgram.setMatrixUniforms({
-          id: this.getPickingId(),
-          sampler: 1.0,
-        });
+        // Check if this sprite is highlighted by script (highlight_units API)
+        // zone._highlightedUnits is array of unit IDs or {id} objects
+        // zone._highlightStyle determines the color
+        let highlightColor = null;
+        const hlUnits = this.zone?._highlightedUnits;
+        if (hlUnits && hlUnits.length && this.id) {
+          const isHighlighted = hlUnits.some(u => {
+            const uid = typeof u === 'string' ? u : u.id || u.unitId;
+            return uid === this.id;
+          });
+          if (isHighlighted) {
+            // Use style-based color, default to targetable red
+            const styleColors = {
+              selectable: [0.3, 0.8, 0.3, 0.6],
+              targetable: [0.8, 0.3, 0.3, 0.6],
+              targeted: [1.0, 0.2, 0.2, 0.8],
+              move: [0.3, 0.8, 0.3, 0.5],
+            };
+            const style = this.zone._highlightStyle || 'targetable';
+            highlightColor = styleColors[style] || styleColors.targetable;
+          }
+        }
+        if (highlightColor) {
+          rm.shaderProgram.setMatrixUniforms({
+            id: this.getPickingId(),
+            isSelected: true,
+            sampler: 1.0,
+            colorMultiplier: highlightColor,
+          });
+        } else {
+          rm.shaderProgram.setMatrixUniforms({
+            id: this.getPickingId(),
+            sampler: 1.0,
+          });
+        }
       }
     }
 

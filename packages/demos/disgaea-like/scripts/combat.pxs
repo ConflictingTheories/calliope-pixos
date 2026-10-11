@@ -1,0 +1,171 @@
+-- Combat system for Disgaea-like tactical RPG
+-- Damage formulas, hit chance, counterattacks, EXP distribution
+
+local Combat = {}
+
+-- Calculate hit chance (0-100)
+-- HIT vs target SPD, with base 90% and clamping
+function Combat.hitChance(attacker, defender)
+    local hit = attacker.stats.hit or 0
+    local spd = defender.stats.spd or 0
+    -- Base 90%, +2% per HIT over target SPD, -2% per SPD over attacker HIT
+    local chance = 90 + (hit - spd) * 2
+    -- Clamp between 5% and 100%
+    if chance < 5 then chance = 5 end
+    if chance > 100 then chance = 100 end
+    return chance
+end
+
+-- Calculate damage
+-- ATK vs DEF with variance, geo panel modifiers
+function Combat.calculateDamage(attacker, defender, geoModAtk, geoModDef)
+    local atk = attacker.stats.atk or 0
+    local def = defender.stats.def or 0
+
+    -- Apply geo panel modifiers (e.g., +50% ATK)
+    if geoModAtk then
+        atk = math.floor(atk * (1 + geoModAtk))
+    end
+    if geoModDef then
+        def = math.floor(def * (1 + geoModDef))
+    end
+
+    -- Base damage: ATK - DEF/2, minimum 1
+    local base = atk - math.floor(def / 2)
+    if base < 1 then base = 1 end
+
+    -- Variance: ±20%
+    local variance = 0.8 + math.random() * 0.4
+    local damage = math.floor(base * variance)
+    if damage < 1 then damage = 1 end
+
+    -- Critical hit: 10% chance, 1.5x damage
+    local isCrit = math.random() < 0.10
+    if isCrit then
+        damage = math.floor(damage * 1.5)
+    end
+
+    return damage, isCrit
+end
+
+-- Perform an attack
+-- Returns: { hit, damage, isCrit, killed, expGained }
+function Combat.attack(attacker, defender, geo)
+    local result = { hit = false, damage = 0, isCrit = false, killed = false, expGained = 0 }
+
+    -- Check hit
+    local chance = Combat.hitChance(attacker, defender)
+    local roll = math.random() * 100
+    if roll > chance then
+        -- Miss!
+        return result
+    end
+    result.hit = true
+
+    -- Get geo modifiers for attacker/defender positions
+    local geoModAtk, geoModDef = nil, nil
+    if geo then
+        geoModAtk = geo.getAtkModifier(geo, attacker.x, attacker.y)
+        geoModDef = geo.getDefModifier(geo, defender.x, defender.y)
+    end
+
+    -- Calculate and apply damage
+    local damage, isCrit = Combat.calculateDamage(attacker, defender, geoModAtk, geoModDef)
+    result.damage = damage
+    result.isCrit = isCrit
+
+    defender.stats.hp = defender.stats.hp - damage
+    if defender.stats.hp < 0 then defender.stats.hp = 0 end
+
+    -- Check for kill
+    if defender.stats.hp <= 0 then
+        result.killed = true
+        -- EXP: based on level difference
+        -- Base 10 EXP, +2 per level defender is above attacker
+        local levelDiff = defender.level - attacker.level
+        local exp = 10 + levelDiff * 2
+        if exp < 5 then exp = 5 end
+        result.expGained = exp
+
+        -- Emit death event
+        if pixos.emit_event then
+            pixos.emit_event('unit:death', {
+                unitId = defender.id,
+                killerId = attacker.id,
+                team = defender.team,
+            })
+        end
+    end
+
+    -- Emit damage event
+    if pixos.emit_event then
+        pixos.emit_event('unit:damaged', {
+            attackerId = attacker.id,
+            defenderId = defender.id,
+            damage = damage,
+            isCrit = isCrit,
+        })
+    end
+
+    return result
+end
+
+-- Check if defender can counterattack
+-- Must be alive, in range, and not yet acted this turn
+function Combat.canCounter(defender, attacker)
+    if defender.stats.hp <= 0 then return false end
+    if defender.acted then return false end
+    -- Check range (Manhattan distance)
+    local dist = math.abs(defender.x - attacker.x) + math.abs(defender.y - attacker.y)
+    return dist <= defender.range
+end
+
+-- Distribute EXP to all living player units (or just killer)
+-- Disgaea gives EXP to killer; we'll do killer + half to others
+function Combat.distributeExp(units, killerId, totalExp, Character)
+    local killer = units[killerId]
+    if not killer then return {} end
+
+    local leveledUp = {}
+
+    -- Killer gets full EXP
+    local levels = Character.gainExp(killer, totalExp)
+    if levels > 0 then
+        table.insert(leveledUp, { id = killerId, levels = levels })
+    end
+
+    -- Other living player units get half (rounded down)
+    local sharedExp = math.floor(totalExp / 2)
+    if sharedExp > 0 then
+        for id, unit in pairs(units) do
+            if id ~= killerId and unit.team == 'player' and unit.stats.hp > 0 then
+                local lv = Character.gainExp(unit, sharedExp)
+                if lv > 0 then
+                    table.insert(leveledUp, { id = id, levels = lv })
+                end
+            end
+        end
+    end
+
+    return leveledUp
+end
+
+-- Check win/lose conditions
+-- Returns 'victory', 'defeat', or nil
+function Combat.checkVictory(units)
+    local playersAlive, enemiesAlive = 0, 0
+    for _, unit in pairs(units) do
+        if unit.stats.hp > 0 then
+            if unit.team == 'player' then
+                playersAlive = playersAlive + 1
+            else
+                enemiesAlive = enemiesAlive + 1
+            end
+        end
+    end
+    if enemiesAlive == 0 then return 'victory' end
+    if playersAlive == 0 then return 'defeat' end
+    return nil
+end
+
+return Combat

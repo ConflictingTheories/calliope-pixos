@@ -1,0 +1,103 @@
+-- Turn order system for Disgaea-like tactical RPG
+-- SPD-based initiative queue, player phase → enemy phase
+
+local Turns = {}
+
+-- Build initiative order sorted by SPD (highest first)
+-- Ties broken by team (players first), then by id
+function Turns.buildInitiative(units)
+    local order = {}
+    for id, unit in pairs(units) do
+        if unit.stats.hp > 0 then
+            table.insert(order, id)
+        end
+    end
+    table.sort(order, function(a, b)
+        local ua, ub = units[a], units[b]
+        local spdA = ua.stats.spd or 0
+        local spdB = ub.stats.spd or 0
+        if spdA ~= spdB then
+            return spdA > spdB
+        end
+        -- Players go first on ties
+        if ua.team ~= ub.team then
+            return ua.team == 'player'
+        end
+        return a < b
+    end)
+    return order
+end
+
+-- Create a new turn manager
+function Turns.create(units)
+    return {
+        units = units,
+        initiative = Turns.buildInitiative(units),
+        currentIndex = 1,
+        round = 1,
+        phase = 'player', -- 'player' or 'enemy'
+    }
+end
+
+-- Get the currently active unit
+function Turns.currentUnit(tm)
+    local id = tm.initiative[tm.currentIndex]
+    if not id then return nil end
+    return tm.units[id]
+end
+
+-- Advance to next unit, handling round transitions
+function Turns.advance(tm)
+    tm.currentIndex = tm.currentIndex + 1
+    if tm.currentIndex > #tm.initiative then
+        -- New round
+        tm.currentIndex = 1
+        tm.round = tm.round + 1
+        -- Reset acted flags for all living units
+        for _, unit in pairs(tm.units) do
+            if unit.stats.hp > 0 then
+                unit.acted = false
+                unit.moved = false
+            end
+        end
+        -- Rebuild initiative (SPD may have changed, units may have died)
+        tm.initiative = Turns.buildInitiative(tm.units)
+        -- Emit turn event
+        if pixos.emit_event then
+            pixos.emit_event('turn:round_start', { round = tm.round })
+        end
+    end
+    local unit = Turns.currentUnit(tm)
+    if unit then
+        tm.phase = unit.team == 'player' and 'player' or 'enemy'
+        if pixos.emit_event then
+            pixos.emit_event('turn:start', { unitId = unit.id, team = unit.team, round = tm.round })
+        end
+    end
+    return unit
+end
+
+-- Skip dead units
+function Turns.skipDead(tm)
+    local unit = Turns.currentUnit(tm)
+    local guard = 0
+    while unit and unit.stats.hp <= 0 and guard < 100 do
+        Turns.advance(tm)
+        unit = Turns.currentUnit(tm)
+        guard = guard + 1
+    end
+    return unit
+end
+
+-- Check if all units of a team have acted
+function Turns.teamDone(tm, team)
+    for _, id in ipairs(tm.initiative) do
+        local unit = tm.units[id]
+        if unit.team == team and unit.stats.hp > 0 and not unit.acted then
+            return false
+        end
+    end
+    return true
+end
+
+return Turns

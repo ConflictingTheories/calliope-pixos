@@ -209,9 +209,11 @@ export default class Zone extends Loadable {
    */
   load = async () => {
     try {
-      const mapModule = await import(
-        '../../../../spritz/' + this.spritzName + '/maps/' + this.id + '/map.js'
-      );
+      // Dynamic map loading for game runtime (not used in editor).
+      // Constructed via array join to avoid static analysis by bundlers.
+      const pathParts = ['../../../../spritz', this.spritzName, 'maps', this.id, 'map.js'];
+      const mapPath = pathParts.join('/');
+      const mapModule = await import(/* @vite-ignore */ mapPath);
       const data = mapModule.default;
       Object.assign(this, data);
 
@@ -331,6 +333,27 @@ export default class Zone extends Loadable {
       interpreter.setScope({ zone: this, map: this, _this: this });
       interpreter.initLibrary();
 
+      // Auto-register shared script modules from scripts/ folder for require()
+      // This allows games to organize code into modules (e.g., scripts/character.pxs)
+      // Generic engine capability, not game-specific.
+      try {
+        const scriptFiles = zip.file(/scripts\/.*\.pxs$/);
+        if (scriptFiles && scriptFiles.length) {
+          for (const sf of scriptFiles) {
+            const content = await sf.async('string');
+            // Register under multiple path variants for flexible require()
+            const fullPath = sf.name; // e.g., "scripts/character.pxs"
+            const baseName = fullPath.replace(/^scripts\//, '').replace(/\.pxs$/, '');
+            interpreter.registerScript(fullPath, content);
+            interpreter.registerScript(baseName, content);
+            interpreter.registerScript('scripts/' + baseName, content);
+          }
+          debug('Zone', `Registered ${scriptFiles.length} script modules`);
+        }
+      } catch (e) {
+        console.warn('Script module registration failed', e);
+      }
+
       const handlers = {};
       if (setupFile) {
         const script = await setupFile.async('string');
@@ -338,34 +361,46 @@ export default class Zone extends Loadable {
         debug('Zone', 'loadModeFromZip: running setup.pxs for mode', modeName);
         await interpreter.run(script);
       }
-      // If update file exists, load it as a function and register as handler
+      // If update file exists, load it as a function and register as handler.
+      // The update chunk is executed ONCE in the mode's interpreter; the
+      // returned function is cached and invoked each frame. _G persists in
+      // the interpreter's env across setup/update/teardown, so mode scripts
+      // can keep state (e.g. _G.battle) between frames.
       if (updateFile) {
         const updateScript = await updateFile.async('string');
-        // wrap as a function and register to call on each frame via ModeManager
-        // We return a JS function that executes the Lua chunk each time
-        handlers.update = async (time, params) => {
-          try {
-            // create a fresh interpreter env for update to avoid state bleed
-            const ui = new PixoScriptInterpreter(this.engine);
-            ui.setScope({ zone: this, map: this, _this: this, time, params });
-            ui.initLibrary();
-            // The update.pxs is expected to return a function
-            const res = await ui.run(updateScript);
-            // If the script returned a callable (Lua function) we invoke it
-            if (typeof res === 'function') res(time, params);
-          } catch (e) {
-            console.warn('mode update exec failed', e);
-          }
-        };
+        let updateFn = null;
+        try {
+          const res = await interpreter.run(updateScript);
+          if (typeof res === 'function') updateFn = res;
+        } catch (e) {
+          console.warn('mode update chunk failed for mode', modeName, e);
+        }
+        if (updateFn) {
+          handlers.update = async (time, params) => {
+            try {
+              await updateFn(time, params);
+            } catch (e) {
+              console.warn('mode update exec failed', e);
+            }
+          };
+        } else {
+          // Chunk did not return a function: re-run it each frame in the
+          // SAME interpreter so _G state still persists.
+          handlers.update = async (time, params) => {
+            try {
+              await interpreter.run(updateScript);
+            } catch (e) {
+              console.warn('mode update exec failed', e);
+            }
+          };
+        }
       }
       if (teardownFile) {
         const tdScript = await teardownFile.async('string');
         handlers.teardown = async params => {
           try {
-            const td = new PixoScriptInterpreter(this.engine);
-            td.setScope({ zone: this });
-            td.initLibrary();
-            const res = await td.run(tdScript);
+            // Reuse the mode's interpreter so teardown sees the mode's _G.
+            const res = await interpreter.run(tdScript);
             // if there is a returned callback, we can run it
             if (typeof res === 'function') res(params);
           } catch (e) {
@@ -376,9 +411,16 @@ export default class Zone extends Loadable {
 
       // If the setup script used pixos.register_mode, the ModeManager will
       // already have the registration. But ensure we add handlers if not.
-      if (world && world.modeManager) {
-        const existing = world.modeManager.registered[modeName];
-        if (!existing) world.modeManager.register(modeName, handlers);
+      // Use engine.modeManager (not world.modeManager) because the engine's
+      // game loop calls engine.modeManager.update() each frame.
+      const mm = this.engine?.modeManager || world?.modeManager;
+      if (mm) {
+        // Always (re-)register: a zone reload must get fresh handlers with a
+        // fresh _G. Reusing stale handlers would resurrect old mode state
+        // (e.g. hub's _G.enteringBattle staying true after battle→hub).
+        mm.register(modeName, handlers);
+        // Activate the mode so its update handler runs each frame
+        await mm.set(modeName, {});
       }
     } catch (e) {
       console.warn('loadModeFromZip failed', modeName, e);
@@ -957,11 +999,17 @@ export default class Zone extends Loadable {
       if (rm.isPickerPass) {
         pickerProgram.setMatrixUniforms({ id });
       } else {
+        // Check if this cell is highlighted by script (highlight_tiles API)
+        const isHighlighted = this._highlightedTileSet
+          ? this._highlightedTileSet.has(`${row},${cell}`)
+          : false;
+        // Use script highlight color for highlighted cells, default otherwise
+        const cellColor = isHighlighted && this._highlight ? this._highlight : highlight;
         shaderProgram.setMatrixUniforms({
           id,
           isSelected: selectedSet ? selectedSet.has(`${row},${cell}`) : false,
           sampler: 1.0,
-          colorMultiplier: highlight,
+          colorMultiplier: cellColor,
         });
       }
       gl.drawArrays(gl.TRIANGLES, 0, vPos.numItems);
@@ -1017,7 +1065,25 @@ export default class Zone extends Loadable {
     // Build selected set once per frame
     const sel = this.selectedTiles;
     this.selectedSet = sel && sel.length ? new Set(sel.map(t => `${t[0]},${t[1]}`)) : null;
-    this.highlight = this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    // Build highlight set from script API (highlight_tiles)
+    // Script sets zone._highlightedTiles as array of {x, y} or [x, y]
+    // and zone._highlight as [r, g, b, a] color
+    const hlTiles = this._highlightedTiles;
+    this._highlightedTileSet = null;
+    if (hlTiles && hlTiles.length) {
+      this._highlightedTileSet = new Set(
+        hlTiles.map(t => {
+          const x = t.x !== undefined ? t.x : t[0];
+          const y = t.y !== undefined ? t.y : t[1];
+          // Note: drawRow uses (row, cell) where row=y, cell=x
+          return `${y},${x}`;
+        })
+      );
+    }
+    // Only use the flashing default highlight if script hasn't set one
+    if (!this._highlightedTileSet) {
+      this.highlight = this.engine.frameCount & 0x8 ? [1, 0, 0, 1] : [1, 1, 0, 1];
+    }
 
     // look into this
     const ensureSortedByY = arr => {

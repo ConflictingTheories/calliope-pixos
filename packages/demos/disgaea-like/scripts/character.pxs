@@ -1,0 +1,140 @@
+-- Character system for Disgaea-like tactical RPG
+-- Stats: HP, SP, ATK, DEF, INT, RES, HIT, SPD
+-- Classes with different stat growths, EXP and leveling
+
+local Character = {}
+
+-- Class definitions with base stats and growth rates
+-- Growth is the amount gained per level
+Character.CLASSES = {
+    warrior = {
+        name = 'Warrior',
+        base = { hp = 35, sp = 10, atk = 12, def = 10, int = 4, res = 6, hit = 8, spd = 6 },
+        growth = { hp = 8, sp = 2, atk = 3, def = 2, int = 1, res = 1, hit = 2, spd = 1 },
+        move = 4,
+        range = 1,
+        weapon = 'sword',
+    },
+    mage = {
+        name = 'Mage',
+        base = { hp = 22, sp = 25, atk = 5, def = 5, int = 14, res = 10, hit = 7, spd = 5 },
+        growth = { hp = 5, sp = 5, atk = 1, def = 1, int = 3, res = 2, hit = 1, spd = 1 },
+        move = 3,
+        range = 3,
+        weapon = 'staff',
+    },
+    archer = {
+        name = 'Archer',
+        base = { hp = 28, sp = 12, atk = 10, def = 7, int = 6, res = 7, hit = 12, spd = 9 },
+        growth = { hp = 6, sp = 2, atk = 2, def = 1, int = 1, res = 1, hit = 3, spd = 2 },
+        move = 5,
+        range = 4,
+        weapon = 'bow',
+    },
+    goblin = {
+        name = 'Goblin',
+        base = { hp = 20, sp = 5, atk = 7, def = 5, int = 3, res = 4, hit = 6, spd = 7 },
+        growth = { hp = 4, sp = 1, atk = 2, def = 1, int = 1, res = 1, hit = 1, spd = 1 },
+        move = 4,
+        range = 1,
+        weapon = 'club',
+    },
+    orc = {
+        name = 'Orc',
+        base = { hp = 45, sp = 8, atk = 11, def = 9, int = 3, res = 5, hit = 6, spd = 4 },
+        growth = { hp = 9, sp = 1, atk = 2, def = 2, int = 1, res = 1, hit = 1, spd = 1 },
+        move = 3,
+        range = 1,
+        weapon = 'axe',
+    },
+}
+
+-- EXP required for level N (cumulative)
+function Character.expForLevel(level)
+    -- Disgaea-like curve: exp = 10 * level^2
+    return math.floor(10 * level * level)
+end
+
+-- Create a new character
+function Character.create(id, className, level, team, x, y)
+    local classDef = Character.CLASSES[className]
+    if not classDef then
+        error('Unknown class: ' .. tostring(className))
+    end
+    level = level or 1
+
+    local stats = {}
+    for stat, baseVal in pairs(classDef.base) do
+        local growthVal = classDef.growth[stat] or 0
+        stats[stat] = baseVal + growthVal * (level - 1)
+    end
+
+    return {
+        id = id,
+        className = className,
+        classTitle = classDef.name,
+        level = level,
+        exp = 0,
+        team = team, -- 'player' or 'enemy'
+        x = x,
+        y = y,
+        stats = stats,
+        maxHp = stats.hp,
+        maxSp = stats.sp,
+        move = classDef.move,
+        range = classDef.range,
+        weapon = classDef.weapon,
+        acted = false,
+        moved = false,
+    }
+end
+
+-- Gain EXP, handle level-ups
+-- Returns number of levels gained
+function Character.gainExp(char, amount)
+    char.exp = char.exp + amount
+    local levelsGained = 0
+    while char.exp >= Character.expForLevel(char.level + 1) do
+        char.level = char.level + 1
+        levelsGained = levelsGained + 1
+        -- Apply growth
+        local classDef = Character.CLASSES[char.className]
+        for stat, growthVal in pairs(classDef.growth) do
+            char.stats[stat] = char.stats[stat] + growthVal
+        end
+        -- Update max HP/SP, heal the gained amount
+        local hpGain = classDef.growth.hp or 0
+        local spGain = classDef.growth.sp or 0
+        char.maxHp = char.stats.hp
+        char.maxSp = char.stats.sp
+        char.stats.hp = math.min(char.stats.hp + hpGain, char.maxHp)
+        char.stats.sp = math.min(char.stats.sp + spGain, char.maxSp)
+    end
+    return levelsGained
+end
+
+-- Check if character is alive
+function Character.isAlive(char)
+    return char.stats.hp > 0
+end
+
+-- Get effective stat (base + equipment + geo panel modifiers)
+-- equipment and geoMod are optional tables
+function Character.getStat(char, statName, equipment, geoMod)
+    local base = char.stats[statName] or 0
+    local equipBonus = 0
+    if equipment then
+        for _, item in pairs(equipment) do
+            if item.modifiers and item.modifiers[statName] then
+                equipBonus = equipBonus + item.modifiers[statName]
+            end
+        end
+    end
+    local geoBonus = 0
+    if geoMod and geoMod[statName] then
+        geoBonus = math.floor(base * geoMod[statName])
+    end
+    return base + equipBonus + geoBonus
+end
+
+return Character

@@ -1,0 +1,93 @@
+-- Enemy AI for Disgaea-like tactical RPG
+-- Simple tactical AI: move toward nearest player, attack if in range
+
+local AI = {}
+
+-- Find nearest living player unit (Manhattan distance)
+function AI.findNearestPlayer(unit, units)
+    local nearest = nil
+    local bestDist = 999999
+    for _, u in pairs(units) do
+        if u.team == 'player' and u.stats.hp > 0 then
+            local dist = math.abs(unit.x - u.x) + math.abs(unit.y - u.y)
+            if dist < bestDist then
+                bestDist = dist
+                nearest = u
+            end
+        end
+    end
+    return nearest, bestDist
+end
+
+-- Check if target is in attack range
+function AI.inRange(unit, target)
+    local dist = math.abs(unit.x - target.x) + math.abs(unit.y - target.y)
+    return dist <= unit.range
+end
+
+-- AI take turn: move toward player, attack if possible
+-- Returns: 'moved', 'attacked', 'waited', or 'done'
+function AI.takeTurn(unit, units, Movement, Combat, Geo, mapWidth, mapHeight, isWalkable)
+    if unit.stats.hp <= 0 then return 'done' end
+    if unit.acted then return 'done' end
+
+    local target, dist = AI.findNearestPlayer(unit, units)
+    if not target then
+        unit.acted = true
+        return 'waited' -- No players alive
+    end
+
+    -- If in range, attack
+    if AI.inRange(unit, target) then
+        local result = Combat.attack(unit, target, Geo)
+        unit.acted = true
+        -- Check for counterattack
+        if result.hit and target.stats.hp > 0 and Combat.canCounter(target, unit) then
+            Combat.attack(target, unit, Geo)
+        end
+        return 'attacked'
+    end
+
+    -- Move toward target
+    -- Find best reachable tile that minimizes distance to target
+    local moveRange = Movement.getMoveRange(unit, units, mapWidth, mapHeight, isWalkable)
+    if #moveRange == 0 then
+        unit.acted = true
+        return 'waited' -- Nowhere to move
+    end
+
+    local bestTile = nil
+    local bestDist = dist
+    for _, tile in ipairs(moveRange) do
+        local d = math.abs(tile.x - target.x) + math.abs(tile.y - target.y)
+        -- Don't move onto target's tile, prefer tiles in attack range
+        if d < bestDist then
+            -- Check if this tile is in attack range of target
+            local inAtkRange = d <= unit.range
+            -- Prefer tiles that get us in range
+            if inAtkRange or not bestTile then
+                bestDist = d
+                bestTile = tile
+                if inAtkRange then break end
+            end
+        end
+    end
+
+    if bestTile then
+        Movement.moveUnit(unit, bestTile.x, bestTile.y, units)
+        -- After moving, check if we can attack
+        if AI.inRange(unit, target) then
+            local result = Combat.attack(unit, target, Geo)
+            unit.acted = true
+            if result.hit and target.stats.hp > 0 and Combat.canCounter(target, unit) then
+                Combat.attack(target, unit, Geo)
+            end
+            return 'attacked'
+        end
+    end
+
+    unit.acted = true
+    return 'moved'
+end
+
+return AI
