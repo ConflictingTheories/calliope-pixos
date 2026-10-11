@@ -1,0 +1,21 @@
+{
+  "id": "zone-1",
+  "name": "First Zone",
+  "tileset": "tileset-1",
+  "bounds": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+  },
+  "tileSize": 16,
+  "layers": [
+    {
+      "id": "ground",
+      "tiles": []
+    }
+  ],
+  "scripts": [
+    "scripts/main.pxs"
+  ]
+}

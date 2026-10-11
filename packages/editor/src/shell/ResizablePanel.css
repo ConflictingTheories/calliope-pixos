@@ -1,0 +1,49 @@
+/*
+ * ---------------------------------------------------------------
+ *            PixoSpritz – Editor – ResizablePanel styles
+ * ---------------------------------------------------------------
+ */
+
+.resizable-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  /* NOTE: no overflow:hidden here — the drag handle sits on the edge
+     and must remain hit-testable. Content clipping is handled by
+     .resizable-panel__content. */
+}
+
+.resizable-panel__content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.resizable-panel__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  background: transparent;
+  z-index: 5;
+  transition: background 0.15s ease;
+}
+
+.resizable-panel__handle--right {
+  right: -4px;
+}
+
+.resizable-panel__handle--left {
+  left: -4px;
+}
+
+.resizable-panel__handle:hover,
+.resizable-panel__handle.is-dragging {
+  background: var(--color-border-strong, #4a4a52);
+}

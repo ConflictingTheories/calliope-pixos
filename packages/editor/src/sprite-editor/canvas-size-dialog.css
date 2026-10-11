@@ -1,0 +1,172 @@
+/**
+ * ---------------------------------------------------------------
+ *                 PixoSpritz – CanvasSizeDialog Styles
+ * ---------------------------------------------------------------
+ */
+
+.canvas-size-dialog .rs-modal-content {
+  background: #1a1a2e;
+}
+
+.canvas-size-dialog__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.canvas-size-dialog__info {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.canvas-size-dialog__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.canvas-size-dialog__row > label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 60px;
+}
+
+.canvas-size-dialog__dimensions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.canvas-size-dialog__dimension {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.canvas-size-dialog__dimension > label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.canvas-size-dialog__dimension > span {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.canvas-size-dialog__lock {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.canvas-size-dialog__lock:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.canvas-size-dialog__lock--active {
+  background: rgba(125, 211, 252, 0.2);
+  border-color: rgba(125, 211, 252, 0.4);
+}
+
+.canvas-size-dialog__anchor-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.canvas-size-dialog__anchor-section > label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 60px;
+  padding-top: 8px;
+}
+
+.canvas-size-dialog__anchor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.canvas-size-dialog__anchor-row {
+  display: flex;
+  gap: 2px;
+}
+
+.canvas-size-dialog__anchor-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.canvas-size-dialog__anchor-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.canvas-size-dialog__anchor-btn--active {
+  background: rgba(125, 211, 252, 0.3);
+  border-color: rgba(125, 211, 252, 0.6);
+}
+
+.canvas-size-dialog__anchor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.canvas-size-dialog__anchor-btn--active .canvas-size-dialog__anchor-dot {
+  background: #7dd3fc;
+}
+
+.canvas-size-dialog__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+.canvas-size-dialog__preview-outer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-size-dialog__preview-current {
+  position: absolute;
+  background: rgba(255, 100, 100, 0.3);
+  border: 1px dashed rgba(255, 100, 100, 0.6);
+}
+
+.canvas-size-dialog__preview-new {
+  position: absolute;
+  background: rgba(100, 200, 255, 0.2);
+  border: 2px solid rgba(100, 200, 255, 0.8);
+}
+
+.canvas-size-dialog__preview-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}

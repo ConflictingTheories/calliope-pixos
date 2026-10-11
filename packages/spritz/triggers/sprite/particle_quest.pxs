@@ -1,0 +1,188 @@
+-- Particle Quest NPC
+-- Dynamic quest with multiple states and particle rewards
+
+local npc = pixos.get_caller();
+local player = pixos.get_subject();
+local state = pixos.get_state() or {};
+
+local npc_pos = pixos.from(npc, 'pos');
+local quest_state = pixos.from(npc, 'questState') or 'not_started';
+
+pixos.log(pixos.as_obj({ msg = 'Quest NPC interaction', questState = quest_state, crystals = state.crystalsActivated }));
+
+-- Greeting particles
+pixos.emit_particles(npc_pos, {
+    count = 10,
+    life = 800,
+    speed = 0.02,
+    spread = 0.8,
+    size = 0.08,
+    color = { 0.9, 0.7, 1.0 },
+    gravity = { 0, 0, 0.001 },
+    drag = 0.98
+});
+
+-- Quest logic based on state
+if quest_state == 'not_started' then
+    -- Start quest dialogue
+    local steps = {
+        {
+            type = 'dialogue',
+            speaker = 'Mystic Sage',
+            text = 'Greetings, traveler. I am the keeper of this ancient chamber.'
+        },
+        {
+            type = 'dialogue',
+            speaker = 'Mystic Sage',
+            text = 'Four crystals guard the passage ahead. They must be activated in the correct order.'
+        },
+        {
+            type = 'dialogue',
+            speaker = 'Mystic Sage',
+            text = 'Begin with Blue in the north, then Red, Green, and finally Golden Yellow.'
+        },
+        {
+            type = 'dialogue',
+            speaker = 'Mystic Sage',
+            text = 'The fountain at the center holds restorative waters. The orb controls the weather itself!'
+        }
+    };
+    
+    pixos.run_cutscene(steps);
+    pixos.set(npc, 'questState', 'in_progress');
+    
+elseif quest_state == 'in_progress' then
+    -- Check progress
+    local crystals = state.crystalsActivated or 0;
+    
+    if crystals == 0 then
+        pixos.show_dialogue({
+            speaker = 'Mystic Sage',
+            text = 'The crystals remain dormant. Start with the Blue crystal to the northwest.'
+        });
+    elseif crystals == 1 then
+        pixos.show_dialogue({
+            speaker = 'Mystic Sage',
+            text = 'One crystal awakened! The Red crystal to the northeast awaits.'
+        });
+        -- Encouragement particles
+        pixos.emit_particles(npc_pos, {
+            count = 15,
+            life = 1200,
+            speed = 0.03,
+            spread = 1.2,
+            size = 0.1,
+            color = { 0.2, 0.6, 1.0 },
+            gravity = { 0, 0, 0.001 }
+        });
+    elseif crystals == 2 then
+        pixos.show_dialogue({
+            speaker = 'Mystic Sage',
+            text = 'Halfway there! The Green crystal to the southwest pulses with anticipation.'
+        });
+        pixos.emit_particles(npc_pos, {
+            count = 15,
+            life = 1200,
+            speed = 0.03,
+            spread = 1.2,
+            size = 0.1,
+            color = { 1.0, 0.3, 0.3 },
+            gravity = { 0, 0, 0.001 }
+        });
+    elseif crystals == 3 then
+        pixos.show_dialogue({
+            speaker = 'Mystic Sage',
+            text = 'Almost complete! The final Golden crystal to the southeast holds the key!'
+        });
+        pixos.emit_particles(npc_pos, {
+            count = 20,
+            life = 1500,
+            speed = 0.04,
+            spread = 1.5,
+            size = 0.12,
+            color = { 0.3, 1.0, 0.3 },
+            gravity = { 0, 0, 0.001 }
+        });
+    elseif crystals >= 4 then
+        -- Quest complete!
+        pixos.set(npc, 'questState', 'complete');
+        state.questComplete = true;
+        pixos.set_state(state);
+        
+        -- Celebration particles
+        for i = 1, 5 do
+            pixos.delay(i * 200, function()
+                local colors = {
+                    { 1.0, 0.3, 0.3 },
+                    { 0.3, 1.0, 0.3 },
+                    { 0.3, 0.3, 1.0 },
+                    { 1.0, 1.0, 0.3 },
+                    { 1.0, 0.3, 1.0 }
+                };
+                pixos.emit_particles(npc_pos, {
+                    count = 25,
+                    life = 2000,
+                    speed = 0.05,
+                    spread = 2.0,
+                    size = 0.15,
+                    color = colors[i],
+                    gravity = { 0, 0, 0.002 }
+                });
+            end);
+        end;
+        
+        local complete_steps = {
+            {
+                type = 'dialogue',
+                speaker = 'Mystic Sage',
+                text = 'MAGNIFICENT! All four crystals shine with their true power!'
+            },
+            {
+                type = 'dialogue',
+                speaker = 'Mystic Sage',
+                text = 'The ancient seal is broken. The path to the inner sanctum is open!'
+            },
+            {
+                type = 'dialogue',
+                speaker = 'Mystic Sage',
+                text = 'Take this blessing with you on your journey ahead.'
+            }
+        };
+        pixos.run_cutscene(complete_steps);
+        
+        -- Reward particles on player
+        local player_pos = pixos.from(player, 'pos');
+        if player_pos then
+            pixos.emit_particles(player_pos, {
+                count = 50,
+                life = 3000,
+                speed = 0.04,
+                spread = 2.0,
+                size = 0.15,
+                color = { 1.0, 0.9, 0.4 },
+                gravity = { 0, 0, 0.001 }
+            });
+        end;
+    end;
+    
+elseif quest_state == 'complete' then
+    -- Already completed
+    pixos.show_dialogue({
+        speaker = 'Mystic Sage',
+        text = 'The path ahead awaits you, champion. May the crystals guide your way.'
+    });
+    
+    -- Blessing particles
+    local player_pos = pixos.from(player, 'pos');
+    if player_pos then
+        pixos.emit_particles(player_pos, {
+            count = 20,
+            life = 1500,
+            speed = 0.02,
+            spread = 1.0,
+            size = 0.1,
+            color = { 0.9, 0.8, 1.0 },
+            gravity = { 0, 0, 0.001 }
+        });
+    end;
+end;

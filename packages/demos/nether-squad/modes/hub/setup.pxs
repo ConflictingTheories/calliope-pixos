@@ -1,0 +1,9 @@
+-- Nether Squad: Hub mode setup
+local world = pixos.get_world()
+local hero = world.spriteDict and world.spriteDict['hero']
+if hero then
+    pixos.bind_camera(hero)
+end
+pixos.show_hud('hub')
+pixos.log('nether-squad: hub ready. Talk to the recruiter!')
+return {}

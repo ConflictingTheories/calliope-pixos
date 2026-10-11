@@ -1,0 +1,68 @@
+/**
+ * Placeholder Styles
+ */
+.px-placeholder {
+  display: flex;
+  gap: 16px;
+}
+
+.px-placeholder-graph {
+  flex-shrink: 0;
+  background: var(--placeholder-bg, #2a2a4a);
+  border-radius: 4px;
+}
+
+.px-placeholder-graph-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.px-placeholder-graph-square {
+  width: 60px;
+  height: 60px;
+}
+
+.px-placeholder-graph-image {
+  width: 80px;
+  height: 60px;
+}
+
+.px-placeholder-rows {
+  flex: 1;
+}
+
+.px-placeholder-row {
+  background: var(--placeholder-bg, #2a2a4a);
+  border-radius: 4px;
+}
+
+.px-placeholder-active .px-placeholder-row,
+.px-placeholder-active .px-placeholder-graph,
+.px-placeholder-active .px-placeholder-grid-item {
+  animation: px-placeholder-shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--placeholder-bg, #2a2a4a) 25%,
+    var(--placeholder-highlight, #3a3a5a) 50%,
+    var(--placeholder-bg, #2a2a4a) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes px-placeholder-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.px-placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.px-placeholder-grid-item {
+  height: 100px;
+  background: var(--placeholder-bg, #2a2a4a);
+  border-radius: 6px;
+}

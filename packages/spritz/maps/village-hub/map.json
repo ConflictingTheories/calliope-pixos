@@ -1,0 +1,266 @@
+{
+  "name": "Village Hub",
+  "description": "The central village where the hero begins their journey",
+  "bounds": [0, 0, 20, 15],
+  "tileset": "village",
+  "audioSrc": "fields.mp3",
+  "mode": "explore",
+
+  "sprites": [
+    {
+      "id": "avatar",
+      "type": "characters/male",
+      "pos": [10, 8, 0],
+      "facing": "Down",
+      "bindCamera": true
+    },
+    {
+      "id": "village-elder",
+      "type": "characters/female",
+      "pos": [5, 5, 0],
+      "facing": "Right",
+      "portraitSrc": "textures/portraits/female_portrait.gif",
+      "selectTrigger": "sprite/village_elder"
+    },
+    {
+      "id": "knight-guard",
+      "type": "npc/air-knight",
+      "pos": [15, 5, 0],
+      "facing": "Left",
+      "portraitSrc": "textures/portraits/knight_portrait.gif",
+      "selectTrigger": "sprite/knight_guard"
+    },
+    {
+      "id": "dungeon-portal",
+      "type": "furniture/portal",
+      "pos": [10, 2, 0],
+      "facing": "Down",
+      "zones": ["dungeon-entrance"],
+      "state": "open"
+    },
+    {
+      "id": "fire-portal",
+      "type": "furniture/portal",
+      "pos": [3, 10, 0],
+      "facing": "Down",
+      "zones": ["fire-chamber"],
+      "state": "closed"
+    },
+    {
+      "id": "water-portal",
+      "type": "furniture/portal",
+      "pos": [17, 10, 0],
+      "facing": "Down",
+      "zones": ["water-chamber"],
+      "state": "closed"
+    },
+    {
+      "id": "village-door",
+      "type": "furniture/door",
+      "pos": [10, 14, 0],
+      "facing": "Down",
+      "zones": ["boss-arena"],
+      "state": "closed"
+    },
+    {
+      "id": "treasure-chest-1",
+      "type": "objects/chests/wood",
+      "pos": [2, 2, 0],
+      "facing": "South",
+      "inventory": ["health_potion", "gold_coin"]
+    },
+    {
+      "id": "treasure-chest-2",
+      "type": "objects/chests/blue",
+      "pos": [18, 2, 0],
+      "facing": "South",
+      "inventory": ["mana_potion", "silver_key"]
+    },
+    {
+      "id": "village-tree-1",
+      "type": "furniture/tree",
+      "pos": [1, 7, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "village-tree-2",
+      "type": "furniture/tree",
+      "pos": [19, 7, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "village-fireplace",
+      "type": "furniture/fireplace",
+      "pos": [10, 5, 0],
+      "facing": "Down"
+    },
+    {
+      "id": "fire-effect",
+      "type": "effects/fireplace",
+      "pos": [10, 5, 0.5],
+      "facing": "Up"
+    },
+    {
+      "id": "particle-demo-portal",
+      "type": "furniture/portal",
+      "pos": [5, 12, 0],
+      "facing": "Down",
+      "zones": ["particle-demo"],
+      "state": "open",
+      "selectTrigger": "sprite/portal_enter"
+    }
+  ],
+
+  "lights": [
+    {
+      "id": "sun-light",
+      "pos": [10, 7, 5],
+      "color": [1.0, 0.95, 0.8],
+      "direction": [0.5, 0.5, 1.0],
+      "attenuation": [0.05, 0.05, 0.02],
+      "enabled": true
+    },
+    {
+      "id": "fire-light",
+      "pos": [10, 5, 1],
+      "color": [1.0, 0.4, 0.1],
+      "direction": [0.0, 0.0, 1.0],
+      "attenuation": [0.1, 0.1, 0.05],
+      "density": 0.3,
+      "enabled": true
+    },
+    {
+      "id": "portal-light-north",
+      "pos": [10, 2, 1],
+      "color": [0.5, 0.2, 1.0],
+      "direction": [0.0, 0.5, 0.5],
+      "attenuation": [0.15, 0.1, 0.05],
+      "enabled": true
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "village-intro",
+      "actions": [
+        {
+          "sprite": "village-elder",
+          "action": "dialogue",
+          "args": [
+            [
+              "Welcome, brave hero!",
+              "The four elemental trials await you.",
+              "Speak to the Knight Guard to learn more."
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "knight-briefing",
+      "actions": [
+        {
+          "sprite": "knight-guard",
+          "action": "dialogue",
+          "args": [
+            [
+              "Greetings, warrior!",
+              "Beyond these portals lie the Elemental Chambers.",
+              "Defeat the Fire, Water, Earth, and Air Elementals.",
+              "Only then will the path to the Dark Lord open."
+            ],
+            false,
+            { "autoclose": true }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "scripts": [
+    {
+      "id": "village-load",
+      "trigger": "zone/village_hub_load"
+    }
+  ],
+
+  "objects": [
+    {
+      "id": "village-well",
+      "type": "cube",
+      "mtl": false,
+      "pos": [7, 10, 0],
+      "useScale": [0.5, 0.5, 0.5]
+    },
+    {
+      "id": "village-bench",
+      "type": "chair",
+      "mtl": true,
+      "pos": [13, 10, 0]
+    },
+    {
+      "id": "village-book",
+      "type": "book",
+      "mtl": true,
+      "pos": [5, 6, 0.5]
+    },
+    {
+      "id": "healing-apple",
+      "type": "apple",
+      "mtl": true,
+      "pos": [15, 6, 0.5]
+    }
+  ],
+
+  "menu": {
+    "main-menu": {
+      "text": "The Elemental Trials",
+      "prompt": "A Hero's Journey Awaits...",
+      "x": 100,
+      "y": 100,
+      "w": 200,
+      "h": 100,
+      "quittable": true,
+      "pausable": true,
+      "onEnter": true,
+      "colours": {
+        "top": "#1a1a2e",
+        "bottom": "#16213e",
+        "background": "#0f3460"
+      },
+      "children": ["start-game", "options"]
+    },
+    "start-game": {
+      "text": "Begin Quest",
+      "x": 100,
+      "y": 220,
+      "w": 150,
+      "h": 50,
+      "quittable": false,
+      "pausable": false,
+      "trigger": "menu/start_game",
+      "colours": {
+        "top": "#2d4a22",
+        "bottom": "#1e3a1a",
+        "background": "#2d4a22"
+      }
+    },
+    "options": {
+      "text": "Options",
+      "x": 100,
+      "y": 290,
+      "w": 150,
+      "h": 50,
+      "quittable": false,
+      "pausable": false,
+      "trigger": "menu/options",
+      "colours": {
+        "top": "#4a3f22",
+        "bottom": "#3a2f1a",
+        "background": "#4a3f22"
+      }
+    }
+  }
+}

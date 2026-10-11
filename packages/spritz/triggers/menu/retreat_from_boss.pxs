@@ -1,0 +1,32 @@
+-- Retreat from Boss Menu Trigger
+-- Player chooses to retreat from the boss arena
+
+pixos.log('Menu trigger: Retreat from Boss selected');
+
+-- Close the menu
+pixos.close_menu();
+
+-- Show retreat dialogue
+pixos.run_scene({
+    {
+        sprite = nil,
+        action = 'dialogue',
+        args = {
+            {
+                "You decide to retreat...",
+                "The Dark Lord's laughter echoes behind you.",
+                "Return when you're ready to face your destiny!"
+            },
+            false,
+            { autoclose = true }
+        }
+    }
+});
+
+-- Teleport back to dungeon entrance
+pixos.remove_all_zones();
+pixos.load_zone('dungeon-entrance');
+
+pixos.log('Retreated from boss arena');
+
+return nil;

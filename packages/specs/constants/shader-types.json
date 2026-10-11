@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/shader-types.json",
+  "title": "Shader Type Constants",
+  "description": "Shared shader type identifiers and configurations",
+
+  "categories": {
+    "core": "Essential rendering shaders",
+    "effect": "Post-processing effects",
+    "transition": "Screen transition effects",
+    "skybox": "Background/skybox shaders",
+    "particle": "Particle system shaders",
+    "utility": "Utility/debug shaders"
+  },
+
+  "shaders": {
+    "core": {
+      "SPRITE": {
+        "description": "Basic sprite rendering with texture",
+        "features": ["texture", "alpha", "tint"]
+      },
+      "SPRITE_LIT": {
+        "description": "Sprite with dynamic lighting",
+        "features": ["texture", "alpha", "tint", "lighting", "normal"]
+      },
+      "TILE": {
+        "description": "Tilemap rendering",
+        "features": ["texture", "atlas"]
+      },
+      "MODEL": {
+        "description": "3D model rendering",
+        "features": ["texture", "lighting", "normal", "shadow"]
+      },
+      "BILLBOARD": {
+        "description": "Camera-facing sprite in 3D space",
+        "features": ["texture", "alpha", "billboard"]
+      }
+    },
+
+    "effect": {
+      "BLUR": {
+        "description": "Gaussian blur",
+        "uniforms": ["uRadius", "uDirection"]
+      },
+      "BLOOM": {
+        "description": "Bloom/glow effect",
+        "uniforms": ["uThreshold", "uIntensity"]
+      },
+      "PIXELATE": {
+        "description": "Pixelation effect",
+        "uniforms": ["uPixelSize"]
+      },
+      "CRT": {
+        "description": "CRT monitor simulation",
+        "uniforms": ["uScanlineIntensity", "uCurvature"]
+      },
+      "VIGNETTE": {
+        "description": "Screen edge darkening",
+        "uniforms": ["uRadius", "uSoftness"]
+      },
+      "COLOR_GRADE": {
+        "description": "Color correction/grading",
+        "uniforms": ["uContrast", "uSaturation", "uBrightness"]
+      },
+      "POSTERIZE": {
+        "description": "Reduce color palette",
+        "uniforms": ["uLevels"]
+      },
+      "OUTLINE": {
+        "description": "Edge detection outline",
+        "uniforms": ["uColor", "uThickness"]
+      },
+      "CHROMATIC": {
+        "description": "Chromatic aberration",
+        "uniforms": ["uOffset"]
+      },
+      "SHAKE": {
+        "description": "Screen shake distortion",
+        "uniforms": ["uIntensity", "uTime"]
+      }
+    },
+
+    "transition": {
+      "FADE": {
+        "description": "Simple fade to color",
+        "uniforms": ["uProgress", "uColor"]
+      },
+      "DISSOLVE": {
+        "description": "Noise-based dissolve",
+        "uniforms": ["uProgress", "uNoise"]
+      },
+      "WIPE": {
+        "description": "Directional wipe",
+        "uniforms": ["uProgress", "uDirection"]
+      },
+      "SLIDE": {
+        "description": "Slide in/out",
+        "uniforms": ["uProgress", "uDirection"]
+      },
+      "IRIS": {
+        "description": "Circular iris open/close",
+        "uniforms": ["uProgress", "uCenter"]
+      },
+      "PIXELATE_TRANSITION": {
+        "description": "Pixelate during transition",
+        "uniforms": ["uProgress"]
+      },
+      "CROSS_BLUR": {
+        "description": "Blur during crossfade",
+        "uniforms": ["uProgress", "uBlurAmount"]
+      },
+      "SWIRL": {
+        "description": "Spiral swirl effect",
+        "uniforms": ["uProgress", "uCenter", "uStrength"]
+      }
+    },
+
+    "skybox": {
+      "SKY_GRADIENT": {
+        "description": "Simple gradient sky",
+        "uniforms": ["uTopColor", "uBottomColor"]
+      },
+      "SKY_STARS": {
+        "description": "Starfield with twinkling",
+        "uniforms": ["uTime", "uDensity"]
+      },
+      "SKY_COSMIC": {
+        "description": "Space nebula effect",
+        "uniforms": ["uTime", "uColors"]
+      },
+      "SKY_MATRIX": {
+        "description": "Matrix code rain effect",
+        "uniforms": ["uTime", "uColor"]
+      },
+      "SKY_MORNING": {
+        "description": "Morning sunrise gradient",
+        "uniforms": ["uTime", "uSunPosition"]
+      },
+      "SKY_NEON": {
+        "description": "Cyberpunk neon grid",
+        "uniforms": ["uTime", "uGridColor"]
+      },
+      "SKY_SUNSET": {
+        "description": "Sunset colors",
+        "uniforms": ["uTime"]
+      }
+    },
+
+    "particle": {
+      "PARTICLE_POINT": {
+        "description": "Point sprite particles",
+        "uniforms": ["uPointSize", "uColor"]
+      },
+      "PARTICLE_QUAD": {
+        "description": "Textured quad particles",
+        "uniforms": ["uTexture", "uColor"]
+      },
+      "PARTICLE_ADDITIVE": {
+        "description": "Additive blending particles",
+        "uniforms": ["uTexture", "uIntensity"]
+      },
+      "PARTICLE_TRAIL": {
+        "description": "Trail/ribbon particles",
+        "uniforms": ["uTexture", "uWidth"]
+      }
+    },
+
+    "utility": {
+      "PICKER": {
+        "description": "Object picking via color ID",
+        "uniforms": ["uObjectId"]
+      },
+      "DEPTH": {
+        "description": "Depth buffer visualization",
+        "uniforms": ["uNear", "uFar"]
+      },
+      "NORMAL": {
+        "description": "Normal map visualization",
+        "uniforms": []
+      },
+      "WIREFRAME": {
+        "description": "Wireframe rendering",
+        "uniforms": ["uColor", "uLineWidth"]
+      }
+    }
+  },
+
+  "uniformTypes": {
+    "float": "Single float value",
+    "vec2": "2-component vector",
+    "vec3": "3-component vector",
+    "vec4": "4-component vector / color",
+    "mat3": "3x3 matrix",
+    "mat4": "4x4 matrix",
+    "sampler2D": "2D texture",
+    "samplerCube": "Cubemap texture",
+    "int": "Integer value",
+    "bool": "Boolean value"
+  },
+
+  "blendModes": {
+    "NORMAL": { "src": "SRC_ALPHA", "dst": "ONE_MINUS_SRC_ALPHA" },
+    "ADDITIVE": { "src": "SRC_ALPHA", "dst": "ONE" },
+    "MULTIPLY": { "src": "DST_COLOR", "dst": "ZERO" },
+    "SCREEN": { "src": "ONE", "dst": "ONE_MINUS_SRC_COLOR" },
+    "PREMULTIPLIED": { "src": "ONE", "dst": "ONE_MINUS_SRC_ALPHA" }
+  }
+}

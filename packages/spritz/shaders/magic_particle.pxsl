@@ -1,0 +1,90 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *                    Magic Particle Shader - PXSL Example
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Beautiful sparkle effect for magic spells, fairy dust, collectibles, etc.
+ * Includes color cycling, size pulsing, and smooth fadeout.
+ * 
+ * Usage in PixoScript:
+ *   create_particle_emitter({
+ *     shader = "magic_particle",
+ *     colors = {{1, 0.8, 0.2}, {0.8, 0.2, 1}},  -- Gold to purple
+ *     lifetime = 2.0,
+ *     emission_rate = 50
+ *   })
+ */
+
+@shader "magic_particle"
+
+@vertex
+input position: vec3
+input uv: vec2
+uniform modelMatrix: mat4
+uniform viewMatrix: mat4
+uniform projectionMatrix: mat4
+uniform particleAge: float
+uniform particleLifetime: float
+uniform particleSize: float
+output vUV: vec2
+output vAge: float
+output vLifetimeRatio: float
+
+main {
+  vUV = uv
+  vAge = particleAge
+  vLifetimeRatio = particleAge / particleLifetime
+  
+  // Pulse size during lifetime
+  let sizePulse = sin(particleAge * 10.0) * 0.2 + 1.0
+  let fadeSize = 1.0 - pow(vLifetimeRatio, 2.0)
+  let finalSize = particleSize * sizePulse * fadeSize
+  
+  // Scale the particle
+  let scaledPos = position * finalSize
+  
+  // Billboard towards camera (particle always faces camera)
+  // This uses the inverse view matrix rotation
+  let worldPos = modelMatrix * vec4(scaledPos, 1.0)
+  
+  gl_Position = projectionMatrix * viewMatrix * worldPos
+}
+
+@fragment
+input vUV: vec2
+input vAge: float
+input vLifetimeRatio: float
+uniform texture: sampler2D
+uniform colorStart: vec3
+uniform colorEnd: vec3
+uniform glowIntensity: float
+output fragColor: vec4
+
+main {
+  // Create soft circular particle
+  let center = vUV - 0.5
+  let dist = length(center) * 2.0
+  
+  // Soft falloff
+  let alpha = 1.0 - smoothstep(0.0, 1.0, dist)
+  alpha = pow(alpha, 1.5)
+  
+  // Fade out over lifetime
+  let lifetimeFade = 1.0 - pow(vLifetimeRatio, 2.0)
+  alpha = alpha * lifetimeFade
+  
+  // Color interpolation over lifetime
+  let colorT = vLifetimeRatio
+  let color = mix(colorStart, colorEnd, colorT)
+  
+  // Add sparkle in the center
+  let sparkle = 1.0 - smoothstep(0.0, 0.2, dist)
+  sparkle = pow(sparkle, 3.0) * glowIntensity
+  color = color + vec3(sparkle)
+  
+  // Slight color variation based on age (twinkle effect)
+  let twinkle = pulse(vAge * 20.0, 1.0)
+  color = brighten(color, twinkle * 0.3)
+  
+  fragColor = vec4(color, alpha)
+}

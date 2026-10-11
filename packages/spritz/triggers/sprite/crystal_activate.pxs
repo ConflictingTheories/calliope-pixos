@@ -1,0 +1,141 @@
+-- Crystal Activation Trigger
+-- When player clicks/selects a crystal, activate it with particle burst
+
+local crystal = pixos.get_caller();
+local player = pixos.get_subject();
+local state = pixos.get_state() or {};
+
+local crystal_id = pixos.from(crystal, 'id');
+local crystal_pos = pixos.from(crystal, 'pos');
+local crystal_color = pixos.from(crystal, 'color') or { 1.0, 1.0, 1.0 };
+local crystal_state = pixos.from(crystal, 'state');
+local required = pixos.from(crystal, 'requiredCount') or 1;
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Crystal activation attempt', 
+    crystal = crystal_id, 
+    currentState = crystal_state,
+    activated = state.crystalsActivated,
+    required = required
+}));
+
+-- Check if already activated
+if crystal_state == 'active' then
+    pixos.show_dialogue({
+        speaker = 'Crystal',
+        text = 'This crystal is already pulsing with magical energy...'
+    });
+    return;
+end;
+
+-- Check if activated in correct order
+if state.crystalsActivated + 1 < required then
+    -- Wrong order - rejection particles
+    pixos.emit_particles(crystal_pos, {
+        count = 20,
+        life = 800,
+        speed = 0.04,
+        spread = 1.0,
+        size = 0.1,
+        color = { 0.5, 0.5, 0.5 },
+        gravity = { 0, -0.002, 0 }
+    });
+    
+    pixos.play_sfx('audio/error.mp3');
+    pixos.show_dialogue({
+        speaker = 'Crystal',
+        text = 'The crystal pulses weakly... Perhaps another crystal must be activated first.'
+    });
+    return;
+end;
+
+-- Activate the crystal!
+pixos.play_sfx('audio/chime.mp3');
+
+-- Big particle burst on activation
+pixos.emit_particles(crystal_pos, {
+    count = 50,
+    life = 2000,
+    speed = 0.06,
+    spread = 2.0,
+    size = 0.2,
+    color = crystal_color,
+    gravity = { 0, 0.001, 0 },
+    drag = 0.97
+});
+
+-- Secondary spiral effect
+for i = 1, 8 do
+    local angle = (i / 8) * 6.28;
+    local offset_pos = {
+        crystal_pos[1] + math.cos(angle) * 0.5,
+        crystal_pos[2] + math.sin(angle) * 0.5,
+        crystal_pos[3] + 0.5
+    };
+    pixos.emit_particles(offset_pos, {
+        count = 5,
+        life = 1500,
+        speed = 0.03,
+        spread = 0.5,
+        size = 0.15,
+        color = crystal_color,
+        gravity = { 0, 0.002, 0 }
+    });
+end;
+
+-- Update crystal state
+pixos.set(crystal, 'state', 'active');
+
+-- Update global state
+state.crystalsActivated = (state.crystalsActivated or 0) + 1;
+pixos.set_state(state);
+
+-- Dialogue response
+local messages = {
+    'The first crystal awakens! Its blue light illuminates the chamber.',
+    'The second crystal blazes with crimson energy!',
+    'The third crystal pulses with verdant life force!',
+    'The final crystal shines with golden radiance! The seal is broken!'
+};
+
+pixos.show_dialogue({
+    speaker = 'Crystal',
+    text = messages[state.crystalsActivated] or 'The crystal pulses with energy.'
+});
+
+-- Check if all crystals activated
+if state.crystalsActivated >= 4 then
+    state.doorUnlocked = true;
+    pixos.set_state(state);
+    
+    -- Unlock door with dramatic effect
+    local door = pixos.get_sprite('secret-door');
+    if door then
+        local door_pos = pixos.from(door, 'pos');
+        
+        -- Door unlock particles
+        pixos.emit_particles(door_pos, {
+            count = 80,
+            life = 3000,
+            speed = 0.05,
+            spread = 2.5,
+            size = 0.25,
+            color = { 1.0, 0.9, 0.5 },
+            gravity = { 0, 0.001, 0 },
+            drag = 0.98
+        });
+        
+        pixos.set(door, 'state', 'open');
+        pixos.play_sfx('audio/door_unlock.mp3');
+        
+        -- Delayed celebration dialogue
+        pixos.delay(1500, function()
+            pixos.show_dialogue({
+                speaker = 'System',
+                text = 'All four crystals have been activated! The ancient seal is broken and the path forward is open!'
+            });
+        end);
+    end;
+end;
+
+pixos.log(pixos.as_obj({ msg = 'Crystal activated', total = state.crystalsActivated }));

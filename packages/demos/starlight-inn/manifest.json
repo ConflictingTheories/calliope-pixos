@@ -1,0 +1,1 @@
+{"description":"A cozy visual-novel-style sample: run an inn, talk to travelers, make choices that matter. Showcases dialog behaviors, flags, and branching narrative.","initialZones":["inn"],"maps":["inn"],"modes":["story"],"title":"Starlight Inn","version":"1.0.0"}

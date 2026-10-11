@@ -1,5 +1,0 @@
-{
-    "name":"debug",
-    "update":"update.lua",
-    "setup": "setup.lua"
-}

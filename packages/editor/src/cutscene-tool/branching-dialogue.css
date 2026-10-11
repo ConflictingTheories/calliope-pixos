@@ -1,0 +1,330 @@
+/**
+ * ---------------------------------------------------------------
+ *                 PixoSpritz – BranchingDialogue Styles
+ * ---------------------------------------------------------------
+ */
+
+.branching-dialogue {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #0a0f1a;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.bd-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bd-toolbar__zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Canvas */
+.bd-canvas {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.bd-canvas:active {
+  cursor: grabbing;
+}
+
+.bd-canvas__content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3000px;
+  height: 3000px;
+}
+
+/* Connections SVG */
+.bd-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Nodes */
+.bd-node {
+  position: absolute;
+  width: 160px;
+  background: rgba(20, 25, 40, 0.95);
+  border: 2px solid #666;
+  border-radius: 8px;
+  cursor: move;
+  user-select: none;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.bd-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bd-node--selected {
+  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.5), 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.bd-node__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px 6px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bd-node__icon {
+  font-size: 14px;
+}
+
+.bd-node__type {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bd-node__delete {
+  background: transparent;
+  border: none;
+  color: rgba(255, 100, 100, 0.6);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.bd-node__delete:hover {
+  color: #ff6666;
+}
+
+.bd-node__body {
+  padding: 8px;
+}
+
+.bd-node__speaker {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7dd3fc;
+  margin-bottom: 4px;
+}
+
+.bd-node__text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+  max-height: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Choice options */
+.bd-node__options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bd-node__option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.bd-node__option-text {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Output connectors */
+.bd-node__output {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.bd-node__output:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bd-node__output--main {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bd-node__output--true {
+  background: rgba(52, 211, 153, 0.3);
+  border-color: #34d399;
+}
+
+.bd-node__output--false {
+  background: rgba(248, 113, 113, 0.3);
+  border-color: #f87171;
+}
+
+/* Condition node */
+.bd-node__condition {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bd-node__condition-expr {
+  font-size: 10px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.bd-node__condition-branches {
+  display: flex;
+  justify-content: space-around;
+}
+
+/* Action node */
+.bd-node__command {
+  font-size: 10px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+/* End node */
+.bd-node__end {
+  text-align: center;
+  font-size: 11px;
+  color: #f87171;
+  font-weight: 600;
+}
+
+/* Connection hint */
+.bd-connecting-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(251, 191, 36, 0.9);
+  color: #000;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Properties Panel */
+.bd-properties {
+  width: 240px;
+  position: absolute;
+  right: 0;
+  top: 48px;
+  bottom: 0;
+  background: rgba(15, 20, 35, 0.98);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.bd-properties__header {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bd-properties__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bd-field > label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bd-option-edit {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+/* Add Node Modal */
+.bd-add-nodes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.bd-add-node-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bd-add-node-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
+}
+
+.bd-add-node-btn__icon {
+  font-size: 24px;
+}
+
+.bd-add-node-btn__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}

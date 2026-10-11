@@ -1,0 +1,114 @@
+/**
+ * PixoSpritz Editor — Multi-document tab bar (UX Phase 1)
+ *
+ * Tabbed documents preserve per-tab tool state: inactive tabs stay
+ * mounted but hidden. Token-driven per the Forge design system.
+ */
+
+.editor-tabbar {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: var(--layout-tabbar-h);
+  flex-shrink: 0;
+  padding: 0 var(--space-2);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.editor-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 200px;
+  min-width: 0;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.editor-tab:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.editor-tab:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.editor-tab.is-active {
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+  border-bottom-color: var(--color-brand-primary);
+}
+
+.editor-tab__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.editor-tab__dirty {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+}
+
+.editor-tab__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.editor-tab:hover .editor-tab__close,
+.editor-tab.is-active .editor-tab__close,
+.editor-tab__close:focus-visible {
+  opacity: 1;
+}
+
+.editor-tab__close:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-active);
+}
+
+/* Tab panels: inactive tabs stay mounted but hidden, preserving tool state. */
+.editor-tabpanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor-tabpanel[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-tab {
+    transition: none;
+  }
+}

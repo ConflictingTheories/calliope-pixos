@@ -1,7 +1,15 @@
 **/node_modules
 **/build
 **/output
+**/dist
 **/.DS_Store
 .DS_Store
 
 **/cpp/CMakeFiles/
+**/*.zip
+**/*.pxz
+# Databases are runtime artifacts, never source (P6-03)
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm

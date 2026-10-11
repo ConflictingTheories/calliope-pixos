@@ -1,0 +1,14 @@
+{
+  "format": "pixozine",
+  "formatVersion": "1.0.0",
+  "version": "1.0.0",
+  "maps": [
+    "zone-1"
+  ],
+  "sprites": [
+    "hero"
+  ],
+  "scripts": [
+    "scripts/main.pxs"
+  ]
+}

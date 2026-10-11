@@ -1,0 +1,46 @@
+-- Zone Enter Cutscene Trigger
+-- This script plays a cutscene when entering a new zone/room
+-- Perfect for story moments, boss intros, or area introductions
+
+local zone = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Zone Enter - Cutscene Trigger', 
+    zone = zone,
+    player = player 
+}));
+
+-- Check if this is the first time entering this zone
+local zone_flag = 'zone_' .. pixos.from(zone, 'id') .. '_intro_seen';
+
+if pixos.has_flag(zone_flag) then
+    pixos.log('Zone intro already seen - skipping cutscene');
+    return;
+end
+
+-- Fade out transition before cutscene
+pixos.sync({ 
+    pixos.run_cutscene({
+        { type = 'transition', effect = 'fade', direction = 'out', duration = 300 }
+    })
+});
+
+-- Play the zone introduction cutscene
+pixos.log('Playing zone introduction cutscene...');
+pixos.sync({
+    pixos.play_pxc_cutscene('cutscenes/elemental-gathering.pxc')
+});
+
+-- Fade back in after cutscene
+pixos.sync({ 
+    pixos.run_cutscene({
+        { type = 'transition', effect = 'fade', direction = 'in', duration = 300 }
+    })
+});
+
+-- Mark this zone intro as seen
+pixos.set_flag(zone_flag, true);
+pixos.log('Zone intro completed');
+
+return nil;

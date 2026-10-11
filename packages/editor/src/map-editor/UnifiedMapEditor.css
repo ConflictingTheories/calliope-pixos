@@ -1,0 +1,146 @@
+/*
+ * ---------------------------------------------------------------
+ *            PixoSpritz – Editor – UnifiedMapEditor styles
+ * ---------------------------------------------------------------
+ * Forge design-system tokens. Replaces hardcoded hex values
+ * and inline styles with CSS variables.
+ */
+
+.map-editor {
+  display: flex;
+  height: 100vh;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+.map-editor__sidebar {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border-default);
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.map-editor__panel {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+}
+
+.map-editor__panel-header {
+  background: var(--color-bg-elevated);
+  padding: var(--spacing-sm);
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+.map-editor__panel-body {
+  padding: var(--spacing-sm);
+}
+
+.map-editor__field {
+  margin-bottom: var(--spacing-sm);
+}
+
+.map-editor__label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.map-editor__hint {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-top: 3px;
+}
+
+.map-editor__row {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.map-editor__divider {
+  margin-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border-default);
+  padding-top: var(--spacing-sm);
+}
+
+.map-editor__section-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.map-editor__scroll-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.map-editor__list-item {
+  padding: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.map-editor__list-item-title {
+  font-weight: bold;
+  margin-bottom: 3px;
+  color: var(--color-text-primary);
+}
+
+.map-editor__list-item-meta {
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+}
+
+.map-editor__toolbar-strip {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-default);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.map-editor__empty {
+  padding: 1rem;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+.map-editor__empty-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+}
+
+.map-editor__info-banner {
+  margin-bottom: var(--spacing-sm);
+  font-size: 11px;
+  color: var(--color-brand-secondary);
+  background: var(--color-brand-secondary-muted);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+}
+
+.map-editor__info-banner-hint {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.map-editor__warning-banner {
+  background: var(--color-brand-warm-muted);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  font-size: 12px;
+  color: var(--color-brand-warm);
+}

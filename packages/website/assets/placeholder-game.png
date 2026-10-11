@@ -1,0 +1,33 @@
+<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="640" height="360" fill="#1a1a2e"/>
+  
+  <!-- Grid Pattern -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#252540" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="360" fill="url(#grid)" opacity="0.3"/>
+  
+  <!-- Center Icon -->
+  <circle cx="320" cy="180" r="60" fill="#252540" stroke="#ff6b9d" stroke-width="3"/>
+  <text x="320" y="200" font-family="Arial, sans-serif" font-size="60" fill="#ff6b9d" text-anchor="middle">🎮</text>
+  
+  <!-- Text -->
+  <text x="320" y="260" font-family="Arial, sans-serif" font-size="24" fill="#e4e4e7" text-anchor="middle" font-weight="bold">Game Screenshot</text>
+  <text x="320" y="290" font-family="Arial, sans-serif" font-size="16" fill="#a1a1aa" text-anchor="middle">Add your game screenshot here</text>
+  
+  <!-- Corner Decorations -->
+  <rect x="10" y="10" width="30" height="3" fill="#4ecdc4"/>
+  <rect x="10" y="10" width="3" height="30" fill="#4ecdc4"/>
+  
+  <rect x="600" y="10" width="30" height="3" fill="#ffd93d"/>
+  <rect x="627" y="10" width="3" height="30" fill="#ffd93d"/>
+  
+  <rect x="10" y="347" width="30" height="3" fill="#a78bfa"/>
+  <rect x="10" y="320" width="3" height="30" fill="#a78bfa"/>
+  
+  <rect x="600" y="347" width="30" height="3" fill="#ff6b9d"/>
+  <rect x="627" y="320" width="3" height="30" fill="#ff6b9d"/>
+</svg>

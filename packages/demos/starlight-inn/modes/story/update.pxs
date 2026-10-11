@@ -1,0 +1,32 @@
+-- Starlight Inn: story mode update
+-- Walk with WASD, E to talk
+
+return function(time, params)
+    local world = pixos.get_world()
+    local hero = world.spriteDict and world.spriteDict['traveler']
+    if not hero then return end
+
+    local speed = 0.1
+    local dx, dy = 0, 0
+    if pixos.input_down('left') or pixos.input_down('a') then dx = dx - speed end
+    if pixos.input_down('right') or pixos.input_down('d') then dx = dx + speed end
+    if pixos.input_down('up') or pixos.input_down('w') then dy = dy - speed end
+    if pixos.input_down('down') or pixos.input_down('s') then dy = dy + speed end
+    if dx ~= 0 or dy ~= 0 then
+        hero.pos[1] = math.max(1, math.min(8, hero.pos[1] + dx))
+        hero.pos[2] = math.max(1, math.min(6, hero.pos[2] + dy))
+    end
+
+    if pixos.input_pressed('e') or pixos.input_pressed(' ') then
+        local keeper = world.spriteDict and world.spriteDict['innkeeper']
+        if keeper then
+            local d = math.abs(hero.pos[1] - keeper.pos[1]) + math.abs(hero.pos[2] - keeper.pos[2])
+            if d < 2 then
+                world.behaviorManager.triggerHook(keeper, 'onInteract', {
+                    showDialog = pixos.show_choice,
+                    showMessage = pixos.show_message,
+                })
+            end
+        end
+    end
+end

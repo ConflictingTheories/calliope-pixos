@@ -1,0 +1,77 @@
+{
+  "format": "pixozine",
+  "formatVersion": "1.0.0",
+  "title": "Tiny Pixozine",
+  "version": "1.0.0",
+  "initialZones": [
+    "zone-1"
+  ],
+  "maps": [
+    "zone-1"
+  ],
+  "sprites": [
+    "hero"
+  ],
+  "scripts": [
+    "scripts/main.pxs"
+  ],
+  "description": "A full-featured fixture exercising every manifest section.",
+  "author": "PixoSpritz Test Suite",
+  "website": "https://pixospritz.dev",
+  "license": "CC-BY-NC-SA-4.0",
+  "scriptApiVersion": "1.0.0",
+  "capabilities": [
+    "fs.read",
+    "net.http"
+  ],
+  "tilesets": [
+    "tileset-1"
+  ],
+  "models": [],
+  "textures": [
+    "assets/thumb.png"
+  ],
+  "audio": [
+    "audio/theme.mp3"
+  ],
+  "shaders": [
+    "shaders/water.glsl"
+  ],
+  "cutscenes": [
+    "cutscenes/intro.pxc"
+  ],
+  "callbacks": [],
+  "triggers": [
+    "scripts/trigger.pxs"
+  ],
+  "thumbnail": "assets/thumb.png",
+  "icon": "assets/icon.png",
+  "splash": "assets/splash.png",
+  "settings": {
+    "resolution": [
+      480,
+      640
+    ],
+    "fullscreen": false,
+    "musicVolume": 0.8,
+    "sfxVolume": 0.9,
+    "language": "en"
+  },
+  "saveConfig": {
+    "slots": 3,
+    "autosave": true,
+    "autosaveInterval": 300,
+    "quicksave": true
+  },
+  "requirements": {
+    "webgl": 2,
+    "audio": true,
+    "localStorage": true,
+    "indexedDB": false
+  },
+  "data": {
+    "custom": {
+      "difficulty": "normal"
+    }
+  }
+}

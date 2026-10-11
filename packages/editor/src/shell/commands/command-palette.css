@@ -1,0 +1,121 @@
+/*
+ * ---------------------------------------------------------------
+ *           PixoSpritz – Editor – Command palette styles
+ * ---------------------------------------------------------------
+ * Copyright (c) 2022-2025  Kyle Derby MacInnis
+ *
+ * (P2-08/P2-09) Uses the canonical design-system tokens
+ * (--color-*) declared in src/design-system/.
+ */
+
+.px-command-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding-top: 12vh;
+}
+
+.px-command-palette {
+  width: min(560px, 90vw);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-elevated, #252526);
+  border: 1px solid var(--color-border, #3e3e42);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.px-command-palette-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border, #3e3e42);
+  color: var(--color-text, #d4d4d4);
+  padding: 12px 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.px-command-palette-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+}
+
+.px-command-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-text, #d4d4d4);
+  font-size: 13px;
+}
+
+.px-command-palette-item.active {
+  background: var(--color-bg-selected, #094771);
+  color: #fff;
+}
+
+.px-command-palette-item.disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.px-command-palette-shortcut {
+  font-family: monospace;
+  font-size: 11px;
+  background: var(--color-bg, #1e1e1e);
+  border: 1px solid var(--color-border, #3e3e42);
+  border-radius: 3px;
+  padding: 2px 6px;
+  color: var(--color-text-muted, #888);
+}
+
+.px-command-palette-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--color-text-muted, #888);
+  font-size: 13px;
+}
+
+/* (P2-07) Save status indicator — replaces alert() dialogs. */
+.editor-save-status {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1000;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--color-bg-elevated, #252526);
+  border: 1px solid var(--color-border, #3e3e42);
+  color: var(--color-text, #d4d4d4);
+}
+
+.editor-save-status--saved {
+  border-color: var(--color-success, var(--color-brand-secondary));
+}
+
+.editor-save-status--error {
+  border-color: var(--color-error, #f48771);
+  color: var(--color-error-light, #f48771);
+}
+
+.editor-save-status--retrying,
+.editor-save-status--writing,
+.editor-save-status--validating {
+  border-color: var(--color-warning, #ffd93d);
+}
+
+.editor-tool-loading {
+  padding: 2rem;
+  color: var(--color-text-muted, #888);
+  text-align: center;
+}

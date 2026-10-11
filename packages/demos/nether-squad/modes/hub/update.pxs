@@ -1,0 +1,43 @@
+-- Nether Squad: Hub mode update
+-- Move with WASD/arrows. Press E near recruiter to enter battle.
+
+return function(time, params)
+    local world = pixos.get_world()
+    local hero = world.spriteDict and world.spriteDict['hero']
+    if not hero then return end
+
+    -- Movement
+    local speed = 0.12
+    local dx, dy = 0, 0
+    if pixos.input_down('left') or pixos.input_down('a') then dx = dx - speed end
+    if pixos.input_down('right') or pixos.input_down('d') then dx = dx + speed end
+    if pixos.input_down('up') or pixos.input_down('w') then dy = dy - speed end
+    if pixos.input_down('down') or pixos.input_down('s') then dy = dy + speed end
+    if dx ~= 0 or dy ~= 0 then
+        hero.pos[1] = math.max(0, math.min(7, hero.pos[1] + dx))
+        hero.pos[2] = math.max(0, math.min(7, hero.pos[2] + dy))
+        if dx < 0 then hero.facing = 'Left'
+        elseif dx > 0 then hero.facing = 'Right'
+        elseif dy < 0 then hero.facing = 'Up'
+        else hero.facing = 'Down' end
+    end
+
+    -- Talk to recruiter
+    if pixos.input_pressed('e') or pixos.input_pressed(' ') then
+        local rec = world.spriteDict and world.spriteDict['recruiter']
+        if rec then
+            local d = math.abs(hero.pos[1] - rec.pos[1]) + math.abs(hero.pos[2] - rec.pos[2])
+            if d < 2 then
+                local choice = pixos.show_choice({
+                    speaker = 'Recruiter',
+                    text = 'Ready for battle, dood? Two goblins wait in the arena.',
+                    options = {'To battle!', 'Not yet'}
+                })
+                if choice == 1 then
+                    pixos.switch_mode('battle')
+                    pixos.load_map('arena')
+                end
+            end
+        end
+    end
+end

@@ -1,0 +1,32 @@
+{
+  "name": "pixospritz-server",
+  "version": "1.0.1",
+  "description": "PixoSpritz Server - WebSocket multiplayer server for PixoSpritz games",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "node --watch src/main.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "pixospritz",
+    "server",
+    "websocket",
+    "multiplayer",
+    "game-server"
+  ],
+  "homepage": "https://pixospritz.com",
+  "repository": {
+    "url": "https://github.com/ConflictingTheories/calliope-pixos.git",
+    "type": "git"
+  },
+  "author": "Kyle Derby MacInnis",
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

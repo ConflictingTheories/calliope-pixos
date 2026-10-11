@@ -1,0 +1,28 @@
+/**
+ * IconButton Styles
+ */
+.px-icon-btn {
+  padding: 8px;
+}
+
+.px-icon-btn-circle {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.px-icon-btn-circle.px-btn-xs {
+  width: 24px;
+  height: 24px;
+}
+
+.px-icon-btn-circle.px-btn-sm {
+  width: 30px;
+  height: 30px;
+}
+
+.px-icon-btn-circle.px-btn-lg {
+  width: 44px;
+  height: 44px;
+}

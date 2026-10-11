@@ -1,0 +1,80 @@
+/* ErrorBoundary — per-tool crash card (UX Phase 2, finding A1.2).
+   Follows the Forge theme tokens: achromatic chrome, error signal color. */
+
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 240px;
+  padding: var(--space-6, 24px);
+  background: var(--color-bg-base);
+}
+
+.error-boundary__card {
+  max-width: 480px;
+  width: 100%;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-left: 3px solid var(--color-error);
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6, 24px);
+  text-align: left;
+}
+
+.error-boundary__icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: var(--space-3, 12px);
+}
+
+.error-boundary__title {
+  margin: 0 0 var(--space-2, 8px);
+  font-size: var(--text-lg, 14px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.error-boundary__message {
+  margin: 0 0 var(--space-4, 16px);
+  font-size: var(--text-base, 13px);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.error-boundary__actions {
+  display: flex;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-3, 12px);
+}
+
+.error-boundary__details {
+  font-size: var(--text-sm, 12px);
+  color: var(--color-text-tertiary);
+}
+
+.error-boundary__details summary {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.error-boundary__details summary:hover {
+  color: var(--color-text-primary);
+}
+
+.error-boundary__stack {
+  margin: var(--space-2, 8px) 0 0;
+  padding: var(--space-3, 12px);
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow: auto;
+}

@@ -1,0 +1,184 @@
+-- Nether Squad: Battle mode update v2
+-- Full tactical control: select unit → pick tile → pick target
+
+local function manhattan(x1, y1, x2, y2)
+    return math.abs(x1 - x2) + math.abs(y1 - y2)
+end
+
+local function getMoveRange(unit, battle)
+    local range = {}
+    for dy = -unit.move, unit.move do
+        for dx = -unit.move, unit.move do
+            if math.abs(dx) + math.abs(dy) <= unit.move then
+                local nx, ny = unit.x + dx, unit.y + dy
+                if nx >= 1 and nx <= 6 and ny >= 1 and ny <= 6 then
+                    local occupied = false
+                    for _, u in pairs(battle.units) do
+                        if u.x == nx and u.y == ny and u.hp > 0 and u.id ~= unit.id then
+                            occupied = true
+                            break
+                        end
+                    end
+                    if not occupied then
+                        table.insert(range, {x = nx, y = ny})
+                    end
+                end
+            end
+        end
+    end
+    return range
+end
+
+local function getAttackTargets(unit, battle)
+    local targets = {}
+    for _, e in pairs(battle.units) do
+        if e.team ~= unit.team and e.hp > 0 then
+            if manhattan(unit.x, unit.y, e.x, e.y) <= unit.range then
+                table.insert(targets, e)
+            end
+        end
+    end
+    return targets
+end
+
+local function checkVictory(battle)
+    local pa, ea = 0, 0
+    for _, u in pairs(battle.units) do
+        if u.hp > 0 then
+            if u.team == 'player' then pa = pa + 1 else ea = ea + 1 end
+        end
+    end
+    if ea == 0 then return 'victory' end
+    if pa == 0 then return 'defeat' end
+    return nil
+end
+
+return function(time, params)
+    local battle = _G.battle
+    if not battle then return end
+
+    local result = checkVictory(battle)
+    if result then
+        pixos.show_message(result == 'victory' and 'Victory!' or 'Defeat...')
+        if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+            pixos.switch_mode('hub')
+            pixos.load_map('hub')
+        end
+        return
+    end
+
+    local unitId = battle.turnOrder[battle.turnIndex]
+    local unit = battle.units[unitId]
+    if not unit or unit.hp <= 0 then
+        battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
+        return
+    end
+
+    if unit.team == 'player' then
+        -- PLAYER: click unit → click tile → click target
+        if battle.phase == 'select' then
+            -- Highlight selectable units (not yet acted)
+            pixos.highlight_units(battle.getPlayerUnits(), 'selectable')
+            -- Wait for unit click (simplified: current unit auto-selected, press to confirm)
+            if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+                battle.selectedUnit = unit
+                battle.moveRange = getMoveRange(unit, battle)
+                pixos.highlight_tiles(battle.moveRange, 'move')
+                battle.phase = 'move'
+            end
+
+        elseif battle.phase == 'move' then
+            -- Player picks destination tile
+            -- Simplified: arrow keys move cursor, confirm to move
+            local cursor = battle.cursor or {x = unit.x, y = unit.y}
+            if pixos.input_pressed('left') then cursor.x = math.max(1, cursor.x - 1) end
+            if pixos.input_pressed('right') then cursor.x = math.min(6, cursor.x + 1) end
+            if pixos.input_pressed('up') then cursor.y = math.max(1, cursor.y - 1) end
+            if pixos.input_pressed('down') then cursor.y = math.min(6, cursor.y + 1) end
+            battle.cursor = cursor
+            pixos.move_cursor(cursor.x, cursor.y)
+
+            if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+                -- Check if cursor is in move range
+                local valid = false
+                for _, t in ipairs(battle.moveRange) do
+                    if t.x == cursor.x and t.y == cursor.y then valid = true break end
+                end
+                if valid then
+                    unit.x, unit.y = cursor.x, cursor.y
+                    unit.sprite.pos[1], unit.sprite.pos[2] = cursor.x, cursor.y
+                    pixos.clear_highlight()
+                    battle.phase = 'action'
+                    battle.targets = getAttackTargets(unit, battle)
+                    if #battle.targets > 0 then
+                        pixos.highlight_units(battle.targets, 'targetable')
+                    end
+                end
+            end
+            -- Cancel back to select
+            if pixos.input_pressed('escape') then
+                battle.phase = 'select'
+                pixos.clear_highlight()
+            end
+
+        elseif battle.phase == 'action' then
+            -- Pick target or wait
+            if #battle.targets == 0 then
+                -- No targets, auto-wait
+                pixos.log(unitId .. ' waits.')
+                battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
+                battle.phase = 'select'
+            else
+                -- Cycle targets with tab, confirm to attack
+                battle.targetIndex = battle.targetIndex or 1
+                if pixos.input_pressed('tab') then
+                    battle.targetIndex = battle.targetIndex % #battle.targets + 1
+                end
+                local target = battle.targets[battle.targetIndex]
+                pixos.highlight_units({target}, 'targeted')
+
+                if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+                    target.hp = target.hp - unit.atk
+                    pixos.show_damage(target.id, unit.atk)
+                    if target.hp <= 0 then target.sprite.pos[3] = -999 end
+                    battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
+                    battle.phase = 'select'
+                    battle.targetIndex = nil
+                    pixos.clear_highlight()
+                end
+                -- Wait instead
+                if pixos.input_pressed('w') then
+                    pixos.log(unitId .. ' waits.')
+                    battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
+                    battle.phase = 'select'
+                    pixos.clear_highlight()
+                end
+            end
+        end
+    else
+        -- ENEMY AI (unchanged: move toward, attack if adjacent)
+        local best, bd = nil, 999
+        for _, p in pairs(battle.units) do
+            if p.team == 'player' and p.hp > 0 then
+                local d = manhattan(unit.x, unit.y, p.x, p.y)
+                if d < bd then best, bd = p, d end
+            end
+        end
+        if best then
+            if bd <= unit.range then
+                best.hp = best.hp - unit.atk
+                pixos.show_damage(best.id, unit.atk)
+                if best.hp <= 0 then best.sprite.pos[3] = -999 end
+            else
+                local dx, dy = best.x - unit.x, best.y - unit.y
+                if math.abs(dx) > math.abs(dy) then
+                    unit.x = unit.x + (dx > 0 and 1 or -1)
+                else
+                    unit.y = unit.y + (dy > 0 and 1 or -1)
+                end
+                unit.sprite.pos[1], unit.sprite.pos[2] = unit.x, unit.y
+            end
+        end
+        battle.turnIndex = battle.turnIndex % #battle.turnOrder + 1
+    end
+end

@@ -1,0 +1,148 @@
+# Victory - The Hero's Triumph
+# Celebration cutscene with credits and acknowledgments
+
+@backdrop textures/forest.gif [fadeIn=1200]
+@char HERO sprite=characters/male
+@char ELDER sprite=characters/female
+@char KNIGHT sprite=npc/air-knight
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+wait 1500
+
+# Victory Celebration
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+We did it...
+The kingdom is finally at peace.
+"""
+
+wait 800
+
+@transition wipe [duration=600]
+
+wait 500
+
+@backdrop textures/castle.gif [fadeIn=800]
+
+ELDER: [expression=smile,position=left]
+"""
+The people celebrate in the streets!
+You've given them hope, hero.
+"""
+
+wait 600
+
+KNIGHT: [expression=neutral,position=right]
+"""
+The Elemental Guardians send their regards.
+You've earned their eternal respect.
+"""
+
+wait 600
+
+HERO: [expression=smile,position=center]
+"""
+This adventure taught me so much.
+Passion. Adaptation. Endurance. Freedom.
+These are the true treasures.
+"""
+
+wait 800
+
+@transition fadeOutBackdrop [duration=800]
+
+wait 800
+
+@backdrop textures/temple.gif [fadeIn=1000]
+@do playBgm [name=audio/lonely-mountain.mp3]
+
+# Reflections
+
+*ELDER: [cutin=size=large,expression=smile]
+"""
+What will you do now, hero?
+With the Dark Lord sealed...
+"""
+
+wait 600
+
+HERO: [expression=smile,position=center]
+"""
+There are always more adventures.
+More people who need help.
+A hero's work is never done!
+"""
+
+wait 800
+
+KNIGHT: [expression=neutral,position=right]
+"""
+The world is vast and full of wonder.
+May your journey continue forever.
+"""
+
+wait 1000
+
+@transition wipe [duration=700]
+
+wait 700
+
+@backdrop textures/room.gif [fadeIn=900]
+
+# Credits
+
+wait 500
+
+ELDER: [expression=neutral,position=center]
+"""
+THE ELEMENTAL TRIALS
+
+A PixoSpritz Engine Showcase
+"""
+
+wait 1500
+
+KNIGHT: [expression=neutral,position=center]
+"""
+Featuring:
+- 4 Elemental Chambers
+- Epic Boss Battle
+- Dynamic Lighting
+- Particle Effects
+- Multiple Game Modes
+"""
+
+wait 2000
+
+HERO: [expression=neutral,position=center]
+"""
+Thank you for playing!
+
+This demo showcases:
+- Explore Mode
+- Tactics Mode  
+- Fight Mode
+- Cutscene System
+- PXSL Shaders
+"""
+
+wait 2500
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+THE END
+
+...or is it just the beginning?
+"""
+
+@do playBgm [name=audio/opening.mp3]
+
+wait 2000
+
+@transition fadeOutBackdrop [duration=1500]
+
+waitInput
+
+@end

@@ -1,0 +1,45 @@
+-- Fountain Approach Trigger
+-- Trigger when player enters the fountain area
+
+local player = pixos.get_subject();
+local player_pos = pixos.from(player, 'pos');
+local state = pixos.get_state() or {};
+
+pixos.log(pixos.as_obj({ msg = 'Entering fountain area', pos = player_pos }));
+
+-- Check if first time entering
+if not state.fountainVisited then
+    state.fountainVisited = true;
+    pixos.set_state(state);
+    
+    -- Dramatic water burst
+    pixos.emit_particles({ 8, 8, 0.5 }, {
+        count = 60,
+        life = 2000,
+        speed = 0.06,
+        spread = 2.0,
+        size = 0.12,
+        color = { 0.4, 0.7, 1.0 },
+        gravity = { 0, 0, -0.002 },
+        drag = 0.98
+    });
+    
+    pixos.play_sfx('audio/water_splash.mp3');
+    
+    pixos.show_dialogue({
+        speaker = 'Fountain',
+        text = 'The ancient fountain springs to life as you approach! Its magical waters shimmer with restorative energy.'
+    });
+else
+    -- Regular ambient effect
+    pixos.emit_particles({ 8, 8, 0.5 }, {
+        count = 15,
+        life = 1200,
+        speed = 0.03,
+        spread = 0.8,
+        size = 0.08,
+        color = { 0.5, 0.75, 1.0 },
+        gravity = { 0, 0, -0.001 },
+        drag = 0.99
+    });
+end;

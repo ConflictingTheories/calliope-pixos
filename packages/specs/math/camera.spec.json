@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/camera.spec.json",
+  "title": "Camera Specification",
+  "description": "Shared camera system specifications for JS and C engines",
+
+  "definitions": {
+    "Camera": {
+      "description": "Orbital camera with position, target, and view parameters",
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "vector.spec.json#/definitions/Vector3",
+          "description": "Camera position in world space"
+        },
+        "target": {
+          "$ref": "vector.spec.json#/definitions/Vector3",
+          "description": "Point the camera is looking at"
+        },
+        "up": {
+          "$ref": "vector.spec.json#/definitions/Vector3",
+          "description": "Up vector (typically [0, 1, 0])",
+          "default": { "x": 0, "y": 1, "z": 0 }
+        },
+        "yaw": {
+          "type": "number",
+          "description": "Horizontal rotation in radians",
+          "default": 0
+        },
+        "pitch": {
+          "type": "number",
+          "description": "Vertical rotation in radians",
+          "default": 0.5,
+          "minimum": -1.5607963,
+          "maximum": 1.5607963
+        },
+        "distance": {
+          "type": "number",
+          "description": "Distance from target (orbital radius)",
+          "default": 10,
+          "minimum": 0.1
+        },
+        "fov": {
+          "type": "number",
+          "description": "Field of view in radians",
+          "default": 0.7853981633974483,
+          "minimum": 0.1,
+          "maximum": 3.14159
+        },
+        "near": {
+          "type": "number",
+          "description": "Near clipping plane",
+          "default": 0.1
+        },
+        "far": {
+          "type": "number",
+          "description": "Far clipping plane",
+          "default": 1000
+        },
+        "aspect": {
+          "type": "number",
+          "description": "Aspect ratio (width / height)",
+          "default": 1.7777777777777777
+        }
+      }
+    }
+  },
+
+  "operations": {
+    "updateFromAngles": {
+      "signature": "(camera: Camera) -> void",
+      "description": "Update camera position from yaw, pitch, and distance",
+      "algorithm": [
+        "1. Clamp pitch to [-PI/2 + 0.01, PI/2 - 0.01]",
+        "2. Calculate position.x = target.x + distance * cos(pitch) * sin(yaw)",
+        "3. Calculate position.y = target.y + distance * sin(pitch)",
+        "4. Calculate position.z = target.z + distance * cos(pitch) * cos(yaw)"
+      ],
+      "implementation": {
+        "js": "camera_update_from_angles(camera)",
+        "c": "camera_update_view_from_angles(camera)"
+      }
+    },
+    "getViewMatrix": {
+      "signature": "(camera: Camera) -> Matrix4",
+      "description": "Compute view matrix using lookAt",
+      "implementation": {
+        "js": "mat4_lookAt(camera.position, camera.target, camera.up)",
+        "c": "mat4_look_at(camera.position, camera.target, camera.up)"
+      }
+    },
+    "getProjectionMatrix": {
+      "signature": "(camera: Camera) -> Matrix4",
+      "description": "Compute perspective projection matrix",
+      "implementation": {
+        "js": "mat4_perspective(camera.fov, camera.aspect, camera.near, camera.far)",
+        "c": "mat4_perspective(camera.fov, camera.aspect, camera.near, camera.far)"
+      }
+    },
+    "orbit": {
+      "signature": "(camera: Camera, deltaYaw: number, deltaPitch: number) -> void",
+      "description": "Rotate camera around target",
+      "algorithm": [
+        "1. yaw += deltaYaw",
+        "2. pitch += deltaPitch",
+        "3. Clamp pitch to valid range",
+        "4. Call updateFromAngles(camera)"
+      ]
+    },
+    "zoom": {
+      "signature": "(camera: Camera, delta: number) -> void",
+      "description": "Adjust distance from target",
+      "algorithm": [
+        "1. distance += delta",
+        "2. Clamp distance to [minDistance, maxDistance]",
+        "3. Call updateFromAngles(camera)"
+      ]
+    },
+    "pan": {
+      "signature": "(camera: Camera, deltaX: number, deltaY: number) -> void",
+      "description": "Move target position",
+      "algorithm": [
+        "1. Calculate right = normalize(cross(forward, up))",
+        "2. Calculate local up = normalize(cross(right, forward))",
+        "3. target += right * deltaX + localUp * deltaY",
+        "4. Call updateFromAngles(camera)"
+      ]
+    },
+    "follow": {
+      "signature": "(camera: Camera, target: Vector3, smoothing: number) -> void",
+      "description": "Smoothly follow a target position",
+      "algorithm": [
+        "1. camera.target = lerp(camera.target, target, smoothing)",
+        "2. Call updateFromAngles(camera)"
+      ]
+    }
+  },
+
+  "defaults": {
+    "position": { "x": 0, "y": 10, "z": 10 },
+    "target": { "x": 0, "y": 0, "z": 0 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "yaw": 0,
+    "pitch": 0.5,
+    "distance": 14.14,
+    "fov": 0.7853981633974483,
+    "near": 0.1,
+    "far": 1000,
+    "aspect": 1.7777777777777777
+  },
+
+  "pitchLimits": {
+    "min": -1.5607963,
+    "max": 1.5607963,
+    "description": "±(PI/2 - 0.01) to prevent gimbal lock"
+  }
+}

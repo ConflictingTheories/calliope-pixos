@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pixospritz.dev/schemas/map.schema.json",
+  "title": "PixoSpritz Map Definition",
+  "description": "Schema for map/zone definition files",
+  "type": "object",
+
+  "required": ["tileset", "bounds"],
+
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique map identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name for the map"
+    },
+    "extends": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Parent maps to inherit from"
+    },
+    "tileset": {
+      "type": "string",
+      "description": "Tileset ID to use for this map"
+    },
+    "bounds": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "[minX, minY, maxX, maxY] tile coordinates"
+    },
+    "tileSize": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 },
+      "minItems": 2,
+      "maxItems": 2,
+      "default": [16, 16],
+      "description": "[width, height] of tiles in pixels"
+    },
+    "layers": {
+      "type": "array",
+      "description": "Map layers from bottom to top",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["tile", "object", "collision", "trigger"]
+          },
+          "visible": { "type": "boolean", "default": true },
+          "opacity": { "type": "number", "minimum": 0, "maximum": 1, "default": 1 },
+          "data": {
+            "type": "array",
+            "description": "2D array of tile indices or objects"
+          },
+          "offset": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 3
+          }
+        }
+      }
+    },
+    "tiles": {
+      "type": "object",
+      "description": "Tile placement data by position key",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "tileId": { "type": "integer" },
+          "rotation": { "type": "integer" },
+          "flip": { "type": "string", "enum": ["none", "h", "v", "hv"] },
+          "layer": { "type": "integer" }
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "description": "Placed objects/sprites",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "position"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "sprite": { "type": "string" },
+          "position": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "rotation": { "type": "number" },
+          "scale": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "data": { "type": "object" }
+        }
+      }
+    },
+    "lights": {
+      "type": "array",
+      "description": "Light sources in the map",
+      "items": {
+        "type": "object",
+        "required": ["id", "pos"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["point", "directional", "spot", "ambient"],
+            "default": "point"
+          },
+          "pos": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "color": {
+            "type": "array",
+            "items": { "type": "number", "minimum": 0, "maximum": 1 },
+            "minItems": 3,
+            "maxItems": 3,
+            "default": [1, 1, 1]
+          },
+          "intensity": { "type": "number", "minimum": 0, "default": 1 },
+          "range": { "type": "number", "minimum": 0 },
+          "angle": { "type": "number", "description": "Spot light cone angle in radians" },
+          "castShadow": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "triggers": {
+      "type": "array",
+      "description": "Trigger zones",
+      "items": {
+        "type": "object",
+        "required": ["id", "bounds"],
+        "properties": {
+          "id": { "type": "string" },
+          "bounds": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 4,
+            "maxItems": 6,
+            "description": "[x, y, w, h] or [x, y, z, w, h, d]"
+          },
+          "event": { "type": "string" },
+          "script": { "type": "string" },
+          "once": { "type": "boolean", "default": false },
+          "active": { "type": "boolean", "default": true }
+        }
+      }
+    },
+    "scripts": {
+      "type": "array",
+      "description": "Map-level scripts",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "trigger": { "type": "string" },
+          "script": { "type": "string" },
+          "params": { "type": "object" }
+        }
+      }
+    },
+    "connections": {
+      "type": "array",
+      "description": "Zone transitions",
+      "items": {
+        "type": "object",
+        "required": ["target", "position"],
+        "properties": {
+          "id": { "type": "string" },
+          "target": { "type": "string", "description": "Target zone ID" },
+          "position": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Spawn position in target zone"
+          },
+          "triggerBounds": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "transition": { "type": "string" },
+          "facing": { "type": "integer" }
+        }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "description": "Camera settings for this map",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["follow", "fixed", "rail"],
+          "default": "follow"
+        },
+        "bounds": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 4,
+          "maxItems": 6
+        },
+        "defaultPosition": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "defaultTarget": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "skybox": {
+      "type": "string",
+      "description": "Skybox shader or texture ID"
+    },
+    "ambient": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "intensity": { "type": "number" }
+      }
+    },
+    "fog": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "near": { "type": "number" },
+        "far": { "type": "number" }
+      }
+    },
+    "music": {
+      "type": "string",
+      "description": "Background music track ID"
+    },
+    "ambientSound": {
+      "type": "string",
+      "description": "Ambient sound loop ID"
+    },
+    "data": {
+      "type": "object",
+      "description": "Custom map data",
+      "additionalProperties": true
+    }
+  }
+}

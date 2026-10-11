@@ -1,0 +1,90 @@
+/*
+ * ---------------------------------------------------------------
+ *            PixoSpritz – Editor – MapToolbar styles
+ * ---------------------------------------------------------------
+ * Forge design-system tokens. Replaces 29 inline style blocks
+ * and 48 hardcoded hex values with CSS variables.
+ */
+
+.map-toolbar {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+}
+
+.map-toolbar__header {
+  background: var(--color-bg-elevated);
+  padding: var(--spacing-sm);
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+.map-toolbar__header-hint {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+}
+
+.map-toolbar__body {
+  padding: var(--spacing-sm);
+}
+
+.map-toolbar__body--dimmed {
+  opacity: 0.5;
+}
+
+.map-toolbar__tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.map-toolbar__tool-btn {
+  text-align: left;
+}
+
+.map-toolbar__tool-hint {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.map-toolbar__field {
+  margin-bottom: var(--spacing-sm);
+}
+
+.map-toolbar__label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.map-toolbar__row {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.map-toolbar__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.map-toolbar__section {
+  margin-top: var(--spacing-md);
+}
+
+.map-toolbar__view-toggle {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.map-toolbar__view-toggle > * {
+  flex: 1;
+}

@@ -1,0 +1,72 @@
+/**
+ * InputNumber Styles
+ */
+.px-input-number {
+  display: inline-flex;
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.px-input-number-input {
+  flex: 1;
+  min-width: 60px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--input-bg, #0d0d1a);
+  border: none;
+  color: var(--text-primary, #e0e0e0);
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.px-input-number-input::-webkit-inner-spin-button,
+.px-input-number-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.px-input-number-btn {
+  width: 32px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--btn-default-bg, #2a2a4a);
+  border: none;
+  color: var(--text-primary, #e0e0e0);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.px-input-number-btn:hover:not(:disabled) {
+  background: var(--btn-default-hover, #3a3a5a);
+}
+
+.px-input-number-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.px-input-number-xs .px-input-number-input { padding: 4px 8px; font-size: 12px; }
+.px-input-number-xs .px-input-number-btn { width: 24px; font-size: 14px; }
+
+.px-input-number-sm .px-input-number-input { padding: 6px 10px; font-size: 13px; }
+.px-input-number-sm .px-input-number-btn { width: 28px; font-size: 15px; }
+
+.px-input-number-lg .px-input-number-input { padding: 10px 14px; font-size: 16px; }
+.px-input-number-lg .px-input-number-btn { width: 40px; font-size: 18px; }
+
+/* Disabled */
+.px-input-number-disabled {
+  opacity: 0.5;
+}
+
+.px-input-number-disabled .px-input-number-input,
+.px-input-number-disabled .px-input-number-btn {
+  cursor: not-allowed;
+}

@@ -1,0 +1,217 @@
+# The Elemental Trials - Game Introduction
+# A complete showcase of cutscene features: backdrops, transitions, BGM, SFX, portraits, and animations
+
+@backdrop textures/room.gif [fadeIn=1200]
+@char HERO sprite=characters/male
+@char ELDER sprite=characters/female
+@char KNIGHT sprite=npc/air-knight
+
+# Start with dramatic opening music
+@do playBgm [name=audio/opening.mp3]
+
+wait 1500
+
+# Scene 1: A Peaceful Morning
+
+*HERO: [cutin=size=large,expression=neutral]
+"""
+Another peaceful day in the village...
+The sun rises over the mountains.
+"""
+
+wait 800
+
+@transition wipe [duration=600]
+
+wait 500
+
+@backdrop textures/forest.gif [fadeIn=800]
+
+HERO: [expression=smile,position=left]
+"""
+Time to check on the village elder.
+She mentioned something important yesterday.
+"""
+
+wait 1000
+
+# Dramatic sound effect
+@do playSfx [name=audio/organ.mp3]
+
+@transition fadeOutBackdrop [duration=400]
+
+wait 600
+
+# Scene 2: The Elder's Warning
+
+@backdrop textures/cave.gif [fadeIn=700]
+@do playBgm [name=audio/distorted-communication.mp3]
+
+ELDER: [expression=worried,position=right]
+"""
+Hero! Thank the heavens you've arrived!
+Dark omens cloud my visions...
+"""
+
+wait 600
+
+HERO: [expression=shocked,position=left] What troubles you, Elder?
+
+*ELDER: [cutin=size=large,expression=worried]
+"""
+The Four Elemental Guardians have awakened!
+Fire, Water, Earth, and Air...
+They guard the seal that binds the Dark Lord!
+"""
+
+wait 800
+
+HERO: [expression=worried,position=left]
+"""
+The Dark Lord? But the legends say...
+He was defeated a thousand years ago!
+"""
+
+ELDER: [expression=neutral,position=right]
+"""
+Defeated, yes. Destroyed? No.
+The seal weakens with each passing century.
+Only a hero who conquers all four trials...
+"""
+
+wait 600
+
+*ELDER: [cutin=size=large,expression=neutral]
+"""
+...may renew the seal and save our world!
+You are our only hope, young warrior.
+"""
+
+@do playSfx [name=audio/dungeon-beat.mp3]
+
+wait 1000
+
+@transition wipe [duration=500]
+
+wait 600
+
+# Scene 3: The Knight's Guidance
+
+@backdrop textures/castle.gif [fadeIn=800]
+@do playBgm [name=audio/brass-loop.mp3]
+
+KNIGHT: [expression=neutral,position=right]
+"""
+Greetings, chosen one.
+I am the Guardian Knight of the Elemental Gates.
+"""
+
+wait 500
+
+HERO: [expression=neutral,position=left] The Elder sent me. I'm ready for the trials.
+
+*KNIGHT: [cutin=size=large,expression=neutral]
+"""
+Your courage is admirable!
+But courage alone won't suffice.
+Listen well to my guidance...
+"""
+
+wait 800
+
+KNIGHT: [expression=neutral,position=right]
+"""
+FIRE burns in the northwest - raw power!
+WATER flows in the northeast - adaptability!
+EARTH stands in the southwest - endurance!
+AIR soars in the southeast - agility!
+"""
+
+wait 1000
+
+HERO: [expression=smile,position=left]
+"""
+I understand. Four trials, four elements.
+Each teaching a different virtue.
+"""
+
+KNIGHT: [expression=neutral,position=right]
+"""
+Correct! Collect all four Elemental Shards.
+Only then will the path to the Dark Lord open.
+"""
+
+wait 800
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+I won't let anyone down!
+For the village, for the kingdom...
+For everyone I love!
+"""
+
+@do playBgm [name=audio/dawns-peak.mp3]
+
+wait 1000
+
+@transition fadeOutBackdrop [duration=800]
+
+wait 600
+
+# Scene 4: The Journey Begins
+
+@backdrop textures/temple.gif [fadeIn=900]
+
+wait 600
+
+ELDER: [expression=smile,position=left]
+"""
+May the spirits of the ancients guide you.
+Return to us victorious, hero!
+"""
+
+KNIGHT: [expression=neutral,position=right]
+"""
+The portals await you in the dungeon entrance.
+Each leads to an elemental chamber.
+"""
+
+wait 800
+
+HERO: [expression=neutral,position=center]
+"""
+Then my journey begins now.
+Watch over the village while I'm gone.
+"""
+
+*HERO: [cutin=size=large,expression=smile]
+"""
+When I return...
+The Dark Lord will never threaten us again!
+"""
+
+wait 1000
+
+@do playBgm [name=audio/calm-escape.mp3]
+
+@transition wipe [duration=700]
+
+wait 800
+
+@backdrop textures/room.gif [fadeIn=600]
+
+wait 500
+
+KNIGHT: [expression=neutral,position=center]
+"""
+And so the hero's journey begins...
+May fortune favor the brave.
+"""
+
+wait 1500
+
+@transition fadeOutBackdrop [duration=1000]
+
+waitInput
+
+@end

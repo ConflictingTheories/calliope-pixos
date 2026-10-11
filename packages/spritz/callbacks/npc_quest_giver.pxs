@@ -1,0 +1,31 @@
+-- NPC Quest Giver Cutscene Trigger
+-- This script plays the epic-quest.pxc cutscene when interacting with an NPC
+-- Use this as a template for NPC interactions that trigger cutscenes
+
+local npc = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'NPC Quest Giver - Interaction', 
+    npc = npc,
+    player = player 
+}));
+
+-- Check if player has already accepted this quest
+if pixos.has_flag('quest_epic_accepted') then
+    pixos.log('Quest already accepted - showing alternate dialogue');
+    -- Could play a different cutscene or show simple dialogue here
+    return;
+end
+
+-- Play the epic quest introduction cutscene
+pixos.log('Playing epic-quest cutscene...');
+pixos.sync({
+    pixos.play_pxc_cutscene('cutscenes/epic-quest.pxc')
+});
+
+-- After cutscene completes, set quest flag
+pixos.set_flag('quest_epic_accepted', true);
+pixos.log('Quest accepted - flag set');
+
+return nil;

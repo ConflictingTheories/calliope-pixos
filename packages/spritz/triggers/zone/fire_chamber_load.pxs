@@ -1,0 +1,49 @@
+-- Fire Chamber Zone Load Script
+-- Handles the Fire Elemental trial
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: fire_chamber_load', zone = zone }));
+
+-- Check if trial already complete
+if pixos.has_flag('fire_trial_complete') then
+    pixos.log('Fire trial already complete - exploration mode');
+    pixos.set_mode('explore');
+    pixos.play_bgm('audio/calm-escape.mp3');
+else
+    pixos.log('Fire trial active - tactics mode');
+    -- Set to tactics mode for the trial
+    pixos.set_mode('tactics');
+    
+    -- Play intense battle music
+    pixos.play_bgm('audio/brass-loop.mp3');
+    
+    -- Play the fire trial cutscene intro
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/fire-trial.pxc')
+    });
+    
+    -- After cutscene, mark trial complete
+    pixos.set_flag('fire_trial_complete', true);
+    pixos.log('Fire trial complete - shard obtained!');
+    
+    -- Add fire shard to player inventory
+    local avatar = pixos.get_sprite('avatar');
+    if avatar then
+        local inventory = pixos.from(avatar, 'inventory') or {};
+        table.insert(inventory, 'fire_shard');
+        pixos.to(avatar, { inventory = inventory });
+        pixos.log('Fire shard added to inventory');
+    end;
+    
+    -- Visual celebration effect
+    pixos.emit_particles({6, 3, 1}, { preset = 'magic', count = 40, life = 3000 });
+end;
+
+-- Constant lava effects
+pixos.emit_particles({1, 5, -0.5}, { preset = 'flame', count = 20, life = 2500 });
+pixos.emit_particles({11, 5, -0.5}, { preset = 'flame', count = 20, life = 2500 });
+
+-- Set fire shader effect for the chamber
+pixos.set_skybox_shader('inferno');
+
+return nil;

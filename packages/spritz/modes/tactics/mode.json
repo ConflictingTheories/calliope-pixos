@@ -1,0 +1,41 @@
+{
+  "name": "tactics",
+  "update": "update.pxs",
+  "setup": "setup.pxs",
+  "picker": true,
+  "actions": {
+    "select": {
+      "mouse": "left"
+    },
+    "move_unit": {
+      "mouse": "right"
+    },
+    "select_right": {
+      "mouse": "right"
+    },
+    "end_turn": {
+      "keyboard": "Enter"
+    },
+    "move_up": {
+      "keyboard": "w"
+    },
+    "move_down": {
+      "keyboard": "s"
+    },
+    "move_left": {
+      "keyboard": "a"
+    },
+    "move_right": {
+      "keyboard": "d"
+    },
+    "interact": {
+      "keyboard": "k"
+    },
+    "menu": {
+      "keyboard": "m"
+    },
+    "chat": {
+      "keyboard": " "
+    }
+  }
+}

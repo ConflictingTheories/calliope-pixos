@@ -1,0 +1,104 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *                    Retro CRT Shader - PXSL Example
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Simulates an old CRT monitor with scanlines, chromatic aberration,
+ * barrel distortion, and static noise. Perfect for retro-styled games.
+ * 
+ * Usage in PixoScript:
+ *   -- Apply as post-process effect
+ *   set_post_shader("retro_crt")
+ *   set_uniform("scanlineIntensity", 0.3)
+ *   set_uniform("distortionAmount", 0.02)
+ */
+
+@shader "retro_crt"
+
+@vertex
+input position: vec3
+input uv: vec2
+output vUV: vec2
+
+main {
+  vUV = uv
+  // Full-screen quad - position is already in clip space
+  gl_Position = vec4(position.xy, 0.0, 1.0)
+}
+
+@fragment
+input vUV: vec2
+uniform texture: sampler2D
+uniform time: float
+uniform scanlineIntensity: float
+uniform distortionAmount: float
+uniform chromaticAmount: float
+uniform noiseIntensity: float
+uniform vignetteStrength: float
+output fragColor: vec4
+
+main {
+  // ─────────────────────────────────────────────
+  // Barrel Distortion (CRT screen curvature)
+  // ─────────────────────────────────────────────
+  let centered = vUV - 0.5
+  let dist = length(centered)
+  let distortion = 1.0 + dist * dist * distortionAmount * 10.0
+  let distortedUV = centered * distortion + 0.5
+  
+  // Check if we're outside the screen (creates rounded corners)
+  if (distortedUV.x < 0.0 || distortedUV.x > 1.0 || distortedUV.y < 0.0 || distortedUV.y > 1.0) {
+    fragColor = vec4(0.02, 0.02, 0.02, 1.0)
+    return
+  }
+  
+  // ─────────────────────────────────────────────
+  // Chromatic Aberration (RGB split)
+  // ─────────────────────────────────────────────
+  let aberration = chromaticAmount * dist
+  let r = sample(texture, distortedUV + vec2(aberration, 0.0)).r
+  let g = sample(texture, distortedUV).g
+  let b = sample(texture, distortedUV - vec2(aberration, 0.0)).b
+  let color = vec3(r, g, b)
+  
+  // ─────────────────────────────────────────────
+  // Scanlines
+  // ─────────────────────────────────────────────
+  let scanline = sin(distortedUV.y * 400.0) * 0.5 + 0.5
+  scanline = pow(scanline, 1.5)
+  scanline = mix(1.0, scanline, scanlineIntensity)
+  color = color * scanline
+  
+  // Horizontal line jitter (occasional)
+  let jitterLine = step(0.995, noise(vec2(time * 10.0, 0.0)))
+  if (jitterLine > 0.5) {
+    let jitterY = noise(vec2(time, distortedUV.y * 100.0)) * 0.01
+    color = sample(texture, distortedUV + vec2(jitterY, 0.0)).rgb
+  }
+  
+  // ─────────────────────────────────────────────
+  // Static Noise
+  // ─────────────────────────────────────────────
+  let staticNoise = noise(distortedUV * 500.0 + vec2(time * 100.0, 0.0))
+  staticNoise = (staticNoise - 0.5) * noiseIntensity
+  color = color + vec3(staticNoise)
+  
+  // ─────────────────────────────────────────────
+  // Vignette (darker edges)
+  // ─────────────────────────────────────────────
+  let vignette = 1.0 - dist * vignetteStrength * 2.0
+  vignette = clamp(vignette, 0.0, 1.0)
+  color = color * vignette
+  
+  // ─────────────────────────────────────────────
+  // Phosphor Glow (slight bloom on bright areas)
+  // ─────────────────────────────────────────────
+  let luminance = dot(color, vec3(0.299, 0.587, 0.114))
+  let glow = max(luminance - 0.5, 0.0) * 0.2
+  color = color + glow
+  
+  // Slight green tint (old phosphor monitors)
+  color = color * vec3(0.95, 1.0, 0.95)
+  
+  fragColor = vec4(clamp(color, 0.0, 1.0), 1.0)
+}

@@ -1,0 +1,25 @@
+# Netlify redirects for PixoSpritz website
+# Redirects for SPA routing and build directory access
+
+# Website assets
+/css/*      /packages/website/css/:splat     200
+/js/*       /packages/website/js/:splat      200
+/data/*     /packages/website/data/:splat    200
+/docs/*     /packages/website/docs/:splat    200
+
+# Specific website files
+/docs.html  /packages/website/docs.html      200
+/favicon.ico /packages/website/favicon.ico   200
+/config.js  /packages/website/config.js      200
+
+# Console redirects
+/console/*  /packages/console/build/:splat   200
+
+# Editor redirects
+/editor/*   /packages/editor/build/:splat    200
+
+# API redirects (if needed)
+/api/*      /api/:splat                      200
+
+# Catch-all for SPA - serve website index
+/*          /packages/website/index.html     200

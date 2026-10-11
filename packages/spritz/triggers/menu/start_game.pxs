@@ -1,0 +1,26 @@
+-- Start Game Menu Trigger
+-- Initiates the game when player selects "Begin Quest"
+
+pixos.log('Menu trigger: Start Game selected');
+
+-- Close the menu
+pixos.close_menu();
+
+-- Start the game intro if not already played
+if not pixos.has_flag('intro_played') then
+    pixos.log('Starting game intro cutscene...');
+    pixos.sync({
+        pixos.play_pxc_cutscene('cutscenes/game-intro.pxc')
+    });
+    pixos.set_flag('intro_played', true);
+end;
+
+-- Set explore mode
+pixos.set_mode('explore');
+
+-- Start background music
+pixos.play_bgm('audio/fields.mp3');
+
+pixos.log('Game started!');
+
+return nil;

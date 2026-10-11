@@ -1,0 +1,121 @@
+-- Village Elder NPC Interaction Script
+-- The wise elder who guides the hero
+
+local npc = pixos.get_caller();
+local player = pixos.get_subject();
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Village Elder Interaction', 
+    npc = npc,
+    player = player 
+}));
+
+-- Check game progress and provide appropriate dialogue
+local intro_played = pixos.has_flag('intro_played');
+local fire_complete = pixos.has_flag('fire_trial_complete');
+local water_complete = pixos.has_flag('water_trial_complete');
+local earth_complete = pixos.has_flag('earth_trial_complete');
+local air_complete = pixos.has_flag('air_trial_complete');
+local boss_defeated = pixos.has_flag('boss_defeated');
+
+local trials_complete = 0;
+if fire_complete then trials_complete = trials_complete + 1 end;
+if water_complete then trials_complete = trials_complete + 1 end;
+if earth_complete then trials_complete = trials_complete + 1 end;
+if air_complete then trials_complete = trials_complete + 1 end;
+
+-- Different dialogue based on progress
+if boss_defeated then
+    -- Post-game dialogue
+    pixos.run_scene({
+        {
+            sprite = npc,
+            action = 'dialogue',
+            args = {
+                {
+                    "You did it, hero!",
+                    "The Dark Lord is sealed for another thousand years!",
+                    "The kingdom will forever sing of your bravery!",
+                    "Thank you... thank you for everything."
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+elseif trials_complete >= 4 then
+    -- All trials complete, boss awaits
+    pixos.run_scene({
+        {
+            sprite = npc,
+            action = 'dialogue',
+            args = {
+                {
+                    "You've collected all four Elemental Shards!",
+                    "The path to the Dark Lord is now open!",
+                    "Go forth, hero! Save our world!",
+                    "May the spirits of the elements guide you!"
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+elseif trials_complete > 0 then
+    -- Some trials complete
+    local remaining = 4 - trials_complete;
+    local shards_msg = string.format("You have %d shard(s). %d more to go!", trials_complete, remaining);
+    pixos.run_scene({
+        {
+            sprite = npc,
+            action = 'dialogue',
+            args = {
+                {
+                    "Welcome back, hero!",
+                    shards_msg,
+                    "Keep pushing forward!",
+                    "The fate of the kingdom rests on your shoulders."
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+elseif intro_played then
+    -- After intro, before any trials
+    pixos.run_scene({
+        {
+            sprite = npc,
+            action = 'dialogue',
+            args = {
+                {
+                    "The dungeon portal awaits you to the north.",
+                    "Inside, four elemental chambers test your worth.",
+                    "Fire, Water, Earth, Air - master them all!",
+                    "Speak to the Knight Guard for combat advice."
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+else
+    -- First meeting (shouldn't happen if intro plays correctly)
+    pixos.run_scene({
+        {
+            sprite = npc,
+            action = 'dialogue',
+            args = {
+                {
+                    "Greetings, young one.",
+                    "Dark times are upon us...",
+                    "Seek out the dungeon portal when you're ready."
+                },
+                false,
+                { autoclose = true }
+            }
+        }
+    });
+end;
+
+return nil;

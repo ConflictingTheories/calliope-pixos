@@ -1,0 +1,8 @@
+{
+  "title": "Legacy Zine",
+  "version": "0.3.0",
+  "initialZones": "zone-1",
+  "settings": {
+    "resolution": "480x640"
+  }
+}

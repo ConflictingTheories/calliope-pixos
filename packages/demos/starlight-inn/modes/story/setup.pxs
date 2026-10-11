@@ -1,0 +1,9 @@
+-- Starlight Inn: story mode setup
+local world = pixos.get_world()
+local hero = world.spriteDict and world.spriteDict['traveler']
+if hero then
+    pixos.bind_camera(hero)
+end
+pixos.show_hud('story')
+pixos.log('starlight-inn: welcome!')
+return {}

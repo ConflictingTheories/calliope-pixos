@@ -1,0 +1,205 @@
+-- Disgaea-like: Battle mode update (main game loop)
+-- Handles player input, turn progression, AI, win/lose
+
+local function getUnitAt(units, x, y)
+    for _, u in pairs(units) do
+        if u.stats.hp > 0 and u.x == x and u.y == y then
+            return u
+        end
+    end
+    return nil
+end
+
+return function(time, params)
+    local Game = _G.game
+    if not Game then return end
+
+    local Character = _G.Character
+    local Turns = _G.Turns
+    local Combat = _G.Combat
+    local Geo = _G.Geo
+    local Movement = _G.Movement
+    local AI = _G.AI
+    local isWalkable = _G.isWalkable
+    local MAP_W, MAP_H = _G.MAP_W, _G.MAP_H
+
+    -- Check win/lose
+    if not Game.gameOver then
+        local result = Combat.checkVictory(Game.units)
+        if result then
+            Game.gameOver = result
+            pixos.show_message(result == 'victory' and 'Victory! All enemies defeated!' or 'Defeat... Your party has fallen.')
+            pixos.clear_highlight()
+        end
+    end
+
+    if Game.gameOver then
+        -- Press confirm to return (or restart)
+        if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+            pixos.log('Game over: ' .. Game.gameOver)
+        end
+        return
+    end
+
+    -- Get current unit, skipping dead
+    local unit = Turns.skipDead(Game.turnManager)
+    if not unit then return end
+
+    -- ENEMY TURN: run AI
+    if unit.team == 'enemy' then
+        if not unit.acted then
+            local action = AI.takeTurn(unit, Game.units, Movement, Combat, Geo, MAP_W, MAP_H, isWalkable)
+            pixos.log(unit.id .. ' (' .. unit.classTitle .. ') ' .. action)
+            -- Distribute EXP if AI killed someone
+            -- (EXP handled in Combat.attack via kill detection)
+        end
+        -- Advance to next unit
+        Turns.advance(Game.turnManager)
+        return
+    end
+
+    -- PLAYER TURN
+    if unit.acted then
+        Turns.advance(Game.turnManager)
+        return
+    end
+
+    local phase = Game.phase
+
+    if phase == 'select' then
+        -- Highlight current unit
+        pixos.highlight_units({ unit.id }, 'selectable')
+        pixos.show_message(unit.id .. ' (' .. unit.classTitle .. ' Lv' .. unit.level .. ') - Press ENTER to act')
+
+        if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+            Game.selectedUnit = unit
+            Game.moveRange = Movement.showMoveRange(unit, Game.units, MAP_W, MAP_H, isWalkable)
+            Game.cursor = { x = unit.x, y = unit.y }
+            Game.phase = 'move'
+        end
+        -- Skip unit with Tab
+        if pixos.input_pressed('tab') then
+            unit.acted = true
+            pixos.clear_highlight()
+            Turns.advance(Game.turnManager)
+        end
+
+    elseif phase == 'move' then
+        local u = Game.selectedUnit
+        -- Move cursor
+        if pixos.input_pressed('left') then Game.cursor.x = math.max(1, Game.cursor.x - 1) end
+        if pixos.input_pressed('right') then Game.cursor.x = math.min(MAP_W, Game.cursor.x + 1) end
+        if pixos.input_pressed('up') then Game.cursor.y = math.max(1, Game.cursor.y - 1) end
+        if pixos.input_pressed('down') then Game.cursor.y = math.min(MAP_H, Game.cursor.y + 1) end
+
+        -- Show cursor
+        pixos.highlight_tiles({ { x = Game.cursor.x, y = Game.cursor.y } }, 'targeted')
+
+        if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+            -- Check if cursor is in move range (or is current position)
+            local valid = (Game.cursor.x == u.x and Game.cursor.y == u.y)
+            if not valid then
+                for _, t in ipairs(Game.moveRange) do
+                    if t.x == Game.cursor.x and t.y == Game.cursor.y then
+                        valid = true
+                        break
+                    end
+                end
+            end
+            if valid then
+                if not (Game.cursor.x == u.x and Game.cursor.y == u.y) then
+                    Movement.moveUnit(u, Game.cursor.x, Game.cursor.y, Game.units)
+                    pixos.log(u.id .. ' moved to (' .. u.x .. ',' .. u.y .. ')')
+                end
+                pixos.clear_highlight()
+                Game.phase = 'action'
+                -- Find attack targets
+                Game.targets = {}
+                for _, e in pairs(Game.units) do
+                    if e.team ~= u.team and e.stats.hp > 0 then
+                        local dist = math.abs(u.x - e.x) + math.abs(u.y - e.y)
+                        if dist <= u.range then
+                            table.insert(Game.targets, e)
+                        end
+                    end
+                end
+                if #Game.targets > 0 then
+                    local targetIds = {}
+                    for _, t in ipairs(Game.targets) do
+                        table.insert(targetIds, t.id)
+                    end
+                    pixos.highlight_units(targetIds, 'targetable')
+                    pixos.show_message('Select target (ENTER to attack, ESC to wait)')
+                else
+                    pixos.show_message('No targets in range. ENTER to wait, ESC to cancel move')
+                end
+                Game.targetIndex = 1
+            end
+        end
+        if pixos.input_pressed('escape') then
+            Game.phase = 'select'
+            pixos.clear_highlight()
+        end
+
+    elseif phase == 'action' then
+        local u = Game.selectedUnit
+        -- Cycle targets with left/right
+        if #Game.targets > 0 then
+            if pixos.input_pressed('left') or pixos.input_pressed('up') then
+                Game.targetIndex = Game.targetIndex - 1
+                if Game.targetIndex < 1 then Game.targetIndex = #Game.targets end
+            end
+            if pixos.input_pressed('right') or pixos.input_pressed('down') then
+                Game.targetIndex = Game.targetIndex + 1
+                if Game.targetIndex > #Game.targets then Game.targetIndex = 1 end
+            end
+            local target = Game.targets[Game.targetIndex]
+            if target then
+                pixos.highlight_units({ target.id }, 'targeted')
+                local chance = Combat.hitChance(u, target)
+                pixos.show_message('Target: ' .. target.id .. ' HP:' .. target.stats.hp .. ' Hit:' .. chance .. '% (ENTER=attack, ESC=wait)')
+            end
+        end
+
+        if pixos.input_pressed(' ') or pixos.input_pressed('enter') then
+            if #Game.targets > 0 then
+                local target = Game.targets[Game.targetIndex]
+                -- Attack!
+                local result = Combat.attack(u, target, Game.geo)
+                if result.hit then
+                    pixos.log(u.id .. ' hits ' .. target.id .. ' for ' .. result.damage .. (result.isCrit and ' CRIT!' or ''))
+                    if result.killed then
+                        pixos.log(target.id .. ' defeated! +' .. result.expGained .. ' EXP')
+                        local leveled = Combat.distributeExp(Game.units, u.id, result.expGained, Character)
+                        for _, lv in ipairs(leveled) do
+                            pixos.log(Game.units[lv.id].id .. ' leveled up to ' .. Game.units[lv.id].level .. '!')
+                            pixos.show_message(Game.units[lv.id].id .. ' LEVEL UP! Now Lv' .. Game.units[lv.id].level)
+                        end
+                    end
+                    -- Counterattack
+                    if target.stats.hp > 0 and Combat.canCounter(target, u) then
+                        pixos.log(target.id .. ' counterattacks!')
+                        local cres = Combat.attack(target, u, Game.geo)
+                        if cres.hit then
+                            pixos.log(target.id .. ' counters for ' .. cres.damage)
+                        end
+                    end
+                else
+                    pixos.log(u.id .. ' missed ' .. target.id .. '!')
+                end
+            else
+                pixos.log(u.id .. ' waits.')
+            end
+            u.acted = true
+            pixos.clear_highlight()
+            Game.phase = 'select'
+            Game.selectedUnit = nil
+            Turns.advance(Game.turnManager)
+        end
+        if pixos.input_pressed('escape') then
+            -- Cancel back to move (unit hasn't acted yet)
+            Game.phase = 'move'
+            Game.moveRange = Movement.showMoveRange(u, Game.units, MAP_W, MAP_H, isWalkable)
+        end
+    end
+end

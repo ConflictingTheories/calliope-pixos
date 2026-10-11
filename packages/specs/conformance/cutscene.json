@@ -1,0 +1,20 @@
+{
+  "description": "Cutscene conformance: cutscene docs keep a stable minimal shape (no dedicated schema yet).",
+  "cases": [
+    {
+      "id": "minimal-cutscene",
+      "inline": {
+        "id": "intro",
+        "version": "1.0.0",
+        "steps": [
+          {
+            "say": "Hello"
+          }
+        ]
+      },
+      "expect": {
+        "hasSteps": true
+      }
+    }
+  ]
+}

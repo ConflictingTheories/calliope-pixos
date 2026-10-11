@@ -1,0 +1,55 @@
+-- Dungeon Entrance Zone Load Script
+-- Hub connecting to all four elemental chambers
+
+local zone = pixos.get_caller();
+pixos.log(pixos.as_obj({ msg = 'trigger:: dungeon_entrance_load', zone = zone }));
+
+-- Set explore mode for dungeon navigation
+pixos.set_mode('explore');
+
+-- Play dungeon ambient music
+pixos.play_bgm('audio/dungeon-beat.mp3');
+
+-- Check trial completion and update portal states
+local fire_complete = pixos.has_flag('fire_trial_complete');
+local water_complete = pixos.has_flag('water_trial_complete');
+local earth_complete = pixos.has_flag('earth_trial_complete');
+local air_complete = pixos.has_flag('air_trial_complete');
+
+local total_complete = 0;
+if fire_complete then total_complete = total_complete + 1 end;
+if water_complete then total_complete = total_complete + 1 end;
+if earth_complete then total_complete = total_complete + 1 end;
+if air_complete then total_complete = total_complete + 1 end;
+
+pixos.log(pixos.as_obj({ 
+    msg = 'Trial status', 
+    fire = fire_complete, 
+    water = water_complete, 
+    earth = earth_complete, 
+    air = air_complete,
+    total = total_complete
+}));
+
+-- If all four trials complete, open the boss door
+if total_complete >= 4 then
+    pixos.log('All trials complete! Opening boss chamber door...');
+    local boss_door = pixos.get_sprite('boss-door');
+    if boss_door and pixos.from(boss_door, 'state') == 'closed' then
+        pixos.set_state(boss_door, 'open');
+        -- Dramatic effect
+        pixos.emit_particles({7, 2, 1}, { preset = 'magic', count = 30, life = 2000 });
+    end;
+else
+    -- Show message about remaining trials
+    local remaining = 4 - total_complete;
+    pixos.log(pixos.as_obj({ msg = 'Trials remaining', count = remaining }));
+end;
+
+-- Emit particles at portal locations for visual effect
+pixos.emit_particles({2, 2, 0.5}, { preset = 'flame', count = 10, life = 2500 });  -- Fire portal
+pixos.emit_particles({12, 2, 0.5}, { preset = 'water', count = 10, life = 2500 }); -- Water portal
+pixos.emit_particles({2, 12, 0.5}, { preset = 'earth', count = 10, life = 2500 }); -- Earth portal
+pixos.emit_particles({12, 12, 0.5}, { preset = 'air', count = 10, life = 2500 });  -- Air portal
+
+return nil;

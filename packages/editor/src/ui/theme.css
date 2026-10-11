@@ -1,0 +1,54 @@
+/**
+ * PixoSpritz UI Theme — alias layer
+ *
+ * This file maps the `ui/` component library's semantic variable names
+ * onto the canonical design tokens in `src/design-system/design-system.css`
+ * (the single source of truth — Forge theme, achromatic primary).
+ *
+ * Rules: aliases only, no literal values. If a value isn't in the
+ * canonical token file, it doesn't belong here either.
+ */
+
+:root {
+  /* Panels */
+  --panel-bg: var(--color-bg-surface);
+  --panel-shaded-bg: var(--color-bg-base);
+  --border-color: var(--color-border-default);
+
+  /* Text */
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+
+  /* Inputs */
+  --input-bg: var(--color-bg-base);
+  --input-focus-border: var(--color-brand-primary);
+  --input-focus-shadow: var(--shadow-focus);
+  --input-disabled-bg: var(--color-bg-surface);
+
+  /* Buttons — primary is achromatic (near-white bg, dark text) */
+  --btn-default-bg: var(--color-bg-elevated);
+  --btn-default-hover: var(--color-bg-hover);
+  --btn-primary-bg: var(--color-brand-primary);
+  --btn-primary-hover: var(--color-brand-primary-hover);
+  --btn-primary-text: var(--color-on-brand-primary);
+  --btn-ghost-hover: rgba(255, 255, 255, 0.05);
+  --btn-subtle-hover: rgba(255, 255, 255, 0.1);
+  --btn-link-color: var(--color-brand-secondary);
+
+  /* Toggle */
+  --toggle-bg: var(--color-bg-active);
+
+  /* Slider */
+  --slider-track-bg: var(--color-bg-active);
+
+  /* Progress */
+  --progress-track-bg: var(--color-bg-active);
+
+  /* Tags */
+  --tag-bg: var(--color-bg-active);
+
+  /* Placeholder */
+  --placeholder-bg: var(--color-bg-active);
+  --placeholder-highlight: var(--color-bg-hover);
+}

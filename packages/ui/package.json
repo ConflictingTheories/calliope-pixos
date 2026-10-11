@@ -1,0 +1,1 @@
+{"description":"Shared UI components for PixoSpritz ecosystem (engine editor + SVRN publisher)","exports":{".":"./src/index.js","./components/*":"./src/components/*"},"main":"src/index.js","name":"@pixospritz/ui","type":"module","version":"1.0.1"}

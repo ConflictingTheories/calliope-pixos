@@ -1,0 +1,25 @@
+-- Options Menu Trigger
+-- Shows game options (placeholder for now)
+
+pixos.log('Menu trigger: Options selected');
+
+-- For now, just show a dialogue about options
+pixos.run_scene({
+    {
+        sprite = nil,
+        action = 'dialogue',
+        args = {
+            {
+                "GAME OPTIONS",
+                "Controls: Arrow keys / WASD to move",
+                "Space/Enter: Interact with objects",
+                "Escape: Pause menu",
+                "This demo showcases all PixoSpritz features!"
+            },
+            false,
+            { autoclose = true }
+        }
+    }
+});
+
+return nil;

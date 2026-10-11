@@ -1,0 +1,12 @@
+{
+  "description": "Physics determinism conformance: fixed-step harness over seeded bodies.",
+  "stepHz": 60,
+  "frames": 120,
+  "bodySeed": 42,
+  "bodyCount": 6,
+  "frameJitterSeed": 1234,
+  "expect": {
+    "hash": "47d3bb4c",
+    "tick": 180
+  }
+}

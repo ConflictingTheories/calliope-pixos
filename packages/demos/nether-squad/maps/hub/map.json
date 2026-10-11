@@ -1,0 +1,1 @@
+{"bounds":[0,0,8,8],"description":"Disgaea-like mini: hub area with recruiter NPC.","mode":"hub","name":"Nether Hub","sprites":[{"facing":"Up","id":"hero","pos":[4,6,0],"type":"characters/male"},{"facing":"Down","id":"recruiter","pos":[4,2,0],"type":"npc/air-knight"}],"tileset":"village"}

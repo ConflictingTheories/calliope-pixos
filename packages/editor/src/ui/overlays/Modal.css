@@ -1,0 +1,117 @@
+/**
+ * Modal Styles
+ */
+.px-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: px-fade-in 0.15s ease;
+}
+
+@keyframes px-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.px-modal {
+  background: var(--panel-bg, #1a1a2e);
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: px-slide-in 0.2s ease;
+}
+
+@keyframes px-slide-in {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sizes */
+.px-modal-xs { width: 280px; }
+.px-modal-sm { width: 400px; }
+.px-modal-md { width: 600px; }
+.px-modal-lg { width: 800px; }
+
+.px-modal-full {
+  width: 90vw;
+  height: 90vh;
+}
+
+.px-modal-overflow .px-modal-body {
+  overflow-y: auto;
+}
+
+.px-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.px-modal-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.px-modal-title-text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--text-muted, #666);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.px-modal-close:hover {
+  background: var(--btn-subtle-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-modal-body {
+  padding: 20px;
+  flex: 1;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.px-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color, #2a2a4a);
+}

@@ -1,0 +1,97 @@
+-- Disgaea-like: Battle mode setup
+-- Loads game modules, creates units, places geo panels
+
+-- Load game systems (auto-registered from scripts/ folder)
+local Character = require('character')
+local Turns = require('turns')
+local Combat = require('combat')
+local Geo = require('geo')
+local Movement = require('movement')
+local AI = require('ai')
+
+-- Game state
+local Game = {
+    units = {},
+    turnManager = nil,
+    geo = nil,
+    phase = 'select', -- select, move, action, enemy
+    selectedUnit = nil,
+    moveRange = {},
+    cursor = { x = 5, y = 5 },
+    message = '',
+    gameOver = nil,
+}
+
+-- Map dimensions
+local MAP_W, MAP_H = 10, 10
+
+-- Check if tile is walkable (not a wall)
+local function isWalkable(x, y)
+    -- Walls are at borders; interior is walkable
+    -- In a full implementation, this would check the cells.json
+    if x < 2 or x > 9 or y < 2 or y > 9 then
+        return false
+    end
+    return true
+end
+
+-- Create player units
+Game.units['warrior1'] = Character.create('warrior1', 'warrior', 3, 'player', 2, 8)
+Game.units['mage1'] = Character.create('mage1', 'mage', 3, 'player', 4, 8)
+Game.units['archer1'] = Character.create('archer1', 'archer', 3, 'player', 6, 8)
+
+-- Create enemy units
+Game.units['goblin1'] = Character.create('goblin1', 'goblin', 2, 'enemy', 2, 2)
+Game.units['goblin2'] = Character.create('goblin2', 'goblin', 2, 'enemy', 4, 2)
+Game.units['orc1'] = Character.create('orc1', 'orc', 3, 'enemy', 6, 2)
+
+-- Setup geo panels
+Game.geo = Geo.create()
+-- Red power panels near center
+Geo.placePanel(Game.geo, 4, 5, 'red', 20)
+Geo.placePanel(Game.geo, 5, 5, 'red', 20)
+Geo.placePanel(Game.geo, 6, 5, 'red', 20)
+-- Blue guard panels on player side
+Geo.placePanel(Game.geo, 3, 7, 'blue', 15)
+Geo.placePanel(Game.geo, 5, 7, 'blue', 15)
+-- Green heal panels on enemy side
+Geo.placePanel(Game.geo, 4, 3, 'green', 15)
+Geo.placePanel(Game.geo, 6, 3, 'green', 15)
+
+-- Initialize turn manager
+Game.turnManager = Turns.create(Game.units)
+
+-- Store in global for update script
+_G.game = Game
+_G.Character = Character
+_G.Turns = Turns
+_G.Combat = Combat
+_G.Geo = Geo
+_G.Movement = Movement
+_G.AI = AI
+_G.isWalkable = isWalkable
+_G.MAP_W = MAP_W
+_G.MAP_H = MAP_H
+
+-- Subscribe to events
+if pixos.on_event then
+    pixos.on_event('unit:death', function(data)
+        pixos.log('Unit died: ' .. tostring(data.unitId))
+    end)
+    pixos.on_event('turn:round_start', function(data)
+        pixos.log('Round ' .. tostring(data.round) .. ' begins!')
+        -- Apply geo heal effects at start of round
+        local healed = Geo.applyTurnEffects(Game.geo, Game.units)
+        for _, h in ipairs(healed) do
+            pixos.log(Game.units[h.unitId].id .. ' healed for ' .. h.amount)
+        end
+    end)
+end
+
+pixos.show_hud('battle')
+pixos.log('Disgaea-like battle start! Defeat all enemies.')
+pixos.show_message('Battle Start! Defeat all enemies!')
+
+return {
+    getGame = function() return Game end,
+}

@@ -1,0 +1,18 @@
+-- Water Battle Start Event
+-- Triggered when the water trial battle begins
+
+pixos.log('Event: Water Battle Started!');
+
+-- Emit water particles at boss location
+pixos.emit_particles({6, 3, 1}, { preset = 'water', count = 40, life = 2500 });
+
+-- Set to tactics mode for turn-based combat
+pixos.set_mode('tactics');
+
+-- Play battle music with water theme
+pixos.play_bgm('audio/ocean-waves.mp3');
+
+-- Log combat start
+pixos.log('Water Elemental battle in progress...');
+
+return nil;
