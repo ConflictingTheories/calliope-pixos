@@ -31,7 +31,7 @@
 /* Grid cell highlight (for hover effects) */
 .grid-cell-highlight {
   position: absolute;
-  background: var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15));
+  background: var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15)));
   border: 1px solid var(--color-primary, var(--color-brand-accent));
   pointer-events: none;
   z-index: 5;
@@ -41,7 +41,7 @@
 .grid-selection {
   position: absolute;
   border: 1px dashed var(--color-primary, var(--color-brand-accent));
-  background: var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.1));
+  background: var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.1)));
   pointer-events: none;
   z-index: 15;
 }

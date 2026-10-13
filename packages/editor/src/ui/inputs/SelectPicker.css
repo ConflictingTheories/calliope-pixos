@@ -30,7 +30,7 @@
 
 .px-select-picker-open .px-select-picker-toggle {
   border-color: var(--input-focus-border, var(--color-brand-primary));
-  box-shadow: 0 0 0 2px var(--input-focus-shadow, var(--color-brand-primary-muted, rgba(236, 236, 241,  0.2));
+  box-shadow: 0 0 0 2px var(--input-focus-shadow, var(--color-brand-primary-muted, rgba(236, 236, 241,  0.2)));
 }
 
 .px-select-picker-value {

@@ -196,7 +196,7 @@
 }
 
 .property-input--boolean input:focus-visible + .property-checkbox {
-  box-shadow: 0 0 0 2px var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15));
+  box-shadow: 0 0 0 2px var(--color-primary-subtle, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15)));
 }
 
 /* Select input */

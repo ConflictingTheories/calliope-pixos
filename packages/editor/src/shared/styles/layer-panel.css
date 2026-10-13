@@ -86,11 +86,11 @@
 }
 
 .layer-item--selected {
-  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.12));
+  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.12)));
 }
 
 .layer-item--selected:hover {
-  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15));
+  background: var(--color-bg-selected, var(--color-brand-accent-muted, rgba(255, 107, 157,  0.15)));
 }
 
 .layer-item--drag-over {

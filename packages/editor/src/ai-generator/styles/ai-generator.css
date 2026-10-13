@@ -87,7 +87,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: var(--brand-primary-muted, var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1));
+  background: var(--brand-primary-muted, var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.1)));
   border: 1px solid var(--color-brand-secondary-muted, rgba(78, 205, 196, 0.2));
   border-radius: 6px;
   font-size: 13px;
@@ -525,7 +525,7 @@
 
 .ai-generator .rs-btn-primary:disabled {
   opacity: 0.4;
-  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.3) !important;
+  background: var(--color-brand-secondary-muted, rgba(78, 205, 196,  0.3)) !important;
 }
 
 .ai-generator .rs-btn-xs {

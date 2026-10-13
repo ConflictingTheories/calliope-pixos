@@ -32,12 +32,12 @@
 
 .px-uploader-trigger:hover .px-uploader-default {
   border-color: var(--btn-primary-bg, var(--color-brand-primary));
-  background: var(--color-brand-primary-muted, rgba(236, 236, 241,  0.05);
+  background: var(--color-brand-primary-muted, rgba(236, 236, 241,  0.05));
 }
 
 .px-uploader-dragging .px-uploader-default {
   border-color: var(--btn-primary-bg, var(--color-brand-primary));
-  background: var(--color-brand-primary-muted, rgba(236, 236, 241,  0.1);
+  background: var(--color-brand-primary-muted, rgba(236, 236, 241,  0.1));
 }
 
 .px-uploader-icon {
