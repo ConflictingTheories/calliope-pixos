@@ -311,15 +311,20 @@ const App = () => {
   // (P2-10/P3-10) Shared core for migrated tools.  The repository is
   // bridged onto the live zip-manager session so migrated tools read
   // and write the same project the shell has open.
+  // sessionRefs always points at the latest session functions. The
+  // repository bridge below is created once, but delegates through
+  // these refs so it never closes over the first render's null zip.
+  // (Assigned after the callbacks are defined, below.)
+  const sessionRefs = useRef({});
   const toolCore = useMemo(() => {
     const repository = new BridgedProjectRepository({
       read: async (path, options = {}) => {
-        const entry = findEntryByPath(path);
+        const entry = await sessionRefs.current.findEntryByPath(path);
         if (!entry) throw new Error(`not found: ${path}`);
-        return getData(entry, options.as !== 'bytes');
+        return sessionRefs.current.getData(entry, options.as !== 'bytes');
       },
       write: async (path, data) => {
-        await writeFile(path, data);
+        await sessionRefs.current.writeFile(path, data);
       },
       list: async (dir = '') => {
         const out = [];
@@ -330,10 +335,10 @@ const App = () => {
             else out.push(p);
           }
         };
-        walk(zip, '');
+        walk(sessionRefs.current.getZip(), '');
         return dir ? out.filter(e => e.startsWith(dir + '/')) : out;
       },
-      exists: async path => !!findEntryByPath(path),
+      exists: async path => !!(await sessionRefs.current.findEntryByPath(path)),
     });
     const store = new ProjectStore(repository);
     // Bus ctx carries the repository via services (P1-04 guard seam).
@@ -912,6 +917,14 @@ const App = () => {
     },
     [zip, getEntryFullPath]
   );
+
+  // Keep the repository bridge (created once above) pointed at the live
+  // session functions. Assigned every render; the bridge only calls these
+  // in event handlers/effects, after mount.
+  sessionRefs.current.writeFile = writeFile;
+  sessionRefs.current.findEntryByPath = findEntryByPath;
+  sessionRefs.current.getData = getData;
+  sessionRefs.current.getZip = () => zip;
 
   /**
    * Build a list of image assets with URIs so the tileset editor can
